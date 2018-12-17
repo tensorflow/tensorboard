@@ -1613,6 +1613,7 @@ limitations under the License.
           value: () => ({})
         },
         // Examples and their inferences merged into a single list.
+        // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
         examplesAndInferences : {
           type: Array,
           value: () => ([]),
@@ -2251,7 +2252,7 @@ limitations under the License.
         this.selectedLabelFeature = '';
         this.selectedBreakdownFeature = '';
         this.selectedSecondBreakdownFeature = '';
-        const overallThresholds = []
+        const overallThresholds = [];
         for (let modelInd = 0; modelInd < this.numModels; modelInd++) {
           overallThresholds.push({threshold: 0.5})
         }
@@ -2368,6 +2369,7 @@ limitations under the License.
           return;
         }
         if (regenInferenceStats) {
+          console.log('I am here')
           const inferenceStatsArray = [];
           const regressionEntries = [];
           for (let modelInd = 0; modelInd < this.numModels;
@@ -2554,37 +2556,40 @@ limitations under the License.
                 inferenceStats, a);
           }
         });
-
         this.featureValueThresholds = tempArray;
-        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+
+        // ROC curves should only exist for the binary case
+        if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
+            const plotStats = [];
+            const plotThresholds = [];
+            const modelThresholds = this.featureValueThresholds[i].threshold;
+            for (let modelInd = 0; modelInd < modelThresholds.length;
+              modelInd++) {
+              const inferenceStats = this.inferenceStats_[modelInd];
+              const key = this.createCombinedValueString_(
+                this.featureValueThresholds[i].value,
+                this.featureValueThresholds[i].value2);
+              plotStats.push(inferenceStats.faceted[key]);
+              plotThresholds.push(modelThresholds[modelInd].threshold)
+            }
+            this.plotPr(
+              this.$$('#' + this.getPrChartId(i)),
+              plotStats,
+              plotThresholds,
+              regenInferenceStats);
+          }
           const plotStats = [];
           const plotThresholds = [];
-          const modelThresholds = this.featureValueThresholds[i].threshold;
-          for (let modelInd = 0; modelInd < modelThresholds.length;
+          for (let modelInd = 0; modelInd < this.inferenceStats_.length;
             modelInd++) {
-            const inferenceStats = this.inferenceStats_[modelInd];
-            const key = this.createCombinedValueString_(
-              this.featureValueThresholds[i].value,
-              this.featureValueThresholds[i].value2);
-            plotStats.push(inferenceStats.faceted[key]);
-            plotThresholds.push(modelThresholds[modelInd].threshold)
+            plotStats.push(this.inferenceStats_[modelInd].thresholds);
+            plotThresholds.push(this.overallThresholds[modelInd].threshold);
           }
           this.plotPr(
-            this.$$('#' + this.getPrChartId(i)),
-            plotStats,
-            plotThresholds,
-            regenInferenceStats);
+            this.$$('#prchart'), plotStats,
+            plotThresholds, regenInferenceStats);
         }
-        const plotStats = [];
-        const plotThresholds = [];
-        for (let modelInd = 0; modelInd < this.inferenceStats_.length;
-             modelInd++) {
-          plotStats.push(this.inferenceStats_[modelInd].thresholds);
-          plotThresholds.push(this.overallThresholds[modelInd].threshold);
-        }
-        this.plotPr(
-              this.$$('#prchart'), plotStats,
-              plotThresholds, regenInferenceStats);
         this.updateCorrectness_();
       },
 
@@ -3191,12 +3196,8 @@ limitations under the License.
             this.inferences.results.length != this.numModels) {
           return;
         }
-        // console.log('nummodels', this.numModels);
-        // console.log('overallthresholds', this.overallThresholds)
-        // console.log('inferencestats', this.inferenceStats_)
-        // console.log('inferences', this.inferences.results)
-        // console.log('examplesandinferences', this.examplesAndInferences)
         // Create map of example indices to inference results.
+        // inferenceMap: sample id -> # Models -> # Labels
         const inferenceMap = {}
         const isClassification =
           !!this.inferences.results[0].classificationResult;
