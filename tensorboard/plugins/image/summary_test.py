@@ -192,9 +192,8 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     return self.read_single_event_from_eventfile().summary
 
   def read_single_event_from_eventfile(self):
-    event_files = glob.glob(os.path.join(self.get_temp_dir(), '*'))
-    self.assertEqual(len(event_files), 1)
-    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
+    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
     return events[1]
