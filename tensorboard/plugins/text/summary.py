@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
-
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary_v2
 
@@ -63,6 +61,9 @@ def op(name,
   Raises:
     ValueError: If tensor has the wrong type.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -94,6 +95,9 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   try:
     tensor = tf.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:

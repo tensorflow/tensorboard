@@ -21,7 +21,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
@@ -55,6 +54,9 @@ def op(name,
   Returns:
     A TensorFlow summary op.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -83,6 +85,9 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   data = np.array(data)
   if data.shape != ():
     raise ValueError('Expected scalar shape for data, saw shape: %s.'

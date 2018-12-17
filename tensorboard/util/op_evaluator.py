@@ -23,8 +23,6 @@ from __future__ import print_function
 
 import threading
 
-import tensorflow.compat.v1 as tf
-
 
 class PersistentOpEvaluator(object):
   """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
@@ -71,6 +69,8 @@ class PersistentOpEvaluator(object):
 
   def _lazily_initialize(self):
     """Initialize the graph and session, if this has not yet been done."""
+    # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+    import tensorflow.compat.v1 as tf
     with self._initialization_lock:
       if self._session:
         return

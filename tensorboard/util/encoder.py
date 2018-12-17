@@ -22,8 +22,7 @@ from __future__ import print_function
 
 
 import numpy as np
-import tensorflow  # for contrib
-import tensorflow.compat.v1 as tf
+
 from tensorboard.util import op_evaluator
 
 
@@ -47,6 +46,8 @@ class _TensorFlowPngEncoder(op_evaluator.PersistentOpEvaluator):
     self._encode_op = None
 
   def initialize_graph(self):
+    # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+    import tensorflow.compat.v1 as tf
     self._image_placeholder = tf.placeholder(
         dtype=tf.uint8, name='image_to_encode')
     self._encode_op = tf.image.encode_png(self._image_placeholder)
@@ -82,6 +83,9 @@ class _TensorFlowWavEncoder(op_evaluator.PersistentOpEvaluator):
     self._encode_op = None
 
   def initialize_graph(self):
+    # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+    import tensorflow  # for contrib
+    import tensorflow.compat.v1 as tf
     self._audio_placeholder = tf.placeholder(
         dtype=tf.float32, name='image_to_encode')
     self._samples_per_second_placeholder = tf.placeholder(

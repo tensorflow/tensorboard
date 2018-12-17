@@ -32,7 +32,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
 import numpy as np
 
 from tensorboard.plugins.histogram import metadata
@@ -55,6 +54,8 @@ def _buckets(data, bucket_count=None):
     a triple `[left_edge, right_edge, count]` for a single bucket.
     The value of `k` is either `bucket_count` or `1` or `0`.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
   if bucket_count is None:
     bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
   with tf.name_scope('buckets', values=[data, bucket_count]), \
@@ -128,6 +129,9 @@ def op(name,
   Returns:
     A TensorFlow summary op.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -161,6 +165,9 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if bucket_count is None:
     bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
   data = np.array(data).flatten().astype(float)

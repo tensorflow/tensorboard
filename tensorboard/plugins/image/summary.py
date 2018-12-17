@@ -26,7 +26,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow.compat.v1 as tf
 
 from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary_v2
@@ -67,6 +66,9 @@ def op(name,
   Returns:
     A TensorFlow summary op.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -116,6 +118,9 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   images = np.array(images).astype(np.uint8)
   if images.ndim != 4:
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))

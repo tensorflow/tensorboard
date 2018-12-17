@@ -31,8 +31,6 @@ from __future__ import print_function
 import functools
 
 import numpy as np
-import tensorflow  # for contrib
-import tensorflow.compat.v1 as tf
 
 from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
@@ -92,6 +90,9 @@ def op(name,
   as WAV. If the specific format is important to you, please provide a
   file format explicitly.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow  # for contrib
+  import tensorflow.compat.v1 as tf
 
   if display_name is None:
     display_name = name
@@ -175,6 +176,9 @@ def pb(name,
   as WAV. If the specific format is important to you, please provide a
   file format explicitly.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   audio = np.array(audio)
   if audio.ndim != 3:
     raise ValueError('Shape %r must have rank 3' % (audio.shape,))
