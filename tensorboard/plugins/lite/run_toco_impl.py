@@ -67,7 +67,9 @@ def make_args_from_session(sess, graph_def_file, tflite_file, options):
         tensor = sess.graph.get_tensor_by_name(node + ":0")
         input_nodes.append(node)
         shape = tensor.shape.as_list()
-        if shape[0] == -1 or shape[0] is None:
+        print("xxxxxxxxxxxxxxxxx")
+        print(shape)
+        if len(shape) > 0 and (shape[0] == -1 or shape[0] is None):
             shape[0] = options['batch_size']
         input_shapes.append(','.join(map(str, shape)))
 
@@ -102,7 +104,8 @@ def make_args_from_session(sess, graph_def_file, tflite_file, options):
                     "--input_arrays={}".format(",".join(input_nodes)),
                     "--output_arrays={}".format(",".join(output_nodes)),
                     "--input_shapes={}".format(":".join(input_shapes))]
-
+    print(freeze_args)
+    print(convert_args)
     return freeze_args, convert_args
 
 
