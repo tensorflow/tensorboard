@@ -27,12 +27,7 @@ from __future__ import print_function
 
 import functools
 
-# TODO(nickfelt): get encode_wav() exported in the public API.
-from tensorflow.python.ops import gen_audio_ops
-
-from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata
-from tensorboard.util import tensor_util
 
 
 def audio(name,
@@ -71,6 +66,9 @@ def audio(name,
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
   from tensorboard.compat import tf_v2 as tf
+  # TODO(nickfelt): get encode_wav() exported in the public API.
+  from tensorflow.python.ops import gen_audio_ops
+
   if encoding is None:
     encoding = 'wav'
   if encoding != 'wav':
