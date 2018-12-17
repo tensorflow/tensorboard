@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""[EXPERIMENTAL] Central API entry point for v2 versions of summary operations.
+"""Central API entry point for v2 versions of summary operations.
 
 This module exposes v2 summary ops for the standard TensorBoard plugins.
 """
@@ -20,29 +20,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.plugins.scalar.summary import scalar
-from tensorboard.plugins.scalar.summary import scalar_pb
+# pylint: disable=unused-import
+from tensorboard.plugins.audio.summary_v2 import audio
+from tensorboard.plugins.histogram.summary_v2 import histogram
+from tensorboard.plugins.image.summary_v2 import image
+from tensorboard.plugins.scalar.summary_v2 import scalar
+from tensorboard.plugins.text.summary_v2 import text
 
-def _not_implemented_yet():
-  raise NotImplementedError()
-
-audio = _not_implemented_yet
-audio_pb = _not_implemented_yet
-
-custom_scalar = _not_implemented_yet
-custom_scalar_pb = _not_implemented_yet
-
-histogram = _not_implemented_yet
-histogram_pb = _not_implemented_yet
-
-image = _not_implemented_yet
-image_pb = _not_implemented_yet
-
-pr_curve = _not_implemented_yet
-pr_curve_pb = _not_implemented_yet
-pr_curve_streaming_op = _not_implemented_yet
-pr_curve_raw_data_op = _not_implemented_yet
-pr_curve_raw_data_pb = _not_implemented_yet
-
-text = _not_implemented_yet
-text_pb = _not_implemented_yet
+del absolute_import, division, print_function

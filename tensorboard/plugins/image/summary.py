@@ -26,10 +26,14 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
 
 from tensorboard.plugins.image import metadata
+from tensorboard.plugins.image import summary_v2
 from tensorboard.util import encoder
+
+
+# Export V2 versions.
+image = summary_v2.image
 
 
 def op(name,
@@ -38,7 +42,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create an image summary op for use in a TensorFlow graph.
+  """Create a legacy image summary op for use in a TensorFlow graph.
 
   Arguments:
     name: A unique name for the generated summary node.
@@ -62,6 +66,9 @@ def op(name,
   Returns:
     A TensorFlow summary op.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -86,7 +93,7 @@ def op(name,
 
 
 def pb(name, images, max_outputs=3, display_name=None, description=None):
-  """Create an image summary protobuf.
+  """Create a legacy image summary protobuf.
 
   This behaves as if you were to create an `op` with the same arguments
   (wrapped with constant tensors where appropriate) and then execute
@@ -111,6 +118,9 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   images = np.array(images).astype(np.uint8)
   if images.ndim != 4:
     raise ValueError('Shape %r must have rank 4' % (images.shape, ))
@@ -119,7 +129,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   encoded_images = [encoder.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
-  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

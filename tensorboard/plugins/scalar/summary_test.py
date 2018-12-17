@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for the scalar plugin summary generation functions."""
+"""Tests for the scalar plugin summary API."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,19 +22,36 @@ from __future__ import print_function
 import glob
 import os
 
+
 import numpy as np
 import six
 import tensorflow as tf
 
-tf.enable_eager_execution()
-
-from tensorboard.compat.proto import summary_pb2
+from tensorboard import compat
 from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import tensor_util
-from tensorboard.util import test_util
+
+try:
+  tf_v2 = compat.import_tf_v2()
+except ImportError:
+  tf_v2 = None
+
+try:
+  tf.enable_eager_execution()
+except AttributeError:
+  # TF 2.0 doesn't have this symbol because eager is the default.
+  pass
+
 
 class SummaryBaseTest(object):
+
+  def scalar(self, *args, **kwargs):
+    raise NotImplementedError()
+
+  def test_tag(self):
+    self.assertEqual('a', self.scalar('a', 1).value[0].tag)
+    self.assertEqual('a/b', self.scalar('a/b', 1).value[0].tag)
 
   def test_metadata(self):
     pb = self.scalar('a', 1.13)
@@ -46,10 +63,9 @@ class SummaryBaseTest(object):
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
-  def test_explicit__description(self):
+  def test_explicit_description(self):
     description = 'The first letter of the alphabet.'
-    pb = self.scalar('a', 1.13,
-                     description=description)
+    pb = self.scalar('a', 1.13, description=description)
     summary_metadata = pb.value[0].metadata
     self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
@@ -81,8 +97,9 @@ class SummaryBaseTest(object):
   def test_string_value(self):
     # Use str.* in regex because PY3 numpy refers to string arrays using
     # length-dependent type names in the format "str%d" % (32 * len(str)).
-    with six.assertRaisesRegex(self, Exception, r'Cast str.*float'):
-      self.scalar('a', np.array("113"))
+    with six.assertRaisesRegex(self, (ValueError, tf.errors.UnimplementedError),
+                               r'Cast str.*float'):
+      self.scalar('a', np.array('113'))
 
   def test_requires_rank_0(self):
     with six.assertRaisesRegex(self, ValueError, r'Expected scalar shape'):
@@ -91,13 +108,25 @@ class SummaryBaseTest(object):
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return test_util.ensure_tb_summary_proto(
-        summary.pb(*args, **kwargs))
+    return summary.pb(*args, **kwargs)
+
+  def test_tag(self):
+    self.assertEqual('a/scalar_summary', self.scalar('a', 1).value[0].tag)
+    self.assertEqual('a/b/scalar_summary', self.scalar('a/b', 1).value[0].tag)
 
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
-    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+
+  def test_tag(self):
+    self.assertEqual('a/scalar_summary', self.scalar('a', 1).value[0].tag)
+    self.assertEqual('a/b/scalar_summary', self.scalar('a/b', 1).value[0].tag)
+
+  def test_scoped_tag(self):
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a/scalar_summary',
+                       self.scalar('a', 1).value[0].tag)
 
 
 class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
@@ -106,26 +135,53 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
 
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
-  def scalar(self, *args, **kwargs):
-    return self.scalar_event(*args, **kwargs).summary
 
-  def scalar_event(self, *args, **kwargs):
-    writer = tf.contrib.summary.create_file_writer(self.get_temp_dir())
-    with writer.as_default(), tf.contrib.summary.always_record_summaries():
+  def setUp(self):
+    super(SummaryV2OpTest, self).setUp()
+    if tf_v2 is None:
+      self.skipTest('v2 summary API not available')
+
+  def scalar(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
       summary.scalar(*args, **kwargs)
-    return self.read_single_event_from_eventfile()
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
 
   def read_single_event_from_eventfile(self):
-    event_files = glob.glob(os.path.join(self.get_temp_dir(), '*'))
-    self.assertEqual(len(event_files), 1)
-    events = list(tf.train.summary_iterator(event_files[0]))
+    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
+    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
     return events[1]
 
+  def test_scoped_tag(self):
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a', self.scalar('a', 1).value[0].tag)
+
   def test_step(self):
-    event = self.scalar_event('a', 1.0, step=333)
+    self.scalar('a', 1.0, step=333)
+    event = self.read_single_event_from_eventfile()
     self.assertEqual(333, event.step)
+
+
+class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
+  def scalar(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    # Hack to extract current scope since there's no direct API for it.
+    with tf.name_scope('_') as temp_scope:
+      scope = temp_scope.rstrip('/_')
+    @tf_v2.function
+    def graph_fn():
+      # Recreate the active scope inside the defun since it won't propagate.
+      with tf.name_scope(scope):
+        summary.scalar(*args, **kwargs)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
+      graph_fn()
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
 
 
 if __name__ == '__main__':

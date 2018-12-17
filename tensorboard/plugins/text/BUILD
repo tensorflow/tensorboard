@@ -70,7 +70,23 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/compat",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -86,7 +102,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
-        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -100,7 +115,6 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
     ],

@@ -20,7 +20,6 @@ from __future__ import print_function
 import numpy as np
 import six
 
-from tensorboard.compat import tf
 from tensorboard.compat.proto import tensor_pb2
 from tensorboard.compat.tensorflow_stub import dtypes, compat, tensor_shape
 
@@ -156,7 +155,7 @@ _TENSOR_CONTENT_TYPES = frozenset(
         dtypes.float64,
         dtypes.int32,
         dtypes.uint8,
-        tf.int16,
+        dtypes.int16,
         dtypes.int8,
         dtypes.int64,
         dtypes.qint8,
@@ -250,7 +249,7 @@ _TF_TO_IS_OK = {
     dtypes.float16: [_FilterFloat],
     dtypes.float32: [_FilterFloat],
     dtypes.float64: [_FilterFloat],
-    tf.int16: [_FilterInt],
+    dtypes.int16: [_FilterInt],
     dtypes.int32: [_FilterInt],
     dtypes.int64: [_FilterInt],
     dtypes.int8: [_FilterInt],
@@ -532,7 +531,7 @@ def make_ndarray(tensor):
         dtypes.int32,
         dtypes.uint8,
         dtypes.uint16,
-        tf.int16,
+        dtypes.int16,
         dtypes.int8,
         dtypes.qint32,
         dtypes.quint8,
