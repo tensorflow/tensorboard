@@ -721,8 +721,6 @@ export class LineChart {
 >>>>>>> Check whether values are constant before smooth
         d.smoothed = nextVal;
       } else {
-        // This arithematic causes IEEE 754 floating-point precision error and
-        // cause really janky bounds/chart.
         last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
         numAccum++;
         // The uncorrected moving average is biased towards the initial value.
