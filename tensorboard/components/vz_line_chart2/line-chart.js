@@ -532,7 +532,7 @@ var vz_line_chart2;
             var numAccum = 0;
             data.forEach(function (d, i) {
                 var nextVal = _this.yValueAccessor(d, i, dataset);
-                if (!_.isFinite(nextVal)) {
+                if (!Number.isFinite(nextVal)) {
                     d.smoothed = nextVal;
                 }
                 else {
