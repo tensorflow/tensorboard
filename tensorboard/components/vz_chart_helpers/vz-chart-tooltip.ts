@@ -91,7 +91,7 @@ Polymer({
     newDom.forEach(row => this.scopeSubtree(row));
 
     if (!anchorNode.isConnected) {
-      throw new DOMError('AnchorNode must be connected/mounted');
+      throw new Error('anchorNode must be mounted');
     }
 
     window.cancelAnimationFrame(this._raf);
@@ -103,10 +103,12 @@ Polymer({
 
   /**
    * Finds the scrollable container using heuristics - using computed style,
-   * scrollHeight, and clientHeight. In case scrollHeight is greater, it means
-   * that the container can show scorllbar and the anchor node can be hidden.
-   * This is by no means only way a content is clipped by other elements but,
-   * for use cases so far, this is good enough.
+   * scrollHeight, and clientHeight. When scrollHeight is greater than
+   * clientHeight, the container can show scorllbar and the anchor node can be
+   * hidden. This is by no means only way a content is clipped by other elements
+   * but, for use cases so far, this is good enough.
+   * Note that the `node` has to be mounted, i.e., node.parentElement should
+   * exist.
    */
   _getScrollableContainer(node: Element): Element {
     while (node !== document.body) {
@@ -120,13 +122,16 @@ Polymer({
   },
 
   _repositionImpl(anchorNode: Element) {
-    const tooltipContent = this.content();
+    if (!anchorNode.isConnected) {
+      throw new Error('anchorNode must be mounted');
+    }
 
+    const container = this._getScrollableContainer(anchorNode);
+    const containerRect = container.getBoundingClientRect();
+    const tooltipContent = this.content();
     const nodeRect = anchorNode.getBoundingClientRect();
     const tooltipRect = tooltipContent.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
-    const containerRect = this._getScrollableContainer(anchorNode)
-        .getBoundingClientRect();
     const documentWidth = document.body.clientWidth;
 
     const anchorTop = nodeRect.top;
