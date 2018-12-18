@@ -90,6 +90,10 @@ Polymer({
   updateAndPosition(anchorNode: Element, newDom: Element[]) {
     newDom.forEach(row => this.scopeSubtree(row));
 
+    if (!anchorNode.isConnected) {
+      throw new DOMError('AnchorNode must be connected/mounted');
+    }
+
     window.cancelAnimationFrame(this._raf);
     this._raf = window.requestAnimationFrame(() => {
       if (!this.isAttached) return;
