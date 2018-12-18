@@ -110,7 +110,7 @@ Polymer({
    */
   _getScrollableContainer(node: Element): Element {
     while (node && node !== document.body) {
-      if (window.getComputedStyle(node).overflow != 'visible' &&
+      if (window.getComputedStyle(node).overflow !== 'visible' &&
           node.scrollHeight > node.clientHeight) {
         return node;
       }
@@ -139,7 +139,7 @@ Polymer({
     let right = null;
     let top = anchorTop;
 
-    if (this.position == TooltipPosition.RIGHT) {
+    if (this.position === TooltipPosition.RIGHT) {
       left = nodeRect.right;
     } else {
       top = anchorBottom + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
@@ -153,7 +153,7 @@ Polymer({
 
     // If there is not enough space in the container to render tooltip below the
     // anchorNode, place it above the node.
-    if (this.position == TooltipPosition.AUTO &&
+    if (this.position === TooltipPosition.AUTO &&
         nodeRect.top - effectiveTooltipHeight > 0 &&
         containerRect.bottom < nodeRect.bottom + effectiveTooltipHeight) {
       top = null;
