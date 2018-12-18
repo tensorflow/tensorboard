@@ -530,9 +530,12 @@ var vz_line_chart2;
             // frequency components of the time-series.
             var last = data.length > 0 ? 0 : NaN;
             var numAccum = 0;
+            var yValues = data.map(function (d, i) { return _this.yValueAccessor(d, i, dataset); });
+            // See #786.
+            var isConstant = yValues.every(function (v) { return v == yValues[0]; });
             data.forEach(function (d, i) {
-                var nextVal = _this.yValueAccessor(d, i, dataset);
-                if (!Number.isFinite(nextVal)) {
+                var nextVal = yValues[i];
+                if (isConstant || !Number.isFinite(nextVal)) {
                     d.smoothed = nextVal;
                 }
                 else {
