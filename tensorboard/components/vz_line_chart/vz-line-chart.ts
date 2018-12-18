@@ -1017,7 +1017,7 @@ class LineChart {
     let numAccum = 0;
     data.forEach((d, i) => {
       let nextVal = this.yValueAccessor(d, i, dataset);
-      if (!_.isFinite(nextVal)) {
+      if (!Number.isFinite(nextVal)) {
         d.smoothed = nextVal;
       } else {
         last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
