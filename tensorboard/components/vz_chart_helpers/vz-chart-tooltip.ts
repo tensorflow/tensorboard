@@ -105,7 +105,7 @@ Polymer({
    * for use cases so far, this is good enough.
    */
   _getScrollableContainer(node: Element): Element {
-    while (node && node != document.body) {
+    while (node && node !== document.body) {
       if (window.getComputedStyle(node).overflow != 'visible' &&
           node.scrollHeight > node.clientHeight) {
         return node;
