@@ -10,8 +10,7 @@ tf_web_library(
     path = "/tf-overview-page",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components/tf_imports:plottable",
-        "//tensorboard/components/vz_line_chart",
+        "//tensorboard/components/vz_line_chart2",
         "@org_polymer_paper_card",
     ],
 )

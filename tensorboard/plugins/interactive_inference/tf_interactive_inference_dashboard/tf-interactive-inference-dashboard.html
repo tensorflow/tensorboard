@@ -41,7 +41,7 @@ limitations under the License.
 <link rel="import" href="./tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
 <link rel="import" href="./tf-regression-table.html">
@@ -354,7 +354,7 @@ limitations under the License.
         background: white;
       }
 
-      :host vz-line-chart {
+      :host vz-line-chart2 {
         height: 120px;
         width: 200px;
         display: inline-block;
@@ -1354,10 +1354,10 @@ limitations under the License.
                                 <div class="roc-holder">
                                   <div class="roc-x-label">FPR</div>
                                   <div class="roc-y-label">TPR</div>
-                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                  <vz-line-chart2 id="[[getPrChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                               </template>
                             </div>
@@ -1408,9 +1408,10 @@ limitations under the License.
                                 <div class="roc-holder">
                                   <div class="roc-x-label">FPR</div>
                                   <div class="roc-y-label">TPR</div>
-                                  <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                  <vz-line-chart2 id="prchart" class="pr-line-chart"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                               </template>
                             </div>
@@ -3986,7 +3987,7 @@ limitations under the License.
         //     {"1" (label): [{"step": 19.0, "scalar": 0.09157766401767},
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562}]}}
 
-        const chart = document.createElement('vz-line-chart');
+        const chart = document.createElement('vz-line-chart2');
         chart.colorScale = new Plottable.Scales.Color().range(
           d3.schemeCategory10);
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
@@ -4274,7 +4275,7 @@ limitations under the License.
         element.setAttribute('hidden', true);
 
         // Delete all the charts.
-        let charts = element.querySelectorAll('vz-line-chart');
+        let charts = element.querySelectorAll('vz-line-chart2');
         charts.forEach(function(chart){
           deleteElement(chart);
         });

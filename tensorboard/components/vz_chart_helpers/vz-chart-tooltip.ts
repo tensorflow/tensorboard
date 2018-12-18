@@ -97,12 +97,32 @@ Polymer({
     });
   },
 
+  /**
+   * Finds the scrollable container using heuristics - using computed style,
+   * scrollHeight, and clientHeight. In case scrollHeight is greater, it means
+   * that the container can show scorllbar and the anchor node can be hidden.
+   * This is by no means only way a content is clipped by other elements but,
+   * for use cases so far, this is good enough.
+   */
+  _getScrollableContainer(node: Element): Element {
+    while (node && node != document.body) {
+      if (window.getComputedStyle(node).overflow != 'visible' &&
+          node.scrollHeight > node.clientHeight) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return document.body;
+  },
+
   _repositionImpl(anchorNode: Element) {
     const tooltipContent = this.content();
 
     const nodeRect = anchorNode.getBoundingClientRect();
     const tooltipRect = tooltipContent.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
+    const containerRect = this._getScrollableContainer(anchorNode)
+        .getBoundingClientRect();
     const documentWidth = document.body.clientWidth;
 
     const anchorTop = nodeRect.top;
@@ -127,13 +147,11 @@ Polymer({
       }
     }
 
-    // If there is not enough space to render tooltip below the anchorNode in
-    // the viewport and there is enough space above, place it above the
-    // anchorNode.
+    // If there is not enough space in the container to render tooltip below the
+    // anchorNode, place it above the node.
     if (this.position == TooltipPosition.AUTO &&
         nodeRect.top - effectiveTooltipHeight > 0 &&
-        viewportHeight < nodeRect.top + nodeRect.height +
-            effectiveTooltipHeight) {
+        containerRect.bottom < nodeRect.bottom + effectiveTooltipHeight) {
       top = null;
       bottom = viewportHeight - anchorTop +
           vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
