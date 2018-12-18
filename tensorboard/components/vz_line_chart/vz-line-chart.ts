@@ -1020,13 +1020,8 @@ class LineChart {
     // See #786.
     const isConstant = yValues.every((v) => v == yValues[0]);
     data.forEach((d, i) => {
-<<<<<<< HEAD
-      let nextVal = this.yValueAccessor(d, i, dataset);
-      if (!Number.isFinite(nextVal)) {
-=======
       const nextVal = yValues[i];
       if (isConstant || !Number.isFinite(nextVal)) {
->>>>>>> CR review
         d.smoothed = nextVal;
       } else {
         last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
