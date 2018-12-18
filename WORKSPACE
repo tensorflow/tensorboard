@@ -71,16 +71,6 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "ai_google_pair_facets",
-    sha256 = "e3f7b7b3c194c1772d16bdc8b348716c0da59a51daa03ef4503cf06c073caafc",
-    strip_prefix = "facets-0.2.1",
-    urls = [
-        "http://mirror.bazel.build/github.com/pair-code/facets/archive/0.2.1.tar.gz",
-        "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
-    ],
-)
-
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
 
 closure_repositories(
