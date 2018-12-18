@@ -15,7 +15,6 @@ py_library(
         "dtypes.py",
         "flags.py",
         "gfile.py",
-        "logging.py",
         "pywrap_tensorflow.py",
         "tensor_shape.py",
     ],
