@@ -47,24 +47,30 @@ def convert_predict_response(pred, serving_bundle):
   Returns:
     A ClassificationResponse or RegressionResponse.
   """
-  output = pred.outputs[serving_bundle.predict_output_tensor]
-  raw_output = output.float_val
-  output_index = 0
+  output = pred.outputs[serving_bundle.predict_output_tensor].float_val
+  if serving_bundle.model_type == 'classification':
+    values = []
+    for example_index in range(output.tensor_shape.dim[0].size):
+      start = example_index * output.tensor_shape.dim[1].size
+      values.append(output[start:start + output.tensor_shape.dim[1].size])
+  else:
+    values = output
+  return convert_prediction_values(values, serving_bundle, pred.model_spec)
+
+def convert_prediction_values(values, serving_bundle, model_spec=None):
   if serving_bundle.model_type == 'classification':
     response = classification_pb2.ClassificationResponse()
-    response.model_spec.CopyFrom(pred.model_spec)
-    for _ in range(output.tensor_shape.dim[0].size):
+    for example_index in range(len(values)):
       classification = response.result.classifications.add()
-      for class_index in range(output.tensor_shape.dim[1].size):
+      for class_index in range(len(values[example_index])):
         class_score = classification.classes.add()
-        class_score.score = raw_output[output_index]
-        output_index += 1
+        class_score.score = values[example_index][class_index]
         class_score.label = str(class_index)
   else:
     response = regression_pb2.RegressionResponse()
-    response.model_spec.CopyFrom(pred.model_spec)
-    for _ in range(output.tensor_shape.dim[0].size):
+    for example_index in range(len(values)):
       regression = response.result.regressions.add()
-      regression.value = raw_output[output_index]
-      output_index += 1
+      regression.value = values[example_index]
+  if model_spec:
+    response.model_spec.CopyFrom(model_spec)
   return response

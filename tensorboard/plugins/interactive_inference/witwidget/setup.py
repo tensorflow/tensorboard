@@ -24,7 +24,7 @@ import platform
 import subprocess
 
 here = os.path.dirname(os.path.abspath(__file__))
-node_root = os.path.join(here, 'js')
+node_root = os.path.join(here, 'witwidget', 'notebook', 'jupyter', 'js')
 is_repo = os.path.exists(os.path.join(here, '.git'))
 
 npm_path = os.pathsep.join([
@@ -54,12 +54,12 @@ class BuildWitHtml(Command):
     def run(self):
         command = ['bazel', 'build',
                    'tf_interactive_inference_dashboard:wit_jupyter']
-        subprocess.check_call(command)
+        subprocess.check_call(command, cwd="../")
         command = ['mkdir', '-p', 'witwidget/static']
         subprocess.check_call(command)
         command = [
             'cp', '-f',
-            '../../../bazel-genfiles/tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/wit_jupyter.html',
+            '../../../../bazel-genfiles/tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/wit_jupyter.html',
             'witwidget/static/']
         subprocess.check_call(command)
 
@@ -198,7 +198,7 @@ setup_args = {
 
     'author': 'Google LLC',
     'author_email': '',
-    'url': 'https://github.com/tensorflow/tensorboard/tensorboard/plugins/interactive_inference',
+    'url': 'https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference',
     'keywords': [
         'ipython',
         'jupyter',

@@ -11,15 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from ._version import version_info, __version__
-
-from .wit import *
-
-def _jupyter_nbextension_paths():
-    return [{
-        'section': 'notebook',
-        'src': 'static',
-        'dest': 'wit-widget',
-        'require': 'wit-widget/extension'
-    }]

@@ -24,96 +24,15 @@ from traitlets import List
 from traitlets import observe
 from traitlets import Unicode
 from traitlets import Set
-from . import inference_utils
-
-class WitConfigBuilder(object):
-    
-    def __init__(self, examples):
-        self.config = {}
-        self.set_examples(examples)
-        self.set_model_type('classification')
-    
-    def build(self):
-        return self.config
-    
-    def store(self, key, value):
-        self.config[key] = value
-    
-    def set_examples(self, examples):
-        self.store('examples', examples)
-        return self
-        
-    def set_model_type(self, model):
-        self.store('model_type', model)
-        return self
-    
-    def set_inference_address(self, address):
-        self.store('inference_address', address)
-        return self
-        
-    def set_model_name(self, name):
-        self.store('model_name', name)
-        return self
-    
-    def set_model_version(self, version):
-        self.store('model_version', version)
-        return self
-        
-    def set_model_signature(self, signature):
-        self.store('model_signature', signature)
-        return self
-        
-    def set_compare_inference_address(self, address):
-        self.store('inference_address_2', address)
-        return self
-        
-    def set_compare_model_name(self, name):
-        self.store('model_name_2', name)
-        return self
-    
-    def set_compare_model_version(self, version):
-        self.store('model_version_2', version)
-        return self
-        
-    def set_compare_model_signature(self, signature):
-        self.store('model_signature_2', signature)
-        return self
-        
-    def set_uses_predict_api(self, predict):
-        self.store('uses_predict_api', predict)
-        return self
-        
-    def set_are_sequence_examples(self, seq):
-        self.store('are_sequence_examples', seq)
-        return self
-    
-    def set_max_classes_to_display(self, max_classes):
-        self.store('max_classes', max_classes)
-        return self
-    
-    def set_multi_class(self, multiclass):
-        self.store('multiclass', multiclass)
-        return self
-        
-    def set_predict_input_tensor(self, tensor):
-        self.store('predict_input_tensor', tensor)
-        return self
-
-    def set_predict_output_tensor(self, tensor):
-        self.store('predict_output_tensor', tensor)
-        return self
-
-    def set_label_vocab_path(self, path):
-        self.store('label_vocab_path', path)
-        return self
+from tensorboard.plugins.interactive_inference.utils import inference_utils
 
         
 @widgets.register
 class WitWidget(widgets.DOMWidget):
-    """An example widget."""
+    """WIT widget for Jupyter."""
     _view_name = Unicode('WITView').tag(sync=True)
     _view_module = Unicode('wit-widget').tag(sync=True)
-    _view_module_version = Unicode('^0.1.0').tag(sync=True)
+    _view_module_version = Unicode('^0.1.4').tag(sync=True)
     config = Dict(dict()).tag(sync=True)
     examples = List([]).tag(sync=True)
     inferences = Dict(dict()).tag(sync=True)
@@ -133,14 +52,24 @@ class WitWidget(widgets.DOMWidget):
         super(WitWidget, self).__init__(layout=Layout(height='%ipx' % height))
         config = config_builder.build()
         copied_config = dict(config)
-        self.setExamples(config['examples'])
+        self.estimator_and_spec = dict(config.get('estimator_and_spec')) if 'estimator_and_spec' in config else {}
+        self.compare_estimator_and_spec = dict(config.get('compare_estimator_and_spec')) if 'compare_estimator_and_spec' in config else {}
+        self._set_examples(config['examples'])
         del copied_config['examples']
+        if 'estimator_and_spec' in copied_config:
+            del copied_config['estimator_and_spec']
+            copied_config['inference_address'] = 'estimator'
+            copied_config['model_name'] = 'estimator'
+        if 'compare_estimator_and_spec' in copied_config:
+            del copied_config['compare_estimator_and_spec']
+            copied_config['inference_address_2'] = 'estimator'
+            copied_config['model_name_2'] = 'estimator'
         self.config = copied_config
     
-    def setExamples(self, examples):
+    def _set_examples(self, examples):
         self.examples = [json_format.MessageToJson(ex) for ex in examples]
         self.updated_example_indices = set(range(len(examples)))
-        self.generate_sprite()
+        self._generate_sprite()
     
     def json_to_proto(self, json):
         ex = (tf.train.SequenceExample()
@@ -163,10 +92,12 @@ class WitWidget(widgets.DOMWidget):
             self.config.get('model_signature'),
             self.config.get('uses_predict_api'),
             self.config.get('predict_input_tensor'),
-            self.config.get('predict_output_tensor'))
-        infer_objs.append(inference_utils.call_servo_for_inference_results(
+            self.config.get('predict_output_tensor'),
+            self.estimator_and_spec.get('estimator'),
+            self.estimator_and_spec.get('feature_spec'))
+        infer_objs.append(inference_utils.run_inference_for_inference_results(
             examples_to_infer, serving_bundle))
-        if 'inference_address_2' in self.config:
+        if 'inference_address_2' in self.config or self.compare_estimator_and_spec.get('estimator'):
             serving_bundle = inference_utils.ServingBundle(
                 self.config.get('inference_address_2'),
                 self.config.get('model_name_2'),
@@ -175,8 +106,10 @@ class WitWidget(widgets.DOMWidget):
                 self.config.get('model_signature_2'),
                 self.config.get('uses_predict_api'),
                 self.config.get('predict_input_tensor'),
-                self.config.get('predict_output_tensor'))
-            infer_objs.append(inference_utils.call_servo_for_inference_results(
+                self.config.get('predict_output_tensor'),
+                self.compare_estimator_and_spec.get('estimator'),
+                self.compare_estimator_and_spec.get('feature_spec'))
+            infer_objs.append(inference_utils.run_inference_for_inference_results(
                 examples_to_infer, serving_bundle))
         self.updated_example_indices = set()
         self.inferences = {
@@ -208,7 +141,9 @@ class WitWidget(widgets.DOMWidget):
             self.config.get('model_signature'),
             self.config.get('uses_predict_api'),
             self.config.get('predict_input_tensor'),
-            self.config.get('predict_output_tensor'))
+            self.config.get('predict_output_tensor'),
+            self.estimator_and_spec.get('estimator'),
+            self.estimator_and_spec.get('feature_spec'))
         viz_params = inference_utils.VizParams(
           info['x_min'], info['x_max'],
           scan_examples, 10,
@@ -224,20 +159,20 @@ class WitWidget(widgets.DOMWidget):
         index = self.update_example['index']
         self.updated_example_indices.add(index)
         self.examples[index] = self.update_example['example']
-        self.generate_sprite()
+        self._generate_sprite()
         
     @observe('duplicate_example')
     def _duplicate_example(self, change):
         self.examples.append(self.examples[self.duplicate_example['index']])
         self.updated_example_indices.add(len(self.examples) - 1)
-        self.generate_sprite()
+        self._generate_sprite()
         
     @observe('delete_example')
     def _delete_example(self, change):
         self.examples.pop(self.delete_example['index'])
-        self.generate_sprite()
+        self._generate_sprite()
 
-    def generate_sprite(self):
+    def _generate_sprite(self):
         # Generate a sprite image for the examples if the examples contain the
         # standard encoded image feature.
         if not self.examples:

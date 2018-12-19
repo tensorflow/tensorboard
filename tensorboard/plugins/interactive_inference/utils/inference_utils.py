@@ -25,8 +25,8 @@ from six import iteritems
 from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
-from . import common_utils
-from . import platform_utils
+from tensorboard.plugins.interactive_inference.utils import common_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import inference_pb2
 from tensorflow_serving.apis import regression_pb2
@@ -179,6 +179,8 @@ class ServingBundle(object):
       Predict API.
     predict_output_tensor: The name of the output tensor to parse when using the
       Predict API.
+    estimator: An estimator to use instead of calling an external model.
+    feature_spec: A feature spec for use with the estimator.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
@@ -186,7 +188,7 @@ class ServingBundle(object):
 
   def __init__(self, inference_address, model_name, model_type, model_version,
                signature, use_predict, predict_input_tensor,
-               predict_output_tensor):
+               predict_output_tensor, estimator=None, feature_spec=None):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -211,6 +213,8 @@ class ServingBundle(object):
     self.use_predict = use_predict
     self.predict_input_tensor = predict_input_tensor
     self.predict_output_tensor = predict_output_tensor
+    self.estimator = estimator
+    self.feature_spec = feature_spec
 
 
 def proto_value_for_feature(example, feature_name):
@@ -466,7 +470,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundle,
     mutant_features, mutant_examples = make_mutant_tuples(
         example_protos, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = platform_utils.call_servo(
+    inference_result_proto = run_inference(
         mutant_examples, serving_bundle)
     return make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
@@ -598,9 +602,9 @@ def get_example_features(example):
   return (example.features.feature if isinstance(example, tf.train.Example)
           else example.context.feature)
 
-def call_servo_for_inference_results(examples, serving_bundle):
+def run_inference_for_inference_results(examples, serving_bundle):
   """Calls servo and wraps the inference results."""
-  inference_result_proto = platform_utils.call_servo(examples, serving_bundle)
+  inference_result_proto = run_inference(examples, serving_bundle)
   inferences = wrap_inference_results(inference_result_proto)
   infer_json = json_format.MessageToJson(
     inferences, including_default_value_fields=True)
@@ -701,3 +705,29 @@ def create_sprite_image(examples):
       # Create the single sprite atlas image from these thumbnails.
       sprite = generate_image_from_thubnails(loop_out[2], thumbnail_dims)
       return sprite.eval()
+
+def run_inference(examples, serving_bundle):
+  """Run inference on examples given model information
+
+  Args:
+    examples: A list of examples that matches the model spec.
+    serving_bundle: A `ServingBundle` object that contains the information to
+      make the inference request.
+
+  Returns:
+    A ClassificationResponse or RegressionResponse proto.
+  """
+  if serving_bundle.estimator and serving_bundle.feature_spec:
+    preds = serving_bundle.estimator.predict(lambda: tf.data.Dataset.from_tensor_slices(
+      tf.parse_example([ex.SerializeToString() for ex in examples], serving_bundle.feature_spec)).batch(64))
+    preds_key = 'probabilities'
+    if serving_bundle.use_predict:
+      preds_key = serving_bundle.predict_output_tensor
+    elif serving_bundle.model_type == 'regression':
+      preds_key = 'predictions'
+    values = []
+    for pred in preds:
+      values.append(pred[preds_key])
+    return common_utils.convert_prediction_values(values, serving_bundle)
+  else:
+    return platform_utils.call_servo(examples, serving_bundle)

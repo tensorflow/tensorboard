@@ -31,9 +31,9 @@ from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 
-from tensorboard.plugins.interactive_inference.witwidget import common_utils
-from tensorboard.plugins.interactive_inference.witwidget import inference_utils
-from tensorboard.plugins.interactive_inference.witwidget import platform_utils
+from tensorboard.plugins.interactive_inference.utils import common_utils
+from tensorboard.plugins.interactive_inference.utils import inference_utils
+from tensorboard.plugins.interactive_inference.utils import platform_utils
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -279,7 +279,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
             request.args.get('use_predict') == 'true',
             request.args.get('predict_input_tensor'),
             request.args.get('predict_output_tensor'))
-        infer_objs.append(inference_utils.call_servo_for_inference_results(
+        infer_objs.append(inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
 
       resp = {'indices': indices_to_infer, 'results': infer_objs}
