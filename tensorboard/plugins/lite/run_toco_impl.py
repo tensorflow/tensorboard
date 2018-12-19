@@ -110,11 +110,21 @@ def make_args_from_session(sess, graph_def_file, tflite_file, options):
 
 
 def make_args(graph_def_file, tflite_file, options):
-    graph_def = parse_input_graph_proto(graph_def_file)
-    with tf.Graph().as_default():
-        with tf.Session() as sess:
-            tf.import_graph_def(graph_def, name='')
-            return make_args_from_session(sess, graph_def_file, tflite_file, options)
+    if tf.gfile.Exists(graph_def_file):
+        graph_def = parse_input_graph_proto(graph_def_file)
+        with tf.Graph().as_default():
+            with tf.Session() as sess:
+                tf.import_graph_def(graph_def, name='')
+                return make_args_from_session(sess, graph_def_file, tflite_file, options)
+    else:
+        meta_file = options['checkpoint'] + '.meta'
+        if tf.gfile.Exists(meta_file):
+            with tf.Session() as sess:
+                saver = tf.train.import_meta_graph(meta_file, clear_devices=True)
+                saver.restore(sess, options['checkpoint'])
+                return make_args_from_session(sess, graph_def_file, tflite_file, options)
+        else:
+            raise ValueError('no model file or checkpoint meta file')
 
 
 def freeze_and_convert(graph_def_file, tflite_file, options):
