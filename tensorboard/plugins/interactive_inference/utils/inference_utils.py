@@ -717,9 +717,13 @@ def run_inference(examples, serving_bundle):
   Returns:
     A ClassificationResponse or RegressionResponse proto.
   """
+  batch_size = 64
   if serving_bundle.estimator and serving_bundle.feature_spec:
-    preds = serving_bundle.estimator.predict(lambda: tf.data.Dataset.from_tensor_slices(
-      tf.parse_example([ex.SerializeToString() for ex in examples], serving_bundle.feature_spec)).batch(64))
+    # If provided an estimator and feature spec then run inference locally.
+    preds = serving_bundle.estimator.predict(
+      lambda: tf.data.Dataset.from_tensor_slices(
+        tf.parse_example([ex.SerializeToString() for ex in examples],
+        serving_bundle.feature_spec)).batch(batch_size))
     preds_key = 'probabilities'
     if serving_bundle.use_predict:
       preds_key = serving_bundle.predict_output_tensor

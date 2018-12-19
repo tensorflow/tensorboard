@@ -27,91 +27,91 @@ else:
 
 class WitConfigBuilder(object):
     
-    def __init__(self, examples):
-        self.config = {}
-        self.set_examples(examples)
-        self.set_model_type('classification')
+  def __init__(self, examples):
+    self.config = {}
+    self.set_examples(examples)
+    self.set_model_type('classification')
+  
+  def build(self):
+    return self.config
+  
+  def store(self, key, value):
+    self.config[key] = value
+  
+  def set_examples(self, examples):
+    self.store('examples', examples)
+    return self
+      
+  def set_model_type(self, model):
+    self.store('model_type', model)
+    return self
+  
+  def set_inference_address(self, address):
+    self.store('inference_address', address)
+    return self
     
-    def build(self):
-        return self.config
-    
-    def store(self, key, value):
-        self.config[key] = value
-    
-    def set_examples(self, examples):
-        self.store('examples', examples)
-        return self
-        
-    def set_model_type(self, model):
-        self.store('model_type', model)
-        return self
-    
-    def set_inference_address(self, address):
-        self.store('inference_address', address)
-        return self
-        
-    def set_model_name(self, name):
-        self.store('model_name', name)
-        return self
-    
-    def set_model_version(self, version):
-        self.store('model_version', version)
-        return self
-        
-    def set_model_signature(self, signature):
-        self.store('model_signature', signature)
-        return self
-        
-    def set_compare_inference_address(self, address):
-        self.store('inference_address_2', address)
-        return self
-        
-    def set_compare_model_name(self, name):
-        self.store('model_name_2', name)
-        return self
-    
-    def set_compare_model_version(self, version):
-        self.store('model_version_2', version)
-        return self
-        
-    def set_compare_model_signature(self, signature):
-        self.store('model_signature_2', signature)
-        return self
-        
-    def set_uses_predict_api(self, predict):
-        self.store('uses_predict_api', predict)
-        return self
-        
-    def set_are_sequence_examples(self, seq):
-        self.store('are_sequence_examples', seq)
-        return self
-    
-    def set_max_classes_to_display(self, max_classes):
-        self.store('max_classes', max_classes)
-        return self
-    
-    def set_multi_class(self, multiclass):
-        self.store('multiclass', multiclass)
-        return self
-        
-    def set_predict_input_tensor(self, tensor):
-        self.store('predict_input_tensor', tensor)
-        return self
+  def set_model_name(self, name):
+    self.store('model_name', name)
+    return self
+  
+  def set_model_version(self, version):
+    self.store('model_version', version)
+    return self
+      
+  def set_model_signature(self, signature):
+    self.store('model_signature', signature)
+    return self
+      
+  def set_compare_inference_address(self, address):
+    self.store('inference_address_2', address)
+    return self
+      
+  def set_compare_model_name(self, name):
+    self.store('model_name_2', name)
+    return self
+  
+  def set_compare_model_version(self, version):
+    self.store('model_version_2', version)
+    return self
+      
+  def set_compare_model_signature(self, signature):
+    self.store('model_signature_2', signature)
+    return self
+      
+  def set_uses_predict_api(self, predict):
+    self.store('uses_predict_api', predict)
+    return self
+      
+  def set_are_sequence_examples(self, seq):
+    self.store('are_sequence_examples', seq)
+    return self
+  
+  def set_max_classes_to_display(self, max_classes):
+    self.store('max_classes', max_classes)
+    return self
+  
+  def set_multi_class(self, multiclass):
+    self.store('multiclass', multiclass)
+    return self
+      
+  def set_predict_input_tensor(self, tensor):
+    self.store('predict_input_tensor', tensor)
+    return self
 
-    def set_predict_output_tensor(self, tensor):
-        self.store('predict_output_tensor', tensor)
-        return self
+  def set_predict_output_tensor(self, tensor):
+    self.store('predict_output_tensor', tensor)
+    return self
 
-    def set_label_vocab_path(self, path):
-        self.store('label_vocab_path', path)
-        return self
+  def set_label_vocab_path(self, path):
+    self.store('label_vocab_path', path)
+    return self
 
-    def set_estimator_and_feature_spec(self, estimator, feature_spec):
-        self.store('estimator_and_spec', {
-            'estimator': estimator, 'feature_spec': feature_spec})
-        return self
-    
-    def set_compare_estimator_and_feature_spec(self, estimator, feature_spec):
-        self.store('compare_estimator_and_spec', {
-            'estimator': estimator, 'feature_spec': feature_spec})
-        return self
+  def set_estimator_and_feature_spec(self, estimator, feature_spec):
+    self.store('estimator_and_spec', {
+      'estimator': estimator, 'feature_spec': feature_spec})
+    return self
+  
+  def set_compare_estimator_and_feature_spec(self, estimator, feature_spec):
+    self.store('compare_estimator_and_spec', {
+      'estimator': estimator, 'feature_spec': feature_spec})
+    return self

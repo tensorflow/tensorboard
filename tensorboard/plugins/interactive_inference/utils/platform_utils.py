@@ -23,7 +23,6 @@ import tensorflow as tf
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorflow.core.framework import types_pb2
-from tensorflow.core.framework import types_pb2
 from tensorflow_serving.apis import classification_pb2
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2
