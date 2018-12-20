@@ -88,8 +88,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       gated_debug_ops = [
           (item[0], item[2], item[3]) for item in gated_debug_ops]
 
-      # TODO(#1705): TF 2.0 breaks below. Make sure it is not the discrepency
-      # between Eager vs. Graph mode.
+      # TODO(#1705): TF 2.0 breaks below.
       self.assertIn(('a', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('b', 0, 'DebugIdentity'), gated_debug_ops)
