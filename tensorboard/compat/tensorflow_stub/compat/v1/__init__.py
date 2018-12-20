@@ -17,4 +17,4 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from . import pywrap_tensorflow  # noqa
+from tensorboard.compat.tensorflow_stub import pywrap_tensorflow  # noqa

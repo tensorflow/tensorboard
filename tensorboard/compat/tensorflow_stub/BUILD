@@ -9,32 +9,16 @@ exports_files(["LICENSE"])
 
 py_library(
     name = "tensorflow_stub",
-    srcs = [
-        "__init__.py",
-        "app.py",
-        "dtypes.py",
-        "flags.py",
-        "gfile.py",
-        "pywrap_tensorflow.py",
-        "tensor_shape.py",
-    ],
+    srcs = glob([
+        "*.py",
+        "compat/__init__.py",
+        "compat/v1/__init__.py",
+    ]),
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":errors",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/compat/tensorflow_stub/compat",
-    ],
-)
-
-py_library(
-    name = "errors",
-    srcs = [
-        "error_codes.py",
-        "errors.py",
-    ],
-    srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@org_pythonhosted_six",
     ],
 )
