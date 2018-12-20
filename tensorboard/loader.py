@@ -97,7 +97,7 @@ class RecordReader(object):
 
     :rtype: int
     """
-    size = tf.gfile.Stat(self.path).length
+    size = tf.io.gfile.stat(self.path).length
     minimum = max(self._offset, self._size)
     if size < minimum:
       raise IOError('File shrunk: %d < %d: %s' % (size, minimum, self.path))
@@ -1065,7 +1065,7 @@ def get_event_logs(directory):
   :rtype: list[EventLogReader]
   """
   logs = []
-  for dirname, _, filenames in tf.gfile.Walk(directory):
+  for dirname, _, filenames in tf.io.gfile.walk(directory):
     for filename in filenames:
       if is_event_log_file(filename):
         logs.append(EventLogReader(os.path.join(dirname, filename)))

@@ -41,7 +41,7 @@ except ImportError:
   tf_v2 = None
 
 try:
-  tf.enable_eager_execution()
+  tf.compat.v1.enable_eager_execution()
 except AttributeError:
   # TF 2.0 doesn't have this symbol because eager is the default.
   pass

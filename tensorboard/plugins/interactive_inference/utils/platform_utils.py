@@ -129,18 +129,18 @@ def example_protos_from_path(path,
 
   filenames = filepath_to_filepath_list(path)
   compression_types = [
-      tf.python_io.TFRecordCompressionType.NONE,
-      tf.python_io.TFRecordCompressionType.GZIP,
-      tf.python_io.TFRecordCompressionType.ZLIB,
+      tf.io.TFRecordCompressionType.NONE,
+      tf.io.TFRecordCompressionType.GZIP,
+      tf.io.TFRecordCompressionType.ZLIB,
   ]
   current_compression_idx = 0
   current_file_index = 0
   while (current_file_index < len(filenames) and
          current_compression_idx < len(compression_types)):
     try:
-      record_iterator = tf.python_io.tf_record_iterator(
+      record_iterator = tf.compat.v1.python_io.tf_record_iterator(
           path=filenames[current_file_index],
-          options=tf.python_io.TFRecordOptions(
+          options=tf.io.TFRecordOptions(
               compression_types[current_compression_idx]))
       append_examples_from_iterable(record_iterator, examples)
       current_file_index += 1

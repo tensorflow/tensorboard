@@ -113,14 +113,14 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runSimpleAddMultiplyGraph(self, variable_size=1):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         a = tf.Variable([10.0] * variable_size, name='a')
         b = tf.Variable([20.0] * variable_size, name='b')
         c = tf.Variable([30.0] * variable_size, name='c')
         x = tf.multiply(a, b, name="x")
         y = tf.add(x, c, name="y")
 
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         session_run_results.append(sess.run(y))
@@ -131,12 +131,12 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runMultiStepAssignAddGraph(self, steps):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         a = tf.Variable(10, dtype=tf.int32, name='a')
         b = tf.Variable(1, dtype=tf.int32, name='b')
-        inc_a = tf.assign_add(a, b, name='inc_a')
+        inc_a = tf.compat.v1.assign_add(a, b, name='inc_a')
 
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         for _ in range(steps):
@@ -148,15 +148,15 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runTfGroupGraph(self):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         a = tf.Variable(10, dtype=tf.int32, name='a')
         b = tf.Variable(20, dtype=tf.int32, name='b')
         d = tf.constant(1, dtype=tf.int32, name='d')
-        inc_a = tf.assign_add(a, d, name='inc_a')
-        inc_b = tf.assign_add(b, d, name='inc_b')
+        inc_a = tf.compat.v1.assign_add(a, d, name='inc_a')
+        inc_b = tf.compat.v1.assign_add(b, d, name='inc_b')
         inc_ab = tf.group([inc_a, inc_b], name="inc_ab")
 
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         session_run_results.append(sess.run(inc_ab))
@@ -705,7 +705,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runInitializer(self):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         a = tf.Variable([10.0] * 10, name='a')
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         # Run the initializer with a debugger-wrapped tf.Session.
@@ -783,7 +783,7 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runHealthPillNetwork(self):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         a = tf.Variable(
             [np.nan, np.inf, np.inf, -np.inf, -np.inf, -np.inf, 10, 20, 30],
             dtype=tf.float32, name='a')
@@ -830,11 +830,11 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runAsciiStringNetwork(self):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         str1 = tf.Variable('abc', name='str1')
         str2 = tf.Variable('def', name='str2')
         str_concat = tf.add(str1, str2, name='str_concat')
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         session_run_results.append(sess.run(str_concat))
     session_run_thread = threading.Thread(target=session_run_job)
@@ -887,11 +887,11 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
   def _runBinaryStringNetwork(self):
     session_run_results = []
     def session_run_job():
-      with tf.Session() as sess:
+      with tf.compat.v1.Session() as sess:
         str1 = tf.Variable([b'\x01' * 3, b'\x02' * 3], name='str1')
         str2 = tf.Variable([b'\x03' * 3, b'\x04' * 3], name='str2')
         str_concat = tf.add(str1, str2, name='str_concat')
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         sess = tf_debug.TensorBoardDebugWrapperSession(sess, self._debugger_url)
         session_run_results.append(sess.run(str_concat))
     session_run_thread = threading.Thread(target=session_run_job)

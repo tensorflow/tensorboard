@@ -48,11 +48,11 @@ class AudioPluginTest(tf.test.TestCase):
     numpy.random.seed(42)
 
     # Create old-style audio summaries for run "foo".
-    tf.reset_default_graph()
-    sess = tf.Session()
-    placeholder = tf.placeholder(tf.float32)
-    tf.summary.audio(name="baz", tensor=placeholder, sample_rate=44100)
-    merged_summary_op = tf.summary.merge_all()
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    placeholder = tf.compat.v1.placeholder(tf.float32)
+    tf.compat.v1.summary.audio(name="baz", tensor=placeholder, sample_rate=44100)
+    merged_summary_op = tf.compat.v1.summary.merge_all()
     foo_directory = os.path.join(self.log_dir, "foo")
     with test_util.FileWriterCache.get(foo_directory) as writer:
       writer.add_graph(sess.graph)
@@ -63,14 +63,14 @@ class AudioPluginTest(tf.test.TestCase):
         }), global_step=step)
 
     # Create new-style audio summaries for run "bar".
-    tf.reset_default_graph()
-    sess = tf.Session()
-    audio_placeholder = tf.placeholder(tf.float32)
-    labels_placeholder = tf.placeholder(tf.string)
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    audio_placeholder = tf.compat.v1.placeholder(tf.float32)
+    labels_placeholder = tf.compat.v1.placeholder(tf.string)
     summary.op("quux", audio_placeholder, sample_rate=44100,
                labels=labels_placeholder,
                description="how do you pronounce that, anyway?")
-    merged_summary_op = tf.summary.merge_all()
+    merged_summary_op = tf.compat.v1.summary.merge_all()
     bar_directory = os.path.join(self.log_dir, "bar")
     with test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)

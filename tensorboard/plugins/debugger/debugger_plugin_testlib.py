@@ -126,15 +126,15 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.debugger_data_server_grpc_port = portpicker.pick_unused_port()
 
     # Fake threading behavior so that threads are synchronous.
-    tf.test.mock.patch('threading.Thread.start', threading.Thread.run).start()
+    tf.compat.v1.test.mock.patch('threading.Thread.start', threading.Thread.run).start()
 
-    self.mock_debugger_data_server = tf.test.mock.Mock(
+    self.mock_debugger_data_server = tf.compat.v1.test.mock.Mock(
         debugger_server_lib.DebuggerDataServer)
-    self.mock_debugger_data_server_class = tf.test.mock.Mock(
+    self.mock_debugger_data_server_class = tf.compat.v1.test.mock.Mock(
         debugger_server_lib.DebuggerDataServer,
         return_value=self.mock_debugger_data_server)
 
-    tf.test.mock.patch.object(
+    tf.compat.v1.test.mock.patch.object(
         debugger_server_lib,
         'DebuggerDataServer',
         self.mock_debugger_data_server_class).start()
@@ -158,7 +158,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
 
   def tearDown(self):
     # Remove the directory with debugger-related events files.
-    tf.test.mock.patch.stopall()
+    tf.compat.v1.test.mock.patch.stopall()
 
   def _CreateEventWithDebugNumericSummary(
       self, device_name, op_name, output_slot, wall_time, step, list_of_values):

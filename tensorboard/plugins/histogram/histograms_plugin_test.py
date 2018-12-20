@@ -69,21 +69,21 @@ class HistogramsPluginTest(tf.test.TestCase):
     self.plugin = histograms_plugin.HistogramsPlugin(context)
 
   def generate_run(self, run_name):
-    tf.reset_default_graph()
-    sess = tf.Session()
-    placeholder = tf.placeholder(tf.float32, shape=[3])
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    placeholder = tf.compat.v1.placeholder(tf.float32, shape=[3])
 
     if run_name == self._RUN_WITH_LEGACY_HISTOGRAM:
-      tf.summary.histogram(self._LEGACY_HISTOGRAM_TAG, placeholder)
+      tf.compat.v1.summary.histogram(self._LEGACY_HISTOGRAM_TAG, placeholder)
     elif run_name == self._RUN_WITH_HISTOGRAM:
       summary.op(self._HISTOGRAM_TAG, placeholder,
                  display_name=self._DISPLAY_NAME,
                  description=self._DESCRIPTION)
     elif run_name == self._RUN_WITH_SCALARS:
-      tf.summary.scalar(self._SCALAR_TAG, tf.reduce_mean(placeholder))
+      tf.compat.v1.summary.scalar(self._SCALAR_TAG, tf.reduce_mean(input_tensor=placeholder))
     else:
       assert False, 'Invalid run name: %r' % run_name
-    summ = tf.summary.merge_all()
+    summ = tf.compat.v1.summary.merge_all()
 
     subdir = os.path.join(self.logdir, run_name)
     with test_util.FileWriterCache.get(subdir) as writer:

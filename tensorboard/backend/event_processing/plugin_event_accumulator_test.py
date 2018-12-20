@@ -119,7 +119,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
   def setUp(self):
     super(MockingEventAccumulatorTest, self).setUp()
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
     self._real_constructor = ea.EventAccumulator
     self._real_generator = ea._GeneratorFromPath
 
@@ -275,7 +275,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc = ea.EventAccumulator(gen)
     gen.AddScalarTensor('s1', wall_time=1, step=100, value=20)
     ev1 = event_pb2.Event(wall_time=2, step=0, file_version='brain.Event:1')
-    graph_bytes = tf.GraphDef().SerializeToString()
+    graph_bytes = tf.compat.v1.GraphDef().SerializeToString()
     ev2 = event_pb2.Event(wall_time=3, step=0, graph_def=graph_bytes)
     gen.AddEvent(ev1)
     gen.AddEvent(ev2)
@@ -350,10 +350,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      step = tf.placeholder(tf.float32, shape=[])
+      step = tf.compat.v1.placeholder(tf.float32, shape=[])
       scalar_summary.op('accuracy', 1.0 - 1.0 / (step + tf.constant(1.0)))
       scalar_summary.op('xent', 1.0 / (step + tf.constant(1.0)))
-      merged = tf.summary.merge_all()
+      merged = tf.compat.v1.summary.merge_all()
       writer.add_graph(sess.graph)
       for i in xrange(10):
         summ = sess.run(merged, feed_dict={step: float(i)})
@@ -379,14 +379,14 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      ipt = tf.random_normal(shape=[5, 441, 2])
+      ipt = tf.random.normal(shape=[5, 441, 2])
       with tf.name_scope('1'):
         audio_summary.op('one', ipt, sample_rate=44100, max_outputs=1)
       with tf.name_scope('2'):
         audio_summary.op('two', ipt, sample_rate=44100, max_outputs=2)
       with tf.name_scope('3'):
         audio_summary.op('three', ipt, sample_rate=44100, max_outputs=3)
-      merged = tf.summary.merge_all()
+      merged = tf.compat.v1.summary.merge_all()
       writer.add_graph(sess.graph)
       for i in xrange(10):
         summ = sess.run(merged)
@@ -424,7 +424,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         image_summary.op('images', ipt, max_outputs=2)
       with tf.name_scope('3'):
         image_summary.op('images', ipt, max_outputs=3)
-      merged = tf.summary.merge_all()
+      merged = tf.compat.v1.summary.merge_all()
       writer.add_graph(sess.graph)
       for i in xrange(10):
         summ = sess.run(merged)
@@ -451,10 +451,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
     with self.test_session() as sess:
-      tf.summary.tensor_summary('scalar', tf.constant(1.0))
-      tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
-      tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
-      merged = tf.summary.merge_all()
+      tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0))
+      tf.compat.v1.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
+      tf.compat.v1.summary.tensor_summary('string', tf.constant(six.b('foobar')))
+      merged = tf.compat.v1.summary.merge_all()
       summ = sess.run(merged)
       writer.add_summary(summ, 0)
 
@@ -488,9 +488,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
       summary_metadata = summary_pb2.SummaryMetadata(
           plugin_data=summary_pb2.SummaryMetadata.PluginData(
               plugin_name=plugin_name, content=b'{}'))
-      tf.summary.tensor_summary('scalar', tf.constant(1.0),
+      tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0),
                                 summary_metadata=summary_metadata)
-      merged = tf.summary.merge_all()
+      merged = tf.compat.v1.summary.merge_all()
       for step in xrange(steps):
         writer.add_summary(sess.run(merged), global_step=step)
 
@@ -550,9 +550,9 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       return summary
 
     directory = os.path.join(self.get_temp_dir(), 'values_dir')
-    if tf.gfile.IsDirectory(directory):
-      tf.gfile.DeleteRecursively(directory)
-    tf.gfile.MkDir(directory)
+    if tf.io.gfile.isdir(directory):
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 
@@ -560,11 +560,11 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       _ = tf.constant([2.0, 1.0])
     # Add a graph to the summary writer.
     writer.add_graph(graph)
-    meta_graph_def = tf.train.export_meta_graph(graph_def=graph.as_graph_def(
+    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
         add_shapes=True))
     writer.add_meta_graph(meta_graph_def)
 
-    run_metadata = tf.RunMetadata()
+    run_metadata = tf.compat.v1.RunMetadata()
     device_stats = run_metadata.step_stats.dev_stats.add()
     device_stats.device = 'test device'
     writer.add_run_metadata(run_metadata, 'test run')
@@ -622,16 +622,16 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     """Test accumulator by writing values and then reading them."""
 
     directory = os.path.join(self.get_temp_dir(), 'metagraph_test_values_dir')
-    if tf.gfile.IsDirectory(directory):
-      tf.gfile.DeleteRecursively(directory)
-    tf.gfile.MkDir(directory)
+    if tf.io.gfile.isdir(directory):
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
     # Add a graph to the summary writer.
-    meta_graph_def = tf.train.export_meta_graph(graph_def=graph.as_graph_def(
+    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
         add_shapes=True))
     writer.add_meta_graph(meta_graph_def)
 

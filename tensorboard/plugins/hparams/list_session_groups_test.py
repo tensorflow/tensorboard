@@ -45,9 +45,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
     self.maxDiff = None
 
   def setUp(self):
-    self._mock_tb_context = tf.test.mock.create_autospec(
+    self._mock_tb_context = tf.compat.v1.test.mock.create_autospec(
         base_plugin.TBContext)
-    self._mock_multiplexer = tf.test.mock.create_autospec(
+    self._mock_multiplexer = tf.compat.v1.test.mock.create_autospec(
         plugin_event_multiplexer.EventMultiplexer)
     self._mock_tb_context.multiplexer = self._mock_multiplexer
     self._mock_multiplexer.PluginRunToTagToContent.return_value = {

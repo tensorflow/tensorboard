@@ -221,12 +221,12 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
     debugger_directory = os.path.join(
         os.path.expanduser(logdir), constants.DEBUGGER_DATA_DIRECTORY_NAME)
 
-    if not tf.gfile.Exists(debugger_directory):
+    if not tf.io.gfile.exists(debugger_directory):
       try:
-        tf.gfile.MakeDirs(debugger_directory)
+        tf.io.gfile.makedirs(debugger_directory)
         logger.info("Created directory for debugger data: %s",
                         debugger_directory)
-      except tf.OpError as e:
+      except tf.errors.OpError as e:
         logger.fatal(
             "Could not make directory for debugger data: %s. Error: %s",
             debugger_directory, e)
@@ -254,9 +254,9 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
         debugger_directory, constants.ALERT_REGISTRY_BACKUP_FILE_NAME)
     initial_data = None
 
-    if tf.gfile.Exists(self._registry_backup_file_path):
+    if tf.io.gfile.exists(self._registry_backup_file_path):
       # A backup file exists. Read its contents to use for initialization.
-      with tf.gfile.Open(self._registry_backup_file_path, "r") as backup_file:
+      with tf.compat.v1.gfile.Open(self._registry_backup_file_path, "r") as backup_file:
         try:
           # Use the data to initialize the registry.
           initial_data = json.load(backup_file)

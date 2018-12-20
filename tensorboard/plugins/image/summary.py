@@ -75,18 +75,18 @@ def op(name,
       display_name=display_name, description=description)
   with tf.name_scope(name), \
        tf.control_dependencies([tf.assert_rank(images, 4),
-                                tf.assert_type(images, tf.uint8),
-                                tf.assert_non_negative(max_outputs)]):
+                                tf.compat.v1.assert_type(images, tf.uint8),
+                                tf.compat.v1.assert_non_negative(max_outputs)]):
     limited_images = images[:max_outputs]
     encoded_images = tf.map_fn(tf.image.encode_png, limited_images,
                                dtype=tf.string,
                                name='encode_each_image')
-    image_shape = tf.shape(images)
+    image_shape = tf.shape(input=images)
     dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
                            tf.as_string(image_shape[1], name='height')],
                           name='dimensions')
     tensor = tf.concat([dimensions, encoded_images], axis=0)
-    return tf.summary.tensor_summary(name='image_summary',
+    return tf.compat.v1.summary.tensor_summary(name='image_summary',
                                      tensor=tensor,
                                      collections=collections,
                                      summary_metadata=summary_metadata)
@@ -129,7 +129,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
   encoded_images = [encoder.encode_png(image) for image in limited_images]
   (width, height) = (images.shape[2], images.shape[1])
   content = [str(width), str(height)] + encoded_images
-  tensor = tf.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

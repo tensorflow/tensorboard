@@ -218,7 +218,7 @@ class CorePluginTest(tf.test.TestCase):
         'enigmatic': None,
     }
 
-    stubs = tf.test.StubOutForTesting()
+    stubs = tf.compat.v1.test.StubOutForTesting()
     def FirstEventTimestamp_stub(multiplexer_self, run_name):
       del multiplexer_self
       matches = [candidate_name
@@ -345,14 +345,14 @@ class CorePluginTest(tf.test.TestCase):
     with test_util.FileWriterCache.get(run_path) as writer:
 
       # Add a simple graph event.
-      graph_def = tf.GraphDef()
+      graph_def = tf.compat.v1.GraphDef()
       node1 = graph_def.node.add()
       node1.name = 'a'
       node2 = graph_def.node.add()
       node2.name = 'b'
       node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
 
-      meta_graph_def = tf.MetaGraphDef(graph_def=graph_def)
+      meta_graph_def = tf.compat.v1.MetaGraphDef(graph_def=graph_def)
 
       if self._only_use_meta_graph:
         writer.add_meta_graph(meta_graph_def)
@@ -361,7 +361,7 @@ class CorePluginTest(tf.test.TestCase):
 
     # Write data for the run to the database.
     # TODO(nickfelt): Figure out why reseting the graph is necessary.
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     db_writer = tf.contrib.summary.create_db_writer(
         db_uri=self.db_path,
         experiment_name=experiment_name,
@@ -370,8 +370,8 @@ class CorePluginTest(tf.test.TestCase):
     with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
       tf.contrib.summary.scalar('mytag', 1)
 
-    with tf.Session() as sess:
-      sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+      sess.run(tf.compat.v1.global_variables_initializer())
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
       sess.run(tf.contrib.summary.all_summary_ops())
 

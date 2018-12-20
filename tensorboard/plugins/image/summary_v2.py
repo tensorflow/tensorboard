@@ -71,9 +71,9 @@ def image(name,
                                name='encode_each_image')
     # Workaround for map_fn returning float dtype for an empty elems input.
     encoded_images = tf.cond(
-        tf.shape(encoded_images)[0] > 0,
+        tf.shape(input=encoded_images)[0] > 0,
         lambda: encoded_images, lambda: tf.constant([], tf.string))
-    image_shape = tf.shape(images)
+    image_shape = tf.shape(input=images)
     dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
                            tf.as_string(image_shape[1], name='height')],
                           name='dimensions')

@@ -54,7 +54,7 @@ class DirectoryWatcherTest(tf.test.TestCase):
     os.mkdir(self._directory)
     self._watcher = directory_watcher.DirectoryWatcher(self._directory,
                                                        _ByteLoader)
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
 
   def tearDown(self):
     self.stubs.CleanUp()

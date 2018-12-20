@@ -33,11 +33,11 @@ class PrCurveTest(tf.test.TestCase):
 
   def setUp(self):
     super(PrCurveTest, self).setUp()
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     np.random.seed(42)
 
   def pb_via_op(self, summary_op, feed_dict=None):
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
     actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
@@ -339,7 +339,7 @@ class StreamingOpTest(tf.test.TestCase):
 
   def setUp(self):
     super(StreamingOpTest, self).setUp()
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     np.random.seed(1)
 
   def pb_via_op(self, summary_op):
@@ -367,7 +367,7 @@ class StreamingOpTest(tf.test.TestCase):
                                    labels=labels,
                                    num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run([update_op])
 
       proto = self.pb_via_op(pr_curve)
@@ -395,7 +395,7 @@ class StreamingOpTest(tf.test.TestCase):
                                    labels=complete_labels,
                                    num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run([update_op])
       sess.run([update_op])
       sess.run([update_op])
@@ -423,10 +423,10 @@ class StreamingOpTest(tf.test.TestCase):
                                         labels=labels,
                                         num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run(update_op)
       summary_proto = summary_pb2.Summary()
-      summary_proto.ParseFromString(sess.run(tf.summary.merge_all()))
+      summary_proto.ParseFromString(sess.run(tf.compat.v1.summary.merge_all()))
 
     tags = [v.tag for v in summary_proto.value]
     # Only 1 tag should have been introduced.

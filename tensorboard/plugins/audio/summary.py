@@ -114,15 +114,15 @@ def op(name,
                               dtype=tf.string,
                               name='encode_each_audio')
     if labels is None:
-      limited_labels = tf.tile([''], tf.shape(limited_audio)[:1])
+      limited_labels = tf.tile([''], tf.shape(input=limited_audio)[:1])
     else:
       limited_labels = labels[:max_outputs]
-    tensor = tf.transpose(tf.stack([encoded_audio, limited_labels]))
+    tensor = tf.transpose(a=tf.stack([encoded_audio, limited_labels]))
     summary_metadata = metadata.create_summary_metadata(
         display_name=display_name,
         description=description,
         encoding=encoding)
-    return tf.summary.tensor_summary(name='audio_summary',
+    return tf.compat.v1.summary.tensor_summary(name='audio_summary',
                                      tensor=tensor,
                                      collections=collections,
                                      summary_metadata=summary_metadata)
@@ -201,7 +201,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tf.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

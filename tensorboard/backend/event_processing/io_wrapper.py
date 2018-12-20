@@ -63,7 +63,7 @@ def IsTensorFlowEventsFile(path):
 def ListDirectoryAbsolute(directory):
   """Yields all files in the given directory. The paths are absolute."""
   return (os.path.join(directory, path)
-          for path in tf.gfile.ListDirectory(directory))
+          for path in tf.io.gfile.listdir(directory))
 
 
 def _EscapeGlobCharacters(path):
@@ -111,7 +111,7 @@ def ListRecursivelyViaGlobbing(top):
 
   while True:
     logger.info('GlobAndListFiles: Starting to glob level %d', level)
-    glob = tf.gfile.Glob(current_glob_string)
+    glob = tf.io.gfile.glob(current_glob_string)
     logger.info(
         'GlobAndListFiles: %d files glob-ed at level %d', len(glob), level)
 
@@ -155,7 +155,7 @@ def ListRecursivelyViaWalking(top):
   Yields:
     A (dir_path, file_paths) tuple for each directory/subdirectory.
   """
-  for dir_path, _, filenames in tf.gfile.Walk(top, in_order=True):
+  for dir_path, _, filenames in tf.io.gfile.walk(top, topdown=True):
     yield (dir_path, (os.path.join(dir_path, filename)
                       for filename in filenames))
 
@@ -176,11 +176,11 @@ def GetLogdirSubdirectories(path):
   Raises:
     ValueError: If the path passed to the method exists and is not a directory.
   """
-  if not tf.gfile.Exists(path):
+  if not tf.io.gfile.exists(path):
     # No directory to traverse.
     return ()
 
-  if not tf.gfile.IsDirectory(path):
+  if not tf.io.gfile.isdir(path):
     raise ValueError('GetLogdirSubdirectories: path exists and is not a '
                      'directory, %s' % path)
 

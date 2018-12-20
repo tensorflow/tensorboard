@@ -59,18 +59,18 @@ def _buckets(data, bucket_count=None):
   if bucket_count is None:
     bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
   with tf.name_scope('buckets', values=[data, bucket_count]), \
-       tf.control_dependencies([tf.assert_scalar(bucket_count),
-                                tf.assert_type(bucket_count, tf.int32)]):
+       tf.control_dependencies([tf.compat.v1.assert_scalar(bucket_count),
+                                tf.compat.v1.assert_type(bucket_count, tf.int32)]):
     data = tf.reshape(data, shape=[-1])  # flatten
     data = tf.cast(data, tf.float64)
-    is_empty = tf.equal(tf.size(data), 0)
+    is_empty = tf.equal(tf.size(input=data), 0)
 
     def when_empty():
       return tf.constant([], shape=(0, 3), dtype=tf.float64)
 
     def when_nonempty():
-      min_ = tf.reduce_min(data)
-      max_ = tf.reduce_max(data)
+      min_ = tf.reduce_min(input_tensor=data)
+      max_ = tf.reduce_max(input_tensor=data)
       range_ = max_ - min_
       is_singular = tf.equal(range_, 0)
 
@@ -81,21 +81,21 @@ def _buckets(data, bucket_count=None):
                                  dtype=tf.int32)
         clamped_indices = tf.minimum(bucket_indices, bucket_count - 1)
         one_hots = tf.one_hot(clamped_indices, depth=bucket_count)
-        bucket_counts = tf.cast(tf.reduce_sum(one_hots, axis=0),
+        bucket_counts = tf.cast(tf.reduce_sum(input_tensor=one_hots, axis=0),
                                 dtype=tf.float64)
-        edges = tf.lin_space(min_, max_, bucket_count + 1)
+        edges = tf.linspace(min_, max_, bucket_count + 1)
         left_edges = edges[:-1]
         right_edges = edges[1:]
-        return tf.transpose(tf.stack(
+        return tf.transpose(a=tf.stack(
             [left_edges, right_edges, bucket_counts]))
 
       def when_singular():
         center = min_
         bucket_starts = tf.stack([center - 0.5])
         bucket_ends = tf.stack([center + 0.5])
-        bucket_counts = tf.stack([tf.cast(tf.size(data), tf.float64)])
+        bucket_counts = tf.stack([tf.cast(tf.size(input=data), tf.float64)])
         return tf.transpose(
-            tf.stack([bucket_starts, bucket_ends, bucket_counts]))
+            a=tf.stack([bucket_starts, bucket_ends, bucket_counts]))
 
       return tf.cond(is_singular, when_singular, when_nonsingular)
 
@@ -138,7 +138,7 @@ def op(name,
       display_name=display_name, description=description)
   with tf.name_scope(name):
     tensor = _buckets(data, bucket_count=bucket_count)
-    return tf.summary.tensor_summary(name='histogram_summary',
+    return tf.compat.v1.summary.tensor_summary(name='histogram_summary',
                                      tensor=tensor,
                                      collections=collections,
                                      summary_metadata=summary_metadata)
@@ -194,7 +194,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tf.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tf.compat.v1.make_tensor_proto(buckets, dtype=tf.float64)
 
   if display_name is None:
     display_name = name
