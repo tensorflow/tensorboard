@@ -53,7 +53,6 @@ class WitWidget(object):
 
   def __init__(self, config_builder, height=1000):
     tf.logging.set_verbosity(tf.logging.WARN)
-    self.height = height
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
@@ -86,6 +85,7 @@ class WitWidget(object):
       <script>
         const examples = {examples};
         const wit = document.querySelector("#wit");
+        wit.parentElement.style.height = '{height}px';
         let mutantFeature = null;
 
         // Listeners from WIT element events which pass requests to python.
@@ -168,7 +168,7 @@ class WitWidget(object):
           }}
         }}, 5000);
       </script>
-      """.format(examples=json.dumps(self.examples))))
+      """.format(examples=json.dumps(self.examples), height=height)))
     self._generate_sprite()
     output.eval_js("""configCallback('{config}')""".format(
       config=json.dumps(self.config)))
