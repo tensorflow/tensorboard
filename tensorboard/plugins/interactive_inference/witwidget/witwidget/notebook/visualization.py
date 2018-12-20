@@ -26,7 +26,8 @@ else:
 
 
 class WitConfigBuilder(object):
-    
+  """Configuration builder for WitWidget settings."""
+
   def __init__(self, examples):
     self.config = {}
     self.set_examples(examples)
@@ -40,6 +41,9 @@ class WitConfigBuilder(object):
   
   def set_examples(self, examples):
     self.store('examples', examples)
+    if len(examples) > 0:
+      self.store('are_sequence_examples',
+                 isinstance(examples[0], tf.train.SequenceExample))
     return self
       
   def set_model_type(self, model):
@@ -81,10 +85,6 @@ class WitConfigBuilder(object):
   def set_uses_predict_api(self, predict):
     self.store('uses_predict_api', predict)
     return self
-      
-  def set_are_sequence_examples(self, seq):
-    self.store('are_sequence_examples', seq)
-    return self
   
   def set_max_classes_to_display(self, max_classes):
     self.store('max_classes', max_classes)
@@ -102,8 +102,8 @@ class WitConfigBuilder(object):
     self.store('predict_output_tensor', tensor)
     return self
 
-  def set_label_vocab_path(self, path):
-    self.store('label_vocab_path', path)
+  def set_label_vocab(self, vocab):
+    self.store('label_vocab', vocab)
     return self
 
   def set_estimator_and_feature_spec(self, estimator, feature_spec):

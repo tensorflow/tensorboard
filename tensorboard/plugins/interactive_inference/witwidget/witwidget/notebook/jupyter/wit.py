@@ -33,7 +33,9 @@ class WitWidget(widgets.DOMWidget):
   """WIT widget for Jupyter."""
   _view_name = Unicode('WITView').tag(sync=True)
   _view_module = Unicode('wit-widget').tag(sync=True)
-  _view_module_version = Unicode('^0.1.4').tag(sync=True)
+  _view_module_version = Unicode('^0.1.5').tag(sync=True)
+
+  # Traitlets for communicating between python and javascript.
   config = Dict(dict()).tag(sync=True)
   examples = List([]).tag(sync=True)
   inferences = Dict(dict()).tag(sync=True)
@@ -51,6 +53,7 @@ class WitWidget(widgets.DOMWidget):
 
   def __init__(self, config_builder, height=1000):
     super(WitWidget, self).__init__(layout=Layout(height='%ipx' % height))
+    tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = dict(config.get(
@@ -115,14 +118,14 @@ class WitWidget(widgets.DOMWidget):
         self.config.get('predict_output_tensor'),
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'))
-        infer_objs.append(inference_utils.run_inference_for_inference_results(
-          examples_to_infer, serving_bundle))
+      infer_objs.append(inference_utils.run_inference_for_inference_results(
+        examples_to_infer, serving_bundle))
     self.updated_example_indices = set()
     self.inferences = {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': inference_utils.get_label_vocab(
-        self.config.get('label_vocab_path'))}
+      'label_vocab': self.config.get('label_vocab')}
 
+  # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')
   def _get_eligible_features(self, change):
     examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
@@ -176,6 +179,8 @@ class WitWidget(widgets.DOMWidget):
   @observe('delete_example')
   def _delete_example(self, change):
     self.examples.pop(self.delete_example['index'])
+    self.updated_example_indices = set([
+        i if i < index else i - 1 for i in self.updated_example_indices])
     self._generate_sprite()
 
   def _generate_sprite(self):

@@ -38,10 +38,14 @@ var WITView = widgets.DOMWidgetView.extend({
     render: function() {
         loadVulcanizedTemplate();
         this.inferMutantsCounter = 0;
+
+        // Create and attach WIT element to DOM.
         this.view_ = document.createElement(
             'tf-interactive-inference-dashboard');
         this.view_.local = true;
         this.el.appendChild(this.view_);
+
+        // Add listeners for changes from python.
         this.model.on('change:examples', this.examples_changed, this);
         this.model.on('change:config', this.config_changed, this);
         this.model.on('change:inferences', this.inferences_changed, this);
@@ -50,6 +54,8 @@ var WITView = widgets.DOMWidgetView.extend({
         this.model.on('change:mutant_charts', this.mutant_charts_changed, this);
         this.model.on('change:sprite', this.sprite_changed, this);
 
+        // Add listeners for changes from WIT Polymer element. Passes changes
+        // along to python.
         this.view_.addEventListener('infer-examples', e => {
           let i = this.model.get('infer') + 1;
           this.model.set('infer', i);
@@ -86,6 +92,7 @@ var WITView = widgets.DOMWidgetView.extend({
         }, 0);
     },
 
+    // Callback functions for when changes made on python side.
     examples_changed: function() {
       const examples = this.model.get('examples');
       if (!this.view_.updateExampleContents_) {
