@@ -31,6 +31,8 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class GraphsPluginTest(tf.test.TestCase):
 

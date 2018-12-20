@@ -28,6 +28,8 @@ from google.protobuf import text_format
 from tensorboard.plugins import projector
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ProjectorApiTest(tf.test.TestCase):
 

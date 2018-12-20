@@ -59,8 +59,8 @@ def _buckets(data, bucket_count=None):
   if bucket_count is None:
     bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
   with tf.name_scope('buckets', values=[data, bucket_count]), \
-       tf.control_dependencies([tf.compat.v1.assert_scalar(bucket_count),
-                                tf.compat.v1.assert_type(bucket_count, tf.int32)]):
+       tf.control_dependencies([tf.assert_scalar(bucket_count),
+                                tf.assert_type(bucket_count, tf.int32)]):
     data = tf.reshape(data, shape=[-1])  # flatten
     data = tf.cast(data, tf.float64)
     is_empty = tf.equal(tf.size(input=data), 0)
@@ -138,7 +138,7 @@ def op(name,
       display_name=display_name, description=description)
   with tf.name_scope(name):
     tensor = _buckets(data, bucket_count=bucket_count)
-    return tf.compat.v1.summary.tensor_summary(name='histogram_summary',
+    return tf.summary.tensor_summary(name='histogram_summary',
                                      tensor=tensor,
                                      collections=collections,
                                      summary_metadata=summary_metadata)
@@ -194,7 +194,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tf.compat.v1.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tf.make_tensor_proto(buckets, dtype=tf.float64)
 
   if display_name is None:
     display_name = name

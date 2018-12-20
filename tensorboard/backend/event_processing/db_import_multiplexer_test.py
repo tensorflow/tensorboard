@@ -27,6 +27,8 @@ from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 import tensorflow as tf
 
+tf.compat.v1.disable_v2_behavior()
+
 
 def add_event(path):
   with test_util.FileWriterCache.get(path) as writer:

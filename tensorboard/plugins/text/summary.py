@@ -69,8 +69,8 @@ def op(name,
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
   with tf.name_scope(name):
-    with tf.control_dependencies([tf.compat.v1.assert_type(data, tf.string)]):
-      return tf.compat.v1.summary.tensor_summary(name='text_summary',
+    with tf.control_dependencies([tf.assert_type(data, tf.string)]):
+      return tf.summary.tensor_summary(name='text_summary',
                                        tensor=data,
                                        collections=collections,
                                        summary_metadata=summary_metadata)
@@ -99,7 +99,7 @@ def pb(name, data, display_name=None, description=None):
   import tensorflow.compat.v1 as tf
 
   try:
-    tensor = tf.compat.v1.make_tensor_proto(data, dtype=tf.string)
+    tensor = tf.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
     raise ValueError(e)
 

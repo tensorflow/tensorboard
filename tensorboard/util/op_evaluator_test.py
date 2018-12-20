@@ -25,7 +25,7 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
   def setUp(self):
     super(PersistentOpEvaluatorTest, self).setUp()
 
-    patch = tf.compat.v1.test.mock.patch('tensorflow.compat.v1.Session', wraps=tf.compat.v1.Session)
+    patch = tf.test.mock.patch('tensorflow.compat.v1.Session', wraps=tf.Session)
     patch.start()
     self.addCleanup(patch.stop)
 
@@ -37,7 +37,7 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
         self._squarer = None
 
       def initialize_graph(self):
-        self._input = tf.compat.v1.placeholder(tf.int32)
+        self._input = tf.placeholder(tf.int32)
         self._squarer = tf.square(self._input)
 
       def run(self, xs):  # pylint: disable=arguments-differ
@@ -46,25 +46,25 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
     self._square = Squarer()
 
   def test_preserves_existing_session(self):
-    with tf.compat.v1.Session() as sess:
+    with tf.Session() as sess:
       op = tf.reduce_sum(input_tensor=[2, 2])
-      self.assertIs(sess, tf.compat.v1.get_default_session())
+      self.assertIs(sess, tf.get_default_session())
 
       result = self._square(123)
       self.assertEqual(123 * 123, result)
 
-      self.assertIs(sess, tf.compat.v1.get_default_session())
+      self.assertIs(sess, tf.get_default_session())
       number_of_lights = sess.run(op)
       self.assertEqual(number_of_lights, 4)
 
   def test_lazily_initializes_sessions(self):
-    self.assertEqual(tf.compat.v1.Session.call_count, 0)
+    self.assertEqual(tf.Session.call_count, 0)
 
   def test_reuses_sessions(self):
     self._square(123)
-    self.assertEqual(tf.compat.v1.Session.call_count, 1)
+    self.assertEqual(tf.Session.call_count, 1)
     self._square(234)
-    self.assertEqual(tf.compat.v1.Session.call_count, 1)
+    self.assertEqual(tf.Session.call_count, 1)
 
 
 if __name__ == '__main__':

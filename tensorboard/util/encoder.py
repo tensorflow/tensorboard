@@ -48,7 +48,7 @@ class _TensorFlowPngEncoder(op_evaluator.PersistentOpEvaluator):
   def initialize_graph(self):
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
     import tensorflow.compat.v1 as tf
-    self._image_placeholder = tf.compat.v1.placeholder(
+    self._image_placeholder = tf.placeholder(
         dtype=tf.uint8, name='image_to_encode')
     self._encode_op = tf.image.encode_png(self._image_placeholder)
 
@@ -86,9 +86,9 @@ class _TensorFlowWavEncoder(op_evaluator.PersistentOpEvaluator):
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
     import tensorflow  # for contrib
     import tensorflow.compat.v1 as tf
-    self._audio_placeholder = tf.compat.v1.placeholder(
+    self._audio_placeholder = tf.placeholder(
         dtype=tf.float32, name='image_to_encode')
-    self._samples_per_second_placeholder = tf.compat.v1.placeholder(
+    self._samples_per_second_placeholder = tf.placeholder(
         dtype=tf.int32, name='samples_per_second')
     self._encode_op = tensorflow.contrib.ffmpeg.encode_audio(
         self._audio_placeholder,

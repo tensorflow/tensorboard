@@ -201,9 +201,9 @@ class DirectoryWatcherTest(tf.test.TestCase):
     for stub_name in stub_names:
       self.stubs.Set(io_wrapper, stub_name,
                      FakeFactory(getattr(io_wrapper, stub_name)))
-    for stub_name in ['IsDirectory', 'Exists', 'Stat']:
-      self.stubs.Set(tf.gfile, stub_name,
-                     FakeFactory(getattr(tf.gfile, stub_name)))
+    for stub_name in ['exists', 'stat']:
+      self.stubs.Set(tf.io.gfile, stub_name,
+                     FakeFactory(getattr(tf.io.gfile, stub_name)))
 
     with self.assertRaises((IOError, OSError)):
       self._LoadAllEvents()

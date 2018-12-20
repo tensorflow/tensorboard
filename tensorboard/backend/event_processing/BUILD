@@ -144,6 +144,7 @@ py_test(
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "//tensorboard/util:test_util",
         "@org_pythonhosted_six",

@@ -38,6 +38,8 @@ from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ProjectorAppTest(tf.test.TestCase):
 

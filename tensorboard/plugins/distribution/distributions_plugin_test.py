@@ -34,6 +34,8 @@ from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.histogram import summary
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class DistributionsPluginTest(tf.test.TestCase):
 

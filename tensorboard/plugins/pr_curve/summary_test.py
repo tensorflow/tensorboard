@@ -28,6 +28,8 @@ from tensorboard.plugins.pr_curve import summary
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class PrCurveTest(tf.test.TestCase):
 

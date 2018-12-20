@@ -32,6 +32,7 @@ from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 from tensorboard.util import tb_logging
 
+tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 

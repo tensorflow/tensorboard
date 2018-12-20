@@ -143,7 +143,7 @@ def ListRecursivelyViaWalking(top):
 
   For each of `top` and its subdirectories, yields a tuple containing the path
   to the directory and the path to each of the contained files.  Note that
-  unlike os.Walk()/tf.gfile.Walk()/ListRecursivelyViaGlobbing, this does not
+  unlike os.Walk()/tf.io.gfile.walk()/ListRecursivelyViaGlobbing, this does not
   list subdirectories. The file paths are all absolute. If the directory does
   not exist, this yields nothing.
 

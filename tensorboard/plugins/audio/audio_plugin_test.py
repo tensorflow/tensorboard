@@ -38,6 +38,9 @@ from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.audio import summary
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
+
 class AudioPluginTest(tf.test.TestCase):
 
   def setUp(self):

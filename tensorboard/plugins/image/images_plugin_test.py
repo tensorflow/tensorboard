@@ -38,6 +38,8 @@ from tensorboard.plugins.image import summary
 from tensorboard.plugins.image import images_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ImagesPluginTest(tf.test.TestCase):
 

@@ -30,8 +30,12 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
+logger = tb_logging.get_logger()
 
 
 class _EventGenerator(object):
@@ -186,7 +190,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     discard events based on the step value of SessionLog.START.
     """
     warnings = []
-    self.stubs.Set(tf.logging, 'warn', warnings.append)
+    self.stubs.Set(logger, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)
@@ -241,7 +245,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     discard events based on the step value of SessionLog.START.
     """
     warnings = []
-    self.stubs.Set(tf.logging, 'warn', warnings.append)
+    self.stubs.Set(logger, 'warn', warnings.append)
 
     gen = _EventGenerator(self)
     acc = ea.EventAccumulator(gen)

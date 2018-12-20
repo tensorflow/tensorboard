@@ -122,7 +122,7 @@ def op(name,
         display_name=display_name,
         description=description,
         encoding=encoding)
-    return tf.compat.v1.summary.tensor_summary(name='audio_summary',
+    return tf.summary.tensor_summary(name='audio_summary',
                                      tensor=tensor,
                                      collections=collections,
                                      summary_metadata=summary_metadata)
@@ -201,7 +201,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

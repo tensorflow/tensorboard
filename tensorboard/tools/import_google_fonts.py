@@ -58,21 +58,21 @@ limitations under the License.
 -->
 '''
 
-tf.flags.DEFINE_string('urls', ';'.join(ROBOTO_URLS),
+tf.compat.v1.flags.DEFINE_string('urls', ';'.join(ROBOTO_URLS),
                        'Google Fonts stylesheet URLs (semicolons delimited)')
-tf.flags.DEFINE_string('path', '/font-roboto/roboto.html', 'Path of HTML file')
-tf.flags.DEFINE_string('repo', 'com_google_fonts_roboto', 'Name of repository')
-tf.flags.DEFINE_string('license', 'notice', 'Bazel category of license')
-tf.flags.DEFINE_string('license_summary', 'Apache 2.0', 'License description')
-tf.flags.DEFINE_string('license_html', GOOGLE_LICENSE_HTML,
+tf.compat.v1.flags.DEFINE_string('path', '/font-roboto/roboto.html', 'Path of HTML file')
+tf.compat.v1.flags.DEFINE_string('repo', 'com_google_fonts_roboto', 'Name of repository')
+tf.compat.v1.flags.DEFINE_string('license', 'notice', 'Bazel category of license')
+tf.compat.v1.flags.DEFINE_string('license_summary', 'Apache 2.0', 'License description')
+tf.compat.v1.flags.DEFINE_string('license_html', GOOGLE_LICENSE_HTML,
                        'HTML @license comment')
-tf.flags.DEFINE_string('user_agent',
+tf.compat.v1.flags.DEFINE_string('user_agent',
                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/62.0.3202.94 '
                        'Safari/537.36',
                        'HTTP User-Agent header to send to Google Fonts')
-tf.flags.DEFINE_string('mirror', 'https://mirror.bazel.build/',
+tf.compat.v1.flags.DEFINE_string('mirror', 'https://mirror.bazel.build/',
                        'Mirror URL prefix')
 FLAGS = tf.app.flags.FLAGS
 

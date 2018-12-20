@@ -78,8 +78,8 @@ class PersistentOpEvaluator(object):
       with graph.as_default():
         self.initialize_graph()
       # Don't reserve GPU because libpng can't run on GPU.
-      config = tf.compat.v1.ConfigProto(device_count={'GPU': 0})
-      self._session = tf.compat.v1.Session(graph=graph, config=config)
+      config = tf.ConfigProto(device_count={'GPU': 0})
+      self._session = tf.Session(graph=graph, config=config)
 
   def initialize_graph(self):
     """Create the TensorFlow graph needed to compute this operation.

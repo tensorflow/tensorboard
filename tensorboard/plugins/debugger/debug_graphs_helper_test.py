@@ -24,6 +24,7 @@ from tensorboard.util import tb_logging
 from tensorflow.python import debug as tf_debug
 from tensorflow.python.debug.lib import grpc_debug_test_server
 
+tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -87,6 +88,8 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       gated_debug_ops = [
           (item[0], item[2], item[3]) for item in gated_debug_ops]
 
+      # TODO(#1705): TF 2.0 breaks below. Make sure it is not the discrepency
+      # between Eager vs. Graph mode.
       self.assertIn(('a', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('b', 0, 'DebugIdentity'), gated_debug_ops)
@@ -149,6 +152,7 @@ class BaseExpandedNodeNameTest(tf.test.TestCase):
       self.assertEqual(
           'bar/b/read',
           graph_wrapper.maybe_base_expanded_node_name('bar/b/read'))
+      # TODO(#1705): TF 2.0 tf.add creates nested nodes.
       self.assertEqual(
           'baz/c', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
 

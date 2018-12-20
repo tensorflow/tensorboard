@@ -38,7 +38,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
-
+tf.compat.v1.disable_v2_behavior()
 FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 
 

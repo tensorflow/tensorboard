@@ -43,6 +43,7 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import interactive_debugger_plugin
 
+tf.compat.v1.disable_v2_behavior()
 _SERVER_URL_PREFIX = '/data/plugin/debugger/'
 
 

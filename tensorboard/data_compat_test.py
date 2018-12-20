@@ -31,6 +31,8 @@ from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class MigrateValueTest(tf.test.TestCase):
   """Tests for `migrate_value`.

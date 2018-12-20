@@ -37,12 +37,13 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import summary
 
-FLAGS = tf.flags.FLAGS
+tf.compat.v1.disable_v2_behavior()
+FLAGS = tf.compat.v1.flags.FLAGS
 
-tf.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
+tf.compat.v1.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
                        'Directory into which to write TensorBoard data.')
 
-tf.flags.DEFINE_integer('steps', 10,
+tf.compat.v1.flags.DEFINE_integer('steps', 10,
                         'Number of steps to generate for each PR curve.')
 
 def start_runs(

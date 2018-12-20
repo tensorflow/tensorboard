@@ -32,6 +32,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
 
 GEMS = ['garnet', 'amethyst', 'pearl', 'steven']
 
