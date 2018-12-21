@@ -24,9 +24,17 @@ else
 fi
 
 run_smoke_test=1
-if [ "$1" = "--no-smoke" ]; then
-  run_smoke_test=0
-fi
+while arg="$1" && shift; do
+  case "$arg" in
+    "--no-smoke")
+      run_smoke_test=0
+      ;;
+    *)
+      echo >&2 'fatal: unknown argument:' "$arg"
+      exit 1
+      ;;
+  esac
+done
 
 smoke() {
   TF_PACKAGE=tf-nightly
