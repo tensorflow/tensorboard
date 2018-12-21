@@ -63,11 +63,11 @@ http_archive(
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "88324ad9379eae4fdb2aefb8e0d6c7cd0dc748b44daa5cc96ffd9415705c00c3",
-    strip_prefix = "tensorflow-9752b117ff63f204c4975cad52b5aab5c1f5e9a9",
+    sha256 = "a0d7eea4c4e4b526cdba624f706bfbcc87a7923bb09904dfab22589a6bd142f2",
+    strip_prefix = "tensorflow-6ef428bd6e83b0930266bf922eaa2f4a60e8328a",
     urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",  # 2018-04-16
-        "https://github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",
+        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/6ef428bd6e83b0930266bf922eaa2f4a60e8328a.tar.gz",  # 2018-12-06
+        "https://github.com/tensorflow/tensorflow/archive/6ef428bd6e83b0930266bf922eaa2f4a60e8328a.tar.gz",
     ],
 )
 
