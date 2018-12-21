@@ -45,6 +45,107 @@ def infer_mutants(details):
   WitWidget.widget.infer_mutants(details)
 output.register_callback('notebook.InferMutants', infer_mutants)
 
+# HTML/javascript for the WIT frontend.
+WIT_HTML = """
+  <tf-interactive-inference-dashboard id="wit" local>
+  </tf-interactive-inference-dashboard>
+  <script>
+    const examples = {examples};
+    const wit = document.querySelector("#wit");
+    wit.parentElement.style.height = '{height}px';
+    let mutantFeature = null;
+
+    // Listeners from WIT element events which pass requests to python.
+    wit.addEventListener("infer-examples", e => {{
+      google.colab.kernel.invokeFunction(
+        'notebook.InferExamples', [], {{}});
+    }});
+    wit.addEventListener("delete-example", e => {{
+      google.colab.kernel.invokeFunction(
+        'notebook.DeleteExample', [e.detail.index], {{}});
+    }});
+    wit.addEventListener("duplicate-example", e => {{
+      google.colab.kernel.invokeFunction(
+        'notebook.DuplicateExample', [e.detail.index], {{}});
+    }});
+    wit.addEventListener("update-example", e => {{
+      google.colab.kernel.invokeFunction(
+        'notebook.UpdateExample', [e.detail.index, e.detail.example], {{}});
+    }});
+    wit.addEventListener('get-eligible-features', e => {{
+      google.colab.kernel.invokeFunction(
+        'notebook.GetEligibleFeatures', [], {{}});
+    }});
+    wit.addEventListener('infer-mutants', e => {{
+      mutantFeature = e.detail.feature_name;
+      google.colab.kernel.invokeFunction(
+        'notebook.InferMutants', [e.detail], {{}});
+    }});
+
+    // Javascript callbacks called by python code to communicate with WIT
+    // Polymer element.
+    window.inferenceCallback = inferences => {{
+      const parsedInferences = JSON.parse(inferences);
+      wit.inferences = parsedInferences.inferences;
+      wit.labelVocab = parsedInferences.label_vocab;
+    }}
+    window.spriteCallback = spriteUrl => {{
+      if (!wit.updateSprite_) {{
+        setTimeout(() => window.spriteCallback(spriteUrl), 100);
+        return;
+      }}
+      wit.hasSprite = true;
+      wit.localAtlasUrl = spriteUrl;
+      wit.updateSprite_();
+    }}
+    window.eligibleFeaturesCallback = features => {{
+      const parsedFeatures = JSON.parse(features);
+      wit.partialDepPlotEligibleFeatures = parsedFeatures;
+    }}
+    window.inferMutantsCallback = jsonMapping => {{
+      const chartInfo = JSON.parse(jsonMapping);
+      wit.makeChartForFeature_(chartInfo.chartType, mutantFeature,
+        chartInfo.data);
+    }}
+    window.configCallback = jsonConfig => {{
+      const config = JSON.parse(jsonConfig);
+      if ('inference_address' in config) {{
+        let addresses = config['inference_address'];
+        if ('inference_address_2' in config) {
+          addresses += ',' + config['inference_address_2'];
+        }
+        wit.inferenceAddress = addresses;
+      }}
+      if ('model_name' in config) {{
+        let names = config['model_name'];
+        if ('model_name_2' in config) {{
+          names += ',' + config['model_name_2'];
+        }}
+        wit.modelName = names;
+      }}
+      if ('model_type' in config) {{
+        wit.modelType = config['model_type'];
+      }}
+      if ('are_sequence_examples' in config) {{
+        wit.sequenceExamples = config['are_sequence_examples'];
+      }}
+      if ('max_classes' in config) {{
+        wit.maxInferenceEntriesPerRun = config['max_classes'];
+      }}
+      if ('multiclass' in config) {{
+        wit.multiClass = config['multiclass'];
+      }}
+      wit.updateNumberOfModels_();
+    }}
+    setTimeout(() => {{
+      wit.updateExampleContents_(examples, false);
+      if (wit.localAtlasUrl) {{
+        window.spriteCallback(wit.localAtlasUrl);
+      }}
+    }}, 5000);
+  </script>
+  """
+
 class WitWidget(object):
   """WIT widget for colab."""
 
@@ -61,117 +162,30 @@ class WitWidget(object):
     self.compare_estimator_and_spec = (
       dict(config.get('compare_estimator_and_spec'))
       if 'compare_estimator_and_spec' in config else {})
-    del copied_config['examples']
     if 'estimator_and_spec' in copied_config:
       del copied_config['estimator_and_spec']
-      copied_config['inference_address'] = 'estimator'
-      copied_config['model_name'] = 'estimator'
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
-      copied_config['inference_address_2'] = 'estimator'
-      copied_config['model_name_2'] = 'estimator'
-    self.config = copied_config
+
     self._set_examples(config['examples'])
+    del copied_config['examples']
+
+    self.config = copied_config
     WitWidget.widget = self
 
     # Display WIT Polymer element.
-    display.display(display.HTML("""
-      <link rel="import"
-      href="/nbextensions/wit-widget/wit_jupyter.html">
-      """))
-    display.display(display.HTML("""
-      <tf-interactive-inference-dashboard id="wit" local>
-      </tf-interactive-inference-dashboard>
-      <script>
-        const examples = {examples};
-        const wit = document.querySelector("#wit");
-        wit.parentElement.style.height = '{height}px';
-        let mutantFeature = null;
+    display.display(display.HTML(self._get_element_html()))
+    display.display(display.HTML(
+      WIT_HTML.format(examples=json.dumps(self.examples), height=height)))
 
-        // Listeners from WIT element events which pass requests to python.
-        wit.addEventListener("infer-examples", e => {{
-          google.colab.kernel.invokeFunction(
-            'notebook.InferExamples', [], {{}});
-        }});
-        wit.addEventListener("delete-example", e => {{
-          google.colab.kernel.invokeFunction(
-            'notebook.DeleteExample', [e.detail.index], {{}});
-        }});
-        wit.addEventListener("duplicate-example", e => {{
-          google.colab.kernel.invokeFunction(
-            'notebook.DuplicateExample', [e.detail.index], {{}});
-        }});
-        wit.addEventListener("update-example", e => {{
-          google.colab.kernel.invokeFunction(
-            'notebook.UpdateExample', [e.detail.index, e.detail.example], {{}});
-        }});
-        wit.addEventListener('get-eligible-features', e => {{
-          google.colab.kernel.invokeFunction(
-            'notebook.GetEligibleFeatures', [], {{}});
-        }});
-        wit.addEventListener('infer-mutants', e => {{
-          mutantFeature = e.detail.feature_name;
-          google.colab.kernel.invokeFunction(
-            'notebook.InferMutants', [e.detail], {{}});
-        }});
-
-        // Javascript callbacks called by python code to communicate with WIT
-        // Polymer element.
-        window.inferenceCallback = inferences => {{
-          const parsedInferences = JSON.parse(inferences);
-          wit.inferences = parsedInferences.inferences;
-          wit.labelVocab = parsedInferences.label_vocab;
-        }}
-        window.spriteCallback = spriteUrl => {{
-          if (!wit.updateSprite_) {{
-            setTimeout(() => window.spriteCallback(spriteUrl), 100);
-            return;
-          }}
-          wit.hasSprite = true;
-          wit.localAtlasUrl = spriteUrl;
-          wit.updateSprite_();
-        }}
-        window.eligibleFeaturesCallback = features => {{
-          const parsedFeatures = JSON.parse(features);
-          wit.partialDepPlotEligibleFeatures = parsedFeatures;
-        }}
-        window.inferMutantsCallback = jsonMapping => {{
-          const chartInfo = JSON.parse(jsonMapping);
-          wit.makeChartForFeature_(chartInfo.chartType, mutantFeature,
-            chartInfo.data);
-        }}
-        window.configCallback = jsonConfig => {{
-          const config = JSON.parse(jsonConfig);
-          if ('inference_address' in config) {{
-            wit.inferenceAddress = config['inference_address'];
-          }}
-          if ('model_name' in config) {{
-            wit.modelName = config['model_name'];
-          }}
-          if ('model_type' in config) {{
-            wit.modelType = config['model_type'];
-          }}
-          if ('are_sequence_examples' in config) {{
-            wit.sequenceExamples = config['are_sequence_examples'];
-          }}
-          if ('max_classes' in config) {{
-            wit.maxInferenceEntriesPerRun = config['max_classes'];
-          }}
-          if ('multiclass' in config) {{
-            wit.multiClass = config['multiclass'];
-          }}
-        }}
-        setTimeout(() => {{
-          wit.updateExampleContents_(examples, false);
-          if (wit.localAtlasUrl) {{
-            window.spriteCallback(wit.localAtlasUrl);
-          }}
-        }}, 5000);
-      </script>
-      """.format(examples=json.dumps(self.examples), height=height)))
     self._generate_sprite()
+
     output.eval_js("""configCallback('{config}')""".format(
       config=json.dumps(self.config)))
+
+  def _get_element_html(self):
+    return """
+      <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
   def _set_examples(self, examples):
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
@@ -255,7 +269,8 @@ class WitWidget(object):
                 else [self.examples[example_index]])
     examples = [self.json_to_proto(ex) for ex in examples]
     scan_examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    serving_bundle = inference_utils.ServingBundle(
+    serving_bundles = []
+    serving_bundles.append(inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
       self.config.get('model_type'),
@@ -265,13 +280,26 @@ class WitWidget(object):
       self.config.get('predict_input_tensor'),
       self.config.get('predict_output_tensor'),
       self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'))
+      self.estimator_and_spec.get('feature_spec')))
+    if ('inference_address_2' in self.config or
+        self.compare_estimator_and_spec.get('estimator')):
+      serving_bundles.append(inference_utils.ServingBundle(
+        self.config.get('inference_address_2'),
+        self.config.get('model_name_2'),
+        self.config.get('model_type'),
+        self.config.get('model_version_2'),
+        self.config.get('model_signature_2'),
+        self.config.get('uses_predict_api'),
+        self.config.get('predict_input_tensor'),
+        self.config.get('predict_output_tensor'),
+        self.compare_estimator_and_spec.get('estimator'),
+        self.compare_estimator_and_spec.get('feature_spec')))
     viz_params = inference_utils.VizParams(
       info['x_min'], info['x_max'],
       scan_examples, 10,
       info['feature_index_pattern'])
     json_mapping = inference_utils.mutant_charts_for_feature(
-      examples, feature_name, serving_bundle, viz_params)
+      examples, feature_name, serving_bundles, viz_params)
     output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
       json_mapping=json.dumps(json_mapping)))
 

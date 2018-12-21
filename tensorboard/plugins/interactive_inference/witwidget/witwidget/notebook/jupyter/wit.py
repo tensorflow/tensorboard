@@ -56,20 +56,20 @@ class WitWidget(widgets.DOMWidget):
     tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
-    self.estimator_and_spec = dict(config.get(
-      'estimator_and_spec')) if 'estimator_and_spec' in config else {}
-    self.compare_estimator_and_spec = dict(config.get(
-      'compare_estimator_and_spec')) if 'compare_estimator_and_spec' in config else {}
-    self._set_examples(config['examples'])
-    del copied_config['examples']
+    self.estimator_and_spec = (
+      dict(config.get('estimator_and_spec'))
+      if 'estimator_and_spec' in config else {})
+    self.compare_estimator_and_spec = (
+      dict(config.get('compare_estimator_and_spec'))
+      if 'compare_estimator_and_spec' in config else {})
     if 'estimator_and_spec' in copied_config:
       del copied_config['estimator_and_spec']
-      copied_config['inference_address'] = 'estimator'
-      copied_config['model_name'] = 'estimator'
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
-      copied_config['inference_address_2'] = 'estimator'
-      copied_config['model_name_2'] = 'estimator'
+
+    self._set_examples(config['examples'])
+    del copied_config['examples']
+
     self.config = copied_config
 
     # Ensure the visualization takes all available width.
@@ -106,7 +106,8 @@ class WitWidget(widgets.DOMWidget):
       self.estimator_and_spec.get('feature_spec'))
     infer_objs.append(inference_utils.run_inference_for_inference_results(
       examples_to_infer, serving_bundle))
-    if 'inference_address_2' in self.config or self.compare_estimator_and_spec.get('estimator'):
+    if ('inference_address_2' in self.config or
+        self.compare_estimator_and_spec.get('estimator')):
       serving_bundle = inference_utils.ServingBundle(
         self.config.get('inference_address_2'),
         self.config.get('model_name_2'),
@@ -142,7 +143,8 @@ class WitWidget(widgets.DOMWidget):
                 else [self.examples[example_index]])
     examples = [self.json_to_proto(ex) for ex in examples]
     scan_examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    serving_bundle = inference_utils.ServingBundle(
+    serving_bundles = []
+    serving_bundles.append(inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
       self.config.get('model_type'),
@@ -152,13 +154,26 @@ class WitWidget(widgets.DOMWidget):
       self.config.get('predict_input_tensor'),
       self.config.get('predict_output_tensor'),
       self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'))
+      self.estimator_and_spec.get('feature_spec')))
+    if ('inference_address_2' in self.config or
+        self.compare_estimator_and_spec.get('estimator')):
+      serving_bundles.append(inference_utils.ServingBundle(
+        self.config.get('inference_address_2'),
+        self.config.get('model_name_2'),
+        self.config.get('model_type'),
+        self.config.get('model_version_2'),
+        self.config.get('model_signature_2'),
+        self.config.get('uses_predict_api'),
+        self.config.get('predict_input_tensor'),
+        self.config.get('predict_output_tensor'),
+        self.compare_estimator_and_spec.get('estimator'),
+        self.compare_estimator_and_spec.get('feature_spec')))
     viz_params = inference_utils.VizParams(
       info['x_min'], info['x_max'],
       scan_examples, 10,
       info['feature_index_pattern'])
     json_mapping = inference_utils.mutant_charts_for_feature(
-      examples, feature_name, serving_bundle, viz_params)
+      examples, feature_name, serving_bundles, viz_params)
     json_mapping['counter'] = self.mutant_charts_counter
     self.mutant_charts_counter += 1
     self.mutant_charts = json_mapping
@@ -178,7 +193,8 @@ class WitWidget(widgets.DOMWidget):
 
   @observe('delete_example')
   def _delete_example(self, change):
-    self.examples.pop(self.delete_example['index'])
+    index = self.delete_example['index']
+    self.examples.pop(index)
     self.updated_example_indices = set([
         i if i < index else i - 1 for i in self.updated_example_indices])
     self._generate_sprite()

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Visualization API."""
 import sys
+import tensorflow as tf
 
 
 def _is_colab():
@@ -109,9 +110,13 @@ class WitConfigBuilder(object):
   def set_estimator_and_feature_spec(self, estimator, feature_spec):
     self.store('estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
+    self.set_inference_address('estimator')
+    self.set_model_name('estimator')
     return self
   
   def set_compare_estimator_and_feature_spec(self, estimator, feature_spec):
     self.store('compare_estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
+    self.set_compare_inference_address('estimator')
+    self.set_compare_model_name('estimator')
     return self

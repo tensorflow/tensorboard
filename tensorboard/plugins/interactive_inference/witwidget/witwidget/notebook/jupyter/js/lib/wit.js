@@ -120,10 +120,18 @@ var WITView = widgets.DOMWidgetView.extend({
     config_changed: function() {
       const config = this.model.get('config');
       if ('inference_address' in config) {
-        this.view_.inferenceAddress = config['inference_address'];
+        let addresses = config['inference_address'];
+        if ('inference_address_2' in config) {
+          addresses += ',' + config['inference_address_2'];
+        }
+        this.view_.inferenceAddress = addresses;
       }
       if ('model_name' in config) {
-        this.view_.modelName = config['model_name'];
+        let names = config['model_name'];
+        if ('model_name_2' in config) {
+          names += ',' + config['model_name_2'];
+        }
+        this.view_.modelName = names;
       }
       if ('model_type' in config) {
         this.view_.modelType = config['model_type'];
@@ -137,6 +145,7 @@ var WITView = widgets.DOMWidgetView.extend({
       if ('multiclass' in config) {
         this.view_.multiClass = config['multiclass'];
       }
+      this.view_.updateNumberOfModels_();
     },
     sprite_changed: function() {
       if (!this.view_.updateSprite_) {
