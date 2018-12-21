@@ -43,7 +43,7 @@ from tensorboard.plugins.interactive_inference.utils import test_utils
 class InferenceUtilsTest(tf.test.TestCase):
 
   def setUp(self):
-    self.logdir = tf.test.get_temp_dir()
+    self.logdir = tf.compat.v1.test.get_temp_dir()
     self.examples_path = os.path.join(self.logdir, 'example.pb')
 
   def tearDown(self):
@@ -82,7 +82,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(1, original_feature.length)
 
   def test_example_protos_from_path_get_all_in_file(self):
-    cns_path = os.path.join(tf.test.get_temp_dir(),
+    cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'dummy_example')
     example = test_utils.make_fake_example()
     test_utils.write_out_examples([example], cns_path)
@@ -91,7 +91,7 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(example, dummy_examples[0])
 
   def test_example_protos_from_path_get_two(self):
-    cns_path = os.path.join(tf.test.get_temp_dir(),
+    cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'dummy_example')
     example_one = test_utils.make_fake_example(1)
     example_two = test_utils.make_fake_example(2)
@@ -104,23 +104,23 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual(example_two, dummy_examples[1])
 
   def test_example_protos_from_path_use_wildcard(self):
-    cns_path = os.path.join(tf.test.get_temp_dir(),
+    cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'wildcard_example1')
     example1 = test_utils.make_fake_example(1)
     test_utils.write_out_examples([example1], cns_path)
-    cns_path = os.path.join(tf.test.get_temp_dir(),
+    cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'wildcard_example2')
     example2 = test_utils.make_fake_example(2)
     test_utils.write_out_examples([example2], cns_path)
 
-    wildcard_path = os.path.join(tf.test.get_temp_dir(),
+    wildcard_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                                 'wildcard_example*')
     dummy_examples = platform_utils.example_protos_from_path(
         wildcard_path)
     self.assertEqual(2, len(dummy_examples))
 
   def test_example_proto_from_path_if_does_not_exist(self):
-    cns_path = os.path.join(tf.test.get_temp_dir(), 'does_not_exist')
+    cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(), 'does_not_exist')
     with self.assertRaises(common_utils.InvalidUserInputError):
       platform_utils.example_protos_from_path(cns_path)
 

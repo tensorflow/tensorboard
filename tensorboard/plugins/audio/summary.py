@@ -31,10 +31,14 @@ from __future__ import print_function
 import functools
 
 import numpy as np
-import tensorflow as tf
 
 from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
+from tensorboard.plugins.audio import summary_v2
+
+
+# Export V2 versions.
+audio = summary_v2.audio
 
 
 def op(name,
@@ -46,7 +50,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create an audio summary op for use in a TensorFlow graph.
+  """Create a legacy audio summary op for use in a TensorFlow graph.
 
   Arguments:
     name: A unique name for the generated summary node.
@@ -86,6 +90,9 @@ def op(name,
   as WAV. If the specific format is important to you, please provide a
   file format explicitly.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow  # for contrib
+  import tensorflow.compat.v1 as tf
 
   if display_name is None:
     display_name = name
@@ -94,7 +101,7 @@ def op(name,
 
   if encoding == 'wav':
     encoding = metadata.Encoding.Value('WAV')
-    encoder = functools.partial(tf.contrib.ffmpeg.encode_audio,
+    encoder = functools.partial(tensorflow.contrib.ffmpeg.encode_audio,
                                 samples_per_second=sample_rate,
                                 file_format='wav')
   else:
@@ -107,10 +114,10 @@ def op(name,
                               dtype=tf.string,
                               name='encode_each_audio')
     if labels is None:
-      limited_labels = tf.tile([''], tf.shape(limited_audio)[:1])
+      limited_labels = tf.tile([''], tf.shape(input=limited_audio)[:1])
     else:
       limited_labels = labels[:max_outputs]
-    tensor = tf.transpose(tf.stack([encoded_audio, limited_labels]))
+    tensor = tf.transpose(a=tf.stack([encoded_audio, limited_labels]))
     summary_metadata = metadata.create_summary_metadata(
         display_name=display_name,
         description=description,
@@ -129,7 +136,7 @@ def pb(name,
        encoding=None,
        display_name=None,
        description=None):
-  """Create an audio summary protobuf.
+  """Create a legacy audio summary protobuf.
 
   This behaves as if you were to create an `op` with the same arguments
   (wrapped with constant tensors where appropriate) and then execute
@@ -169,6 +176,9 @@ def pb(name,
   as WAV. If the specific format is important to you, please provide a
   file format explicitly.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   audio = np.array(audio)
   if audio.ndim != 3:
     raise ValueError('Shape %r must have rank 3' % (audio.shape,))
@@ -191,7 +201,7 @@ def pb(name,
 
   encoded_audio = [encoder(a) for a in limited_audio]
   content = np.array([encoded_audio, limited_labels]).transpose()
-  tensor = tf.compat.v1.make_tensor_proto(content, dtype=tf.string)
+  tensor = tf.make_tensor_proto(content, dtype=tf.string)
 
   if display_name is None:
     display_name = name

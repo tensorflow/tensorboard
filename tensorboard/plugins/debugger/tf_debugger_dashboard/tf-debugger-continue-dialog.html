@@ -236,7 +236,7 @@ limitations under the License.
         }
         // Validate that this._tensorConditionRefValue is a number.
         const refValue = Number(this._tensorConditionRefValue);
-        if (!_.isFinite(refValue)) {
+        if (!Number.isFinite(refValue)) {
           this.set('_tensorConditionRefValue', 0);
           return;
         }

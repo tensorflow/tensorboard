@@ -22,19 +22,22 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import logging
 import contextlib
 import functools
-import logging
 import os
 import sqlite3
 import threading
 
 import tensorflow as tf
-from tensorboard.compat.proto import event_pb2
-from tensorboard.compat.proto import summary_pb2
-from tensorboard.util import util
 
 from tensorboard import db
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.util import tb_logging
+from tensorboard.util import util
+
+logger = tb_logging.get_logger()
 
 
 class TestCase(tf.test.TestCase):
@@ -56,9 +59,8 @@ class TestCase(tf.test.TestCase):
   def setUp(self):
     super(TestCase, self).setUp()
     util.setup_logging()
-    tf.logging.set_verbosity(tf.logging.DEBUG)
-    logging.getLogger('werkzeug').setLevel(logging.INFO)
-    tf.logging.debug('=== %s ===', self._method)
+    logging.set_verbosity(logging.DEBUG)
+    logger.debug('=== %s ===', self._method)
     db.TESTING_MODE = True
 
   def tearDown(self):
@@ -192,7 +194,7 @@ class FileWriter(tf.summary.FileWriter):
     if isinstance(event, event_pb2.Event):
       tf_event = tf.Event.FromString(event.SerializeToString())
     else:
-      tf.logging.warn('Added TensorFlow event proto. '
+      logger.warn('Added TensorFlow event proto. '
                       'Please prefer TensorBoard copy of the proto')
       tf_event = event
     super(FileWriter, self).add_event(tf_event)
@@ -201,16 +203,16 @@ class FileWriter(tf.summary.FileWriter):
     if isinstance(summary, summary_pb2.Summary):
       tf_summary = tf.Summary.FromString(summary.SerializeToString())
     else:
-      tf.logging.warn('Added TensorFlow summary proto. '
+      logger.warn('Added TensorFlow summary proto. '
                       'Please prefer TensorBoard copy of the proto')
       tf_summary = summary
     super(FileWriter, self).add_summary(tf_summary, global_step)
 
   def add_session_log(self, session_log, global_step=None):
     if isinstance(session_log, event_pb2.SessionLog):
-      tf_session_log = tf.SessionLog.FromString(session_log.SerializeToString())
+      tf_session_log = tf.compat.v1.SessionLog.FromString(session_log.SerializeToString())
     else:
-      tf.logging.warn('Added TensorFlow session_log proto. '
+      logger.warn('Added TensorFlow session_log proto. '
                       'Please prefer TensorBoard copy of the proto')
       tf_session_log = session_log
     super(FileWriter, self).add_session_log(tf_session_log, global_step)

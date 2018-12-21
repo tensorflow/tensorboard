@@ -23,6 +23,7 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
+    'absl-py >= 0.4',
     # futures is a backport of the python 3.2+ concurrent.futures module
     'futures >= 3.1.1; python_version < "3"',
     'grpcio >= 1.6.3',

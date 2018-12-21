@@ -18,9 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import logging
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # Directory into which to write tensorboard data.
 LOGDIR = '/tmp/text_demo'
@@ -34,8 +38,8 @@ def simple_example(step):
   # UTF-8. Here's a simple example, wherein we greet the user on each
   # step:
   step_string = tf.as_string(step)
-  greeting = tf.string_join(['Hello from step ', step_string, '!'])
-  tf.summary.text('greeting', greeting)
+  greeting = tf.strings.join(['Hello from step ', step_string, '!'])
+  tf.compat.v1.summary.text('greeting', greeting)
 
 
 def markdown_table(step):
@@ -55,12 +59,12 @@ def markdown_table(step):
   happiness = tf.square(chocolate + 1)
   chocolate_column = tf.as_string(chocolate)
   happiness_column = tf.as_string(happiness)
-  table_rows = tf.string_join([chocolate_column, " | ", happiness_column])
-  table_body = tf.reduce_join(table_rows, separator='\n')
-  table = tf.string_join([header_row, "---|---", table_body], separator='\n')
+  table_rows = tf.strings.join([chocolate_column, " | ", happiness_column])
+  table_body = tf.strings.reduce_join(inputs=table_rows, separator='\n')
+  table = tf.strings.join([header_row, "---|---", table_body], separator='\n')
   preamble = 'We conducted an experiment and found the following data:\n\n'
-  result = tf.string_join([preamble, table])
-  tf.summary.text('chocolate_study', result)
+  result = tf.strings.join([preamble, table])
+  tf.compat.v1.summary.text('chocolate_study', result)
 
 
 def higher_order_tensors(step):
@@ -81,7 +85,7 @@ def higher_order_tensors(step):
 
   # Next, we'll create a header row and column, and a little
   # multiplication sign to put in the corner.
-  bold_numbers = tf.string_join(['**', tf.as_string(numbers), '**'])
+  bold_numbers = tf.strings.join(['**', tf.as_string(numbers), '**'])
   bold_row = tf.expand_dims(bold_numbers, 0)
   bold_column = tf.expand_dims(bold_numbers, 1)
   corner_cell = tf.constant(u'\u00d7'.encode('utf-8'))  # MULTIPLICATION SIGN
@@ -95,12 +99,12 @@ def higher_order_tensors(step):
   # The result, `table_full`, is a rank-2 string tensor of shape
   # `[step + 1, step + 1]`. We can pass it directly to the summary, and
   # we'll get a nicely formatted table in TensorBoard.
-  tf.summary.text('multiplication_table', table_full)
+  tf.compat.v1.summary.text('multiplication_table', table_full)
 
 
 def run_all(logdir):
-  tf.reset_default_graph()
-  step_placeholder = tf.placeholder(tf.int32)
+  tf.compat.v1.reset_default_graph()
+  step_placeholder = tf.compat.v1.placeholder(tf.int32)
 
   with tf.name_scope('simple_example'):
     simple_example(step_placeholder)
@@ -108,9 +112,9 @@ def run_all(logdir):
     markdown_table(step_placeholder)
   with tf.name_scope('higher_order_tensors'):
     higher_order_tensors(step_placeholder)
-  all_summaries = tf.summary.merge_all()
+  all_summaries = tf.compat.v1.summary.merge_all()
 
-  with tf.Session() as sess:
+  with tf.compat.v1.Session() as sess:
     writer = tf.summary.FileWriter(logdir)
     writer.add_graph(sess.graph)
     for step in xrange(STEPS):
@@ -120,11 +124,11 @@ def run_all(logdir):
 
 
 def main(unused_argv):
-  tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Saving output to %s.' % LOGDIR)
+  logging.set_verbosity(logging.INFO)
+  logger.info('Saving output to %s.' % LOGDIR)
   run_all(LOGDIR)
-  tf.logging.info('Done. Output saved to %s.' % LOGDIR)
+  logger.info('Done. Output saved to %s.' % LOGDIR)
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  tf.compat.v1.app.run()

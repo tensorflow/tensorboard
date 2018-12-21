@@ -182,6 +182,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_absl_logging_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "tf_contrib_ffmpeg",
     # This is a dummy rule for the open source world, which indicates
     # that srcs dereference tf.contrib.ffmpeg.
@@ -267,9 +275,11 @@ py_binary(
     srcs = ["encode_png_benchmark.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -304,10 +314,12 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util",
         "//tensorboard/util:platform_util",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -337,25 +349,4 @@ py_library(
     name = "lazy",
     srcs = ["lazy.py"],
     srcs_version = "PY2AND3",
-)
-
-# For legacy use only. Do not add new dependencies on this target.
-py_library(
-    name = "util",
-    srcs = [],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/util:__init__",
-    ],
-)
-
-py_test(
-    name = "util_test",
-    size = "small",
-    srcs = ["util_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":util",
-    ],
 )

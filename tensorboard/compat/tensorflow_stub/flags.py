@@ -62,7 +62,7 @@ def _wrap_define_function(original_function):
 class _FlagValuesWrapper(object):
     """Wrapper class for absl.flags.FLAGS.
 
-    The difference is that tf.flags.FLAGS implicitly parses flags with sys.argv
+    The difference is that tf.compat.v1.flags.FLAGS implicitly parses flags with sys.argv
     when accessing the FLAGS values before it's explicitly parsed,
     while absl.flags.FLAGS raises an exception.
     """

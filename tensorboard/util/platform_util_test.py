@@ -12,31 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Legacy interface for `tensorboard.util` exports.
-
-Prefer importing modules directly: `from tensorboard.util import foo`.
-"""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
 
-from tensorboard.util import encoder
-from tensorboard.util import op_evaluator
-from tensorboard.util import util
+from tensorboard.util import platform_util
 
 
-encode_png = encoder.encode_png
-encode_wav = encoder.encode_wav
+class PlatformUtilTest(tf.test.TestCase):
 
-PersistentOpEvaluator = op_evaluator.PersistentOpEvaluator
+  def test_readahead_file_path(self):
+    self.assertEqual('foo/bar', platform_util.readahead_file_path('foo/bar'))
 
-Ansi = util.Ansi
-LogFormatter = util.LogFormatter
-LogHandler = util.LogHandler
-Retrier = util.Retrier
-close_all = util.close_all
-closeable = util.closeable
-guarded_by = util.guarded_by
-setup_logging = util.setup_logging
+
+if __name__ == '__main__':
+  tf.test.main()

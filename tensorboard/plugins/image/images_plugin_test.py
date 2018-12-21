@@ -38,6 +38,8 @@ from tensorboard.plugins.image import summary
 from tensorboard.plugins.image import images_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ImagesPluginTest(tf.test.TestCase):
 
@@ -49,11 +51,11 @@ class ImagesPluginTest(tf.test.TestCase):
     numpy.random.seed(42)
 
     # Create old-style image summaries for run "foo".
-    tf.reset_default_graph()
-    sess = tf.Session()
-    placeholder = tf.placeholder(tf.uint8)
-    tf.summary.image(name="baz", tensor=placeholder)
-    merged_summary_op = tf.summary.merge_all()
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    placeholder = tf.compat.v1.placeholder(tf.uint8)
+    tf.compat.v1.summary.image(name="baz", tensor=placeholder)
+    merged_summary_op = tf.compat.v1.summary.merge_all()
     foo_directory = os.path.join(self.log_dir, "foo")
     with test_util.FileWriterCache.get(foo_directory) as writer:
       writer.add_graph(sess.graph)
@@ -64,12 +66,12 @@ class ImagesPluginTest(tf.test.TestCase):
         }), global_step=step)
 
     # Create new-style image summaries for run bar.
-    tf.reset_default_graph()
-    sess = tf.Session()
-    placeholder = tf.placeholder(tf.uint8)
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    placeholder = tf.compat.v1.placeholder(tf.uint8)
     summary.op(name="quux", images=placeholder,
                description="how do you pronounce that, anyway?")
-    merged_summary_op = tf.summary.merge_all()
+    merged_summary_op = tf.compat.v1.summary.merge_all()
     bar_directory = os.path.join(self.log_dir, "bar")
     with test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)

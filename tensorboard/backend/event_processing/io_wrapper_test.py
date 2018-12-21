@@ -28,7 +28,7 @@ from tensorboard.backend.event_processing import io_wrapper
 
 class IoWrapperTest(tf.test.TestCase):
   def setUp(self):
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
 
   def tearDown(self):
     self.stubs.CleanUp()
