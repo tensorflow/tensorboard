@@ -48,7 +48,6 @@ limitations under the License.
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
-
 <!--
   A frontend that displays a set of editable examples and enables inference of those examples,
   visualizing the results.
@@ -222,8 +221,9 @@ limitations under the License.
       }
 
       .pr-line-chart {
-        height: 150px;
-        width: 250px;
+        margin: 6px;
+        height: 200px;
+        width: 300px;
         display: inline-block;
       }
 
@@ -467,14 +467,30 @@ limitations under the License.
         border-right: 1px solid lightgrey;
       }
 
-      .roc-and-conf-matrix {
-        display: flex;
-        width: 100%;
-        flex-wrap: wrap;
+      .roc-holder {
+        width: 300px;
+        position: relative;
       }
 
-      .roc-holder {
-        width: 250px;
+      .roc-x-label {
+        position: absolute;
+        bottom: 0;
+        left: 165px;
+        font-size: 12px;
+        color: #3c4043;
+        padding: 0px;
+        font-weight: 500;
+      }
+
+      .roc-y-label {
+        position: absolute;
+        left: 0;
+        bottom: 110px;
+        transform: rotate(270deg);
+        font-size: 12px;
+        color: #3c4043;
+        padding: 0px;
+        font-weight: 500;
       }
 
       .on-switch-button {
@@ -1157,7 +1173,7 @@ limitations under the License.
                         <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                           <div class="flex">
                             <paper-input value="{{incorrectPredCostRatio}}"
-                              label="Cost Ratio"
+                              label="Cost Ratio (FP/FN)"
                               type="number" class="threshold-cost-input">
                             </paper-input>
                             <div>
@@ -1291,115 +1307,140 @@ limitations under the License.
                       </div>
                     </button>
                     <iron-collapse class="no-padding-card" id="collapseperformance" opened="{{openedPerformance}}">
-                      <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                        <template is="dom-repeat" items="[[featureValueThresholds]]">
+                      <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
+                        <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
                           <div class="feature-breakdown">
-                            <div class="slider-label">[[getPrintableValue_(item)]]</div>
-                            <div class="flex">
-                              <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                            immediate-value="{{item.threshold}}" value="[[item.threshold]]"
-                                            on-value-changed="refreshInferencesNoRegen_">
-                              </paper-slider>
-                              <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold for this slice. Inference values at or above this threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
+                            <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
+                            <div class="flex-wrap">
+                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                <div>
+                                  <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[index]]</div>
+                                  <div class="flex">
+                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    </paper-slider>
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                      <div class="dialog-title">Exploring Classification Performance</div>
+                                      <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
+                                        above this
+                                        threshold
+                                        are considered a positive classification, while inference values below this threshold are considered
+                                        a negative classification.
+                                      </div>
+                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                        are updated as the classification threshold changes.
+                                      </div>
+                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                        false
+                                        positive rate (FPR) at various classification thresholds. Find out more
+                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                          here
+                                        </a>.
+                                      </div>
+                                    </paper-dialog>
                                   </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
-                              </div>
-                            </div>
-                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                              <div class="roc-and-conf-matrix">
+                                  <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                    <div>
+                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                        class="conf-matrix">
+                                      </tf-confusion-matrix>
+                                    </div>
+                                  </template>
+                                </div>
+                              </template>
+                              <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                                 <div class="roc-holder">
+                                  <div class="roc-x-label">FPR</div>
+                                  <div class="roc-y-label">TPR</div>
                                   <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                   </vz-line-chart>
                                 </div>
-                                <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, item.threshold, item)]]"
-                                                    class="conf-matrix">
-                                </tf-confusion-matrix>
-                              </div>
-                            </template>
+                              </template>
+                            </div>
                           </div>
                         </template>
-                        <template  is="dom-if" if="[[shouldShowOverallTresholder_(selectedBreakdownFeature)]]">
+                        <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
                           <div class="feature-breakdown">
                             <div class="slider-label">Threshold for positive classification</div>
-                            <div class="flex">
-                              <paper-slider class="slider" editable=true min="0" max="1" step="0.01"
-                                            immediate-value="{{overallThreshold}}" value="[[overallThreshold]]">
-                              </paper-slider>
-                              <div>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
+                            <div class="flex-wrap">
+                              <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
+                                <div>
+                                  <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
+                                  <div class="flex">
+                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
+                                      value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    </paper-slider>
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                      <div class="dialog-title">Exploring Classification Performance</div>
+                                      <div>Use this slider to adjust the classification threshold. Inference values at or above this
+                                        threshold
+                                        are considered a positive classification, while inference values below this threshold are considered
+                                        a negative classification.
+                                      </div>
+                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                        are updated as the classification threshold changes.
+                                      </div>
+                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                        false
+                                        positive rate (FPR) at various classification thresholds. Find out more
+                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                          here
+                                        </a>.
+                                      </div>
+                                    </paper-dialog>
                                   </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
-                              </div>
+                                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                    <div>
+                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                        class="conf-matrix"></tf-confusion-matrix>
+                                      </tf-confusion-matrix>
+                                    </div>
+                                  </template>
+                                </div>
+                              </template>
+                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                <div class="roc-holder">
+                                  <div class="roc-x-label">FPR</div>
+                                  <div class="roc-y-label">TPR</div>
+                                  <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                  </vz-line-chart>
+                                </div>
+                              </template>
                             </div>
                           </div>
-                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                            <div class="roc-and-conf-matrix">
-                              <div class="roc-holder">
-                                <vz-line-chart id="prchart" class="pr-line-chart"
-                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
-                              </div>
-                              <tf-confusion-matrix counts="[[getConfusionCounts(inferenceStats_, overallThreshold)]]"
-                                                  class="conf-matrix"></tf-confusion-matrix>
-                              </tf-confusion-matrix>
-                            </div>
-                          </template>
                         </template>
                       </template>
-                      <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]">
+                      <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
                         <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_)]]"
-                                                class="conf-matrix">
-                          </tf-confusion-matrix>
+                          <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
+                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat)]]"
+                                                  class="conf-matrix">
+                            </tf-confusion-matrix>
+                          </template>
                         </template>
                         <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <template is="dom-repeat" items="[[featureValueThresholds]]">
+                          <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
                             <div class="feature-breakdown">
-                              <paper-input value="[[getPrintableValue_(item)]]" readonly=true
+                              <paper-input value="[[getPrintableValue_(featureValueThreshold)]]" readonly=true
                                             class="facet-label" no-label-float=true>
                               </paper-input>
-                              <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, item)]]"
-                                                    class="conf-matrix">
-                              </tf-confusion-matrix>
+                              <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
+                                <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat, featureValueThreshold)]]"
+                                                      class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
                             </div>
                           </template>
                         </template>
                       </template>
-                      <template is="dom-if" if="[[isRegression_(modelType)]]">
+                      <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
                         <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
                       </template>
                     </iron-collapse>
@@ -1510,7 +1551,7 @@ limitations under the License.
     const inferenceErrorStr = ' Inference error';
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
-    const inferenceScoreStr = ' Inference score ';
+    const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Example ID';
     const classificationResultsKey = 'probabilities';
     const regressionResultsKey = 'score';
@@ -1572,6 +1613,7 @@ limitations under the License.
           value: () => ({})
         },
         // Examples and their inferences merged into a single list.
+        // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
         examplesAndInferences : {
           type: Array,
           value: () => ([]),
@@ -1652,8 +1694,8 @@ limitations under the License.
         },
         // Calculated statistics from the inference results.
         inferenceStats_: {
-          type: Object,
-          value: () => ({}),
+          type: Array,
+          value: () => ([]),
         },
         // Array of feature values and their set classification thresholds, for
         // Polymer display purposes.
@@ -1669,11 +1711,10 @@ limitations under the License.
           observer: 'refreshInferences_',
         },
         // The classification threshold when it isn't being set on a
-        // per-feature-value basis.
-        overallThreshold: {
-          type: Number,
-          value: 0.5,
-          observer: 'refreshInferencesNoRegen_',
+        // per-feature-value basis. One per model.
+        overallThresholds: {
+          type: Array,
+          value: () => ([]),
         },
         // Which side-tab is selected.
         sideTabSelected: {
@@ -1824,6 +1865,12 @@ limitations under the License.
           type: Boolean,
           readOnly: true,
         },
+        // Number of models, only updated when user clicks "Accept" in settings
+        // pane
+        numModels: {
+          type: Number,
+          readOnly: true,
+        },
       },
 
       observers: [
@@ -1922,16 +1969,19 @@ limitations under the License.
         this.findClosestCounterfactual_(true);
       },
 
+      // TODO (tolgab) Update for model comparison
       findClosestCounterfactual_: function(useL2Distance) {
         this.neighborByL2 = useL2Distance;
         const selected = this.selected[0];
+        const modelInferenceValueStr =
+            this.strWithModelIndex_(inferenceValueStr, 0);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
           // Skip examples with the same inference class as the selected
           // examples.
-          if (this.visdata[selected][inferenceValueStr] ==
-              this.visdata[i][inferenceValueStr]) {
+          if (this.visdata[selected][modelInferenceValueStr] ==
+              this.visdata[i][modelInferenceValueStr]) {
             continue;
           }
           let dist = this.getDist(
@@ -2184,13 +2234,41 @@ limitations under the License.
         return features;
       },
 
+      strStartsWith_: function(inStr, prefixStr){
+        return inStr.lastIndexOf(prefixStr, 0) == 0;
+      },
+
+      strWithModelIndex_: function(inStr, modelNumber){
+        if (this.numModels > 1){
+          return inStr + ' ' + (modelNumber + 1);
+        } else {
+          return inStr
+        }
+      },
+
+      updateNumberOfModels_: function () {
+        this._setNumModels(this.modelName.split(',').length);
+        // Initialize default overall thresholds
+        this.selectedLabelFeature = '';
+        this.selectedBreakdownFeature = '';
+        this.selectedSecondBreakdownFeature = '';
+        const overallThresholds = [];
+        for (let modelInd = 0; modelInd < this.numModels; modelInd++) {
+          overallThresholds.push({threshold: 0.5})
+        }
+        this.set('overallThresholds', overallThresholds);
+      },
+
       isComputedKeyStr_: function(feature) {
-        return feature == inferenceValueStr || feature == inferenceLabelStr
-            || feature == inferenceCorrectStr || feature == inferenceErrorStr
-            || feature.lastIndexOf(inferenceScoreStr, 0) == 0
-            || feature == inferenceAbsErrorStr
-            || feature == inferenceSquaredErrorStr || feature == exampleIdKey
-            || this.facetDistFeatureNames.indexOf(feature) != -1
+        return this.strStartsWith_(feature, inferenceValueStr)
+            || this.strStartsWith_(feature, inferenceLabelStr)
+            || this.strStartsWith_(feature, inferenceCorrectStr)
+            || this.strStartsWith_(feature, inferenceErrorStr)
+            || this.strStartsWith_(feature, inferenceScoreStr)
+            || this.strStartsWith_(feature, inferenceAbsErrorStr)
+            || this.strStartsWith_(feature, inferenceSquaredErrorStr)
+            || feature == exampleIdKey
+            || this.facetDistFeatureNames.indexOf(feature) != -1;
       },
 
       /**
@@ -2236,8 +2314,14 @@ limitations under the License.
                     ? undefined : this.stats[feature1].valueHash[key1].value;
                   const feature2Value = key2 == 'undefined'
                     ? undefined : this.stats[feature2].valueHash[key2].value;
+                  // Deep copy thresholds for each facet
+                  const modelThresholds = []
+                  for (let i = 0; i < this.overallThresholds.length; i++) {
+                    modelThresholds.push(
+                      {threshold: this.overallThresholds[i].threshold});
+                  }
                   const thresh = {value: feature1Value, value2: feature2Value,
-                                  threshold: this.overallThreshold};
+                                  threshold: modelThresholds};
                   thresholds.push(thresh);
                   const mapKey = this.createCombinedValueString_(
                     feature1Value, feature2Value);
@@ -2247,8 +2331,8 @@ limitations under the License.
             }
           }
         }
-        this.featureValueThresholds = thresholds;
-        this.featureValueThresholdsMap = thresholdsMap;
+        this.set('featureValueThresholds', thresholds);
+        this.set('featureValueThresholdsMap', thresholdsMap);
         this.refreshInferences_(false);
       },
 
@@ -2274,196 +2358,243 @@ limitations under the License.
        * stats.
        */
       updateInferenceStats_: function(regenInferenceStats) {
+        // In the case user changes the number of models without refreshing
+        // the page:
+        // - The code may enter updateInferenceStats before
+        // examplesAndInferences is updated for the correct number of models
+        // - This may get called without regenInferenceStats, but
+        // inferenceStats still contains the results for the old number of
+        // models
         if (!this.inferenceStats_ || !this.visdata ||
             this.selectedLabelFeature == '' ||
             this.examplesAndInferences.length == 0 ||
-            this.examplesAndInferences[0].inferences == null) {
+            this.examplesAndInferences[0].inferences == null ||
+            this.examplesAndInferences[0].inferences[0].length
+              != this.numModels ||
+            (this.inferenceStats_.length != this.numModels &&
+              !regenInferenceStats)) {
           return;
         }
         if (regenInferenceStats) {
-          let inferenceStats = {};
-          if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
-            // For binary classifiers, update the confusion matrices values for
-            // all possible classification thresholds.
-            inferenceStats.thresholds = [];
-            for (let i = 0; i < 101; i++) {
-              inferenceStats.thresholds.push(
-                {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-            }
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = []
-                  for (let i = 0; i < 101; i++) {
-                    inferenceStats.faceted[facetKey].push(
-                        {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
-                  }
+          const inferenceStatsArray = [];
+          const regressionEntries = [];
+          for (let modelInd = 0; modelInd < this.numModels;
+              modelInd++) {
+            let inferenceStats = {};
+            if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+              // For binary classifiers, update the confusion matrices values
+              // for all possible classification thresholds.
+              inferenceStats.thresholds = [];
+              for (let i = 0; i < 101; i++) {
+                inferenceStats.thresholds.push(
+                  {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+              }
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
-                }
-              }
-              const nonZeroClassification =
-                this.getClassificationBestNonZero(i);
-              let thresh = 0;
-              for (; thresh <= 100; thresh++) {
-                if (thresh > nonZeroClassification.score * 100) {
-                  break;
-                }
-                if (+item[this.selectedLabelFeature] ==
-                    +nonZeroClassification.label) {
-                  inferenceStats.thresholds[thresh]['TP'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['TP'] += 1;
-                  }
-                } else {
-                  inferenceStats.thresholds[thresh]['FP'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['FP'] += 1;
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = []
+                    for (let i = 0; i < 101; i++) {
+                      inferenceStats.faceted[facetKey].push(
+                          {'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0});
+                    }
+                    facetedStats = inferenceStats.faceted[facetKey];
                   }
                 }
-              }
-              for (; thresh <= 100; thresh++) {
-                if (item[this.selectedLabelFeature] == null ||
-                    +item[this.selectedLabelFeature] == 0) {
-                  inferenceStats.thresholds[thresh]['TN'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['TN'] += 1;
+                const nonZeroClassification =
+                  this.getClassificationBestNonZero(i, modelInd);
+                let thresh = 0;
+                for (; thresh <= 100; thresh++) {
+                  if (thresh > nonZeroClassification.score * 100) {
+                    break;
                   }
-                } else {
-                  inferenceStats.thresholds[thresh]['FN'] += 1;
-                  if (facetedStats) {
-                    facetedStats[thresh]['FN'] += 1;
+                  if (+item[this.selectedLabelFeature] ==
+                      +nonZeroClassification.label) {
+                    inferenceStats.thresholds[thresh]['TP'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['TP'] += 1;
+                    }
+                  } else {
+                    inferenceStats.thresholds[thresh]['FP'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['FP'] += 1;
+                    }
+                  }
+                }
+                for (; thresh <= 100; thresh++) {
+                  if (item[this.selectedLabelFeature] == null ||
+                      +item[this.selectedLabelFeature] == 0) {
+                    inferenceStats.thresholds[thresh]['TN'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['TN'] += 1;
+                    }
+                  } else {
+                    inferenceStats.thresholds[thresh]['FN'] += 1;
+                    if (facetedStats) {
+                      facetedStats[thresh]['FN'] += 1;
+                    }
                   }
                 }
               }
-            }
-            this.calcThresholdStats(inferenceStats.thresholds);
-            for(let key in inferenceStats.faceted) {
-              if (inferenceStats.faceted.hasOwnProperty(key)) {
-                this.calcThresholdStats(inferenceStats.faceted[key]);
+              this.calcThresholdStats(inferenceStats.thresholds);
+              for(let key in inferenceStats.faceted) {
+                if (inferenceStats.faceted.hasOwnProperty(key)) {
+                  this.calcThresholdStats(inferenceStats.faceted[key]);
+                }
               }
-            }
-          } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
-            // For multi-class classifiers, update the confusion matrices.
-            inferenceStats.results = {};
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = {};
+            } else if (this.isMultiClass_(this.modelType, this.multiClass)) {
+              // For multi-class classifiers, update the confusion matrices.
+              inferenceStats.results = {};
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = {};
+                    facetedStats = inferenceStats.faceted[facetKey];
+                  }
                 }
-              }
-              let statsActual =
-                inferenceStats.results[item[this.selectedLabelFeature]];
-              if (!statsActual) {
-                inferenceStats.results[item[this.selectedLabelFeature]] = {};
-                statsActual =
+                let statsActual =
                   inferenceStats.results[item[this.selectedLabelFeature]];
-              }
-              let count = statsActual[item[inferenceValueStr]];
-              if (count == null) {
-                statsActual[item[inferenceValueStr]] = 1;
-              } else {
-                statsActual[item[inferenceValueStr]] += 1;
-              }
-              if (facetedStats) {
-                let statsActual = facetedStats[item[this.selectedLabelFeature]];
                 if (!statsActual) {
-                  facetedStats[item[this.selectedLabelFeature]] = {};
-                  statsActual = facetedStats[item[this.selectedLabelFeature]];
+                  inferenceStats.results[item[this.selectedLabelFeature]] = {};
+                  statsActual =
+                    inferenceStats.results[item[this.selectedLabelFeature]];
                 }
-                let count = statsActual[item[inferenceValueStr]];
+                const modelInferenceValueStr =
+                  this.strWithModelIndex_(inferenceValueStr, modelInd);
+                let count = statsActual[item[modelInferenceValueStr]];
                 if (count == null) {
-                  statsActual[item[inferenceValueStr]] = 1;
+                  statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
-                  statsActual[item[inferenceValueStr]] += 1;
+                  statsActual[item[modelInferenceValueStr]] += 1;
+                }
+                if (facetedStats) {
+                  let statsActual =
+                    facetedStats[item[this.selectedLabelFeature]];
+                  if (!statsActual) {
+                    facetedStats[item[this.selectedLabelFeature]] = {};
+                    statsActual = facetedStats[item[this.selectedLabelFeature]];
+                  }
+                  let count = statsActual[item[modelInferenceValueStr]];
+                  if (count == null) {
+                    statsActual[item[modelInferenceValueStr]] = 1;
+                  } else {
+                    statsActual[item[modelInferenceValueStr]] += 1;
+                  }
                 }
               }
-            }
-          } else {
-            // For regression models, calculate inference error.
-            inferenceStats.results = {errors: []};
-            inferenceStats.faceted = {};
-            for (let i = 0; i < this.examplesAndInferences.length; i++) {
-              const item = this.visdata[i];
-              let facetedStats = null;
-              if (this.selectedBreakdownFeature != '') {
-                const facetKey = this.createCombinedValueString_(
-                  item[this.selectedBreakdownFeature],
-                  item[this.selectedSecondBreakdownFeature]);
-                facetedStats = inferenceStats.faceted[facetKey];
-                if (!facetedStats) {
-                  inferenceStats.faceted[facetKey] = {errors: []};
+            } else {
+              // For regression models, calculate inference error.
+              inferenceStats.results = {errors: []};
+              inferenceStats.faceted = {};
+              for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                const item = this.visdata[i];
+                let facetedStats = null;
+                if (this.selectedBreakdownFeature != '') {
+                  const facetKey = this.createCombinedValueString_(
+                    item[this.selectedBreakdownFeature],
+                    item[this.selectedSecondBreakdownFeature]);
                   facetedStats = inferenceStats.faceted[facetKey];
+                  if (!facetedStats) {
+                    inferenceStats.faceted[facetKey] = {errors: []};
+                    facetedStats = inferenceStats.faceted[facetKey];
+                  }
+                }
+                const inferenceError =
+                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+                   item[this.selectedLabelFeature];
+                inferenceStats.results.errors.push(inferenceError);
+                if (facetedStats) {
+                  facetedStats.errors.push(inferenceError);
                 }
               }
-              const inferenceError =
-                item[inferenceValueStr] - item[this.selectedLabelFeature];
-              inferenceStats.results.errors.push(inferenceError);
-              if (facetedStats) {
-                facetedStats.errors.push(inferenceError);
+              regressionEntries.push(
+                this.fillInRegressionStats(inferenceStats.results,
+                  this.formatChartKey('Total', modelInd, this.numModels)));
+              for (let key in inferenceStats.faceted) {
+                regressionEntries.push(
+                  this.fillInRegressionStats(inferenceStats.faceted[key],
+                    this.formatChartKey(key, modelInd, this.numModels)));
               }
             }
-
-            const regressionEntries = [];
-            regressionEntries.push(
-              this.fillInRegressionStats(inferenceStats.results, 'Total'));
-            for (let key in inferenceStats.faceted) {
-              regressionEntries.push(
-                this.fillInRegressionStats(inferenceStats.faceted[key], key));
-            }
-            regressionEntries.sort((a, b) => b.count - a.count);
-            this.regressionEntries_ = [];
-            this.regressionEntries_ = regressionEntries;
+            inferenceStatsArray.push(inferenceStats);
           }
-
-          this.inferenceStats_ = inferenceStats;
+          regressionEntries.sort((a, b) => b.count - a.count);
+          this.regressionEntries_ = [];
+          this.regressionEntries_ = regressionEntries;
+          this.inferenceStats_ = inferenceStatsArray;
         }
 
-        const temp = this.featureValueThresholds;
+        // Assigning to tempArray to force polymer to update the array.
+        // Polymer does not recognize updates to elements within the array
+        const tempArray = this.featureValueThresholds;
         this.featureValueThresholds = [];
-        temp.sort((a, b) => {
+        // featureValueThresholds are sorted by number of samples per group
+        // so that the groups appear from larger to smaller in GUI
+        // Since group counts are model agnostic we only sort w.r.t. the
+        // statistics of the first model
+        // a, b here are only used to identify facet key string so we don't
+        // have to index by model
+        const inferenceStats = this.inferenceStats_[0];
+        tempArray.sort((a, b) => {
           if (this.isRegression_(this.modelType)) {
-            return this.getRegressionCount(this.inferenceStats_, b) -
-                this.getRegressionCount(this.inferenceStats_, a);
+            return this.getRegressionCount(inferenceStats, b) -
+                this.getRegressionCount(inferenceStats, a);
           } else if (this.isBinaryClassification_(
             this.modelType, this.multiClass)) {
-            return this.getBinaryClassificationCount(this.inferenceStats_, b) -
-                this.getBinaryClassificationCount(this.inferenceStats_, a);
+            return this.getBinaryClassificationCount(inferenceStats, b) -
+                this.getBinaryClassificationCount(inferenceStats, a);
           } else {
             return this.getMulticlassClassificationCount(
-              this.inferenceStats_, b) - this.getMulticlassClassificationCount(
-                this.inferenceStats_, a);
+              inferenceStats, b) - this.getMulticlassClassificationCount(
+                inferenceStats, a);
           }
         });
-        this.featureValueThresholds = temp;
+        this.featureValueThresholds = tempArray;
 
-        this.plotPr(
-          this.$$('#prchart'), this.inferenceStats_.thresholds,
-          this.overallThreshold, regenInferenceStats);
-
-        for (let i = 0; i < this.featureValueThresholds.length; i++) {
-          const key = this.createCombinedValueString_(
-            this.featureValueThresholds[i].value,
-            this.featureValueThresholds[i].value2);
+        // ROC curves should only exist for the binary case
+        if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
+            const plotStats = [];
+            const plotThresholds = [];
+            const modelThresholds = this.featureValueThresholds[i].threshold;
+            for (let modelInd = 0; modelInd < modelThresholds.length;
+              modelInd++) {
+              const inferenceStats = this.inferenceStats_[modelInd];
+              const key = this.createCombinedValueString_(
+                this.featureValueThresholds[i].value,
+                this.featureValueThresholds[i].value2);
+              plotStats.push(inferenceStats.faceted[key]);
+              plotThresholds.push(modelThresholds[modelInd].threshold)
+            }
+            this.plotPr(
+              this.$$('#' + this.getPrChartId(i)),
+              plotStats,
+              plotThresholds,
+              regenInferenceStats);
+          }
+          const plotStats = [];
+          const plotThresholds = [];
+          for (let modelInd = 0; modelInd < this.inferenceStats_.length;
+            modelInd++) {
+            plotStats.push(this.inferenceStats_[modelInd].thresholds);
+            plotThresholds.push(this.overallThresholds[modelInd].threshold);
+          }
           this.plotPr(
-            this.$$('#' + this.getPrChartId(i)),
-            this.inferenceStats_.faceted[key],
-            this.featureValueThresholds[i].threshold,
-            regenInferenceStats);
+            this.$$('#prchart'), plotStats,
+            plotThresholds, regenInferenceStats);
         }
         this.updateCorrectness_();
       },
@@ -2493,36 +2624,47 @@ limitations under the License.
 
       /**
        * Plots a PR purve given data to plot.
+       * thresholdstats and thresholds are arrays, indexed by model number
        */
-      plotPr: function(chart, thresholdStats, threshold,
+      plotPr: function(chart, thresholdStats, thresholds,
                        regenInferenceStats) {
-        if (!thresholdStats || !chart) {
+        if (!thresholdStats || !thresholdStats[0] || !chart) {
           return;
         }
-
-        let currentThresholdData = null;
-        let self = this;
-        const data = thresholdStats.map((thresh, i) => {
-          if (i - threshold * 100 < 0.5) {
-            currentThresholdData = {
+        const visibleCharts = []
+        for (let modelInd = 0; modelInd < thresholdStats.length; modelInd++) {
+          let currentThresholdData = null;
+          const data = thresholdStats[modelInd].map((thresh, i) => {
+            // This finds the furthest point on the line that is below the
+            // current threshold
+            if (i - thresholds[modelInd] * 100 < 0.5) {
+              currentThresholdData = {
+                'step': thresh['FPR'],
+                'scalar': thresh['TPR'],
+                'threshold': i / 100
+              };
+            }
+            return {
               'step': thresh['FPR'],
               'scalar': thresh['TPR'],
               'threshold': i / 100
             };
+          }).reverse();
+          chart.setSeriesData(
+            this.strWithModelIndex_('Threshold set', modelInd),
+            [currentThresholdData]);
+          if (regenInferenceStats) {
+            chart.setSeriesData(this.strWithModelIndex_('ROC', modelInd), data);
+            visibleCharts.push(this.strWithModelIndex_('ROC', modelInd));
+            visibleCharts.push(
+              this.strWithModelIndex_('Threshold set', modelInd));
           }
-          return {
-            'step': thresh['FPR'],
-            'scalar': thresh['TPR'],
-            'threshold': i / 100
-          };
-        }).reverse();
+        }
         if (regenInferenceStats) {
-          chart.setVisibleSeries(['ROC', 'Threshold set']);
-          chart.setSeriesData('ROC', data);
           const valueFormatter = d3.format('.2f');
           chart.xAxisFormatter = d3.format('.2f');
           const percentageFormatter = d3.format(",.1%");
-          chart.tooltipColumns = [
+          const tooltipColumns = [
             {
                 title: 'Threshold',
                 evaluate: function (d) {
@@ -2542,8 +2684,22 @@ limitations under the License.
                 },
             },
           ];
+          // When more than one model is available, make tooltip show an extra
+          // column for model id
+          if (thresholdStats.length > 1){
+            tooltipColumns.push(
+              {
+                title: 'Model',
+                evaluate: function (d) {
+                  const modelId = d.dataset.metadata().name.split(' ');
+                  return modelId[modelId.length - 1];
+                },
+              }
+            );
+          }
+          chart.tooltipColumns = tooltipColumns;
+          chart.setVisibleSeries(visibleCharts);
         }
-        chart.setSeriesData('Threshold set', [currentThresholdData]);
       },
 
       /**
@@ -2566,38 +2722,40 @@ limitations under the License.
         }
       },
 
-      forceUpdateFeatureValueThresholds_: function() {
-        const thresholds = this.featureValueThresholds;
-        this.featureValueThresholds = [];
-        this.featureValueThresholds = thresholds;
-      },
-
       optimizeThresholdClicked_: function() {
         // Find the optimal threshold for all examples, then set all thresholds
         // to that value.
-        const thresholdToSet =
-          this.findOptimalThreshold_(this.inferenceStats_.thresholds);
-        this.overallThreshold = thresholdToSet;
-        if (this.featureValueThresholds) {
-          for (let i = 0; i < this.featureValueThresholds.length; i++) {
-            const thresholdPath = 'featureValueThresholds.' + i + '.threshold';
-            this.set(thresholdPath, thresholdToSet);
+        for (let modelInd = 0; modelInd < this.inferenceStats_.length;
+            modelInd++) {
+          const thresholdToSet =
+            this.findOptimalThreshold_(
+              this.inferenceStats_[modelInd].thresholds);
+          this.set('overallThresholds.' + modelInd + '.threshold',
+            thresholdToSet);
+          if (this.featureValueThresholds) {
+            for (let i = 0; i < this.featureValueThresholds.length; i++) {
+              const thresholdPath = 'featureValueThresholds.' + i +
+                '.threshold.' + modelInd + '.threshold';
+              this.set(thresholdPath, thresholdToSet);
+            }
           }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       optimizeFacetedThresholdsClicked_: function() {
         // For each faceted set of examples, find the optimal threshold and
         // set it.
-        const values = Object.keys(this.inferenceStats_.faceted);
-        for (let i = 0; i < values.length; i++) {
-          const featureValue = values[i];
-          const thresholdToSet = this.findOptimalThreshold_(
-            this.inferenceStats_.faceted[featureValue]);
-          this.set('featureValueThresholds.' + i + '.threshold', thresholdToSet);
+        for (let modelInd = 0; modelInd < this.inferenceStats_.length;
+            modelInd++) {
+          const values = Object.keys(this.inferenceStats_[modelInd].faceted);
+          for (let i = 0; i < values.length; i++) {
+            const featureValue = values[i];
+            const thresholdToSet = this.findOptimalThreshold_(
+              this.inferenceStats_[modelInd].faceted[featureValue]);
+            this.set('featureValueThresholds.' + i + '.threshold.' + modelInd +
+              '.threshold', thresholdToSet);
+          }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       /**
@@ -2647,43 +2805,47 @@ limitations under the License.
         //     current threshold
         //   Calculate cost for these threshold settings settings across the
         //   facets, and save if the lowest.
-        let minCost = Number.POSITIVE_INFINITY;
-        let bestThresholds = null;
-        const values = Object.keys(this.inferenceStats_.faceted);
-        const firstFacet = this.inferenceStats_.faceted[values[0]];
-        for (let i = 0; i < firstFacet.length; i++) {
-          const firstFacetMeasure = fairnessCalculator(firstFacet[i]);
-          const facetThresholds = [i];
-          let cost = this.getCost(firstFacet[i]);
-          for (let facetIdx = 1; facetIdx < values.length; facetIdx++) {
-            const currentFacet = this.inferenceStats_.faceted[values[facetIdx]];
-            const currentFacetThreshold = this.thresholdClosestToMeasure(
-              currentFacet, firstFacetMeasure, fairnessCalculator);
-            facetThresholds.push(currentFacetThreshold);
-            cost += this.getCost(currentFacet[currentFacetThreshold])
-          }
-          if (cost <= minCost) {
-            minCost = cost;
-            bestThresholds = facetThresholds;
-          }
-        }
-
-        // Set all thresholds to the setting with the lowest cost from the above
-        // search.
-        for (let i = 0; i < this.featureValueThresholds.length; i++) {
-          let thresholdIndex = 0;
-          for (let vIdx = 0; vIdx < values.length; vIdx++) {
-            const valueString =
-              this.getPrintableValue_(this.featureValueThresholds[i]);
-            if (valueString == values[vIdx]) {
-              thresholdIndex = vIdx;
-              break;
+        for (let modelInd = 0; modelInd < this.inferenceStats_.length;
+            modelInd++) {
+          let minCost = Number.POSITIVE_INFINITY;
+          let bestThresholds = null;
+          const modelStats = this.inferenceStats_[modelInd];
+          const values = Object.keys(modelStats.faceted);
+          const firstFacet = modelStats.faceted[values[0]];
+          for (let i = 0; i < firstFacet.length; i++) {
+            const firstFacetMeasure = fairnessCalculator(firstFacet[i]);
+            const facetThresholds = [i];
+            let cost = this.getCost(firstFacet[i]);
+            for (let facetIdx = 1; facetIdx < values.length; facetIdx++) {
+              const currentFacet = modelStats.faceted[values[facetIdx]];
+              const currentFacetThreshold = this.thresholdClosestToMeasure(
+                currentFacet, firstFacetMeasure, fairnessCalculator);
+              facetThresholds.push(currentFacetThreshold);
+              cost += this.getCost(currentFacet[currentFacetThreshold])
+            }
+            if (cost <= minCost) {
+              minCost = cost;
+              bestThresholds = facetThresholds;
             }
           }
-          this.set('featureValueThresholds.' + i + '.threshold',
-            bestThresholds[thresholdIndex] / 100);
+
+          // Set all thresholds to the setting with the lowest cost from the
+          // above search.
+          for (let vIdx = 0; vIdx < values.length; vIdx++) {
+            this.set('featureValueThresholdsMap.' + values[vIdx] +
+              '.threshold.' + modelInd + '.threshold',
+              bestThresholds[vIdx] / 100 );
+          }
+          // Polymer does not reflect changes if we only update through
+          // featureValueThresholdsMap, this is a quick workaround
+          // until we find the correct way to link
+          for (let i = 0; i < this.featureValueThresholds.length; i++) {
+            const value =
+                this.featureValueThresholds[i].threshold[modelInd].threshold;
+            this.set('featureValueThresholds.' + i + '.threshold.' + modelInd +
+              '.threshold', value);
+          }
         }
-        this.forceUpdateFeatureValueThresholds_();
       },
 
       /**
@@ -2716,22 +2878,38 @@ limitations under the License.
        * Finds the first inference label in the score-sorted list that is
        * non-zero.
        */
-      getClassificationBestNonZero: function(index) {
-        // TODO(tolgab) Generalize this to multiple models
+      getClassificationBestNonZero: function(index, modelIndex) {
         let indexForNonZeroLabel = 0;
-        const inferenceIndex = this.examplesAndInferences[index].inferences.length - 1;
+        const inferenceIndex =
+          this.examplesAndInferences[index].inferences.length - 1;
         for (let i = 0;
              i < this.examplesAndInferences[index].inferences[
-               inferenceIndex][0].length;
+               inferenceIndex][modelIndex].length;
              i++) {
           if (+this.examplesAndInferences[index].inferences[
-              inferenceIndex][0][i].label !== 0) {
+              inferenceIndex][modelIndex][i].label !== 0) {
             indexForNonZeroLabel = i;
             break;
           }
         }
-        return this.examplesAndInferences[index].inferences[inferenceIndex][0][
-          indexForNonZeroLabel];
+        return this.examplesAndInferences[index].inferences[
+          inferenceIndex][modelIndex][indexForNonZeroLabel];
+      },
+
+      /**
+       * Gets confusion counts for a single model index modelInd
+       */
+      getConfusionCountsModelIndex: function (inferenceStats, thresholds,
+          modelInd, item) {
+        // During updates inferenceStats and overallThresholds may get out of
+        // sync, this if protects against indexing them before final state
+        if (this.overallThresholds.length != this.numModels ||
+            this.inferenceStats_.length != this.numModels) {
+          return {};
+        } else {
+          return this.getConfusionCounts(this.inferenceStats_[modelInd],
+            thresholds[modelInd].threshold, item);
+        }
       },
 
       /**
@@ -2837,11 +3015,15 @@ limitations under the License.
       },
 
       getBinaryClassificationCount: function(classificationStats, facetItem) {
+        // stat[0] because we only need to count one threshold in binary case
         return this.getInferenceStat(classificationStats, facetItem,
           stat => Object.values(stat[0]).reduce((a, b) => a + b), null);
       },
 
-      getMulticlassClassificationCount: function(classificationStats, facetItem) {
+      getMulticlassClassificationCount: function(classificationStats,
+          facetItem) {
+        // stat because in multi class case inferenceStats does not have
+        // thresholds
         return this.getInferenceStat(classificationStats, facetItem,
           stat => Object.values(stat).reduce((a, b) => a + b), null);
       },
@@ -2890,7 +3072,7 @@ limitations under the License.
         return cls;
       },
 
-      shouldShowOverallTresholder_: function(feature) {
+      shouldShowOverallThresholder_: function(feature) {
         return feature.length === 0;
       },
 
@@ -3007,34 +3189,42 @@ limitations under the License.
        */
       updateInferences_: function(newInferencesCalculated) {
         if (!this.examplesAndInferences || !this.inferences.indices ||
-            this.inferences.indices.length == 0) {
+            this.inferences.indices.length == 0 ||
+            this.inferences.results.length != this.numModels) {
           return;
         }
         // Create map of example indices to inference results.
+        // inferenceMap: sample id -> # Models -> # Labels
         const inferenceMap = {}
-        const isClassification = !!this.inferences.results[0].classificationResult;
+        const isClassification =
+          !!this.inferences.results[0].classificationResult;
         for (let i = 0; i < this.inferences.indices.length; i++) {
           if (isClassification) {
             inferenceMap[this.inferences.indices[i]] = [];
             for (let modelNum = 0; modelNum < this.inferences.results.length;
                  modelNum++){
-              const result = this.inferences.results[modelNum].classificationResult;
+              const result =
+                this.inferences.results[modelNum].classificationResult;
               // For models that don't return any labels for the classes, fill
               // them out with class indicies.
-              for (let j = 0; j < result.classifications[i].classes.length; j++) {
+              for (let j = 0; j < result.classifications[i].classes.length;
+                  j++) {
                 if (result.classifications[i].classes[j].label == '') {
                   result.classifications[i].classes[j].label = j.toString();
                 }
               }
               inferenceMap[this.inferences.indices[i]][modelNum] =
-                  result.classifications[i].classes.sort((a, b) => b.score - a.score);
+                  result.classifications[i].classes.sort(
+                    (a, b) => b.score - a.score);
             }
           } else {
             inferenceMap[this.inferences.indices[i]] = [];
-            // TODO(tolgab) Generalize regression to multiple models
-            const result = this.inferences.results[0].regressionResult;
-            inferenceMap[this.inferences.indices[i]][0] =
-                [{label: '', score: result.regressions[i].value}];
+            for (let modelNum = 0; modelNum < this.inferences.results.length;
+              modelNum++) {
+              const result = this.inferences.results[modelNum].regressionResult;
+              inferenceMap[this.inferences.indices[i]][modelNum] =
+                [{ label: '', score: result.regressions[i].value }];
+            }
           }
         }
         // Set the inferences in the examplesAndInferences structure, updating
@@ -3056,10 +3246,13 @@ limitations under the License.
               item, index, self.selectedBreakdownFeature,
               self.selectedSecondBreakdownFeature);
           } else {
-            item[inferenceValueStr] =
-              self.examplesAndInferences[index].inferences[
-                self.examplesAndInferences[index].inferences.length - 1][0][
-                  0].score;
+            for (let modelInd = 0; modelInd < self.numModels;
+                 modelInd++) {
+              item[self.strWithModelIndex_(inferenceValueStr, modelInd)] =
+                self.examplesAndInferences[index].inferences[
+                  self.examplesAndInferences[index].inferences.length - 1][
+                  modelInd][0].score;
+            }
           }
 
           // If there is a label vocab for classification, set the string
@@ -3085,7 +3278,11 @@ limitations under the License.
                 }
               }
             }
-            item[inferenceLabelStr] = self.labelVocab[item[inferenceValueStr]];
+            for (let modelInd = 0; modelInd < self.numModels; modelInd++) {
+              item[self.strWithModelIndex_(inferenceLabelStr, modelInd)] =
+                self.labelVocab[
+                  item[self.strWithModelIndex_(inferenceValueStr, modelInd)]];
+            }
             hasInferenceLabels = true;
           }
         });
@@ -3093,11 +3290,12 @@ limitations under the License.
         this.refreshDive_();
 
         // If inferring from new examples, set the color in facets dive to
-        // inference results. When reinferring from changes, don't override
-        // whatever coloring has been set.
+        // inference results of the first model. When reinferring from changes,
+        // don't override whatever coloring has been set.
         if (newInferencesCalculated) {
           this.$.dive.colorBy =
-            hasInferenceLabels ? inferenceLabelStr : inferenceValueStr;
+            hasInferenceLabels ? this.strWithModelIndex_(inferenceLabelStr, 0)
+              : this.strWithModelIndex_(inferenceValueStr, 0);
         }
         this.updatedExample = false;
       },
@@ -3109,48 +3307,35 @@ limitations under the License.
         const inferenceIdx =
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
-          item[inferenceValueStr] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][0][0].label;
+          for (let i = 0; i < this.numModels; i++){
+            item[this.strWithModelIndex_(inferenceValueStr, i)] =
+            this.examplesAndInferences[index].inferences[inferenceIdx][i][
+              0].label;
+          }
           return;
         }
 
         // Binary classifier case.
-        let threshold = this.overallThreshold;
+        let thresholds = this.overallThresholds;
         // If a feature has been selected (string will be non-empty in this
         // case), then get the appropriate threshold for this item's value for
         // that feature. Otherwise the overall threshold will be used.
         if (feature1.length !== 0) {
-          let key = this.createCombinedValueString_(item[feature1], item[feature2]);
-          threshold = this.featureValueThresholdsMap[key].threshold;
+          let key =
+            this.createCombinedValueString_(item[feature1], item[feature2]);
+          thresholds = this.featureValueThresholdsMap[key].threshold;
         }
-
-        // Find the first inference label in the score-sorted list that is
-        // non-zero.
-        let indexForNonZeroLabel = 0;
-        for (let i = 0;
-             i < this.examplesAndInferences[index].inferences[
-               inferenceIdx][0].length;
-             i++) {
-          if (+this.examplesAndInferences[index].inferences[
-            inferenceIdx][0][i].label !== 0) {
-            indexForNonZeroLabel = i;
-            break;
-          }
-        }
-
-        let n_models = this.examplesAndInferences[index].inferences[
-          inferenceIdx].length;
-        for (let modelNum = 0; modelNum < n_models; modelNum++){
-          item[inferenceScoreStr + (modelNum + 1)] =
-            this.examplesAndInferences[index].inferences[inferenceIdx][
-              modelNum][indexForNonZeroLabel].score;
-          if (this.examplesAndInferences[index].inferences[inferenceIdx][
-            0][indexForNonZeroLabel].score >= threshold) {
-            item[inferenceValueStr] =
-              this.examplesAndInferences[index].inferences[inferenceIdx][0][
-                indexForNonZeroLabel].label;
+        for (let modelNum = 0; modelNum < this.numModels; modelNum++){
+          const nonZeroClassification =
+            this.getClassificationBestNonZero(index, modelNum);
+          item[this.strWithModelIndex_(inferenceScoreStr, modelNum)] =
+            nonZeroClassification.score;
+          if (nonZeroClassification.score >= thresholds[modelNum].threshold) {
+            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+              nonZeroClassification.label;
           } else {
-            item[inferenceValueStr] = this.defaultInferenceLabel.toString();
+            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+              this.defaultInferenceLabel.toString();
           }
         }
       },
@@ -3173,16 +3358,25 @@ limitations under the License.
         }
         for (let i = 0; i < this.examplesAndInferences.length; i++) {
           const item = this.visdata[i];
-          if (this.modelType == 'classification') {
-            item[inferenceCorrectStr] =
-              item[this.selectedLabelFeature] == item[inferenceValueStr]
-                ? "correct" : "incorrect";
-          } else {
-            item[inferenceErrorStr] =
-              item[inferenceValueStr] - item[this.selectedLabelFeature];
-            item[inferenceAbsErrorStr] = Math.abs(item[inferenceErrorStr]);
-            item[inferenceSquaredErrorStr] =
-              item[inferenceErrorStr] * item[inferenceErrorStr];
+          for (let modelInd = 0; modelInd < this.numModels;
+              modelInd++){
+            if (this.modelType == 'classification') {
+              item[this.strWithModelIndex_(inferenceCorrectStr, modelInd)] =
+                item[this.selectedLabelFeature] ==
+                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)]
+                    ? "correct" : "incorrect";
+            } else {
+              item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] =
+                item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+                  item[this.selectedLabelFeature];
+              item[this.strWithModelIndex_(inferenceAbsErrorStr, modelInd)] =
+                Math.abs(
+                  item[this.strWithModelIndex_(inferenceErrorStr, modelInd)]);
+              item[this.strWithModelIndex_(inferenceSquaredErrorStr,
+               modelInd)] =
+                item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] *
+                 item[this.strWithModelIndex_(inferenceErrorStr, modelInd)];
+            }
           }
         }
       },
@@ -3423,7 +3617,12 @@ limitations under the License.
 
       getExamplesAndCloseSettings_: function() {
         this.settingsClicked_();
+        this.updateNumberOfModels_();
         this.getExamples_();
+      },
+
+      showModelNumbers_: function() {
+        return this.numModels <= 1;
       },
 
       /**
@@ -3662,59 +3861,120 @@ limitations under the License.
       },
 
       makeBarChart: function(featureName, data){
-        // categorical data:
-        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721817},
-        //        {"step": ["Married-AF-spouse"], "scalar": 0.153403326869010}]}
+        // array of categorical data objects (keys are labels):
+        // {"1": [{"step": ["Divorced"], "scalar": 0.1533520370721},
+        //    {"step": ["Married-AF-spouse"], "scalar": 0.153403326869}]},
+        // one object per model
 
-        function convertPoint(point){
+        function convertPoint(point, origKey){
           // point: {"step": ["Divorced"], "scalar": 0.1533520370721817}
           return {
-            x: point.step,
+            x: (point.step ==
+              origKey) ? point.step + ' - original value' : point.step,
             y: point.scalar
           };
         };
 
-        // Make a series for the current value of the feature to show in the
-        // plot.
+        // Overwrite the key for original value so that it reads under the bar
+        let origKey = '';
+        const firstModelValues = data[0];
         if (!this.globalPdPlots) {
           const origValEntry =
-            this.createPdEntryForCurrentValue(featureName, data);
+            this.createPdEntryForCurrentValue(featureName, firstModelValues, 0);
           if (origValEntry) {
-            let indexOfOrigValInData = -1;
-            const origKey = _.keys(data)[0];
-            const origData = data[origKey];
-            for (let i = 0; i < origData.length; i++) {
-              if (origData[i].step == origValEntry.step) {
-                indexOfOrigValInData = i;
-                break;
-              }
-            }
-            if (indexOfOrigValInData != -1) {
-              origData.splice(indexOfOrigValInData, 1);
-            }
-            data[origKey + ' - original value'] = [origValEntry];
+            origKey = origValEntry.step;
           }
         }
 
         // Convert the data into the format expected by vz-bar-chart.
-        const mapped = _.mapValues(data, function(pointsForSeries){
-          return _.map(pointsForSeries, point => convertPoint(point));
+        // Stack models and labels so that each (model,label) is a separate
+        // series
+        const mapped = {};
+        _.forEach(data, (modelValues, modelInd) => {
+          const obj = _.forEach(modelValues,
+            (pointsForSeries, labelKey) => {
+              mapped[this.formatChartKey(labelKey, modelInd, data.length)] =
+                _.map(pointsForSeries, point => convertPoint(point, origKey));
+            });
         });
+
+
+        const toolTipColumns = [
+          {
+              title: 'Inference value',
+              evaluate: d => {
+                const splitLabel =
+                    this.splitChartKey(d.key, data.length);
+                let label = splitLabel.label;
+                if (!isNaN(label) && label.length > 0 && this.labelVocab) {
+                  const index = +label;
+                  if (index < this.labelVocab.length && index >= 0) {
+                    label += ' (' + this.labelVocab[index] + ')';
+                  }
+                }
+                return label;
+              }
+          },
+          {
+              title: 'Feature value',
+              evaluate: d => d.value.x,
+          },
+          {
+              title: 'Score',
+              evaluate: d => d.value.y,
+          },
+        ];
+        // If there is more than 1 model, show model number tooltip
+        if (data.length >= 2){
+          toolTipColumns.push(
+            {
+              title: 'Model',
+              evaluate: d => {
+                const label = this.splitChartKey(d.key, data.length);
+                return label.model;
+              }
+            });
+        }
 
         const chart = document.createElement('vz-bar-chart');
         chart.data = mapped;
+        chart.tooltipColumns = toolTipColumns;
 
         return chart;
       },
 
+      splitChartKey: function (labelKey, numberOfModels){
+          // If there is model key split it, otherwise just return original
+          // label (index i) (model m) -> label (index #), m
+          let keyToChart = labelKey;
+          let modelToChart = '';
+          if (numberOfModels >= 2) {
+            const indexOfModelStr = labelKey.indexOf('(model');
+            keyToChart = labelKey.substring(0, indexOfModelStr);
+            modelToChart =
+              labelKey.substring(indexOfModelStr + 7,
+                labelKey.indexOf(')', indexOfModelStr));
+          }
+          return {'label': keyToChart, 'model': modelToChart};
+      },
+
+      formatChartKey: function (labelKey, modelInd, numberOfModels) {
+        if (numberOfModels == 1) {
+          return labelKey;
+        } else {
+          return labelKey + ' (model ' + (modelInd + 1) + ')'
+        }
+      },
+
       makeLineChart: function(featureName, data){
         // numerical data:
-        // {"1": [{"step": 19.0, "scalar": 0.09157766401767731},
-        //        {"step": 23.444444444444443, "scalar": 0.10299546271562576}]}
+        // {"0" (model id):
+        //     {"1" (label): [{"step": 19.0, "scalar": 0.09157766401767},
+        //        {"step": 23.444444444444443, "scalar": 0.10299546271562}]}}
 
         const chart = document.createElement('vz-line-chart');
         chart.colorScale = new Plottable.Scales.Color().range(
-          [d3.schemeCategory10[1], d3.schemeCategory10[0]]);
+          d3.schemeCategory10);
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
           vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = function (x) {
@@ -3723,11 +3983,14 @@ limitations under the License.
         if (this.modelType == 'classification') {
           chart.defaultYRange = [0, 1];
         }
-        chart.tooltipColumns = [
+        const toolTipColumns = [
           {
               title: 'Inference value',
               evaluate: d => {
-                let label = d.dataset.metadata().name;
+                const splitLabel =
+                    this.splitChartKey(d.dataset.metadata().name,
+                      data.length);
+                let label = splitLabel.label;
                 if (!isNaN(label) && label.length > 0 && this.labelVocab) {
                   const index = +label;
                   if (index < this.labelVocab.length && index >= 0) {
@@ -3746,23 +4009,48 @@ limitations under the License.
               evaluate: d => formatValueOrNaN(d.datum.scalar),
           },
         ];
+        // If there is more than 1 model, show model number tooltip
+        if (data.length >= 2) {
+          toolTipColumns.push(
+            {
+              title: 'Model',
+              evaluate: d => {
+                const label = this.splitChartKey(d.dataset.metadata().name,
+                  data.length);
+                return label.model;
+              }
+            });
+        }
+        chart.tooltipColumns = toolTipColumns;
 
-        // Make a series for the current value of the feature to show in the
-        // plot.
-        if (!this.globalPdPlots) {
-          const origValEntry =
-            this.createPdEntryForCurrentValue(featureName, data);
-          if (origValEntry) {
-            const origKey = _.keys(data)[0];
-            data[origKey + ' - original value'] = [origValEntry];
+        const allSeries = [];
+        for (let modelInd = 0; modelInd < data.length; modelInd++){
+          const modelData = data[modelInd];
+          const series = _.keys(modelData);
+          series.forEach(label => {
+            const thisLabel = this.formatChartKey(label, modelInd, data.length);
+            chart.setSeriesData(thisLabel, modelData[label]);
+            allSeries.push(thisLabel);
+          });
+          // Make a series for the current value of the feature to show in the
+          // plot.
+          if (!this.globalPdPlots) {
+            const origValEntry =
+              this.createPdEntryForCurrentValue(featureName, modelData,
+                modelInd);
+            if (origValEntry) {
+              const showKey = this.formatChartKey(
+                _.keys(modelData)[0] + ' - original value ', modelInd,
+                  data.length);
+              chart.setSeriesData(showKey, [origValEntry]);
+              allSeries.push(showKey);
+            }
           }
         }
-
-        const series = _.keys(data);
-        chart.setVisibleSeries(series);
-        series.forEach(label => chart.setSeriesData(label, data[label]));
         chart.xAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
         chart.yAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
+        chart.colorScale.domain(allSeries);
+        chart.setVisibleSeries(allSeries);
         return chart;
       },
 
@@ -3770,7 +4058,7 @@ limitations under the License.
        * Helper for making a partial dependence plot entry for the current
        * value for a feature.
        */
-      createPdEntryForCurrentValue: function(featureName, data) {
+      createPdEntryForCurrentValue: function(featureName, data, modelInd) {
         // Extract the class and feature value index from the key of the PD
         // chart data .
         const key = _.keys(data)[0];
@@ -3788,9 +4076,8 @@ limitations under the License.
           origValue = origValue[indexForValue];
         }
 
-        // TODO(tolgab) Generalize this to multiple models
         const inferences = this.selectedExampleAndInference.inferences[
-          this.selectedExampleAndInference.inferences.length - 1][0];
+          this.selectedExampleAndInference.inferences.length - 1][modelInd];
         let origInferenceScore = -1;
         for (let i = 0; i < inferences.length; i++) {
           if (inferences[i].label == classToChart.toString() ||
@@ -3819,7 +4106,7 @@ limitations under the License.
         // Delete spinner
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
-
+        // A separate chart per feature index for features with multiple values
         data.forEach(
           subfeature => this.addChart(chartType, featureName, subfeature));
       },

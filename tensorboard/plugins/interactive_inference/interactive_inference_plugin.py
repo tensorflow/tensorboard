@@ -22,18 +22,21 @@ import json
 import math
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
 
 from google.protobuf import json_format
 from grpc.framework.interfaces.face.face import AbortionError
 from werkzeug import wrappers
 
+import tensorflow as tf
+
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
-
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -257,17 +260,17 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     vocab_path = request.args.get('label_vocab_path')
     if vocab_path:
       try:
-        with tf.gfile.GFile(vocab_path, 'r') as f:
+        with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
           label_vocab = [line.rstrip('\n') for line in f]
       except tf.errors.NotFoundError as err:
-        tf.logging.error('error reading vocab file: %s', err)
+        logger.error('error reading vocab file: %s', err)
         label_vocab = []
     else:
       label_vocab = []
 
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                     'application/json', code=405)
 
@@ -322,7 +325,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
     def generate_image_from_thubnails(thumbnails, thumbnail_dims):
       """Generates a sprite atlas image from a set of thumbnails."""
-      num_thumbnails = tf.shape(thumbnails)[0].eval()
+      num_thumbnails = tf.shape(input=thumbnails)[0].eval()
       images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
       thumb_height = thumbnail_dims[0]
       thumb_width = thumbnail_dims[1]
@@ -340,12 +343,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         master[top_start:top_end, left_start:left_end, :] = image
       return tf.image.encode_png(master)
 
-    with tf.Session():
+    with tf.compat.v1.Session():
       keys_to_features = {
           self.image_feature_name:
-              tf.FixedLenFeature((), tf.string, default_value=''),
+              tf.io.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.parse_example(examples, keys_to_features)
+      parsed = tf.io.parse_example(serialized=examples, features=keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (self.sprite_thumbnail_dim_px,
@@ -358,7 +361,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       def loop_body(i, encoded_images, images):
         encoded_image = encoded_images[i]
         image = tf.image.decode_jpeg(encoded_image, channels=3)
-        resized_image = tf.image.resize_images(image, thumbnail_dims)
+        resized_image = tf.compat.v1.image.resize_images(image, thumbnail_dims)
         expanded_image = tf.expand_dims(resized_image, 0)
         images = tf.cond(
             tf.equal(i, 0), lambda: expanded_image,
@@ -366,8 +369,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         return i + 1, encoded_images, images
 
       loop_out = tf.while_loop(
-          lambda i, encoded_images, images: tf.less(i, num_examples),
-          loop_body, [i, encoded_images, images],
+          cond=lambda i, encoded_images, images: tf.less(i, num_examples),
+          body=loop_body, loop_vars=[i, encoded_images, images],
           shape_invariants=[
               i.get_shape(),
               encoded_images.get_shape(),
@@ -421,7 +424,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                  'application/json', code=405)
 
@@ -433,24 +436,24 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       (inference_addresses, model_names, model_versions,
           model_signatures) = self._parse_request_arguments(request)
 
-      # TODO(tolgab) Generalize this to multiple models
-      model_num = 0
-      serving_bundle = inference_utils.ServingBundle(
-          inference_addresses[model_num],
-          model_names[model_num],
-          request.args.get('model_type'),
-          model_versions[model_num],
-          model_signatures[model_num],
-          request.args.get('use_predict') == 'true',
-          request.args.get('predict_input_tensor'),
-          request.args.get('predict_output_tensor'))
+      serving_bundles = []
+      for model_num in xrange(len(inference_addresses)):
+        serving_bundles.append(inference_utils.ServingBundle(
+            inference_addresses[model_num],
+            model_names[model_num],
+            request.args.get('model_type'),
+            model_versions[model_num],
+            model_signatures[model_num],
+            request.args.get('use_predict') == 'true',
+            request.args.get('predict_input_tensor'),
+            request.args.get('predict_output_tensor')))
 
       viz_params = inference_utils.VizParams(
           request.args.get('x_min'), request.args.get('x_max'),
           self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
           request.args.get('feature_index_pattern'))
       json_mapping = inference_utils.mutant_charts_for_feature(
-          examples, feature_name, serving_bundle, viz_params)
+          examples, feature_name, serving_bundles, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},

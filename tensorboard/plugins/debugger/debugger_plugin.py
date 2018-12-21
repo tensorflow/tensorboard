@@ -34,7 +34,10 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
+
+logger = tb_logging.get_logger()
 
 # HTTP routes.
 _HEALTH_PILLS_ROUTE = '/health_pills'
@@ -211,12 +214,12 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       # run in many different environments, as it is open-source.
       # TODO(@caisq, @chihuahua): Create platform-dependent adapter to catch
       # specific types of exceptions, instead of the broad catching here.
-      tf.logging.error('Could not decode node name JSON string %r: %s',
+      logger.error('Could not decode node name JSON string %r: %s',
                        jsonified_node_names, e)
       return wrappers.Response(status=400)
 
     if not isinstance(node_names, list):
-      tf.logging.error('%r is not a JSON list of node names:',
+      logger.error('%r is not a JSON list of node names:',
                        jsonified_node_names)
       return wrappers.Response(status=400)
 
@@ -239,7 +242,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
         mapping = self._obtain_health_pills_at_step(
             events_directory, node_names, step)
       except IOError as error:
-        tf.logging.error(
+        logger.error(
             'Error retrieving health pills for step %d: %s', step, error)
         return wrappers.Response(status=404)
 
@@ -291,7 +294,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
               self._tensor_proto_to_health_pill(tensor_event, node_name,
                                                 device_name, output_slot))
         except (KeyError, ValueError) as e:
-          tf.logging.error('Could not determine device from JSON string '
+          logger.error('Could not determine device from JSON string '
                            '%r: %r', json_string, e)
 
       mapping[node_name] = health_pills
@@ -381,7 +384,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
     events_loader = event_file_loader.EventFileLoader(file_path)
     for event in events_loader.Load():
       if not event.HasField('summary'):
-        tf.logging.warning(
+        logger.warn(
             'An event in a debugger events file lacks a summary.')
         continue
 
@@ -404,26 +407,26 @@ class DebuggerPlugin(base_plugin.TBPlugin):
             content = json.loads(
                 tf.compat.as_text(summary_metadata.plugin_data.content))
           except ValueError as err:
-            tf.logging.warning(
+            logger.warn(
                 'Could not parse the JSON string containing data for '
                 'the debugger plugin: %r, %r', content, err)
             continue
           device_name = content['device']
           output_slot = content['outputSlot']
         else:
-          tf.logging.error(
+          logger.error(
               'No debugger plugin data found for event with tag %s and node '
               'name %s.', value.tag, value.node_name)
           continue
 
         if not value.HasField('tensor'):
-          tf.logging.warning(
+          logger.warn(
               'An event in a debugger events file lacks a tensor value.')
           continue
 
         match = re.match(r'^(.*):(\d+):DebugNumericSummary$', value.node_name)
         if not match:
-          tf.logging.warning(
+          logger.warn(
               ('A event with a health pill has an invalid watch, (i.e., an '
                'unexpected debug op): %r'), value.node_name)
           return None
@@ -511,7 +514,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       A werkzeug BaseResponse object.
     """
     if request.method != 'GET':
-      tf.logging.error(
+      logger.error(
           '%s requests are forbidden by the debugger plugin.', request.method)
       return wrappers.Response(status=405)
 

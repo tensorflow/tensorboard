@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import os
 from werkzeug import wrappers
 
@@ -31,6 +30,9 @@ from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 # The prefix of routes provided by this plugin.
 PLUGIN_NAME = 'profile'
@@ -112,7 +114,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
 
   def _run_dir(self, run):
     run_dir = os.path.join(self.plugin_logdir, run)
-    return run_dir if tf.gfile.IsDirectory(run_dir) else None
+    return run_dir if tf.io.gfile.isdir(run_dir) else None
 
   def start_grpc_stub_if_necessary(self):
     # We will enable streaming trace viewer on two conditions:
@@ -169,11 +171,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
     #           profile/
     #             host2.trace
     run_to_tools = {}
-    if not tf.gfile.IsDirectory(self.plugin_logdir):
+    if not tf.io.gfile.isdir(self.plugin_logdir):
       return run_to_tools
 
     self.start_grpc_stub_if_necessary()
-    for run in tf.gfile.ListDirectory(self.plugin_logdir):
+    for run in tf.io.gfile.listdir(self.plugin_logdir):
       run_dir = self._run_dir(run)
       if not run_dir:
         continue
@@ -182,11 +184,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
         tool_pattern = '*' + TOOLS[tool]
         path = os.path.join(run_dir, tool_pattern)
         try:
-          files = tf.gfile.Glob(path)
+          files = tf.io.gfile.glob(path)
           if len(files) >= 1:
             run_to_tools[run].append(tool)
         except tf.errors.OpError as e:
-          logging.warning("Cannot read asset directory: %s, OpError %s",
+          logger.warn("Cannot read asset directory: %s, OpError %s",
                           run_dir, e)
       if 'trace_viewer@' in run_to_tools[run]:
         # streaming trace viewer always override normal trace viewer.
@@ -235,18 +237,18 @@ class ProfilePlugin(base_plugin.TBPlugin):
         {"host1", "host2", "host3"} for the example.
     """
     hosts = {}
-    if not tf.gfile.IsDirectory(self.plugin_logdir):
+    if not tf.io.gfile.isdir(self.plugin_logdir):
       return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
-      logging.warning("Cannot find asset directory: %s", run_dir)
+      logger.warn("Cannot find asset directory: %s", run_dir)
       return hosts
     tool_pattern = '*' + TOOLS[tool]
     try:
-      files = tf.gfile.Glob(os.path.join(run_dir, tool_pattern))
+      files = tf.io.gfile.glob(os.path.join(run_dir, tool_pattern))
       hosts = [os.path.basename(f).replace(TOOLS[tool], '') for f in files]
     except tf.errors.OpError as e:
-      logging.warning("Cannot read asset directory: %s, OpError %s",
+      logger.warn("Cannot read asset directory: %s, OpError %s",
                       run_dir, e)
     return hosts
 
@@ -301,12 +303,12 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      with tf.gfile.Open(asset_path, 'rb') as f:
+      with tf.compat.v1.gfile.Open(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
-      logging.warning('Asset path %s not found', asset_path)
+      logger.warn('Asset path %s not found', asset_path)
     except tf.errors.OpError as e:
-      logging.warning("Couldn't read asset path: %s, OpError %s", asset_path, e)
+      logger.warn("Couldn't read asset path: %s, OpError %s", asset_path, e)
 
     if raw_data is None:
       return None

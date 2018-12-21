@@ -29,7 +29,10 @@ from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 namedtuple = collections.namedtuple
 
@@ -267,7 +270,7 @@ class EventAccumulator(object):
       new_file_version = _ParseFileVersion(event.file_version)
       if self.file_version and self.file_version != new_file_version:
         ## This should not happen.
-        tf.logging.warn(('Found new file_version for event.proto. This will '
+        logger.warn(('Found new file_version for event.proto. This will '
                          'affect purging logic for TensorFlow restarts. '
                          'Old: {0} New: {1}').format(self.file_version,
                                                      new_file_version))
@@ -283,7 +286,7 @@ class EventAccumulator(object):
     # inside the meta_graph_def.
     if event.HasField('graph_def'):
       if self._graph is not None:
-        tf.logging.warn(
+        logger.warn(
             ('Found more than one graph event per run, or there was '
              'a metagraph containing a graph_def, as well as one or '
              'more graph events.  Overwriting the graph with the '
@@ -292,17 +295,17 @@ class EventAccumulator(object):
       self._graph_from_metagraph = False
     elif event.HasField('meta_graph_def'):
       if self._meta_graph is not None:
-        tf.logging.warn(('Found more than one metagraph event per run. '
+        logger.warn(('Found more than one metagraph event per run. '
                          'Overwriting the metagraph with the newest event.'))
       self._meta_graph = event.meta_graph_def
       if self._graph is None or self._graph_from_metagraph:
         # We may have a graph_def in the metagraph.  If so, and no
         # graph_def is directly available, use this one instead.
-        meta_graph = tf.MetaGraphDef()
+        meta_graph = tf.compat.v1.MetaGraphDef()
         meta_graph.ParseFromString(self._meta_graph)
         if meta_graph.graph_def:
           if self._graph is not None:
-            tf.logging.warn(
+            logger.warn(
                 ('Found multiple metagraphs containing graph_defs,'
                  'but did not find any graph events.  Overwriting the '
                  'graph with the newest metagraph version.'))
@@ -311,7 +314,7 @@ class EventAccumulator(object):
     elif event.HasField('tagged_run_metadata'):
       tag = event.tagged_run_metadata.tag
       if tag in self._tagged_metadata:
-        tf.logging.warn('Found more than one "run metadata" event with tag ' +
+        logger.warn('Found more than one "run metadata" event with tag ' +
                         tag + '. Overwriting it with the newest event.')
       self._tagged_metadata[tag] = event.tagged_run_metadata.run_metadata
     elif event.HasField('summary'):
@@ -334,7 +337,7 @@ class EventAccumulator(object):
                 self._plugin_to_tag_to_content[plugin_data.plugin_name][tag] = (
                     plugin_data.content)
             else:
-              tf.logging.warn(
+              logger.warn(
                   ('This summary with tag %r is oddly not associated with a '
                    'plugin.'), tag)
 
@@ -375,7 +378,7 @@ class EventAccumulator(object):
     Returns:
       The `graph_def` proto.
     """
-    graph = tf.GraphDef()
+    graph = tf.compat.v1.GraphDef()
     if self._graph is not None:
       graph.ParseFromString(self._graph)
       return graph
@@ -392,7 +395,7 @@ class EventAccumulator(object):
     """
     if self._meta_graph is None:
       raise ValueError('There is no metagraph in this EventAccumulator')
-    meta_graph = tf.MetaGraphDef()
+    meta_graph = tf.compat.v1.MetaGraphDef()
     meta_graph.ParseFromString(self._meta_graph)
     return meta_graph
 
@@ -411,7 +414,7 @@ class EventAccumulator(object):
     if tag not in self._tagged_metadata:
       raise ValueError('There is no run metadata with this tag name')
 
-    run_metadata = tf.RunMetadata()
+    run_metadata = tf.compat.v1.RunMetadata()
     run_metadata.ParseFromString(self._tagged_metadata[tag])
     return run_metadata
 
@@ -475,7 +478,7 @@ class EventAccumulator(object):
         previously seen events with a greater event.step will be purged.
     """
     if event.HasField(
-        'session_log') and event.session_log.status == tf.SessionLog.START:
+        'session_log') and event.session_log.status == tf.compat.v1.SessionLog.START:
       self._Purge(event, by_tags=False)
 
   def _CheckForOutOfOrderStepAndMaybePurge(self, event):
@@ -547,7 +550,7 @@ class EventAccumulator(object):
       purge_msg = _GetPurgeMessage(self.most_recent_step,
                                    self.most_recent_wall_time, event.step,
                                    event.wall_time, num_expired)
-      tf.logging.warn(purge_msg)
+      logger.warn(purge_msg)
 
 
 def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
@@ -589,7 +592,7 @@ def _ParseFileVersion(file_version):
   except ValueError:
     ## This should never happen according to the definition of file_version
     ## specified in event.proto.
-    tf.logging.warn(
+    logger.warn(
         ('Invalid event.proto file_version. Defaulting to use of '
          'out-of-order event.step logic for purging expired events.'))
     return -1

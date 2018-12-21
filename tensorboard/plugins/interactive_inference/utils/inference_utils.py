@@ -435,15 +435,15 @@ def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
   return mutant_features, mutant_examples
 
 
-def mutant_charts_for_feature(example_protos, feature_name, serving_bundle,
+def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
                               viz_params):
   """Returns JSON formatted for rendering all charts for a feature.
 
   Args:
     example_proto: The example protos to mutate.
     feature_name: The string feature name to mutate.
-    serving_bundle: A `ServingBundle` object that contains the information to
-      make the serving request.
+    serving_bundles: One `ServingBundle` object per model, that contains the
+      information to make the serving request.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Raises:
@@ -463,11 +463,14 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundle,
     mutant_features, mutant_examples = make_mutant_tuples(
         example_protos, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = platform_utils.call_servo(
-        mutant_examples, serving_bundle)
-    return make_json_formatted_for_single_chart(mutant_features,
+    charts = []
+    for serving_bundle in serving_bundles:
+      inference_result_proto = platform_utils.call_servo(mutant_examples,
+        serving_bundle)
+      charts.append(make_json_formatted_for_single_chart(mutant_features,
                                                 inference_result_proto,
-                                                index_to_mutate)
+                                                index_to_mutate))
+    return charts
 
   try:
     original_feature = parse_original_feature_from_example(

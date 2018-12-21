@@ -19,23 +19,27 @@ from __future__ import print_function
 import pickle
 
 from google.protobuf import message
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 import tensorflow as tf
 
+logger = tb_logging.get_logger()
+
 
 def write_file(contents, path, mode='wb'):
-  with tf.gfile.Open(path, mode) as new_file:
+  with tf.compat.v1.gfile.Open(path, mode) as new_file:
     new_file.write(contents)
 
 
 def read_tensor_summary(path):
-  with tf.gfile.Open(path, 'rb') as summary_file:
+  with tf.compat.v1.gfile.Open(path, 'rb') as summary_file:
     summary_string = summary_file.read()
 
   if not summary_string:
     raise message.DecodeError('Empty summary.')
 
-  summary_proto = tf.Summary()
+  summary_proto = summary_pb2.Summary()
   summary_proto.ParseFromString(summary_string)
   tensor_proto = summary_proto.value[0].tensor
   array = tensor_util.make_ndarray(tensor_proto)
@@ -44,18 +48,18 @@ def read_tensor_summary(path):
 
 
 def write_pickle(obj, path):
-  with tf.gfile.Open(path, 'wb') as new_file:
+  with tf.compat.v1.gfile.Open(path, 'wb') as new_file:
     pickle.dump(obj, new_file)
 
 
 def read_pickle(path, default=None):
   try:
-    with tf.gfile.Open(path, 'rb') as pickle_file:
+    with tf.compat.v1.gfile.Open(path, 'rb') as pickle_file:
       result = pickle.load(pickle_file)
 
   except (IOError, EOFError, ValueError, tf.errors.NotFoundError) as e:
     if not isinstance(e, tf.errors.NotFoundError):
-      tf.logging.error('Error reading pickle value: %s', e)
+      logger.error('Error reading pickle value: %s', e)
     if default is not None:
       result = default
     else:

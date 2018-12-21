@@ -27,6 +27,7 @@ from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.custom_scalar import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 class LayoutTest(tf.test.TestCase):
@@ -84,7 +85,7 @@ class LayoutTest(tf.test.TestCase):
         ])
 
     # Write the data as a summary for the '.' run.
-    with tf.Session() as s, tf.summary.FileWriter(self.logdir) as writer:
+    with tf.compat.v1.Session() as s, test_util.FileWriterCache.get(self.logdir) as writer:
       writer.add_summary(s.run(summary.op(layout_proto_to_write)))
 
     # Read the data from disk.

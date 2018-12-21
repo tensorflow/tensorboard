@@ -31,8 +31,10 @@ from werkzeug import utils
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
-from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 class CorePlugin(base_plugin.TBPlugin):
@@ -161,7 +163,7 @@ class CorePlugin(base_plugin.TBPlugin):
         try:
           return self._multiplexer.FirstEventTimestamp(run_name)
         except ValueError:
-          tf.logging.warning(
+          logger.warn(
               'Unable to get first event timestamp for run %s', run_name)
           # Put runs without a timestamp at the end.
           return float('inf')

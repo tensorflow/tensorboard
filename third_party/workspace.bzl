@@ -14,9 +14,11 @@
 
 # TensorBoard external dependencies that can be loaded in WORKSPACE files.
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_bazel_rules_closure//closure/private:java_import_external.bzl", "java_import_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
+load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:polymer.bzl", "tensorboard_polymer_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
@@ -30,7 +32,7 @@ def tensorboard_workspace():
   tensorboard_typings_workspace()
   tensorboard_js_workspace()
 
-  native.new_http_archive(
+  http_archive(
       name = "com_google_protobuf_js",
       strip_prefix = "protobuf-3.6.0/js",
       sha256 = "50a5753995b3142627ac55cfd496cebc418a2e575ca0236e29033c67bd5665f4",
@@ -47,40 +49,42 @@ def tensorboard_workspace():
       actual = "@org_pythonhosted_six",
   )
 
-  filegroup_external(
-      name = "org_chromium_chromedriver",
-      licenses = ["notice"],  # Apache 2.0
-      sha256_urls = {
-          "687d2e15c42908e2911344c08a949461b3f20a83017a7a682ef4d002e05b5d46": [
-              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip",
-              "http://chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip",
-          ],
-      },
-      sha256_urls_macos = {
-          "3fd49c2782a5f93cb48ff2dee021004d9a7fb393798e4c4807b391cedcd30ed9": [
-              "https://mirror.bazel.build/chromedriver.storage.googleapis.com/2.44/chromedriver_mac64.zip",
-              "http://chromedriver.storage.googleapis.com/2.44/chromedriver_mac64.zip",
-          ],
-      },
-      generated_rule_name = "archive",
+  platform_http_file(
+      name = "org_chromium_chromium",
+      licenses = ["notice"],  # BSD 3-clause (maybe more?)
+      amd64_sha256 =
+          "6933d0afce6e17304b62029fbbd246cbe9e130eb0d90d7682d3765d3dbc8e1c8",
+      amd64_urls = [
+          "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/561732/chrome-linux.zip",
+      ],
+      macos_sha256 =
+          "084884e91841a923d7b6e81101f0105bbc3b0026f9f6f7a3477f5b313ee89e32",
+      macos_urls = [
+          "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/561733/chrome-mac.zip",
+      ],
+      windows_sha256 =
+          "d1bb728118c12ea436d8ea07dba980789e7d860aa664dd1fad78bc20e8d9391c",
+      windows_urls = [
+          "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/540270/chrome-win32.zip",
+      ],
   )
 
-  # Last Updated: 2018-11-29
-  # Roughly corresponds to Chrome 70
-  filegroup_external(
-      name = "org_chromium_chromium",
-      licenses = ["restricted"],  # So many licenses
-      sha256_urls = {
-          "ac11a4b8c901622cdd6cebbdac7a0dfe20c32f4d287a44ed19368444a2cd159e": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/582301/chrome-linux.zip",
-          ],
-      },
-      sha256_urls_macos = {
-          "4ffd70a5d3ce02637550fc0d41d15e4e9de053d5bc55621442652b253fc61665": [
-              "https://mirror.bazel.build/commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
-              "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/582236/chrome-mac.zip",
-          ],
-      },
-      generated_rule_name = "archive",
+  platform_http_file(
+      name = "org_chromium_chromedriver",
+      licenses = ["reciprocal"],  # BSD 3-clause, ICU, MPL 1.1, libpng (BSD/MIT-like), Academic Free License v. 2.0, BSD 2-clause, MIT
+      amd64_sha256 =
+          "71eafe087900dbca4bc0b354a1d172df48b31a4a502e21f7c7b156d7e76c95c7",
+      amd64_urls = [
+          "https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip",
+      ],
+      macos_sha256 =
+          "fd32a27148f44796a55f5ce3397015c89ebd9f600d9dda2bcaca54575e2497ae",
+      macos_urls = [
+          "https://chromedriver.storage.googleapis.com/2.41/chromedriver_mac64.zip",
+      ],
+      windows_sha256 =
+          "a8fa028acebef7b931ef9cb093f02865f9f7495e49351f556e919f7be77f072e",
+      windows_urls = [
+          "https://chromedriver.storage.googleapis.com/2.38/chromedriver_win32.zip",
+      ],
   )

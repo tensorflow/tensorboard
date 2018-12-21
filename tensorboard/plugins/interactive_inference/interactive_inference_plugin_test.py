@@ -49,7 +49,7 @@ from tensorboard.plugins.interactive_inference import interactive_inference_plug
 class InferencePluginTest(tf.test.TestCase):
 
   def setUp(self):
-    self.logdir = tf.test.get_temp_dir()
+    self.logdir = tf.compat.v1.test.get_temp_dir()
 
     self.context = base_plugin.TBContext(logdir=self.logdir)
     self.plugin = interactive_inference_plugin.InteractiveInferencePlugin(
@@ -194,15 +194,15 @@ class InferencePluginTest(tf.test.TestCase):
     # A no-op that just passes the example passed to mutant_charts_for_feature
     # back through. This tests that the URL parameters get processed properly
     # within infer_mutants_handler.
-    def pass_through(example, feature_name, serving_bundle, viz_params):
+    def pass_through(example, feature_name, serving_bundles, viz_params):
       return {
           'example': str(example),
           'feature_name': feature_name,
-          'serving_bundle': {
-              'inference_address': serving_bundle.inference_address,
-              'model_name': serving_bundle.model_name,
-              'model_type': serving_bundle.model_type,
-          },
+          'serving_bundles': [{
+              'inference_address': serving_bundles[0].inference_address,
+              'model_name': serving_bundles[0].model_name,
+              'model_type': serving_bundles[0].model_type,
+          }],
           'viz_params': {
               'x_min': viz_params.x_min,
               'x_max': viz_params.x_max
@@ -229,10 +229,10 @@ class InferencePluginTest(tf.test.TestCase):
     self.assertEqual(str([example]), result['example'])
     self.assertEqual('single_int', result['feature_name'])
     self.assertEqual('ml-serving-temp.prediction',
-                     result['serving_bundle']['inference_address'])
+                     result['serving_bundles'][0]['inference_address'])
     self.assertEqual('/ml/cassandrax/iris_classification',
-                     result['serving_bundle']['model_name'])
-    self.assertEqual('classification', result['serving_bundle']['model_type'])
+                     result['serving_bundles'][0]['model_name'])
+    self.assertEqual('classification', result['serving_bundles'][0]['model_type'])
     self.assertAlmostEqual(-10, result['viz_params']['x_min'])
     self.assertAlmostEqual(10, result['viz_params']['x_max'])
 

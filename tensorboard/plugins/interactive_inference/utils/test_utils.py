@@ -39,7 +39,7 @@ def make_fake_example(single_int_val=0):
 def write_out_examples(examples, path):
   """Writes protos to the CNS path."""
 
-  writer = tf.python_io.TFRecordWriter(path)
+  writer = tf.io.TFRecordWriter(path)
   for example in examples:
     writer.write(example.SerializeToString())
 
