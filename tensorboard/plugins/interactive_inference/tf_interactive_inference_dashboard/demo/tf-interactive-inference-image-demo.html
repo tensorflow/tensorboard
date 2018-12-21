@@ -53,7 +53,7 @@ limitations under the License.
       },
       ready: async function() {
         this.$.dash.settingsClicked_();
-
+        this.$.dash.updateNumberOfModels_();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/images/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/images/smile_examples.json";

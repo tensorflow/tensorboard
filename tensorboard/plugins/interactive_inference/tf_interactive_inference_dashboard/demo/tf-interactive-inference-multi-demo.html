@@ -30,7 +30,7 @@ limitations under the License.
         width: 100%;
       }
     </style>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]"  model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]"  model-name="demo1, demo2" inference-address="demo1, demo2">
     </tf-interactive-inference-dashboard>
   </template>
   <script>
@@ -46,6 +46,7 @@ limitations under the License.
       },
       ready: async function() {
         this.$.dash.settingsClicked_();
+        this.$.dash.updateNumberOfModels_();
         this.means = {
           'age': 38.64358543876172,
           'education-num': 10.078088530363212,
@@ -239,7 +240,9 @@ limitations under the License.
               const PRED_SIZE = 2;
               const BATCH_SIZE = 128
               const results = [];
+              const results2 = [];
               const predValuesList = [];
+              const predValuesList2 = [];
               for (let i = 0; i < examples.length; i += BATCH_SIZE) {
                 let tlist = [];
                 for (let idx = i;
@@ -251,29 +254,40 @@ limitations under the License.
                 tlist.forEach(tensor => tensor.dispose());
                 const input = tconcat.reshape([tlist.length, 104]);
                 const res = this.model.predict(input, {batchSize: BATCH_SIZE});
+                const res2 = this.model2.predict(input, {batchSize: BATCH_SIZE});
                 const vals = await res.data();
+                const vals2 = await res2.data();
                 predValuesList.push(vals);
+                predValuesList2.push(vals2);
                 input.dispose();
                 res.dispose();
+                res2.dispose();
                 tconcat.dispose();
               }
               const predSize = predValuesList.reduce((a, b) => a + b.length, 0);
               const predValues = new Float32Array(predSize);
+              const predValues2 = new Float32Array(predSize);
               let curIdx = 0;
               for (let i = 0; i < predValuesList.length; i++) {
                 predValues.set(predValuesList[i], curIdx);
+                predValues2.set(predValuesList2[i], curIdx);
                 curIdx += predValuesList[i].length;
               }
               for (let trialIdx = 0; trialIdx < numTrials; trialIdx++) {
                 const startingPredIdx =
                   trialIdx * exampleIndices.length * PRED_SIZE;
                 const scores = [];
+                const scores2 = [];
                 for (let exampleIdx = 0; exampleIdx < exampleIndices.length;
                     exampleIdx++) {
                   scores.push(
                     predValues[startingPredIdx + (exampleIdx * PRED_SIZE)]);
+                  scores2.push(
+                    predValues2[startingPredIdx + (exampleIdx * PRED_SIZE)]);
                 }
                 const score = scores.reduce(
+                  (prev, cur) => prev + cur, 0) / scores.length;
+                const score2 = scores2.reduce(
                   (prev, cur) => prev + cur, 0) / scores.length;
                 const ex = examples[trialIdx * exampleIndices.length];
                 const step = isNum ? ex.features.feature[
@@ -281,9 +295,10 @@ limitations under the License.
                       : [atob(ex.features.feature[
                           e.detail.feature_name].bytesList.value[0])];
                 results.push({step: step, scalar: score});
+                results2.push({step: step, scalar: score2});
               }
               this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
-                  e.detail.feature_name, [{'1': results}]);
+                  e.detail.feature_name, [[{'1': results}, {'1': results2}]]);
             };
             setTimeout(method, 50);
           });
