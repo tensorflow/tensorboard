@@ -23,6 +23,19 @@ else
   sedi="sed -i"
 fi
 
+run_smoke_test=1
+while arg="$1" && shift; do
+  case "$arg" in
+    "--no-smoke")
+      run_smoke_test=0
+      ;;
+    *)
+      echo >&2 'fatal: unknown argument:' "$arg"
+      exit 1
+      ;;
+  esac
+done
+
 smoke() {
   TF_PACKAGE=tf-nightly
   if [ -n "$TF_VERSION" ]; then
@@ -115,7 +128,9 @@ pip install -qU wheel 'setuptools>=36.2.0'
 python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-smoke 2
-smoke 3
+if [ "$run_smoke_test" = 1 ]; then
+  smoke 2
+  smoke 3
+fi
 
 ls -hal "$PWD/dist"
