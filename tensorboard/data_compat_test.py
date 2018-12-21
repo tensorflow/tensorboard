@@ -31,6 +31,8 @@ from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class MigrateValueTest(tf.test.TestCase):
   """Tests for `migrate_value`.
@@ -42,7 +44,7 @@ class MigrateValueTest(tf.test.TestCase):
   """
 
   def _value_from_op(self, op):
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       summary_pbtxt = sess.run(op)
     summary = summary_pb2.Summary()
     summary.ParseFromString(summary_pbtxt)
@@ -59,7 +61,7 @@ class MigrateValueTest(tf.test.TestCase):
     self.assertEqual(original_pbtxt, value.SerializeToString())
 
   def test_scalar(self):
-    old_op = tf.summary.scalar('important_constants', tf.constant(0x5f3759df))
+    old_op = tf.compat.v1.summary.scalar('important_constants', tf.constant(0x5f3759df))
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('simple_value'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -77,7 +79,7 @@ class MigrateValueTest(tf.test.TestCase):
 
   def test_audio(self):
     audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
-    old_op = tf.summary.audio('k488', audio, 44100)
+    old_op = tf.compat.v1.summary.audio('k488', audio, 44100)
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('audio'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -96,7 +98,7 @@ class MigrateValueTest(tf.test.TestCase):
     self.assertEqual(b'', data[0][1])  # empty label
 
   def test_text(self):
-    op = tf.summary.text('lorem_ipsum', tf.constant('dolor sit amet'))
+    op = tf.compat.v1.summary.text('lorem_ipsum', tf.constant('dolor sit amet'))
     value = self._value_from_op(op)
     assert value.HasField('tensor'), value
     self._assert_noop(value)
@@ -106,7 +108,7 @@ class MigrateValueTest(tf.test.TestCase):
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
             plugin_name='font_of_wisdom',
             content=b'adobe_garamond'))
-    op = tf.summary.tensor_summary(
+    op = tf.compat.v1.summary.tensor_summary(
         name='tensorpocalypse',
         tensor=tf.constant([[0.0, 2.0], [float('inf'), float('nan')]]),
         display_name='TENSORPOCALYPSE',
@@ -117,9 +119,9 @@ class MigrateValueTest(tf.test.TestCase):
     self._assert_noop(value)
 
   def test_image(self):
-    old_op = tf.summary.image('mona_lisa',
+    old_op = tf.compat.v1.summary.image('mona_lisa',
                               tf.image.convert_image_dtype(
-                                  tf.random_normal(shape=[1, 400, 200, 3]),
+                                  tf.random.normal(shape=[1, 400, 200, 3]),
                                   tf.uint8,
                                   saturate=True))
     old_value = self._value_from_op(old_op)
@@ -138,8 +140,8 @@ class MigrateValueTest(tf.test.TestCase):
         tf.compat.as_bytes(old_value.image.encoded_image_string), data)
 
   def test_histogram(self):
-    old_op = tf.summary.histogram('important_data',
-                                  tf.random_normal(shape=[23, 45]))
+    old_op = tf.compat.v1.summary.histogram('important_data',
+                                  tf.random.normal(shape=[23, 45]))
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('histo'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -156,7 +158,7 @@ class MigrateValueTest(tf.test.TestCase):
 
   def test_new_style_histogram(self):
     op = histogram_summary.op('important_data',
-                              tf.random_normal(shape=[10, 10]),
+                              tf.random.normal(shape=[10, 10]),
                               bucket_count=100,
                               display_name='Important data',
                               description='secrets of the universe')
@@ -168,7 +170,7 @@ class MigrateValueTest(tf.test.TestCase):
     op = image_summary.op(
         'mona_lisa',
         tf.image.convert_image_dtype(
-            tf.random_normal(shape=[1, 400, 200, 3]), tf.uint8, saturate=True),
+            tf.random.normal(shape=[1, 400, 200, 3]), tf.uint8, saturate=True),
         display_name='The Mona Lisa',
         description='A renowned portrait by da Vinci.')
     value = self._value_from_op(op)

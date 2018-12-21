@@ -75,7 +75,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
     self.stream_handler.on_core_metadata_event(event_pb2.Event())
 
   def tearDown(self):
-    tf.test.mock.patch.stopall()
+    tf.compat.v1.test.mock.patch.stopall()
 
   def _create_event_with_float_tensor(self, node_name, output_slot, debug_op,
                                       list_of_values):
@@ -203,7 +203,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
     self.assertGreater(events_written[0].step, 0)
 
   def testAlertingEventCallback(self):
-    numerics_alert_callback = tf.test.mock.Mock()
+    numerics_alert_callback = tf.compat.v1.test.mock.Mock()
     stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=FakeEventsWriterManager(
             self.events_written),

@@ -89,7 +89,7 @@ class DirectoryWatcher(object):
       for event in self._LoadInternal():
         yield event
     except tf.errors.OpError:
-      if not tf.gfile.Exists(self._directory):
+      if not tf.io.gfile.exists(self._directory):
         raise DirectoryDeletedError(
             'Directory %s has been permanently deleted' % self._directory)
 
@@ -182,7 +182,7 @@ class DirectoryWatcher(object):
     if old_path and not io_wrapper.IsGCSPath(old_path):
       try:
         # We're done with the path, so store its size.
-        size = tf.gfile.Stat(old_path).length
+        size = tf.io.gfile.stat(old_path).length
         logger.debug('Setting latest size of %s to %d', old_path, size)
         self._finalized_sizes[old_path] = size
       except tf.errors.OpError as e:
@@ -231,7 +231,7 @@ class DirectoryWatcher(object):
   def _HasOOOWrite(self, path):
     """Returns whether the path has had an out-of-order write."""
     # Check the sizes of each path before the current one.
-    size = tf.gfile.Stat(path).length
+    size = tf.io.gfile.stat(path).length
     old_size = self._finalized_sizes.get(path, None)
     if size != old_size:
       if old_size is None:

@@ -55,7 +55,7 @@ class LoaderTestCase(test_util.TestCase):
     :rtype: str
     """
     path = os.path.join(self.get_temp_dir(), name)
-    with tf.python_io.TFRecordWriter(tf.compat.as_bytes(path)) as writer:
+    with tf.io.TFRecordWriter(tf.compat.as_bytes(path)) as writer:
       for record in records:
         writer.write(tf.compat.as_bytes(record))
     return path

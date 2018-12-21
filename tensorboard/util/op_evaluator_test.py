@@ -47,7 +47,7 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
 
   def test_preserves_existing_session(self):
     with tf.Session() as sess:
-      op = tf.reduce_sum([2, 2])
+      op = tf.reduce_sum(input_tensor=[2, 2])
       self.assertIs(sess, tf.get_default_session())
 
       result = self._square(123)

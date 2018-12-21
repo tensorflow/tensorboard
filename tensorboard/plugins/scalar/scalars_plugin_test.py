@@ -36,6 +36,8 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ScalarsPluginTest(tf.test.TestCase):
 
@@ -84,9 +86,9 @@ class ScalarsPluginTest(tf.test.TestCase):
     self.plugin = scalars_plugin.ScalarsPlugin(context)
 
   def generate_run_to_db(self, experiment_name, run_name):
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
 
-    global_step = tf.placeholder(tf.int64)
+    global_step = tf.compat.v1.placeholder(tf.int64)
     db_writer = tf.contrib.summary.create_db_writer(
         db_uri=self.db_path,
         experiment_name=experiment_name,
@@ -98,7 +100,7 @@ class ScalarsPluginTest(tf.test.TestCase):
       tf.contrib.summary.scalar(self._SCALAR_TAG, 42, step=global_step)
       flush_op = tf.contrib.summary.flush(db_writer._resource)
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
       for step in xrange(self._STEPS):
         feed_dict = {global_step: step}
@@ -113,21 +115,21 @@ class ScalarsPluginTest(tf.test.TestCase):
     self.assertIsInstance(routes['/tags'], collections.Callable)
 
   def generate_run(self, run_name):
-    tf.reset_default_graph()
-    sess = tf.Session()
-    placeholder = tf.placeholder(tf.float32, shape=[3])
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    placeholder = tf.compat.v1.placeholder(tf.float32, shape=[3])
 
     if run_name == self._RUN_WITH_LEGACY_SCALARS:
-      tf.summary.scalar(self._LEGACY_SCALAR_TAG, tf.reduce_mean(placeholder))
+      tf.compat.v1.summary.scalar(self._LEGACY_SCALAR_TAG, tf.reduce_mean(input_tensor=placeholder))
     elif run_name == self._RUN_WITH_SCALARS:
-      summary.op(self._SCALAR_TAG, tf.reduce_sum(placeholder),
+      summary.op(self._SCALAR_TAG, tf.reduce_sum(input_tensor=placeholder),
                  display_name=self._DISPLAY_NAME,
                  description=self._DESCRIPTION)
     elif run_name == self._RUN_WITH_HISTOGRAM:
-      tf.summary.histogram(self._HISTOGRAM_TAG, placeholder)
+      tf.compat.v1.summary.histogram(self._HISTOGRAM_TAG, placeholder)
     else:
       assert False, 'Invalid run name: %r' % run_name
-    summ = tf.summary.merge_all()
+    summ = tf.compat.v1.summary.merge_all()
 
     subdir = os.path.join(self.logdir, run_name)
     with test_util.FileWriterCache.get(subdir) as writer:

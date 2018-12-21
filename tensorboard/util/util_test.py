@@ -32,7 +32,7 @@ class LogFormatterTest(tf.test.TestCase):
   def __init__(self, *args, **kwargs):
     super(LogFormatterTest, self).__init__(*args, **kwargs)
     self.clock = test_util.FakeClock()
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
     self.formatter = util.LogFormatter()
     self.formatter.converter = time.gmtime
 

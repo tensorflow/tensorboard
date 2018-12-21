@@ -81,7 +81,7 @@ def op(name,
     encoded_images = tf.map_fn(tf.image.encode_png, limited_images,
                                dtype=tf.string,
                                name='encode_each_image')
-    image_shape = tf.shape(images)
+    image_shape = tf.shape(input=images)
     dimensions = tf.stack([tf.as_string(image_shape[2], name='width'),
                            tf.as_string(image_shape[1], name='height')],
                           name='dimensions')

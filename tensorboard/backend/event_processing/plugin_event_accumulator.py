@@ -301,7 +301,7 @@ class EventAccumulator(object):
       if self._graph is None or self._graph_from_metagraph:
         # We may have a graph_def in the metagraph.  If so, and no
         # graph_def is directly available, use this one instead.
-        meta_graph = tf.MetaGraphDef()
+        meta_graph = tf.compat.v1.MetaGraphDef()
         meta_graph.ParseFromString(self._meta_graph)
         if meta_graph.graph_def:
           if self._graph is not None:
@@ -378,7 +378,7 @@ class EventAccumulator(object):
     Returns:
       The `graph_def` proto.
     """
-    graph = tf.GraphDef()
+    graph = tf.compat.v1.GraphDef()
     if self._graph is not None:
       graph.ParseFromString(self._graph)
       return graph
@@ -395,7 +395,7 @@ class EventAccumulator(object):
     """
     if self._meta_graph is None:
       raise ValueError('There is no metagraph in this EventAccumulator')
-    meta_graph = tf.MetaGraphDef()
+    meta_graph = tf.compat.v1.MetaGraphDef()
     meta_graph.ParseFromString(self._meta_graph)
     return meta_graph
 
@@ -414,7 +414,7 @@ class EventAccumulator(object):
     if tag not in self._tagged_metadata:
       raise ValueError('There is no run metadata with this tag name')
 
-    run_metadata = tf.RunMetadata()
+    run_metadata = tf.compat.v1.RunMetadata()
     run_metadata.ParseFromString(self._tagged_metadata[tag])
     return run_metadata
 
@@ -478,7 +478,7 @@ class EventAccumulator(object):
         previously seen events with a greater event.step will be purged.
     """
     if event.HasField(
-        'session_log') and event.session_log.status == tf.SessionLog.START:
+        'session_log') and event.session_log.status == tf.compat.v1.SessionLog.START:
       self._Purge(event, by_tags=False)
 
   def _CheckForOutOfOrderStepAndMaybePurge(self, event):

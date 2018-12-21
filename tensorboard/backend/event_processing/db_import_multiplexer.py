@@ -272,7 +272,7 @@ class _ImportOpEventSink(_EventSink):
     if key in self._writer_fn_cache:
       return self._writer_fn_cache[key]
     with tf.Graph().as_default():
-      placeholder = tf.placeholder(shape=[], dtype=tf.string)
+      placeholder = tf.compat.v1.placeholder(shape=[], dtype=tf.string)
       writer = tf.contrib.summary.create_db_writer(
           self._db_path,
           experiment_name=event_batch.experiment_name,
@@ -281,7 +281,7 @@ class _ImportOpEventSink(_EventSink):
         # TODO(nickfelt): running import_event() one record at a time is very
         #   slow; we should add an op that accepts a vector of records.
         import_op = tf.contrib.summary.import_event(placeholder)
-      session = tf.Session()
+      session = tf.compat.v1.Session()
       session.run(writer.init())
       def writer_fn(event_proto):
         session.run(import_op, feed_dict={placeholder: event_proto})
@@ -342,7 +342,7 @@ class _SqliteWriterEventSink(_EventSink):
     elif event_type == 'file_version':
       pass  # TODO: reject file version < 2 (at loader level)
     elif event_type == 'session_log':
-      if event.session_log.status == tf.SessionLog.START:
+      if event.session_log.status == tf.compat.v1.SessionLog.START:
         pass  # TODO: implement purging via sqlite writer truncation method
     elif event_type in ('graph_def', 'meta_graph_def'):
       pass  # TODO: support graphs

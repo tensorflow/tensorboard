@@ -71,13 +71,13 @@ class BeholderPlugin(base_plugin.TBPlugin):
         self.PLUGIN_LOGDIR, shared_config.SUMMARY_FILENAME)
     info_filename = '{}/{}'.format(
         self.PLUGIN_LOGDIR, shared_config.SECTION_INFO_FILENAME)
-    return tf.gfile.Exists(summary_filename) and\
-           tf.gfile.Exists(info_filename)
+    return tf.io.gfile.exists(summary_filename) and\
+           tf.io.gfile.exists(info_filename)
 
   def is_config_writable(self):
     try:
-      if not tf.gfile.Exists(self.PLUGIN_LOGDIR):
-        tf.gfile.MakeDirs(self.PLUGIN_LOGDIR)
+      if not tf.io.gfile.exists(self.PLUGIN_LOGDIR):
+        tf.io.gfile.makedirs(self.PLUGIN_LOGDIR)
       config_filename = '{}/{}'.format(
           self.PLUGIN_LOGDIR, shared_config.CONFIG_FILENAME)
       with self._config_file_lock:
