@@ -210,7 +210,7 @@ class FileWriter(tf.summary.FileWriter):
 
   def add_session_log(self, session_log, global_step=None):
     if isinstance(session_log, event_pb2.SessionLog):
-      tf_session_log = tf.SessionLog.FromString(session_log.SerializeToString())
+      tf_session_log = tf.compat.v1.SessionLog.FromString(session_log.SerializeToString())
     else:
       logger.warn('Added TensorFlow session_log proto. '
                       'Please prefer TensorBoard copy of the proto')

@@ -27,6 +27,8 @@ from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class EventFileInspectorTest(tf.test.TestCase):
 

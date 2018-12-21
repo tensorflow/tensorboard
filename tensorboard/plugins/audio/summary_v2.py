@@ -91,9 +91,9 @@ def audio(name,
                               name='encode_each_audio')
     # Workaround for map_fn returning float dtype for an empty elems input.
     encoded_audio = tf.cond(
-        tf.shape(encoded_audio)[0] > 0,
+        tf.shape(input=encoded_audio)[0] > 0,
         lambda: encoded_audio, lambda: tf.constant([], tf.string))
-    limited_labels = tf.tile([''], tf.shape(limited_audio)[:1])
-    tensor = tf.transpose(tf.stack([encoded_audio, limited_labels]))
+    limited_labels = tf.tile([''], tf.shape(input=limited_audio)[:1])
+    tensor = tf.transpose(a=tf.stack([encoded_audio, limited_labels]))
     return tf.summary.write(
         tag=tag, tensor=tensor, step=step, metadata=summary_metadata)

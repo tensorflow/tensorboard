@@ -43,7 +43,7 @@ def op(scalars_layout, collections=None):
     A tensor summary op that writes the layout to disk.
   """
   assert isinstance(scalars_layout, layout_pb2.Layout)
-  return tf.summary.tensor_summary(name=metadata.CONFIG_SUMMARY_TAG,
+  return tf.compat.v1.summary.tensor_summary(name=metadata.CONFIG_SUMMARY_TAG,
                                    tensor=tf.constant(
                                        scalars_layout.SerializeToString(),
                                        dtype=tf.string),

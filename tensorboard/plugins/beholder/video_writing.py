@@ -121,7 +121,7 @@ class PNGVideoOutput(VideoOutput):
     del frame_shape  # unused
     self.directory = directory + '/video-frames-{}'.format(time.time())
     self.frame_num = 0
-    tf.gfile.MakeDirs(self.directory)
+    tf.io.gfile.makedirs(self.directory)
 
   def emit_frame(self, np_array):
     filename = self.directory + '/{:05}.png'.format(self.frame_num)

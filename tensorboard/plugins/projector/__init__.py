@@ -58,5 +58,5 @@ def visualize_embeddings(summary_writer, config):
   # Saving the config file in the logdir.
   config_pbtxt = _text_format.MessageToString(config)
   path = os.path.join(logdir, _projector_plugin.PROJECTOR_FILENAME)
-  with tf.gfile.Open(path, 'w') as f:
+  with tf.compat.v1.gfile.Open(path, 'w') as f:
     f.write(config_pbtxt)

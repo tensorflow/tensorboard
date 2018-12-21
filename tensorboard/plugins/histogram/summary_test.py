@@ -37,7 +37,7 @@ except ImportError:
   tf_v2 = None
 
 try:
-  tf.enable_eager_execution()
+  tf.compat.v1.enable_eager_execution()
 except AttributeError:
   # TF 2.0 doesn't have this symbol because eager is the default.
   pass
@@ -100,7 +100,7 @@ class SummaryBaseTest(object):
 
   def test_when_shape_not_statically_known(self):
     self.skipTest('TODO: figure out how to test this')
-    placeholder = tf.placeholder(tf.float64, shape=None)
+    placeholder = tf.compat.v1.placeholder(tf.float64, shape=None)
     reshaped = self.gaussian.reshape((25, -1))
     self.histogram(data=reshaped,
                                       data_tensor=placeholder,
@@ -109,7 +109,7 @@ class SummaryBaseTest(object):
 
   def test_when_bucket_count_not_statically_known(self):
     self.skipTest('TODO: figure out how to test this')
-    placeholder = tf.placeholder(tf.int32, shape=())
+    placeholder = tf.compat.v1.placeholder(tf.int32, shape=())
     bucket_count = 44
     pb = self.histogram(
         bucket_count=bucket_count,

@@ -190,11 +190,11 @@ def get_field_to_observations_map(generator, query_for_tag=''):
       increment('graph', event)
     if event.HasField('session_log') and (not query_for_tag):
       status = event.session_log.status
-      if status == tf.SessionLog.START:
+      if status == tf.compat.v1.SessionLog.START:
         increment('sessionlog:start', event)
-      elif status == tf.SessionLog.STOP:
+      elif status == tf.compat.v1.SessionLog.STOP:
         increment('sessionlog:stop', event)
-      elif status == tf.SessionLog.CHECKPOINT:
+      elif status == tf.compat.v1.SessionLog.CHECKPOINT:
         increment('sessionlog:checkpoint', event)
     elif event.HasField('summary'):
       for value in event.summary.value:
@@ -324,7 +324,7 @@ def generators_from_logdir(logdir):
   generators = [
       itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.gfile.ListDirectory(subdir)
+          for f in tf.io.gfile.listdir(subdir)
           if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ]) for subdir in subdirs
   ]
@@ -358,7 +358,7 @@ def get_inspection_units(logdir='', event_file='', tag=''):
     for subdir in subdirs:
       generator = itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.gfile.ListDirectory(subdir)
+          for f in tf.io.gfile.listdir(subdir)
           if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ])
       inspection_units.append(InspectionUnit(
@@ -417,4 +417,4 @@ def inspect(logdir='', event_file='', tag=''):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  tf.compat.v1.app.run()

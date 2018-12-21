@@ -133,13 +133,13 @@ class EventsWriterManager(object):
 
         file_path = os.path.join(self._events_directory,
                                  self.get_current_file_name())
-        if not tf.gfile.Exists(file_path):
+        if not tf.io.gfile.exists(file_path):
           # The events file does not exist. Perhaps the user had manually
           # deleted it after training began. Create a new one.
           self._events_writer.Close()
           self._events_writer = self._create_events_writer(
               self._events_directory)
-        elif tf.gfile.Stat(file_path).length > self._single_file_size_cap_bytes:
+        elif tf.io.gfile.stat(file_path).length > self._single_file_size_cap_bytes:
           # The current events file has gotten too big. Close the previous
           # events writer. Make a new one.
           self._events_writer.Close()
@@ -182,7 +182,7 @@ class EventsWriterManager(object):
     events_files = self._fetch_events_files_on_disk()
     for file_name in events_files:
       file_path = os.path.join(self._events_directory, file_name)
-      total_size += tf.gfile.Stat(file_path).length
+      total_size += tf.io.gfile.stat(file_path).length
 
     if total_size >= self.total_file_size_cap_bytes:
       # The total size written to disk is too big. Delete events files until
@@ -192,9 +192,9 @@ class EventsWriterManager(object):
           break
 
         file_path = os.path.join(self._events_directory, file_name)
-        file_size = tf.gfile.Stat(file_path).length
+        file_size = tf.io.gfile.stat(file_path).length
         try:
-          tf.gfile.Remove(file_path)
+          tf.io.gfile.remove(file_path)
           total_size -= file_size
           logger.info(
               "Deleted %s because events files take up over %d bytes",
@@ -217,7 +217,7 @@ class EventsWriterManager(object):
       The names of the debugger-related events files written to disk. The names
       are sorted in increasing events file index.
     """
-    all_files = tf.gfile.ListDirectory(self._events_directory)
+    all_files = tf.io.gfile.listdir(self._events_directory)
     relevant_files = [
         file_name for file_name in all_files
         if _DEBUGGER_EVENTS_FILE_NAME_REGEX.match(file_name)

@@ -32,6 +32,7 @@ from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 from tensorboard.util import tb_logging
 
+tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -184,7 +185,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
   def setUp(self):
     super(MockingEventAccumulatorTest, self).setUp()
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
     self._real_constructor = ea.EventAccumulator
     self._real_generator = ea._GeneratorFromPath
 
@@ -578,7 +579,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     acc = ea.EventAccumulator(gen)
     gen.AddScalar('s1', wall_time=1, step=100, value=20)
     ev1 = event_pb2.Event(wall_time=2, step=0, file_version='brain.Event:1')
-    graph_bytes = tf.GraphDef().SerializeToString()
+    graph_bytes = tf.compat.v1.GraphDef().SerializeToString()
     ev2 = event_pb2.Event(wall_time=3, step=0, graph_def=graph_bytes)
     gen.AddEvent(ev1)
     gen.AddEvent(ev2)
@@ -653,10 +654,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     with test_util.FileWriterCache.get(self.get_temp_dir()) as writer:
       writer.event_writer = event_sink
       with self.test_session() as sess:
-        ipt = tf.placeholder(tf.float32)
-        tf.summary.scalar('scalar1', ipt)
-        tf.summary.scalar('scalar2', ipt * ipt)
-        merged = tf.summary.merge_all()
+        ipt = tf.compat.v1.placeholder(tf.float32)
+        tf.compat.v1.summary.scalar('scalar1', ipt)
+        tf.compat.v1.summary.scalar('scalar2', ipt * ipt)
+        merged = tf.compat.v1.summary.merge_all()
         writer.add_graph(sess.graph)
         for i in xrange(10):
           summ = sess.run(merged, feed_dict={ipt: i})
@@ -694,12 +695,12 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         # Using the tf node name instead allows argument re-use to the image
         # summary.
         with tf.name_scope('1'):
-          tf.summary.image('images', ipt, max_outputs=1)
+          tf.compat.v1.summary.image('images', ipt, max_outputs=1)
         with tf.name_scope('2'):
-          tf.summary.image('images', ipt, max_outputs=2)
+          tf.compat.v1.summary.image('images', ipt, max_outputs=2)
         with tf.name_scope('3'):
-          tf.summary.image('images', ipt, max_outputs=3)
-        merged = tf.summary.merge_all()
+          tf.compat.v1.summary.image('images', ipt, max_outputs=3)
+        merged = tf.compat.v1.summary.merge_all()
         writer.add_graph(sess.graph)
         for i in xrange(10):
           summ = sess.run(merged)
@@ -725,10 +726,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     with test_util.FileWriterCache.get(self.get_temp_dir()) as writer:
       writer.event_writer = event_sink
       with self.test_session() as sess:
-        tf.summary.tensor_summary('scalar', tf.constant(1.0))
-        tf.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
-        tf.summary.tensor_summary('string', tf.constant(six.b('foobar')))
-        merged = tf.summary.merge_all()
+        tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0))
+        tf.compat.v1.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
+        tf.compat.v1.summary.tensor_summary('string', tf.constant(six.b('foobar')))
+        merged = tf.compat.v1.summary.merge_all()
         summ = sess.run(merged)
         writer.add_summary(summ, 0)
 
@@ -762,9 +763,9 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       return summary
 
     directory = os.path.join(self.get_temp_dir(), 'values_dir')
-    if tf.gfile.IsDirectory(directory):
-      tf.gfile.DeleteRecursively(directory)
-    tf.gfile.MkDir(directory)
+    if tf.io.gfile.isdir(directory):
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 
@@ -772,11 +773,11 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       _ = tf.constant([2.0, 1.0])
     # Add a graph to the summary writer.
     writer.add_graph(graph)
-    meta_graph_def = tf.train.export_meta_graph(graph_def=graph.as_graph_def(
+    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
         add_shapes=True))
     writer.add_meta_graph(meta_graph_def)
 
-    run_metadata = tf.RunMetadata()
+    run_metadata = tf.compat.v1.RunMetadata()
     device_stats = run_metadata.step_stats.dev_stats.add()
     device_stats.device = 'test device'
     writer.add_run_metadata(run_metadata, 'test run')
@@ -834,16 +835,16 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     """Test accumulator by writing values and then reading them."""
 
     directory = os.path.join(self.get_temp_dir(), 'metagraph_test_values_dir')
-    if tf.gfile.IsDirectory(directory):
-      tf.gfile.DeleteRecursively(directory)
-    tf.gfile.MkDir(directory)
+    if tf.io.gfile.isdir(directory):
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
     # Add a graph to the summary writer.
-    meta_graph_def = tf.train.export_meta_graph(graph_def=graph.as_graph_def(
+    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
         add_shapes=True))
     writer.add_meta_graph(meta_graph_def)
 
