@@ -22,18 +22,21 @@ import json
 import math
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
 
 from google.protobuf import json_format
 from grpc.framework.interfaces.face.face import AbortionError
 from werkzeug import wrappers
 
+import tensorflow as tf
+
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
-
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 # Max number of examples to scan along the `examples_path` in order to return
@@ -257,17 +260,17 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     vocab_path = request.args.get('label_vocab_path')
     if vocab_path:
       try:
-        with tf.gfile.GFile(vocab_path, 'r') as f:
+        with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
           label_vocab = [line.rstrip('\n') for line in f]
       except tf.errors.NotFoundError as err:
-        tf.logging.error('error reading vocab file: %s', err)
+        logger.error('error reading vocab file: %s', err)
         label_vocab = []
     else:
       label_vocab = []
 
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                     'application/json', code=405)
 
@@ -322,7 +325,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
     def generate_image_from_thubnails(thumbnails, thumbnail_dims):
       """Generates a sprite atlas image from a set of thumbnails."""
-      num_thumbnails = tf.shape(thumbnails)[0].eval()
+      num_thumbnails = tf.shape(input=thumbnails)[0].eval()
       images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
       thumb_height = thumbnail_dims[0]
       thumb_width = thumbnail_dims[1]
@@ -340,12 +343,12 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         master[top_start:top_end, left_start:left_end, :] = image
       return tf.image.encode_png(master)
 
-    with tf.Session():
+    with tf.compat.v1.Session():
       keys_to_features = {
           self.image_feature_name:
-              tf.FixedLenFeature((), tf.string, default_value=''),
+              tf.io.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.parse_example(examples, keys_to_features)
+      parsed = tf.io.parse_example(serialized=examples, features=keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (self.sprite_thumbnail_dim_px,
@@ -358,7 +361,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       def loop_body(i, encoded_images, images):
         encoded_image = encoded_images[i]
         image = tf.image.decode_jpeg(encoded_image, channels=3)
-        resized_image = tf.image.resize_images(image, thumbnail_dims)
+        resized_image = tf.compat.v1.image.resize_images(image, thumbnail_dims)
         expanded_image = tf.expand_dims(resized_image, 0)
         images = tf.cond(
             tf.equal(i, 0), lambda: expanded_image,
@@ -366,8 +369,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         return i + 1, encoded_images, images
 
       loop_out = tf.while_loop(
-          lambda i, encoded_images, images: tf.less(i, num_examples),
-          loop_body, [i, encoded_images, images],
+          cond=lambda i, encoded_images, images: tf.less(i, num_examples),
+          body=loop_body, loop_vars=[i, encoded_images, images],
           shape_invariants=[
               i.get_shape(),
               encoded_images.get_shape(),
@@ -421,7 +424,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     """
     try:
       if request.method != 'GET':
-        tf.logging.error('%s requests are forbidden.', request.method)
+        logger.error('%s requests are forbidden.', request.method)
         return http_util.Respond(request, {'error': 'invalid non-GET request'},
                                  'application/json', code=405)
 

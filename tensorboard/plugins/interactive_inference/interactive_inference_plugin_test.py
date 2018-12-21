@@ -49,7 +49,7 @@ from tensorboard.plugins.interactive_inference import interactive_inference_plug
 class InferencePluginTest(tf.test.TestCase):
 
   def setUp(self):
-    self.logdir = tf.test.get_temp_dir()
+    self.logdir = tf.compat.v1.test.get_temp_dir()
 
     self.context = base_plugin.TBContext(logdir=self.logdir)
     self.plugin = interactive_inference_plugin.InteractiveInferencePlugin(

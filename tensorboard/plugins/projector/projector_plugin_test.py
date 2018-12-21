@@ -38,6 +38,8 @@ from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.util import test_util
 
+tf.compat.v1.disable_v2_behavior()
+
 
 class ProjectorAppTest(tf.test.TestCase):
 
@@ -78,7 +80,7 @@ class ProjectorAppTest(tf.test.TestCase):
     config.model_checkpoint_path = 'does_not_exist'
     embedding = config.embeddings.add()
     embedding.tensor_name = 'var1'
-    with tf.gfile.GFile(config_path, 'w') as f:
+    with tf.compat.v1.gfile.GFile(config_path, 'w') as f:
       f.write(text_format.MessageToString(config))
     self._SetupWSGIApp()
 
@@ -194,7 +196,7 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    patcher = tf.compat.v1.test.mock.patch('threading.Thread.start', autospec=True)
     mock = patcher.start()
     self.addCleanup(patcher.stop)
 
@@ -224,7 +226,7 @@ class ProjectorAppTest(tf.test.TestCase):
 
     # The is_active method makes use of a separate thread, so we mock threading
     # behavior to make this test deterministic.
-    patcher = tf.test.mock.patch('threading.Thread.start', autospec=True)
+    patcher = tf.compat.v1.test.mock.patch('threading.Thread.start', autospec=True)
     mock = patcher.start()
     self.addCleanup(patcher.stop)
 
@@ -280,23 +282,23 @@ class ProjectorAppTest(tf.test.TestCase):
     # Add an embedding by its canonical tensor name.
     embedding.tensor_name = 'var1:0'
 
-    with tf.gfile.GFile(os.path.join(self.log_dir, 'bookmarks.json'), 'w') as f:
+    with tf.compat.v1.gfile.GFile(os.path.join(self.log_dir, 'bookmarks.json'), 'w') as f:
       f.write('{"a": "b"}')
     embedding.bookmarks_path = 'bookmarks.json'
 
     config_pbtxt = text_format.MessageToString(config)
-    with tf.gfile.GFile(config_path, 'w') as f:
+    with tf.compat.v1.gfile.GFile(config_path, 'w') as f:
       f.write(config_pbtxt)
 
     # Write a checkpoint with some dummy variables.
     with tf.Graph().as_default():
-      sess = tf.Session()
+      sess = tf.compat.v1.Session()
       checkpoint_path = os.path.join(self.log_dir, 'model')
-      tf.get_variable('var1', [1, 2], initializer=tf.constant_initializer(6.0))
-      tf.get_variable('var2', [10, 10])
-      tf.get_variable('var3', [100, 100])
-      sess.run(tf.global_variables_initializer())
-      saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
+      tf.compat.v1.get_variable('var1', [1, 2], initializer=tf.constant_initializer(6.0))
+      tf.compat.v1.get_variable('var2', [10, 10])
+      tf.compat.v1.get_variable('var3', [100, 100])
+      sess.run(tf.compat.v1.global_variables_initializer())
+      saver = tf.compat.v1.train.Saver(write_version=tf.compat.v1.train.SaverDef.V1)
       saver.save(sess, checkpoint_path)
 
 

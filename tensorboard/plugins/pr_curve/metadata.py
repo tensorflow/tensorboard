@@ -18,9 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.pr_curve import plugin_data_pb2
-from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+logger = tb_logging.get_logger()
 
 PLUGIN_NAME = 'pr_curves'
 
@@ -37,7 +39,7 @@ RECALL_INDEX = 5
 PROTO_VERSION = 0
 
 def create_summary_metadata(display_name, description, num_thresholds):
-  """Create a `tf.SummaryMetadata` proto for pr_curves plugin data.
+  """Create a `summary_pb2.SummaryMetadata` proto for pr_curves plugin data.
 
   Arguments:
     display_name: The display name used in TensorBoard.
@@ -45,16 +47,18 @@ def create_summary_metadata(display_name, description, num_thresholds):
     num_thresholds: The number of thresholds to use for PR curves.
 
   Returns:
-    A `tf.SummaryMetadata` protobuf object.
+    A `summary_pb2.SummaryMetadata` protobuf object.
   """
   pr_curve_plugin_data = plugin_data_pb2.PrCurvePluginData(
       version=PROTO_VERSION, num_thresholds=num_thresholds)
   content = pr_curve_plugin_data.SerializeToString()
-  return tf.SummaryMetadata(
+  return summary_pb2.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(plugin_name=PLUGIN_NAME,
-                                                content=content))
+      plugin_data=summary_pb2.SummaryMetadata.PluginData(
+          plugin_name=PLUGIN_NAME,
+          content=content))
+
 
 def parse_plugin_metadata(content):
   """Parse summary metadata to a Python object.
@@ -66,16 +70,13 @@ def parse_plugin_metadata(content):
   Returns:
     A `PrCurvesPlugin` protobuf object.
   """
-  result = plugin_data_pb2.PrCurvePluginData()
-  # TODO(@jart): Instead of converting to bytes, assert that the input
-  # is a bytestring, and raise a ValueError otherwise...but only after
-  # converting `PluginData`'s `content` field to have type `bytes`
-  # instead of `string`.
-  result.ParseFromString(tf.compat.as_bytes(content))
+  if not isinstance(content, bytes):
+    raise TypeError('Content type must be bytes')
+  result = plugin_data_pb2.PrCurvePluginData.FromString(content)
   if result.version == 0:
     return result
   else:
-    tf.logging.warn(
+    logger.warn(
         'Unknown metadata version: %s. The latest version known to '
         'this build of TensorBoard is %s; perhaps a newer build is '
         'available?', result.version, PROTO_VERSION)

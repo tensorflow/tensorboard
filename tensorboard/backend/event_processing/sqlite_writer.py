@@ -26,8 +26,11 @@ import time
 import six
 
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
+
+logger = tb_logging.get_logger()
 
 # Struct bundling a tag with its SummaryMetadata and a list of values, each of
 # which are a tuple of step, wall time (as a float), and a TensorProto.
@@ -178,7 +181,7 @@ class SqliteWriter(object):
       experiment_name: name of experiment.
       run_name: name of run.
     """
-    tf.logging.debug('Writing summaries for %s tags', len(tagged_data))
+    logger.debug('Writing summaries for %s tags', len(tagged_data))
     # Connection used as context manager for auto commit/rollback on exit.
     # We still need an explicit BEGIN, because it doesn't do one on enter,
     # it waits until the first DML command - which is totally broken.
@@ -423,5 +426,5 @@ def initialize_schema(connection):
     for statement in _SCHEMA_STATEMENTS:
       lines = statement.strip('\n').split('\n')
       message = lines[0] + ('...' if len(lines) > 1 else '')
-      tf.logging.debug('Running DB init statement: %s', message)
+      logger.debug('Running DB init statement: %s', message)
       cursor.execute(statement)

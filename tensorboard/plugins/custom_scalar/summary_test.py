@@ -85,7 +85,7 @@ class LayoutTest(tf.test.TestCase):
         ])
 
     # Write the data as a summary for the '.' run.
-    with tf.Session() as s, test_util.FileWriterCache.get(self.logdir) as writer:
+    with tf.compat.v1.Session() as s, test_util.FileWriterCache.get(self.logdir) as writer:
       writer.add_summary(s.run(summary.op(layout_proto_to_write)))
 
     # Read the data from disk.

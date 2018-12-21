@@ -35,6 +35,8 @@ import numbers as _numbers
 import numpy as _np
 import six as _six
 
+from tensorboard.compat.tensorflow_stub.compat.v1 import *  # noqa
+
 
 def as_bytes(bytes_or_text, encoding="utf-8"):
     """Converts either bytes or unicode to `bytes`, using utf-8 encoding for text.

@@ -23,6 +23,7 @@ py_library(
         ":visualizer",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -41,6 +42,7 @@ py_library(
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:encoder",
+        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -76,6 +78,8 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
     ],
 )
@@ -113,5 +117,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":im_util",
+        "//tensorboard/util:tb_logging",
     ],
 )

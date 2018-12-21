@@ -23,7 +23,11 @@ import shutil
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_file_inspector as efi
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class EventFileInspectorTest(tf.test.TestCase):
@@ -48,13 +52,14 @@ class EventFileInspectorTest(tf.test.TestCase):
 
       with test_util.FileWriterCache.get(subdir) as sw:
         for datum in data:
-          summary = tf.Summary()
+          summary = summary_pb2.Summary()
           if 'simple_value' in datum:
             summary.value.add(tag=datum['tag'],
                               simple_value=datum['simple_value'])
             sw.add_summary(summary, global_step=datum['step'])
           elif 'histo' in datum:
-            summary.value.add(tag=datum['tag'], histo=tf.HistogramProto())
+            summary.value.add(tag=datum['tag'],
+                              histo=summary_pb2.HistogramProto())
             sw.add_summary(summary, global_step=datum['step'])
           elif 'session_log' in datum:
             sw.add_session_log(datum['session_log'], global_step=datum['step'])
@@ -123,31 +128,38 @@ class EventFileInspectorTest(tf.test.TestCase):
   def testSessionLogSummaries(self):
     data = [
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.START),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.START),
             'step': 0
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.CHECKPOINT),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.CHECKPOINT),
             'step': 1
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.CHECKPOINT),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.CHECKPOINT),
             'step': 2
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.CHECKPOINT),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.CHECKPOINT),
             'step': 3
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.STOP),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.STOP),
             'step': 4
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.START),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.START),
             'step': 5
         },
         {
-            'session_log': tf.SessionLog(status=tf.SessionLog.STOP),
+            'session_log': event_pb2.SessionLog(
+                status=event_pb2.SessionLog.STOP),
             'step': 6
         },
     ]
