@@ -17,7 +17,4 @@
 # Check that the capitalized strings "do not submit" and "do_not_submit"
 # do not appear in any code files.
 
-! grep -r -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' \
-    --include='*.*' \
-    --exclude='*.{pyc,json,png,wav,pbtxt,md,in,rst,cfg,ipynb}' \
-    tensorboard
+! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' tensorboard
