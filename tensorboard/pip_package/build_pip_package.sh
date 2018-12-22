@@ -24,16 +24,17 @@ else
 fi
 
 run_smoke_test=1
-while arg="$1" && shift; do
-  case "$arg" in
+while [ "$#" -gt 0 ]; do
+  case "$1" in
     "--no-smoke")
       run_smoke_test=0
       ;;
     *)
-      echo >&2 'fatal: unknown argument:' "$arg"
+      echo >&2 'fatal: unknown argument:' "$1"
       exit 1
       ;;
   esac
+  shift
 done
 
 smoke() {
