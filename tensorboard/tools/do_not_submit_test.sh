@@ -19,20 +19,9 @@
 
 set -e
 
-# Traverse up to the root of the repository. (The directory structure is
-# slightly different in open-source vs. Google-internal, so we can't use
-# a fixed offset.)
-cd "$(dirname "$0")"
-while true; do
-    if [ -f LICENSE ]; then
-        break
-    fi
-    if [ "$(readlink -f .)" = "$(readlink -f ..)" ]; then
-        printf >&2 'fatal: cannot find TensorBoard repository root\n'
-        printf >&2 'fatal: (is there no longer a LICENSE file?)\n'
-        exit 2
-    fi
-    cd ../
-done
+if ! [ -f WORKSPACE ]; then
+    printf >&2 'fatal: no WORKSPACE file found (are you at TensorBoard root?)\n'
+    exit 2
+fi
 
 ! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' .
