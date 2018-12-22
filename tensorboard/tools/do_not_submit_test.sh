@@ -35,4 +35,4 @@ while true; do
     cd ../
 done
 
-! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' tensorboard
+! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' .
