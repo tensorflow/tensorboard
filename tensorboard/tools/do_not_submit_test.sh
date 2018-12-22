@@ -17,4 +17,22 @@
 # Check that the capitalized strings "do not submit" and "do_not_submit"
 # do not appear in any code files.
 
+set -e
+
+# Traverse up to the root of the repository. (The directory structure is
+# slightly different in open-source vs. Google-internal, so we can't use
+# a fixed offset.)
+cd "$(dirname "$0")"
+while true; do
+    if [ -f LICENSE ]; then
+        break
+    fi
+    if [ "$(readlink -f .)" = "$(readlink -f ..)" ]; then
+        printf >&2 'fatal: cannot find TensorBoard repository root\n'
+        printf >&2 'fatal: (is there no longer a LICENSE file?)\n'
+        exit 2
+    fi
+    cd ../
+done
+
 ! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' tensorboard
