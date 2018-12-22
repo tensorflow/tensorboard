@@ -108,6 +108,7 @@ py_library(
         ":reservoir",
         "//tensorboard:data_compat",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/util:tb_logging",
     ],
@@ -259,6 +260,7 @@ py_library(
         ":event_accumulator",
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
