@@ -26,4 +26,7 @@ fi
 
 # Exclude the .git directory, whose reflog entries can include the first
 # lines of commit messages. Include all other non-binary files.
-! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' --exclude-dir=.git .
+! grep -rI . --exclude-dir=.git \
+    -e 'DO'' ''NOT'' ''SUBMIT' \
+    -e 'DO''_''NOT''_''SUBMIT' \
+    ;
