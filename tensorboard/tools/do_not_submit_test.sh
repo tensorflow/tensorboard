@@ -24,4 +24,6 @@ if ! [ -f WORKSPACE ]; then
     exit 2
 fi
 
-! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' .
+# Exclude the .git directory, whose reflog entries can include the first
+# lines of commit messages. Include all other non-binary files.
+! grep -rI -e 'DO NOT'' ''SUBMIT' -e 'DO_NOT''_''SUBMIT' --exclude-dir=.git .
