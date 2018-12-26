@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import app
 from absl import logging
 import contextlib
 import os.path
@@ -281,4 +282,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)
