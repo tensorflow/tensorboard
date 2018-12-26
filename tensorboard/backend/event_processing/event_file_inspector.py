@@ -415,7 +415,3 @@ def inspect(logdir='', event_file='', tag=''):
 
     print_dict(get_dict_to_print(unit.field_to_obs), show_missing=(not tag))
     print(PRINT_SEPARATOR)
-
-
-if __name__ == '__main__':
-  tf.compat.v1.app.run()
