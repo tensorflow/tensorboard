@@ -24,6 +24,8 @@ from __future__ import print_function
 import argparse
 import sys
 
+from absl import app
+
 import tensorflow as tf
 import tensorflow.examples.tutorials.mnist as mnist
 import tensorboard.plugins.beholder as beholder_lib
@@ -212,4 +214,4 @@ if __name__ == '__main__':
       default='/tmp/tensorflow/mnist/logs/mnist_with_summaries',
       help='Summaries log directory')
   FLAGS, unparsed = parser.parse_known_args()
-  tf.compat.v1.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  app.run(main=main, argv=[sys.argv[0]] + unparsed)

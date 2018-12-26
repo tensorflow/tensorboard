@@ -28,6 +28,7 @@ import os.path
 import hashlib
 import shutil
 
+from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from google.protobuf import struct_pb2
@@ -216,4 +217,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)
