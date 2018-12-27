@@ -45,6 +45,7 @@ limitations under the License.
       },
       ready: async function() {
         this.$.dash.settingsClicked_();
+        this.$.dash.updateNumberOfModels_();
         this.means = {
           'age': 38.64358543876172,
           'education-num': 10.078088530363212,
@@ -267,7 +268,7 @@ limitations under the License.
                 results.push({step: step, scalar: adjustedScore});
               }
               this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
-                  e.detail.feature_name, [{'value': results}]);
+                  e.detail.feature_name, [[{'value': results}]]);
             };
             setTimeout(method, 50);
           });

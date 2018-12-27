@@ -7,11 +7,12 @@ py_library(
     srcs = ["interactive_inference_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard/backend:http_util",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/interactive_inference/utils:common_utils",
         "//tensorboard/plugins/interactive_inference/utils:inference_utils",
         "//tensorboard/plugins/interactive_inference/utils:platform_utils",
-        "//tensorboard/backend:http_util",
-        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
 )

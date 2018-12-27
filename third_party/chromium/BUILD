@@ -14,13 +14,14 @@ config_setting(
 
 web_test_archive(
     name = "chromium",
-    archive = "@org_chromium_chromium//:archive",
+    archive = "@org_chromium_chromium//file",
+    extract = "build",
     named_files = select({
         ":linux": {
-            "CHROME": "chrome-linux/chrome",
+            "CHROMIUM": "chrome-linux/chrome",
         },
         ":mac": {
-            "CHROME": "chrome-mac/Chromium.app/Contents/MacOS/chromium",
+            "CHROMIUM": "chrome-mac/Chromium.app/Contents/MacOS/chromium",
         },
     }),
     visibility = ["//tensorboard/functionaltests/browsers:__pkg__"],
@@ -28,7 +29,8 @@ web_test_archive(
 
 web_test_archive(
     name = "chromedriver",
-    archive = "@org_chromium_chromedriver//:archive",
+    archive = "@org_chromium_chromedriver//file",
+    extract = "build",
     named_files = {"CHROMEDRIVER": "chromedriver"},
     visibility = ["//tensorboard/functionaltests/browsers:__pkg__"],
 )

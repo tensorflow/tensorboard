@@ -18,11 +18,13 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+
 import tensorflow as tf
+from tensorboard.plugins.debugger import tensor_helper
+from tensorboard.util import tb_logging
 from tensorflow.python.debug.lib import debug_data
 
-from tensorboard.plugins.debugger import tensor_helper
-
+logger = tb_logging.get_logger()
 
 # TODO(cais): Defer some tensor values to TensorBase, within a bytes limit,
 #   before discarding them.
@@ -249,7 +251,7 @@ class TensorStore(object):
       if mapping == 'image/png':
         output = tensor_helper.array_to_base64_png(output)
       elif mapping and mapping != 'none':
-        tf.logging.warn(
+        logger.warn(
             'Unsupported mapping mode after recomining time steps: %s',
             mapping)
     return output

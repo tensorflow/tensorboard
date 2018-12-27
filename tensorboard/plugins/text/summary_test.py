@@ -13,86 +13,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for the text plugin summary generation functions."""
+"""Tests for the text plugin summary API."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import glob
+import os
+
+
 import numpy as np
 import six
 import tensorflow as tf
 
+from tensorboard import compat
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
 from tensorboard.util import tensor_util
 
+try:
+  tf_v2 = compat.import_tf_v2()
+except ImportError:
+  tf_v2 = None
 
-class SummaryTest(tf.test.TestCase):
+try:
+  tf.compat.v1.enable_eager_execution()
+except AttributeError:
+  # TF 2.0 doesn't have this symbol because eager is the default.
+  pass
 
-  def pb_via_op(self, summary_op, feed_dict=None):
-    with tf.Session() as sess:
-      actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = tf.Summary()
-    actual_proto.ParseFromString(actual_pbtxt)
-    return actual_proto
 
-  def normalize_summary_pb(self, pb):
-    """Pass `pb`'s `TensorProto` through a marshalling roundtrip.
+class SummaryBaseTest(object):
 
-    `TensorProto`s can be equal in value even if they are not identical
-    in representation, because data can be stored in either the
-    `tensor_content` field or the `${dtype}_value` field. This
-    normalization ensures a canonical form, and should be used before
-    comparing two `Summary`s for equality.
-    """
-    result = tf.Summary()
-    result.MergeFrom(pb)
-    for value in result.value:
-      if value.HasField('tensor'):
-        new_tensor = tensor_util.make_tensor_proto(tensor_util.make_ndarray(value.tensor))
-        value.ClearField('tensor')
-        value.tensor.MergeFrom(new_tensor)
-    return result
+  def text(self, *args, **kwargs):
+    raise NotImplementedError()
 
-  def compute_and_check_summary_pb(self, name, data,
-                                   display_name=None, description=None,
-                                   data_tensor=None, feed_dict=None):
-    """Use both `op` and `pb` to get a summary, asserting equality.
-
-    Returns:
-      a `Summary` protocol buffer
-    """
-    if data_tensor is None:
-      data_tensor = tf.constant(data)
-    op = summary.op(
-        name, data, display_name=display_name, description=description)
-    pb = self.normalize_summary_pb(summary.pb(
-        name, data, display_name=display_name, description=description))
-    pb_via_op = self.normalize_summary_pb(
-        self.pb_via_op(op, feed_dict=feed_dict))
-    self.assertProtoEquals(pb, pb_via_op)
-    return pb
+  def test_tag(self):
+    self.assertEqual('a', self.text('a', 'foo').value[0].tag)
+    self.assertEqual('a/b', self.text('a/b', 'foo').value[0].tag)
 
   def test_metadata(self):
-    pb = self.compute_and_check_summary_pb('do', 'A deer. A female deer.')
+    pb = self.text('do', 'A deer. A female deer.')
     summary_metadata = pb.value[0].metadata
     plugin_data = summary_metadata.plugin_data
-    self.assertEqual(summary_metadata.display_name, 'do')
     self.assertEqual(summary_metadata.summary_description, '')
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
     content = summary_metadata.plugin_data.content
     # There's no content, so successfully parsing is fine.
     metadata.parse_plugin_metadata(content)
 
-  def test_explicit_display_name_and_description(self):
-    display_name = '"Re"'
+  def test_explicit_description(self):
     description = 'A whole step above do.'
-    pb = self.compute_and_check_summary_pb('re', 'A drop of golden sun.',
-                                           display_name=display_name,
-                                           description=description)
+    pb = self.text('re', 'A drop of golden sun.', description=description)
     summary_metadata = pb.value[0].metadata
-    self.assertEqual(summary_metadata.display_name, display_name)
     self.assertEqual(summary_metadata.summary_description, description)
     plugin_data = summary_metadata.plugin_data
     self.assertEqual(plugin_data.plugin_name, metadata.PLUGIN_NAME)
@@ -101,20 +75,19 @@ class SummaryTest(tf.test.TestCase):
     metadata.parse_plugin_metadata(content)
 
   def test_bytes_value(self):
-    pb = self.compute_and_check_summary_pb(
-        'mi', b'A name\xe2\x80\xa6I call myself')
+    pb = self.text('mi', b'A name\xe2\x80\xa6I call myself')
     value = tensor_util.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
   def test_unicode_value(self):
-    pb = self.compute_and_check_summary_pb('mi', u'A name\u2026I call myself')
+    pb = self.text('mi', u'A name\u2026I call myself')
     value = tensor_util.make_ndarray(pb.value[0].tensor).item()
     self.assertIsInstance(value, six.binary_type)
     self.assertEqual(b'A name\xe2\x80\xa6I call myself', value)
 
   def test_np_array_bytes_value(self):
-    pb = self.compute_and_check_summary_pb(
+    pb = self.text(
         'fa',
         np.array(
             [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']]))
@@ -128,11 +101,11 @@ class SummaryTest(tf.test.TestCase):
         self.assertIsInstance(value, six.binary_type)
 
   def test_np_array_unicode_value(self):
-    pb = self.compute_and_check_summary_pb(
+    pb = self.text(
         'fa',
         np.array(
             [[u'A', u'long', u'long'], [u'way', u'to', u'run \u203C']]))
-    values = tensor_util.make_ndarray(pb.value[0].tensor).tolist()
+    values = tensor_util.make_ndarray (pb.value[0].tensor).tolist()
     self.assertEqual(
         [[b'A', b'long', b'long'], [b'way', b'to', b'run \xe2\x80\xbc']],
         values)
@@ -141,20 +114,91 @@ class SummaryTest(tf.test.TestCase):
       for value in vectors:
         self.assertIsInstance(value, six.binary_type)
 
-  def test_non_string_value_in_op(self):
-    with six.assertRaisesRegex(
-        self,
-        Exception,
-        r'must be of type <dtype: \'string\'>'):
-      with tf.Session() as sess:
-        sess.run(summary.op('so', tf.constant(5)))
+  def test_non_string_value(self):
+    with six.assertRaisesRegex(self, TypeError, r'must be of type.*string'):
+      self.text('la', np.array(range(42)))
 
-  def test_non_string_value_in_pb(self):
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        r'Expected binary or unicode string, got 0'):
-      summary.pb('la', np.array(range(42)))
+
+class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
+  def text(self, *args, **kwargs):
+    return summary.pb(*args, **kwargs)
+
+  def test_tag(self):
+    self.assertEqual('a/text_summary', self.text('a', 'foo').value[0].tag)
+    self.assertEqual('a/b/text_summary', self.text('a/b', 'foo').value[0].tag)
+
+  def test_non_string_value(self):
+    with six.assertRaisesRegex(self, ValueError,
+                               r'Expected binary or unicode string, got 0'):
+      self.text('la', np.array(range(42)))
+
+
+class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
+  def text(self, *args, **kwargs):
+    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+
+  def test_tag(self):
+    self.assertEqual('a/text_summary', self.text('a', 'foo').value[0].tag)
+    self.assertEqual('a/b/text_summary', self.text('a/b', 'foo').value[0].tag)
+
+  def test_scoped_tag(self):
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a/text_summary',
+                       self.text('a', 'foo').value[0].tag)
+
+
+class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
+  def text(self, *args, **kwargs):
+    return summary.text_pb(*args, **kwargs)
+
+
+class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
+  def setUp(self):
+    super(SummaryV2OpTest, self).setUp()
+    if tf_v2 is None:
+      self.skipTest('TF v2 summary API not available')
+
+  def text(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
+      summary.text(*args, **kwargs)
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
+
+  def read_single_event_from_eventfile(self):
+    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
+    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
+    # Expect a boilerplate event for the file_version, then the summary one.
+    self.assertEqual(len(events), 2)
+    return events[1]
+
+  def test_scoped_tag(self):
+    with tf.name_scope('scope'):
+      self.assertEqual('scope/a', self.text('a', 'foo').value[0].tag)
+
+  def test_step(self):
+    self.text('a', 'foo', step=333)
+    event = self.read_single_event_from_eventfile()
+    self.assertEqual(333, event.step)
+
+
+class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
+  def text(self, *args, **kwargs):
+    kwargs.setdefault('step', 1)
+    # Hack to extract current scope since there's no direct API for it.
+    with tf.name_scope('_') as temp_scope:
+      scope = temp_scope.rstrip('/_')
+    @tf_v2.function
+    def graph_fn():
+      # Recreate the active scope inside the defun since it won't propagate.
+      with tf.name_scope(scope):
+        summary.text(*args, **kwargs)
+    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    with writer.as_default():
+      graph_fn()
+    writer.close()
+    return self.read_single_event_from_eventfile().summary
 
 
 if __name__ == '__main__':

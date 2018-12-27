@@ -476,7 +476,6 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
       charts.append(make_json_formatted_for_single_chart(
         mutant_features, inference_result_proto, index_to_mutate))
     return charts
-
   try:
     original_feature = parse_original_feature_from_example(
         example_protos[0], feature_name)
@@ -631,7 +630,7 @@ def get_eligible_features(examples, num_mutants):
 def get_label_vocab(vocab_path):
   if vocab_path:
     try:
-      with tf.gfile.GFile(vocab_path, 'r') as f:
+      with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
       tf.logging.error('error reading vocab file: %s', err)

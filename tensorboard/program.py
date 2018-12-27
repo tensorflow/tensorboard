@@ -34,7 +34,6 @@ from abc import abstractmethod
 import argparse
 from collections import defaultdict
 import errno
-import logging
 import os
 import socket
 import sys
@@ -47,6 +46,7 @@ from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
 from tensorboard.util import util
 
 try:
@@ -57,7 +57,7 @@ except ImportError:
   absl_flags = None
   argparse_flags = argparse
 
-logger = logging.getLogger(__name__)
+logger = tb_logging.get_logger()
 
 
 def setup_environment():
@@ -369,7 +369,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         # Log a warning on failure to dual-bind, except for EAFNOSUPPORT
         # since that's expected if IPv4 isn't supported at all (IPv6-only).
         if hasattr(errno, 'EAFNOSUPPORT') and e.errno != errno.EAFNOSUPPORT:
-          logging.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
+          logger.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
     super(WerkzeugServer, self).server_bind()
 
   def handle_error(self, request, client_address):

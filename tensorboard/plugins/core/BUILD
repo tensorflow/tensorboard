@@ -17,8 +17,8 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/backend:http_util",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -31,10 +31,12 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":core_plugin",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

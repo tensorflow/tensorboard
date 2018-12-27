@@ -18,9 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import plugin_data_pb2
-from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+logger = tb_logging.get_logger()
 
 PLUGIN_NAME = 'audio'
 
@@ -33,17 +35,17 @@ Encoding = plugin_data_pb2.AudioPluginData.Encoding
 
 
 def create_summary_metadata(display_name, description, encoding):
-  """Create a `tf.SummaryMetadata` proto for audio plugin data.
+  """Create a `SummaryMetadata` proto for audio plugin data.
 
   Returns:
-    A `tf.SummaryMetadata` protobuf object.
+    A `SummaryMetadata` protobuf object.
   """
   content = plugin_data_pb2.AudioPluginData(
       version=PROTO_VERSION, encoding=encoding)
-  metadata = tf.SummaryMetadata(
+  metadata = summary_pb2.SummaryMetadata(
       display_name=display_name,
       summary_description=description,
-      plugin_data=tf.SummaryMetadata.PluginData(
+      plugin_data=summary_pb2.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME,
           content=content.SerializeToString()))
   return metadata
@@ -59,16 +61,13 @@ def parse_plugin_metadata(content):
   Returns:
     An `AudioPluginData` protobuf object.
   """
-  result = plugin_data_pb2.AudioPluginData()
-  # TODO(@jart): Instead of converting to bytes, assert that the input
-  # is a bytestring, and raise a ValueError otherwise...but only after
-  # converting `PluginData`'s `content` field to have type `bytes`
-  # instead of `string`.
-  result.ParseFromString(tf.compat.as_bytes(content))
+  if not isinstance(content, bytes):
+    raise TypeError('Content type must be bytes')
+  result = plugin_data_pb2.AudioPluginData.FromString(content)
   if result.version == 0:
     return result
   else:
-    tf.logging.warn(
+    logger.warn(
         'Unknown metadata version: %s. The latest version known to '
         'this build of TensorBoard is %s; perhaps a newer build is '
         'available?', result.version, PROTO_VERSION)

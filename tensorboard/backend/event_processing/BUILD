@@ -13,6 +13,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -36,6 +37,7 @@ py_library(
     deps = [
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -73,7 +75,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:platform_util",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -105,6 +109,7 @@ py_library(
         "//tensorboard:data_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -116,11 +121,13 @@ py_test(
     deps = [
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -132,11 +139,14 @@ py_test(
     deps = [
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -153,7 +163,7 @@ py_library(
         ":directory_watcher",
         ":event_accumulator",
         ":io_wrapper",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -196,6 +206,8 @@ py_library(
         ":sqlite_writer",
         "//tensorboard:data_compat",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -207,8 +219,11 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":db_import_multiplexer",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -221,6 +236,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
@@ -254,5 +270,7 @@ py_test(
     deps = [
         ":event_file_inspector",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:test_util",
     ],
 )

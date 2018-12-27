@@ -53,3 +53,6 @@ scalar_pb = _scalar_summary.pb
 
 text = _text_summary.op
 text_pb = _text_summary.pb
+
+
+del absolute_import, division, print_function
