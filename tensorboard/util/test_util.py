@@ -33,6 +33,8 @@ import tensorflow as tf
 
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import tb_logging
 from tensorboard.util import util
@@ -216,6 +218,23 @@ class FileWriter(tf.summary.FileWriter):
                       'Please prefer TensorBoard copy of the proto')
       tf_session_log = session_log
     super(FileWriter, self).add_session_log(tf_session_log, global_step)
+
+  def add_graph(self, graph, global_step=None, graph_def=None):
+    if isinstance(graph_def, graph_pb2.GraphDef):
+      tf_graph_def = tf.compat.v1.GraphDef.FromString(graph_def.SerializeToString())
+    else:
+      tf_graph_def = graph_def
+
+    super(FileWriter, self).add_graph(graph, global_step=global_step, graph_def=tf_graph_def)
+
+  def add_meta_graph(self, meta_graph_def, global_step=None):
+    if isinstance(meta_graph_def, meta_graph_pb2.MetaGraphDef):
+      tf_meta_graph_def = tf.compat.v1.MetaGraphDef.FromString(meta_graph_def.SerializeToString())
+    else:
+      tf_meta_graph_def = meta_graph_def
+
+    super(FileWriter, self).add_meta_graph(meta_graph_def=tf_meta_graph_def, global_step=global_step)
+
 
 class FileWriterCache(object):
   """Cache for TensorBoard test file writers.

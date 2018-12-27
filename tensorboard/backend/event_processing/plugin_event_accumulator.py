@@ -31,6 +31,8 @@ from tensorboard.backend.event_processing import reservoir
 from tensorboard.compat import tf
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.util import tb_logging
 
 
@@ -280,8 +282,7 @@ class EventAccumulator(object):
 
     self._MaybePurgeOrphanedData(event)
 
-    ## Process the event.
-    # GraphDef and MetaGraphDef are handled in a special way:
+    ## Process the meta_graph_pb2and MetaGraphDef are handled in a special way:
     # If no graph_def Event is available, but a meta_graph_def is, and it
     # contains a graph_def, then use the meta_graph_def.graph_def as our graph.
     # If a graph_def Event is available, always prefer it to the graph_def
@@ -303,7 +304,7 @@ class EventAccumulator(object):
       if self._graph is None or self._graph_from_metagraph:
         # We may have a graph_def in the metagraph.  If so, and no
         # graph_def is directly available, use this one instead.
-        meta_graph = tf.compat.v1.MetaGraphDef()
+        meta_graph = meta_graph_pb2.MetaGraphDef()
         meta_graph.ParseFromString(self._meta_graph)
         if meta_graph.graph_def:
           if self._graph is not None:
@@ -380,7 +381,7 @@ class EventAccumulator(object):
     Returns:
       The `graph_def` proto.
     """
-    graph = tf.compat.v1.GraphDef()
+    graph = graph_pb2.GraphDef()
     if self._graph is not None:
       graph.ParseFromString(self._graph)
       return graph
@@ -397,7 +398,7 @@ class EventAccumulator(object):
     """
     if self._meta_graph is None:
       raise ValueError('There is no metagraph in this EventAccumulator')
-    meta_graph = tf.compat.v1.MetaGraphDef()
+    meta_graph = meta_graph_pb2.MetaGraphDef()
     meta_graph.ParseFromString(self._meta_graph)
     return meta_graph
 
