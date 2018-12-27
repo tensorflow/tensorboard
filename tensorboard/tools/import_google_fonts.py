@@ -32,6 +32,7 @@ import re
 import sys
 import urlparse
 
+from absl import app
 import tensorflow as tf
 
 ROBOTO_URLS = [
@@ -210,4 +211,4 @@ def main(unused_argv=None):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run(main)
+  app.run(main)

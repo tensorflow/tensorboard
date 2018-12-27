@@ -32,6 +32,7 @@ from __future__ import print_function
 
 import os.path
 
+from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
@@ -231,4 +232,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)

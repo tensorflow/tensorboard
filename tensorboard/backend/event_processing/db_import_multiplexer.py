@@ -342,7 +342,7 @@ class _SqliteWriterEventSink(_EventSink):
     elif event_type == 'file_version':
       pass  # TODO: reject file version < 2 (at loader level)
     elif event_type == 'session_log':
-      if event.session_log.status == tf.compat.v1.SessionLog.START:
+      if event.session_log.status == event_pb2.SessionLog.START:
         pass  # TODO: implement purging via sqlite writer truncation method
     elif event_type in ('graph_def', 'meta_graph_def'):
       pass  # TODO: support graphs
