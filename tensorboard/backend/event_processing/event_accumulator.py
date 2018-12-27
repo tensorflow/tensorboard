@@ -26,6 +26,7 @@ from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 from tensorboard.compat import tf
+from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tb_logging
@@ -482,7 +483,7 @@ class EventAccumulator(object):
     if tag not in self._tagged_metadata:
       raise ValueError('There is no run metadata with this tag name')
 
-    run_metadata = tf.compat.v1.RunMetadata()
+    run_metadata = config_pb2.RunMetadata()
     run_metadata.ParseFromString(self._tagged_metadata[tag])
     return run_metadata
 
