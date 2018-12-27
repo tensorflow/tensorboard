@@ -66,7 +66,7 @@ limitations under the License.
       .one-model {
         display: none;
       }
-      .label {
+      .show-label {
         flex: 20;
         display: flex;
         overflow: hidden;
@@ -149,7 +149,7 @@ limitations under the License.
       },
 
       getLabelClass: function(modelType) {
-        return modelType == 'classification' ? 'label' : 'no-label';
+        return modelType == 'classification' ? 'show-label' : 'no-label';
       },
 
       getModelClass: function(inferences) {
