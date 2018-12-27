@@ -63,7 +63,6 @@ def import_tf_v2():
   if USING_TF:
     # Check if this is TF 2.0 by looking for a known 2.0-only tf.summary symbol.
     # TODO(nickfelt): determine a cleaner way to do this.
-    # DO NOT SUBMIT - replicate to GitHub
     if hasattr(tf, 'summary') and hasattr(tf.summary, 'write'):
       return tf
     else:

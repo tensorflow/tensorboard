@@ -120,6 +120,7 @@ from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.compat import tf
+from tensorboard.compat.proto import event_pb2
 
 
 # Map of field names within summary.proto to the user-facing names that this
@@ -190,11 +191,11 @@ def get_field_to_observations_map(generator, query_for_tag=''):
       increment('graph', event)
     if event.HasField('session_log') and (not query_for_tag):
       status = event.session_log.status
-      if status == tf.compat.v1.SessionLog.START:
+      if status == event_pb2.SessionLog.START:
         increment('sessionlog:start', event)
-      elif status == tf.compat.v1.SessionLog.STOP:
+      elif status == event_pb2.SessionLog.STOP:
         increment('sessionlog:stop', event)
-      elif status == tf.compat.v1.SessionLog.CHECKPOINT:
+      elif status == event_pb2.SessionLog.CHECKPOINT:
         increment('sessionlog:checkpoint', event)
     elif event.HasField('summary'):
       for value in event.summary.value:
@@ -414,7 +415,3 @@ def inspect(logdir='', event_file='', tag=''):
 
     print_dict(get_dict_to_print(unit.field_to_obs), show_missing=(not tag))
     print(PRINT_SEPARATOR)
-
-
-if __name__ == '__main__':
-  tf.compat.v1.app.run()

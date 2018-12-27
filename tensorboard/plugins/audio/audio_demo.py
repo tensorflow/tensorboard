@@ -22,6 +22,7 @@ import inspect
 import math
 import os.path
 
+from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorboard.plugins.audio import summary
@@ -256,4 +257,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)

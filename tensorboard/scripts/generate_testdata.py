@@ -26,6 +26,7 @@ import os.path
 import random
 import shutil
 
+from absl import app
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
@@ -223,4 +224,4 @@ def main(unused_argv=None):
 
 
 if __name__ == "__main__":
-  tf.compat.v1.app.run()
+  app.run(main)

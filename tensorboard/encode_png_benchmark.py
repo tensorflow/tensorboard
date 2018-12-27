@@ -51,6 +51,7 @@ import time
 
 from six.moves import xrange
 
+from absl import app
 from absl import logging
 import numpy as np
 import tensorflow as tf
@@ -139,4 +140,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)

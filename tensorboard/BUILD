@@ -279,6 +279,7 @@ py_binary(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util",
+        "//tensorboard/util:encoder",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
