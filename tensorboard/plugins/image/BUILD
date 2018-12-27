@@ -34,6 +34,7 @@ py_binary(
         ":summary",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
