@@ -668,7 +668,7 @@ def create_sprite_image(examples):
 
     image_feature_name = 'image/encoded'
     sprite_thumbnail_dim_px = 32
-    with tf.Session():
+    with tf.compat.v1.Session():
       keys_to_features = {
           image_feature_name:
               tf.FixedLenFeature((), tf.string, default_value=''),
@@ -686,7 +686,7 @@ def create_sprite_image(examples):
       def loop_body(i, encoded_images, images):
         encoded_image = encoded_images[i]
         image = tf.image.decode_jpeg(encoded_image, channels=3)
-        resized_image = tf.image.resize_images(image, thumbnail_dims)
+        resized_image = tf.compat.v1.image.resize_images(image, thumbnail_dims)
         expanded_image = tf.expand_dims(resized_image, 0)
         images = tf.cond(
             tf.equal(i, 0), lambda: expanded_image,

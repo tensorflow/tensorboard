@@ -47,14 +47,15 @@ def convert_predict_response(pred, serving_bundle):
   Returns:
     A ClassificationResponse or RegressionResponse.
   """
-  output = pred.outputs[serving_bundle.predict_output_tensor].float_val
+  output = pred.outputs[serving_bundle.predict_output_tensor]
+  raw_output = output.float_val
   if serving_bundle.model_type == 'classification':
     values = []
     for example_index in range(output.tensor_shape.dim[0].size):
       start = example_index * output.tensor_shape.dim[1].size
-      values.append(output[start:start + output.tensor_shape.dim[1].size])
+      values.append(raw_output[start:start + output.tensor_shape.dim[1].size])
   else:
-    values = output
+    values = raw_output
   return convert_prediction_values(values, serving_bundle, pred.model_spec)
 
 def convert_prediction_values(values, serving_bundle, model_spec=None):
