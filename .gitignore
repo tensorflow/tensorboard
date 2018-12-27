@@ -4,8 +4,4 @@
 *.pyc
 *.egg-info/
 *.swp
-**/interactive_inference/dist/
-**/witwidget/dist/
-**/witwidget/static/
-node_modules/
-package-lock.json
+

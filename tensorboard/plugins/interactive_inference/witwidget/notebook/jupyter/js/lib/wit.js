@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 var widgets = require('@jupyter-widgets/base');
-var _ = require('lodash');
 
 /**
  * Helper method to load the vulcanized template.
