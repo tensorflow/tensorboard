@@ -74,6 +74,7 @@ mkdir -p witwidget/_utils
 cp "$plugin_runfile_dir/utils/common_utils.py" witwidget/_utils
 cp "$plugin_runfile_dir/utils/inference_utils.py" witwidget/_utils
 cp "$plugin_runfile_dir/utils/platform_utils.py" witwidget/_utils
+touch witwidget/_utils/__init__.py
 
 # Fix the import statements to reflect the copied over path.
 find witwidget -name \*.py |
