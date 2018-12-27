@@ -39,7 +39,7 @@ cd "$dest"
 mkdir -p js
 pushd js
 
-cp -LR "$plugin_runfile_dir/witwidget/notebook/jupyter/js/" .
+cp -LR "$plugin_runfile_dir"/witwidget/notebook/jupyter/js/* .
 
 # Install Node dependencies
 npm install
