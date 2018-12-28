@@ -449,7 +449,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
   Args:
     example_proto: The example protos to mutate.
     feature_name: The string feature name to mutate.
-    serving_bundles: One `ServingBundle` per model, that contains the
+    serving_bundles: One `ServingBundle` object per model, that contains the
       information to make the serving request.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
@@ -738,6 +738,7 @@ def run_inference(examples, serving_bundle):
       lambda: tf.data.Dataset.from_tensor_slices(
         tf.parse_example([ex.SerializeToString() for ex in examples],
         serving_bundle.feature_spec)).batch(batch_size))
+  
     if serving_bundle.use_predict:
       preds_key = serving_bundle.predict_output_tensor
     elif serving_bundle.model_type == 'regression':
