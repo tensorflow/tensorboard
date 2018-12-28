@@ -16,6 +16,7 @@ tf_web_library(
         "//tensorboard/plugins/lite/tf_lite_common",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_node_search",
+        "@org_polymer_iron_pages",
         "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_dialog",
@@ -24,6 +25,7 @@ tf_web_library(
         "@org_polymer_paper_listbox",
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_tooltip",
+        "@org_polymer_paper_tabs"
     ],
 )
 

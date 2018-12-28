@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
@@ -22,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
@@ -64,15 +66,6 @@ table td {
 }
 .script_wrap {
   position: relative;
-}
-.pre {
-  font: 14px/20px Roboto Mono,monospace;
-  margin: 16px 0;
-  overflow-x: auto;
-  padding: 8px;
-  background: #f7f7f7;
-  color: #37474f;
-  white-space: pre-line;
 }
 
 .allcontrols {
@@ -266,6 +259,14 @@ span.counter {
   color: gray;
 }
 
+paper-tabs {
+  --paper-tabs-selection-bar-color: #F57C00;
+  --paper-tabs-content: {
+    -webkit-font-smoothing: antialiased;
+    text-transform: capitalize;
+  }
+}
+
 table.control-holder {
   border: 0;
   border-collapse: collapse;
@@ -306,6 +307,36 @@ paper-listbox paper-item-body {
   height: 30px;
   position: absolute;
   right: 10px;
+}
+pre.result-code {
+  font: 14px/20px Roboto Mono,monospace;
+  margin: 16px 0;
+  overflow-x: auto;
+  padding: 8px;
+  background: #f7f7f7;
+  color: #37474f;
+  white-space: pre-line;
+}
+#result_dialog {
+  min-width: 50%;
+}
+#result_dialog .result {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+h4.result-title {
+  text-transform:capitalize;
+}
+.result-addons {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.result-addons a {
+  text-decoration: none;
+  font-size: 12px;
+  height: 25px;
+  color: gray;
 }
 
 /** Otherwise, polymer UI controls appear atop node search. */
@@ -580,40 +611,45 @@ tf-graph-node-search {
   </div>
 </div>
 <paper-dialog id="result_dialog" with-backdrop>
-    <h2>TfLite Convert Result</h2>
-    <paper-dialog-scrollable>
-        <template is="dom-repeat" items="[[conversionMessages]]">
-            <paper-item>
-                <paper-item-body two-line>
-                  <div>{{item.type}}:
-                    <pre class="pre">{{item.content.message}}</pre>
-                    <template is="dom-if" if="{{conversionResult}}">
-                      <a id="copy_generated_path_button" on-click="copyGeneratedPath" title="Click to copy the path"><iron-icon icon="content-copy"></iron-icon></a>
-                    </template>
-                  </div>
-                  <div secondary>
-                    <template is="dom-if" if="[[item.content.suggestion]]">
-                      <div><{{item.content.suggestion}}</div>
-                    </template>
-                    <template is="dom-if" if="[[item.content.stack_trace]]">
-                      <pre class="pre" ><{{item.content.stack_trace}}</pre>
-                    </template>
-                  </div>
-
-                  <template is="dom-if" if="{{conversionResult}}">
-                    <div class="script_wrap">
-                      <pre class="pre" id="command_text">{{item.content.shell_script}}
-                      </pre>
-                      <a class="copy-button" title="Click to copy the command" on-click="copyCommand">
-                        <iron-icon icon="content-copy">
-                      </a>
-                    </div>
-                  </template>
-                </paper-item-body>
-                <iron-icon icon="{{conversionResult}}"></iron-icon>
-            </paper-item>
+  <h2>TF Lite Convert Result: <span class="result">{{conversionResult.result}}</span></h2>
+  <template is="dom-if" if="[[conversionResult.addons]]">
+    <div class="result-addons">
+      <template is="dom-repeat" items="[[conversionResult.addons]]">
+          <template is="dom-if" if="[[_equals(item.type, 'link')]]">
+            <a href="[[item.body]]" tabindex="-1" target="tb-external">
+              <paper-button raised>[[ item.title ]]</paper-button>
+            </a>
           </template>
-    </paper-dialog-scrollable>
+      </template>
+    </div>
+  </template>
+  <paper-tabs selected="{{_conversionResultTabSelectedIndex}}" noink>
+    <template is="dom-repeat" items="[[conversionResult.tabs]]">
+    <paper-tab>[[ item.name ]]</paper-tab>
+    </template>
+  </paper-tabs>
+  <paper-dialog-scrollable>
+    <iron-pages selected="{{_conversionResultTabSelectedIndex}}">
+      <template is="dom-repeat" items="[[conversionResult.tabs]]">
+        <div>
+          <template is="dom-repeat" items="[[item.content]]">
+            <template is="dom-if" if="[[_equals(item.type, 'code')]]">
+              <h4 class="result-title">[[ item.title ]]</h4>
+              <pre class="result-code">
+                [[ item.body ]]
+              </pre>
+            </template>
+            <template is="dom-if" if="[[_equals(item.type, 'text')]]">
+              <h4 class="result-title">[[ item.title ]]</h4>
+              <div class="result-text">
+                [[ item.body ]]
+              </div>
+            </template>
+          </template>
+        </div>
+      </template>
+    </iron-pages>
+  </paper-dialog-scrollable>
 </paper-dialog>
 <paper-toast id="messageToast" always-on-top></paper-toast>
 </template>
@@ -650,13 +686,13 @@ tf-graph-node-search {
           type: Number,
           value: 1
         },
-        conversionMessages: {
+        conversionResult: {
+          type: Object,
+          value: {}
+        },
+        conversionResultKeys: {
           type: Array,
           value: []
-        },
-        conversionResult: {
-          type: String,
-          value: ''
         },
         convertCommand: {
           type: String,
@@ -689,6 +725,10 @@ tf-graph-node-search {
         _outputNodesEmpty: {
           type: Boolean,
           value: true
+        },
+        _conversionResultTabSelectedIndex: {
+          type: Number,
+          value: 0
         },
         _requestManager: {
           type: Object,
@@ -736,8 +776,7 @@ tf-graph-node-search {
       convert: function () {
         this._fetchRunToco().then(
           result => {
-            this.conversionResult = result.hasOwnProperty('success');
-            this.conversionMessages = this.conversionResult ? [result.success] : result.errors;
+            this.conversionResult = result
             this.$.result_dialog.open();
           }
         )
@@ -797,7 +836,12 @@ tf-graph-node-search {
         window.getSelection().addRange(range);
         document.execCommand("copy");
         this._showToast("Copied the text successfully.");
-      }
+      },
+      _equals: function(a, b) {
+        console.log(a + ' ' + b);
+        console.log(a === b);
+        return a === b;
+      },
     });
   })(); // Closing private scope.
 </script>

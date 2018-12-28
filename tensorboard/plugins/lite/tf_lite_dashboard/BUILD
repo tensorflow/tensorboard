@@ -21,9 +21,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_lite_dashboard",
     srcs = [
-        "tf-lite-card.html",
         "tf-lite-dashboard.html",
-        "tf-lite-steps-selector.html",
     ],
     path = "/tf-lite-dashboard",
     deps = [

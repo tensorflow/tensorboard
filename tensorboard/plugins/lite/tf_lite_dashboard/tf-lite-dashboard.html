@@ -212,16 +212,14 @@ Polymer({
         tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
   },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    const demoMode = tf_backend.getRouter().isDemoMode();
     const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
-    const optional = (p) => (p != null && !demoMode || undefined) && p;
+    const optional = (p) => (p != null || undefined) && p;
     const parameters = {
       'run': run,
       'limit_attr_size': optional(limitAttrSize),
       'large_attrs_key': optional(largeAttrsKey),
     };
-    const extension = demoMode ? '.pbtxt' : '';
-    return tf_backend.addParams(base, parameters) + extension;
+    return tf_backend.addParams(base, parameters) ;
   },
   _maybeInitializeDashboard: function(isAttached) {
     if (this._initialized || !isAttached) {

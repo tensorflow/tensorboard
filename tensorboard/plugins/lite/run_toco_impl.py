@@ -163,10 +163,10 @@ if tflite_support:
     try:
       freeze_and_convert(graph_def_file, "model_dir/test.tflite", options)
     except Exception as e:
-      print e
+      print(e)
 
     try:
       script = get_freeze_and_convert_script(graph_def_file, "model_dir/test.tflite", options)
       print(script)
     except Exception as e:
-      print e
+      print(e)

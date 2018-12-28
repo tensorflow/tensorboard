@@ -19,7 +19,7 @@ py_library(
 
 py_library(
     name = "lite_plugin",
-    srcs = ["lite_plugin.py", "run_toco_impl.py", "freeze_graph.py", "tflite_convert.py", "suggestion.py"],
+    srcs = ["lite_plugin.py", "run_toco_impl.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [

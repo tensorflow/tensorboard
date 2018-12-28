@@ -345,43 +345,6 @@ alias(
     name = "summary",
     actual = "//tensorboard/summary",
     visibility = ["//visibility:public"],
-<<<<<<< HEAD
-=======
-    deps = [
-        "//tensorboard/plugins/audio:summary",
-        "//tensorboard/plugins/custom_scalar:summary",
-        "//tensorboard/plugins/histogram:summary",
-        "//tensorboard/plugins/image:summary",
-        "//tensorboard/plugins/pr_curve:summary",
-        "//tensorboard/plugins/lite:summary",
-        "//tensorboard/plugins/scalar:summary",
-        "//tensorboard/plugins/text:summary",
-    ],
-)
-
-py_test(
-    name = "summary_test",
-    size = "small",
-    srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":lib",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
-py_library(
-    name = "test_util",
-    testonly = 1,
-    srcs = ["test_util.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":db",
-        ":util",
-        "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
->>>>>>> Create a new plugin which is based on pr-curve
 )
 
 py_library(
