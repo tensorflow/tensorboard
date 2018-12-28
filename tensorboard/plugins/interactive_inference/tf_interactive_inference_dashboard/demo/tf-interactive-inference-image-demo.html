@@ -52,7 +52,6 @@ limitations under the License.
         images: Array,
       },
       ready: async function() {
-        this.$.dash.settingsClicked_();
         this.$.dash.updateNumberOfModels_();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/images/model.json', {credentials: 'include'}));
