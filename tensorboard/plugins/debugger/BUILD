@@ -33,6 +33,7 @@ py_test(
     deps = [
         ":debug_graphs_helper",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
         "@org_python_pypi_portpicker",
     ],
