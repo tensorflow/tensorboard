@@ -115,7 +115,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         if self.example_class == tf.train.Example
         else self.examples[0].context.feature)
     self.sprite = (
-        self.create_sprite_image(example_strings)
+        inference_utils.create_sprite_image(example_strings)
         if (len(self.examples) and self.image_feature_name in feature_list) else
         None)
 
@@ -257,16 +257,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     Returns:
       A list of JSON objects, one for each chart.
     """
-    vocab_path = request.args.get('label_vocab_path')
-    if vocab_path:
-      try:
-        with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
-          label_vocab = [line.rstrip('\n') for line in f]
-      except tf.errors.NotFoundError as err:
-        logger.error('error reading vocab file: %s', err)
-        label_vocab = []
-    else:
-      label_vocab = []
+    label_vocab = inference_utils.get_label_vocab(
+      request.args.get('label_vocab_path'))
 
     try:
       if request.method != 'GET':
@@ -290,16 +282,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
             request.args.get('use_predict') == 'true',
             request.args.get('predict_input_tensor'),
             request.args.get('predict_output_tensor'))
-
-        # Get inference results proto and combine with indices of inferred
-        # examples and respond with this data as json.
-        inference_result_proto = platform_utils.call_servo(
-            examples_to_infer, serving_bundle)
-        new_inferences = inference_utils.wrap_inference_results(
-            inference_result_proto)
-        infer_json = json_format.MessageToJson(
-            new_inferences, including_default_value_fields=True)
-        infer_objs.append(json.loads(infer_json))
+        infer_objs.append(inference_utils.run_inference_for_inference_results(
+          examples_to_infer, serving_bundle))
 
       resp = {'indices': indices_to_infer, 'results': infer_objs}
       self.updated_example_indices = set()
@@ -313,74 +297,6 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, {'error': e.details},
                                'application/json', code=400)
 
-  def create_sprite_image(self, examples):
-    """Returns an encoded sprite image for use in Facets Dive.
-
-    Args:
-      examples: A list of serialized example protos to get images for.
-
-    Returns:
-      An encoded PNG.
-    """
-
-    def generate_image_from_thubnails(thumbnails, thumbnail_dims):
-      """Generates a sprite atlas image from a set of thumbnails."""
-      num_thumbnails = tf.shape(input=thumbnails)[0].eval()
-      images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
-      thumb_height = thumbnail_dims[0]
-      thumb_width = thumbnail_dims[1]
-      master_height = images_per_row * thumb_height
-      master_width = images_per_row * thumb_width
-      num_channels = 3
-      master = np.zeros([master_height, master_width, num_channels])
-      for idx, image in enumerate(thumbnails.eval()):
-        left_idx = idx % images_per_row
-        top_idx = int(math.floor(idx / images_per_row))
-        left_start = left_idx * thumb_width
-        left_end = left_start + thumb_width
-        top_start = top_idx * thumb_height
-        top_end = top_start + thumb_height
-        master[top_start:top_end, left_start:left_end, :] = image
-      return tf.image.encode_png(master)
-
-    with tf.compat.v1.Session():
-      keys_to_features = {
-          self.image_feature_name:
-              tf.io.FixedLenFeature((), tf.string, default_value=''),
-      }
-      parsed = tf.io.parse_example(serialized=examples, features=keys_to_features)
-      images = tf.zeros([1, 1, 1, 1], tf.float32)
-      i = tf.constant(0)
-      thumbnail_dims = (self.sprite_thumbnail_dim_px,
-                        self.sprite_thumbnail_dim_px)
-      num_examples = tf.constant(len(examples))
-      encoded_images = parsed[self.image_feature_name]
-
-      # Loop over all examples, decoding the image feature value, resizing
-      # and appending to a list of all images.
-      def loop_body(i, encoded_images, images):
-        encoded_image = encoded_images[i]
-        image = tf.image.decode_jpeg(encoded_image, channels=3)
-        resized_image = tf.compat.v1.image.resize_images(image, thumbnail_dims)
-        expanded_image = tf.expand_dims(resized_image, 0)
-        images = tf.cond(
-            tf.equal(i, 0), lambda: expanded_image,
-            lambda: tf.concat([images, expanded_image], 0))
-        return i + 1, encoded_images, images
-
-      loop_out = tf.while_loop(
-          cond=lambda i, encoded_images, images: tf.less(i, num_examples),
-          body=loop_body, loop_vars=[i, encoded_images, images],
-          shape_invariants=[
-              i.get_shape(),
-              encoded_images.get_shape(),
-              tf.TensorShape(None)
-          ])
-
-      # Create the single sprite atlas image from these thumbnails.
-      sprite = generate_image_from_thubnails(loop_out[2], thumbnail_dims)
-      return sprite.eval()
-
   @wrappers.Request.application
   def _eligible_features_from_example_handler(self, request):
     """Returns a list of JSON objects for each feature in the example.
@@ -393,21 +309,8 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       Numeric features are represented as {name: observedMin: observedMax:}.
       Categorical features are repesented as {name: samples:[]}.
     """
-    features_dict = (
-        inference_utils.get_numeric_features_to_observed_range(
-            self.examples[0: NUM_EXAMPLES_TO_SCAN]))
-
-    features_dict.update(
-        inference_utils.get_categorical_features_to_sampling(
-            self.examples[0: NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS))
-
-    # Massage the features_dict into a sorted list before returning because
-    # Polymer dom-repeat needs a list.
-    features_list = []
-    for k, v in sorted(features_dict.items()):
-      v['name'] = k
-      features_list.append(v)
-
+    features_list = inference_utils.get_eligible_features(
+      self.examples[0: NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS)
     return http_util.Respond(request, features_list, 'application/json')
 
   @wrappers.Request.application
