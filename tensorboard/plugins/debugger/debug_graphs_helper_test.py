@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorboard.plugins.debugger import debug_graphs_helper
-from tensorboard.util import tb_logging
 from tensorflow.python import debug as tf_debug
 from tensorflow.python.debug.lib import grpc_debug_test_server
+
+from tensorboard.compat.proto import config_pb2
+from tensorboard.plugins.debugger import debug_graphs_helper
+from tensorboard.util import tb_logging
 
 tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
@@ -71,7 +73,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       z, run_options = self._createTestGraphAndRunOptions(sess, gated_grpc=True)
 
       sess.run(tf.compat.v1.global_variables_initializer())
-      run_metadata = tf.compat.v1.RunMetadata()
+      run_metadata = config_pb2.RunMetadata()
       self.assertAllClose(
           [10.0], sess.run(z, options=run_options, run_metadata=run_metadata))
 
@@ -106,7 +108,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       z, run_options = self._createTestGraphAndRunOptions(sess, gated_grpc=True)
 
       sess.run(tf.compat.v1.global_variables_initializer())
-      run_metadata = tf.compat.v1.RunMetadata()
+      run_metadata = config_pb2.RunMetadata()
       self.assertAllClose(
           [10.0], sess.run(z, options=run_options, run_metadata=run_metadata))
 
@@ -121,7 +123,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
                                                           gated_grpc=False)
 
       sess.run(tf.compat.v1.global_variables_initializer())
-      run_metadata = tf.compat.v1.RunMetadata()
+      run_metadata = config_pb2.RunMetadata()
       self.assertAllClose(
           [10.0], sess.run(z, options=run_options, run_metadata=run_metadata))
 

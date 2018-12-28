@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import app
 from absl import logging
 import contextlib
 import os.path
@@ -27,6 +28,8 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import tensorflow as tf
+
+from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.util import tb_logging
 
@@ -180,7 +183,7 @@ def run_box_to_gaussian(logdir, verbose=False):
         logger.info('--- box_to_gaussian: step: %s' % step)
         feed_dict = {blur_radius: step}
       run_options = tf.compat.v1.RunOptions(trace_level=tf.compat.v1.RunOptions.FULL_TRACE)
-      run_metadata = tf.compat.v1.RunMetadata()
+      run_metadata = config_pb2.RunMetadata()
       s = sess.run(summ, feed_dict=feed_dict,
                    options=run_options, run_metadata=run_metadata)
       writer.add_summary(s, global_step=step)
@@ -254,7 +257,7 @@ def run_sobel(logdir, verbose=False):
         logger.info("--- sobel: step: %s" % step)
         feed_dict = {kernel_radius: step}
       run_options = tf.compat.v1.RunOptions(trace_level=tf.compat.v1.RunOptions.FULL_TRACE)
-      run_metadata = tf.compat.v1.RunMetadata()
+      run_metadata = config_pb2.RunMetadata()
       s = sess.run(summ, feed_dict=feed_dict,
                    options=run_options, run_metadata=run_metadata)
       writer.add_summary(s, global_step=step)
@@ -281,4 +284,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.compat.v1.app.run()
+  app.run(main)

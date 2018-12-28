@@ -20,9 +20,9 @@ from __future__ import print_function
 
 import inspect
 
-from tensorboard.util import platform_util
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
+from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
 
 
@@ -92,17 +92,3 @@ class EventFileLoader(RawEventFileLoader):
     """
     for record in super(EventFileLoader, self).Load():
       yield event_pb2.Event.FromString(record)
-
-
-def main(argv):
-  if len(argv) != 2:
-    print('Usage: event_file_loader <path-to-the-recordio-file>')
-    return 1
-  loader = EventFileLoader(argv[1])
-  for event in loader.Load():
-    print(event)
-  return 0
-
-
-if __name__ == '__main__':
-  tf.compat.v1.app.run()
