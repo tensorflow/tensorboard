@@ -738,7 +738,7 @@ def run_inference(examples, serving_bundle):
       lambda: tf.data.Dataset.from_tensor_slices(
         tf.parse_example([ex.SerializeToString() for ex in examples],
         serving_bundle.feature_spec)).batch(batch_size))
-  
+
     if serving_bundle.use_predict:
       preds_key = serving_bundle.predict_output_tensor
     elif serving_bundle.model_type == 'regression':
