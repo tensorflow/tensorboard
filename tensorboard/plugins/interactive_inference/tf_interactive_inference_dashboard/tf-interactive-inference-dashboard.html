@@ -234,10 +234,6 @@ limitations under the License.
         border-radius: 10px;
       }
 
-      .inference-settings-disabled {
-         display: none;
-       }
-
       .dashboard-layout {
         display: flex;
         height: 100%;
@@ -851,7 +847,7 @@ limitations under the License.
         border-left: 1px solid lightgrey;
       }
     </style>
-    <paper-dialog id="inferencesettings" class$="[[getInferenceSettingsClass_(local)]]" opened="true">
+    <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
           inference-address="{{inferenceAddress}}"
           model-name="{{modelName}}"
@@ -1730,8 +1726,9 @@ limitations under the License.
         // part of a TensorBoard build and has no backend.
         local: {
           type: Boolean,
+          value: false,
           observer: 'localChanged_',
-         },
+        },
         // Atlas URL for "local" demo mode.
         localAtlasUrl: String,
         // List of features for which we can make partial dep plots.
@@ -1931,10 +1928,10 @@ limitations under the License.
       },
 
       localChanged_: function() {
-         if (this.local) {
-           this.closeSettings_();
-         }
-       },
+        if (this.local) {
+          this.closeSettings_();
+        }
+      },
 
       closeSettings_: function() {
         this.$.inferencesettings.close();
@@ -2187,10 +2184,6 @@ limitations under the License.
       getInferenceSectionHolderClass_: function(panelExpanded) {
         return panelExpanded
           ? 'inference-section-holder-expanded' : 'inference-section-holder';
-      },
-
-      getInferenceSettingsClass_: function(local) {
-        return local ? 'inference-settings-disabled' : 'inference-settings';
       },
 
       isBinaryClassification_: function(modelType, multiClass) {
