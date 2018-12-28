@@ -282,7 +282,8 @@ class EventAccumulator(object):
 
     self._MaybePurgeOrphanedData(event)
 
-    ## Process the meta_graph_pb2and MetaGraphDef are handled in a special way:
+    ## Process the event.
+    # GraphDef and MetaGraphDef are handled in a special way:
     # If no graph_def Event is available, but a meta_graph_def is, and it
     # contains a graph_def, then use the meta_graph_def.graph_def as our graph.
     # If a graph_def Event is available, always prefer it to the graph_def
