@@ -45,13 +45,13 @@ var WITView = widgets.DOMWidgetView.extend({
         this.el.appendChild(this.view_);
 
         // Add listeners for changes from python.
-        this.model.on('change:examples', this.examples_changed, this);
-        this.model.on('change:config', this.config_changed, this);
-        this.model.on('change:inferences', this.inferences_changed, this);
+        this.model.on('change:examples', this.examplesChanged, this);
+        this.model.on('change:config', this.configChanged, this);
+        this.model.on('change:inferences', this.inferencesChanged, this);
         this.model.on('change:eligible_features',
-            this.eligible_features_changed, this);
-        this.model.on('change:mutant_charts', this.mutant_charts_changed, this);
-        this.model.on('change:sprite', this.sprite_changed, this);
+            this.eligibleFeaturesChanged, this);
+        this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
+        this.model.on('change:sprite', this.spriteChanged, this);
 
         // Add listeners for changes from WIT Polymer element. Passes changes
         // along to python.
@@ -84,40 +84,43 @@ var WITView = widgets.DOMWidgetView.extend({
           this.mutantFeature = e.detail.feature_name;
           this.touch();
         });
-        setTimeout(()=> {
-          this.config_changed();
-          this.examples_changed();
-          this.sprite_changed();
-        }, 0);
+        requestAnimationFrame(()=> {
+          this.configChanged();
+          this.examplesChanged();
+          this.spriteChanged();
+        });
     },
 
     // Callback functions for when changes made on python side.
-    examples_changed: function() {
+    examplesChanged: function() {
       const examples = this.model.get('examples');
-      if (!this.view_.updateExampleContents_) {
-        setTimeout(() => this.examples_changed(), 100);
+      if (!this.view_.updateExampleContents) {
+        requestAnimationFrame(() => this.examplesChanged());
         return;
       }
       if (examples && examples.length > 0) {
-        this.view_.updateExampleContents_(examples, false);
+        this.view_.updateExampleContents(examples, false);
       }
     },
-    inferences_changed: function() {
+    inferencesChanged: function() {
       const inferences = this.model.get('inferences');
       this.view_.labelVocab = inferences['label_vocab'];
       this.view_.inferences = inferences['inferences'];
     },
-    eligible_features_changed: function() {
+    eligibleFeaturesChanged: function() {
       const features = this.model.get('eligible_features');
-      this.view_.partialDepPlotEligibleFeatures = features
+      this.view_.partialDepPlotEligibleFeatures = features;
     },
-    mutant_charts_changed: function() {
+    mutantChartsChanged: function() {
       const chartInfo = this.model.get('mutant_charts');
-      this.view_.makeChartForFeature_(chartInfo.chartType, this.mutantFeature,
+      this.view_.makeChartForFeature(chartInfo.chartType, this.mutantFeature,
           chartInfo.data);
     },
-    config_changed: function() {
+    configChanged: function() {
       const config = this.model.get('config');
+      if (config == null) {
+        return;
+      }
       if ('inference_address' in config) {
         let addresses = config['inference_address'];
         if ('inference_address_2' in config) {
@@ -144,17 +147,17 @@ var WITView = widgets.DOMWidgetView.extend({
       if ('multiclass' in config) {
         this.view_.multiClass = config['multiclass'];
       }
-      this.view_.updateNumberOfModels_();
+      this.view_.updateNumberOfModels();
     },
-    sprite_changed: function() {
+    spriteChanged: function() {
       if (!this.view_.updateSprite_) {
-        setTimeout(() => this.sprite_changed(), 100);
+        requestAnimationFrame(() => this.spriteChanged());
         return;
       }
       const spriteUrl = this.model.get('sprite');
       this.view_.hasSprite = true;
       this.view_.localAtlasUrl = spriteUrl;
-      this.view_.updateSprite_();
+      this.view_.updateSprite();
   },
 });
 
