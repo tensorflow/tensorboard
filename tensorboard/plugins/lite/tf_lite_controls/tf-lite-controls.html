@@ -149,15 +149,6 @@ svg.icon {
   margin: 0;
   padding: 0;
 }
-.copy-button {
-  position: absolute;
-  right:0px;
-  top: 6px;
-  padding: 6px;
-}
-.copy-button:hover {
-  background: #ccc;
-}
 
 .gray {
   color: #666;
@@ -327,6 +318,18 @@ pre.result-code {
 h4.result-title {
   text-transform:capitalize;
 }
+.result-code-field {
+  position: relative;
+}
+.copy-button {
+  position: absolute;
+  right:0px;
+  top: 0px;
+  padding: 6px;
+}
+.copy-button:hover {
+  background: #ccc;
+}
 .result-addons {
   position: absolute;
   top: 0px;
@@ -337,6 +340,9 @@ h4.result-title {
   font-size: 12px;
   height: 25px;
   color: gray;
+}
+paper-dialog-scrollable {
+  margin-top: 0px;
 }
 
 /** Otherwise, polymer UI controls appear atop node search. */
@@ -635,9 +641,12 @@ tf-graph-node-search {
           <template is="dom-repeat" items="[[item.content]]">
             <template is="dom-if" if="[[_equals(item.type, 'code')]]">
               <h4 class="result-title">[[ item.title ]]</h4>
-              <pre class="result-code">
-                [[ item.body ]]
-              </pre>
+              <div class="result-code-field">
+                <pre class="result-code">
+                  [[ item.body ]]
+                </pre>
+                <a class="copy-button" on-click="copyContent" title="Click to copy the code"><iron-icon icon="content-copy"></iron-icon></a>
+              </div>
             </template>
             <template is="dom-if" if="[[_equals(item.type, 'text')]]">
               <h4 class="result-title">[[ item.title ]]</h4>
@@ -738,11 +747,8 @@ tf-graph-node-search {
       ready() {
         this.getCheckpoints();
       },
-      copyCommand: function(){
-        this._copyHtml('command_text');
-      },
-      copyGeneratedPath: function() {
-        this._copyHtml('generated_path');
+      copyContent: function(e) {
+        this._copyHtml(e.currentTarget.previousElementSibling);
       },
       addInputNode: function() {
         if(!this.selectedNode ) {
@@ -829,10 +835,9 @@ tf-graph-node-search {
         this.$.messageToast.setAttribute('text', text);
         this.$.messageToast.open();
       },
-      _copyHtml(domId) {
-        const copyText = document.getElementById(domId);
+      _copyHtml(dom) {
         var range = document.getSelection().getRangeAt(0);
-        range.selectNode(copyText);
+        range.selectNode(dom);
         window.getSelection().addRange(range);
         document.execCommand("copy");
         this._showToast("Copied the text successfully.");
