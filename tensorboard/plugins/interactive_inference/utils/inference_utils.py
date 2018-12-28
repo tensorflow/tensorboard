@@ -611,6 +611,19 @@ def run_inference_for_inference_results(examples, serving_bundle):
   return json.loads(infer_json)
 
 def get_eligible_features(examples, num_mutants):
+  """Returns a list of JSON objects for each feature in the examples.
+
+    This list is used to drive partial dependence plots in the plugin.
+
+    Args:
+      examples: Examples to examine to determine the eligible features.
+      num_mutants: The number of mutations to make over each feature.
+
+    Returns:
+      A list with a JSON object for each feature.
+      Numeric features are represented as {name: observedMin: observedMax:}.
+      Categorical features are repesented as {name: samples:[]}.
+    """
   features_dict = (
       get_numeric_features_to_observed_range(
           examples))
@@ -628,6 +641,7 @@ def get_eligible_features(examples, num_mutants):
   return features_list
 
 def get_label_vocab(vocab_path):
+  """Returns a list of label strings loaded from the provided path."""
   if vocab_path:
     try:
       with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
@@ -724,11 +738,13 @@ def run_inference(examples, serving_bundle):
       lambda: tf.data.Dataset.from_tensor_slices(
         tf.parse_example([ex.SerializeToString() for ex in examples],
         serving_bundle.feature_spec)).batch(batch_size))
-    preds_key = 'probabilities'
     if serving_bundle.use_predict:
       preds_key = serving_bundle.predict_output_tensor
     elif serving_bundle.model_type == 'regression':
       preds_key = 'predictions'
+    else:
+      preds_key = 'probabilities'
+
     values = []
     for pred in preds:
       values.append(pred[preds_key])
