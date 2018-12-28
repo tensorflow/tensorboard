@@ -23,21 +23,22 @@ import math
 import os.path
 
 from absl import app
+from absl import flags
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorboard.plugins.audio import summary
 
-FLAGS = tf.compat.v1.flags.FLAGS
+FLAGS = flags.FLAGS
 
-tf.compat.v1.flags.DEFINE_string('logdir', '/tmp/audio_demo',
+flags.DEFINE_string('logdir', '/tmp/audio_demo',
                        'Directory into which to write TensorBoard data.')
 
-tf.compat.v1.flags.DEFINE_integer('steps', 50,
+flags.DEFINE_integer('steps', 50,
                         'Number of frequencies of each waveform to generate.')
 
 # Parameters for the audio output.
-tf.compat.v1.flags.DEFINE_integer('sample_rate', 44100, 'Sample rate, in Hz.')
-tf.compat.v1.flags.DEFINE_float('duration', 2.0, 'Duration of each waveform, in s.')
+flags.DEFINE_integer('sample_rate', 44100, 'Sample rate, in Hz.')
+flags.DEFINE_float('duration', 2.0, 'Duration of each waveform, in s.')
 
 
 def _samples():

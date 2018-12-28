@@ -33,6 +33,7 @@ import sys
 import urlparse
 
 from absl import app
+from absl import flags
 import tensorflow as tf
 
 ROBOTO_URLS = [
@@ -59,23 +60,23 @@ limitations under the License.
 -->
 '''
 
-tf.compat.v1.flags.DEFINE_string('urls', ';'.join(ROBOTO_URLS),
+flags.DEFINE_string('urls', ';'.join(ROBOTO_URLS),
                        'Google Fonts stylesheet URLs (semicolons delimited)')
-tf.compat.v1.flags.DEFINE_string('path', '/font-roboto/roboto.html', 'Path of HTML file')
-tf.compat.v1.flags.DEFINE_string('repo', 'com_google_fonts_roboto', 'Name of repository')
-tf.compat.v1.flags.DEFINE_string('license', 'notice', 'Bazel category of license')
-tf.compat.v1.flags.DEFINE_string('license_summary', 'Apache 2.0', 'License description')
-tf.compat.v1.flags.DEFINE_string('license_html', GOOGLE_LICENSE_HTML,
+flags.DEFINE_string('path', '/font-roboto/roboto.html', 'Path of HTML file')
+flags.DEFINE_string('repo', 'com_google_fonts_roboto', 'Name of repository')
+flags.DEFINE_string('license', 'notice', 'Bazel category of license')
+flags.DEFINE_string('license_summary', 'Apache 2.0', 'License description')
+flags.DEFINE_string('license_html', GOOGLE_LICENSE_HTML,
                        'HTML @license comment')
-tf.compat.v1.flags.DEFINE_string('user_agent',
+flags.DEFINE_string('user_agent',
                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/62.0.3202.94 '
                        'Safari/537.36',
                        'HTTP User-Agent header to send to Google Fonts')
-tf.compat.v1.flags.DEFINE_string('mirror', 'https://mirror.bazel.build/',
+flags.DEFINE_string('mirror', 'https://mirror.bazel.build/',
                        'Mirror URL prefix')
-FLAGS = tf.app.flags.FLAGS
+FLAGS = flags.FLAGS
 
 BAR = '/%s/' % ('*' * 78)
 NON_REPO_PATTERN = re.compile(r'[^_a-z0-9]')

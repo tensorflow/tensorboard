@@ -27,18 +27,19 @@ import random
 import shutil
 
 from absl import app
+from absl import flags
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 
-tf.compat.v1.flags.DEFINE_string("target", None, """The directory where serialized data
+flags.DEFINE_string("target", None, """The directory where serialized data
 will be written""")
 
-tf.compat.v1.flags.DEFINE_boolean("overwrite", False, """Whether to remove and overwrite
+flags.DEFINE_boolean("overwrite", False, """Whether to remove and overwrite
 TARGET if it already exists.""")
 
-FLAGS = tf.compat.v1.flags.FLAGS
+FLAGS = flags.FLAGS
 
 # Hardcode a start time and reseed so script always generates the same data.
 _start_time = 0
