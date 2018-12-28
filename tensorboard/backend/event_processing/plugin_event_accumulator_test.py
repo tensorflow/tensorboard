@@ -25,6 +25,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_accumulator as ea
+from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import summary as audio_summary
@@ -568,7 +569,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         add_shapes=True))
     writer.add_meta_graph(meta_graph_def)
 
-    run_metadata = tf.compat.v1.RunMetadata()
+    run_metadata = config_pb2.RunMetadata()
     device_stats = run_metadata.step_stats.dev_stats.add()
     device_stats.device = 'test device'
     writer.add_run_metadata(run_metadata, 'test run')

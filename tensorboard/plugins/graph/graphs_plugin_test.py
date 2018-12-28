@@ -27,6 +27,7 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.util import test_util
@@ -69,7 +70,7 @@ class GraphsPluginTest(tf.test.TestCase):
     if include_graph:
       writer.add_graph(sess.graph)
     options = tf.compat.v1.RunOptions(trace_level=tf.compat.v1.RunOptions.FULL_TRACE)
-    run_metadata = tf.compat.v1.RunMetadata()
+    run_metadata = config_pb2.RunMetadata()
     s = sess.run(summary_message, options=options, run_metadata=run_metadata)
     writer.add_summary(s)
     writer.add_run_metadata(run_metadata, self._METADATA_TAG)
@@ -142,7 +143,7 @@ class GraphsPluginTest(tf.test.TestCase):
     (metadata_pbtxt, mime_type) = self.plugin.run_metadata_impl(
         self._RUN_WITH_GRAPH, self._METADATA_TAG)
     self.assertEqual(mime_type, 'text/x-protobuf')
-    text_format.Parse(metadata_pbtxt, tf.compat.v1.RunMetadata())
+    text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
     # If it parses, we're happy.
 
   def test_is_active_with_graph(self):
