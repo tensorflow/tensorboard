@@ -118,6 +118,7 @@ Polymer({
       }
       node = node.parentElement;
     }
+    // document.body is a natural scrollable region even when without overflow.
     return document.body;
   },
 
