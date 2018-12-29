@@ -48,7 +48,7 @@ class ProjectorApiTest(tf.test.TestCase):
       projector.visualize_embeddings(writer, config)
 
     # Read the configurations from disk and make sure it matches the original.
-    with tf.compat.v1.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
+    with tf.io.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
       config2 = projector.ProjectorConfig()
       text_format.Parse(f.read(), config2)
       self.assertEqual(config, config2)

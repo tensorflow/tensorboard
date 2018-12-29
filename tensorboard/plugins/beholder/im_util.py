@@ -139,12 +139,12 @@ decode_png = PNGDecoder()
 resize = Resizer()
 
 def read_image(filename):
-  with tf.compat.v1.gfile.Open(filename, 'rb') as image_file:
+  with tf.io.gfile.GFile(filename, 'rb') as image_file:
     return np.array(decode_png(image_file.read()))
 
 
 def write_image(array, filename):
-  with tf.compat.v1.gfile.Open(filename, 'w') as image_file:
+  with tf.io.gfile.GFile(filename, 'w') as image_file:
     image_file.write(encoder.encode_png(array))
 
 

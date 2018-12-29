@@ -644,7 +644,7 @@ def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
   if vocab_path:
     try:
-      with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
+      with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
       tf.logging.error('error reading vocab file: %s', err)
