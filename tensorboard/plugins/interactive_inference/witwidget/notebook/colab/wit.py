@@ -90,13 +90,13 @@ WIT_HTML = """
       wit.labelVocab = parsedInferences.label_vocab;
     }}
     window.spriteCallback = spriteUrl => {{
-      if (!wit.updateSprite_) {{
+      if (!wit.updateSprite) {{
         setTimeout(() => window.spriteCallback(spriteUrl), 100);
         return;
       }}
       wit.hasSprite = true;
       wit.localAtlasUrl = spriteUrl;
-      wit.updateSprite_();
+      wit.updateSprite();
     }}
     window.eligibleFeaturesCallback = features => {{
       const parsedFeatures = JSON.parse(features);
@@ -104,7 +104,7 @@ WIT_HTML = """
     }}
     window.inferMutantsCallback = jsonMapping => {{
       const chartInfo = JSON.parse(jsonMapping);
-      wit.makeChartForFeature_(chartInfo.chartType, mutantFeature,
+      wit.makeChartForFeature(chartInfo.chartType, mutantFeature,
         chartInfo.data);
     }}
     window.configCallback = jsonConfig => {{
@@ -135,10 +135,10 @@ WIT_HTML = """
       if ('multiclass' in config) {{
         wit.multiClass = config['multiclass'];
       }}
-      wit.updateNumberOfModels_();
+      wit.updateNumberOfModels();
     }}
     setTimeout(() => {{
-      wit.updateExampleContents_(examples, false);
+      wit.updateExampleContents(examples, false);
       if (wit.localAtlasUrl) {{
         window.spriteCallback(wit.localAtlasUrl);
       }}
