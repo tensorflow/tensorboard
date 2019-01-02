@@ -108,16 +108,16 @@ WIT_HTML = """
         chartInfo.data);
     }};
     window.configCallback = jsonConfig => {{
-      if (!wit.updateNumberOfModels) {
+      if (!wit.updateNumberOfModels) {{
         requestAnimationFrame(() => window.configCallback(jsonConfig));
         return;
-      }
+      }}
       const config = JSON.parse(jsonConfig);
       if ('inference_address' in config) {{
         let addresses = config['inference_address'];
-        if ('inference_address_2' in config) {
+        if ('inference_address_2' in config) {{
           addresses += ',' + config['inference_address_2'];
-        }
+        }}
         wit.inferenceAddress = addresses;
       }}
       if ('model_name' in config) {{
@@ -141,18 +141,16 @@ WIT_HTML = """
       }}
       wit.updateNumberOfModels();
     }};
-    window.updateExamples = examples => {{
-      if (!wit.updateExampleContents) {
-        requestAnimationFrame(() => window.updateExamples(examples));
+    window.updateExamplesCallback = () => {{
+      if (!wit.updateExampleContents) {{
+        requestAnimationFrame(() => window.updateExamplesCallback(examples));
         return;
-      }
+      }}
       wit.updateExampleContents(examples, false);
       if (wit.localAtlasUrl) {{
         window.spriteCallback(wit.localAtlasUrl);
       }}
     }};
-
-    window.updateExamples(examples);
   </script>
   """
 
@@ -188,10 +186,11 @@ class WitWidget(object):
     display.display(display.HTML(
       WIT_HTML.format(examples=json.dumps(self.examples), height=height)))
 
-    self._generate_sprite()
-
+    # Send the provided config and examples to JS
     output.eval_js("""configCallback('{config}')""".format(
       config=json.dumps(self.config)))
+    output.eval_js('updateExamplesCallback()')
+    self._generate_sprite()
 
   def _get_element_html(self):
     return """
