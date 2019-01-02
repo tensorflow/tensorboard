@@ -38,11 +38,7 @@ var WITView = widgets.DOMWidgetView.extend({
         loadVulcanizedTemplate();
         this.inferMutantsCounter = 0;
 
-        // Create and attach WIT element to DOM.
-        this.view_ = document.createElement(
-            'tf-interactive-inference-dashboard');
-        this.view_.local = true;
-        this.el.appendChild(this.view_);
+        this.createWhatIfToolElement();
 
         // Add listeners for changes from python.
         this.model.on('change:examples', this.examplesChanged, this);
@@ -53,42 +49,51 @@ var WITView = widgets.DOMWidgetView.extend({
         this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
         this.model.on('change:sprite', this.spriteChanged, this);
 
-        // Add listeners for changes from WIT Polymer element. Passes changes
-        // along to python.
-        this.view_.addEventListener('infer-examples', e => {
-          let i = this.model.get('infer') + 1;
-          this.model.set('infer', i);
-          this.touch();
-        });
-        this.view_.addEventListener('delete-example', e => {
-          this.model.set('delete_example', {'index': e.detail.index});
-          this.touch();
-        });
-        this.view_.addEventListener('duplicate-example', e => {
-          this.model.set('duplicate_example', {'index': e.detail.index});
-          this.touch();
-        });
-        this.view_.addEventListener('update-example', e => {
-          this.model.set('update_example',
-              {'index': e.detail.index, 'example': e.detail.example});
-          this.touch();
-        });
-        this.view_.addEventListener('get-eligible-features', e => {
-          let i = this.model.get('get_eligible_features') + 1;
-          this.model.set('get_eligible_features', i);
-          this.touch();
-        });
-        this.view_.addEventListener('infer-mutants', e => {
-          e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
-          this.model.set('infer_mutants', e.detail);
-          this.mutantFeature = e.detail.feature_name;
-          this.touch();
-        });
         requestAnimationFrame(()=> {
           this.configChanged();
           this.examplesChanged();
           this.spriteChanged();
         });
+    },
+
+    createWhatIfToolElement: function() {
+      // Create and attach WIT element to DOM.
+      this.view_ = document.createElement(
+        'tf-interactive-inference-dashboard');
+      this.view_.local = true;
+      this.el.appendChild(this.view_);
+
+      // Add listeners for changes from WIT Polymer element. Passes changes
+      // along to python.
+      this.view_.addEventListener('infer-examples', e => {
+        let i = this.model.get('infer') + 1;
+        this.model.set('infer', i);
+        this.touch();
+      });
+      this.view_.addEventListener('delete-example', e => {
+        this.model.set('delete_example', {'index': e.detail.index});
+        this.touch();
+      });
+      this.view_.addEventListener('duplicate-example', e => {
+        this.model.set('duplicate_example', {'index': e.detail.index});
+        this.touch();
+      });
+      this.view_.addEventListener('update-example', e => {
+        this.model.set('update_example',
+            {'index': e.detail.index, 'example': e.detail.example});
+        this.touch();
+      });
+      this.view_.addEventListener('get-eligible-features', e => {
+        let i = this.model.get('get_eligible_features') + 1;
+        this.model.set('get_eligible_features', i);
+        this.touch();
+      });
+      this.view_.addEventListener('infer-mutants', e => {
+        e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
+        this.model.set('infer_mutants', e.detail);
+        this.mutantFeature = e.detail.feature_name;
+        this.touch();
+      });
     },
 
     // Callback functions for when changes made on python side.
