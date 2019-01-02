@@ -33,7 +33,7 @@ class WitWidget(widgets.DOMWidget):
   """WIT widget for Jupyter."""
   _view_name = Unicode('WITView').tag(sync=True)
   _view_module = Unicode('wit-widget').tag(sync=True)
-  _view_module_version = Unicode('^0.1.5').tag(sync=True)
+  _view_module_version = Unicode('^0.1.0').tag(sync=True)
 
   # Traitlets for communicating between python and javascript.
   config = Dict(dict()).tag(sync=True)

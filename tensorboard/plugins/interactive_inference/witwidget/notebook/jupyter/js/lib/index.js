@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-__webpack_public_path__ =
+window.__webpack_public_path__ =
   document.querySelector('body').getAttribute('data-base-url') +
   'nbextensions/wit-widget/';
 
-// Export widget models and views, and the npm package version number.
+// Export widget models and views.
 module.exports = require('./wit.js');
-module.exports['version'] = require('../package.json').version;

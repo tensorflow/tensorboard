@@ -1,6 +1,5 @@
 {
   "name": "wit-widget",
-  "version": "0.1.5",
   "description": "What-If Tool jupyter widget",
   "author": "Google LLC",
   "main": "lib/index.js",

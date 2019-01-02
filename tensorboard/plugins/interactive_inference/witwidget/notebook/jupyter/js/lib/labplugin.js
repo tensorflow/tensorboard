@@ -22,7 +22,7 @@ module.exports = {
   activate: function(app, widgets) {
       widgets.registerWidget({
           name: 'wit-widget',
-          version: witwidget.version,
+          version: '0.1.0',
           exports: witwidget
       });
   },
