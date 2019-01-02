@@ -1,3 +1,12 @@
+# Release 1.12.2
+
+The 1.12.2 minor series tracks TensorFlow 1.12.
+
+## Bug fixes
+- #1620 - Fix path_prefix flag regression (PR #1623)
+- #1724 - Fix PIP package
+
+
 # Release 1.12.1
 
 The 1.12.1 minor series tracks TensorFlow 1.12.
