@@ -1,3 +1,12 @@
+# Release 1.12.2
+
+The 1.12.2 minor series tracks TensorFlow 1.12.
+
+## Bug fixes
+- #1620 - Fix path_prefix flag regression (PR #1623)
+- #1704 - Fix debugger sidebar resizer
+
+
 # Release 1.12.1
 
 The 1.12.1 minor series tracks TensorFlow 1.12.
