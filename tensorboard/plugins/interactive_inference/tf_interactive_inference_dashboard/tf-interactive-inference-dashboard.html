@@ -2260,7 +2260,7 @@ limitations under the License.
         }
       },
 
-      updateNumberOfModels_: function () {
+      updateNumberOfModels: function () {
         this._setNumModels(this.modelName.split(',').length);
         // Initialize default overall thresholds
         this.selectedLabelFeature = '';
@@ -3451,7 +3451,7 @@ limitations under the License.
         const tempSelected = this.$.dive.selectedData;
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
-        this.updateSprite_();
+        this.updateSprite();
       },
 
       /**
@@ -3631,7 +3631,7 @@ limitations under the License.
 
       getExamplesAndCloseSettings_: function() {
         this.settingsClicked_();
-        this.updateNumberOfModels_();
+        this.updateNumberOfModels();
         this.getExamples_();
       },
 
@@ -3642,7 +3642,7 @@ limitations under the License.
       /**
        * Callback for when new examples are received from the backend.
        */
-      updateExampleContents_: function(examples, hasSprite) {
+      updateExampleContents: function(examples, hasSprite) {
         this.exampleStatusStr = examples.length + ' examples loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;
@@ -3657,7 +3657,7 @@ limitations under the License.
         this.$.dive.atlasUrl = '';
         this.$.dive.imageFieldName = exampleIdKey;
         this.hasSprite = hasSprite;
-        this.updateSprite_();
+        this.updateSprite();
         if (!this.shouldDisableInferButton_(
             this.examplesAndInferences, this.modelName, this.inferenceAddress,
             this.updatedExample)) {
@@ -3714,7 +3714,7 @@ limitations under the License.
                                  'sequence_examples': this.sequenceExamples});
 
         const updateExampleContents = result => {
-          this.updateExampleContents_(
+          this.updateExampleContents(
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading examples...'
@@ -3722,7 +3722,7 @@ limitations under the License.
         this.$.spinner.hidden = false;
       },
 
-      updateSprite_: function() {
+      updateSprite: function() {
         if (this.hasSprite) {
           this.$.dive.atlasUrl = null;
           if (!this.local) {
@@ -4116,7 +4116,7 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeChartForFeature_: function(chartType, featureName, data) {
+      makeChartForFeature: function(chartType, featureName, data) {
         // Delete spinner
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
@@ -4161,7 +4161,7 @@ limitations under the License.
           const url = tf_backend.addParams(
             '/data/plugin/whatif/infer_mutants', urlParams);
           const chartMakerCallback = function(result){
-            this.makeChartForFeature_(
+            this.makeChartForFeature(
               result.value.chartType, featureName, result.value.data);
           };
           this.makeAsyncRequest_(url, chartMakerCallback.bind(this), null);

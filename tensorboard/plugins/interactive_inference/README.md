@@ -233,9 +233,11 @@ We imagine WIT to be useful for a wide variety of users.
 
 ## How do I use it in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
-> pip install witwidget
-> jupyter nbextension install --py --symlink --sys-prefix witwidget
-> jupyter nbextension enable --py --sys-prefix witwidget
+```sh
+pip install witwidget
+jupyter nbextension install --py --symlink --sys-prefix witwidget
+jupyter nbextension enable --py --sys-prefix witwidget
+```
 
 Then, use it as seen at the bottom of the
 [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb).
