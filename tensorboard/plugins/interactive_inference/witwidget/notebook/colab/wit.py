@@ -88,26 +88,30 @@ WIT_HTML = """
       const parsedInferences = JSON.parse(inferences);
       wit.inferences = parsedInferences.inferences;
       wit.labelVocab = parsedInferences.label_vocab;
-    }}
+    }};
     window.spriteCallback = spriteUrl => {{
       if (!wit.updateSprite) {{
-        setTimeout(() => window.spriteCallback(spriteUrl), 100);
+        requestAnimationFrame(() => window.spriteCallback(spriteUrl));
         return;
       }}
       wit.hasSprite = true;
       wit.localAtlasUrl = spriteUrl;
       wit.updateSprite();
-    }}
+    }};
     window.eligibleFeaturesCallback = features => {{
       const parsedFeatures = JSON.parse(features);
       wit.partialDepPlotEligibleFeatures = parsedFeatures;
-    }}
+    }};
     window.inferMutantsCallback = jsonMapping => {{
       const chartInfo = JSON.parse(jsonMapping);
       wit.makeChartForFeature(chartInfo.chartType, mutantFeature,
         chartInfo.data);
-    }}
+    }};
     window.configCallback = jsonConfig => {{
+      if (!wit.updateNumberOfModels) {
+        requestAnimationFrame(() => window.configCallback(jsonConfig));
+        return;
+      }
       const config = JSON.parse(jsonConfig);
       if ('inference_address' in config) {{
         let addresses = config['inference_address'];
@@ -136,13 +140,19 @@ WIT_HTML = """
         wit.multiClass = config['multiclass'];
       }}
       wit.updateNumberOfModels();
-    }}
-    setTimeout(() => {{
+    }};
+    window.updateExamples = examples => {{
+      if (!wit.updateExampleContents) {
+        requestAnimationFrame(() => window.updateExamples(examples));
+        return;
+      }
       wit.updateExampleContents(examples, false);
       if (wit.localAtlasUrl) {{
         window.spriteCallback(wit.localAtlasUrl);
       }}
-    }}, 5000);
+    }};
+
+    window.updateExamples(examples);
   </script>
   """
 
