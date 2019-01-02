@@ -15,47 +15,49 @@ limitations under the License.
 
 var widgets = require('@jupyter-widgets/base');
 
-/**
- * Helper method to load the vulcanized template.
- */
-function loadVulcanizedTemplate() {
-    const templateLocation =
-        __webpack_public_path__ + 'wit_jupyter.html';
-
-    // If the vulcanized template is not loaded yet, load it now.
-    if (!document.querySelector('link[href="' + templateLocation + '"]')) {
-        const link = document.createElement('link');
-        link.setAttribute('rel', 'import');
-        link.setAttribute('href', templateLocation);
-        document.head.appendChild(link);
-    }
-}
-
 // What-If Tool View. Renders the tool and provides communication with the
 // python backend.
 var WITView = widgets.DOMWidgetView.extend({
     render: function() {
-        loadVulcanizedTemplate();
-        this.inferMutantsCounter = 0;
+      // Load up the WIT polymer element.
+      this.loadAndCreateWhatIfToolElement();
 
-        this.createWhatIfToolElement();
-
-        // Add listeners for changes from python.
-        this.model.on('change:examples', this.examplesChanged, this);
-        this.model.on('change:config', this.configChanged, this);
-        this.model.on('change:inferences', this.inferencesChanged, this);
-        this.model.on('change:eligible_features',
-            this.eligibleFeaturesChanged, this);
-        this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
-        this.model.on('change:sprite', this.spriteChanged, this);
-
-        requestAnimationFrame(()=> {
-          this.configChanged();
-          this.examplesChanged();
-          this.spriteChanged();
-        });
+      // Add listeners for changes from python.
+      this.model.on('change:examples', this.examplesChanged, this);
+      this.model.on('change:config', this.configChanged, this);
+      this.model.on('change:inferences', this.inferencesChanged, this);
+      this.model.on('change:eligible_features',
+          this.eligibleFeaturesChanged, this);
+      this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
+      this.model.on('change:sprite', this.spriteChanged, this);
     },
 
+    /**
+     * Loads up the WIT element.
+     */
+    loadAndCreateWhatIfToolElement: function() {
+      const templateLocation =
+          __webpack_public_path__ + 'wit_jupyter.html';
+
+      // If the vulcanized template is not loaded yet, load it now.
+      if (!document.querySelector('link[href="' + templateLocation + '"]')) {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'import');
+        link.setAttribute('href', templateLocation);
+
+        // Create the polymer element upon loading the template.
+        link.onload = () => this.createWhatIfToolElement();
+
+        document.head.appendChild(link);
+      } else {
+        // If the template is already loaded then create the element.
+        this.createWhatIfToolElement();
+      }
+    },
+
+    /**
+     * Creates and configure the WIT polymer element.
+     */
     createWhatIfToolElement: function() {
       // Create and attach WIT element to DOM.
       this.view_ = document.createElement(
@@ -88,21 +90,24 @@ var WITView = widgets.DOMWidgetView.extend({
         this.model.set('get_eligible_features', i);
         this.touch();
       });
+
+      this.inferMutantsCounter = 0;
       this.view_.addEventListener('infer-mutants', e => {
         e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
         this.model.set('infer_mutants', e.detail);
         this.mutantFeature = e.detail.feature_name;
         this.touch();
       });
+
+      // Invoke change listeners for initial settings.
+      this.configChanged();
+      this.examplesChanged();
+      this.spriteChanged();
     },
 
     // Callback functions for when changes made on python side.
     examplesChanged: function() {
       const examples = this.model.get('examples');
-      if (!this.view_.updateExampleContents) {
-        requestAnimationFrame(() => this.examplesChanged());
-        return;
-      }
       if (examples && examples.length > 0) {
         this.view_.updateExampleContents(examples, false);
       }
@@ -155,10 +160,6 @@ var WITView = widgets.DOMWidgetView.extend({
       this.view_.updateNumberOfModels();
     },
     spriteChanged: function() {
-      if (!this.view_.updateSprite_) {
-        requestAnimationFrame(() => this.spriteChanged());
-        return;
-      }
       const spriteUrl = this.model.get('sprite');
       this.view_.hasSprite = true;
       this.view_.localAtlasUrl = spriteUrl;
