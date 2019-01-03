@@ -25,7 +25,7 @@ from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard import summary as summary_lib
+from tensorboard.summary import v1 as summary_lib
 from tensorboard.plugins.custom_scalar import layout_pb2
 
 
