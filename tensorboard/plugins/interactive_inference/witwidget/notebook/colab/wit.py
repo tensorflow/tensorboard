@@ -86,8 +86,8 @@ WIT_HTML = """
     // Polymer element.
     window.inferenceCallback = inferences => {{
       const parsedInferences = JSON.parse(inferences);
-      wit.inferences = parsedInferences.inferences;
       wit.labelVocab = parsedInferences.label_vocab;
+      wit.inferences = parsedInferences.inferences;
     }};
     window.spriteCallback = spriteUrl => {{
       if (!wit.updateSprite) {{
@@ -243,8 +243,7 @@ class WitWidget(object):
     self.updated_example_indices = set()
     inferences = {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': inference_utils.get_label_vocab(
-          self.config.get('label_vocab_path'))}
+      'label_vocab': self.config.get('label_vocab')}
     output.eval_js("""inferenceCallback('{inferences}')""".format(
       inferences=json.dumps(inferences)))
 
