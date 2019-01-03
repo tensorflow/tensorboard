@@ -45,7 +45,7 @@ setup(
   long_description=get_readme(),
   author='Google Inc.',
   author_email='opensource@google.com',
-  url='https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/witwidget',
+  url='https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference',
   include_package_data=True,
   data_files=[
       ('share/jupyter/nbextensions/wit-widget', [
