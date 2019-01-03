@@ -119,9 +119,7 @@ public final class Vulcanize {
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
   private static final String NO_NOINLINE_FILE_PROVIDED = "NO_REGEXS";
 
-  private static final String DATA_URI_PREFIX = "data:";
-  private static final String HTTP_URI_PREFIX = "http://";
-  private static final String HTTPS_URI_PREFIX = "https://";
+  private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
   public static void main(String[] args) throws IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
@@ -633,11 +631,7 @@ public final class Vulcanize {
    * Webpath.isAbsolute does not take data uri and other forms of absolute path into account.
    */
   private static Boolean isAbsolutePath(Webpath path) {
-    String sPath = path.toString();
-    return path.isAbsolute()
-        || sPath.startsWith(DATA_URI_PREFIX)
-        || sPath.startsWith(HTTP_URI_PREFIX)
-        || sPath.startsWith(HTTPS_URI_PREFIX);
+    return path.isAbsolute() || ABS_URI_PATTERN.matcher(path.toString()).find();
   }
 
   private static String getInlineScriptFromNode(Node node) {
