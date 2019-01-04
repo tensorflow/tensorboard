@@ -80,7 +80,7 @@ class ProjectorAppTest(tf.test.TestCase):
     config.model_checkpoint_path = 'does_not_exist'
     embedding = config.embeddings.add()
     embedding.tensor_name = 'var1'
-    with tf.compat.v1.gfile.GFile(config_path, 'w') as f:
+    with tf.io.gfile.GFile(config_path, 'w') as f:
       f.write(text_format.MessageToString(config))
     self._SetupWSGIApp()
 
@@ -282,12 +282,12 @@ class ProjectorAppTest(tf.test.TestCase):
     # Add an embedding by its canonical tensor name.
     embedding.tensor_name = 'var1:0'
 
-    with tf.compat.v1.gfile.GFile(os.path.join(self.log_dir, 'bookmarks.json'), 'w') as f:
+    with tf.io.gfile.GFile(os.path.join(self.log_dir, 'bookmarks.json'), 'w') as f:
       f.write('{"a": "b"}')
     embedding.bookmarks_path = 'bookmarks.json'
 
     config_pbtxt = text_format.MessageToString(config)
-    with tf.compat.v1.gfile.GFile(config_path, 'w') as f:
+    with tf.io.gfile.GFile(config_path, 'w') as f:
       f.write(config_pbtxt)
 
     # Write a checkpoint with some dummy variables.

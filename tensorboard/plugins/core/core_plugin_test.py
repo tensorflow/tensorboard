@@ -34,6 +34,8 @@ from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
@@ -345,19 +347,19 @@ class CorePluginTest(tf.test.TestCase):
     with test_util.FileWriterCache.get(run_path) as writer:
 
       # Add a simple graph event.
-      graph_def = tf.compat.v1.GraphDef()
+      graph_def = graph_pb2.GraphDef()
       node1 = graph_def.node.add()
       node1.name = 'a'
       node2 = graph_def.node.add()
       node2.name = 'b'
       node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
 
-      meta_graph_def = tf.compat.v1.MetaGraphDef(graph_def=graph_def)
+      meta_graph_def = meta_graph_pb2.MetaGraphDef(graph_def=graph_def)
 
       if self._only_use_meta_graph:
         writer.add_meta_graph(meta_graph_def)
       else:
-        writer.add_graph(graph_def)
+        writer.add_graph(graph=None, graph_def=graph_def)
 
     # Write data for the run to the database.
     # TODO(nickfelt): Figure out why reseting the graph is necessary.

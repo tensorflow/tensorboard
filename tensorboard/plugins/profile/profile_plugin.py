@@ -303,7 +303,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     asset_path = os.path.join(self.plugin_logdir, rel_data_path)
     raw_data = None
     try:
-      with tf.compat.v1.gfile.Open(asset_path, 'rb') as f:
+      with tf.io.gfile.GFile(asset_path, 'rb') as f:
         raw_data = f.read()
     except tf.errors.NotFoundError:
       logger.warn('Asset path %s not found', asset_path)
