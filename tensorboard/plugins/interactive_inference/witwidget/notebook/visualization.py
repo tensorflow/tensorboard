@@ -34,6 +34,7 @@ class WitConfigBuilder(object):
     self.config = {}
     self.set_examples(examples)
     self.set_model_type('classification')
+    self.set_label_vocab([])
   
   def build(self):
     return self.config
