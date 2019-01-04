@@ -16,11 +16,7 @@ way to play with a trained ML model on a set of data through a visual interface
 with absolutely no code required.
 
 The tool can be accessed through TensorBoard or as an extension in a Jupyter
-<<<<<<< HEAD
 or Colab notebook.
-=======
-notebook.
->>>>>>> master
 
 ## I don’t want to read this document. Can I just play with a demo?
 
