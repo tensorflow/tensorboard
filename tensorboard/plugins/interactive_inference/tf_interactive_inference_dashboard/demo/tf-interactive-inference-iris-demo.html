@@ -46,7 +46,7 @@ limitations under the License.
       },
       ready: async function() {
         this.$.dash.multiClass = true;
-        this.$.dash.updateNumberOfModels_();
+        this.$.dash.updateNumberOfModels();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/iris/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/iris/iris.json";
@@ -55,7 +55,7 @@ limitations under the License.
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(
+          this.$.dash.updateExampleContents(
             this.data.map(item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
@@ -206,7 +206,7 @@ limitations under the License.
                 results[1].push({step: step, scalar: score[1]});
                 results[2].push({step: step, scalar: score[2]});
               }
-              this.$.dash.makeChartForFeature_(
+              this.$.dash.makeChartForFeature(
                 isNum ? 'numeric' : 'categorical',
                 e.detail.feature_name,
                 [[{'0': results[0], '1': results[1], '2': results[2]}]]);

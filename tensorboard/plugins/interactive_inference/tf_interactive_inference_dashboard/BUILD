@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -54,6 +55,34 @@ tf_web_library(
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard:registry",
     ],
+)
+
+tf_web_library(
+    name = "wit_lib",
+    srcs = [
+        "wit.html"
+    ],
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        ":tf_interactive_inference_dashboard",
+    ]
+)
+
+tensorboard_html_binary(
+    name = "wit_bin",
+    compile = True,
+    input_path = "/tf-interactive-inference-dashboard/wit.html",
+    output_path = "/all/wit.html",
+    deps = [
+        ":wit_lib",
+    ],
+)
+
+genrule(
+    name = "wit_jupyter",
+    srcs = [":wit_bin"],
+    outs = ["wit_jupyter.html"],
+    cmd = "sed 's|<!doctype html>|<!doctype html><script>define=undefined</script>|' $(location :wit_bin) > $@",
 )
 
 tf_web_library(
