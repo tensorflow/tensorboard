@@ -240,7 +240,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb).
+[WIT_from_scratch.ipynb jupyter notebook](./WIT_from_scratch.ipynb).
 
 ## How do I use it in a Colab notebook?
 Install the widget into the runtime of the notebook kerbnel by running a cell
@@ -250,4 +250,4 @@ containing:
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_in_colab.ipynb ipython notebook](./WIT_in_colab.ipynb).
+[WIT_in_colab.ipynb colab notebook](./WIT_in_colab.ipynb).
