@@ -33,18 +33,19 @@ from __future__ import print_function
 import os.path
 
 from absl import app
+from absl import flags
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import summary
 
 tf.compat.v1.disable_v2_behavior()
-FLAGS = tf.compat.v1.flags.FLAGS
+FLAGS = flags.FLAGS
 
-tf.compat.v1.flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
+flags.DEFINE_string('logdir', '/tmp/pr_curve_demo',
                        'Directory into which to write TensorBoard data.')
 
-tf.compat.v1.flags.DEFINE_integer('steps', 10,
+flags.DEFINE_integer('steps', 10,
                         'Number of steps to generate for each PR curve.')
 
 def start_runs(

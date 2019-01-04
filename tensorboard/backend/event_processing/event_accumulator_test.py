@@ -27,6 +27,8 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tensor_util
@@ -829,8 +831,14 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       self.assertEqual(i * 5, sq_events[i].step)
       self.assertEqual(i, id_events[i].value)
       self.assertEqual(i * i, sq_events[i].value)
-    self.assertProtoEquals(graph.as_graph_def(add_shapes=True), acc.Graph())
-    self.assertProtoEquals(meta_graph_def, acc.MetaGraph())
+
+    expected_graph_def = graph_pb2.GraphDef.FromString(
+          graph.as_graph_def(add_shapes=True).SerializeToString())
+    self.assertProtoEquals(expected_graph_def, acc.Graph())
+
+    expected_meta_graph = meta_graph_pb2.MetaGraphDef.FromString(
+          meta_graph_def.SerializeToString())
+    self.assertProtoEquals(expected_meta_graph, acc.MetaGraph())
 
   def testGraphFromMetaGraphBecomesAvailable(self):
     """Test accumulator by writing values and then reading them."""
@@ -858,8 +866,14 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         ea.GRAPH: True,
         ea.META_GRAPH: True,
     })
-    self.assertProtoEquals(graph.as_graph_def(add_shapes=True), acc.Graph())
-    self.assertProtoEquals(meta_graph_def, acc.MetaGraph())
+
+    expected_graph_def = graph_pb2.GraphDef.FromString(
+          graph.as_graph_def(add_shapes=True).SerializeToString())
+    self.assertProtoEquals(expected_graph_def, acc.Graph())
+
+    expected_meta_graph = meta_graph_pb2.MetaGraphDef.FromString(
+          meta_graph_def.SerializeToString())
+    self.assertProtoEquals(expected_meta_graph, acc.MetaGraph())
 
   def _writeMetadata(self, logdir, summary_metadata, nonce=''):
     """Write to disk a summary with the given metadata.

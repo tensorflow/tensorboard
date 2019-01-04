@@ -97,7 +97,7 @@ py_binary(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:summary",
+        "//tensorboard/summary:summary_v1",
         "@org_pythonhosted_six",
     ],
 )

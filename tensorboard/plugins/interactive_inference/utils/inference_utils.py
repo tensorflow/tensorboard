@@ -644,7 +644,7 @@ def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
   if vocab_path:
     try:
-      with tf.compat.v1.gfile.GFile(vocab_path, 'r') as f:
+      with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
       tf.logging.error('error reading vocab file: %s', err)
@@ -700,7 +700,7 @@ def create_sprite_image(examples):
       def loop_body(i, encoded_images, images):
         encoded_image = encoded_images[i]
         image = tf.image.decode_jpeg(encoded_image, channels=3)
-        resized_image = tf.compat.v1.image.resize_images(image, thumbnail_dims)
+        resized_image = tf.image.resize(image, thumbnail_dims)
         expanded_image = tf.expand_dims(resized_image, 0)
         images = tf.cond(
             tf.equal(i, 0), lambda: expanded_image,

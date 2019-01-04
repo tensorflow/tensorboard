@@ -146,7 +146,7 @@ class EmbeddingMetadata(object):
 
 
 def _read_tensor_tsv_file(fpath):
-  with tf.compat.v1.gfile.GFile(fpath, 'r') as f:
+  with tf.io.gfile.GFile(fpath, 'r') as f:
     tensor = []
     for line in f:
       line = line.rstrip('\n')
@@ -170,7 +170,7 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
       config = ProjectorConfig()
       config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
       if tf.io.gfile.exists(config_fpath):
-        with tf.compat.v1.gfile.GFile(config_fpath, 'r') as f:
+        with tf.io.gfile.GFile(config_fpath, 'r') as f:
           file_content = f.read()
         text_format.Merge(file_content, config)
     else:
@@ -381,7 +381,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
       config = ProjectorConfig()
       config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
       if tf.io.gfile.exists(config_fpath):
-        with tf.compat.v1.gfile.GFile(config_fpath, 'r') as f:
+        with tf.io.gfile.GFile(config_fpath, 'r') as f:
           file_content = f.read()
         text_format.Merge(file_content, config)
       has_tensor_files = False
@@ -512,7 +512,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                      'text/plain', 400)
 
     num_header_rows = 0
-    with tf.compat.v1.gfile.GFile(fpath, 'r') as f:
+    with tf.io.gfile.GFile(fpath, 'r') as f:
       lines = []
       # Stream reading the file with early break in case the file doesn't fit in
       # memory.
@@ -608,7 +608,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                      'text/plain', 400)
 
     bookmarks_json = None
-    with tf.compat.v1.gfile.GFile(fpath, 'rb') as f:
+    with tf.io.gfile.GFile(fpath, 'rb') as f:
       bookmarks_json = f.read()
     return Respond(request, bookmarks_json, 'application/json')
 
@@ -641,7 +641,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
       return Respond(request, '"%s" does not exist or is directory' % fpath,
                      'text/plain', 400)
-    f = tf.compat.v1.gfile.GFile(fpath, 'rb')
+    f = tf.io.gfile.GFile(fpath, 'rb')
     encoded_image_string = f.read()
     f.close()
     image_type = imghdr.what(None, encoded_image_string)
