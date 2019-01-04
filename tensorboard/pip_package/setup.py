@@ -89,4 +89,7 @@ setup(
     ],
     license='Apache 2.0',
     keywords='tensorflow tensorboard tensor machine learning visualizer',
+    project_urls={
+        'Changelog': 'https://github.com/tensorflow/tensorboard/blob/master/RELEASE.md',
+    },
 )
