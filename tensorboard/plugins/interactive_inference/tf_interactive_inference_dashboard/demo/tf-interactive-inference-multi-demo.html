@@ -45,7 +45,7 @@ limitations under the License.
         labelVocab: {type: Array, value: ['<=50k', '>50k']},
       },
       ready: async function() {
-        this.$.dash.updateNumberOfModels_();
+        this.$.dash.updateNumberOfModels();
         this.means = {
           'age': 38.64358543876172,
           'education-num': 10.078088530363212,
@@ -96,7 +96,7 @@ limitations under the License.
           for (let i = 0; i < data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(
+          this.$.dash.updateExampleContents(
             data.map(item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
@@ -296,7 +296,7 @@ limitations under the License.
                 results.push({step: step, scalar: score});
                 results2.push({step: step, scalar: score2});
               }
-              this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
+              this.$.dash.makeChartForFeature(isNum ? 'numeric' : 'categorical',
                   e.detail.feature_name, [[{'1': results}, {'1': results2}]]);
             };
             setTimeout(method, 50);
