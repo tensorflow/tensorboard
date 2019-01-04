@@ -20,30 +20,37 @@ from google.colab import output
 from google.protobuf import json_format
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
+
 # Python functions for requests from javascript.
-def infer_examples():
-  WitWidget.widget.infer()
+def infer_examples(wit_id):
+  WitWidget.widgets[wit_id].infer()
 output.register_callback('notebook.InferExamples', infer_examples)
 
-def delete_example(index):
-  WitWidget.widget.delete_example(index)
+
+def delete_example(wit_id, index):
+  WitWidget.widgets[wit_id].delete_example(index)
 output.register_callback('notebook.DeleteExample', delete_example)
 
-def duplicate_example(index):
-  WitWidget.widget.duplicate_example(index)
+
+def duplicate_example(wit_id, index):
+  WitWidget.widgets[wit_id].duplicate_example(index)
 output.register_callback('notebook.DuplicateExample', duplicate_example)
 
-def update_example(index, example):
-  WitWidget.widget.update_example(index, example)
+
+def update_example(wit_id, index, example):
+  WitWidget.widgets[wit_id].update_example(index, example)
 output.register_callback('notebook.UpdateExample', update_example)
 
-def get_eligible_features():
-  WitWidget.widget.get_eligible_features()
+
+def get_eligible_features(wit_id):
+  WitWidget.widgets[wit_id].get_eligible_features()
 output.register_callback('notebook.GetEligibleFeatures', get_eligible_features)
 
-def infer_mutants(details):
-  WitWidget.widget.infer_mutants(details)
+
+def infer_mutants(wit_id, details):
+  WitWidget.widgets[wit_id].infer_mutants(details)
 output.register_callback('notebook.InferMutants', infer_mutants)
+
 
 # HTML/javascript for the WIT frontend.
 WIT_HTML = """
@@ -51,6 +58,7 @@ WIT_HTML = """
   </tf-interactive-inference-dashboard>
   <script>
     const examples = {examples};
+    const id = {id};
     const wit = document.querySelector("#wit");
     wit.parentElement.style.height = '{height}px';
     let mutantFeature = null;
@@ -58,28 +66,28 @@ WIT_HTML = """
     // Listeners from WIT element events which pass requests to python.
     wit.addEventListener("infer-examples", e => {{
       google.colab.kernel.invokeFunction(
-        'notebook.InferExamples', [], {{}});
+        'notebook.InferExamples', [id], {{}});
     }});
     wit.addEventListener("delete-example", e => {{
       google.colab.kernel.invokeFunction(
-        'notebook.DeleteExample', [e.detail.index], {{}});
+        'notebook.DeleteExample', [id, e.detail.index], {{}});
     }});
     wit.addEventListener("duplicate-example", e => {{
       google.colab.kernel.invokeFunction(
-        'notebook.DuplicateExample', [e.detail.index], {{}});
+        'notebook.DuplicateExample', [id, e.detail.index], {{}});
     }});
     wit.addEventListener("update-example", e => {{
       google.colab.kernel.invokeFunction(
-        'notebook.UpdateExample', [e.detail.index, e.detail.example], {{}});
+        'notebook.UpdateExample', [id, e.detail.index, e.detail.example], {{}});
     }});
     wit.addEventListener('get-eligible-features', e => {{
       google.colab.kernel.invokeFunction(
-        'notebook.GetEligibleFeatures', [], {{}});
+        'notebook.GetEligibleFeatures', [id], {{}});
     }});
     wit.addEventListener('infer-mutants', e => {{
       mutantFeature = e.detail.feature_name;
       google.colab.kernel.invokeFunction(
-        'notebook.InferMutants', [e.detail], {{}});
+        'notebook.InferMutants', [id, e.detail], {{}});
     }});
 
     // Javascript callbacks called by python code to communicate with WIT
@@ -154,11 +162,17 @@ WIT_HTML = """
   </script>
   """
 
+
 class WitWidget(object):
   """WIT widget for colab."""
 
-  # Static instance object so python global functions can call into this object.
-  widget = None
+  # Static instance list of constructed WitWidgets so python global functions
+  # can call into instances of this object
+  widgets = []
+
+  # Static instance index to keep track of ID number of each constructed
+  # WitWidget.
+  index = 0
 
   def __init__(self, config_builder, height=1000):
     tf.logging.set_verbosity(tf.logging.WARN)
@@ -179,12 +193,18 @@ class WitWidget(object):
     del copied_config['examples']
 
     self.config = copied_config
-    WitWidget.widget = self
+
+    # Add this instance to the static instance list.
+    WitWidget.widgets.append(self)
 
     # Display WIT Polymer element.
     display.display(display.HTML(self._get_element_html()))
     display.display(display.HTML(
-      WIT_HTML.format(examples=json.dumps(self.examples), height=height)))
+      WIT_HTML.format(
+        examples=json.dumps(self.examples), height=height, id=WitWidget.index)))
+
+    # Increment the static instance WitWidget index counter
+    WitWidget.index += 1
 
     # Send the provided config and examples to JS
     output.eval_js("""configCallback('{config}')""".format(
