@@ -31,7 +31,7 @@ def _AddEvents(path):
   if not tf.io.gfile.isdir(path):
     tf.io.gfile.makedirs(path)
   fpath = os.path.join(path, 'hypothetical.tfevents.out')
-  with tf.compat.v1.gfile.GFile(fpath, 'w') as f:
+  with tf.io.gfile.GFile(fpath, 'w') as f:
     f.write('')
     return fpath
 

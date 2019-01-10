@@ -20,7 +20,6 @@ from grpc.beta import implementations
 import random
 from six.moves.urllib.parse import urlparse
 import tensorflow as tf
-from tensorboard.util import tensor_util
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
 from tensorflow.core.framework import types_pb2
@@ -187,10 +186,13 @@ def call_servo(examples, serving_bundle):
     request.model_spec.signature_name = serving_bundle.signature
 
   if serving_bundle.use_predict:
+    # tf.compat.v1 API used here to convert tf.example into proto. This
+    # utility file is bundled in the witwidget pip package which has a dep
+    # on TensorFlow.
     request.inputs[serving_bundle.predict_input_tensor].CopyFrom(
-        tensor_util.make_tensor_proto(
-            values=[ex.SerializeToString() for ex in examples],
-            dtype=types_pb2.DT_STRING))
+      tf.compat.v1.make_tensor_proto(
+        values=[ex.SerializeToString() for ex in examples],
+        dtype=types_pb2.DT_STRING))
   else:
     request.input.example_list.examples.extend(examples)
 

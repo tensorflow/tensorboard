@@ -90,7 +90,7 @@ def RetrieveAsset(logdir, plugin_name, asset_name):
 
   asset_path = os.path.join(PluginDirectory(logdir, plugin_name), asset_name)
   try:
-    with tf.compat.v1.gfile.Open(asset_path, "r") as f:
+    with tf.io.gfile.GFile(asset_path, "r") as f:
       return f.read()
   except tf.errors.NotFoundError:
     raise KeyError("Asset path %s not found" % asset_path)

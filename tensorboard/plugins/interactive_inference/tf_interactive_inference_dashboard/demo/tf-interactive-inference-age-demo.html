@@ -44,8 +44,7 @@ limitations under the License.
         categories: Object,
       },
       ready: async function() {
-        this.$.dash.settingsClicked_();
-        this.$.dash.updateNumberOfModels_();
+        this.$.dash.updateNumberOfModels();
         this.means = {
           'age': 38.64358543876172,
           'education-num': 10.078088530363212,
@@ -94,7 +93,7 @@ limitations under the License.
           for (let i = 0; i < data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(data.map(
+          this.$.dash.updateExampleContents(data.map(
             item => JSON.stringify(item)), false);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
@@ -267,7 +266,7 @@ limitations under the License.
                           e.detail.feature_name].bytesList.value[0])];
                 results.push({step: step, scalar: adjustedScore});
               }
-              this.$.dash.makeChartForFeature_(isNum ? 'numeric' : 'categorical',
+              this.$.dash.makeChartForFeature(isNum ? 'numeric' : 'categorical',
                   e.detail.feature_name, [[{'value': results}]]);
             };
             setTimeout(method, 50);

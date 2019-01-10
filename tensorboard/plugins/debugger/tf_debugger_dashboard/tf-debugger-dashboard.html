@@ -202,6 +202,11 @@ limitations under the License.
         width: 40vw;
         margin-left: 30vw;
       }
+      tf-dashboard-layout {
+        --tf-dashboard-layout-sidebar-basis: auto;
+        --tf-dashboard-layout-sidebar-max-width: unset;
+        --tf-dashboard-layout-sidebar-min-width: unset;
+      }
       .debugger-section-title {
         font-size: 110%;
         font-weight: bold;
@@ -271,12 +276,16 @@ limitations under the License.
         margin: 80px auto 0 auto;
       }
       .sidebar {
-        position: relative;
         height: 100%;
+        overflow-x: visible;
+        position: relative;
       }
       .center {
         position: relative;
         height: 100%;
+      }
+      tf-debugger-resizer {
+        right: -10px;
       }
       #center-content {
         position: absolute;
@@ -301,15 +310,16 @@ limitations under the License.
         vertical-align: middle;
       }
       .node-entries {
-        position: relative;
+        box-shadow: 3px 3px #ddd;
+        box-sizing: border-box;
         height: 80%;
-        width: 100%;
-        vertical-align: top;
         overflow: auto;
-        padding-top: 3px;
         padding-left: 3px;
         padding-right: 3px;
-        box-shadow: 3px 3px #ddd;
+        padding-top: 3px;
+        position: relative;
+        vertical-align: top;
+        width: 100%;
       }
       .source-code-view-div {
         position: relative;
