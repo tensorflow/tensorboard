@@ -16,6 +16,8 @@ way to play with a trained ML model on a set of data through a visual interface
 with absolutely no code required.
 
 The tool can be accessed through TensorBoard or as an extension in a Jupyter
+or
+[Colab](https://colab.sandbox.google.com/github/tensorflow/tensorboard/blob/colab/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb)
 notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
@@ -240,4 +242,14 @@ jupyter nbextension enable --py --sys-prefix witwidget
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb).
+[WIT_from_scratch.ipynb jupyter notebook](./WIT_from_scratch.ipynb).
+
+## How do I use it in a Colab notebook?
+Install the widget into the runtime of the notebook kernel by running a cell
+containing:
+```
+!pip install witwidget
+```
+
+Then, use it as seen at the bottom of the
+[WIT_in_colab.ipynb colab notebook](https://colab.sandbox.google.com/github/tensorflow/tensorboard/blob/colab/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb).
