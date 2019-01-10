@@ -170,6 +170,7 @@ paper-progress {
               all-steps-mode-enabled="{{allStepsModeEnabled}}"
               specific-health-pill-step="{{specificHealthPillStep}}"
               health-pill-step-index="{{healthPillStepIndex}}"
+              compat-node-title="[[compatNodeTitle]]"
     ></tf-graph-info>
   </div>
   <div class="context-menu"></div>
@@ -233,6 +234,7 @@ Polymer({
       type: String,
       notify: true,
     },
+    compatNodeTitle: String,
     // A function with signature EdgeThicknessFunction that computes the
     // thickness of a given edge.
     edgeWidthFunction: Object,
