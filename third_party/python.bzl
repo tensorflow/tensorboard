@@ -69,11 +69,10 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pocoo_werkzeug",
         urls = [
-            "https://mirror.bazel.build/pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
-            "https://pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
+			"https://files.pythonhosted.org/packages/fe/7f/6d70f765ce5484e07576313897793cb49333dd34e462488ee818d17244af/Werkzeug-0.11.15.tar.gz"
         ],
-        strip_prefix = "Werkzeug-0.11.10",
-        sha256 = "cc64dafbacc716cdd42503cf6c44cb5a35576443d82f29f6829e5c49264aeeee",
+        strip_prefix = "Werkzeug-0.11.15",
+        sha256 = "455d7798ac263266dbd38d4841f7534dd35ca9c3da4a8df303f8488f38f3bcc0",
         build_file = str(Label("//third_party:werkzeug.BUILD")),
     )
 
