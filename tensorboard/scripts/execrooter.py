@@ -43,14 +43,23 @@ def run(inputs, program, outputs):
       parent = os.path.join(root, os.path.dirname(fake))
       if not os.path.exists(parent):
         os.makedirs(parent)
-      os.symlink(os.path.join(cwd, real), os.path.join(root, fake))
+      # Use symlink if possible and not on Windows, since on Windows 10
+	  # symlinks exist but they require administrator privileges to use.
+      if hasattr(os, 'symlink') and not os.name == 'nt':
+        os.symlink(os.path.join(cwd, real), os.path.join(root, fake))
+      else:
+        shutil.copyfile(os.path.join(cwd, real), os.path.join(root, fake))
     if subprocess.call(program + [root]) != 0:
       return 1
     for fake, real in outputs:
       shutil.copyfile(os.path.join(root, fake), real)
     return 0
   finally:
-    shutil.rmtree(root)
+    try:
+      shutil.rmtree(root)
+    except EnvironmentError:
+      # Ignore "file in use" errors on Windows; ok since it's just a tmpdir.
+      pass
 
 
 def main(args):
