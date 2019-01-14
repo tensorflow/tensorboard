@@ -85,6 +85,9 @@ before_install:
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
 
+  # Absolute hack; don't get this anywhere near my prod
+  - bazel clean --expunge
+
 install:
   - pip install flake8==3.5.0
   - pip install futures==3.1.1
