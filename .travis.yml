@@ -33,7 +33,7 @@ cache:
 
 before_install:
   - pip freeze
-  - pip uninstall numpy  # Travis preinstalls this. Something is strange right now. Maybe this fixes it?
+  - pip uninstall -y numpy  # Travis preinstalls this. Something is strange right now. Maybe this fixes it?
   - pip freeze
   - |
     # Download Bazel
