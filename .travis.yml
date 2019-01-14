@@ -70,6 +70,9 @@ before_install:
   - echo "build --local_resources=400,2,1.0" >>~/.bazelrc
   - echo "build --worker_max_instances=2" >>~/.bazelrc
 
+  # What goes on when something goes wrong?
+  - echo "build --sandbox_debug" >>~/.bazelrc
+
   # Make Bazel as strict as possible, so TensorBoard will build correctly
   # for users, regardless of their Bazel configuration.
   - echo "build --worker_verbose" >>~/.bazelrc
