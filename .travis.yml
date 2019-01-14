@@ -91,7 +91,9 @@ install:
         pip install -I tensorflow
         ;;
       NIGHTLY)
-        pip install -I tf-nightly
+        # TODO(@wchargin): Unpin once tensorflow/tensorflow#24867 is merged:
+        # https://github.com/tensorflow/tensorflow/pull/24867
+        pip install -I tf-nightly==1.13.0.dev20190104
         ;;
       *)
         pip install -I tensorflow=="${TF}"
