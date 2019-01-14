@@ -32,6 +32,7 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
+  - pip uninstall numpy  # Travis preinstalls this. Something is strange right now. Maybe this fixes it?
   - |
     # Download Bazel
     bazel_binary="$(mktemp)" &&
