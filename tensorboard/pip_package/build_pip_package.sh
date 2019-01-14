@@ -38,7 +38,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 smoke() {
-  TF_PACKAGE=tf-nightly
+  TF_PACKAGE=tf-nightly-2.0-preview
   if [ -n "$TF_VERSION" ]; then
     TF_PACKAGE="tensorflow==${TF_VERSION}"
   fi
