@@ -69,7 +69,7 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pocoo_werkzeug",
         urls = [
-			"https://files.pythonhosted.org/packages/fe/7f/6d70f765ce5484e07576313897793cb49333dd34e462488ee818d17244af/Werkzeug-0.11.15.tar.gz"
+            "https://files.pythonhosted.org/packages/fe/7f/6d70f765ce5484e07576313897793cb49333dd34e462488ee818d17244af/Werkzeug-0.11.15.tar.gz",
         ],
         strip_prefix = "Werkzeug-0.11.15",
         sha256 = "455d7798ac263266dbd38d4841f7534dd35ca9c3da4a8df303f8488f38f3bcc0",

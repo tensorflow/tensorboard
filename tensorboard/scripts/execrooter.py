@@ -44,7 +44,7 @@ def run(inputs, program, outputs):
       if not os.path.exists(parent):
         os.makedirs(parent)
       # Use symlink if possible and not on Windows, since on Windows 10
-	  # symlinks exist but they require administrator privileges to use.
+      # symlinks exist but they require administrator privileges to use.
       if hasattr(os, 'symlink') and not os.name == 'nt':
         os.symlink(os.path.join(cwd, real), os.path.join(root, fake))
       else:
