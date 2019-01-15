@@ -32,11 +32,11 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  # Travis pre-installs an old version of numpy. Uninstalling it
-  # manually has been known to solve some strange failures that we've
-  # had in the past.
+  # Travis pre-installs an old version of numpy. We uninstall it to
+  # reduce the potential for strange behavior when upgrading in-place
+  # for TensorFlow's numpy dependency.
   - pip uninstall -y numpy
-  - pip freeze
+  - pip freeze  # print installed distributions, for debugging purposes
   - |
     # Download Bazel
     bazel_binary="$(mktemp)" &&
