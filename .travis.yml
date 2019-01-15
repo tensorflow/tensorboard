@@ -88,7 +88,9 @@ before_install:
   - ./test_bazel_cc.sh "post .bazelrc config"
 
   # Who dares poison my cache?!
-  - find "${HOME}/.bazel-output-base" || true
+  #- find "${HOME}/.bazel-output-base" || true  # log too long, Travis kill job :-(
+  - find "${HOME}/.bazel-output-base" \( -iname "*crosstool*" -o -iname "*toolchain*" \)
+  - find "${HOME}/.bazel-output-base" -type f \( -iname "*crosstool*" -o -iname "*toolchain*" \) -print0 | xargs -0 awk 'BEGINFILE { printf "\n--- %s ---\n", FILENAME } 1'
 
 install:
   - ./test_bazel_cc.sh "at top of 'install' section"
