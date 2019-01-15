@@ -32,8 +32,10 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - pip freeze
-  - pip uninstall -y numpy  # Travis preinstalls this. Something is strange right now. Maybe this fixes it?
+  # Travis pre-installs an old version of numpy. Uninstalling it
+  # manually has been known to solve some strange failures that we've
+  # had in the past.
+  - pip uninstall -y numpy
   - pip freeze
   - |
     # Download Bazel
@@ -70,9 +72,6 @@ before_install:
   - echo "build --local_resources=400,2,1.0" >>~/.bazelrc
   - echo "build --worker_max_instances=2" >>~/.bazelrc
 
-  # What goes on when something goes wrong?
-  - echo "build --sandbox_debug" >>~/.bazelrc
-
   # Make Bazel as strict as possible, so TensorBoard will build correctly
   # for users, regardless of their Bazel configuration.
   - echo "build --worker_verbose" >>~/.bazelrc
@@ -84,9 +83,6 @@ before_install:
   # It's helpful to see the errors on failure.
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
-
-  # Absolute hack; don't get this anywhere near my prod
-  - bazel clean --expunge
 
 install:
   - pip install flake8==3.5.0
