@@ -84,7 +84,11 @@ before_install:
   # It's helpful to see the errors on failure.
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
+
   - ./test_bazel_cc.sh "post .bazelrc config"
+
+  # Who dares poison my cache?!
+  - find "${HOME}/.bazel-output-base" || true
 
 install:
   - ./test_bazel_cc.sh "at top of 'install' section"
