@@ -32,6 +32,11 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
+  # Travis pre-installs an old version of numpy. We uninstall it to
+  # reduce the potential for strange behavior when upgrading in-place
+  # for TensorFlow's numpy dependency.
+  - pip uninstall -y numpy
+  - pip freeze  # print installed distributions, for debugging purposes
   - |
     # Download Bazel
     bazel_binary="$(mktemp)" &&
@@ -91,7 +96,9 @@ install:
         pip install -I tensorflow
         ;;
       NIGHTLY)
-        pip install -I tf-nightly
+        # TODO(@wchargin): Unpin once tensorflow/tensorflow#24867 is merged:
+        # https://github.com/tensorflow/tensorflow/pull/24867
+        pip install -I tf-nightly==1.13.0.dev20190104
         ;;
       *)
         pip install -I tensorflow=="${TF}"
