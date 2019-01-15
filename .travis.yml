@@ -20,7 +20,7 @@ env:
   #
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
-  - TF=NIGHTLY BAZEL=0.16.1 BAZEL_SHA256SUM=f1a855ca35043cdb360bba96ca51998a6277797c096b3390e787fdee07398959
+  - TF=NIGHTLY BAZEL=0.21.0 BAZEL_SHA256SUM=7a2f347d779c4c772cdb318f0435f8d489a238be42e7a9bf1e2bad94b1c3094f
 
 cache:
   directories:
@@ -59,6 +59,7 @@ before_install:
     [ -f "${bazel_binary}" ]
   - chmod +x "${bazel_binary}"
   - sudo mv "${bazel_binary}" /usr/local/bin/bazel
+  - ./test_bazel_cc.sh "immediately after Bazel install"
 
   # Storing build artifacts in this directory helps Travis cache them. This
   # will sometimes cut latency in half, when we're lucky.
@@ -84,11 +85,23 @@ before_install:
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
 
+  # (WIP) need this or action_env=PATH for Bazel 0.21.0
+  - echo "test --incompatible_strict_action_env=false" >>~/.bazelrc
+
+  - ./test_bazel_cc.sh "post .bazelrc config"
+
+  # Who dares poison my cache?!
+  #- find "${HOME}/.bazel-output-base" || true  # log too long, Travis kill job :-(
+  - find "${HOME}/.bazel-output-base" \( -iname "*crosstool*" -o -iname "*toolchain*" \)
+  - find "${HOME}/.bazel-output-base" -type f \( -iname "*crosstool*" -o -iname "*toolchain*" \) -print0 | xargs -0 awk 'BEGINFILE { printf "\n--- FILE: %s ---\n", FILENAME } 1'
+
 install:
+  - ./test_bazel_cc.sh "at top of 'install' section"
   - pip install flake8==3.5.0
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
   - pip install mock==2.0.0
+  - ./test_bazel_cc.sh "after installing non-TF Pip packages"
   - |
     # Install TensorFlow
     case "${TF}" in
@@ -104,8 +117,10 @@ install:
         pip install -I tensorflow=="${TF}"
         ;;
     esac
+  - ./test_bazel_cc.sh "after installing TensorFlow"
 
 before_script:
+  - ./test_bazel_cc.sh "at top of 'before_script' section"
   # fail the build if there are Python syntax errors or undefined names
   - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
@@ -120,9 +135,11 @@ before_script:
 # categorize them as 'failed', rather than 'error' for other sections.
 script:
   # Note: bazel test implies fetch+build, but this gives us timing.
+  - ./test_bazel_cc.sh "at top of 'script' section"
   - bazel fetch //tensorboard/...
   - bazel build //tensorboard/...
   - bazel test //tensorboard/...
+  - ./test_bazel_cc.sh "at bottom of 'script' section"
 
 after_script:
   # Bazel launches daemons unless --batch is used.
