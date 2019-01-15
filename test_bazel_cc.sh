@@ -1,4 +1,6 @@
 #!/bin/sh
+printf -- 'Testing Bazel CC behavior: %s\n' "$*"
+
 set -eux
 cd "$(mktemp -d)"
 
