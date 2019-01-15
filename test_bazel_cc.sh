@@ -31,4 +31,4 @@ cc_binary(
 )
 EOF
 
-describe_status "${1-bazel}" run :hello 3>&1
+describe_status "${2-bazel}" run :hello 3>&1
