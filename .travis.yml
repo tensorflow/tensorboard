@@ -85,6 +85,9 @@ before_install:
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
 
+  # (WIP) need this or action_env=PATH for Bazel 0.21.0
+  - echo "test --incompatible_strict_action_env=false" >>~/.bazelrc
+
   - ./test_bazel_cc.sh "post .bazelrc config"
 
   # Who dares poison my cache?!
