@@ -20,7 +20,7 @@ env:
   #
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
-  - TF=NIGHTLY BAZEL=0.16.1 BAZEL_SHA256SUM=f1a855ca35043cdb360bba96ca51998a6277797c096b3390e787fdee07398959
+  - TF=NIGHTLY BAZEL=0.21.0 BAZEL_SHA256SUM=7a2f347d779c4c772cdb318f0435f8d489a238be42e7a9bf1e2bad94b1c3094f
 
 cache:
   directories:
@@ -32,6 +32,11 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
+  # Travis pre-installs an old version of numpy. We uninstall it to
+  # reduce the potential for strange behavior when upgrading in-place
+  # for TensorFlow's numpy dependency.
+  - pip uninstall -y numpy
+  - pip freeze  # print installed distributions, for debugging purposes
   - |
     # Download Bazel
     bazel_binary="$(mktemp)" &&
@@ -79,6 +84,10 @@ before_install:
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
 
+  # We need to pass the PATH from our virtualenv down into our tests,
+  # which is non-hermetic and so disabled by default in Bazel 0.21.0+.
+  - echo "test --action_env=PATH" >>~/.bazelrc
+
 install:
   - pip install flake8==3.5.0
   - pip install futures==3.1.1
@@ -91,7 +100,9 @@ install:
         pip install -I tensorflow
         ;;
       NIGHTLY)
-        pip install -I tf-nightly
+        # TODO(@wchargin): Unpin once tensorflow/tensorflow#24867 is merged:
+        # https://github.com/tensorflow/tensorflow/pull/24867
+        pip install -I tf-nightly==1.13.0.dev20190104
         ;;
       *)
         pip install -I tensorflow=="${TF}"
