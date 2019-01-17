@@ -71,13 +71,13 @@ var vz_chart_helpers;
             }
             var f;
             if (absv >= 1E4) {
-                f = d3.format('.' + digits + 'e');
+                f = d3.format('.' + digits + '~e');
             }
             else if (absv > 0 && absv < 0.01) {
-                f = d3.format('.' + digits + 'e');
+                f = d3.format('.' + digits + '~e');
             }
             else {
-                f = d3.format('.' + digits + 'g');
+                f = d3.format('.' + digits + '~g');
             }
             return f(v);
         };
@@ -138,7 +138,7 @@ var vz_chart_helpers;
         return function (d, index, dataset) { return d[key]; };
     }
     vz_chart_helpers.accessorize = accessorize;
-    vz_chart_helpers.stepFormatter = Plottable.Formatters.siSuffix(vz_chart_helpers.STEP_FORMATTER_PRECISION);
+    vz_chart_helpers.stepFormatter = d3.format("." + vz_chart_helpers.STEP_FORMATTER_PRECISION + "~s");
     function stepX() {
         var scale = new Plottable.Scales.Linear();
         scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
