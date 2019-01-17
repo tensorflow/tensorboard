@@ -9,7 +9,7 @@ py_library(
         "__init__.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":summary_v1",
         ":summary_v2",
