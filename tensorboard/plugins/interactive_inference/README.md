@@ -252,4 +252,4 @@ containing:
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_in_colab.ipynb colab notebook](https://colab.sandbox.google.com/github/tensorflow/tensorboard/blob/colab/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb).
+[WIT_in_colab.ipynb colab notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb).
