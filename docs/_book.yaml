@@ -25,5 +25,9 @@ upper_tabs:
         path: /tensorboard/graphs
       - title: Histograms
         path: /tensorboard/histograms
+    - name: API
+      skip_translation: true
+      contents:
+      - include: /tensorboard/api_docs/python/_toc.yaml
 
 - include: /_upper_tabs_right.yaml
