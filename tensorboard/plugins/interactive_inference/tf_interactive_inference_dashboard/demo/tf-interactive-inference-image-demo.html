@@ -52,8 +52,7 @@ limitations under the License.
         images: Array,
       },
       ready: async function() {
-        this.$.dash.settingsClicked_();
-        this.$.dash.updateNumberOfModels_();
+        this.$.dash.updateNumberOfModels();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/images/model.json', {credentials: 'include'}));
         const DATA_PATH = "data/images/smile_examples.json";
@@ -64,7 +63,7 @@ limitations under the License.
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
-          this.$.dash.updateExampleContents_(
+          this.$.dash.updateExampleContents(
             this.data.map(item => JSON.stringify(item)), true);
           this.$.dash.addEventListener('update-example', e => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
@@ -183,6 +182,7 @@ limitations under the License.
           };
         }
       },
+
       imageLoaded: function() {
         const canvas = this.$.spritecanvas;
         const THUMBNAIL_SIZE = 32;
@@ -203,7 +203,7 @@ limitations under the License.
                         THUMBNAIL_SIZE);
         }
         this.$.dash.localAtlasUrl = canvas.toDataURL();
-        this.$.dash.updateSprite_();
+        this.$.dash.updateSprite();
       },
     });
   </script>

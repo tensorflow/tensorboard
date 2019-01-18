@@ -119,8 +119,9 @@ class Resizer(op_evaluator.PersistentOpEvaluator):
   def initialize_graph(self):
     self._image_placeholder = tf.compat.v1.placeholder(dtype=tf.float32)
     self._size_placeholder = tf.compat.v1.placeholder(dtype=tf.int32)
-    self._resize_op = tf.compat.v1.image.resize_nearest_neighbor(self._image_placeholder,
-                                                       self._size_placeholder)
+    self._resize_op = tf.image.resize(self._image_placeholder,
+                                      self._size_placeholder,
+                                      method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
   # pylint: disable=arguments-differ
   def run(self, image, height, width):
@@ -139,12 +140,12 @@ decode_png = PNGDecoder()
 resize = Resizer()
 
 def read_image(filename):
-  with tf.compat.v1.gfile.Open(filename, 'rb') as image_file:
+  with tf.io.gfile.GFile(filename, 'rb') as image_file:
     return np.array(decode_png(image_file.read()))
 
 
 def write_image(array, filename):
-  with tf.compat.v1.gfile.Open(filename, 'w') as image_file:
+  with tf.io.gfile.GFile(filename, 'w') as image_file:
     image_file.write(encoder.encode_png(array))
 
 

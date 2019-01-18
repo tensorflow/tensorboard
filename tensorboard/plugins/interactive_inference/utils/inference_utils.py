@@ -16,8 +16,11 @@
 
 import collections
 import copy
+import json
+import math
 import numpy as np
 import tensorflow as tf
+from google.protobuf import json_format
 from six import iteritems
 from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
@@ -176,6 +179,8 @@ class ServingBundle(object):
       Predict API.
     predict_output_tensor: The name of the output tensor to parse when using the
       Predict API.
+    estimator: An estimator to use instead of calling an external model.
+    feature_spec: A feature spec for use with the estimator.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
@@ -183,7 +188,7 @@ class ServingBundle(object):
 
   def __init__(self, inference_address, model_name, model_type, model_version,
                signature, use_predict, predict_input_tensor,
-               predict_output_tensor):
+               predict_output_tensor, estimator=None, feature_spec=None):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -208,6 +213,8 @@ class ServingBundle(object):
     self.use_predict = use_predict
     self.predict_input_tensor = predict_input_tensor
     self.predict_output_tensor = predict_output_tensor
+    self.estimator = estimator
+    self.feature_spec = feature_spec
 
 
 def proto_value_for_feature(example, feature_name):
@@ -465,13 +472,10 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
     charts = []
     for serving_bundle in serving_bundles:
-      inference_result_proto = platform_utils.call_servo(mutant_examples,
-        serving_bundle)
-      charts.append(make_json_formatted_for_single_chart(mutant_features,
-                                                inference_result_proto,
-                                                index_to_mutate))
+      inference_result_proto = run_inference(mutant_examples, serving_bundle)
+      charts.append(make_json_formatted_for_single_chart(
+        mutant_features, inference_result_proto, index_to_mutate))
     return charts
-
   try:
     original_feature = parse_original_feature_from_example(
         example_protos[0], feature_name)
@@ -597,3 +601,154 @@ def get_example_features(example):
   """Returns the non-sequence features from the provided example."""
   return (example.features.feature if isinstance(example, tf.train.Example)
           else example.context.feature)
+
+def run_inference_for_inference_results(examples, serving_bundle):
+  """Calls servo and wraps the inference results."""
+  inference_result_proto = run_inference(examples, serving_bundle)
+  inferences = wrap_inference_results(inference_result_proto)
+  infer_json = json_format.MessageToJson(
+    inferences, including_default_value_fields=True)
+  return json.loads(infer_json)
+
+def get_eligible_features(examples, num_mutants):
+  """Returns a list of JSON objects for each feature in the examples.
+
+    This list is used to drive partial dependence plots in the plugin.
+
+    Args:
+      examples: Examples to examine to determine the eligible features.
+      num_mutants: The number of mutations to make over each feature.
+
+    Returns:
+      A list with a JSON object for each feature.
+      Numeric features are represented as {name: observedMin: observedMax:}.
+      Categorical features are repesented as {name: samples:[]}.
+    """
+  features_dict = (
+      get_numeric_features_to_observed_range(
+          examples))
+
+  features_dict.update(
+      get_categorical_features_to_sampling(
+          examples, num_mutants))
+
+  # Massage the features_dict into a sorted list before returning because
+  # Polymer dom-repeat needs a list.
+  features_list = []
+  for k, v in sorted(features_dict.items()):
+    v['name'] = k
+    features_list.append(v)
+  return features_list
+
+def get_label_vocab(vocab_path):
+  """Returns a list of label strings loaded from the provided path."""
+  if vocab_path:
+    try:
+      with tf.io.gfile.GFile(vocab_path, 'r') as f:
+        return [line.rstrip('\n') for line in f]
+    except tf.errors.NotFoundError as err:
+      tf.logging.error('error reading vocab file: %s', err)
+  return []
+
+def create_sprite_image(examples):
+    """Returns an encoded sprite image for use in Facets Dive.
+
+    Args:
+      examples: A list of serialized example protos to get images for.
+
+    Returns:
+      An encoded PNG.
+    """
+
+    def generate_image_from_thubnails(thumbnails, thumbnail_dims):
+      """Generates a sprite atlas image from a set of thumbnails."""
+      num_thumbnails = tf.shape(thumbnails)[0].eval()
+      images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
+      thumb_height = thumbnail_dims[0]
+      thumb_width = thumbnail_dims[1]
+      master_height = images_per_row * thumb_height
+      master_width = images_per_row * thumb_width
+      num_channels = 3
+      master = np.zeros([master_height, master_width, num_channels])
+      for idx, image in enumerate(thumbnails.eval()):
+        left_idx = idx % images_per_row
+        top_idx = int(math.floor(idx / images_per_row))
+        left_start = left_idx * thumb_width
+        left_end = left_start + thumb_width
+        top_start = top_idx * thumb_height
+        top_end = top_start + thumb_height
+        master[top_start:top_end, left_start:left_end, :] = image
+      return tf.image.encode_png(master)
+
+    image_feature_name = 'image/encoded'
+    sprite_thumbnail_dim_px = 32
+    with tf.compat.v1.Session():
+      keys_to_features = {
+          image_feature_name:
+              tf.FixedLenFeature((), tf.string, default_value=''),
+      }
+      parsed = tf.parse_example(examples, keys_to_features)
+      images = tf.zeros([1, 1, 1, 1], tf.float32)
+      i = tf.constant(0)
+      thumbnail_dims = (sprite_thumbnail_dim_px,
+                        sprite_thumbnail_dim_px)
+      num_examples = tf.constant(len(examples))
+      encoded_images = parsed[image_feature_name]
+
+      # Loop over all examples, decoding the image feature value, resizing
+      # and appending to a list of all images.
+      def loop_body(i, encoded_images, images):
+        encoded_image = encoded_images[i]
+        image = tf.image.decode_jpeg(encoded_image, channels=3)
+        resized_image = tf.image.resize(image, thumbnail_dims)
+        expanded_image = tf.expand_dims(resized_image, 0)
+        images = tf.cond(
+            tf.equal(i, 0), lambda: expanded_image,
+            lambda: tf.concat([images, expanded_image], 0))
+        return i + 1, encoded_images, images
+
+      loop_out = tf.while_loop(
+          lambda i, encoded_images, images: tf.less(i, num_examples),
+          loop_body, [i, encoded_images, images],
+          shape_invariants=[
+              i.get_shape(),
+              encoded_images.get_shape(),
+              tf.TensorShape(None)
+          ])
+
+      # Create the single sprite atlas image from these thumbnails.
+      sprite = generate_image_from_thubnails(loop_out[2], thumbnail_dims)
+      return sprite.eval()
+
+def run_inference(examples, serving_bundle):
+  """Run inference on examples given model information
+
+  Args:
+    examples: A list of examples that matches the model spec.
+    serving_bundle: A `ServingBundle` object that contains the information to
+      make the inference request.
+
+  Returns:
+    A ClassificationResponse or RegressionResponse proto.
+  """
+  batch_size = 64
+  if serving_bundle.estimator and serving_bundle.feature_spec:
+    # If provided an estimator and feature spec then run inference locally.
+    preds = serving_bundle.estimator.predict(
+      lambda: tf.data.Dataset.from_tensor_slices(
+        tf.parse_example([ex.SerializeToString() for ex in examples],
+        serving_bundle.feature_spec)).batch(batch_size))
+
+    if serving_bundle.use_predict:
+      preds_key = serving_bundle.predict_output_tensor
+    elif serving_bundle.model_type == 'regression':
+      preds_key = 'predictions'
+    else:
+      preds_key = 'probabilities'
+
+    values = []
+    for pred in preds:
+      values.append(pred[preds_key])
+    return common_utils.convert_prediction_values(values, serving_bundle)
+  else:
+    return platform_utils.call_servo(examples, serving_bundle)

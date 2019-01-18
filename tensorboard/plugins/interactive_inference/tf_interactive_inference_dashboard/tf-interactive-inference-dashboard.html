@@ -847,7 +847,7 @@ limitations under the License.
         border-left: 1px solid lightgrey;
       }
     </style>
-    <paper-dialog id="inferencesettings" class="inference-settings" opened="true" with-backdrop>
+    <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
           inference-address="{{inferenceAddress}}"
           model-name="{{modelName}}"
@@ -873,14 +873,14 @@ limitations under the License.
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
       </div>
     </paper-dialog>
-    <paper-dialog id="deletedialog" modal>
+    <paper-dialog id="deletedialog">
       <p>Are you sure you want to delete the selected example?</p>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
         <paper-button dialog-confirm autofocus on-tap="deleteDatapoint_" class="main-button">Delete</paper-button>
       </div>
     </paper-dialog>
-    <paper-dialog id="distancedialog" modal>
+    <paper-dialog id="distancedialog">
       <h2>Create a distance feature</h2>
       <paper-input value="{{facetDistFeatureName}}" label="Enter feature name" class="datapoint-control-filter-input">
       </paper-input>
@@ -1099,28 +1099,28 @@ limitations under the License.
                           all the features and values associated with that example. Some of the things you can
                           do in the datapoint editor are:</div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="../tf-interactive-inference-dashboard/editedexample.png">
+                          <img class="doc-image" src="editedexample.png">
                           <div class="datapoint-info-block">
                             <div class="bold">Test inference on edited values</div>
                             <div>Edit features and run inference to see how your model performs</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="../tf-interactive-inference-dashboard/distance.png">
+                          <img class="doc-image" src="distance.png">
                           <div class="datapoint-info-block">
                             <div class="bold">Compute distances from a selected datapoint</div>
                             <div>Have the selected example be an anchor and create a new distance feature for all loaded examples</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="../tf-interactive-inference-dashboard/explorecounterfactuals.png">
+                          <img class="doc-image" src="explorecounterfactuals.png">
                           <div class="datapoint-info-block">
                             <div class="bold">Find closest counterfactuals</div>
                             <div>See the closest example with a different classification</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="../tf-interactive-inference-dashboard/pdplots.png">
+                          <img class="doc-image" src="pdplots.png">
                           <div class="datapoint-info-block">
                             <div class="bold">Partial Dependence Plots</div>
                             <div>Explore plots for every feature that show the change in inference results across different valid values for that feature</div>
@@ -1724,7 +1724,11 @@ limitations under the License.
         },
         // Boolean for if running in "local" demo mode, meaning this isn't
         // part of a TensorBoard build and has no backend.
-        local: Boolean,
+        local: {
+          type: Boolean,
+          value: false,
+          observer: 'localChanged_',
+        },
         // Atlas URL for "local" demo mode.
         localAtlasUrl: String,
         // List of features for which we can make partial dep plots.
@@ -1921,6 +1925,16 @@ limitations under the License.
 
       settingsClicked_: function() {
         this.$.inferencesettings.toggle();
+      },
+
+      localChanged_: function() {
+        if (this.local) {
+          this.closeSettings_();
+        }
+      },
+
+      closeSettings_: function() {
+        this.$.inferencesettings.close();
       },
 
       onTabSelect_: function() {
@@ -2246,7 +2260,7 @@ limitations under the License.
         }
       },
 
-      updateNumberOfModels_: function () {
+      updateNumberOfModels: function () {
         this._setNumModels(this.modelName.split(',').length);
         // Initialize default overall thresholds
         this.selectedLabelFeature = '';
@@ -3437,7 +3451,7 @@ limitations under the License.
         const tempSelected = this.$.dive.selectedData;
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
-        this.updateSprite_();
+        this.updateSprite();
       },
 
       /**
@@ -3617,7 +3631,7 @@ limitations under the License.
 
       getExamplesAndCloseSettings_: function() {
         this.settingsClicked_();
-        this.updateNumberOfModels_();
+        this.updateNumberOfModels();
         this.getExamples_();
       },
 
@@ -3628,7 +3642,7 @@ limitations under the License.
       /**
        * Callback for when new examples are received from the backend.
        */
-      updateExampleContents_: function(examples, hasSprite) {
+      updateExampleContents: function(examples, hasSprite) {
         this.exampleStatusStr = examples.length + ' examples loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;
@@ -3643,7 +3657,7 @@ limitations under the License.
         this.$.dive.atlasUrl = '';
         this.$.dive.imageFieldName = exampleIdKey;
         this.hasSprite = hasSprite;
-        this.updateSprite_();
+        this.updateSprite();
         if (!this.shouldDisableInferButton_(
             this.examplesAndInferences, this.modelName, this.inferenceAddress,
             this.updatedExample)) {
@@ -3700,7 +3714,7 @@ limitations under the License.
                                  'sequence_examples': this.sequenceExamples});
 
         const updateExampleContents = result => {
-          this.updateExampleContents_(
+          this.updateExampleContents(
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading examples...'
@@ -3708,7 +3722,7 @@ limitations under the License.
         this.$.spinner.hidden = false;
       },
 
-      updateSprite_: function() {
+      updateSprite: function() {
         if (this.hasSprite) {
           this.$.dive.atlasUrl = null;
           if (!this.local) {
@@ -4102,7 +4116,7 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeChartForFeature_: function(chartType, featureName, data) {
+      makeChartForFeature: function(chartType, featureName, data) {
         // Delete spinner
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
@@ -4147,7 +4161,7 @@ limitations under the License.
           const url = tf_backend.addParams(
             '/data/plugin/whatif/infer_mutants', urlParams);
           const chartMakerCallback = function(result){
-            this.makeChartForFeature_(
+            this.makeChartForFeature(
               result.value.chartType, featureName, result.value.data);
           };
           this.makeAsyncRequest_(url, chartMakerCallback.bind(this), null);

@@ -119,6 +119,8 @@ public final class Vulcanize {
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
   private static final String NO_NOINLINE_FILE_PROVIDED = "NO_REGEXS";
 
+  private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
+
   public static void main(String[] args) throws IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
     wantsCompile = args[1].equals("true");
@@ -614,9 +616,22 @@ public final class Vulcanize {
       return;
     }
     Webpath uri = Webpath.get(value);
-    if (webfiles.containsKey(uri)) {
-      node.attr(attribute, outputPath.getParent().relativize(uri).toString());
+    // Form absolute path from uri if uri is not an absolute path.
+    // Note that webfiles is a map of absolute webpaths to relative filepaths.
+    Webpath absUri = isAbsolutePath(uri)
+        ? uri : me().getParent().resolve(uri).normalize();
+
+    if (webfiles.containsKey(absUri)) {
+      node.attr(attribute, outputPath.getParent().relativize(absUri).toString());
     }
+  }
+
+  /**
+   * Checks whether a path is a absolute path.
+   * Webpath.isAbsolute does not take data uri and other forms of absolute path into account.
+   */
+  private static Boolean isAbsolutePath(Webpath path) {
+    return path.isAbsolute() || ABS_URI_PATTERN.matcher(path.toString()).find();
   }
 
   private static String getInlineScriptFromNode(Node node) {

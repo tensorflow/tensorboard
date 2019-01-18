@@ -256,7 +256,7 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
 
     if tf.io.gfile.exists(self._registry_backup_file_path):
       # A backup file exists. Read its contents to use for initialization.
-      with tf.compat.v1.gfile.Open(self._registry_backup_file_path, "r") as backup_file:
+      with tf.io.gfile.GFile(self._registry_backup_file_path, "r") as backup_file:
         try:
           # Use the data to initialize the registry.
           initial_data = json.load(backup_file)
