@@ -89,6 +89,10 @@ class TraceEventsJsonStream(object):
     else:
       result['ph'] = _TYPE_INSTANT
       result['s'] = _SCOPE_THREAD
+    for key in dict(event.args):
+      if result['args'] is None:
+        result['args'] = {}
+      result['args'][key] = event.args[key]
     return result
 
   def __iter__(self):
