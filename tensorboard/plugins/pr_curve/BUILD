@@ -45,7 +45,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
-        ":pr_curve_demo",
+        ":pr_curve_demo_lib",
         ":pr_curves_plugin",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
@@ -94,6 +94,13 @@ tb_proto_library(
 
 py_binary(
     name = "pr_curve_demo",
+    srcs = ["pr_curve_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [":pr_curve_demo_lib"],
+)
+
+py_library(
+    name = "pr_curve_demo_lib",
     srcs = ["pr_curve_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
