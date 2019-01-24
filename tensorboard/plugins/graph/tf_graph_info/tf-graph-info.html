@@ -59,7 +59,8 @@ h2 {
   <tf-graph-op-compat-card graph-hierarchy="[[graphHierarchy]]"
                            hierarchy-params="[[hierarchyParams]]"
                            render-hierarchy="[[renderHierarchy]]"
-                           color-by="[[colorBy]]">
+                           color-by="[[colorBy]]"
+                           node-title="[[compatNodeTitle]]">
   </tf-graph-op-compat-card>
 </template>
 <template is="dom-if" if="[[_healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills)]]">
@@ -94,6 +95,7 @@ h2 {
         notify: true,
       },
       colorBy: String,
+      compatNodeTitle: String,
       // Two-ways
       selectedNode: {
         type: String,
