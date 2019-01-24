@@ -207,9 +207,13 @@ class TensorBoard(object):
       return 0
     try:
       server = self._make_server()
+      url = server.get_url()
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
-                       (version.VERSION, server.get_url()))
+                       (version.VERSION, url))
       sys.stderr.flush()
+      if self.flags.url_file is not None:
+        with open(self.flags.url_file, "w") as outfile:
+          outfile.write("%s\n" % server.get_url())
       server.serve_forever()
       return 0
     except TensorBoardServerException as e:

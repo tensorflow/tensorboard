@@ -449,6 +449,25 @@ keeps 500 scalars and all images. Most users should not need to set this
 flag.\
 ''')
 
+    parser.add_argument(
+        '--url_file',
+        metavar='FILE',
+        type=str,
+        help='''\
+An optional file to which to write a URL from which TensorBoard should
+be reachable. The URL will include scheme, hostname, and port, and
+possibly path if `--path_prefix` is set. Useful when setting `--port=0`,
+which automatically selects an unused port. Primarily intended for use
+by scripts; for human consumers, this same value is already printed to
+stderr.
+
+If provided, this should point to an existing file (which will be
+truncated) or a nonexistent file within a directory that exists.
+
+If TensorBoard fails to start (e.g., because the specified port is
+already in use), this file will not be written.
+''')
+
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     if flags.inspect:
