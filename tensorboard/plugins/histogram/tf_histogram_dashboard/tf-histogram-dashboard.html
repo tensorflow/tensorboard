@@ -42,6 +42,14 @@ limitations under the License.
     <tf-dashboard-layout>
       <div class="sidebar">
         <div class="sidebar-section">
+          <div class="line-item">
+            <paper-checkbox
+              id="show-download-links"
+              checked="{{_showDownloadLinks}}"
+            >Show data download links</paper-checkbox>
+          </div>
+        </div>
+        <div class="sidebar-section">
           <tf-option-selector
             id="histogramModeSelector"
             name="Histogram mode"
@@ -107,6 +115,7 @@ limitations under the License.
                     tag="[[item.tag]]"
                     tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                     time-property="[[_timeProperty]]"
+                    show-download-links="[[_showDownloadLinks]]"
                     histogram-mode="[[_histogramMode]]"
                     request-manager="[[_requestManager]]"
                   ></tf-histogram-loader>
@@ -140,6 +149,13 @@ limitations under the License.
         _timeProperty: {
           type: String,
           value: "step",
+        },
+        _showDownloadLinks: {
+          type: Boolean,
+          notify: true,
+          value: tf_storage.getBooleanInitializer('_showDownloadLinks',
+              {defaultValue: false, useLocalStorage: true}),
+          observer: '_showDownloadLinksObserver',
         },
 
         _selectedRuns: Array,
@@ -178,6 +194,9 @@ limitations under the License.
       listeners: {
         'content-visibility-changed': '_redrawCategoryPane',
       },
+
+      _showDownloadLinksObserver: tf_storage.getBooleanObserver(
+          '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
 
       _redrawCategoryPane(event, val) {
         if (!val) return;
