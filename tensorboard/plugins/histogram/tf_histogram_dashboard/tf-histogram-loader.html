@@ -54,29 +54,29 @@ limitations under the License.
         icon="fullscreen"
         on-tap="_toggleExpanded"
       ></paper-icon-button>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links" style="display: flex; flex-direction: row;">
+          <paper-dropdown-menu
+            no-label-float="true"
+            label="run to download"
+            selected-item-label="{{_runToDownload}}"
+          >
+            <paper-menu class="dropdown-content" slot="dropdown-content">
+              <template is="dom-repeat" items="[[dataToLoad]]">
+                <paper-item no-label-float=true>[[item.run]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <a
+            download="run_[[_runToDownload]]-tag-[[tag]].csv"
+            href="[[_csvUrl(tag, _runToDownload)]]"
+          >CSV</a> <a
+          download="run_[[_runToDownload]]-tag-[[tag]].json"
+          href="[[_jsonUrl(tag, _runToDownload)]]"
+        >JSON</a>
+        </div>
+      </template>
     </div>
-    <template is="dom-if" if="[[showDownloadLinks]]">
-      <div class="download-links" style="display: flex; flex-direction: row;">
-        <paper-dropdown-menu
-          no-label-float="true"
-          label="run to download"
-          selected-item-label="{{_runToDownload}}"
-        >
-          <paper-menu class="dropdown-content" slot="dropdown-content">
-            <template is="dom-repeat" items="[[dataToLoad]]">
-              <paper-item no-label-float=true>[[item.run]]</paper-item>
-            </template>
-          </paper-menu>
-        </paper-dropdown-menu>
-        <a
-          download="run_[[_runToDownload]]-tag-[[tag]].csv"
-          href="[[_csvUrl(tag, _runToDownload)]]"
-        >CSV</a> <a
-        download="run_[[_runToDownload]]-tag-[[tag]].json"
-        href="[[_jsonUrl(tag, _runToDownload)]]"
-      >JSON</a>
-      </div>
-    </template>
     <style>
       :host {
         display: flex;
@@ -113,8 +113,6 @@ limitations under the License.
         margin-bottom: 10px;
         width: 90%;
       }
-
-
 
       .download-links {
         display: flex;
