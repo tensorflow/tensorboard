@@ -90,7 +90,7 @@ class TraceEventsJsonStream(object):
       result['ph'] = _TYPE_INSTANT
       result['s'] = _SCOPE_THREAD
     for key in dict(event.args):
-      if 'arg' not in result:
+      if 'args' not in result:
         result['args'] = {}
       result['args'][key] = event.args[key]
     return result
