@@ -32,35 +32,35 @@ limitations under the License.
 <dom-module id="tf-histogram-loader">
   <template>
     <tf-card-heading
-            tag="[[tag]]"
-            run="[[run]]"
-            display-name="[[tagMetadata.displayName]]"
-            description="[[tagMetadata.description]]"
-            color="[[_runColor]]"
+      tag="[[tag]]"
+      run="[[run]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+      color="[[_runColor]]"
     ></tf-card-heading>
     <!--
       The main histogram that we render. Data is set directly with
       `setSeriesData`, not with a bound property.
     -->
     <vz-histogram-timeseries
-            id="chart"
-            time-property="[[timeProperty]]"
-            mode="[[histogramMode]]"
-            color-scale="[[_colorScaleFunction]]"
+      id="chart"
+      time-property="[[timeProperty]]"
+      mode="[[histogramMode]]"
+      color-scale="[[_colorScaleFunction]]"
     ></vz-histogram-timeseries>
     <div style="display: flex; flex-direction: row;">
       <paper-icon-button
-              selected$="[[_expanded]]"
-              icon="fullscreen"
-              on-tap="_toggleExpanded"
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
       ></paper-icon-button>
     </div>
     <template is="dom-if" if="[[showDownloadLinks]]">
-      <div class="download-links">
+      <div class="download-links" style="display: flex; flex-direction: row;">
         <paper-dropdown-menu
-                no-label-float="true"
-                label="run to download"
-                selected-item-label="{{_runToDownload}}"
+          no-label-float="true"
+          label="run to download"
+          selected-item-label="{{_runToDownload}}"
         >
           <paper-menu class="dropdown-content" slot="dropdown-content">
             <template is="dom-repeat" items="[[dataToLoad]]">
@@ -69,11 +69,11 @@ limitations under the License.
           </paper-menu>
         </paper-dropdown-menu>
         <a
-                download="run_[[_runToDownload]]-tag-[[tag]].csv"
-                href="[[_csvUrl(tag, _runToDownload)]]"
+          download="run_[[_runToDownload]]-tag-[[tag]].csv"
+          href="[[_csvUrl(tag, _runToDownload)]]"
         >CSV</a> <a
-              download="run_[[_runToDownload]]-tag-[[tag]].json"
-              href="[[_jsonUrl(tag, _runToDownload)]]"
+        download="run_[[_runToDownload]]-tag-[[tag]].json"
+        href="[[_jsonUrl(tag, _runToDownload)]]"
       >JSON</a>
       </div>
     </template>
