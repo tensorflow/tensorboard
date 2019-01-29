@@ -60,6 +60,8 @@ class TraceEventsJsonStreamTest(tf.test.TestCase):
               name: "E1.2.1"
               timestamp_ps: 100000
               duration_ps: 10000
+              args { key: "label" value: "E1.2.1" }
+              args { key: "extra" value: "extra info" }
             }
             trace_events {
               device_id: 2
@@ -108,7 +110,14 @@ class TraceEventsJsonStreamTest(tf.test.TestCase):
                     tid=2,
                     name='thread_sort_index',
                     args=dict(sort_index=2)),
-                dict(ph='X', pid=1, tid=2, name='E1.2.1', ts=0.1, dur=0.01),
+                dict(
+                    ph='X',
+                    pid=1,
+                    tid=2,
+                    name='E1.2.1',
+                    ts=0.1,
+                    dur=0.01,
+                    args=dict(label='E1.2.1', extra='extra info')),
                 dict(ph='i', pid=2, tid=2, name='E2.2.1', ts=0.105, s='t'),
                 {},
             ]))
