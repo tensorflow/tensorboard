@@ -42,10 +42,11 @@ def lazy_load(name):
   def wrapper(load_fn):
     # Wrap load_fn to call it exactly once and update __dict__ afterwards to
     # make future lookups efficient (only failed lookups call __getattr__).
-    @_return_once
+    @_memoize
     def load_once(self):
       module = load_fn()
       self.__dict__.update(module.__dict__)
+      load_once.loaded = True
       return module
 
     # Define a module that proxies getattr() and dir() to the result of calling
@@ -59,23 +60,26 @@ def lazy_load(name):
         return dir(load_once(self))
 
       def __repr__(self):
+        if hasattr(load_once, 'loaded'):
+          return repr(load_once(self))
         return '<module \'%s\' (LazyModule)>' % self.__name__
 
     return LazyModule(name)
   return wrapper
 
 
-def _return_once(f):
-  """Decorator that calls f() once, then returns that value repeatedly."""
-  not_called = object()  # Unique "not yet called" sentinel object.
-  # Cache result indirectly via a list since closures can't reassign variables.
-  cache = [not_called]
-  lock = threading.Lock()
+def _memoize(f):
+  """Memoizing decorator for f, which must have exactly 1 hashable argument."""
+  nothing = object()  # Unique "no value" sentinel object.
+  cache = {}
+  # Use a reentrank lock so that if f references the resulting wrapper we die
+  # with recursion depth exceeded instead of deadlocking.
+  lock = threading.RLock()
   @functools.wraps(f)
-  def wrapper(*args, **kwargs):
-    if cache[0] == not_called:
+  def wrapper(arg):
+    if cache.get(arg, nothing) == nothing:
       with lock:
-        if cache[0] == not_called:
-          cache[0] = f(*args, **kwargs)
-    return cache[0]
+        if cache.get(arg, nothing) == nothing:
+          cache[arg] = f(arg)
+    return cache[arg]
   return wrapper
