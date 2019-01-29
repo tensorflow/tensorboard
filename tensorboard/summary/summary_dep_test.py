@@ -32,9 +32,9 @@ class SummaryV2DepTest(unittest.TestCase):
     # Check that we can import the module (multiple ways) and list and reference
     # symbols from it without triggering a tensorflow import.
     import tensorboard.summary.v2
-    from tensorboard.summary import v2
-    print(dir(tensorboard.summary.v2))
-    print(tensorboard.summary.v2.scalar)
+    from tensorboard.summary import v2 as summary_v2
+    print(dir(summary_v2))
+    print(summary_v2.scalar)
     self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
 
 
