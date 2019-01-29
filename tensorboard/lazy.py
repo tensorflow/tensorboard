@@ -20,54 +20,62 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import threading
 import types
-
-
-class LazyLoader(types.ModuleType):
-  """Lazily import a module.
-
-  This can be used to defer importing troublesome dependencies - e.g. ones that
-  are large and infrequently used, or that cause a dependency cycle -
-  until they are actually used.
-  """
-
-  # The lint error here is incorrect.
-  def __init__(self, name, load_fn):  # pylint: disable=super-on-old-class
-    """Create a LazyLoader for a module.
-
-    Args:
-      name: the fully-qualified name of the module
-      load_fn: callable that actually does the import and returns the module
-    """
-    super(LazyLoader, self).__init__(name)
-    self._load_fn = load_fn
-    self._cached_module = None
-
-  def _load(self):
-    self._cached_module = self._load_fn()
-    # Update this object's dict to make future lookups efficient (__getattr__ is
-    # only called on lookups that fail).
-    self.__dict__.update(self._cached_module.__dict__)
-
-  def __getattr__(self, item):
-    if not self._cached_module:
-      self._load()
-    return getattr(self._cached_module, item)
-
-  def __dir__(self):
-    if not self._cached_module:
-      self._load()
-    return dir(self._cached_module)
 
 
 def lazy_load(name):
   """Decorator to define a function that lazily loads the module 'name'.
+
+  This can be used to defer importing troublesome dependencies - e.g. ones that
+  are large and infrequently used, or that cause a dependency cycle -
+  until they are actually used.
 
   Args:
     name: the fully-qualified name of the module; typically the last segment
       of 'name' matches the name of the decorated function
 
   Returns:
-    Decorator function for lazily loading the module 'name'.
+    Decorator function that produces a lazy-loading module 'name' backed by the
+    underlying decorated function.
   """
-  return functools.partial(LazyLoader, name)
+  def wrapper(load_fn):
+    # Wrap load_fn to call it exactly once and update __dict__ afterwards to
+    # make future lookups efficient (only failed lookups call __getattr__).
+    @_return_once
+    def load_once(self):
+      module = load_fn()
+      self.__dict__.update(module.__dict__)
+      return module
+
+    # Define a module that proxies getattr() and dir() to the result of calling
+    # load_once() the first time it's needed. The class is nested so we can close
+    # over load_once() and avoid polluting the module's attrs with our own state.
+    class LazyModule(types.ModuleType):
+      def __getattr__(self, attr_name):
+        return getattr(load_once(self), attr_name)
+
+      def __dir__(self):
+        return dir(load_once(self))
+
+      def __repr__(self):
+        return '<module \'%s\' (LazyModule)>' % self.__name__
+
+    return LazyModule(name)
+  return wrapper
+
+
+def _return_once(f):
+  """Decorator that calls f() once, then returns that value repeatedly."""
+  not_called = object()  # Unique "not yet called" sentinel object.
+  # Cache result indirectly via a list since closures can't reassign variables.
+  cache = [not_called]
+  lock = threading.Lock()
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if cache[0] == not_called:
+      with lock:
+        if cache[0] == not_called:
+          cache[0] = f(*args, **kwargs)
+    return cache[0]
+  return wrapper
