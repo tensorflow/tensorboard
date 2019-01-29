@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import numpy as np
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
@@ -43,9 +44,6 @@ def scalar(name, data, step, description=None):
     True on success, or false if no summary was written because no default
     summary writer was available.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   with tf.summary.summary_scope(
