@@ -48,6 +48,7 @@ def lazy_load(name):
       self.__dict__.update(module.__dict__)
       load_once.loaded = True
       return module
+    load_once.loaded = False
 
     # Define a module that proxies getattr() and dir() to the result of calling
     # load_once() the first time it's needed. The class is nested so we can close
@@ -60,7 +61,7 @@ def lazy_load(name):
         return dir(load_once(self))
 
       def __repr__(self):
-        if hasattr(load_once, 'loaded'):
+        if load_once.loaded:
           return repr(load_once(self))
         return '<module \'%s\' (LazyModule)>' % self.__name__
 
@@ -72,7 +73,7 @@ def _memoize(f):
   """Memoizing decorator for f, which must have exactly 1 hashable argument."""
   nothing = object()  # Unique "no value" sentinel object.
   cache = {}
-  # Use a reentrank lock so that if f references the resulting wrapper we die
+  # Use a reentrant lock so that if f references the resulting wrapper we die
   # with recursion depth exceeded instead of deadlocking.
   lock = threading.RLock()
   @functools.wraps(f)
