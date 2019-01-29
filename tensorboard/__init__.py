@@ -19,16 +19,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import importlib as _importlib
-
 from tensorboard import lazy
 
 
 @lazy.lazy_load('tensorboard.program')
 def program():
-  return _importlib.import_module('tensorboard.program')
+  import tensorboard.program as module  # pylint: disable=g-import-not-at-top
+  return module
 
 
 @lazy.lazy_load('tensorboard.summary')
 def summary():
-  return _importlib.import_module('tensorboard.summary')
+  import tensorboard.summary as module  # pylint: disable=g-import-not-at-top
+  return module
