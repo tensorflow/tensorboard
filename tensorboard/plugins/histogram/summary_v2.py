@@ -31,6 +31,7 @@ from __future__ import print_function
 
 import numpy as np
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import metadata
 from tensorboard.util import tensor_util
@@ -59,9 +60,6 @@ def histogram(name, data, step, buckets=None, description=None):
     True on success, or false if no summary was emitted because no default
     summary writer was available.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   with tf.summary.summary_scope(
@@ -82,9 +80,6 @@ def _buckets(data, bucket_count=None):
     a triple `[left_edge, right_edge, count]` for a single bucket.
     The value of `k` is either `bucket_count` or `1` or `0`.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   if bucket_count is None:
     bucket_count = DEFAULT_BUCKET_COUNT
   with tf.name_scope('buckets', values=[data, bucket_count]):
@@ -152,8 +147,6 @@ def histogram_pb(tag, data, buckets=None, description=None):
   Returns:
     A `summary_pb2.Summary` protobuf object.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf
   bucket_count = DEFAULT_BUCKET_COUNT if buckets is None else buckets
   data = np.array(data).flatten().astype(float)
   if data.size == 0:
@@ -179,7 +172,7 @@ def histogram_pb(tag, data, buckets=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tensor_util.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tensor_util.make_tensor_proto(buckets, dtype=np.float64)
 
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)

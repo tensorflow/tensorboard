@@ -34,3 +34,6 @@ from . import flags  # noqa
 from . import gfile  # noqa
 from . import pywrap_tensorflow  # noqa
 from . import tensor_shape  # noqa
+
+# Set a fake __version__ to help distinguish this as our own stub API.
+__version__ = 'stub'

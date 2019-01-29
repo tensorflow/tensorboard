@@ -27,6 +27,7 @@ from __future__ import print_function
 
 import functools
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.audio import metadata
 
 
@@ -64,9 +65,6 @@ def audio(name,
     True on success, or false if no summary was emitted because no default
     summary writer was available.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   # TODO(nickfelt): get encode_wav() exported in the public API.
   from tensorflow.python.ops import gen_audio_ops
 

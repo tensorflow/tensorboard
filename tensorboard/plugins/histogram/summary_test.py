@@ -25,16 +25,16 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.compat import tf2
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary
 from tensorboard.util import tensor_util
 
 
 try:
-  from tensorboard import compat
-  tf_v2 = compat.import_tf_v2()
+  tf2.__version__  # Force lazy import to resolve
 except ImportError:
-  tf_v2 = None
+  tf2 = None
 
 try:
   tf.compat.v1.enable_eager_execution()
@@ -160,12 +160,12 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV2OpTest, self).setUp()
-    if tf_v2 is None:
+    if tf2 is None:
       self.skipTest('v2 summary API not available')
 
   def histogram(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
-    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.histogram(*args, **kwargs)
     writer.close()
@@ -194,12 +194,12 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
       scope = temp_scope.rstrip('/_')
-    @tf_v2.function
+    @tf2.function
     def graph_fn():
       # Recreate the active scope inside the defun since it won't propagate.
       with tf.name_scope(scope):
         summary.histogram(*args, **kwargs)
-    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       graph_fn()
     writer.close()
