@@ -63,7 +63,7 @@ var WITView = widgets.DOMWidgetView.extend({
     this.view_ = document.createElement(
       'tf-interactive-inference-dashboard');
     this.view_.local = true;
-    this.viow_.hideImages = true;
+    this.view_.hideImages = true;
     this.el.appendChild(this.view_);
 
     // Add listeners for changes from WIT Polymer element. Passes changes
