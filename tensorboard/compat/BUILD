@@ -23,6 +23,9 @@ py_library(
     srcs = ["__init__.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard:lazy",
+    ],
 )
 
 # This rule ensures that `from tensorboard.compat import tf` will provide a

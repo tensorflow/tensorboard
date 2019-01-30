@@ -22,9 +22,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.image import metadata
-from tensorboard.util import tensor_util
 
 
 def image(name,
@@ -55,9 +54,6 @@ def image(name,
     True on success, or false if no summary was emitted because no default
     summary writer was available.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   with tf.summary.summary_scope(

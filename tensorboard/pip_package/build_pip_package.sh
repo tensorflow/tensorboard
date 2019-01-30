@@ -38,9 +38,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 smoke() {
-  # TODO(@wchargin): Unpin once tensorflow/tensorflow#24867 is merged:
-  # https://github.com/tensorflow/tensorflow/pull/24867
-  TF_PACKAGE=tf-nightly==1.13.0.dev20190104
+  TF_PACKAGE=tf-nightly
   if [ -n "$TF_VERSION" ]; then
     TF_PACKAGE="tensorflow==${TF_VERSION}"
   fi

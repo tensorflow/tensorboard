@@ -19,36 +19,68 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import importlib
+import functools
+import threading
 import types
 
 
-class LazyLoader(types.ModuleType):
-  """Lazily import a module, mainly to avoid pulling in large dependencies."""
+def lazy_load(name):
+  """Decorator to define a function that lazily loads the module 'name'.
 
-  # The lint error here is incorrect.
-  def __init__(self, local_name, parent_module_globals, name):  # pylint: disable=super-on-old-class
-    self._local_name = local_name
-    self._parent_module_globals = parent_module_globals
+  This can be used to defer importing troublesome dependencies - e.g. ones that
+  are large and infrequently used, or that cause a dependency cycle -
+  until they are actually used.
 
-    super(LazyLoader, self).__init__(name)
+  Args:
+    name: the fully-qualified name of the module; typically the last segment
+      of 'name' matches the name of the decorated function
 
-  def _load(self):
-    # Import the target module and insert it into the parent's namespace
-    module = importlib.import_module(self.__name__)
-    self._parent_module_globals[self._local_name] = module
+  Returns:
+    Decorator function that produces a lazy-loading module 'name' backed by the
+    underlying decorated function.
+  """
+  def wrapper(load_fn):
+    # Wrap load_fn to call it exactly once and update __dict__ afterwards to
+    # make future lookups efficient (only failed lookups call __getattr__).
+    @_memoize
+    def load_once(self):
+      module = load_fn()
+      self.__dict__.update(module.__dict__)
+      load_once.loaded = True
+      return module
+    load_once.loaded = False
 
-    # Update this object's dict so that if someone keeps a reference to the
-    #   LazyLoader, lookups are efficient (__getattr__ is only called on lookups
-    #   that fail).
-    self.__dict__.update(module.__dict__)
+    # Define a module that proxies getattr() and dir() to the result of calling
+    # load_once() the first time it's needed. The class is nested so we can close
+    # over load_once() and avoid polluting the module's attrs with our own state.
+    class LazyModule(types.ModuleType):
+      def __getattr__(self, attr_name):
+        return getattr(load_once(self), attr_name)
 
-    return module
+      def __dir__(self):
+        return dir(load_once(self))
 
-  def __getattr__(self, item):
-    module = self._load()
-    return getattr(module, item)
+      def __repr__(self):
+        if load_once.loaded:
+          return repr(load_once(self))
+        return '<module \'%s\' (LazyModule)>' % self.__name__
 
-  def __dir__(self):
-    module = self._load()
-    return dir(module)
+    return LazyModule(name)
+  return wrapper
+
+
+def _memoize(f):
+  """Memoizing decorator for f, which must have exactly 1 hashable argument."""
+  nothing = object()  # Unique "no value" sentinel object.
+  cache = {}
+  # Use a reentrant lock so that if f references the resulting wrapper we die
+  # with recursion depth exceeded instead of deadlocking.
+  lock = threading.RLock()
+  @functools.wraps(f)
+  def wrapper(arg):
+    if cache.get(arg, nothing) == nothing:
+      with lock:
+        if cache.get(arg, nothing) == nothing:
+          cache[arg] = f(arg)
+    return cache[arg]
+  return wrapper

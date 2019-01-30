@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -102,4 +103,29 @@ tf_web_library(
     srcs = ["bh_tsne.ts"],
     path = "/vz-projector",
     deps = [":sptree"],
+)
+
+################# Standalone development #################
+
+tf_web_library(
+    name = "standalone_lib",
+    srcs = [
+      "standalone.html",
+      "standalone_projector_config.json",
+    ],
+    path = "/",
+    deps = [
+        "@org_polymer_iron_icons",
+        "@org_polymer_paper_icon_button",
+        "@org_polymer_paper_tooltip",
+        "@org_polymer_webcomponentsjs",
+        ":vz_projector",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "devserver",
+    input_path = "/standalone.html",
+    output_path = "/index.html",
+    deps = [":standalone_lib"],
 )

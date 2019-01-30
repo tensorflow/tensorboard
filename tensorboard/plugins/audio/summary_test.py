@@ -29,16 +29,16 @@ import tensorflow as tf
 # TODO(nickfelt): get encode_wav() exported in the public API.
 from tensorflow.python.ops import gen_audio_ops
 
+from tensorboard.compat import tf2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
 
 
 try:
-  from tensorboard import compat
-  tf_v2 = compat.import_tf_v2()
+  tf2.__version__  # Force lazy import to resolve
 except ImportError:
-  tf_v2 = None
+  tf2 = None
 
 try:
   tf.compat.v1.enable_eager_execution()
@@ -198,12 +198,12 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV2OpTest, self).setUp()
-    if tf_v2 is None:
+    if tf2 is None:
       self.skipTest('TF v2 summary API not available')
 
   def audio(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
-    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.audio(*args, **kwargs)
     writer.close()
