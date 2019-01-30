@@ -66,8 +66,8 @@ def lazy_load(name):
 
       def __repr__(self):
         if load_once.loaded:
-          return repr(load_once(self))
-        return '<module \'%s\' (LazyModule)>' % self.__name__
+          return '<%r via LazyModule (loaded)>' % load_once(self)
+        return '<module %r via LazyModule (not yet loaded)>' % self.__name__
 
     return LazyModule(name)
   return wrapper
