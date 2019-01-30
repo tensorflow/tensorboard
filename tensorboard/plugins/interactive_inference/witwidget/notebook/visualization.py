@@ -54,12 +54,16 @@ class WitConfigBuilder(object):
   
   def store(self, key, value):
     self.config[key] = value
-  
-  # Each setter in this object returns the object itself so that method
-  # chaining can be used.
 
   def set_examples(self, examples):
-    """Sets the examples to be displayed in WIT."""
+    """Sets the examples to be displayed in WIT.
+    
+    Args:
+      examples: List of example protos.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
     self.store('examples', examples)
     if len(examples) > 0:
       self.store('are_sequence_examples',
@@ -72,6 +76,9 @@ class WitConfigBuilder(object):
     Args:
       model: The model type, such as "classification" or "regression".
       The model type defaults to "classification".
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_type', model)
     return self
@@ -82,6 +89,9 @@ class WitConfigBuilder(object):
     Args:
       address: The address of the served model, including port, such as
       "localhost:8888".
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('inference_address', address)
     return self
@@ -95,6 +105,9 @@ class WitConfigBuilder(object):
     Args:
       name: The name of the model to be queried through TF Serving at the
       address provided by set_inference_address.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_name', name)
     return self
@@ -106,6 +119,9 @@ class WitConfigBuilder(object):
       version: The string version number of the model to be queried through TF
       Serving. This is optional, as TF Serving will use the latest model version
       if none is provided.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_version', version)
     return self
@@ -117,6 +133,9 @@ class WitConfigBuilder(object):
       signature: The string signature of the model to be queried through TF
       Serving. This is optional, as TF Serving will use the default model
       signature if none is provided.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_signature', signature)
     return self
@@ -131,6 +150,9 @@ class WitConfigBuilder(object):
     Args:
       address: The address of the served model, including port, such as
       "localhost:8888".
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('inference_address_2', address)
     return self
@@ -147,6 +169,9 @@ class WitConfigBuilder(object):
     Args:
       name: The name of the model to be queried through TF Serving at the
       address provided by set_compare_inference_address.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_name_2', name)
     return self
@@ -161,6 +186,9 @@ class WitConfigBuilder(object):
       version: The string version number of the model to be queried through TF
       Serving. This is optional, as TF Serving will use the latest model version
       if none is provided.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_version_2', version)
     return self
@@ -176,6 +204,9 @@ class WitConfigBuilder(object):
       signature: The string signature of the model to be queried through TF
       Serving. This is optional, as TF Serving will use the default model
       signature if none is provided.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('model_signature_2', signature)
     return self
@@ -193,6 +224,9 @@ class WitConfigBuilder(object):
 
     Args:
       predict: True if the model or models use the Predict API.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('uses_predict_api', predict)
     return self
@@ -209,6 +243,9 @@ class WitConfigBuilder(object):
     Args:
       max_classes: The maximum number of classes to display for inference
       results for multiclass classification models.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('max_classes', max_classes)
     return self
@@ -219,6 +256,9 @@ class WitConfigBuilder(object):
     Args:
       multiclass: True if the model or models are multiclass classififcation
       models. Defaults to false.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('multiclass', multiclass)
     return self
@@ -232,6 +272,9 @@ class WitConfigBuilder(object):
 
     Args:
       tensor: The name of the input tensor.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('predict_input_tensor', tensor)
     return self
@@ -245,6 +288,9 @@ class WitConfigBuilder(object):
 
     Args:
       tensor: The name of the output tensor.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('predict_output_tensor', tensor)
     return self
@@ -261,6 +307,9 @@ class WitConfigBuilder(object):
       vocab: A list of strings, where the string at each index corresponds to
       the label for that class ID. For example ['<=50K', '>50K'] for the UCI
       census binary classification task.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('label_vocab', vocab)
     return self
@@ -277,6 +326,9 @@ class WitConfigBuilder(object):
       estimator: The TF Estimator which will be used for model inference.
       feature_spec: The feature_spec object which will be used for exmaple
       parsing.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
@@ -299,6 +351,9 @@ class WitConfigBuilder(object):
       estimator: The TF Estimator which will be used for model inference.
       feature_spec: The feature_spec object which will be used for exmaple
       parsing.
+
+    Returns:
+      self, in order to enabled method chaining.
     """
     self.store('compare_estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
