@@ -36,9 +36,12 @@ from tensorboard.backend import http_util
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
-from tensorboard.plugins.scalar.scalars_plugin import OutputFormat
 from tensorboard.util import tensor_util
 
+class OutputFormat(object):
+  """An enum used to list the valid output formats for API calls."""
+  JSON = 'json'
+  CSV = 'csv'
 
 class HistogramsPlugin(base_plugin.TBPlugin):
   """Histograms Plugin for TensorBoard.
