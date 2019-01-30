@@ -242,7 +242,36 @@ We imagine WIT to be useful for a wide variety of users.
 * Lay users - Learn about machine learning by interactively playing with
   datasets and models.
 
-## How do I use it in a Jupyter notebook?
+## Notebook mode details
+
+As seen in the [example notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb),
+creating the `WitWidget` object is what causes the What-If Tool to be displayed
+in an output cell. The `WitWidget` object takes a `WitConfigBuilder` object as a
+constructor argument. The `WitConfigBuilder` object specifies the data and model
+information that the What-If Tool will use.
+
+The WitConfigBuilder object takes a list of tf.Example or tf.SequenceExample
+protos as a constructor argument. These protos will be shown in the tool and
+inferred in the specified model.
+
+The model to be used for inference by the tool can be specified one of two ways:
+- As a TensorFlow [Estimator](https://www.tensorflow.org/guide/estimators)
+  object that is provided through the `set_estimator_and_feature_spec` method.
+  In this case the inference will be done inside the notebook using the
+  provided estimator.
+- As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
+  through the `set_inference_address` and `set_model_name` methods. In this case
+  the inference will be done on the model server specified. To query a model served
+  on host "localhost" on port 8888, named "my_model", you would set on your
+  builder
+  `builder.set_inference_address('localhost:8888').set_model_name('my_model')`.
+
+See the documentation of [WitConfigBuilder]https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/witwidget/notebook/visualization.py)
+for all options you can provide, including how to specify other model types
+(defaults to binary classification) and how to specify an optional second model
+to compare to the first model.
+
+### How do I enable it for use in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
 ```sh
 pip install witwidget
@@ -253,7 +282,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
 
-## How do I use it in a Colab notebook?
+### How do I enable it for use in a Colab notebook?
 Install the widget into the runtime of the notebook kernel by running a cell
 containing:
 ```
@@ -262,3 +291,4 @@ containing:
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).
+

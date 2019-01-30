@@ -175,6 +175,12 @@ class WitWidget(object):
   index = 0
 
   def __init__(self, config_builder, height=1000):
+    """Constructor for colab notebook WitWidget.
+
+    Args:
+      config_builder: WitConfigBuilder object containing settings for WIT.
+      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+    """
     tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
