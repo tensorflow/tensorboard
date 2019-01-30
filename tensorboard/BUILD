@@ -359,3 +359,13 @@ py_library(
     srcs = ["lazy.py"],
     srcs_version = "PY2AND3",
 )
+
+py_test(
+    name = "lazy_test",
+    srcs = ["lazy_test.py"],
+    srcs_version = "PY2AND3",
+    size = "small",
+    deps = [
+        ":lazy",
+    ],
+)
