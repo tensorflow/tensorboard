@@ -17,7 +17,7 @@ with absolutely no code required.
 
 The tool can be accessed through TensorBoard or as an extension in a Jupyter
 or
-[Colab](https://colab.sandbox.google.com/github/tensorflow/tensorboard/blob/colab/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb)
+[Colab](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb)
 notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
@@ -50,9 +50,21 @@ Fine, here are some demos:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
 
-## What do I need to use it?
+## What do I need to use it in a jupyter or colab notebook?
 
-To use the tool, only the following information needs to be provided:
+You can use the What-If Tool to analyze a classification or regression
+[TensorFlow Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator/Estimator)
+that takes TensorFlow Example or SequenceExample protos
+(data points) as inputs directly in a jupyter or colab notebook.
+
+If you want to train an ML model from a dataset and explore the dataset and
+model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
+converts the data to tf.Example protos, trains a classifier, and then uses the
+What-If Tool to show the classifier performance on the data.
+
+## What do I need to use it in TensorBoard?
+
+To use the tool in TensorBoard, only the following information needs to be provided:
 
 * The model server host and port, served using
   [TensorFlow Serving](https://github.com/tensorflow/serving). The model can
@@ -101,23 +113,15 @@ The information can also be provided directly through URL parameters.
 Changing the settings through the controls automatically updates the URL so that
 it can be shared with others for them to view the same data in the What-If Tool.
 
-## All I have is a dataset. What can I do? Where do I start?
+### All I have is a dataset. What can I do in TensorBoard? Where do I start?
 
-If you want to explore a dataset directly, you have two options:
-
-If you want to train an ML model from the dataset and explore the dataset and
-model, check out the [WIT_from_scratch.ipynb ipython notebook](./WIT_from_scratch.ipynb)
-which shows how to install TensorFlow, TensorBoard, and TensorFlow Serving,
-train a very simple model to predict a column from a CSV file, serve that model
-and load it up in the What-If Tool.
-
-If instead you just want to explore the information in the CSV, just set the
-path to the examples to the file (with a ".csv" extension) and leave the
-inference address and model name fields blank. The first line of the CSV file
-must contain column names. Each line after that contains one example from the
-dataset, with values for each of the columns defined on the first line. The pipe
-character ("|") deliminates separate feature values in a list of feature values
-for a given feature.
+If you just want to explore the information in a CSV file using the What-If Tool
+in TensorBoard, just set the path to the examples to the file (with a ".csv"
+extension) and leave the inference address and model name fields blank.
+The first line of the CSV file must contain column names. Each line after that
+contains one example from the dataset, with values for each of the columns
+defined on the first line. The pipe character ("|") deliminates separate feature
+values in a list of feature values for a given feature.
 
 In order to make use of the model understanding features of the tool, you can
 have columns in your dataset that contain the output from an ML model. If your
@@ -188,6 +192,11 @@ changes.
   * Clone an existing example for editing/comparison.
   * Revert edits to an edited example.
 
+* Compare the results of two models on the same input data.
+  * If you provide two models to the tool during setup, it will run inference
+    with the provided data on both models and you can compare the results
+    between the two models using all the features defined above.
+
 
 ![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/tensorboard/plugins/interactive_inference/img/wit-census-edit-rerun.png "The side panel showing new inference results after the “capital-gain” feature value has been edited")
 
@@ -242,7 +251,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_from_scratch.ipynb jupyter notebook](./WIT_from_scratch.ipynb).
+[What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
 
 ## How do I use it in a Colab notebook?
 Install the widget into the runtime of the notebook kernel by running a cell
@@ -252,4 +261,4 @@ containing:
 ```
 
 Then, use it as seen at the bottom of the
-[WIT_in_colab.ipynb colab notebook](https://colab.sandbox.google.com/github/tensorflow/tensorboard/blob/colab/tensorboard/plugins/interactive_inference/WIT_in_colab.ipynb).
+[What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).

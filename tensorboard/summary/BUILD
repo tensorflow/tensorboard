@@ -9,7 +9,7 @@ py_library(
         "__init__.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":summary_v1",
         ":summary_v2",
@@ -60,5 +60,15 @@ py_test(
         ":summary_v1",
         ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_test(
+    name = "summary_dep_test",
+    size = "small",
+    srcs = ["summary_dep_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary_v2",
     ],
 )
