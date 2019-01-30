@@ -54,7 +54,7 @@ output.register_callback('notebook.InferMutants', infer_mutants)
 
 # HTML/javascript for the WIT frontend.
 WIT_HTML = """
-  <tf-interactive-inference-dashboard id="wit" local>
+  <tf-interactive-inference-dashboard id="wit" local hide-images>
   </tf-interactive-inference-dashboard>
   <script>
     const examples = {examples};
