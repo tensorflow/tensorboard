@@ -163,14 +163,13 @@ limitations under the License.
         },
         getDataLoadUrl: {
           type: Function,
-          value: () => ({tag, run, experiment}) => {
+          value: () => ({tag, run}) => {
             const router = tf_backend.getRouter();
             return tf_backend.addParams(
               router.pluginRoute('histograms', '/histograms'),
               {
                 tag,
                 run,
-                experiment: experiment ? experiment.id : '',
               });
           },
         },
