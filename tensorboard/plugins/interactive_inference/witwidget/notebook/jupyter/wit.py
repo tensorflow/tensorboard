@@ -52,6 +52,12 @@ class WitWidget(widgets.DOMWidget):
   sprite = Unicode('').tag(sync=True)
 
   def __init__(self, config_builder, height=1000):
+    """Constructor for Jupyter notebook WitWidget.
+
+    Args:
+      config_builder: WitConfigBuilder object containing settings for WIT.
+      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+    """
     super(WitWidget, self).__init__(layout=Layout(height='%ipx' % height))
     tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
