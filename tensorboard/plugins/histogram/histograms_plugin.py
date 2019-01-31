@@ -130,6 +130,31 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
     return result
 
+  def _get_csv_response(self, events):
+    """
+    Returns a string response with all the events formatted in the csv format
+    :param events:
+    :return:
+    """
+    csv_events = []
+    # Convert the events in a way that we can sensibly export
+    # them as csv. Therefore, we split the start, end, value of
+    # each bin by semicolon.
+    for e in events:
+      csv_events.append(
+        [e[0], e[1],
+         ';'.join(['{:.17f}'.format(el[0]) for el in e[2]]),
+         ';'.join(['{:.17f}'.format(el[1]) for el in e[2]]),
+         ';'.join(['{}'.format(el[2]) for el in e[2]]),
+         ]
+      )
+    string_io = StringIO()
+    writer = csv.writer(string_io)
+    writer.writerow(['Wall time', 'Step', 'BinStart', 'BinEnd', 'BinValue'])
+    writer.writerows(csv_events)
+    return string_io.getvalue()
+
+
   def histograms_impl(self, tag, run,
                       output_format='json', downsample_to=None):
     """Result of the form `(body, mime_type)`, or `ValueError`.
@@ -217,24 +242,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         tensor_events = [tensor_events[i] for i in indices]
       events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
+
     if output_format == OutputFormat.CSV:
-      csv_events = []
-      # Convert the events in a way that we can sensibly export
-      # them as csv. Therefore, we split the start, end, value of
-      # each bin by semicolon.
-      for e in events:
-        csv_events.append(
-          [e[0], e[1],
-           ';'.join(['{:.32f}'.format(el[0]) for el in e[2]]),
-           ';'.join(['{:.32f}'.format(el[1]) for el in e[2]]),
-           ';'.join(['{}'.format(el[2]) for el in e[2]]),
-           ]
-        )
-      string_io = StringIO()
-      writer = csv.writer(string_io)
-      writer.writerow(['Wall time', 'Step', 'BinStart', 'BinEnd', 'BinValue'])
-      writer.writerows(csv_events)
-      return (string_io.getvalue(), 'text/csv')
+      return (self._get_csv_response(events), 'text/csv')
 
     return (events, 'application/json')
 
