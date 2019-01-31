@@ -69,8 +69,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-      '/histograms': self.histograms_route,
-      '/tags': self.tags_route,
+        '/histograms': self.histograms_route,
+        '/tags': self.tags_route,
     }
 
   def is_active(self):
@@ -130,8 +130,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
     return result
 
-  def histograms_impl(self, tag, run, experiment,
-                      output_format, downsample_to=None):
+  def histograms_impl(self, tag, run,
+                      output_format='json', downsample_to=None):
     """Result of the form `(body, mime_type)`, or `ValueError`.
 
     At most `downsample_to` events will be returned. If this value is
@@ -260,12 +260,11 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     """Given a tag and single run, return array of histogram values."""
     tag = request.args.get('tag')
     run = request.args.get('run')
-    experiment = request.args.get('experiment')
     output_format = request.args.get('format')
     try:
       (body, mime_type) = self.histograms_impl(
-        tag, run, experiment, output_format,
-        downsample_to=self.SAMPLE_SIZE)
+          tag, run, output_format,
+          downsample_to=self.SAMPLE_SIZE)
       code = 200
     except ValueError as e:
       (body, mime_type) = (str(e), 'text/plain')
