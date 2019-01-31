@@ -19,30 +19,30 @@ const {assert} = chai;
 describe('storageUtils', () => {
   describe('decodeIdArray', () => {
     it('decodes list of ids from a string', () => {
-      const actual = tf_data_selector.decodeIdArray('1,2,3,2s');
-      assert.equal(actual, [1, 2, 3, 100]);
+      const actual = tf_data_selector.decodeIdArray('1,2,3,100');
+      assert.deepEqual(actual, [1, 2, 3, 100]);
     });
 
     it('ignores stringified float', () => {
       const actual = tf_data_selector.decodeIdArray('1.weeeeeeeee');
-      assert.equal(actual, [1]);
+      assert.deepEqual(actual, [1]);
     });
 
-    it('decodes with unexpected string', () => {
-      const actual = tf_data_selector.decodeIdArray(',1, 2,!a,Infinity');
-      assert.equal(actual, [NaN, 1, 2, NaN, Infinity]);
+    it('filters non-number (including inf) from decoded ids', () => {
+      const actual = tf_data_selector.decodeIdArray(',1, 2,0,!a,Infinity');
+      assert.deepEqual(actual, [1, 2, 0]);
     });
   });
 
   describe('encodeIdArray', () => {
     it('encodes list of ids', () => {
       const actual = tf_data_selector.encodeIdArray([1, 2, 3, 100]);
-      assert.equal(actual, '1,2,3,2s');
+      assert.deepEqual(actual, '1,2,3,100');
     });
 
     it('behaves ok for floats', () => {
       const actual = tf_data_selector.encodeIdArray([1, 1.9]);
-      assert.equal(actual, '1,1.weeeeeeeee');
+      assert.equal(actual, '1,1.9');
     });
 
     it('behaves ok with large numbers', () => {

@@ -31,8 +31,6 @@ from __future__ import print_function
 import logging
 import os
 
-import tensorflow as tf
-
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin
@@ -49,6 +47,7 @@ from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+
 
 logger = logging.getLogger(__name__)
 
@@ -81,18 +80,3 @@ def get_plugins():
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
   return _PLUGINS[:]
-
-def get_assets_zip_provider():
-  """Opens stock TensorBoard web assets collection.
-
-  Returns:
-    Returns function that returns a newly opened file handle to zip file
-    containing static assets for stock TensorBoard, or None if webfiles.zip
-    could not be found. The value the callback returns must be closed. The
-    paths inside the zip file are considered absolute paths on the web server.
-  """
-  path = os.path.join(tf.resource_loader.get_data_files_path(), 'webfiles.zip')
-  if not os.path.exists(path):
-    logger.warning('webfiles.zip static assets not found: %s', path)
-    return None
-  return lambda: open(path, 'rb')

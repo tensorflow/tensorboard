@@ -116,11 +116,11 @@ import collections
 import itertools
 import os
 
-import tensorflow as tf
-
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
+from tensorboard.compat.proto import event_pb2
 
 
 # Map of field names within summary.proto to the user-facing names that this
@@ -191,11 +191,11 @@ def get_field_to_observations_map(generator, query_for_tag=''):
       increment('graph', event)
     if event.HasField('session_log') and (not query_for_tag):
       status = event.session_log.status
-      if status == tf.SessionLog.START:
+      if status == event_pb2.SessionLog.START:
         increment('sessionlog:start', event)
-      elif status == tf.SessionLog.STOP:
+      elif status == event_pb2.SessionLog.STOP:
         increment('sessionlog:stop', event)
-      elif status == tf.SessionLog.CHECKPOINT:
+      elif status == event_pb2.SessionLog.CHECKPOINT:
         increment('sessionlog:checkpoint', event)
     elif event.HasField('summary'):
       for value in event.summary.value:
@@ -325,7 +325,7 @@ def generators_from_logdir(logdir):
   generators = [
       itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.gfile.ListDirectory(subdir)
+          for f in tf.io.gfile.listdir(subdir)
           if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ]) for subdir in subdirs
   ]
@@ -359,7 +359,7 @@ def get_inspection_units(logdir='', event_file='', tag=''):
     for subdir in subdirs:
       generator = itertools.chain(*[
           generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.gfile.ListDirectory(subdir)
+          for f in tf.io.gfile.listdir(subdir)
           if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
       ])
       inspection_units.append(InspectionUnit(
@@ -397,12 +397,6 @@ def inspect(logdir='', event_file='', tag=''):
   Raises:
     ValueError: If neither logdir and event_file are given, or both are given.
   """
-  if logdir and event_file:
-    raise ValueError(
-        'Must specify either --logdir or --event_file, but not both.')
-  if not (logdir or event_file):
-    raise ValueError('Must specify either --logdir or --event_file.')
-
   print(PRINT_SEPARATOR +
         'Processing event files... (this can take a few minutes)\n' +
         PRINT_SEPARATOR)
@@ -421,7 +415,3 @@ def inspect(logdir='', event_file='', tag=''):
 
     print_dict(get_dict_to_print(unit.field_to_obs), show_missing=(not tag))
     print(PRINT_SEPARATOR)
-
-
-if __name__ == '__main__':
-  tf.app.run()

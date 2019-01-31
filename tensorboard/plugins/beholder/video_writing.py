@@ -23,8 +23,10 @@ import time
 
 import numpy as np
 import tensorflow as tf
-
 from tensorboard.plugins.beholder import im_util
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 class VideoWriter(object):
@@ -54,7 +56,7 @@ class VideoWriter(object):
         self.output.close()
       self.output = None
       self.frame_shape = np_array.shape
-      tf.logging.info('Starting video with frame shape: %s', self.frame_shape)
+      logger.info('Starting video with frame shape: %s', self.frame_shape)
     # Write the frame, advancing across output types as necessary.
     original_output_index = self.output_index
     for self.output_index in range(original_output_index, len(self.outputs)):
@@ -62,13 +64,13 @@ class VideoWriter(object):
         if not self.output:
           new_output = self.outputs[self.output_index]
           if self.output_index > original_output_index:
-            tf.logging.warn(
+            logger.warn(
                 'Falling back to video output %s', new_output.name())
           self.output = new_output(self.directory, self.frame_shape)
         self.output.emit_frame(np_array)
         return
       except (IOError, OSError) as e:
-        tf.logging.warn(
+        logger.warn(
             'Video output type %s not available: %s',
             self.current_output().name(), str(e))
         if self.output:
@@ -119,7 +121,7 @@ class PNGVideoOutput(VideoOutput):
     del frame_shape  # unused
     self.directory = directory + '/video-frames-{}'.format(time.time())
     self.frame_num = 0
-    tf.gfile.MakeDirs(self.directory)
+    tf.io.gfile.makedirs(self.directory)
 
   def emit_frame(self, np_array):
     filename = self.directory + '/{:05}.png'.format(self.frame_num)
@@ -182,7 +184,7 @@ class FFmpegVideoOutput(VideoOutput):
   def _handle_error(self):
     _, stderr = self.ffmpeg.communicate()
     bar = '=' * 40
-    tf.logging.error(
+    logger.error(
         'Error writing to FFmpeg:\n%s\n%s\n%s', bar, stderr.rstrip('\n'), bar)
 
   def emit_frame(self, np_array):

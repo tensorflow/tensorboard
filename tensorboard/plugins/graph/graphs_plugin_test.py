@@ -27,8 +27,12 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin
+from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class GraphsPluginTest(tf.test.TestCase):
@@ -46,7 +50,7 @@ class GraphsPluginTest(tf.test.TestCase):
 
   def generate_run(self, run_name, include_graph):
     """Create a run with a text summary, metadata, and optionally a graph."""
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     k1 = tf.constant(math.pi, name='k1')
     k2 = tf.constant(math.e, name='k2')
     result = (k1 ** k2) - k1
@@ -56,17 +60,17 @@ class GraphsPluginTest(tf.test.TestCase):
     true_length = len(message_prefix_value)
     assert true_length > self._MESSAGE_PREFIX_LENGTH_LOWER_BOUND, true_length
     message_prefix = tf.constant(message_prefix_value, name='message_prefix')
-    error_message = tf.string_join([message_prefix,
+    error_message = tf.strings.join([message_prefix,
                                     tf.as_string(error, name='error_string')],
                                    name='error_message')
-    summary_message = tf.summary.text('summary_message', error_message)
+    summary_message = tf.compat.v1.summary.text('summary_message', error_message)
 
-    sess = tf.Session()
-    writer = tf.summary.FileWriter(os.path.join(self.logdir, run_name))
+    sess = tf.compat.v1.Session()
+    writer = test_util.FileWriter(os.path.join(self.logdir, run_name))
     if include_graph:
       writer.add_graph(sess.graph)
-    options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    run_metadata = tf.RunMetadata()
+    options = tf.compat.v1.RunOptions(trace_level=tf.compat.v1.RunOptions.FULL_TRACE)
+    run_metadata = config_pb2.RunMetadata()
     s = sess.run(summary_message, options=options, run_metadata=run_metadata)
     writer.add_summary(s)
     writer.add_run_metadata(run_metadata, self._METADATA_TAG)
@@ -110,7 +114,7 @@ class GraphsPluginTest(tf.test.TestCase):
     (graph_pbtxt, mime_type) = self.plugin.graph_impl(
         self._RUN_WITH_GRAPH, *args, **kwargs)
     self.assertEqual(mime_type, 'text/x-protobuf')
-    return text_format.Parse(graph_pbtxt, tf.GraphDef())
+    return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
 
   def test_graph_simple(self):
     graph = self._get_graph()
@@ -139,7 +143,7 @@ class GraphsPluginTest(tf.test.TestCase):
     (metadata_pbtxt, mime_type) = self.plugin.run_metadata_impl(
         self._RUN_WITH_GRAPH, self._METADATA_TAG)
     self.assertEqual(mime_type, 'text/x-protobuf')
-    text_format.Parse(metadata_pbtxt, tf.RunMetadata())
+    text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
     # If it parses, we're happy.
 
   def test_is_active_with_graph(self):

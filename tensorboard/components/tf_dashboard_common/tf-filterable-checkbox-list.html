@@ -70,7 +70,7 @@ Properties out:
             <span>[[item.title]]</span>
 
             <template is="dom-if" if="[[item.subtitle]]">
-              <span>[[item.subtitle]]</span>
+              <span class="subtitle">[[item.subtitle]]</span>
             </template>
           </paper-checkbox>
         </div>
@@ -97,9 +97,17 @@ Properties out:
     paper-checkbox {
       --paper-checkbox-ink-size: 40px;
       --paper-checkbox-label: {
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
         text-overflow: ellipsis;
+        word-break: break-word;
       }
+    }
+
+    .subtitle {
+      color: var(--paper-grey-700);
+      font-size: 13px;
     }
 
     paper-menu-button {

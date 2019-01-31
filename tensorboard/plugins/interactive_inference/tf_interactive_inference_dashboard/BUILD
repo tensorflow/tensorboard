@@ -58,6 +58,34 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "wit_lib",
+    srcs = [
+        "wit.html"
+    ],
+    path = "/tf-interactive-inference-dashboard",
+    deps = [
+        ":tf_interactive_inference_dashboard",
+    ]
+)
+
+tensorboard_html_binary(
+    name = "wit_bin",
+    compile = True,
+    input_path = "/tf-interactive-inference-dashboard/wit.html",
+    output_path = "/all/wit.html",
+    deps = [
+        ":wit_lib",
+    ],
+)
+
+genrule(
+    name = "wit_jupyter",
+    srcs = [":wit_bin"],
+    outs = ["wit_jupyter.html"],
+    cmd = "sed 's|<!doctype html>|<!doctype html><script>define=undefined</script>|' $(location :wit_bin) > $@",
+)
+
+tf_web_library(
     name = "tf_inference_viewer",
     srcs = [
         "tf-inference-viewer.html",

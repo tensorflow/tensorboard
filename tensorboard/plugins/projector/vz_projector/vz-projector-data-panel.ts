@@ -249,8 +249,10 @@ export class DataPanel extends DataPanelPolymer {
               let thresholds: ColorLegendThreshold[];
               let isCategorical =
                   this.forceCategoricalColoring || !stats.tooManyUniqueValues;
+              let desc;
+
               if (isCategorical) {
-                const scale = d3.scaleOrdinal(d3.schemeCategory20);
+                const scale = d3.scaleOrdinal(d3.schemeCategory10);
                 let range = scale.range();
                 // Re-order the range.
                 let newRange = range.map((color, i) => {
@@ -260,26 +262,26 @@ export class DataPanel extends DataPanelPolymer {
                 items = stats.uniqueEntries;
                 scale.range(newRange).domain(items.map(x => x.label));
                 map = scale;
+                const len = stats.uniqueEntries.length;
+                desc = `${len} ${len > range.length ? ' non-unique' : ''} ` +
+                    `colors`;
               } else {
                 thresholds = [
                   {color: '#ffffdd', value: stats.min},
-                  {color: '#1f2d86', value: stats.max}
+                  {color: '#1f2d86', value: stats.max},
                 ];
                 map = d3.scaleLinear<string, string>()
                           .domain(thresholds.map(t => t.value))
                           .range(thresholds.map(t => t.color));
+                desc = 'gradient';
               }
-              let desc = !isCategorical ? 'gradient' :
-                                          stats.uniqueEntries.length +
-                      ((stats.uniqueEntries.length > 20) ? ' non-unique' : '') +
-                      ' colors';
               return {
                 name: stats.name,
                 desc: desc,
                 map: map,
                 items: items,
                 thresholds: thresholds,
-                tooManyUniqueValues: stats.tooManyUniqueValues
+                tooManyUniqueValues: stats.tooManyUniqueValues,
               };
             });
 

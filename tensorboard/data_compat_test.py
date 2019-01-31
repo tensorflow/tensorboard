@@ -20,14 +20,18 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import data_compat
-from tensorboard.plugins.audio import summary as audio_summary
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
-from tensorboard.plugins.histogram import summary as histogram_summary
+from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.histogram import metadata as histogram_metadata
-from tensorboard.plugins.image import summary as image_summary
+from tensorboard.plugins.histogram import summary as histogram_summary
 from tensorboard.plugins.image import metadata as image_metadata
-from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.plugins.scalar import summary as scalar_summary
+from tensorboard.util import tensor_util
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class MigrateValueTest(tf.test.TestCase):
@@ -40,9 +44,9 @@ class MigrateValueTest(tf.test.TestCase):
   """
 
   def _value_from_op(self, op):
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       summary_pbtxt = sess.run(op)
-    summary = tf.Summary()
+    summary = summary_pb2.Summary()
     summary.ParseFromString(summary_pbtxt)
     # There may be multiple values (e.g., for an image summary that emits
     # multiple images in one batch). That's fine; we'll choose any
@@ -57,7 +61,7 @@ class MigrateValueTest(tf.test.TestCase):
     self.assertEqual(original_pbtxt, value.SerializeToString())
 
   def test_scalar(self):
-    old_op = tf.summary.scalar('important_constants', tf.constant(0x5f3759df))
+    old_op = tf.compat.v1.summary.scalar('important_constants', tf.constant(0x5f3759df))
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('simple_value'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -68,14 +72,14 @@ class MigrateValueTest(tf.test.TestCase):
         description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    data = tf.make_ndarray(new_value.tensor)
+    data = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual((), data.shape)
     low_precision_value = np.array(0x5f3759df).astype('float32').item()
     self.assertEqual(low_precision_value, data.item())
 
   def test_audio(self):
     audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
-    old_op = tf.summary.audio('k488', audio, 44100)
+    old_op = tf.compat.v1.summary.audio('k488', audio, 44100)
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('audio'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -87,24 +91,24 @@ class MigrateValueTest(tf.test.TestCase):
         encoding=audio_metadata.Encoding.Value('WAV'))
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    data = tf.make_ndarray(new_value.tensor)
+    data = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual((1, 2), data.shape)
     self.assertEqual(tf.compat.as_bytes(old_value.audio.encoded_audio_string),
                      data[0][0])
     self.assertEqual(b'', data[0][1])  # empty label
 
   def test_text(self):
-    op = tf.summary.text('lorem_ipsum', tf.constant('dolor sit amet'))
+    op = tf.compat.v1.summary.text('lorem_ipsum', tf.constant('dolor sit amet'))
     value = self._value_from_op(op)
     assert value.HasField('tensor'), value
     self._assert_noop(value)
 
   def test_fully_populated_tensor(self):
-    metadata = tf.SummaryMetadata(
-        plugin_data=tf.SummaryMetadata.PluginData(
+    metadata = summary_pb2.SummaryMetadata(
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
             plugin_name='font_of_wisdom',
             content=b'adobe_garamond'))
-    op = tf.summary.tensor_summary(
+    op = tf.compat.v1.summary.tensor_summary(
         name='tensorpocalypse',
         tensor=tf.constant([[0.0, 2.0], [float('inf'), float('nan')]]),
         display_name='TENSORPOCALYPSE',
@@ -115,9 +119,9 @@ class MigrateValueTest(tf.test.TestCase):
     self._assert_noop(value)
 
   def test_image(self):
-    old_op = tf.summary.image('mona_lisa',
+    old_op = tf.compat.v1.summary.image('mona_lisa',
                               tf.image.convert_image_dtype(
-                                  tf.random_normal(shape=[1, 400, 200, 3]),
+                                  tf.random.normal(shape=[1, 400, 200, 3]),
                                   tf.uint8,
                                   saturate=True))
     old_value = self._value_from_op(old_op)
@@ -129,15 +133,15 @@ class MigrateValueTest(tf.test.TestCase):
         display_name='mona_lisa/image/0', description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    (width, height, data) = tf.make_ndarray(new_value.tensor)
+    (width, height, data) = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual(b'200', width)
     self.assertEqual(b'400', height)
     self.assertEqual(
         tf.compat.as_bytes(old_value.image.encoded_image_string), data)
 
   def test_histogram(self):
-    old_op = tf.summary.histogram('important_data',
-                                  tf.random_normal(shape=[23, 45]))
+    old_op = tf.compat.v1.summary.histogram('important_data',
+                                  tf.random.normal(shape=[23, 45]))
     old_value = self._value_from_op(old_op)
     assert old_value.HasField('histo'), old_value
     new_value = data_compat.migrate_value(old_value)
@@ -147,14 +151,14 @@ class MigrateValueTest(tf.test.TestCase):
         display_name='important_data', description='')
     self.assertEqual(expected_metadata, new_value.metadata)
     self.assertTrue(new_value.HasField('tensor'))
-    buckets = tf.make_ndarray(new_value.tensor)
+    buckets = tensor_util.make_ndarray(new_value.tensor)
     self.assertEqual(old_value.histo.min, buckets[0][0])
     self.assertEqual(old_value.histo.max, buckets[-1][1])
     self.assertEqual(23 * 45, buckets[:, 2].astype(int).sum())
 
   def test_new_style_histogram(self):
     op = histogram_summary.op('important_data',
-                              tf.random_normal(shape=[10, 10]),
+                              tf.random.normal(shape=[10, 10]),
                               bucket_count=100,
                               display_name='Important data',
                               description='secrets of the universe')
@@ -166,7 +170,7 @@ class MigrateValueTest(tf.test.TestCase):
     op = image_summary.op(
         'mona_lisa',
         tf.image.convert_image_dtype(
-            tf.random_normal(shape=[1, 400, 200, 3]), tf.uint8, saturate=True),
+            tf.random.normal(shape=[1, 400, 200, 3]), tf.uint8, saturate=True),
         display_name='The Mona Lisa',
         description='A renowned portrait by da Vinci.')
     value = self._value_from_op(op)

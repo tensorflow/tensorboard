@@ -9,6 +9,7 @@ tf_web_library(
     srcs = [
         "paginatedViewStore.ts",
         "tf-paginated-view.html",
+        "tf-paginated-view2.html",
         "tf-paginated-view-store.html",
     ],
     path = "/tf-paginated-view",

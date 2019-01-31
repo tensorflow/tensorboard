@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-namespace memory_viewer {
+namespace memory_viewer_utils {
 /**
  * Converts from number of bytes to MiB.
  */
@@ -108,4 +108,4 @@ export function percent(fraction: number): string {
       fraction < 1E-5 ? '0.00%' : (fraction * 100).toPrecision(2) + '%';
 }
 
-} // namespace memory_viewer
+} // namespace memory_viewer_utils

@@ -1,0 +1,45 @@
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+syntax = "proto3";
+
+package tensorboard;
+option cc_enable_arenas = true;
+
+import "tensorboard/compat/proto/types.proto";
+import "tensorboard/compat/proto/tensor_shape.proto";
+
+message CppShapeInferenceResult {
+  message HandleShapeAndType {
+    TensorShapeProto shape = 1;
+    DataType dtype = 2;
+  }
+  message HandleData {
+    bool is_set = 1;
+
+    // Only valid if <is_set>.
+    repeated HandleShapeAndType shape_and_type = 2;
+  }
+  TensorShapeProto shape = 1;
+
+  reserved 2;  // was handle_shape
+  reserved 3;  // was handle_dtype
+  HandleData handle_data = 4;
+}
+
+message CppShapeInferenceInputsNeeded {
+  repeated int32 input_tensors_needed = 1;
+  repeated int32 input_tensors_as_shapes_needed = 2;
+}

@@ -1,0 +1,33 @@
+upper_tabs:
+# Tabs left of dropdown menu
+- include: /_upper_tabs_left.yaml
+- include: /api_docs/_upper_tabs_api.yaml
+# Dropdown menu
+- name: Resources
+  path: /resources
+  is_default: true
+  menu:
+  - include: /resources/_menu_toc.yaml
+  lower_tabs:
+    # Subsite tabs
+    other:
+    - name: Tutorials
+      contents:
+      - title: Tutorial example
+        path: /tensorboard/tutorials/tutorial
+    - name: Guide
+      contents:
+      - title: Overview
+        path: /tensorboard/overview
+      - title: Summaries
+        path: /tensorboard/summaries
+      - title: Graphs
+        path: /tensorboard/graphs
+      - title: Histograms
+        path: /tensorboard/histograms
+    - name: API
+      skip_translation: true
+      contents:
+      - include: /tensorboard/api_docs/python/_toc.yaml
+
+- include: /_upper_tabs_right.yaml

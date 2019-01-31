@@ -25,3 +25,11 @@ To generate fake log data for a plugin, run its demo script. For instance, this 
 ```sh
 (tf)$ bazel run //tensorboard/plugins/scalar:scalars_demo
 ```
+
+If you have Bazel≥0.16 and want to build any commit of TensorBoard prior to 2018-08-07, then you must first cherry-pick [pull request #1334][pr-1334] onto your working tree:
+
+```
+$ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
+```
+
+[pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334

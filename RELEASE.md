@@ -1,3 +1,77 @@
+# Release 1.12.2
+
+## Bug fixes
+- #1620 - Fix path_prefix flag regression (PR #1623)
+- #1704 - Fix debugger sidebar resizer
+
+
+# Release 1.12.1
+
+The 1.12.1 minor series tracks TensorFlow 1.12.
+
+## Bug fixes
+- #1549 - Run names wrap at all character (PR #1602) - thanks @dgrahn
+- #1610 - Fix Download as PNG for large graph
+- #1684 - Fix bug rendering debugger plugin (PR #1550) - thanks @longouyang
+
+
+# Release 1.12.0
+
+The 1.12 minor series tracks TensorFlow 1.12.
+
+## Features
+- New download-as-SVG option for scalar dashboard charts (#1446)
+- Image dashboard should now detect and render SVG images (#1440)
+- What-If Tool example viewer/loader improvements:
+  - Support for sampling examples to load (#1504)
+  - Support for viewing SequenceExamples (#1513)
+  - Improvements to saliency viewing/sorting (#1472)
+- Profile tool shows per-program breakdown, idle time, and ops left out (#1470)
+
+## Bug fixes
+- #1463 - What-If tool now handles classes with blank labels (PR #1471)
+- #1468 - Reduce clipping in graph plugin sidebar
+- #1475 - Restore tag filter persistence to URL param and across dashboards
+- #1477 - Fix bug rendering TPU profile dashboard overview page
+- #1480 - Fix projector hanging due to infinite loop (PR #1481)
+- #1491 - Restore spinner on line charts when loading data
+- #1499 - Fix stale/incorrect line charts when filtering by tag (PR #1500)
+- #1505 - Fix 404 console errors in Firefox - thanks @wdirons
+- #1506 - Fix --purge_orphaned_data to allow passing false (PR #1511)
+- #1508 - Make custom scalars chart ignore outliers functionality work
+- #1524 - Preserve line chart zoom level when data refreshes
+
+
+# Release 1.11.0
+
+The 1.11 minor series tracks TensorFlow 1.11.
+
+## Highlights
+- New What-If Tool dashboard, which provides a simple, intuitive, and powerful
+  visual interface to play with a trained ML model on a set of data with
+  absolutely no code required. See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.11/tensorboard/plugins/interactive_inference
+
+## Features
+- Graph dashboard now supports coloring nodes by XLA cluster (PR #1336)
+- Last updated time appears in tooltip for refresh button (PR #1362)
+- Line charts support pan w/ shift key, zoom w/ scroll wheel (PR #1429, #1456)
+
+## Performance improvements
+- Better UI animation/scrolling performance (#1311, #1357)
+- Reduced Plottable MouseInteraction overhead on hover (#1333/#1329)
+- Optimized line chart tooltip redraw behavior (#1355)
+
+## Bug fixes
+- #982  - Fix spurious 404s for /[[_dataImageSrc]] or /[[_imageURL]] (PR #1315)
+- #1320 - Fix port binding to disallow confusing IPv4/IPv6 port reuse (PR #1449)
+- #1397 - Fix multi-part logdirs to correct expand ~ for user homedir
+- #1396 - Fix "step" chart axis to show only integer ticks
+- #1389 - Fix scalar card titles to omit common prefix (PR #1399)
+- #1403 - Fix scalar chart shrinking problem on fast page changes
+- #1406 - Fix scalar chart tooltip display to better avoid clipping
+
+
 # Release 1.10.0
 
 The 1.10 minor series tracks TensorFlow 1.10.

@@ -43,6 +43,7 @@ Polymer({
     datasets: Array,
     selectedDataset: Number,
     selectedFile: Object,
+    compatibilityProvider: Object,
     /**
      * If this optional object is provided, graph logic will override
      * the HierarchyParams it uses to build the graph with properties within
@@ -101,8 +102,9 @@ Polymer({
     }.bind(this));
   },
   /**
-   * @param {string?} path
+   * @param {?string} path
    * @param {string=} pbTxtFile
+   * @param {Object=} overridingHierarchyParams
    */
   _parseAndConstructHierarchicalGraph: function(
       path, pbTxtFile, overridingHierarchyParams) {
@@ -165,7 +167,7 @@ Polymer({
     })
     .then(function(graph) {
       // Populate compatibile field of OpNode based on whitelist
-      tf.graph.op.checkOpsForCompatibility(graph);
+      tf.graph.op.checkOpsForCompatibility(graph, this.compatibilityProvider);
 
       this._setOutGraph(graph);
       var hierarchyTracker = tf.graph.util.getSubtaskTracker(tracker, 50,

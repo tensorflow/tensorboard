@@ -3,7 +3,7 @@
 ![What-If Tool Screenshot](/tensorboard/plugins/interactive_inference/img/wit-smile-intro.png "What-If Tool Screenshot")
 
 The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an easy-to-use interface for expanding
-understanding of a black-box ML model.
+understanding of a black-box classification or regression ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
 Additionally, examples can be edited manually or programatically and re-run
@@ -14,6 +14,11 @@ subsets of a dataset.
 The purpose of the tool is that give people a simple, intuitive, and powerful
 way to play with a trained ML model on a set of data through a visual interface
 with absolutely no code required.
+
+The tool can be accessed through TensorBoard or as an extension in a Jupyter
+or
+[Colab](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb)
+notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
 
@@ -45,15 +50,46 @@ Fine, here are some demos:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
 
-## What do I need to use it?
+## What do I need to use it in a jupyter or colab notebook?
 
-To use the tool, only the following information needs to be provided:
+You can use the What-If Tool to analyze a classification or regression
+[TensorFlow Estimator](https://www.tensorflow.org/api_docs/python/tf/estimator/Estimator)
+that takes TensorFlow Example or SequenceExample protos
+(data points) as inputs directly in a jupyter or colab notebook.
+
+If you want to train an ML model from a dataset and explore the dataset and
+model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
+converts the data to tf.Example protos, trains a classifier, and then uses the
+What-If Tool to show the classifier performance on the data.
+
+## What do I need to use it in TensorBoard?
+
+To use the tool in TensorBoard, only the following information needs to be provided:
 
 * The model server host and port, served using
-  [TensorFlow Serving](https://github.com/tensorflow/serving). The model must
-  use the TensorFlow Serving Classification or Regression APIs.
-* A TFRecord file of tf.Examples to perform inference on and the
-  number of examples to load from the file.
+  [TensorFlow Serving](https://github.com/tensorflow/serving). The model can
+  use the TensorFlow Serving Classification, Regression, or Predict API.
+    * Information on how to create a saved model with the `Estimator` API that
+      will use thse appropriate TensorFlow Serving Classification or Regression
+      APIs can be found in the [saved model documentation](https://www.tensorflow.org/guide/saved_model#using_savedmodel_with_estimators)
+      and in this [helpful tutorial](http://shzhangji.com/blog/2018/05/14/serve-tensorflow-estimator-with-savedmodel/).
+      Models that use these APIs are the simplest to use with the What-If Tool
+      as they require no set-up in the tool beyond setting the model type.
+    * If the model uses the Predict API, the input must be serialized tf.Example
+      or tf.SequenceExample protos and the output must be following:
+        * For classification models, the output must include a 2D float tensor
+          containing a list of class probabilities for all possible class
+          indices for each inferred example.
+        * For regression models, the output must include a float tensor
+          containing a single regression score for each inferred example.
+    * The What-If Tool queries the served model using the gRPC API, not the
+      RESTful API. See the TensorFlow Serving
+      [docker documentation](https://www.tensorflow.org/serving/docker) for
+      more information on the two APIs. The docker image uses port 8500 for the
+      gRPC API, so if using the docker approach, the port to specify in the
+      What-If Tool will be 8500.
+* A TFRecord file of tf.Examples or tf.SequenceExamples to perform inference on
+  and the number of examples to load from the file.
     * Can handle up to tens of thousands of examples. The exact amount depends
       on the size of each example (how many features there are and how large the
       feature values are).
@@ -67,12 +103,36 @@ To use the tool, only the following information needs to be provided:
       labels for a classification model. If not, it will show the predicted
       class indices.
 
+Alternatively, the What-If Tool can be used to explore a dataset directly from
+a CSV file. See the next section for details.
+
 The information can be provided in the settings dialog screen, which pops up
 automatically upon opening this tool and is accessible through the settings
 icon button in the top-right of the tool.
 The information can also be provided directly through URL parameters.
 Changing the settings through the controls automatically updates the URL so that
 it can be shared with others for them to view the same data in the What-If Tool.
+
+### All I have is a dataset. What can I do in TensorBoard? Where do I start?
+
+If you just want to explore the information in a CSV file using the What-If Tool
+in TensorBoard, just set the path to the examples to the file (with a ".csv"
+extension) and leave the inference address and model name fields blank.
+The first line of the CSV file must contain column names. Each line after that
+contains one example from the dataset, with values for each of the columns
+defined on the first line. The pipe character ("|") deliminates separate feature
+values in a list of feature values for a given feature.
+
+In order to make use of the model understanding features of the tool, you can
+have columns in your dataset that contain the output from an ML model. If your
+file has a column named "probabilities" with a pipe-delimited ("|") list of
+probability scores (between 0 and 1), then the tool will treat those as the
+output scores of a classification model. If your file has a numeric column named
+"score" then the tool will treat those as the output of a regression model. In
+this way, the tool can be used to analyze any dataset and the results of any
+model run offline against the dataset. Note that in this mode, the examples
+aren't editable as there is no way to get new inference results when an example
+changes.
 
 ## What can it do?
 * Visualize a dataset of TensorFlow Example protos.
@@ -132,6 +192,11 @@ it can be shared with others for them to view the same data in the What-If Tool.
   * Clone an existing example for editing/comparison.
   * Revert edits to an edited example.
 
+* Compare the results of two models on the same input data.
+  * If you provide two models to the tool during setup, it will run inference
+    with the provided data on both models and you can compare the results
+    between the two models using all the features defined above.
+
 
 ![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/tensorboard/plugins/interactive_inference/img/wit-census-edit-rerun.png "The side panel showing new inference results after the “capital-gain” feature value has been edited")
 
@@ -152,7 +217,7 @@ it can be shared with others for them to view the same data in the What-If Tool.
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
 
-![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on on the equal opporitunity fairness criteria button")
+![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:
@@ -176,3 +241,24 @@ We imagine WIT to be useful for a wide variety of users.
   model on a dataset. Try it out with your own data.
 * Lay users - Learn about machine learning by interactively playing with
   datasets and models.
+
+## How do I use it in a Jupyter notebook?
+First, install and enable WIT for Jupyter through the following commands:
+```sh
+pip install witwidget
+jupyter nbextension install --py --symlink --sys-prefix witwidget
+jupyter nbextension enable --py --sys-prefix witwidget
+```
+
+Then, use it as seen at the bottom of the
+[What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
+
+## How do I use it in a Colab notebook?
+Install the widget into the runtime of the notebook kernel by running a cell
+containing:
+```
+!pip install witwidget
+```
+
+Then, use it as seen at the bottom of the
+[What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).

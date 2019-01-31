@@ -27,6 +27,8 @@ from __future__ import print_function
 
 import os
 import shutil
+
+from absl import app
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -83,4 +85,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  app.run(main)

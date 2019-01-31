@@ -44,15 +44,15 @@ export class EnvironmentStore extends BaseStore {
   }
 
   public getDataLocation(): string {
-    return this.environment.dataLocation;
+    return this.environment ? this.environment.dataLocation : '';
   }
 
   public getMode(): Mode {
-    return this.environment.mode;
+    return this.environment ? this.environment.mode : null;
   }
 
   public getWindowTitle(): string {
-    return this.environment.windowTitle;
+    return this.environment ? this.environment.windowTitle : '';
   }
 }
 

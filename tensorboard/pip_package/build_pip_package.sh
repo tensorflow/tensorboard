@@ -23,6 +23,20 @@ else
   sedi="sed -i"
 fi
 
+run_smoke_test=1
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    "--no-smoke")
+      run_smoke_test=0
+      ;;
+    *)
+      echo >&2 'fatal: unknown argument:' "$1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
 smoke() {
   TF_PACKAGE=tf-nightly
   if [ -n "$TF_VERSION" ]; then
@@ -88,6 +102,9 @@ mkdir -p tensorboard/_vendor
 touch tensorboard/_vendor/__init__.py
 cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
 cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
+# Vendor tensorflow-serving-api because it depends directly on TensorFlow.
+# TODO(nickfelt): de-vendor if they're able to relax that dependency.
+cp -LR "${RUNFILES}/org_tensorflow_serving_api/tensorflow_serving" tensorboard/_vendor
 
 chmod -R u+w,go+r .
 
@@ -97,6 +114,7 @@ find tensorboard -name \*.py |
     s/^from html5lib/from tensorboard._vendor.html5lib/
     s/^import bleach$/from tensorboard._vendor import bleach/
     s/^from bleach/from tensorboard._vendor.bleach/
+    s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
   '
 
 virtualenv venv
@@ -111,7 +129,9 @@ pip install -qU wheel 'setuptools>=36.2.0'
 python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-smoke 2
-smoke 3
+if [ "$run_smoke_test" = 1 ]; then
+  smoke 2
+  smoke 3
+fi
 
 ls -hal "$PWD/dist"

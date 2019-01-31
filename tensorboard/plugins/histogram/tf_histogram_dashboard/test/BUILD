@@ -3,12 +3,18 @@ package(
     default_visibility = ["//tensorboard:internal"],
 )
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_web_test(
     name = "test",
+    web_library = ":test_web_library",
+    src = "/tf-histogram-dashboard/test/tests.html",
+)
+
+tf_web_library(
+    name = "test_web_library",
     srcs = [
         "tests.html",
         "histogramTests.ts",

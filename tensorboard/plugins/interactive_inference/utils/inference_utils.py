@@ -16,16 +16,20 @@
 
 import collections
 import copy
+import json
+import math
 import numpy as np
+import tensorflow as tf
+from google.protobuf import json_format
 from six import iteritems
 from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
-from tensorboard.plugins.interactive_inference.utils import inference_pb2
-from tensorboard.plugins.interactive_inference.utils import oss_utils
-from tensorboard.plugins.interactive_inference.utils.serving import classification_pb2
-from tensorboard.plugins.interactive_inference.utils.serving import regression_pb2
+from tensorboard.plugins.interactive_inference.utils import platform_utils
+from tensorflow_serving.apis import classification_pb2
+from tensorflow_serving.apis import inference_pb2
+from tensorflow_serving.apis import regression_pb2
 
 
 class VizParams(object):
@@ -105,7 +109,7 @@ class OriginalFeatureList(object):
 
   Attributes:
     feature_name: String name of the feature.
-    original_value: The value of the feature in the original tf.train.Example.
+    original_value: The value of the feature in the original example.
     feature_type: One of ['int64_list', 'float_list'].
 
   Raises:
@@ -169,13 +173,22 @@ class ServingBundle(object):
       empty string, the latest model will be used.
     signature: The signature of the model to infer. If set to an empty string,
       the default signuature will be used.
+    use_predict: If true then use the servo Predict API as opposed to
+      Classification or Regression.
+    predict_input_tensor: The name of the input tensor to parse when using the
+      Predict API.
+    predict_output_tensor: The name of the output tensor to parse when using the
+      Predict API.
+    estimator: An estimator to use instead of calling an external model.
+    feature_spec: A feature spec for use with the estimator.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
   """
 
   def __init__(self, inference_address, model_name, model_type, model_version,
-               signature):
+               signature, use_predict, predict_input_tensor,
+               predict_output_tensor, estimator=None, feature_spec=None):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -197,10 +210,18 @@ class ServingBundle(object):
 
     self.signature = signature if signature else None
 
+    self.use_predict = use_predict
+    self.predict_input_tensor = predict_input_tensor
+    self.predict_output_tensor = predict_output_tensor
+    self.estimator = estimator
+    self.feature_spec = feature_spec
+
 
 def proto_value_for_feature(example, feature_name):
   """Get the value of a feature from Example regardless of feature type."""
-  feature = example.features.feature[feature_name]
+  feature = get_example_features(example)[feature_name]
+  if feature is None:
+    raise ValueError('Feature {} is not on example proto.'.format(feature_name))
   feature_type = feature.WhichOneof('kind')
   if feature_type is None:
     raise ValueError('Feature {} on example proto has no declared type.'.format(
@@ -212,13 +233,13 @@ def parse_original_feature_from_example(example, feature_name):
   """Returns an `OriginalFeatureList` for the specified feature_name.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
     feature_name: A string feature name.
 
   Returns:
     A filled in `OriginalFeatureList` object representing the feature.
   """
-  feature = example.features.feature[feature_name]
+  feature = get_example_features(example)[feature_name]
   feature_type = feature.WhichOneof('kind')
   original_value = proto_value_for_feature(example, feature_name)
 
@@ -237,9 +258,10 @@ def wrap_inference_results(inference_result_proto):
   inference_proto = inference_pb2.InferenceResult()
   if isinstance(inference_result_proto,
                 classification_pb2.ClassificationResponse):
-    inference_proto.classification.CopyFrom(inference_result_proto.result)
+    inference_proto.classification_result.CopyFrom(
+        inference_result_proto.result)
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
-    inference_proto.regression.CopyFrom(inference_result_proto.result)
+    inference_proto.regression_result.CopyFrom(inference_result_proto.result)
   return inference_proto
 
 
@@ -247,13 +269,13 @@ def get_numeric_feature_names(example):
   """Returns a list of feature names for float and int64 type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
-    A list of string feature names.
+    A list of strings of the names of numeric features.
   """
   numeric_features = ('float_list', 'int64_list')
-  features = example.features.feature
+  features = get_example_features(example)
   return sorted([
       feature_name for feature_name in features
       if features[feature_name].WhichOneof('kind') in numeric_features
@@ -264,12 +286,12 @@ def get_categorical_feature_names(example):
   """Returns a list of feature names for byte type features.
 
   Args:
-    example: A tf.train.Example.
+    example: An example.
 
   Returns:
     A list of categorical feature names (e.g. ['education', 'marital_status'] )
   """
-  features = example.features.feature
+  features = get_example_features(example)
   return sorted([
       feature_name for feature_name in features
       if features[feature_name].WhichOneof('kind') == 'bytes_list'
@@ -377,50 +399,58 @@ def make_mutant_features(original_feature, index_to_mutate, viz_params):
                      original_feature.feature_type)
 
 
-def make_mutant_tuples(example_proto, original_feature, index_to_mutate,
+def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
                        viz_params):
   """Return a list of `MutantFeatureValue`s and a list of mutant Examples.
 
   Args:
-    example_proto: The tf.train.Example to mutate.
+    example_protos: The examples to mutate.
     original_feature: A `OriginalFeatureList` that encapsulates the feature to
       mutate.
     index_to_mutate: The index of the int64_list or float_list to mutate.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Returns:
-    A list of `MutantFeatureValue`s and a list of mutant `tf.train.Examples`.
+    A list of `MutantFeatureValue`s and a list of mutant examples.
   """
   mutant_features = make_mutant_features(original_feature, index_to_mutate,
                                          viz_params)
   mutant_examples = []
-  for mutant_feature in mutant_features:
-    copied_example = copy.deepcopy(example_proto)
-    feature_name = mutant_feature.original_feature.feature_name
+  for example_proto in example_protos:
+    for mutant_feature in mutant_features:
+      copied_example = copy.deepcopy(example_proto)
+      feature_name = mutant_feature.original_feature.feature_name
 
-    feature_list = proto_value_for_feature(copied_example, feature_name)
-    if index_to_mutate is None:
-      new_values = mutant_feature.mutant_value
-    else:
-      new_values = list(feature_list)
-      new_values[index_to_mutate] = mutant_feature.mutant_value
+      try:
+        feature_list = proto_value_for_feature(copied_example, feature_name)
+        if index_to_mutate is None:
+          new_values = mutant_feature.mutant_value
+        else:
+          new_values = list(feature_list)
+          new_values[index_to_mutate] = mutant_feature.mutant_value
 
-    del feature_list[:]
-    feature_list.extend(new_values)
-    mutant_examples.append(copied_example)
+        del feature_list[:]
+        feature_list.extend(new_values)
+        mutant_examples.append(copied_example)
+      except (ValueError, IndexError):
+        # If the mutant value can't be set, still add the example to the
+        # mutant_example even though no change was made. This is necessary to
+        # allow for computation of global PD plots when not all examples have
+        # the same number of feature values for a feature.
+        mutant_examples.append(copied_example)
 
   return mutant_features, mutant_examples
 
 
-def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
+def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
                               viz_params):
   """Returns JSON formatted for rendering all charts for a feature.
 
   Args:
-    example_proto: The tf.train.Example proto to mutate.
+    example_proto: The example protos to mutate.
     feature_name: The string feature name to mutate.
-    serving_bundle: A `ServingBundle` object that contains the information to
-      make the serving request.
+    serving_bundles: One `ServingBundle` object per model, that contains the
+      information to make the serving request.
     viz_params: A `VizParams` object that contains the UI state of the request.
 
   Raises:
@@ -438,17 +468,17 @@ def mutant_charts_for_feature(example_proto, feature_name, serving_bundle,
 
   def chart_for_index(index_to_mutate):
     mutant_features, mutant_examples = make_mutant_tuples(
-        example_proto, original_feature, index_to_mutate, viz_params)
+        example_protos, original_feature, index_to_mutate, viz_params)
 
-    inference_result_proto = oss_utils.call_servo(
-        mutant_examples, serving_bundle)
-    return make_json_formatted_for_single_chart(mutant_features,
-                                                inference_result_proto,
-                                                index_to_mutate)
-
+    charts = []
+    for serving_bundle in serving_bundles:
+      inference_result_proto = run_inference(mutant_examples, serving_bundle)
+      charts.append(make_json_formatted_for_single_chart(
+        mutant_features, inference_result_proto, index_to_mutate))
+    return charts
   try:
     original_feature = parse_original_feature_from_example(
-        example_proto, feature_name)
+        example_protos[0], feature_name)
   except ValueError as e:
     return {
         'chartType': 'categorical',
@@ -482,7 +512,7 @@ def make_json_formatted_for_single_chart(mutant_features,
       X-axis.
     inference_result_proto: A ClassificationResponse or RegressionResponse
       returned by Servo, representing the Y-axis.
-      It contains one 'classification' or 'regression' for everyExample that
+      It contains one 'classification' or 'regression' for every Example that
       was sent for inference. The length of that field should be the same length
       of mutant_features.
     index_to_mutate: The index of the feature being mutated for this chart.
@@ -493,19 +523,26 @@ def make_json_formatted_for_single_chart(mutant_features,
   """
   x_label = 'step'
   y_label = 'scalar'
-  points = []
 
   if isinstance(inference_result_proto,
                 classification_pb2.ClassificationResponse):
     # classification_label -> [{x_label: y_label:}]
-    series = collections.defaultdict(list)
+    series = {}
 
     # ClassificationResponse has a separate probability for each label
-    assert len(mutant_features) == len(
-        inference_result_proto.result.classifications)
-    for mutant_feature, classification in zip(
-        mutant_features, inference_result_proto.result.classifications):
-      for classification_class in classification.classes:
+    for idx, classification in enumerate(
+        inference_result_proto.result.classifications):
+      # For each example to use for mutant inference, we create a copied example
+      # with the feature in question changed to each possible mutant value. So
+      # when we get the inferences back, we get num_examples*num_mutants
+      # results. So, modding by len(mutant_features) allows us to correctly
+      # lookup the mutant value for each inference.
+      mutant_feature = mutant_features[idx % len(mutant_features)]
+      for class_index, classification_class in enumerate(
+        classification.classes):
+        # Fill in class index when labels are missing
+        if classification_class.label == '':
+          classification_class.label = str(class_index)
         # Special case to not include the "0" class in binary classification.
         # Since that just results in a chart that is symmetric around 0.5.
         if len(
@@ -514,30 +551,204 @@ def make_json_formatted_for_single_chart(mutant_features,
         key = classification_class.label
         if index_to_mutate:
           key += ' (index %d)' % index_to_mutate
-        series[key].append({
-            x_label: mutant_feature.mutant_value,
-            y_label: classification_class.score,
-        })
+        if not key in series:
+          series[key] = {}
+        if not mutant_feature.mutant_value in series[key]:
+          series[key][mutant_feature.mutant_value] = []
+        series[key][mutant_feature.mutant_value].append(
+          classification_class.score)
 
     # Post-process points to have separate list for each class
-    for points in series.values():
-      points.sort(key=lambda p: p[x_label])
-    return series
+    return_series = collections.defaultdict(list)
+    for key, mutant_values in iteritems(series):
+      for value, y_list in iteritems(mutant_values):
+        return_series[key].append({
+          x_label: value,
+          y_label: sum(y_list) / float(len(y_list))
+        })
+      return_series[key].sort(key=lambda p: p[x_label])
+    return return_series
 
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
-    assert len(mutant_features) == len(
-        inference_result_proto.result.regressions)
+    points = {}
 
-    for mutant_feature, regression in zip(
-        mutant_features, inference_result_proto.result.regressions):
-      points.append({
-          x_label: mutant_feature.mutant_value,
-          y_label: regression.value
-      })
+    for idx, regression in enumerate(inference_result_proto.result.regressions):
+      # For each example to use for mutant inference, we create a copied example
+      # with the feature in question changed to each possible mutant value. So
+      # when we get the inferences back, we get num_examples*num_mutants
+      # results. So, modding by len(mutant_features) allows us to correctly
+      # lookup the mutant value for each inference.
+      mutant_feature = mutant_features[idx % len(mutant_features)]
+      if not mutant_feature.mutant_value in points:
+        points[mutant_feature.mutant_value] = []
+      points[mutant_feature.mutant_value].append(regression.value)
     key = 'value'
     if (index_to_mutate != 0):
       key += ' (index %d)' % index_to_mutate
-    return {key: points}
+    list_of_points = []
+    for value, y_list in iteritems(points):
+      list_of_points.append({
+        x_label: value,
+        y_label: sum(y_list) / float(len(y_list))
+      })
+    return {key: list_of_points}
 
   else:
     raise NotImplementedError('Only classification and regression implemented.')
+
+
+def get_example_features(example):
+  """Returns the non-sequence features from the provided example."""
+  return (example.features.feature if isinstance(example, tf.train.Example)
+          else example.context.feature)
+
+def run_inference_for_inference_results(examples, serving_bundle):
+  """Calls servo and wraps the inference results."""
+  inference_result_proto = run_inference(examples, serving_bundle)
+  inferences = wrap_inference_results(inference_result_proto)
+  infer_json = json_format.MessageToJson(
+    inferences, including_default_value_fields=True)
+  return json.loads(infer_json)
+
+def get_eligible_features(examples, num_mutants):
+  """Returns a list of JSON objects for each feature in the examples.
+
+    This list is used to drive partial dependence plots in the plugin.
+
+    Args:
+      examples: Examples to examine to determine the eligible features.
+      num_mutants: The number of mutations to make over each feature.
+
+    Returns:
+      A list with a JSON object for each feature.
+      Numeric features are represented as {name: observedMin: observedMax:}.
+      Categorical features are repesented as {name: samples:[]}.
+    """
+  features_dict = (
+      get_numeric_features_to_observed_range(
+          examples))
+
+  features_dict.update(
+      get_categorical_features_to_sampling(
+          examples, num_mutants))
+
+  # Massage the features_dict into a sorted list before returning because
+  # Polymer dom-repeat needs a list.
+  features_list = []
+  for k, v in sorted(features_dict.items()):
+    v['name'] = k
+    features_list.append(v)
+  return features_list
+
+def get_label_vocab(vocab_path):
+  """Returns a list of label strings loaded from the provided path."""
+  if vocab_path:
+    try:
+      with tf.io.gfile.GFile(vocab_path, 'r') as f:
+        return [line.rstrip('\n') for line in f]
+    except tf.errors.NotFoundError as err:
+      tf.logging.error('error reading vocab file: %s', err)
+  return []
+
+def create_sprite_image(examples):
+    """Returns an encoded sprite image for use in Facets Dive.
+
+    Args:
+      examples: A list of serialized example protos to get images for.
+
+    Returns:
+      An encoded PNG.
+    """
+
+    def generate_image_from_thubnails(thumbnails, thumbnail_dims):
+      """Generates a sprite atlas image from a set of thumbnails."""
+      num_thumbnails = tf.shape(thumbnails)[0].eval()
+      images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
+      thumb_height = thumbnail_dims[0]
+      thumb_width = thumbnail_dims[1]
+      master_height = images_per_row * thumb_height
+      master_width = images_per_row * thumb_width
+      num_channels = 3
+      master = np.zeros([master_height, master_width, num_channels])
+      for idx, image in enumerate(thumbnails.eval()):
+        left_idx = idx % images_per_row
+        top_idx = int(math.floor(idx / images_per_row))
+        left_start = left_idx * thumb_width
+        left_end = left_start + thumb_width
+        top_start = top_idx * thumb_height
+        top_end = top_start + thumb_height
+        master[top_start:top_end, left_start:left_end, :] = image
+      return tf.image.encode_png(master)
+
+    image_feature_name = 'image/encoded'
+    sprite_thumbnail_dim_px = 32
+    with tf.compat.v1.Session():
+      keys_to_features = {
+          image_feature_name:
+              tf.FixedLenFeature((), tf.string, default_value=''),
+      }
+      parsed = tf.parse_example(examples, keys_to_features)
+      images = tf.zeros([1, 1, 1, 1], tf.float32)
+      i = tf.constant(0)
+      thumbnail_dims = (sprite_thumbnail_dim_px,
+                        sprite_thumbnail_dim_px)
+      num_examples = tf.constant(len(examples))
+      encoded_images = parsed[image_feature_name]
+
+      # Loop over all examples, decoding the image feature value, resizing
+      # and appending to a list of all images.
+      def loop_body(i, encoded_images, images):
+        encoded_image = encoded_images[i]
+        image = tf.image.decode_jpeg(encoded_image, channels=3)
+        resized_image = tf.image.resize(image, thumbnail_dims)
+        expanded_image = tf.expand_dims(resized_image, 0)
+        images = tf.cond(
+            tf.equal(i, 0), lambda: expanded_image,
+            lambda: tf.concat([images, expanded_image], 0))
+        return i + 1, encoded_images, images
+
+      loop_out = tf.while_loop(
+          lambda i, encoded_images, images: tf.less(i, num_examples),
+          loop_body, [i, encoded_images, images],
+          shape_invariants=[
+              i.get_shape(),
+              encoded_images.get_shape(),
+              tf.TensorShape(None)
+          ])
+
+      # Create the single sprite atlas image from these thumbnails.
+      sprite = generate_image_from_thubnails(loop_out[2], thumbnail_dims)
+      return sprite.eval()
+
+def run_inference(examples, serving_bundle):
+  """Run inference on examples given model information
+
+  Args:
+    examples: A list of examples that matches the model spec.
+    serving_bundle: A `ServingBundle` object that contains the information to
+      make the inference request.
+
+  Returns:
+    A ClassificationResponse or RegressionResponse proto.
+  """
+  batch_size = 64
+  if serving_bundle.estimator and serving_bundle.feature_spec:
+    # If provided an estimator and feature spec then run inference locally.
+    preds = serving_bundle.estimator.predict(
+      lambda: tf.data.Dataset.from_tensor_slices(
+        tf.parse_example([ex.SerializeToString() for ex in examples],
+        serving_bundle.feature_spec)).batch(batch_size))
+
+    if serving_bundle.use_predict:
+      preds_key = serving_bundle.predict_output_tensor
+    elif serving_bundle.model_type == 'regression':
+      preds_key = 'predictions'
+    else:
+      preds_key = 'probabilities'
+
+    values = []
+    for pred in preds:
+      values.append(pred[preds_key])
+    return common_utils.convert_prediction_values(values, serving_bundle)
+  else:
+    return platform_utils.call_servo(examples, serving_bundle)

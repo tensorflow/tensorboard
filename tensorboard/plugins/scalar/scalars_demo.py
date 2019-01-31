@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import os.path
 
+from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorboard.plugins.scalar import summary
@@ -55,8 +56,8 @@ def run(logdir, run_name,
     heat_coefficient: float; a measure of the object's thermal
       conductivity
   """
-  tf.reset_default_graph()
-  tf.set_random_seed(0)
+  tf.compat.v1.reset_default_graph()
+  tf.compat.v1.set_random_seed(0)
 
   with tf.name_scope('temperature'):
     # Create a mutable variable to hold the object's temperature, and
@@ -86,14 +87,14 @@ def run(logdir, run_name,
   # coefficient. But in real life, not everything is quite so clean, so
   # we'll add in some noise. (The value of 50 is arbitrary, chosen to
   # make the data look somewhat interesting. :-) )
-  noise = 50 * tf.random_normal([])
+  noise = 50 * tf.random.normal([])
   delta = -heat_coefficient * (ambient_difference + noise)
   summary.op('delta', delta,
              description='The change in temperature from the previous '
                          'step, in Kelvins.')
 
   # Collect all the scalars that we want to keep track of.
-  summ = tf.summary.merge_all()
+  summ = tf.compat.v1.summary.merge_all()
 
   # Now, augment the current temperature by this delta that we computed,
   # blocking the assignment on summary collection to avoid race conditions
@@ -101,10 +102,10 @@ def run(logdir, run_name,
   with tf.control_dependencies([summ]):
     update_step = temperature.assign_add(delta)
 
-  sess = tf.Session()
+  sess = tf.compat.v1.Session()
   writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
   writer.add_graph(sess.graph)
-  sess.run(tf.global_variables_initializer())
+  sess.run(tf.compat.v1.global_variables_initializer())
   for step in xrange(STEPS):
     # By asking TensorFlow to compute the update step, we force it to
     # change the value of the temperature variable. We don't actually
@@ -140,4 +141,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  app.run(main)

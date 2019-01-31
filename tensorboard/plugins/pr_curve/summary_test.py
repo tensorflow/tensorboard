@@ -22,21 +22,26 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import summary
+from tensorboard.util import tensor_util
+from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class PrCurveTest(tf.test.TestCase):
 
   def setUp(self):
     super(PrCurveTest, self).setUp()
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     np.random.seed(42)
 
   def pb_via_op(self, summary_op, feed_dict=None):
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       actual_pbtxt = sess.run(summary_op, feed_dict=feed_dict or {})
-    actual_proto = tf.Summary()
+    actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -48,11 +53,15 @@ class PrCurveTest(tf.test.TestCase):
     normalization ensures a canonical form, and should be used before
     comparing two `Summary`s for equality.
     """
-    result = tf.Summary()
+    result = summary_pb2.Summary()
+    if not isinstance(pb, summary_pb2.Summary):
+      # pb can come from `pb_via_op` which creates a TB Summary.
+      pb = test_util.ensure_tb_summary_proto(pb)
     result.MergeFrom(pb)
     for value in result.value:
       if value.HasField('tensor'):
-        new_tensor = tf.make_tensor_proto(tf.make_ndarray(value.tensor))
+        new_tensor = tensor_util.make_tensor_proto(
+            tensor_util.make_ndarray(value.tensor))
         value.ClearField('tensor')
         value.tensor.MergeFrom(new_tensor)
     return result
@@ -130,7 +139,7 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 1.0, 1.0],
         [1.0, 1.0, 1.0],
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_true_negatives(self):
@@ -147,7 +156,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0],
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_false_positives(self):
@@ -164,7 +173,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 0.0],
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_all_false_negatives(self):
@@ -181,7 +190,7 @@ class PrCurveTest(tf.test.TestCase):
         [1.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_many_values(self):
@@ -198,7 +207,7 @@ class PrCurveTest(tf.test.TestCase):
         [2.0 / 3.0, 1.0, 0.0],
         [1.0, 0.75, 0.0],
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_many_values_with_weights(self):
@@ -216,7 +225,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.375, 1.0, 0.0],
         [1.0, 1.0, 0.0]
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_exhaustive_random_values(self):
@@ -236,7 +245,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.5190476, 0.5225806, 0.5311005, 0.5188679, 0.0],
         [1.0, 0.7431192, 0.5091743, 0.2522936, 0.0]
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_counts_below_1(self):
@@ -258,7 +267,7 @@ class PrCurveTest(tf.test.TestCase):
         [0.4, 1.0, 0.0],
         [1.0, 1.0, 0.0]
     ]
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal(expected, values)
 
   def test_raw_data(self):
@@ -317,7 +326,7 @@ class PrCurveTest(tf.test.TestCase):
     self.assertEqual(5, plugin_data.num_thresholds)
 
     # Test the summary contents.
-    values = tf.make_ndarray(pb.value[0].tensor)
+    values = tensor_util.make_ndarray(pb.value[0].tensor)
     self.verify_float_arrays_are_equal([
         [75.0, 64.0, 21.0, 5.0, 0.0],  # True positives.
         [150.0, 105.0, 18.0, 0.0, 0.0],  # False positives.
@@ -332,18 +341,18 @@ class StreamingOpTest(tf.test.TestCase):
 
   def setUp(self):
     super(StreamingOpTest, self).setUp()
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     np.random.seed(1)
 
   def pb_via_op(self, summary_op):
     actual_pbtxt = summary_op.eval()
-    actual_proto = tf.Summary()
+    actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
   def tensor_via_op(self, summary_op):
     actual_pbtxt = summary_op.eval()
-    actual_proto = tf.Summary()
+    actual_proto = summary_pb2.Summary()
     actual_proto.ParseFromString(actual_pbtxt)
     return actual_proto
 
@@ -360,7 +369,7 @@ class StreamingOpTest(tf.test.TestCase):
                                    labels=labels,
                                    num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run([update_op])
 
       proto = self.pb_via_op(pr_curve)
@@ -388,7 +397,7 @@ class StreamingOpTest(tf.test.TestCase):
                                    labels=complete_labels,
                                    num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run([update_op])
       sess.run([update_op])
       sess.run([update_op])
@@ -416,10 +425,10 @@ class StreamingOpTest(tf.test.TestCase):
                                         labels=labels,
                                         num_thresholds=10)
     with self.test_session() as sess:
-      sess.run(tf.local_variables_initializer())
+      sess.run(tf.compat.v1.local_variables_initializer())
       sess.run(update_op)
-      summary_proto = tf.Summary()
-      summary_proto.ParseFromString(sess.run(tf.summary.merge_all()))
+      summary_proto = summary_pb2.Summary()
+      summary_proto.ParseFromString(sess.run(tf.compat.v1.summary.merge_all()))
 
     tags = [v.tag for v in summary_proto.value]
     # Only 1 tag should have been introduced.

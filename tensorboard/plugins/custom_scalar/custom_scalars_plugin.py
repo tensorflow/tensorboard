@@ -29,15 +29,18 @@ import re
 
 from google.protobuf import json_format
 import numpy as np
-import tensorflow as tf
+
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import scalars_plugin
+from tensorboard.util import tensor_util
+
 
 # The name of the property in the response for whether the regex is valid.
 _REGEX_VALID_PROPERTY = 'regex_valid'
@@ -267,7 +270,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           run, metadata.CONFIG_SUMMARY_TAG)
 
       # This run has a layout. Merge it with the ones currently found.
-      string_array = tf.make_ndarray(tensor_events[0].tensor_proto)
+      string_array = tensor_util.make_ndarray(tensor_events[0].tensor_proto)
       content = np.asscalar(string_array)
       layout_proto = layout_pb2.Layout()
       layout_proto.ParseFromString(tf.compat.as_bytes(content))

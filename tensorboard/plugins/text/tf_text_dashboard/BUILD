@@ -34,16 +34,3 @@ tf_web_library(
         "@org_polymer_paper_spinner",
     ],
 )
-
-tf_web_library(
-    name = "demo",
-    srcs = ["index.html"] + glob(["data/**"]),
-    path = "/tf-text-dashboard",
-    deps = [
-        ":tf_text_dashboard",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_styles",
-    ],
-)

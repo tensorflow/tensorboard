@@ -27,6 +27,7 @@ import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
 
+
 # A value that we use as the minimum value during division of counts to prevent
 # division by 0. 1.0 does not work: Certain weights could cause counts below 1.
 _MINIMUM_COUNT = 1e-7
@@ -90,7 +91,7 @@ def op(
   dtype = predictions.dtype
 
   with tf.name_scope(name, values=[labels, predictions, weights]):
-    tf.assert_type(labels, tf.bool)
+    tf.compat.v1.assert_type(labels, tf.bool)
     # We cast to float to ensure we have 0.0 or 1.0.
     f_labels = tf.cast(labels, dtype)
     # Ensure predictions are all in range [0.0, 1.0].
@@ -135,10 +136,10 @@ def op(
 
     # Bucket predictions.
     tp_buckets = tf.reduce_sum(
-        tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
+        input_tensor=tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
         axis=0)
     fp_buckets = tf.reduce_sum(
-        tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
+        input_tensor=tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
         axis=0)
 
     # Set up the cumulative sums to compute the actual metrics.
@@ -289,22 +290,22 @@ def streaming_op(name,
                 for i in range(num_thresholds)]
 
   with tf.name_scope(name, values=[labels, predictions, weights]):
-    tp, update_tp = tf.metrics.true_positives_at_thresholds(
+    tp, update_tp = tf.compat.v1.metrics.true_positives_at_thresholds(
         labels=labels,
         predictions=predictions,
         thresholds=thresholds,
         weights=weights)
-    fp, update_fp = tf.metrics.false_positives_at_thresholds(
+    fp, update_fp = tf.compat.v1.metrics.false_positives_at_thresholds(
         labels=labels,
         predictions=predictions,
         thresholds=thresholds,
         weights=weights)
-    tn, update_tn = tf.metrics.true_negatives_at_thresholds(
+    tn, update_tn = tf.compat.v1.metrics.true_negatives_at_thresholds(
         labels=labels,
         predictions=predictions,
         thresholds=thresholds,
         weights=weights)
-    fn, update_fn = tf.metrics.false_negatives_at_thresholds(
+    fn, update_fn = tf.compat.v1.metrics.false_negatives_at_thresholds(
         labels=labels,
         predictions=predictions,
         thresholds=thresholds,
@@ -331,7 +332,7 @@ def streaming_op(name,
     update_op = tf.group(update_tp, update_fp, update_tn, update_fn)
     if updates_collections:
       for collection in updates_collections:
-        tf.add_to_collection(collection, update_op)
+        tf.compat.v1.add_to_collection(collection, update_op)
 
     return pr_curve, update_op
 
@@ -457,6 +458,8 @@ def raw_data_pb(
       display_name=display_name if display_name is not None else name,
       description=description or '',
       num_thresholds=num_thresholds)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   data = np.stack(
       (true_positive_counts,
@@ -465,9 +468,9 @@ def raw_data_pb(
        false_negative_counts,
        precision,
        recall))
-  tensor = tf.make_tensor_proto(np.float32(data), dtype=tf.float32)
+  tensor = tf.compat.v1.make_tensor_proto(np.float32(data), dtype=tf.float32)
   summary.value.add(tag='%s/pr_curves' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary
 
@@ -511,7 +514,7 @@ def _create_tensor_summary(
       tf.cast(precision, tf.float32),
       tf.cast(recall, tf.float32)])
 
-  return tf.summary.tensor_summary(
+  return tf.compat.v1.summary.tensor_summary(
       name='pr_curves',
       tensor=combined_data,
       collections=collections,

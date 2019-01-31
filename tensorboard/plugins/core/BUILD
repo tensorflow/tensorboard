@@ -16,9 +16,9 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -28,28 +28,17 @@ py_test(
     name = "core_plugin_test",
     size = "small",
     srcs = ["core_plugin_test.py"],
-    data = ["test_webfiles.zip"],
     srcs_version = "PY2AND3",
     deps = [
         ":core_plugin",
+        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
-)
-
-tf_web_library(
-    name = "test_assets",
-    testonly = 1,
-    srcs = ["index.html"],
-    path = "/",
-)
-
-tensorboard_zip_file(
-    name = "test_webfiles",
-    testonly = 1,
-    deps = [":test_assets"],
 )

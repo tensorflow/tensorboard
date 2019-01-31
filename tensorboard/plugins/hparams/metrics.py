@@ -19,8 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
 from tensorboard.plugins.hparams import api_pb2
+from tensorboard.util import tensor_util
+
 
 def last_metric_eval(multiplexer, session_name, metric_name):
   """Returns the last evaluations of the given metric at the given session.
@@ -55,4 +56,4 @@ def last_metric_eval(multiplexer, session_name, metric_name):
   # TODO(erez): Raise HParamsError if the tensor is not a 0-D real scalar.
   return (last_event.wall_time,
           last_event.step,
-          tf.make_ndarray(last_event.tensor_proto).item())
+          tensor_util.make_ndarray(last_event.tensor_proto).item())

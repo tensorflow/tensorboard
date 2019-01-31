@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import error
+import tensorflow as tf
+
 
 PLUGIN_NAME = 'hparams'
 PLUGIN_DATA_VERSION = 0
@@ -54,7 +54,7 @@ def parse_experiment_plugin_data(content):
 
   Raises:
     HParamsError if the content doesn't have 'experiment' set or
-    this file is incompatible with the version of the the metadata stored.
+    this file is incompatible with the version of the metadata stored.
   """
   return _parse_plugin_data_as(content, 'experiment')
 
@@ -65,7 +65,7 @@ def parse_session_start_info_plugin_data(content):
 
   Raises:
     HParamsError if the content doesn't have 'session_start_info' set or
-    this file is incompatible with the version of the the metadata stored.
+    this file is incompatible with the version of the metadata stored.
   """
   return _parse_plugin_data_as(content, 'session_start_info')
 
@@ -76,7 +76,7 @@ def parse_session_end_info_plugin_data(content):
 
   Raises:
     HParamsError if the content doesn't have 'session_end_info' set or
-    this file is incompatible with the version of the the metadata stored.
+    this file is incompatible with the version of the metadata stored.
   """
   return _parse_plugin_data_as(content, 'session_end_info')
 
@@ -87,7 +87,7 @@ def _parse_plugin_data_as(content, data_oneof_field):
 
   Raises:
     HParamsError if the content doesn't have 'data_oneof_field' set or
-    this file is incompatible with the version of the the metadata stored.
+    this file is incompatible with the version of the metadata stored.
   """
   plugin_data = plugin_data_pb2.HParamsPluginData.FromString(content)
   if plugin_data.version != PLUGIN_DATA_VERSION:

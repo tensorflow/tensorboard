@@ -26,9 +26,11 @@ import tensorflow as tf
 from google.protobuf import json_format
 from tensorflow.core.debug import debugger_event_metadata_pb2
 
+from tensorboard.compat.proto import event_pb2
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
 from tensorboard.plugins.debugger import numerics_alert
+from tensorboard.util import tensor_util
 # pylint: enable=ungrouped-imports, wrong-import-order
 
 
@@ -70,10 +72,10 @@ class DebuggerDataServerTest(tf.test.TestCase):
     events_writer_manager = FakeEventsWriterManager(self.events_written)
     self.stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=events_writer_manager)
-    self.stream_handler.on_core_metadata_event(tf.Event())
+    self.stream_handler.on_core_metadata_event(event_pb2.Event())
 
   def tearDown(self):
-    tf.test.mock.patch.stopall()
+    tf.compat.v1.test.mock.patch.stopall()
 
   def _create_event_with_float_tensor(self, node_name, output_slot, debug_op,
                                       list_of_values):
@@ -86,14 +88,14 @@ class DebuggerDataServerTest(tf.test.TestCase):
       debug_op: The name of the debug op to use.
       list_of_values: A python list of values within the tensor.
     Returns:
-      A `tf.Event` with a summary containing that node name and a float64
+      A `Event` with a summary containing that node name and a float64
       tensor with those values.
     """
-    event = tf.Event()
+    event = event_pb2.Event()
     value = event.summary.value.add(
         tag=node_name,
         node_name="%s:%d:%s" % (node_name, output_slot, debug_op),
-        tensor=tf.make_tensor_proto(
+        tensor=tensor_util.make_tensor_proto(
             list_of_values, dtype=tf.float64, shape=[len(list_of_values)]))
     plugin_content = debugger_event_metadata_pb2.DebuggerEventMetadata(
         device="/job:localhost/replica:0/task:0/cpu:0", output_slot=output_slot)
@@ -117,8 +119,8 @@ class DebuggerDataServerTest(tf.test.TestCase):
       self.assertEqual(expected_event.summary.value[0].node_name,
                        gotten_event.summary.value[0].node_name)
       self.assertAllClose(
-          tf.make_ndarray(expected_event.summary.value[0].tensor),
-          tf.make_ndarray(gotten_event.summary.value[0].tensor))
+          tensor_util.make_ndarray(expected_event.summary.value[0].tensor),
+          tensor_util.make_ndarray(gotten_event.summary.value[0].tensor))
       self.assertEqual(expected_event.summary.value[0].tag,
                        gotten_event.summary.value[0].tag)
 
@@ -160,7 +162,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
 
   def testCorrectStepIsWritten(self):
     events_written = []
-    metadata_event = tf.Event()
+    metadata_event = event_pb2.Event()
     metadata_event.log_message.message = json.dumps({"session_run_index": 42})
     stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=FakeEventsWriterManager(events_written))
@@ -178,7 +180,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
 
   def testSentinelStepValueAssignedWhenExecutorStepCountKeyIsMissing(self):
     events_written = []
-    metadata_event = tf.Event()
+    metadata_event = event_pb2.Event()
     metadata_event.log_message.message = json.dumps({})
     stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=FakeEventsWriterManager(events_written))
@@ -190,7 +192,7 @@ class DebuggerDataServerTest(tf.test.TestCase):
 
   def testSentinelStepValueAssignedWhenMetadataJsonIsInvalid(self):
     events_written = []
-    metadata_event = tf.Event()
+    metadata_event = event_pb2.Event()
     metadata_event.log_message.message = "some invalid JSON string"
     stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=FakeEventsWriterManager(events_written))
@@ -201,12 +203,12 @@ class DebuggerDataServerTest(tf.test.TestCase):
     self.assertGreater(events_written[0].step, 0)
 
   def testAlertingEventCallback(self):
-    numerics_alert_callback = tf.test.mock.Mock()
+    numerics_alert_callback = tf.compat.v1.test.mock.Mock()
     stream_handler = debugger_server_lib.DebuggerDataStreamHandler(
         events_writer_manager=FakeEventsWriterManager(
             self.events_written),
         numerics_alert_callback=numerics_alert_callback)
-    stream_handler.on_core_metadata_event(tf.Event())
+    stream_handler.on_core_metadata_event(event_pb2.Event())
 
     # The stream handler receives 1 good event and 1 with an NaN value.
     stream_handler.on_value_event(

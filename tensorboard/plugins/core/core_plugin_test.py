@@ -19,19 +19,44 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import contextlib
 import json
 import os
 import shutil
+import six
 import sqlite3
+import zipfile
 
 import tensorflow as tf
+
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
+FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
+
+
+class FakeFlags(object):
+  def __init__(
+      self,
+      inspect,
+      logdir='',
+      event_file='',
+      db='',
+      path_prefix=''):
+    self.inspect = inspect
+    self.logdir = logdir
+    self.event_file = event_file
+    self.db = db
+    self.path_prefix = path_prefix
 
 
 class CorePluginTest(tf.test.TestCase):
@@ -53,13 +78,42 @@ class CorePluginTest(tf.test.TestCase):
     self.assertIsInstance(routes['/data/logdir'], collections.Callable)
     self.assertIsInstance(routes['/data/runs'], collections.Callable)
 
+  def testFlag(self):
+    loader = core_plugin.CorePluginLoader()
+    loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
+    loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
+    loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp'))
+    loader.fix_flags(FakeFlags(inspect=False, db='sqlite:foo'))
+    # User can pass both, although the behavior is not clearly defined.
+    loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp', db="sqlite:foo"))
+
+    logdir_or_db_req = r'A logdir or db must be specified'
+    one_of_event_or_logdir_req = r'Must specify either --logdir.*but not both.$'
+    event_or_logdir_req = r'Must specify either --logdir or --event_file.$'
+
+    with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
+      loader.fix_flags(FakeFlags(inspect=True))
+    with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
+      loader.fix_flags(FakeFlags(inspect=True, db='sqlite:~/db.sqlite'))
+    with six.assertRaisesRegex(self, ValueError, one_of_event_or_logdir_req):
+      loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp',
+                                 event_file='/tmp/event.out'))
+    with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+      loader.fix_flags(FakeFlags(inspect=False))
+    with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+      loader.fix_flags(FakeFlags(inspect=False, event_file='/tmp/event.out'))
+
+    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='hello/')
+    loader.fix_flags(flag)
+    self.assertEqual(flag.path_prefix, 'hello')
+
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
     response = self.logdir_based_server.get('/')
     self.assertEqual(200, response.status_code)
     self.assertStartsWith(response.headers.get('Content-Type'), 'text/html')
     html = response.get_data()
-    self.assertStartsWith(html, b'<!doctype html>')
+    self.assertEqual(html, FAKE_INDEX_HTML)
 
   def testDataPaths_disableAllCaching(self):
     """Test the format of the /data/runs endpoint."""
@@ -166,7 +220,7 @@ class CorePluginTest(tf.test.TestCase):
         'enigmatic': None,
     }
 
-    stubs = tf.test.StubOutForTesting()
+    stubs = tf.compat.v1.test.StubOutForTesting()
     def FirstEventTimestamp_stub(multiplexer_self, run_name):
       del multiplexer_self
       matches = [candidate_name
@@ -290,29 +344,26 @@ class CorePluginTest(tf.test.TestCase):
           events.
     """
     run_path = os.path.join(self.logdir, run_name)
-    writer = tf.summary.FileWriter(run_path)
+    with test_util.FileWriterCache.get(run_path) as writer:
 
-    # Add a simple graph event.
-    graph_def = tf.GraphDef()
-    node1 = graph_def.node.add()
-    node1.name = 'a'
-    node2 = graph_def.node.add()
-    node2.name = 'b'
-    node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
+      # Add a simple graph event.
+      graph_def = graph_pb2.GraphDef()
+      node1 = graph_def.node.add()
+      node1.name = 'a'
+      node2 = graph_def.node.add()
+      node2.name = 'b'
+      node2.attr['very_large_attr'].s = b'a' * 2048  # 2 KB attribute
 
-    meta_graph_def = tf.MetaGraphDef(graph_def=graph_def)
+      meta_graph_def = meta_graph_pb2.MetaGraphDef(graph_def=graph_def)
 
-    if self._only_use_meta_graph:
-      writer.add_meta_graph(meta_graph_def)
-    else:
-      writer.add_graph(graph_def)
-
-    writer.flush()
-    writer.close()
+      if self._only_use_meta_graph:
+        writer.add_meta_graph(meta_graph_def)
+      else:
+        writer.add_graph(graph=None, graph_def=graph_def)
 
     # Write data for the run to the database.
     # TODO(nickfelt): Figure out why reseting the graph is necessary.
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     db_writer = tf.contrib.summary.create_db_writer(
         db_uri=self.db_path,
         experiment_name=experiment_name,
@@ -321,8 +372,8 @@ class CorePluginTest(tf.test.TestCase):
     with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
       tf.contrib.summary.scalar('mytag', 1)
 
-    with tf.Session() as sess:
-      sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+      sess.run(tf.compat.v1.global_variables_initializer())
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
       sess.run(tf.contrib.summary.all_summary_ops())
 
@@ -333,12 +384,10 @@ class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
 
 
 def get_test_assets_zip_provider():
-  path = os.path.join(tf.resource_loader.get_data_files_path(),
-                      'test_webfiles.zip')
-  if not os.path.exists(path):
-    tf.logging.warning('test_webfiles.zip static assets not found: %s', path)
-    return None
-  return lambda: open(path, 'rb')
+  memfile = six.BytesIO()
+  with zipfile.ZipFile(memfile, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+    zf.writestr('index.html', FAKE_INDEX_HTML)
+  return lambda: contextlib.closing(six.BytesIO(memfile.getvalue()))
 
 
 if __name__ == '__main__':

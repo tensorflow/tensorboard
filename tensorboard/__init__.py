@@ -21,12 +21,14 @@ from __future__ import print_function
 
 from tensorboard import lazy
 
-pkg = lambda i: i  # helps google sync process
-mod = lambda i: lazy.LazyLoader(i[i.rindex('.') + 1:], globals(), i)
 
-program = mod(pkg('tensorboard.program'))
-summary = mod(pkg('tensorboard.summary'))
+@lazy.lazy_load('tensorboard.program')
+def program():
+  import tensorboard.program as module  # pylint: disable=g-import-not-at-top
+  return module
 
-del lazy
-del mod
-del pkg
+
+@lazy.lazy_load('tensorboard.summary')
+def summary():
+  import tensorboard.summary as module  # pylint: disable=g-import-not-at-top
+  return module

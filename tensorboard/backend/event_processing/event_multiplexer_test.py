@@ -28,18 +28,18 @@ from tensorboard.backend.event_processing import event_multiplexer
 
 
 def _AddEvents(path):
-  if not tf.gfile.IsDirectory(path):
-    tf.gfile.MakeDirs(path)
+  if not tf.io.gfile.isdir(path):
+    tf.io.gfile.makedirs(path)
   fpath = os.path.join(path, 'hypothetical.tfevents.out')
-  with tf.gfile.GFile(fpath, 'w') as f:
+  with tf.io.gfile.GFile(fpath, 'w') as f:
     f.write('')
     return fpath
 
 
 def _CreateCleanDirectory(path):
-  if tf.gfile.IsDirectory(path):
-    tf.gfile.DeleteRecursively(path)
-  tf.gfile.MkDir(path)
+  if tf.io.gfile.isdir(path):
+    tf.io.gfile.rmtree(path)
+  tf.io.gfile.mkdir(path)
 
 
 class _FakeAccumulator(object):
@@ -117,7 +117,7 @@ class EventMultiplexerTest(tf.test.TestCase):
 
   def setUp(self):
     super(EventMultiplexerTest, self).setUp()
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
 
     self.stubs.Set(event_accumulator, 'EventAccumulator', _GetFakeAccumulator)
 
@@ -206,7 +206,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertEqual(x.Runs(), {}, 'loading empty directory had no effect')
 
     path1 = join(realdir, 'path1')
-    tf.gfile.MkDir(path1)
+    tf.io.gfile.mkdir(path1)
     x.AddRunsFromDirectory(realdir)
     self.assertEqual(x.Runs(), {}, 'creating empty subdirectory had no effect')
 

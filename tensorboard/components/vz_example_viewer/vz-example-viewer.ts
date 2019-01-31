@@ -87,7 +87,7 @@ const clipSaliencyRatio = .95;
 // Colors for the saliency color scale.
 const posSaliencyColor = '#0f0';
 const negSaliencyColor = '#f00';
-const neutralSaliencyColor = '#d3d3d3';
+const neutralSaliencyColor = '#e8eaed';
 
 
 const COLOR_INTERPOLATOR = d3.interpolateRgb;
@@ -129,7 +129,7 @@ Polymer({
     ignoreChange: Boolean,
     minSal: {type: Number, value: 0},
     maxSal: {type: Number, value: 0},
-    showSaliency: {type: Boolean, value: false},
+    showSaliency: {type: Boolean, value: true},
     imageInfo: {type: Object, value: {}},
     windowWidth: {type: Number, value: DEFAULT_WINDOW_WIDTH},
     windowCenter: {type: Number, value: DEFAULT_WINDOW_CENTER},
@@ -145,14 +145,13 @@ Polymer({
     colors: {type: Object, computed: 'getColors(saliency)', observer: 'createLegend'},
     displayMode: {type: String, value: 'grid'},
     featureSearchValue: {type: String, value: '', notify: true},
-    filteredFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(featuresList, featureSearchValue)'},
-    filteredSeqFeaturesList: {type: Object, computed: 'getFilteredFeaturesList(seqFeaturesList, featureSearchValue)'},
+    filteredFeaturesList: {type: Object},
+    filteredSeqFeaturesList: {type: Object},
     focusedFeatureName: String,
     focusedFeatureValueIndex: Number,
     focusedSeqNumber: Number,
     showDeleteValueButton: {type: Boolean, value: false},
     expandedFeatures: {type: Object, value: {}},
-    expandPillClass: {type: String, value: 'expandPill'},
     expandAllFeatures: {type: Boolean, value: false},
     zeroIndex: {type: Number, value: 0},
     compareJson: {type: Object, observer: 'createCompareExamplesFromJson'},
@@ -172,8 +171,10 @@ Polymer({
     compareTitle: String,
   },
   observers: [
-    'haveSaliency(featuresList, saliency, colors, showSaliency, saliencyCutoff)',
+    'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
     'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
+    'setFilteredFeaturesList(featuresList, featureSearchValue, saliency)',
+    'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency)',
   ],
 
   isExpanded: function(featName: string, expandAllFeatures: boolean) {
@@ -275,9 +276,35 @@ Polymer({
         .getFeatureLists()!.getFeatureListMap();
   },
 
+  setFilteredFeaturesList: function(featureList: NameAndFeature[],
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredFeaturesList = [];
+    this.filteredFeaturesList = this.getFilteredFeaturesList(
+      featureList, searchValue, saliency);
+  },
+
+  setFilteredSeqFeaturesList: function(seqFeatureList: NameAndFeature[],
+      searchValue: string, saliency: SaliencyMap) {
+    this.filteredSeqFeaturesList = [];
+    this.filteredSeqFeaturesList = this.getFilteredFeaturesList(
+      seqFeatureList, searchValue, saliency);
+  },
+
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
-      searchValue: string) {
+      searchValue: string, saliency: SaliencyMap) {
     let filtered = featureList;
+    const checkSal = saliency && Object.keys(saliency).length > 0;
+    // Create a dict of feature names to the total absolute saliency of all
+    // its feature values, to sort features with the most salienct features at
+    // the top.
+    const saliencyTotals = checkSal ?
+         Object.assign({}, ...Object.keys(saliency).map(
+           name => ({[name]: typeof saliency[name] == 'number' ?
+                      Math.abs(saliency[name] as number) :
+                      (saliency[name] as Array<number>).reduce((total, cur) =>
+                          Math.abs(total) + Math.abs(cur) , 0)}))) :
+                    {};
+
     if (searchValue != '') {
       const re = new RegExp(searchValue, 'i');
       filtered = featureList.filter(feature => re.test(feature.name));
@@ -288,6 +315,18 @@ Polymer({
       } else if (this.isImage(b.name) && !this.isImage(a.name)) {
         return 1;
       } else {
+        if (checkSal) {
+          if (a.name in saliency && !(b.name in saliency)) {
+            return -1;
+          } else if (b.name in saliency && !(a.name in saliency)) {
+            return 1;
+          } else {
+            const diff = saliencyTotals[b.name] - saliencyTotals[a.name];
+            if (diff != 0) {
+              return diff;
+            }
+          }
+        }
         return a.name.localeCompare(b.name);
       }
     });
@@ -326,29 +365,32 @@ Polymer({
         ]);
   },
 
+  selectAll: function(query: string) {
+    return d3.selectAll(
+      Polymer.dom(this.root).querySelectorAll(query) as any);
+  },
+
   haveSaliency: function() {
-    if (!this.featuresList || !this.saliency ||
+    if (!this.filteredFeaturesList || !this.saliency ||
         Object.keys(this.saliency).length === 0 || !this.colors) {
       return;
     }
 
     // TODO(jwexler): Find a way to do this without requestAnimationFrame.
-    // If the paper-inputs for the features have yet to be rendered, wait to
-    // perform this processing. There should be paper-inputs for all non-image
+    // If the inputs for the features have yet to be rendered, wait to
+    // perform this processing. There should be inputs for all non-image
     // features.
-    if (d3.selectAll('.value input').size() <
-        (this.featuresList.length - Object.keys(this.imageInfo).length)) {
+    if (this.selectAll('input.value-pill').size() <
+        (this.filteredFeaturesList.length - Object.keys(this.imageInfo).length)) {
       requestAnimationFrame(() => this.haveSaliency());
       return;
     }
 
-    // Reset all text to black
-    d3.selectAll<HTMLInputElement, {}>('.value-pill')
-        .style('background', 'lightgrey');
-
+    // Reset all backgrounds to the neutral color.
+    this.selectAll('.value-pill').style('background', neutralSaliencyColor);
     // Color the text of each input element of each feature according to the
     // provided saliency information.
-    for (const feat of this.featuresList) {
+    for (const feat of this.filteredFeaturesList) {
       const val = this.saliency[feat.name] as SaliencyValue;
       // If there is no saliency information for the feature, do not color it.
       if (!val) {
@@ -357,13 +399,28 @@ Polymer({
       const colorFn = Array.isArray(val) ?
           (d: {}, i: number) => this.getColorForSaliency(val[i]) :
           () => this.getColorForSaliency(val);
+      this.selectAll(
+            `input.${this.sanitizeFeature(feat.name)}.value-pill`)
+          .style('background',
+              this.showSaliency ? colorFn : () => neutralSaliencyColor);
 
-      d3.selectAll<HTMLInputElement, {}>(
-            `.${this.sanitizeFeature(feat.name)}.value-pill`)
-          .style('background', this.showSaliency ? colorFn : () => 'lightgrey');
+      // Color the "more feature values" button with the most extreme saliency
+      // of any of the feature values hidden behind the button.
+      if (Array.isArray(val)) {
+        const valArray = val as Array<number>;
+        const moreButton = this.selectAll(
+          `paper-button.${this.sanitizeFeature(feat.name)}.value-pill`);
+        let mostExtremeSal = 0;
+        for (let i = 1; i < valArray.length; i++) {
+          if (Math.abs(valArray[i]) > Math.abs(mostExtremeSal)) {
+            mostExtremeSal = valArray[i];
+          }
+        }
+        moreButton.style('background', this.showSaliency ?
+            () => this.getColorForSaliency(mostExtremeSal) :
+            () => neutralSaliencyColor);
+      }
     }
-    // TODO(jwexler): Determine how to set non-fixed widths to input boxes
-    // inside of grid iron-list.
   },
 
   /**
@@ -382,7 +439,7 @@ Polymer({
     // TODO(jwexler): Find a way to do this without requestAnimationFrame.
     // If the paper-inputs for the features have yet to be rendered, wait to
     // perform this processing.
-    if (d3.selectAll('.value input').size() < this.seqFeaturesList.length) {
+    if (this.selectAll('.value input').size() < this.seqFeaturesList.length) {
       requestAnimationFrame(() => this.seqSaliency());
       return;
     }
@@ -401,7 +458,7 @@ Polymer({
           (d: {}, i: number) => this.getColorForSaliency(val[i]) :
           () => this.getColorForSaliency(val);
 
-      d3.selectAll<HTMLInputElement, {}>(
+      this.selectAll(
             `.${this.sanitizeFeature(feat.name)} input`)
           .style('color', this.showSaliency ? colorFn : () => 'black');
     }
@@ -436,12 +493,20 @@ Polymer({
     }
     min = Math.min(0, min) * clipSaliencyRatio;
     max = Math.max(0, max) * clipSaliencyRatio;
+    // Make min/max symmetric around 0 so that attribution visualization scales
+    // for negative and positive attributions are the same, for visual
+    // consistency.
+    if (min < 0 && max > Math.abs(min)) {
+      min = -1 * max;
+    } else if (max > 0 && Math.abs(min) > max) {
+      max = -1 * min;
+    }
     return [min, max];
   },
 
   /**
    * Returns a list of the feature values for a feature. If keepBytes is true
-   * then return the raw bytes. Otherwise convert them to a a readable string.
+   * then return the raw bytes. Otherwise convert them to a readable string.
    */
   getFeatureValues: function(
       feature: string, keepBytes?: boolean,
@@ -503,7 +568,7 @@ Polymer({
   /**
    * Returns a list of the sequence feature values for a feature for a given
    * sequence number. If keepBytes is true then return the raw bytes. Otherwise
-   * convert them to a a readable string.
+   * convert them to a readable string.
    */
   getSeqFeatureValues: function(
       feature: string, seqNum: number, keepBytes?: boolean, isImage?: boolean,
@@ -603,27 +668,6 @@ Polymer({
       }
     }
     return false;
-  },
-
-  /**
-   * Gets the allowed input type for a feature value, according to its
-   * feature type.
-   */
-  getInputType: function(feature: string) {
-    const feat = this.features.get(feature);
-    if (feat) {
-      if (feat.getInt64List() || feat.getFloatList()) {
-        return 'number'
-      }
-    }
-    const seqfeat = this.seqFeatures.get(feature);
-    if (seqfeat) {
-      if (seqfeat.getFeatureList()[0].getInt64List() ||
-          seqfeat.getFeatureList()[0].getFloatList()) {
-        return 'number';
-      }
-    }
-    return 'text';
   },
 
   /**
@@ -954,6 +998,7 @@ Polymer({
     this.ignoreChange = false;
     setTimeout(() => {
       this.example = temp;
+      this.haveSaliency();
     }, 0);
   },
 
@@ -1029,9 +1074,9 @@ Polymer({
    * be used in css classes/ids.
    */
   sanitizeFeature: function(feat: string) {
-   let sanitized = feat;
-    if (!feat.match(/^[A-Za-z].*$/)) {
-      sanitized = '_' + feat;
+    let sanitized = feat.trim();
+    if (!sanitized.match(/^[A-Za-z].*$/)) {
+      sanitized = '_' + sanitized;
     }
     return sanitized.replace(/[\/\.\#]/g, '_');
   },
@@ -1057,7 +1102,7 @@ Polymer({
     const legendSvg = d3.select(this.$.saliencyLegend).append('g');
     const gradient = legendSvg.append('defs')
         .append('linearGradient')
-        .attr('id', 'gradient')
+        .attr('id', 'vzexampleviewergradient')
         .attr("x1", "0%")
         .attr("y1", "0%")
         .attr("x2", "100%")
@@ -1106,14 +1151,14 @@ Polymer({
         .attr('y1', 0)
         .attr('width', LEGEND_WIDTH_PX)
         .attr('height', LEGEND_HEIGHT_PX)
-        .style('fill', 'url(#gradient)');
+        .style('fill', 'url(#vzexampleviewergradient)');
 
     const legendScale =
         d3.scaleLinear().domain([this.minSal, this.maxSal]).range([
           0, LEGEND_WIDTH_PX
         ]);
 
-    const legendAxis = d3.axisBottom(legendScale);
+    const legendAxis = d3.axisBottom(legendScale).ticks(5);
 
     legendSvg.append('g')
         .attr('class', 'legend axis')

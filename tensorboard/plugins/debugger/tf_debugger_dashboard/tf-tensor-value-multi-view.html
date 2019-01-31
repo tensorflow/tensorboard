@@ -43,11 +43,11 @@ limitations under the License.
     Polymer({
       is: 'tf-tensor-value-multi-view',
       properties: {
-        continueToCallback: Object,
+        continueToCallback: Function,
 
         // Callback invoked when a tensor name is clicked in one of the tensor
         // value views. Set externally.
-        tensorNameClicked: Object,
+        tensorNameClicked: Function,
 
         _tensorViewCounter: {
           type: Number,

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # TensorBoard external JS dependencies (both infrastructure and frontend libs)
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
@@ -117,7 +118,7 @@ def tensorboard_js_workspace():
       ]),
   )
 
-  native.new_http_archive(
+  http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
       sha256 = "7a5c785dbcc3ae0daa1fcf4507de6a23bbecdb2bf80460651e4c2b88c1ad7582",
@@ -272,9 +273,9 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # BSD-3-Clause
       sha256_urls_extract = {
-          "29288a2be82014ffa03f8ee1f8519bd43b71f09790409dcfa300ee3bb77fd81b": [
-              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v4.13.0/d3.zip",
-              "https://github.com/d3/d3/releases/download/v4.13.0/d3.zip",
+          "05a9c2b9c206447be0e26b3a705e7f8df4943df2d063ddc5bf0274f50ec44727": [
+              "https://mirror.bazel.build/github.com/d3/d3/releases/download/v5.7.0/d3.zip",
+              "https://github.com/d3/d3/releases/download/v5.7.0/d3.zip",
           ],
       },
       # TODO(jart): Use srcs=["d3.js"] instead of this once supported.
@@ -300,6 +301,16 @@ def tensorboard_js_workspace():
               "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html"  # 2017-06-19
           ],
       },
+  )
+
+  http_archive(
+      name = "ai_google_pair_facets",
+      sha256 = "e3f7b7b3c194c1772d16bdc8b348716c0da59a51daa03ef4503cf06c073caafc",
+      strip_prefix = "facets-0.2.1",
+      urls = [
+          "http://mirror.bazel.build/github.com/pair-code/facets/archive/0.2.1.tar.gz",
+          "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
+      ],
   )
 
   ##############################################################################
@@ -363,7 +374,7 @@ def tensorboard_js_workspace():
           "https://mirror.bazel.build/registry.npmjs.org/sinon/-/sinon-1.17.4.tgz",
           "https://registry.npmjs.org/sinon/-/sinon-1.17.4.tgz",
       ],
-      strip_prefix = "package/lib",
+      strip_prefix = "package/pkg",
       path = "/sinonjs",
   )
 

@@ -21,6 +21,7 @@ limitations under the License.
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
 <link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -62,8 +63,9 @@ by default. The user can select a different run from a dropdown menu.
 </template>
 <template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
 <tf-dashboard-layout>
-<div class="sidebar">
-  <tf-graph-controls id="controls"
+  <tf-graph-controls
+        id="controls"
+        class="sidebar"
         devices-for-stats="{{_devicesForStats}}"
         color-by-params="[[_colorByParams]]"
         stats="[[_stats]]"
@@ -77,19 +79,19 @@ by default. The user can select a different run from a dropdown menu.
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
-  <tf-graph-loader id="loader"
-        datasets="[[_datasets]]"
-        selected-dataset="[[_selectedDataset]]"
-        selected-metadata-tag="[[_selectedMetadataTag]]"
-        selected-file="[[_selectedFile]]"
-        out-graph-hierarchy="{{_graphHierarchy}}"
-        out-graph="{{_graph}}"
-        out-stats="{{_stats}}"
-        progress="{{_progress}}"
-        out-hierarchy-params="{{_hierarchyParams}}"
-  ></tf-graph-loader>
-</div>
-<div class="center">
+  <div class="center">
+    <tf-graph-loader id="loader"
+          datasets="[[_datasets]]"
+          selected-dataset="[[_selectedDataset]]"
+          selected-metadata-tag="[[_selectedMetadataTag]]"
+          selected-file="[[_selectedFile]]"
+          out-graph-hierarchy="{{_graphHierarchy}}"
+          out-graph="{{_graph}}"
+          out-stats="{{_stats}}"
+          progress="{{_progress}}"
+          out-hierarchy-params="{{_hierarchyParams}}"
+          compatibility-provider="[[_compatibilityProvider]]"
+    ></tf-graph-loader>
     <tf-graph-board id="graphboard"
         devices-for-stats="[[_devicesForStats]]"
         color-by="[[_colorBy]]"
@@ -108,14 +110,20 @@ by default. The user can select a different run from a dropdown menu.
         render-hierarchy="{{_renderHierarchy}}"
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
+        compat-node-title="TPU Compatibility"
     ></tf-graph-board>
-</div>
+  </div>
 </tf-dashboard-layout>
 </template>
 <style>
 
 :host /deep/ {
   font-family: 'Roboto', sans-serif;
+}
+
+.sidebar {
+  display: flex;
+  height: 100%;
 }
 
 .center {
@@ -209,6 +217,7 @@ Polymer({
       type: Number,
       notify: true,
     },
+    _compatibilityProvider: Object
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
@@ -286,16 +295,15 @@ Polymer({
         tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report'));
   },
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    const demoMode = tf_backend.getRouter().isDemoMode();
-    const base = tf_backend.getRouter().pluginRoute('graphs', '/graph');
-    const optional = (p) => (p != null && !demoMode || undefined) && p;
-    const parameters = {
-      'run': run,
-      'limit_attr_size': optional(limitAttrSize),
-      'large_attrs_key': optional(largeAttrsKey),
-    };
-    const extension = demoMode ? '.pbtxt' : '';
-    return tf_backend.addParams(base, parameters) + extension;
+    return tf_backend.getRouter().pluginRoute(
+        'graphs',
+        '/graph',
+        new URLSearchParams({
+          'run': run,
+          'limit_attr_size': limitAttrSize,
+          'large_attrs_key': largeAttrsKey,
+        }),
+    );
   },
   _shouldRequestHealthPills: function() {
     // Do not load debugger data if the feature is disabled, if the user toggled off the feature,
@@ -311,6 +319,9 @@ Polymer({
       // Either this dashboard is already initialized ... or we are not yet ready to initialize.
       return;
     }
+
+    this.set('_compatibilityProvider', new tf.graph.op.TpuCompatibilityProvider());
+
     // Set this to true so we only initialize once.
     this._initialized = true;
     Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])

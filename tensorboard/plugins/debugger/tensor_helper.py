@@ -24,7 +24,7 @@ import binascii
 import numpy as np
 from tensorflow.python.debug.cli import command_parser
 
-from tensorboard import util
+from tensorboard.util import encoder
 from tensorboard.plugins.debugger import health_pill_calc
 
 
@@ -219,5 +219,5 @@ def array_to_base64_png(array):
   rgb[is_negative_infinity] = NEGATIVE_INFINITY_RGB
   rgb[is_nan] = NAN_RGB
 
-  image_encoded = base64.b64encode(util.encode_png(rgb))
+  image_encoded = base64.b64encode(encoder.encode_png(rgb))
   return image_encoded

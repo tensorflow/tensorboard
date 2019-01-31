@@ -272,7 +272,7 @@ class Visualizer(object):
     infos = []
 
     if self.config['values'] == 'trainable_variables':
-      names = [x.name for x in tf.trainable_variables()]
+      names = [x.name for x in tf.compat.v1.trainable_variables()]
     else:
       names = range(len(arrays))
 

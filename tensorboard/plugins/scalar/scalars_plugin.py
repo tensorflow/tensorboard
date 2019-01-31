@@ -28,13 +28,14 @@ import csv
 import six
 from six import StringIO
 from werkzeug import wrappers
-
 import numpy as np
-import tensorflow as tf
+
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+from tensorboard.util import tensor_util
 
 
 class OutputFormat(object):
@@ -141,7 +142,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          /* For backwards compatiblity, ignore the experiment id
+          /* For backwards compatibility, ignore the experiment id
              for matching purposes if it is empty. */
           (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
           AND Runs.run_name = :run
@@ -157,7 +158,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       tensor_events = self._multiplexer.Tensors(run, tag)
       values = [(tensor_event.wall_time,
                  tensor_event.step,
-                 tf.make_ndarray(tensor_event.tensor_proto).item())
+                 tensor_util.make_ndarray(tensor_event.tensor_proto).item())
                 for tensor_event in tensor_events]
 
     if output_format == OutputFormat.CSV:

@@ -19,8 +19,7 @@ from __future__ import print_function
 
 import os.path
 
-
-import tensorflow as tf
+from tensorboard.compat import tf
 
 
 _PLUGINS_DIR = "plugins"
@@ -28,7 +27,7 @@ _PLUGINS_DIR = "plugins"
 
 def _IsDirectory(parent, item):
   """Helper that returns if parent/item is a directory."""
-  return tf.gfile.IsDirectory(os.path.join(parent, item))
+  return tf.io.gfile.isdir(os.path.join(parent, item))
 
 
 def PluginDirectory(logdir, plugin_name):
@@ -49,9 +48,9 @@ def ListPlugins(logdir):
     a list of plugin names, as strings
   """
   plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
-  if not tf.gfile.IsDirectory(plugins_dir):
+  if not tf.io.gfile.isdir(plugins_dir):
     return []
-  entries = tf.gfile.ListDirectory(plugins_dir)
+  entries = tf.io.gfile.listdir(plugins_dir)
   return [x for x in entries if _IsDirectory(plugins_dir, x)]
 
 
@@ -68,9 +67,9 @@ def ListAssets(logdir, plugin_name):
     didn't register) an empty list is returned.
   """
   plugin_dir = PluginDirectory(logdir, plugin_name)
-  if not tf.gfile.IsDirectory(plugin_dir):
+  if not tf.io.gfile.isdir(plugin_dir):
     return []
-  entries = tf.gfile.ListDirectory(plugin_dir)
+  entries = tf.io.gfile.listdir(plugin_dir)
   return [x for x in entries if not _IsDirectory(plugin_dir, x)]
 
 
@@ -91,7 +90,7 @@ def RetrieveAsset(logdir, plugin_name, asset_name):
 
   asset_path = os.path.join(PluginDirectory(logdir, plugin_name), asset_name)
   try:
-    with tf.gfile.Open(asset_path, "r") as f:
+    with tf.io.gfile.GFile(asset_path, "r") as f:
       return f.read()
   except tf.errors.NotFoundError:
     raise KeyError("Asset path %s not found" % asset_path)

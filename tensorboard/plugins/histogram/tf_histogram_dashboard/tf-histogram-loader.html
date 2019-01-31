@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../vz-histogram-timeseries/vz-histogram-timeseries.html">
 <link rel="import" href="tf-histogram-core.html">
@@ -42,6 +43,7 @@ limitations under the License.
       `setSeriesData`, not with a bound property.
     -->
     <vz-histogram-timeseries
+      id="chart"
       time-property="[[timeProperty]]"
       mode="[[histogramMode]]"
       color-scale="[[_colorScaleFunction]]"
@@ -99,6 +101,33 @@ limitations under the License.
       properties: {
         run: String,
         tag: String,
+        dataToLoad: {
+          type: Array,
+          computed: '_computeDataToLoad(run, tag)',
+        },
+        getDataLoadName: {
+          type: Function,
+          value: () => ({run}) => run,
+        },
+        getDataLoadUrl: {
+          type: Function,
+          value: () => ({tag, run}) => {
+            const router = tf_backend.getRouter();
+            return tf_backend.addParams(
+                router.pluginRoute('histograms', '/histograms'),
+                {tag, run});
+          },
+        },
+        loadDataCallback: {
+          type: Function,
+          value: function() {
+            return (_, datum, data) => {
+              const d3Data = tf_histogram_dashboard.backendToVz(data);
+              const name = this.getDataLoadName(datum);
+              this.$.chart.setSeriesData(name, d3Data);
+            };
+          },
+        },
         /** @type {{description: string, displayName: string}} */
         tagMetadata: Object,
         timeProperty: String,
@@ -118,46 +147,24 @@ limitations under the License.
           value: false,
           reflectToAttribute: true,  // for CSS
         },
-
-        requestManager: Object,
-        _canceller: {
-          type: Object,
-          value: () => new tf_backend.Canceller(),
-        },
       },
 
-      observers: ['reload(run, tag)'],
+      observers: [
+        'reload(run, tag, requestManager)',
+      ],
+
+      behaviors: [tf_dashboard_common.DataLoaderBehavior],
+
+      _computeDataToLoad(run, tag) {
+        return [{run, tag}];
+      },
 
       _computeRunColor(run) {
         return this._colorScaleFunction(run);
       },
 
-      attached() {
-        this._attached = true;
-        this.reload();
-      },
-      reload() {
-        if (!this._attached) {
-          return;
-        }
-        this._canceller.cancelAll();
-        const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(router.pluginRoute("histograms", "/histograms"), {
-          tag: this.tag,
-          run: this.run,
-        });
-        const updateData = this._canceller.cancellable(result => {
-          if (result.cancelled) {
-            return;
-          }
-          const backendData = result.value;
-          const d3Data = tf_histogram_dashboard.backendToVz(backendData);
-          this.$$('vz-histogram-timeseries').setSeriesData(this.run, d3Data);
-        });
-        this.requestManager.request(url).then(updateData);
-      },
       redraw() {
-        this.$$('vz-histogram-timeseries').redraw();
+        this.$.chart.redraw();
       },
 
       _toggleExpanded(e) {

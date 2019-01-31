@@ -27,6 +27,12 @@ from tensorboard.backend.event_processing import io_wrapper
 
 
 class IoWrapperTest(tf.test.TestCase):
+  def setUp(self):
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
+
+  def tearDown(self):
+    self.stubs.CleanUp()
+
   def testIsGcsPathIsTrue(self):
     self.assertTrue(io_wrapper.IsGCSPath('gs://bucket/foo'))
 
@@ -38,6 +44,16 @@ class IoWrapperTest(tf.test.TestCase):
 
   def testIsCnsPathFalse(self):
     self.assertFalse(io_wrapper.IsCnsPath('/tmp/foo'))
+
+  def testPathSeparator(self):
+    # In nix systems, path separator would be the same as that of CNS/GCS
+    # making it hard to tell if something went wrong.
+    self.stubs.Set(os, 'sep', '#')
+
+    self.assertEqual(io_wrapper.PathSeparator('/tmp/foo'), '#')
+    self.assertEqual(io_wrapper.PathSeparator('tmp/foo'), '#')
+    self.assertEqual(io_wrapper.PathSeparator('/cns/tmp/foo'), '/')
+    self.assertEqual(io_wrapper.PathSeparator('gs://foo'), '/')
 
   def testIsIsTensorFlowEventsFileTrue(self):
     self.assertTrue(

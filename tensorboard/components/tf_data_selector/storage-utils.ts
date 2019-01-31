@@ -15,7 +15,9 @@ limitations under the License.
 namespace tf_data_selector {
 
 export function decodeIdArray(str: string): Array<number> {
-  return str.split(',').map(idStr => parseInt(idStr, 36)).filter(Boolean);
+  return str.split(',')
+      .map(idStr => parseInt(idStr, 10))
+      .filter(n => !isNaN(n));
 }
 
 export function encodeIdArray(arr: Array<number>): string {
@@ -23,7 +25,20 @@ export function encodeIdArray(arr: Array<number>): string {
 }
 
 export function encodeId(id: number): string {
-  return id.toString(36);
+  return String(id);
 }
+
+export const NO_EXPERIMENT_ID = null;
+
+export const STORAGE_ALL_VALUE = '$all';
+export const STORAGE_NONE_VALUE = '$none';
+
+export const {
+  getInitializer: getIdInitializer,
+  getObserver: getIdObserver,
+  set: setId,
+} = tf_storage.makeBindings(
+    (str: string): number[] => tf_data_selector.decodeIdArray(str),
+    (ids: number[]): string => tf_data_selector.encodeIdArray(ids));
 
 }  // namespace tf_data_selector

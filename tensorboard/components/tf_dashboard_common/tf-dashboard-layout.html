@@ -40,12 +40,12 @@ Generic layout for a dashboard.
       }
 
       #sidebar {
-        flex: 0 0 25%;
+        flex: 0 0 var(--tf-dashboard-layout-sidebar-basis, 25%);
         height: 100%;
-        max-width: 350px;
-        min-width: 270px;
+        max-width: var(--tf-dashboard-layout-sidebar-max-width, 350px);
+        min-width: var(--tf-dashboard-layout-sidebar-min-width, 270px);
+        overflow-y: auto;
         text-overflow: ellipsis;
-        will-change: transform;
       }
 
       #center {

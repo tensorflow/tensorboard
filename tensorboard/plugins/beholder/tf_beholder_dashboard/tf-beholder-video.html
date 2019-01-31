@@ -67,7 +67,7 @@ limitations under the License.
         },
 
         _xhr: Object,
-        _timer: Object,
+        _timer: Number,
         _isDead: Boolean,
       },
 
@@ -106,7 +106,7 @@ limitations under the License.
           this.set('_imageURL', FEED_ROUTE + '?t=' + new Date().getTime());
         }
         this._isDead = !isAlive;
-        this._timer = window.setTimeout(this._ping.bind(this), retryMs);
+        this._timer = window.setTimeout(() => this._ping(), retryMs);
       },
 
       _clear() {
@@ -115,7 +115,7 @@ limitations under the License.
           this._timer = null;
         }
         if (this._xhr) {
-          if (this._xhr.readyState < 4 /* DONE */) {
+          if (this._xhr.readyState < XMLHttpRequest.DONE) {
             this._xhr.abort();
           }
           this._xhr = null;

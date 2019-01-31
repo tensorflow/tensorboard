@@ -28,6 +28,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -44,6 +45,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -100,9 +102,7 @@ py_library(
     name = "error",
     srcs = ["error.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        "//tensorboard:expect_tensorflow_installed",
-    ],
+    deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
 tb_proto_library(

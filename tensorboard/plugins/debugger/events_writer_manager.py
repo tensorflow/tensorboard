@@ -27,7 +27,9 @@ import threading
 import time
 
 import tensorflow as tf
+from tensorboard.util import tb_logging
 
+logger = tb_logging.get_logger()
 
 # Files containing debugger-related events should start with this string.
 DEBUGGER_EVENTS_FILE_STARTING_TEXT = "events.debugger"
@@ -131,20 +133,20 @@ class EventsWriterManager(object):
 
         file_path = os.path.join(self._events_directory,
                                  self.get_current_file_name())
-        if not tf.gfile.Exists(file_path):
+        if not tf.io.gfile.exists(file_path):
           # The events file does not exist. Perhaps the user had manually
           # deleted it after training began. Create a new one.
           self._events_writer.Close()
           self._events_writer = self._create_events_writer(
               self._events_directory)
-        elif tf.gfile.Stat(file_path).length > self._single_file_size_cap_bytes:
+        elif tf.io.gfile.stat(file_path).length > self._single_file_size_cap_bytes:
           # The current events file has gotten too big. Close the previous
           # events writer. Make a new one.
           self._events_writer.Close()
           self._events_writer = self._create_events_writer(
               self._events_directory)
     except IOError as err:
-      tf.logging.error(
+      logger.error(
           "Writing to %s failed: %s", self.get_current_file_name(), err)
     self._lock.release()
 
@@ -180,7 +182,7 @@ class EventsWriterManager(object):
     events_files = self._fetch_events_files_on_disk()
     for file_name in events_files:
       file_path = os.path.join(self._events_directory, file_name)
-      total_size += tf.gfile.Stat(file_path).length
+      total_size += tf.io.gfile.stat(file_path).length
 
     if total_size >= self.total_file_size_cap_bytes:
       # The total size written to disk is too big. Delete events files until
@@ -190,23 +192,23 @@ class EventsWriterManager(object):
           break
 
         file_path = os.path.join(self._events_directory, file_name)
-        file_size = tf.gfile.Stat(file_path).length
+        file_size = tf.io.gfile.stat(file_path).length
         try:
-          tf.gfile.Remove(file_path)
+          tf.io.gfile.remove(file_path)
           total_size -= file_size
-          tf.logging.info(
+          logger.info(
               "Deleted %s because events files take up over %d bytes",
               file_path, self.total_file_size_cap_bytes)
         except IOError as err:
-          tf.logging.error("Deleting %s failed: %s", file_path, err)
+          logger.error("Deleting %s failed: %s", file_path, err)
 
     # We increment this index because each events writer must differ in prefix.
     self._events_file_count += 1
     file_path = "%s.%d.%d" % (
         os.path.join(directory, DEBUGGER_EVENTS_FILE_STARTING_TEXT),
         time.time(), self._events_file_count)
-    tf.logging.info("Creating events file %s", file_path)
-    return tf.pywrap_tensorflow.EventsWriter(tf.compat.as_bytes(file_path))
+    logger.info("Creating events file %s", file_path)
+    return tf.compat.v1.pywrap_tensorflow.EventsWriter(tf.compat.as_bytes(file_path))
 
   def _fetch_events_files_on_disk(self):
     """Obtains the names of debugger-related events files within the directory.
@@ -215,7 +217,7 @@ class EventsWriterManager(object):
       The names of the debugger-related events files written to disk. The names
       are sorted in increasing events file index.
     """
-    all_files = tf.gfile.ListDirectory(self._events_directory)
+    all_files = tf.io.gfile.listdir(self._events_directory)
     relevant_files = [
         file_name for file_name in all_files
         if _DEBUGGER_EVENTS_FILE_NAME_REGEX.match(file_name)

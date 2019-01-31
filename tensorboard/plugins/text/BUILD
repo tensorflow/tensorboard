@@ -17,10 +17,12 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard/util:tensor_util",
         "@org_mozilla_bleach",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_markdown",
@@ -41,6 +43,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -51,7 +54,9 @@ py_binary(
     srcs = ["text_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -65,8 +70,23 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:util",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/compat",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -80,6 +100,8 @@ py_test(
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -93,7 +115,8 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
     ],
 )
 

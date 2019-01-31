@@ -15,10 +15,10 @@
 """Same as web_library but supports TypeScript."""
 
 load("//third_party:clutz.bzl",
-     "CLUTZ_ATTRIBUTES",
-     "CLUTZ_OUTPUTS",
-     "clutz_aspect",
-     "extract_dts_from_closure_libraries")
+     "DEPRECATED_CLUTZ_ATTRIBUTES",
+     "DEPRECATED_CLUTZ_OUTPUTS",
+     "deprecated_clutz_aspect",
+     "deprecated_extract_dts_from_closure_libraries")
 
 load("@io_bazel_rules_closure//closure:defs.bzl",
      "closure_js_aspect")
@@ -31,6 +31,10 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "difference",
      "long_path",
      "unfurl")
+
+load(":web_testing.bzl", _tf_web_test = "tf_web_test")
+
+tf_web_test = _tf_web_test
 
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
@@ -123,7 +127,7 @@ def _tf_web_library(ctx):
       web_srcs.append(src)
 
   # get typings for closure code
-  clutz_dts = extract_dts_from_closure_libraries(ctx)
+  clutz_dts = deprecated_extract_dts_from_closure_libraries(ctx)
   if clutz_dts:
     entry = (long_path(ctx, clutz_dts), clutz_dts.path)
     ts_inputs += [clutz_dts]
@@ -186,7 +190,7 @@ def _tf_web_library(ctx):
     devserver_manifests = manifests + devserver_manifests
   params = struct(
       label=str(ctx.label),
-      bind="[::]:6006",
+      bind="localhost:6006",
       manifest=[long_path(ctx, man) for man in devserver_manifests],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
@@ -343,12 +347,12 @@ def _get_strip(ctx):
 tf_web_library = rule(
     implementation=_tf_web_library,
     executable=True,
-    attrs=dict(CLUTZ_ATTRIBUTES.items() + {
+    attrs=dict(DEPRECATED_CLUTZ_ATTRIBUTES.items() + {
         "path": attr.string(),
         "srcs": attr.label_list(allow_files=True),
         "deps": attr.label_list(
             aspects=[
-                clutz_aspect,
+                deprecated_clutz_aspect,
                 closure_js_aspect,
             ]),
         "exports": attr.label_list(),
@@ -376,4 +380,4 @@ tf_web_library = rule(
         "_ClosureWorker": CLOSURE_WORKER_ATTR,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
     }.items()),
-    outputs=CLUTZ_OUTPUTS)
+    outputs=DEPRECATED_CLUTZ_OUTPUTS)

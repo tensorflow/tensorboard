@@ -29,6 +29,10 @@ from tensorboard.plugins.beholder.shared_config import PLUGIN_NAME, TAG_NAME,\
   SUMMARY_FILENAME, DEFAULT_CONFIG, CONFIG_FILENAME, SUMMARY_COLLECTION_KEY_NAME
 from tensorboard.plugins.beholder import video_writing
 from tensorboard.plugins.beholder.visualizer import Visualizer
+from tensorboard.util import tb_logging
+
+
+logger = tb_logging.get_logger()
 
 
 class Beholder(object):
@@ -43,8 +47,8 @@ class Beholder(object):
             video_writing.FFmpegVideoOutput,
             video_writing.PNGVideoOutput])
 
-    self.frame_placeholder = tf.placeholder(tf.uint8, [None, None, None])
-    self.summary_op = tf.summary.tensor_summary(TAG_NAME,
+    self.frame_placeholder = tf.compat.v1.placeholder(tf.uint8, [None, None, None])
+    self.summary_op = tf.compat.v1.summary.tensor_summary(TAG_NAME,
                                                 self.frame_placeholder,
                                                 collections=[
                                                     SUMMARY_COLLECTION_KEY_NAME
@@ -55,8 +59,8 @@ class Beholder(object):
     self.config_last_modified_time = -1
     self.previous_config = dict(DEFAULT_CONFIG)
 
-    if not tf.gfile.Exists(self.PLUGIN_LOGDIR + '/config.pkl'):
-      tf.gfile.MakeDirs(self.PLUGIN_LOGDIR)
+    if not tf.io.gfile.exists(self.PLUGIN_LOGDIR + '/config.pkl'):
+      tf.io.gfile.makedirs(self.PLUGIN_LOGDIR)
       write_pickle(DEFAULT_CONFIG, '{}/{}'.format(self.PLUGIN_LOGDIR,
                                                   CONFIG_FILENAME))
 
@@ -104,7 +108,7 @@ class Beholder(object):
         final_image = self.visualizer.build_frame(arrays)
 
     elif config['values'] == 'trainable_variables':
-      arrays = [session.run(x) for x in tf.trainable_variables()]
+      arrays = [session.run(x) for x in tf.compat.v1.trainable_variables()]
       final_image = self.visualizer.build_frame(arrays)
 
     if len(final_image.shape) == 2:
@@ -139,14 +143,14 @@ class Beholder(object):
     if should_record:
       if not self.is_recording:
         self.is_recording = True
-        tf.logging.info(
+        logger.info(
             'Starting recording using %s',
             self.video_writer.current_output().name())
       self.video_writer.write_frame(frame)
     elif self.is_recording:
       self.is_recording = False
       self.video_writer.finish()
-      tf.logging.info('Finished recording')
+      logger.info('Finished recording')
 
 
   # TODO: blanket try and except for production? I don't someone's script to die
@@ -184,7 +188,7 @@ class Beholder(object):
     Returns: the gradient tensors and the train_step op.
     '''
     if var_list is None:
-      var_list = tf.trainable_variables()
+      var_list = tf.compat.v1.trainable_variables()
 
     grads_and_vars = optimizer.compute_gradients(loss, var_list=var_list)
     grads = [pair[0] for pair in grads_and_vars]
@@ -192,7 +196,7 @@ class Beholder(object):
     return grads, optimizer.apply_gradients(grads_and_vars)
 
 
-class BeholderHook(tf.train.SessionRunHook):
+class BeholderHook(tf.estimator.SessionRunHook):
   """SessionRunHook implementation that runs Beholder every step.
 
   Convenient when using tf.train.MonitoredSession:
