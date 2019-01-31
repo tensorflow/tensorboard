@@ -32,16 +32,23 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 import argparse
+import atexit
+import datetime
 from collections import defaultdict
 import errno
 import os
+import signal
 import socket
 import sys
+import time
 import threading
 import inspect
 
+import six
+from six.moves import urllib
 from werkzeug import serving
 
+from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
@@ -200,6 +207,7 @@ class TensorBoard(object):
 
     :rtype: int
     """
+    self._install_sigterm_handler()
     if self.flags.inspect:
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(self.flags.event_file)
@@ -209,6 +217,7 @@ class TensorBoard(object):
       server = self._make_server()
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
                        (version.VERSION, server.get_url()))
+      self._register_info(server)
       sys.stderr.flush()
       server.serve_forever()
       return 0
@@ -217,6 +226,38 @@ class TensorBoard(object):
       sys.stderr.write('ERROR: %s\n' % e.msg)
       sys.stderr.flush()
       return -1
+
+  def _install_sigterm_handler(self):
+    old_sigterm_handler = None  # set below
+    def handle_sigterm(signal_number, stack_frame):
+      del signal_number  # unused
+      del stack_frame  # unused
+      # In case we get SIGTERMed again while running atexit handlers,
+      # take the hint and actually die.
+      signal.signal(signal.SIGTERM, old_sigterm_handler)
+      sys.stderr.write("TensorBoard caught SIGTERM; exiting.\n")
+      # The main thread is the only non-daemon thread, so it suffices to
+      # exit hence.
+      sys.exit(0)
+    old_sigterm_handler = signal.signal(signal.SIGTERM, handle_sigterm)
+
+  def _register_info(self, server):
+    server_url = urllib.parse.urlparse(server.get_url())
+    info = manager.TensorboardInfo(
+        version=version.VERSION,
+        start_time=datetime.datetime.now(),
+        port=server_url.port,
+        pid=os.getpid(),
+        path_prefix=self.flags.path_prefix,
+        logdir=self.flags.logdir,
+        db=self.flags.db,
+        cache_key=manager.cache_key(
+            working_directory=os.getcwd(),
+            arguments=sys.argv[1:],
+        ),
+    )
+    atexit.register(manager.remove_info_file)
+    manager.write_info_file(info)
 
   def launch(self):
     """Python API for launching TensorBoard.

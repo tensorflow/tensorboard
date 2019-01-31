@@ -70,16 +70,43 @@ py_library(
 )
 
 py_library(
+    name = "manager",
+    srcs = ["manager.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":version",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_test",
+    size = "small",
+    srcs = ["manager_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":manager",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
