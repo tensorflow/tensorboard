@@ -1,0 +1,72 @@
+<!--
+Essentially looks like a single one row in table-view that can't be expanded.
+Useful to show a selected session group in one of the visualizations.
+
+TODO(erez): Rename this to tf-hparams-session-group-details and rename
+the older tf-hparams-session-group-details to
+tf-hparams-session-group-metric-plots
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-hparams-table-view/tf-hparams-table-view.html">
+
+<dom-module id="tf-hparams-session-group-values">
+  <template>
+    <!-- If sessionGroup or schema are not populated, do not display
+         anything.
+      -->
+    <template is="dom-if"
+              if="[[_propertiesArePopulated(schema, sessionGroup)]]">
+      <!-- Display one row without a "show-metrics" column -->
+      <tf-hparams-table-view
+        schema="[[schema]]"
+        session-groups="[[_singletonSessionGroups(sessionGroup)]]">
+      </tf-hparams-table-view>
+    </template>
+    <template is="dom-if"
+              if="[[!_propertiesArePopulated(schema, sessionGroup)]]">
+      <div>
+        Click or hover over a session group to display its values here.
+      </div>
+    </template>
+
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-session-group-values',
+
+      properties: {
+        // The session group whose values will be displayed.
+        // A JavaScript representation of the tensorboard.hparams.SessionGroup
+        // protocol buffer.
+        sessionGroup: {
+          type: Object,
+          value: null
+        },
+        // The schema defining the columns to use. Only the values of columns
+        // in the schema will be displayed. See tf-hparams-query-pane for
+        // the definition of this object.
+        schema: {
+          type: Object,
+          value: null
+        }
+      },
+
+      _propertiesArePopulated: function(schema, sessionGroup) {
+        return schema !== undefined && schema !== null
+            && sessionGroup !== undefined && sessionGroup !== null;
+      },
+
+      _singletonSessionGroups : function(sessionGroup) {
+        return [sessionGroup];
+      },
+    });
+  </script>
+</dom-module>

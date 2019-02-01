@@ -1,0 +1,31 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-hparams-main/tf-hparams-main.html">
+
+<dom-module id="tf-hparams-dashboard">
+  <template>
+    <!-- Tensorboard doesn't specify an experimentName. Currently it only
+         supports one experiment per invocation.
+         The Google Analytics tracking-id corresponds to
+         account: tensorboard-hparams, property: "tensorboard-backend" -->
+    <tf-hparams-main
+      id="hparams-main"
+      api-url="data/plugin/hparams"
+      experiment-name="">
+    </tf-hparams-main>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-dashboard',
+      // This is called by the tensorboard web framework to refresh the plugin.
+      reload() {
+        this.$["hparams-main"].reload();
+      }
+    });
+    // Register the plugin main element with Tensorboard.
+    tf_tensorboard.registerDashboard({
+      plugin: 'hparams',
+      elementName: 'tf-hparams-dashboard'
+    });
+  </script>
+</dom-module>

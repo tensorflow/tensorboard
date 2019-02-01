@@ -1,0 +1,21 @@
+// Messages for passing configuraton data to the hparams_util script as
+// command line flags.
+
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+import "tensorboard/plugins/hparams/api.proto";
+
+package tensorboard.hparams;
+
+message HParamInfosList {
+  repeated HParamInfo hparam_infos = 1;
+}
+
+message MetricInfosList {
+  repeated MetricInfo metric_infos = 1;
+}
+
+message HParams {
+  map<string, google.protobuf.Value> hparams = 1;
+}

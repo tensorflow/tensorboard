@@ -1,0 +1,34 @@
+include "devtools/blueprint/ncl/blueprint_file.ncl";
+include "devtools/blueprint/ncl/sanitizer.ncl";
+
+local buildable_unit = ::blueprint::BuildableUnit(
+  name = "tb_hparams_plugin",
+  enable_continuous_build = true,
+  enable_coverage = true,  // see go/zapfhahn
+  build_patterns = [
+    "//tensorboard/plugins/hparams/...",
+  ],
+  build_flags = [
+  // The following flags are the implicit default
+  // and they do not need to be explicitly specified:
+  // "--cpu=k8",
+  // "--compilation_mode=fastbuild",
+  ],
+  test_patterns = [
+    "//tensorboard/plugins/hparams/...",
+    "//learning/vizier/service/api:persistent_vizier_service_test",
+  ],
+  test_flags = [],
+  continuous_build_email = ::blueprint::ContinuousBuildEmailInfo(
+    build_cop_email_addrs = ["glassbox-team@google.com"]));
+
+blueprint_file = ::blueprint::BlueprintFile(
+  project_name = "hparams",
+  project_grouping = ["Knowledge", "Machine Intelligence"],
+  tech_lead = ["erez"],
+  mdb_groups = ["research-tap"],
+  dev_mailing_list = "glassbox-team@google.com",
+  buganizer_component_ids = [312572],  // Research > Glassbox > Tensorflow
+  buildable_units = [
+    buildable_unit,
+  ]);

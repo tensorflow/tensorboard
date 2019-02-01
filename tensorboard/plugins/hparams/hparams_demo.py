@@ -1,18 +1,5 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 """Write sample summary data for the hparams plugin.
+
 Each training-session here is a temperature simulation and records temperature
 related metric. See the function `run` below for more details.
 
@@ -24,73 +11,99 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os.path
 import hashlib
+import math
+import os.path
 import shutil
 
-from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from tensorflow import flags
 from google.protobuf import struct_pb2
 
+from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary
-from tensorboard.plugins.scalar import summary as scalar_summary
 
-# Directory into which to write tensorboard data.
-LOGDIR = '/tmp/hparams_demo'
 
-STEPS = 1000
+FLAGS = flags.FLAGS
 
-TEMPERATURE_LIST = [270.0, 310.0, 350.0]
-HEAT_COEFFICIENT_LIST = [0.001, 0.005]
+
+flags.DEFINE_integer('num_session_groups', 50,
+                     'The approximate number of session groups to create.')
+flags.DEFINE_string('logdir', '/tmp/hparams_demo',
+                    'The directory to write the summary information to.')
+flags.DEFINE_integer('summary_freq', 1,
+                     'Summaries will be every n steps, '
+                     'where n is the value of this flag.')
+flags.DEFINE_integer('num_steps', 100,
+                     'Number of steps per trial.')
+
+
+# Total number of sessions is given by:
+# len(TEMPERATURE_LIST)^2 * len(HEAT_COEFFICIENTS) * 2
+HEAT_COEFFICIENTS = {
+    'water': 0.001,
+    'air': 0.003
+}
+TEMPERATURE_LIST = []
+
+
+# We can't initialize TEMPERATURE_LIST directly since the initialization
+# depends on a flag and flag parsing hasn't happened yet. Instead, we use
+# a function that we call in main() below.
+def init_temperature_list():
+  global TEMPERATURE_LIST
+  TEMPERATURE_LIST = [
+      270+i*50.0
+      for i in xrange(
+          0, int(math.sqrt(FLAGS.num_session_groups/len(HEAT_COEFFICIENTS))))]
+
 
 def fingerprint(string):
   m = hashlib.md5()
   m.update(string)
   return m.hexdigest()
 
+
 def create_experiment_summary():
-  """Returns a summary proto buffer holding this experiment"""
+  """Returns a summary proto buffer holding this experiment."""
+
   # Convert TEMPERATURE_LIST to google.protobuf.ListValue
   temperature_list = struct_pb2.ListValue()
   temperature_list.extend(TEMPERATURE_LIST)
+  materials = struct_pb2.ListValue()
+  materials.extend(HEAT_COEFFICIENTS.keys())
   return summary.experiment_pb(
       hparam_infos=[
-          api_pb2.HParamInfo(name="initial_temperature",
-                             display_name="initial temperature",
+          api_pb2.HParamInfo(name='initial_temperature',
+                             display_name='Initial temperature',
                              type=api_pb2.DATA_TYPE_FLOAT64,
                              domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name="ambient_temperature",
-                             display_name="ambient temperature",
+          api_pb2.HParamInfo(name='ambient_temperature',
+                             display_name='Ambient temperature',
                              type=api_pb2.DATA_TYPE_FLOAT64,
                              domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name="heat_coefficient",
-                             display_name="heat coefficient",
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list)
+          api_pb2.HParamInfo(name='material',
+                             display_name='Material',
+                             type=api_pb2.DATA_TYPE_STRING,
+                             domain_discrete=materials)
       ],
       metric_infos=[
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
-                  tag="temperature/current/scalar_summary"),
-              display_name="Current Temp."),
+                  tag='temperature/current/scalar_summary'),
+              display_name='Current Temp.'),
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
-                  tag="temperature/difference_to_ambient/scalar_summary"),
-              display_name="Difference To Ambient Temp."),
+                  tag='temperature/difference_to_ambient/scalar_summary'),
+              display_name='Difference To Ambient Temp.'),
           api_pb2.MetricInfo(
               name=api_pb2.MetricName(
-                  tag="delta/scalar_summary"),
-              display_name="Delta T")
+                  tag='delta/scalar_summary'),
+              display_name='Delta T')
       ]
   )
-
-
-def create_hparam_info(name, display_name, domain_discrete):
-  result = api_pb2.HParamInfo(name=name, display_name=display_name)
-  result.domain_discrete.extend(domain_discrete)
-  return result
 
 
 def run(logdir, session_id, hparams, group_name):
@@ -113,12 +126,12 @@ def run(logdir, session_id, hparams, group_name):
     hparams: A dictionary mapping an hyperparameter name to its value.
     group_name: an id for the session group this session belongs to.
   """
-  tf.compat.v1.reset_default_graph()
-  tf.compat.v1.set_random_seed(0)
+  tf.reset_default_graph()
+  tf.set_random_seed(0)
 
   initial_temperature = hparams['initial_temperature']
   ambient_temperature = hparams['ambient_temperature']
-  heat_coefficient = hparams['heat_coefficient']
+  heat_coefficient = HEAT_COEFFICIENTS[hparams['material']]
   session_dir = os.path.join(logdir, session_id)
   writer = tf.summary.FileWriter(session_dir)
   writer.add_summary(summary.session_start_pb(hparams=hparams,
@@ -127,7 +140,7 @@ def run(logdir, session_id, hparams, group_name):
   with tf.name_scope('temperature'):
     # Create a mutable variable to hold the object's temperature, and
     # create a scalar summary to track its value over time. The name of
-    # the summary will appear as "temperature/current" due to the
+    # the summary will appear as 'temperature/current' due to the
     # name-scope above.
     temperature = tf.Variable(tf.constant(initial_temperature),
                               name='temperature')
@@ -138,7 +151,7 @@ def run(logdir, session_id, hparams, group_name):
 
     # Compute how much the object's temperature differs from that of its
     # environment, and track this, too: likewise, as
-    # "temperature/difference_to_ambient".
+    # 'temperature/difference_to_ambient'.
     ambient_difference = temperature - ambient_temperature
     scalar_summary.op('difference_to_ambient', ambient_difference,
                       display_name='Difference to ambient temperature',
@@ -152,14 +165,14 @@ def run(logdir, session_id, hparams, group_name):
   # coefficient. But in real life, not everything is quite so clean, so
   # we'll add in some noise. (The value of 50 is arbitrary, chosen to
   # make the data look somewhat interesting. :-) )
-  noise = 50 * tf.random.normal([])
+  noise = 50 * tf.random_normal([])
   delta = -heat_coefficient * (ambient_difference + noise)
   scalar_summary.op('delta', delta,
                     description='The change in temperature from the previous '
                                 'step, in Kelvins.')
 
   # Collect all the scalars that we want to keep track of.
-  summ = tf.compat.v1.summary.merge_all()
+  summ = tf.summary.merge_all()
 
   # Now, augment the current temperature by this delta that we computed,
   # blocking the assignment on summary collection to avoid race conditions
@@ -167,15 +180,16 @@ def run(logdir, session_id, hparams, group_name):
   with tf.control_dependencies([summ]):
     update_step = temperature.assign_add(delta)
 
-  sess = tf.compat.v1.Session()
-  sess.run(tf.compat.v1.global_variables_initializer())
-  for step in xrange(STEPS):
+  sess = tf.Session()
+  sess.run(tf.global_variables_initializer())
+  for step in xrange(FLAGS.num_steps):
     # By asking TensorFlow to compute the update step, we force it to
     # change the value of the temperature variable. We don't actually
     # care about this value, so we discard it; instead, we grab the
     # summary data computed along the way.
     (s, _) = sess.run([summ, update_step])
-    writer.add_summary(s, global_step=step)
+    if (step % FLAGS.summary_freq) == 0:
+      writer.add_summary(s, global_step=step)
   writer.add_summary(summary.session_end_pb(api_pb2.STATUS_SUCCESS))
   writer.close()
 
@@ -191,18 +205,21 @@ def run_all(logdir, verbose=False):
   writer.add_summary(create_experiment_summary())
   writer.close()
   session_num = 0
+  num_sessions = (len(TEMPERATURE_LIST)*len(TEMPERATURE_LIST)*
+                  len(HEAT_COEFFICIENTS)*2)
   for initial_temperature in TEMPERATURE_LIST:
     for ambient_temperature in TEMPERATURE_LIST:
-      for heat_coefficient in HEAT_COEFFICIENT_LIST:
-        hparams = {'initial_temperature' : initial_temperature,
-                   'ambient_temperature' : ambient_temperature,
-                   'heat_coefficient' : heat_coefficient}
+      for material in HEAT_COEFFICIENTS:
+        hparams = {'initial_temperature': initial_temperature,
+                   'ambient_temperature': ambient_temperature,
+                   'material': material}
         hparam_str = str(hparams)
         group_name = fingerprint(hparam_str)
         for repeat_idx in xrange(2):
           session_id = str(session_num)
           if verbose:
-            print('--- Running training session')
+            print('--- Running training session %d/%d' % (session_num + 1,
+                                                          num_sessions))
             print(hparam_str)
             print('--- repeat #: %d' % (repeat_idx+1))
           run(logdir, session_id, hparams, group_name)
@@ -210,11 +227,12 @@ def run_all(logdir, verbose=False):
 
 
 def main(unused_argv):
-  shutil.rmtree(LOGDIR, ignore_errors=True)
-  print('Saving output to %s.' % LOGDIR)
-  run_all(LOGDIR, verbose=True)
-  print('Done. Output saved to %s.' % LOGDIR)
+  init_temperature_list()
+  shutil.rmtree(FLAGS.logdir, ignore_errors=True)
+  print('Saving output to %s.' % FLAGS.logdir)
+  run_all(FLAGS.logdir, verbose=True)
+  print('Done. Output saved to %s.' % FLAGS.logdir)
 
 
 if __name__ == '__main__':
-  app.run(main)
+  tf.app.run()

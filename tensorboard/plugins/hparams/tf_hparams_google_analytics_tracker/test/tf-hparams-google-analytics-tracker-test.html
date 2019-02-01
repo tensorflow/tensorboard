@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../tf-hparams-google-analytics-tracker.html">
+  </head>
+  <body>
+    <tf-hparams-google-analytics-tracker id="fixture-default"
+                                         tracking-id="1234">
+    </tf-hparams-google-analytics-tracker>
+    <tf-hparams-google-analytics-tracker id="fixture-named"
+                                         name="t1"
+                                         tracking-id="5678">
+    </tf-hparams-google-analytics-tracker>
+    <tf-hparams-google-analytics-tracker id="fixture-disabled"
+                                         name="t1"
+                                         tracking-id="">
+    </tf-hparams-google-analytics-tracker>
+    <script>
+      'use strict';
+
+      suite('tf-hparams-google-analytics-tracker default', function() {
+        var fixture = document.getElementById('fixture-default');
+
+        test('attributes', function() {
+          fixture.ga(function() {
+            assert.equal(fixture.ga.get('trackingId'), '1234');
+          });
+        });
+      });
+
+      suite('tf-hparams-google-analytics-tracker named', function() {
+        var fixture = document.getElementById('fixture-named');
+
+        test('attributes', function(done) {
+          fixture.ga(function() {
+            assert.equal(fixture.ga.get('trackingId'), '5678');
+            done();
+          });
+        });
+      });
+
+      suite('tf-hparams-google-analytics-tracker methods', function() {
+        var fixture = document.getElementById('fixture-default');
+        var namedFixture = document.getElementById('fixture-named');
+        var disabledFixture = document.getElementById('fixture-disabled');
+        var oldGa = window.ga;
+        setup(function() {
+          window.ga = sinon.spy()
+        });
+        teardown(function() {
+          window.ga = oldGa;
+        });
+
+        test('handleEvent', function() {
+          var theDetail = {'hello': 'world'};
+          fixture.handleEvent({detail : theDetail});
+
+          assert.isTrue(window.ga.calledWith('send', theDetail));
+        });
+
+        test('handleEvent_named', function() {
+          var theDetail = {'hello': 'world'};
+          namedFixture.handleEvent({detail: theDetail});
+
+          assert.isTrue(window.ga.calledWith('t1.send', theDetail));
+        });
+
+        test('handleEvent_disabled', function() {
+          var theDetail = {'hello': 'world'};
+          disabledFixture.handleEvent({detail : theDetail});
+
+          assert.isTrue(window.ga.notCalled);
+        });
+
+        test('sendEvent', function() {
+          fixture.sendEvent('c', 'a', 'l');
+
+          assert.isTrue(window.ga.calledWith('send', 'event', 'c', 'a', 'l'));
+        });
+
+        test('sendPageView', function() {
+          fixture.sendPageView();
+
+          assert.isTrue(window.ga.calledWith('send', 'pageview'));
+        });
+
+        test('sendTiming', function() {
+          fixture.sendTiming('c', 'v', 42);
+
+          assert.isTrue(window.ga.calledWith('send', 'timing', 'c', 'v', 42));
+        });
+      });
+    </script>
+  </body>
+</html>
