@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 import unittest
 
 from tensorboard import lazy
@@ -44,6 +45,23 @@ class LazyTest(unittest.TestCase):
     x1 = outer.namedtuple
     x2 = inner.namedtuple
     self.assertEqual(x1, x2)
+
+  def test_lazy_cycle(self):
+    """A cycle among lazy modules should error, not deadlock or spin."""
+    # This test can fail if `_memoize` uses a non-reentrant lock. (See
+    # pull request review comments on #1781 for details.)
+
+    @lazy.lazy_load("inner")
+    def inner():
+      return outer.foo
+
+    @lazy.lazy_load("outer")
+    def outer():
+      return inner
+
+    expected_message = "Circular import when resolving LazyModule 'inner'"
+    with six.assertRaisesRegex(self, ImportError, expected_message):
+      outer.bar
 
 
 if __name__ == '__main__':

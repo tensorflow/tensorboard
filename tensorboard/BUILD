@@ -367,5 +367,6 @@ py_test(
     size = "small",
     deps = [
         ":lazy",
+        "@org_pythonhosted_six",
     ],
 )
