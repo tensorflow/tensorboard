@@ -63,6 +63,20 @@ class LazyTest(unittest.TestCase):
     with six.assertRaisesRegex(self, ImportError, expected_message):
       outer.bar
 
+  def test_repr_before_load(self):
+    @lazy.lazy_load("foo")
+    def foo():
+      self.fail("Should not need to resolve this module.")
+    self.assertEquals(repr(foo), "<module 'foo' via LazyModule (not yet loaded)>")
+
+  def test_repr_after_load(self):
+    import collections  # pylint: disable=g-import-not-at-top
+    @lazy.lazy_load("foo")
+    def foo():
+      return collections
+    foo.namedtuple
+    self.assertEquals(repr(foo), "<%r via LazyModule (loaded)>" % collections)
+
 
 if __name__ == '__main__':
   unittest.main()
