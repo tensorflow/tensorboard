@@ -71,11 +71,11 @@ from tensorboard.plugins.beholder import Beholder, BeholderHook
 }
 
 set -x
-command -v curl >/dev/null
-command -v perl >/dev/null
-command -v python2 >/dev/null
-command -v python3 >/dev/null
-command -v virtualenv >/dev/null
+# command -v curl >/dev/null
+# command -v perl >/dev/null
+# command -v python2 >/dev/null
+# command -v python3 >/dev/null
+# command -v virtualenv >/dev/null
 [ -d "${RUNFILES}" ]
 
 dest=/tmp/tensorboard
@@ -126,11 +126,11 @@ unset PYTHON_HOME
 # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
 pip install -qU wheel 'setuptools>=36.2.0'
 
-python setup.py bdist_wheel --python-tag py2 >/dev/null
+# python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
 if [ "$run_smoke_test" = 1 ]; then
-  smoke 2
+  # smoke 2
   smoke 3
 fi
 
