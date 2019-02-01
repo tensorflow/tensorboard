@@ -20,7 +20,9 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import csv
 import os.path
+from StringIO import StringIO
 
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -172,6 +174,24 @@ class HistogramsPluginTest(tf.test.TestCase):
   def test_histograms_with_histogram(self):
     self._test_histograms(self._RUN_WITH_HISTOGRAM,
                           '%s/histogram_summary' % self._HISTOGRAM_TAG)
+
+  def _test_histograms_csv(self, run_name, tag_name, should_work=True):
+    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS,
+                           self._RUN_WITH_SCALARS,
+                           self._RUN_WITH_HISTOGRAM])
+    if should_work:
+      (data, mime_type) = self.plugin.histograms_impl(
+        tag_name, run_name, None, histograms_plugin.OutputFormat.CSV)
+      self.assertEqual('text/csv', mime_type)
+      s = StringIO(data)
+      reader = csv.reader(s)
+      self.assertEqual(['Wall time', 'Step', 'BinStart',
+                        'BinEnd', 'BinValue'], next(reader))
+      self.assertEqual(len(list(reader)), self._STEPS)
+    else:
+      with self.assertRaises(KeyError):
+        self.plugin.histograms_impl(self._SCALAR_TAG, run_name, None,
+                                    histograms_plugin.OutputFormat.CSV)
 
   def test_active_with_legacy_histogram(self):
     self.set_up_with_runs([self._RUN_WITH_LEGACY_HISTOGRAM])
