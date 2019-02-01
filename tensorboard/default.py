@@ -31,20 +31,16 @@ from __future__ import print_function
 import logging
 import os
 
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
-from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
-from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
-from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
-from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
@@ -52,9 +48,9 @@ from tensorboard.plugins.text import text_plugin
 
 logger = logging.getLogger(__name__)
 
+# Plugins supported when TensorFlow isn't available
 _PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin.BeholderPlugin,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
@@ -65,11 +61,23 @@ _PLUGINS = [
     pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin.InteractiveInferencePlugin,
-    profile_plugin.ProfilePluginLoader(),
-    debugger_plugin_loader.DebuggerPluginLoader(),
-    hparams_plugin.HParamsPlugin,
 ]
+
+# Plugins only supported when TensorFlow is installed
+if hasattr(tf, '__version__') and tf.__version__ != 'stub':
+    from tensorboard.plugins.beholder import beholder_plugin
+    from tensorboard.plugins.debugger import debugger_plugin_loader
+    from tensorboard.plugins.hparams import hparams_plugin
+    from tensorboard.plugins.interactive_inference import interactive_inference_plugin
+    from tensorboard.plugins.profile import profile_plugin
+
+    _PLUGINS += [
+        beholder_plugin.BeholderPlugin,
+        interactive_inference_plugin.InteractiveInferencePlugin,
+        profile_plugin.ProfilePluginLoader(),
+        debugger_plugin_loader.DebuggerPluginLoader(),
+        hparams_plugin.HParamsPlugin,
+    ]
 
 def get_plugins():
   """Returns a list specifying TensorBoard's default first-party plugins.

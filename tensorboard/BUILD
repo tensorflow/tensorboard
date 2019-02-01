@@ -30,32 +30,6 @@ py_binary(
     ],
 )
 
-# The TensorBoard binary that serves the webapp without TensorFlow.
-py_binary(
-    name = "tensorboard-notf",
-    srcs = ["main_notf.py"],
-    data = ["webfiles.zip"],
-    main = "main_notf.py",
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":program",
-        "//tensorboard/compat:no_tensorflow",
-        "//tensorboard/plugins:base_plugin",
-        "//tensorboard/plugins/audio:audio_plugin",
-        "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
-        "//tensorboard/plugins/distribution:distributions_plugin",
-        "//tensorboard/plugins/graph:graphs_plugin",
-        "//tensorboard/plugins/histogram:histograms_plugin",
-        "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/projector:projector_plugin",
-        "//tensorboard/plugins/scalar:scalars_plugin",
-        "//tensorboard/plugins/text:text_plugin",
-    ],
-)
-
 # The public TensorBoard python library, bundled with the pip package and
 # available via 'import tensorboard as tb' once installed.
 py_library(
