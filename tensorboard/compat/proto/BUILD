@@ -39,6 +39,9 @@ tb_proto_library(
         "tfprof_log.proto",
         "types.proto",
         "versions.proto",
+        "plugin_text.proto",  # relative dir is not accepted. copt that.
+        "plugin_pr_curve.proto",  # relative dir is not accepted. copt that.
+        "layout.proto",  # relative dir is not accepted. copt that.
     ],
     visibility = ["//visibility:public"],
 )

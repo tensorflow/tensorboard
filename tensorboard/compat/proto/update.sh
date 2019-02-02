@@ -28,6 +28,11 @@ cp ../tensorflow/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
 cp ../tensorflow/tensorflow/core/util/*.proto tensorboard/compat/proto/
 cp ../tensorflow/tensorflow/python/framework/*.proto tensorboard/compat/proto/
 
+# run under tensorboard/tensorboard/compat/proto
+cp ../../plugins/text/plugin_data.proto plugin_text.proto
+cp ../../plugins/pr_curve/plugin_data.proto plugin_pr_curve.proto
+cp ../../plugins/custom_scalar/layout.proto .
+
 # Only keep those that update
 # TODO: Might want to do this more selectively
 git clean -fdx
