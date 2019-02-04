@@ -152,9 +152,9 @@ def tensorboard_js_workspace():
       name = "com_google_javascript_closure_compiler_externs_polymer",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "737af73d7b02226e6e1516044a8eb8283376d44f64839979936ca163c00900f4": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
-              "https://raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
+          "a537215a0981b2fdd8cb1d12a0ef9f38398f62a5be7885e39de305fa4bd98f54": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/google/closure-compiler/v20190121/contrib/externs/polymer-1.0.js",
+              "https://raw.githubusercontent.com/google/closure-compiler/v20190121/contrib/externs/polymer-1.0.js",
           ],
       },
   )
