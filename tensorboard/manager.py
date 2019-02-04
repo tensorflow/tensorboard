@@ -21,11 +21,15 @@ from __future__ import print_function
 import base64
 import collections
 import datetime
+import errno
 import json
+import os
+import tempfile
 
 import six
 
 from tensorboard import version
+from tensorboard.util import tb_logging
 
 
 # Type descriptors for `TensorboardInfo` fields.
@@ -199,3 +203,92 @@ def cache_key(working_directory, arguments, configure_kwargs):
   # `raw` is of type `bytes`, even though it only contains ASCII
   # characters; we want it to be `str` in both Python 2 and 3.
   return str(raw.decode("ascii"))
+
+
+def _get_info_dir():
+  """Get path to directory in which to store info files.
+
+  The directory returned by this function is "owned" by this module. If
+  the contents of the directory are modified other than via the public
+  functions of this module, subsequent behavior is undefined.
+
+  The directory will be created if it does not exist.
+  """
+  path = os.path.join(tempfile.gettempdir(), ".tensorboard-info")
+  try:
+    os.makedirs(path)
+  except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(path):
+      pass
+    else:
+      raise
+  return path
+
+
+def _get_info_file_path():
+  """Get path to info file for the current process."""
+  return os.path.join(_get_info_dir(), "pid-%d.info" % os.getpid())
+
+
+def write_info_file(tensorboard_info):
+  """Write TensorboardInfo to the current process's info file.
+
+  This should be called by `main` once the server is ready. When the
+  server shuts down, `remove_info_file` should be called.
+
+  Args:
+    tensorboard_info: A valid `TensorboardInfo` object.
+
+  Raises:
+    ValueError: If any field on `info` is not of the correct type.
+  """
+  payload = "%s\n" % _info_to_string(tensorboard_info)
+  with open(_get_info_file_path(), "w") as outfile:
+    outfile.write(payload)
+
+
+def remove_info_file():
+  """Remove the current process's TensorboardInfo file, if it exists.
+
+  If the file does not exist, no action is taken and no error is raised.
+  """
+  try:
+    os.unlink(_get_info_file_path())
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      # The user may have wiped their temporary directory or something.
+      # Not a problem: we're already in the state that we want to be in.
+      pass
+    else:
+      raise
+
+
+def get_all():
+  """Return TensorboardInfo values for running TensorBoard processes.
+
+  This function may not provide a perfect snapshot of the set of running
+  processes. Its result set may be incomplete if the user has cleaned
+  their /tmp/ directory while TensorBoard processes are running. It may
+  contain extraneous entries if TensorBoard processes exited uncleanly
+  (e.g., with SIGKILL or SIGQUIT).
+
+  Returns:
+    A fresh list of `TensorboardInfo` objects.
+  """
+  info_dir = _get_info_dir()
+  results = []
+  for filename in os.listdir(info_dir):
+    filepath = os.path.join(info_dir, filename)
+    with open(filepath) as infile:
+      contents = infile.read()
+    try:
+      info = _info_from_string(contents)
+    except ValueError:
+      tb_logging.get_logger().warning(
+          "invalid info file: %r",
+          filepath,
+          exc_info=True,
+      )
+    else:
+      results.append(info)
+  return results

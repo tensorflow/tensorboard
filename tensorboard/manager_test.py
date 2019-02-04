@@ -20,13 +20,22 @@ from __future__ import print_function
 
 import datetime
 import json
+import os
 import re
+import tempfile
 
 import six
 import tensorflow as tf
 
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
 from tensorboard import manager
 from tensorboard import version
+from tensorboard.util import tb_logging
 
 
 def _make_info(i=0):
@@ -54,8 +63,8 @@ class TensorboardInfoTest(tf.test.TestCase):
   """Unit tests for TensorboardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
-    # This will also be tested indirectly as part of `manager`
-    # integration tests.
+    # This is also tested indirectly as part of `manager` integration
+    # tests, in `test_get_all`.
     info = _make_info()
     also_info = manager._info_from_string(manager._info_to_string(info))
     self.assertEqual(also_info, info)
@@ -233,6 +242,91 @@ class CacheKeyTest(tf.test.TestCase):
         configure_kwargs={},
     )
     self.assertEqual(with_list, with_tuple)
+
+
+class TensorboardInfoIoTest(tf.test.TestCase):
+  """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
+
+  def setUp(self):
+    super(TensorboardInfoIoTest, self).setUp()
+    patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
+    patcher.start()
+    self.addCleanup(patcher.stop)
+    tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
+    self.info_dir = manager._get_info_dir()  # ensure that directory exists
+
+  def _list_info_dir(self):
+    return os.listdir(self.info_dir)
+
+  @mock.patch("os.getpid", lambda: 76540)
+  def test_write_remove_info_file(self):
+    info = _make_info()
+    self.assertEqual(self._list_info_dir(), [])
+    manager.write_info_file(info)
+    filename = "pid-76540.info"
+    expected_filepath = os.path.join(self.info_dir, filename)
+    self.assertEqual(self._list_info_dir(), [filename])
+    with open(expected_filepath) as infile:
+      self.assertEqual(manager._info_from_string(infile.read()), info)
+    manager.remove_info_file()
+    self.assertEqual(self._list_info_dir(), [])
+
+  def test_write_info_file_rejects_bad_types(self):
+    # The particulars of validation are tested more thoroughly in
+    # `TensorboardInfoTest` above.
+    info = _make_info()._replace(start_time=1549061116)
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        "expected 'start_time' of type.*datetime.*, but found: 1549061116"):
+      manager.write_info_file(info)
+    self.assertEqual(self._list_info_dir(), [])
+
+  def test_write_info_file_rejects_wrong_version(self):
+    # The particulars of validation are tested more thoroughly in
+    # `TensorboardInfoTest` above.
+    info = _make_info()._replace(version="reversion")
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        "expected 'version' to be '.*', but found: 'reversion'"):
+      manager.write_info_file(info)
+    self.assertEqual(self._list_info_dir(), [])
+
+  def test_remove_nonexistent(self):
+    # Should be a no-op, except to create the info directory if
+    # necessary. In particular, should not raise any exception.
+    manager.remove_info_file()
+
+  def test_get_all(self):
+    def add_info(i):
+      with mock.patch("os.getpid", lambda: 76540 + i):
+        manager.write_info_file(_make_info(i))
+    def remove_info(i):
+      with mock.patch("os.getpid", lambda: 76540 + i):
+        manager.remove_info_file()
+    self.assertItemsEqual(manager.get_all(), [])
+    add_info(1)
+    self.assertItemsEqual(manager.get_all(), [_make_info(1)])
+    add_info(2)
+    self.assertItemsEqual(manager.get_all(), [_make_info(1), _make_info(2)])
+    remove_info(1)
+    self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+    add_info(3)
+    self.assertItemsEqual(manager.get_all(), [_make_info(2), _make_info(3)])
+    remove_info(3)
+    self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+    remove_info(2)
+    self.assertItemsEqual(manager.get_all(), [])
+
+  def test_get_all_ignores_bad_files(self):
+    with open(os.path.join(self.info_dir, "pid-1234.info"), "w") as outfile:
+      outfile.write("good luck parsing this\n")
+    with open(os.path.join(self.info_dir, "pid-5678.info"), "w") as outfile:
+      outfile.write('{"valid_json":"yes","valid_tbinfo":"no"}\n')
+    with mock.patch.object(tb_logging.get_logger(), "warning") as fn:
+      self.assertEqual(manager.get_all(), [])
+    self.assertEqual(fn.call_count, 2)
 
 
 if __name__ == "__main__":
