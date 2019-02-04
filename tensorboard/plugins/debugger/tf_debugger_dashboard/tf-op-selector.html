@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
@@ -36,10 +37,10 @@ limitations under the License.
         label="Filter Mode"
         selected-item-label="{{_filterMode}}"
       >
-        <paper-menu class="dropdown-content" slot="dropdown-content">
+        <paper-listbox class="dropdown-content" slot="dropdown-content">
           <paper-item no-label-float=true>Node Name</paper-item>
           <paper-item no-label-float=true>Op Type</paper-item>
-        </paper-menu>
+        </paper-listbox>
       </paper-dropdown-menu>
       <paper-input
         id="filter-input"

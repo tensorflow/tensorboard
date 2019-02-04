@@ -20,9 +20,9 @@ tf_web_library(
         "//tensorboard/plugins/hparams/tf_hparams_utils",
         "@org_polymer_paper_checkbox",
         "@org_polymer_paper_dropdown_menu",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
-        "@org_polymer_paper_menu",
     ],
 )
 
@@ -57,9 +57,9 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//third_party/javascript/polymer/v1/paper-checkbox:lib",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-listbox:lib",
         "//third_party/javascript/polymer/v1/paper-input:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
-        "//third_party/javascript/polymer/v1/paper-menu:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

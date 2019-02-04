@@ -22,7 +22,7 @@ limitations under the License.
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
@@ -84,11 +84,11 @@ limitations under the License.
           label="series to download"
           selected-item-label="{{_dataSeriesNameToDownload}}"
         >
-          <paper-menu class="dropdown-content" slot="dropdown-content">
+          <paper-listbox class="dropdown-content" slot="dropdown-content">
             <template is="dom-repeat" items="[[_seriesNames]]" as="dataSeriesName">
               <paper-item no-label-float=true>[[dataSeriesName]]</paper-item>
             </template>
-          </paper-menu>
+          </paper-listbox>
         </paper-dropdown-menu>
         <a
           download="[[_dataSeriesNameToDownload]].csv"

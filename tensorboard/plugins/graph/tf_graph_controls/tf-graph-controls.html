@@ -20,7 +20,7 @@ limitations under the License.
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
@@ -350,22 +350,22 @@ paper-dropdown-menu {
   <div class="control-holder runs">
     <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
     <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
-      <paper-menu class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
+      <paper-listbox class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[datasets]]">
           <paper-item>[[item.name]]</paper-item>
         </template>
-      </paper-menu>
+      </paper-listbox>
     </paper-dropdown-menu>
   </div>
   <template is="dom-if" if="[[showSessionRunsDropdown]]">
     <div class="control-holder">
       <div class="title">Tag <span class="counter">([[_numTags(datasets, _selectedRunIndex)]])</span></div>
       <paper-dropdown-menu no-label-float no-animations horizontal-align="left" noink class="run-dropdown">
-        <paper-menu class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
+        <paper-listbox class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
           <template is="dom-repeat" items="[[_getTags(datasets, _selectedRunIndex)]]">
             <paper-item>[[item.displayName]]</paper-item>
           </template>
-        </paper-menu>
+        </paper-listbox>
       </paper-dropdown-menu>
     </div>
   </template>

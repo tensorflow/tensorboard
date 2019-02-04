@@ -18,9 +18,9 @@ limitations under the License.
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
@@ -70,12 +70,12 @@ limitations under the License.
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
             >
-              <paper-menu class="dropdown-content" selected="0" slot="dropdown-content">
+              <paper-listbox class="dropdown-content" selected="0" slot="dropdown-content">
                 <paper-item>default</paper-item>
                 <paper-item>descending</paper-item>
                 <paper-item>ascending</paper-item>
                 <paper-item>nearest</paper-item>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
           </div>
         </div>
