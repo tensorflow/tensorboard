@@ -444,7 +444,7 @@ export class LineChart {
 
   private createTooltipInteraction(pzdl: PanZoomDragLayer):
       Plottable.Interactions.Pointer {
-    const pi = new Plottable.Interactions.Pointer();
+    const pi = new vz_chart_helpers.PointerInteraction();
     // Disable interaction while drag zooming.
     const disableTooltipUpdate = () => {
       pi.enabled(false);
@@ -597,7 +597,7 @@ export class LineChart {
             (column: vz_chart_helpers.TooltipColumn, _, __) => {
               return column.title
             });
-    const newHeaderNodes = header.enter()
+    header.enter()
         .append('th')
         .text(col => col.title)
         .nodes();
@@ -628,14 +628,13 @@ export class LineChart {
         .order();
 
     rows.exit().remove();
-    const newRowNodes = rows.enter()
+    rows.enter()
         .append('tr')
         .each(function(point) {
           self.drawTooltipRow(this, tooltipColumns, point);
         })
         .nodes();
-    const newNodes = [...newHeaderNodes, ...newRowNodes] as Element[];
-    this.tooltip.updateAndPosition(this.targetSVG.node(), newNodes);
+    this.tooltip.updateAndPosition(this.targetSVG.node());
   }
 
   private drawTooltipRow(
