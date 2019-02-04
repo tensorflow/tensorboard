@@ -21,7 +21,7 @@ limitations under the License.
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
@@ -127,11 +127,11 @@ limitations under the License.
             label="Device name"
             selected-item-label="{{_activeRuntimeGraphDeviceName}}"
           >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
+            <paper-listbox class="dropdown-content" slot="dropdown-content">
               <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
                 <paper-item no-label-float=true>[[item]]</paper-item>
               </template>
-            </paper-menu>
+            </paper-listbox>
           </paper-dropdown-menu>
           <paper-spinner-lite
             class="spinner"

@@ -30,6 +30,7 @@ tf_web_library(
         "@org_polymer_paper_checkbox",
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_header_panel",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_tabs",
         "@org_polymer_paper_toolbar",

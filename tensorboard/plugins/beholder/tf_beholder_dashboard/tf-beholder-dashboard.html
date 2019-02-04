@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
@@ -129,13 +130,13 @@ limitations under the License.
                 selected-item-label="{{_colormap}}"
                 disabled="[[_controls_disabled]]"
               >
-                <paper-menu class="dropdown-content" selected="0">
+                <paper-listbox slot="dropdown-content" selected="0">
                   <paper-item>magma</paper-item>
                   <paper-item>inferno</paper-item>
                   <paper-item>plasma</paper-item>
                   <paper-item>viridis</paper-item>
                   <paper-item>grayscale</paper-item>
-                </paper-menu>
+                </paper-listbox>
               </paper-dropdown-menu>
             </div>
           </div>

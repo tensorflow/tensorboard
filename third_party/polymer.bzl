@@ -1070,31 +1070,6 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
-      name = "org_polymer_paper_menu",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "b19f368b444f75d7635b3a6ee9327879991ef2724b55c5aab73b88263062b42a",
-      urls = [
-          "https://mirror.bazel.build/github.com/PolymerElements/paper-menu/archive/v1.3.0.tar.gz",
-          "https://github.com/PolymerElements/paper-menu/archive/v1.3.0.tar.gz",
-      ],
-      strip_prefix = "paper-menu-1.3.0",
-      path = "/paper-menu",
-      srcs = [
-          "paper-menu.html",
-          "paper-menu-shared-styles.html",
-          "paper-submenu.html",
-      ],
-      deps = [
-          "@org_polymer",
-          "@org_polymer_iron_behaviors",
-          "@org_polymer_iron_collapse",
-          "@org_polymer_iron_flex_layout",
-          "@org_polymer_iron_menu_behavior",
-          "@org_polymer_paper_styles",
-      ],
-  )
-
-  web_library_external(
       name = "org_polymer_paper_menu_button",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "c5d6a5a9b43673da5400ddcbd7069a57d57260148642d6136a5ed4c0862e6dfc",

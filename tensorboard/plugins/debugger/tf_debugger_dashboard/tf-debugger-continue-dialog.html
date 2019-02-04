@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-imports/lodash.html">
 
@@ -64,7 +65,7 @@ limitations under the License.
           selected-item-label="{{_selectedTensorCondition}}">
           <!-- TODO(cais): Maybe dynamically set the menu items using some variable
                            exported from health-pills.ts. -->
-          <paper-menu id="tensorConditionMenu" class="dropdown-content" slot="dropdown-content">
+          <paper-listbox id="tensorConditionMenu" class="dropdown-content" slot="dropdown-content">
             <paper-item no-label-float=true>Contains +/-∞ or NaN</paper-item>
             <paper-item no-label-float=true>Contains +/-∞</paper-item>
             <paper-item no-label-float=true>Contains NaN</paper-item>
@@ -78,7 +79,7 @@ limitations under the License.
             <paper-item no-label-float=true>Mean &lt;</paper-item>
             <paper-item no-label-float=true>Standard deviation &gt;</paper-item>
             <paper-item no-label-float=true>Standard deviation &lt;</paper-item>
-          </paper-menu>
+          </paper-listbox>
         </paper-dropdown-menu>
         <paper-icon-button
           class="go-button"

@@ -18,7 +18,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
@@ -125,7 +125,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_run" class="dropdown-content" selected="{{selectedDatasetIndex}}">
+          <paper-listbox id="list_box_run" slot="dropdown-content" selected="{{selectedDatasetIndex}}">
             <template id="run_items" is="dom-repeat" items="[[_datasets]]">
               <paper-item>[[item.name]]</paper-item>
             </template>
@@ -135,7 +135,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Tools <span class="counter">([[_activeToolsList.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_tool" class="dropdown-content" selected="{{selectedToolIndex}}">
+          <paper-listbox id="list_box_tool" slot="dropdown-content" selected="{{selectedToolIndex}}">
             <template id="tool_items" is="dom-repeat" items="[[_activeToolsList]]">
               <paper-item>[[item]]</paper-item>
             </template>
@@ -148,7 +148,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Hosts <span class="counter">([[_activeHostsList.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_host" class="dropdown-content" selected="{{selectedHostIndex}}">
+          <paper-listbox id="list_box_host" slot="dropdown-content" selected="{{selectedHostIndex}}">
             <template id="host_items" is="dom-repeat" items="[[_activeHostsList]]">
               <paper-item>[[_getHostDisplayName(item)]]</paper-item>
             </template>

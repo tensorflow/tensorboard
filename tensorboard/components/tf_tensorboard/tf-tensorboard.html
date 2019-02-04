@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-toolbar/paper-toolbar.html">
@@ -95,9 +96,9 @@ limitations under the License.
                 noink
                 style="margin-left: 12px"
               >
-                <paper-menu
+                <paper-listbox
                   id="inactive-dashboards-menu"
-                  class="dropdown-content"
+                  slot="dropdown-content"
                   selected="{{_selectedDashboard}}"
                   attr-for-selected="data-dashboard"
                 >
@@ -114,7 +115,7 @@ limitations under the License.
                       >[[dashboardDatum.tabName]]</paper-item>
                     </template>
                   </template>
-                </paper-menu>
+                </paper-listbox>
               </paper-dropdown-menu>
             </template>
           </template>
@@ -269,7 +270,7 @@ limitations under the License.
         --paper-dropdown-menu-icon: {
           color: white;
         }
-        --paper-input-container-input: {
+        --paper-dropdown-menu-input: {
           -webkit-font-smoothing: antialiased;
           font-size: 14px;
           font-weight: 500;
@@ -281,6 +282,13 @@ limitations under the License.
           font-weight: 500;
           text-transform: uppercase;
         }
+      }
+
+      paper-dropdown-menu paper-item {
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
       }
 
       #inactive-dashboards-menu {
