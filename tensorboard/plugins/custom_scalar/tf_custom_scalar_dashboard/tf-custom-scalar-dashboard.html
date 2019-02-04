@@ -39,7 +39,7 @@ limitations under the License.
 <dom-module id="tf-custom-scalar-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
@@ -90,7 +90,7 @@ limitations under the License.
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center" id="categories-container">
+      <div class="center" slot="center" id="categories-container">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>The custom scalars dashboard is inactive.</h3>
@@ -317,8 +317,8 @@ writer.add_summary(layout_summary)
         this._requestManager.request(url).then(handlePluginsListingResponse);
       },
       _reloadCharts() {
-        const charts = 
-          this.querySelectorAll('tf-custom-scalar-margin-chart-card, ' + 
+        const charts =
+          this.querySelectorAll('tf-custom-scalar-margin-chart-card, ' +
                                 'tf-custom-scalar-multi-line-chart-card');
         charts.forEach(chart => {
           chart.reload();

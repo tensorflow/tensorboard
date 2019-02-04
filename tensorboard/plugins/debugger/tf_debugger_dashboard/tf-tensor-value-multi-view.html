@@ -76,7 +76,7 @@ limitations under the License.
       },
 
       getViews() {
-        const viewCards = this.querySelectorAll('.debugger-tensor-view');
+        const viewCards = this.root.querySelectorAll('.debugger-tensor-view');
         const views = [];
         _.forEach(viewCards, viewCard => {
           views.push({
@@ -91,7 +91,7 @@ limitations under the License.
       },
 
       renderTensorValues() {
-        const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+        const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
         _.forEach(tensorViews, tensorView => {
           tensorView.renderTensorValue();
         });
@@ -101,7 +101,7 @@ limitations under the License.
         const multiViewContainer = this.$$('#multi-tensor-view-container');
 
         // First, clear all current views.
-        const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+        const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
         _.forEach(tensorViews, tensorView => {
           multiViewContainer.removeChild(tensorView);
         });
@@ -114,7 +114,7 @@ limitations under the License.
       _createCloseButtonCallback(viewId) {
         return () => {
           const newViews = [];
-          const tensorViews = this.querySelectorAll('.debugger-tensor-view');
+          const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
           for (let i = 0; i < tensorViews.length; ++i) {
             const tensorView = tensorViews[i];
             if (tensorView.viewId !== viewId) {

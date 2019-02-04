@@ -120,7 +120,7 @@ profile run can have multiple tools that present the performance profile as diff
 </template>
 <template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
   <tf-dashboard-layout>
-  <div class="sidebar">
+  <div class="sidebar" slot="sidebar">
     <div class="allcontrols">
       <div class="sidebar-section">
         <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
@@ -129,7 +129,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_run" class="dropdown-content" selected="{{selectedDatasetIndex}}">
+          <paper-listbox id="list_box_run" slot="dropdown-content" selected="{{selectedDatasetIndex}}">
             <template id="run_items" is="dom-repeat" items="[[_datasets]]">
               <paper-item>[[item.name]]</paper-item>
             </template>
@@ -139,7 +139,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Tools <span class="counter">([[_activeToolsList.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_tool" class="dropdown-content" selected="{{selectedToolIndex}}">
+          <paper-listbox id="list_box_tool" slot="dropdown-content" selected="{{selectedToolIndex}}">
             <template id="tool_items" is="dom-repeat" items="[[_activeToolsList]]">
               <paper-item>[[item]]</paper-item>
             </template>
@@ -152,7 +152,7 @@ profile run can have multiple tools that present the performance profile as diff
       <div class="sidebar-section">
         <div class="title">Hosts <span class="counter">([[_activeHostsList.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_host" class="dropdown-content" selected="{{selectedHostIndex}}">
+          <paper-listbox id="list_box_host" slot="dropdown-content" selected="{{selectedHostIndex}}">
             <template id="host_items" is="dom-repeat" items="[[_activeHostsList]]">
               <paper-item>[[_getHostDisplayName(item)]]</paper-item>
             </template>
@@ -180,7 +180,7 @@ profile run can have multiple tools that present the performance profile as diff
       </div>
     </div>
   </div>
-  <div class="center">
+  <div class="center" slot="center">
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"
@@ -498,7 +498,7 @@ profile run can have multiple tools that present the performance profile as diff
 	      'Failed to capture profile: ' + json.error);
 	  return;
         }
-        this._showToast(json.result);	
+        this._showToast(json.result);
       }).catch((error) => {
 	this._capturingProfile = false;
 	// Network error.

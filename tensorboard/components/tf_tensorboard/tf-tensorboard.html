@@ -57,7 +57,7 @@ limitations under the License.
       ></paper-input>
     </paper-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar" slot="header">
+      <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
           <div class="toolbar-title">[[brand]]</div>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
@@ -97,7 +97,7 @@ limitations under the License.
               >
                 <paper-menu
                   id="inactive-dashboards-menu"
-                  class="dropdown-content"
+                  slot="dropdown-content"
                   selected="{{_selectedDashboard}}"
                   attr-for-selected="data-dashboard"
                 >

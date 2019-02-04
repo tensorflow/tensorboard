@@ -33,8 +33,7 @@ limitations under the License.
 <dom-module id="mesh-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar all-controls">
-
+      <div slot="sidebar" class="all-controls">
         <div class="sidebar-section view-control">
             <h3 class="title">Point of view</h3>
             <div>
@@ -66,7 +65,7 @@ limitations under the License.
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No point cloud data was found.</h3>
@@ -216,7 +215,7 @@ limitations under the License.
           this.reload();
         },
         _getAllChildren() {
-          return this.querySelectorAll('tf-mesh-loader');
+          return this.root.querySelectorAll('tf-mesh-loader');
         },
         _onCameraPositionChanged(event) {
           if (this._selectedView == 'share') {
