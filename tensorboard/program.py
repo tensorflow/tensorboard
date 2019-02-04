@@ -35,6 +35,7 @@ import argparse
 from collections import defaultdict
 import errno
 import os
+import signal
 import socket
 import sys
 import threading
@@ -200,6 +201,7 @@ class TensorBoard(object):
 
     :rtype: int
     """
+    self._install_signal_handler(signal.SIGTERM, "SIGTERM")
     if self.flags.inspect:
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(self.flags.event_file)
@@ -236,6 +238,31 @@ class TensorBoard(object):
     thread.daemon = True
     thread.start()
     return server.get_url()
+
+  def _install_signal_handler(self, signal_number, signal_name):
+    """Set a signal handler to gracefully exit on the given signal.
+
+    When this process receives the given signal, it will run `atexit`
+    handlers and then exit with `0`.
+
+    Args:
+      signal_number: The numeric code for the signal to handle, like
+        `signal.SIGTERM`.
+      signal_name: The human-readable signal name.
+    """
+    old_signal_handler = None  # set below
+    def handler(handled_signal_number, frame):
+      # In case we catch this signal again while running atexit
+      # handlers, take the hint and actually die.
+      signal.signal(signal_number, signal.SIG_DFL)
+      sys.stderr.write("TensorBoard caught %s; exiting...\n" % signal_name)
+      # The main thread is the only non-daemon thread, so it suffices to
+      # exit hence.
+      if old_signal_handler not in (signal.SIG_IGN, signal.SIG_DFL):
+        old_signal_handler(handled_signal_number, frame)
+      sys.exit(0)
+    old_signal_handler = signal.signal(signal_number, handler)
+
 
   def _make_server(self):
     """Constructs the TensorBoard WSGI app and instantiates the server."""
