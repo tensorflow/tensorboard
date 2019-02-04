@@ -148,7 +148,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         });
       },
       _reloadTexts() {
-        this.querySelectorAll('tf-text-loader').forEach(textLoader => {
+        this.root.querySelectorAll('tf-text-loader').forEach(textLoader => {
           textLoader.reload();
         });
       },

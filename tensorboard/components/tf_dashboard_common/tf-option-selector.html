@@ -29,18 +29,21 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
       <div class="content-wrapper"><slot></slot></div>
     </div>
     <style>
-      .content-wrapper ::content > * {
+       .content-wrapper ::slotted(*) {
         background: none;
         color: var(--tb-ui-dark-accent);
         font-size: 13px;
         margin-top: 10px;
       }
 
-      .content-wrapper ::content :first-of-type {
-        margin-left: 0;
+      .content-wrapper ::slotted(*) {
+        background: none;
+        color: var(--tb-ui-dark-accent);
+        font-size: 13px;
+        margin-top: 10px;
       }
 
-      .content-wrapper ::content .selected {
+      .content-wrapper ::slotted(.selected) {
         background-color: var(--tb-ui-dark-accent);
         color: white !important;
       }

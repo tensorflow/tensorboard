@@ -98,7 +98,7 @@ Polymer({
     var selectionMap = this.selectionState;
     var numChecked = _.filter(_.values(selectionMap)).length;
     var buttons =
-        Array.prototype.slice.call(this.querySelectorAll('.isolator'));
+        Array.prototype.slice.call(this.root.querySelectorAll('.isolator'));
 
     buttons.forEach(function(b) {
       if (numChecked === 1 && selectionMap[b.name]) {
@@ -124,15 +124,15 @@ Polymer({
   synchronizeColors: function(e) {
     this._setIsolatorIcon();
 
-    const checkboxes = this.querySelectorAll('paper-checkbox');
+    const checkboxes = this.root.querySelectorAll('paper-checkbox');
     checkboxes.forEach(p => {
       const color = this.coloring.getColor(p.name);
-      p.customStyle['--paper-checkbox-checked-color'] = color;
-      p.customStyle['--paper-checkbox-checked-ink-color'] = color;
-      p.customStyle['--paper-checkbox-unchecked-color'] = color;
-      p.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
+      p.style.setProperty('--paper-checkbox-checked-color', color);
+      p.style.setProperty('--paper-checkbox-checked-ink-color', color);
+      p.style.setProperty('--paper-checkbox-unchecked-color', color);
+      p.style.setProperty('--paper-checkbox-unchecked-ink-color', color);
     });
-    const buttons = this.querySelectorAll('.isolator');
+    const buttons = this.root.querySelectorAll('.isolator');
     buttons.forEach(p => {
       const color = this.coloring.getColor(p.name);
       p.style['color'] = color;

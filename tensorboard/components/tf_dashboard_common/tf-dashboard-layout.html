@@ -25,11 +25,11 @@ Generic layout for a dashboard.
 <dom-module id="tf-dashboard-layout">
   <template>
     <div id="sidebar">
-      <content select=".sidebar"></content>
+      <slot name="sidebar"></slot>
     </div>
 
     <div id="center">
-      <content select=".center" class="scollbar"></content>
+      <slot name="center" class="scollbar"></slot>
     </div>
     <style include="scrollbar-style"></style>
     <style>
@@ -55,7 +55,7 @@ Generic layout for a dashboard.
         overflow: hidden;
       }
 
-      ::content.center {
+      ::slotted(.center) {
         height: 100%;
         overflow-x: hidden;
         overflow-y: auto;
