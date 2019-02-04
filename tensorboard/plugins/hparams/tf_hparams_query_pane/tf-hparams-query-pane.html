@@ -17,9 +17,9 @@ limitations under the License.
 
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
@@ -163,7 +163,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
             <paper-dropdown-menu label="Sort by"
                                  on-selected-item-changed="_queryServer"
                                  horizontal-align="left">
-              <paper-menu class="dropdown-content"
+              <paper-listbox class="dropdown-content"
                           slot="dropdown-content"
                           selected="{{_sortByIndex}}"
                           on-selected-item-changed="_queryServer">
@@ -181,17 +181,17 @@ TODO(erez): Add aggregation controls for repeated sessions.
                     [[_metricName(metric.info)]]
                   </paper-item>
                 </template>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
             <paper-dropdown-menu label="Direction"
                                  on-selected-item-changed="_queryServer"
                                  horizontal-align="left">
-              <paper-menu class="dropdown-content"
+              <paper-listbox class="dropdown-content"
                           slot="dropdown-content"
                           selected="{{_sortDirection}}">
                 <paper-item>Ascending</paper-item>
                 <paper-item>Descending</paper-item>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
           </div>
           <div class="section paging">
@@ -302,7 +302,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       vaadin-split-layout {
         height: 100%;
       }
-      paper-menu {
+      paper-listbox {
         max-height: 15em;
       }
     </style>

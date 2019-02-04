@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
@@ -57,12 +58,12 @@ limitations under the License.
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
             >
-              <paper-menu class="dropdown-content" selected="0" slot="dropdown-content">
+              <paper-listbox class="dropdown-content" selected="0" slot="dropdown-content">
                 <paper-item>default</paper-item>
                 <paper-item>descending</paper-item>
                 <paper-item>ascending</paper-item>
                 <paper-item>nearest</paper-item>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
           </div>
         </div>
