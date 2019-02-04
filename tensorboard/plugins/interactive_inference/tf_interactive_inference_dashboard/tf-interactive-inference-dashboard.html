@@ -1229,7 +1229,7 @@ limitations under the License.
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
       <paper-dropdown-menu label="Apply to datapoints visualization" class="threshold-dropdown distance-vis-dropdown">
-        <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
+        <paper-listbox slot="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
           <paper-item name="colorBy">Color By</paper-item>
           <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
           <paper-item name="verticalFacet">Y-Axis Binning</paper-item>
@@ -1434,7 +1434,7 @@ limitations under the License.
                       <iron-icon icon="av:pause" class="resize-icon"></iron-icon>
                     </div>
                   </div>
-                  <div class="center" id="center">
+                  <div class="center" slot="center" id="center">
                     <facets-dive id="dive" data="[[visdata]]"
                                 selected-indices="[[selected]]"
                                 compared-indices="[[comparedIndices]]"
@@ -1544,7 +1544,7 @@ limitations under the License.
                         <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                           <div class="flex">
                             <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
-                              <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                              <paper-listbox slot="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                                 <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                   <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                 </template>
@@ -1594,7 +1594,7 @@ limitations under the License.
                           <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                             <div class="flex">
                               <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
-                                <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
+                                <paper-listbox slot="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
                                   <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                     <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                   </template>
@@ -1610,7 +1610,7 @@ limitations under the License.
                             <div class="flex">
                               <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
                                 <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
-                                  <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                                  <paper-listbox slot="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
                                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                       <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                     </template>
@@ -1739,7 +1739,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -1941,7 +1941,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -2055,7 +2055,7 @@ limitations under the License.
                         </paper-dialog>
                       </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                        <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                             <paper-item name="[[item]]">[[item]]</paper-item>
                           </template>

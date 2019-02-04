@@ -37,7 +37,7 @@ limitations under the License.
 <dom-module id="tf-pr-curve-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <tf-option-selector
             id="time-type-selector"
@@ -64,7 +64,7 @@ limitations under the License.
         </div>
        </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No precision–recall curve data was found.</h3>
@@ -235,7 +235,7 @@ limitations under the License.
       });
     },
     _reloadCards() {
-      _.forEach(this.querySelectorAll('tf-pr-curve-card'), card => {
+      _.forEach(this.root.querySelectorAll('tf-pr-curve-card'), card => {
         card.reload();
       });
     },

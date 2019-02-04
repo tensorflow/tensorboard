@@ -33,7 +33,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
 <dom-module id="tf-audio-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <tf-runs-selector
             id="runs-selector"
@@ -41,7 +41,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
           ></tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No audio data was found.</h3>
@@ -145,7 +145,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
         });
       },
       _reloadAudio() {
-        this.querySelectorAll('tf-audio-loader').forEach(audio => {
+        this.root.querySelectorAll('tf-audio-loader').forEach(audio => {
           audio.reload();
         });
       },

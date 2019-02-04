@@ -37,7 +37,7 @@ TODO(erez): Add aggregation of repeated trials.
 <dom-module id="tf-hparams-main">
   <template>
     <vaadin-split-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <tf-hparams-query-pane
           id="query-pane"
           backend="[[backend]]"
@@ -46,7 +46,7 @@ TODO(erez): Add aggregation of repeated trials.
           session-groups="{{_sessionGroups}}">
         </tf-hparams-query-pane>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <tf-hparams-sessions-pane
           id="sessions-pane"
           backend="[[backend]]"
