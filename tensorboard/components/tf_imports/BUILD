@@ -133,7 +133,9 @@ tf_web_library(
     ],
     path = "/tf-imports",
     strip_prefix = "package",
-    visibility = ["//visibility:private"],
+    visibility = [
+        "//visibility:private",
+    ],
 )
 
 tf_web_library(
