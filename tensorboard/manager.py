@@ -24,7 +24,9 @@ import datetime
 import errno
 import json
 import os
+import subprocess
 import tempfile
+import time
 
 import six
 
@@ -304,3 +306,129 @@ def get_all():
     else:
       results.append(info)
   return results
+
+
+# Indicates that a call to `start` was compatible with an existing
+# TensorBoard process, which can be reused according to the provided
+# info.
+StartReused = collections.namedtuple("StartReused", ("info",))
+
+# Indicates that a call to `start` successfully launched a new
+# TensorBoard process, which is available with the provided info.
+StartLaunched = collections.namedtuple("StartLaunched", ("info",))
+
+# Indicates that a call to `start` tried to launch a new TensorBoard
+# instance, but the subprocess exited with the given exit code and
+# output streams. (If the contents of the output streams are no longer
+# available---e.g., because the user has emptied /tmp/---then the
+# corresponding values will be `None`.)
+StartFailed = collections.namedtuple(
+    "StartFailed",
+    (
+        "exit_code",  # int, as `Popen.returncode` (negative for signal)
+        "stdout",  # str, or `None` if the stream could not be read
+        "stderr",  # str, or `None` if the stream could not be read
+    ),
+)
+
+# Indicates that a call to `start` launched a TensorBoard process, but
+# that process neither exited nor wrote its info file within the allowed
+# timeout period. The process may still be running under the included
+# PID.
+StartTimedOut = collections.namedtuple("StartTimedOut", ("pid",))
+
+
+def start(arguments, timeout=datetime.timedelta(seconds=10)):
+  """Start a new TensorBoard instance, or reuse a compatible one.
+
+  If the cache key determined by the provided arguments and the current
+  working directory (see `cache_key`) matches the cache key of a running
+  TensorBoard process (see `get_all`), that process will be reused.
+
+  Otherwise, a new TensorBoard process will be spawned with the provided
+  arguments, using the `tensorboard` binary from the system path.
+
+  Args:
+    arguments: List of strings to be passed as arguments to
+      `tensorboard`. (If you have a raw command-line string, see
+      `shlex.split`.)
+    timeout: `datetime.timedelta` object describing how long to wait
+      after launching the subprocess before giving up on it. If the
+      subprocess does not write its info file within this time period,
+      it will be left running in the background.
+
+  Returns:
+    A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`
+    object.
+  """
+  match = _find_matching_instance(
+      cache_key(
+          working_directory=os.getcwd(),
+          arguments=arguments,
+          configure_kwargs={},
+      ),
+  )
+  if match:
+    return StartReused(info=match)
+
+  (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
+  (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
+  start_time = datetime.datetime.now()
+  try:
+    p = subprocess.Popen(
+        ["tensorboard"] + arguments,
+        stdout=stdout_fd,
+        stderr=stderr_fd,
+    )
+  finally:
+    os.close(stdout_fd)
+    os.close(stderr_fd)
+
+  poll_interval_seconds = 0.5
+  end_time = start_time + timeout
+  while datetime.datetime.now() < end_time:
+    time.sleep(poll_interval_seconds)
+    subprocess_result = p.poll()
+    if subprocess_result is not None:
+      return StartFailed(
+          exit_code=subprocess_result,
+          stdout=_maybe_read_file(stdout_path),
+          stderr=_maybe_read_file(stderr_path),
+      )
+    for info in get_all():
+      if info.pid == p.pid and info.start_time >= start_time:
+        return StartLaunched(info=info)
+  else:
+    return StartTimedOut(pid=p.pid)
+
+
+def _find_matching_instance(cache_key):
+  """Find a running TensorBoard instance compatible with the cache key.
+
+  Returns:
+    A `TensorboardInfo` object, or `None` if none matches the cache key.
+  """
+  infos = get_all()
+  candidates = [info for info in infos if info.cache_key == cache_key]
+  for candidate in sorted(candidates, key=lambda x: x.port):
+    # TODO(@wchargin): Check here that the provided port is still live.
+    return candidate
+  return None
+
+
+def _maybe_read_file(filename):
+  """Read the given file, if it exists.
+
+  Args:
+    filename: A path to a file.
+
+  Returns:
+    A string containing the file contents, or `None` if the file does
+    not exist.
+  """
+  try:
+    with open(filename) as infile:
+      return infile.read()
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      return None

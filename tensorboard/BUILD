@@ -96,6 +96,24 @@ py_test(
     ],
 )
 
+py_test(
+    name = "manager_e2e_test",
+    size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
+    timeout = "short",  # about 15 seconds on my machine
+    flaky = True,  # on Python 2, fails about 0.5% of the time
+    srcs = ["manager_e2e_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+    data = [
+        ":tensorboard",
+    ],
+)
+
 py_library(
     name = "program",
     srcs = ["program.py"],
