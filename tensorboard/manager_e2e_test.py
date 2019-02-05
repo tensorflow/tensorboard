@@ -244,6 +244,32 @@ class ManagerEndToEndTest(tf.test.TestCase):
     )
     self.assertEqual(manager.get_all(), [])
 
+  def test_failure_unreadable_stdio(self):
+    if os.name == "nt":
+      # TODO(@wchargin): This could in principle work on Windows.
+      self.skipTest("Requires a POSIX shell for the stub script.")
+    self._stub_tensorboard(
+        name="fail-and-nuke-tmp",
+        program=textwrap.dedent(
+            r"""
+            #!/bin/sh
+            rm -r %s
+            exit 22
+            """.lstrip() % pipes.quote(self.tmproot),
+        ),
+    )
+    start_result = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(start_result, manager.StartFailed)
+    self.assertEqual(
+        start_result,
+        manager.StartFailed(
+            exit_code=22,
+            stderr=None,
+            stdout=None,
+        ),
+    )
+    self.assertEqual(manager.get_all(), [])
+
   def test_timeout(self):
     if os.name == "nt":
       # TODO(@wchargin): This could in principle work on Windows.
