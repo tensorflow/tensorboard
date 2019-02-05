@@ -178,7 +178,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
 
   def test_failure(self):
     if os.name == "nt":
-      # TODO: This could in principle work on Windows.
+      # TODO(@wchargin): This could in principle work on Windows.
       self.skipTest("Requires a POSIX shell for the stub script.")
     self._stub_tensorboard(
         name="fail-with-77",
@@ -205,7 +205,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
 
   def test_timeout(self):
     if os.name == "nt":
-      # TODO: This could in principle work on Windows.
+      # TODO(@wchargin): This could in principle work on Windows.
       self.skipTest("Requires a POSIX shell for the stub script.")
     tempdir = tempfile.mkdtemp()
     pid_file = os.path.join(tempdir, "pidfile")
