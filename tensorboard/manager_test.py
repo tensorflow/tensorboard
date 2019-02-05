@@ -158,6 +158,14 @@ class TensorboardInfoTest(tf.test.TestCase):
         "'2001-02-03T04:05:06'"):
       manager._info_from_string(bad_input)
 
+  def test_logdir_data_source_format(self):
+    info = _make_info()._replace(logdir="~/foo", db="")
+    self.assertEqual(manager.data_source_from_info(info), "logdir ~/foo")
+
+  def test_db_data_source_format(self):
+    info = _make_info()._replace(logdir="", db="sqlite:~/bar")
+    self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
+
 
 class CacheKeyTest(tf.test.TestCase):
   """Unit tests for `manager.cache_key`."""

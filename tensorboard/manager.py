@@ -79,6 +79,23 @@ TensorboardInfo = collections.namedtuple(
     _TENSORBOARD_INFO_FIELDS,
 )
 
+
+def data_source_from_info(info):
+  """Format the data location for the given TensorboardInfo.
+
+  Args:
+    info: A TensorboardInfo value.
+
+  Returns:
+    A human-readable string describing the logdir or database connection
+    used by the server: e.g., "logdir /tmp/logs".
+  """
+  if info.db:
+    return "db %s" % info.db
+  else:
+    return "logdir %s" % info.logdir
+
+
 def _info_to_string(info):
   """Convert a `TensorboardInfo` to string form to be stored on disk.
 
