@@ -429,6 +429,6 @@ def _maybe_read_file(filename):
   try:
     with open(filename) as infile:
       return infile.read()
-  except OSError as e:
+  except IOError as e:
     if e.errno == errno.ENOENT:
       return None
