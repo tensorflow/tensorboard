@@ -70,6 +70,31 @@ py_library(
 )
 
 py_library(
+    name = "manager",
+    srcs = ["manager.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":version",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_test",
+    size = "small",
+    srcs = ["manager_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        ":version",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
