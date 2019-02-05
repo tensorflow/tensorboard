@@ -159,6 +159,18 @@ class ManagerEndToEndTest(tf.test.TestCase):
     self.assertEqual(infos, [r1.info])
     self._assert_live(r1.info, expected_logdir="./logs")
 
+  def test_launch_new_because_incompatible(self):
+    r1 = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(r1, manager.StartLaunched)
+    r2 = manager.start(["--logdir=./adders", "--port=0"])
+    self.assertIsInstance(r2, manager.StartLaunched)
+    self.assertNotEqual(r1.info.port, r2.info.port)
+    self.assertNotEqual(r1.info.pid, r2.info.pid)
+    infos = manager.get_all()
+    self.assertItemsEqual(infos, [r1.info, r2.info])
+    self._assert_live(r1.info, expected_logdir="./logs")
+    self._assert_live(r2.info, expected_logdir="./adders")
+
   def test_reuse_after_kill(self):
     if os.name == "nt":
       self.skipTest("Can't send SIGTERM or SIGINT on Windows.")
