@@ -152,6 +152,14 @@ class TensorboardInfoTest(tf.test.TestCase):
 class CacheKeyTest(tf.test.TestCase):
   """Unit tests for `manager.cache_key`."""
 
+  def test_result_is_str(self):
+    result = manager.cache_key(
+        working_directory="/home/me",
+        arguments=["--logdir", "something"],
+        configure_kwargs={},
+    )
+    self.assertIsInstance(result, str)
+
   def test_depends_on_working_directory(self):
     results = [
         manager.cache_key(
