@@ -193,6 +193,9 @@ def cache_key(working_directory, arguments, configure_kwargs):
       "arguments": arguments,
       "configure_kwargs": configure_kwargs,
   }
-  return base64.b64encode(
+  raw = base64.b64encode(
       json.dumps(datum, sort_keys=True, separators=(",", ":")).encode("utf-8")
   )
+  # `raw` is of type `bytes`, even though it only contains ASCII
+  # characters; we want it to be `str` in both Python 2 and 3.
+  return str(raw.decode("ascii"))
