@@ -188,7 +188,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
     self.assertNotEqual(r1.info.pid, r2.info.pid)
     self._assert_live(r2.info, expected_logdir="./logs")
 
-  def test_failure(self):
+  def test_exit_failure(self):
     if os.name == "nt":
       # TODO(@wchargin): This could in principle work on Windows.
       self.skipTest("Requires a POSIX shell for the stub script.")
@@ -211,6 +211,35 @@ class ManagerEndToEndTest(tf.test.TestCase):
             exit_code=77,
             stderr="fatal: something bad happened\n",
             stdout="also some stdout\n",
+        ),
+    )
+    self.assertEqual(manager.get_all(), [])
+
+  def test_exit_success(self):
+    # TensorBoard exiting with success but not writing the info file is
+    # still a failure to launch.
+    if os.name == "nt":
+      # TODO(@wchargin): This could in principle work on Windows.
+      self.skipTest("Requires a POSIX shell for the stub script.")
+    self._stub_tensorboard(
+        name="fail-with-0",
+        program=textwrap.dedent(
+            r"""
+            #!/bin/sh
+            printf >&2 'info: something good happened\n'
+            printf 'also some standard output\n'
+            exit 0
+            """.lstrip(),
+        ),
+    )
+    start_result = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(start_result, manager.StartFailed)
+    self.assertEqual(
+        start_result,
+        manager.StartFailed(
+            exit_code=0,
+            stderr="info: something good happened\n",
+            stdout="also some standard output\n",
         ),
     )
     self.assertEqual(manager.get_all(), [])
