@@ -149,6 +149,83 @@ class TensorboardInfoTest(tf.test.TestCase):
       manager._info_from_string(bad_input)
 
 
+class CacheKeyTest(tf.test.TestCase):
+  """Unit tests for `manager.cache_key`."""
+
+  def test_depends_on_working_directory(self):
+    results = [
+        manager.cache_key(
+            working_directory=d,
+            arguments=["--logdir", "something"],
+            configure_kwargs={},
+        )
+        for d in ("/home/me", "/home/you")
+    ]
+    self.assertEqual(len(results), len(set(results)))
+
+  def test_depends_on_arguments(self):
+    results = [
+        manager.cache_key(
+            working_directory="/home/me",
+            arguments=arguments,
+            configure_kwargs={},
+        )
+        for arguments in (
+            ["--logdir=something"],
+            ["--logdir", "something"],
+            ["--logdir", "", "something"],
+            ["--logdir", "", "something", ""],
+        )
+    ]
+    self.assertEqual(len(results), len(set(results)))
+
+  def test_depends_on_configure_kwargs(self):
+    results = [
+        manager.cache_key(
+            working_directory="/home/me",
+            arguments=[],
+            configure_kwargs=configure_kwargs,
+        )
+        for configure_kwargs in (
+            {"logdir": "something"},
+            {"logdir": "something_else"},
+            {"logdir": "something", "port": "6006"},
+        )
+    ]
+    self.assertEqual(len(results), len(set(results)))
+
+  def test_arguments_and_configure_kwargs_independent(self):
+    # This test documents current behavior; its existence shouldn't be
+    # interpreted as mandating the behavior. In fact, it would be nice
+    # for `arguments` and `configure_kwargs` to be semantically merged
+    # in the cache key computation, but we don't currently do that.
+    results = [
+        manager.cache_key(
+            working_directory="/home/me",
+            arguments=["--logdir", "something"],
+            configure_kwargs={},
+        ),
+        manager.cache_key(
+            working_directory="/home/me",
+            arguments=[],
+            configure_kwargs={"logdir": "something"},
+        ),
+    ]
+    self.assertEqual(len(results), len(set(results)))
+
+  def test_arguments_list_vs_tuple_irrelevant(self):
+    with_list = manager.cache_key(
+        working_directory="/home/me",
+        arguments=["--logdir", "something"],
+        configure_kwargs={},
+    )
+    with_tuple = manager.cache_key(
+        working_directory="/home/me",
+        arguments=("--logdir", "something"),
+        configure_kwargs={},
+    )
+    self.assertEqual(with_list, with_tuple)
+
 
 if __name__ == "__main__":
   tf.test.main()
