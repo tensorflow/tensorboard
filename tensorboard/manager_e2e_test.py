@@ -56,21 +56,27 @@ class ManagerEndToEndTest(tf.test.TestCase):
     popen_patcher = mock.patch.object(subprocess, "Popen", PopenSpy)
     popen_patcher.start()
 
-    # Add our Bazel-provided `tensorboard` to the system path.
-    tensorboard_binary_dir = os.path.realpath("./tensorboard/")
-    environ = {
-        "TMPDIR": self.get_temp_dir(),
-        "PATH": os.pathsep.join((tensorboard_binary_dir, os.environ["PATH"])),
-    }
-    environ_patcher = mock.patch.dict(os.environ, environ)
-    environ_patcher.start()
-    self.addCleanup(environ_patcher.stop)
-    self._ensure_tensorboard_on_path(tensorboard_binary_dir)
-
     # Make sure that temporary files (including .tensorboard-info) are
     # created under our purview.
+    self.tmproot = os.path.join(self.get_temp_dir(), "tmproot")
+    os.mkdir(self.tmproot)
+    tmpdir_environ = {"TMPDIR": self.tmproot}
+    tmpdir_environ_patcher = mock.patch.dict(os.environ, tmpdir_environ)
+    tmpdir_environ_patcher.start()
+    self.addCleanup(tmpdir_environ_patcher.stop)
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
+    self.assertEqual(tempfile.gettempdir(), self.tmproot)
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
+
+    # Add our Bazel-provided `tensorboard` to the system path.
+    tensorboard_binary_dir = os.path.realpath("./tensorboard/")
+    path_environ = {
+        "PATH": os.pathsep.join((tensorboard_binary_dir, os.environ["PATH"])),
+    }
+    path_environ_patcher = mock.patch.dict(os.environ, path_environ)
+    path_environ_patcher.start()
+    self.addCleanup(path_environ_patcher.stop)
+    self._ensure_tensorboard_on_path(tensorboard_binary_dir)
 
   def tearDown(self):
     failed_kills = []
