@@ -32,7 +32,9 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 import argparse
+import atexit
 from collections import defaultdict
+import datetime
 import errno
 import os
 import signal
@@ -41,8 +43,11 @@ import sys
 import threading
 import inspect
 
+import six
+from six.moves import urllib
 from werkzeug import serving
 
+from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
@@ -100,6 +105,7 @@ class TensorBoard(object):
     assets_zip_provider: Set by constructor.
     server_class: Set by constructor.
     flags: An argparse.Namespace set by the configure() method.
+    cache_key: As `manager.cache_key`; set by the configure() method.
   """
 
   def __init__(self,
@@ -167,6 +173,11 @@ class TensorBoard(object):
       loader.define_flags(parser)
     arg0 = argv[0] if argv else ''
     flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+    self.cache_key = manager.cache_key(
+        working_directory=os.getcwd(),
+        arguments=argv[1:],
+        configure_kwargs=kwargs,
+    )
     if absl_flags and arg0:
       # Only expose main module Abseil flags as TensorBoard native flags.
       # This is the same logic Abseil's ArgumentParser uses for determining
@@ -212,6 +223,7 @@ class TensorBoard(object):
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
                        (version.VERSION, server.get_url()))
       sys.stderr.flush()
+      self._register_info(server)
       server.serve_forever()
       return 0
     except TensorBoardServerException as e:
@@ -238,6 +250,26 @@ class TensorBoard(object):
     thread.daemon = True
     thread.start()
     return server.get_url()
+
+  def _register_info(self, server):
+    """Write a TensorboardInfo file and arrange for its cleanup.
+
+    Args:
+      server: The result of `self._make_server()`.
+    """
+    server_url = urllib.parse.urlparse(server.get_url())
+    info = manager.TensorboardInfo(
+        version=version.VERSION,
+        start_time=datetime.datetime.now(),
+        port=server_url.port,
+        pid=os.getpid(),
+        path_prefix=self.flags.path_prefix,
+        logdir=self.flags.logdir,
+        db=self.flags.db,
+        cache_key=self.cache_key,
+    )
+    atexit.register(manager.remove_info_file)
+    manager.write_info_file(info)
 
   def _install_signal_handler(self, signal_number, signal_name):
     """Set a signal handler to gracefully exit on the given signal.
