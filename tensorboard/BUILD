@@ -100,7 +100,10 @@ py_test(
     name = "manager_e2e_test",
     size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
     timeout = "short",  # about 15 seconds on my machine
-    flaky = True,  # on Python 2, fails about 0.5% of the time
+    # On Python 2, this test fails about 0.5% of the time when run with
+    # high parallelism; TensorBoard subprocess time out instead of
+    # launching successfully.
+    flaky = True,
     srcs = ["manager_e2e_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
