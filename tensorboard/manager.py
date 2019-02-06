@@ -279,8 +279,16 @@ def get_all():
   results = []
   for filename in os.listdir(info_dir):
     filepath = os.path.join(info_dir, filename)
-    with open(filepath) as infile:
-      contents = infile.read()
+    try:
+      with open(filepath) as infile:
+        contents = infile.read()
+    except IOError as e:
+      if e.errno == errno.EACCES:
+        # May have been written by this module in a process whose
+        # `umask` includes some bits of 0o444.
+        continue
+      else:
+        raise
     try:
       info = _info_from_string(contents)
     except ValueError:

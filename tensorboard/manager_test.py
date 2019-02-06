@@ -324,9 +324,12 @@ class TensorboardInfoIoTest(tf.test.TestCase):
       outfile.write("good luck parsing this\n")
     with open(os.path.join(self.info_dir, "pid-5678.info"), "w") as outfile:
       outfile.write('{"valid_json":"yes","valid_tbinfo":"no"}\n')
+    with open(os.path.join(self.info_dir, "pid-9012.info"), "w") as outfile:
+      outfile.write('if a tbinfo has st_mode==0, does it make a sound?\n')
+    os.chmod(os.path.join(self.info_dir, "pid-9012.info"), 0o000)
     with mock.patch.object(tb_logging.get_logger(), "warning") as fn:
       self.assertEqual(manager.get_all(), [])
-    self.assertEqual(fn.call_count, 2)
+    self.assertEqual(fn.call_count, 2)  # 2 invalid, 1 unreadable (silent)
 
 
 if __name__ == "__main__":
