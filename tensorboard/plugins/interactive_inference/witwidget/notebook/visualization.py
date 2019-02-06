@@ -324,7 +324,7 @@ class WitConfigBuilder(object):
 
     Args:
       estimator: The TF Estimator which will be used for model inference.
-      feature_spec: The feature_spec object which will be used for exmaple
+      feature_spec: The feature_spec object which will be used for example
       parsing.
 
     Returns:
@@ -349,7 +349,7 @@ class WitConfigBuilder(object):
 
     Args:
       estimator: The TF Estimator which will be used for model inference.
-      feature_spec: The feature_spec object which will be used for exmaple
+      feature_spec: The feature_spec object which will be used for example
       parsing.
 
     Returns:
