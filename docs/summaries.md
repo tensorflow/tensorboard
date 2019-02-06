@@ -103,7 +103,7 @@ def variable_summaries(var):
 def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
   """Reusable code for making a simple neural net layer.
 
-  It does a matrix multiply, bias add, and then uses relu to nonlinearize.
+  It does a matrix multiply, bias add, and then uses ReLU to nonlinearize.
   It also sets up name scoping so that the resultant graph is easy to read,
   and adds a number of summary ops.
   """
@@ -142,9 +142,11 @@ with tf.name_scope('cross_entropy'):
   # can be numerically unstable.
   #
   # So here we use tf.losses.sparse_softmax_cross_entropy on the
-  # raw logit outputs of the nn_layer above.
+  # raw logit outputs of the nn_layer above, and then average across
+  # the batch.
   with tf.name_scope('total'):
-    cross_entropy = tf.losses.sparse_softmax_cross_entropy(labels=y_, logits=y)
+    cross_entropy = tf.losses.sparse_softmax_cross_entropy(
+        labels=y_, logits=y)
 tf.summary.scalar('cross_entropy', cross_entropy)
 
 with tf.name_scope('train'):
@@ -153,16 +155,16 @@ with tf.name_scope('train'):
 
 with tf.name_scope('accuracy'):
   with tf.name_scope('correct_prediction'):
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    correct_prediction = tf.equal(tf.argmax(y, 1), y_)
   with tf.name_scope('accuracy'):
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 tf.summary.scalar('accuracy', accuracy)
 
-# Merge all the summaries and write them out to /tmp/mnist_logs (by default)
+# Merge all the summaries and write them out to
+# /tmp/tensorflow/mnist/logs/mnist_with_summaries (by default)
 merged = tf.summary.merge_all()
-train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
-                                      sess.graph)
-test_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/test')
+train_writer = tf.summary.FileWriter(FLAGS.log_dir + '/train', sess.graph)
+test_writer = tf.summary.FileWriter(FLAGS.log_dir + '/test')
 tf.global_variables_initializer().run()
 ```
 
