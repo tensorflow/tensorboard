@@ -25,6 +25,7 @@ import json
 import os
 import pipes
 import signal
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -170,6 +171,25 @@ class ManagerEndToEndTest(tf.test.TestCase):
     self.assertItemsEqual(infos, [r1.info, r2.info])
     self._assert_live(r1.info, expected_logdir="./logs")
     self._assert_live(r2.info, expected_logdir="./adders")
+
+  def test_launch_new_because_info_file_deleted(self):
+    r1 = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(r1, manager.StartLaunched)
+
+    # Now suppose that someone comes and wipes /tmp/...
+    self.assertEqual(len(manager.get_all()), 1, manager.get_all())
+    shutil.rmtree(self.tmproot)
+    os.mkdir(self.tmproot)
+    self.assertEqual(len(manager.get_all()), 0, manager.get_all())
+
+    # ...so that starting even the same command forces a relaunch:
+    r2 = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(r2, manager.StartLaunched)  # (picked a new port)
+    self.assertEqual(r1.info.cache_key, r2.info.cache_key)
+    infos = manager.get_all()
+    self.assertItemsEqual(infos, [r2.info])
+    self._assert_live(r1.info, expected_logdir="./logs")
+    self._assert_live(r2.info, expected_logdir="./logs")
 
   def test_reuse_after_kill(self):
     if os.name == "nt":
