@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import errno
 import json
 import os
 import re
@@ -257,6 +258,14 @@ class TensorboardInfoIoTest(tf.test.TestCase):
 
   def _list_info_dir(self):
     return os.listdir(self.info_dir)
+
+  def test_fails_if_info_dir_name_is_taken_by_a_regular_file(self):
+    os.rmdir(self.info_dir)
+    with open(self.info_dir, "w") as outfile:
+      pass
+    with self.assertRaises(OSError) as cm:
+      manager._get_info_dir()
+    self.assertEqual(cm.exception.errno, errno.EEXIST, cm.exception)
 
   @mock.patch("os.getpid", lambda: 76540)
   def test_write_remove_info_file(self):
