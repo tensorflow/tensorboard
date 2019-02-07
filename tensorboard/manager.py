@@ -226,7 +226,11 @@ def _get_info_dir():
 
 
 def _get_info_file_path():
-  """Get path to info file for the current process."""
+  """Get path to info file for the current process.
+
+  As with `_get_info_dir`, the info directory will be created if it does
+  not exist.
+  """
   return os.path.join(_get_info_dir(), "pid-%d.info" % os.getpid())
 
 
