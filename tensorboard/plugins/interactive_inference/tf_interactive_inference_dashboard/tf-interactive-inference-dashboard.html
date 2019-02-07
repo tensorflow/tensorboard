@@ -1099,28 +1099,36 @@ limitations under the License.
                           all the features and values associated with that example. Some of the things you can
                           do in the datapoint editor are:</div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="editedexample.png">
+                          <template is="dom-if" if="[[!hideImages]]">
+                            <img class="doc-image" src="editedexample.png">
+                          </template>
                           <div class="datapoint-info-block">
                             <div class="bold">Test inference on edited values</div>
                             <div>Edit features and run inference to see how your model performs</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="distance.png">
+                          <template is="dom-if" if="[[!hideImages]]">
+                            <img class="doc-image" src="distance.png">
+                          </template>
                           <div class="datapoint-info-block">
                             <div class="bold">Compute distances from a selected datapoint</div>
                             <div>Have the selected example be an anchor and create a new distance feature for all loaded examples</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="explorecounterfactuals.png">
+                          <template is="dom-if" if="[[!hideImages]]">
+                            <img class="doc-image" src="explorecounterfactuals.png">
+                          </template>
                           <div class="datapoint-info-block">
                             <div class="bold">Find closest counterfactuals</div>
                             <div>See the closest example with a different classification</div>
                           </div>
                         </div>
                         <div class="datapoint-info-bullet">
-                          <img class="doc-image" src="pdplots.png">
+                          <template is="dom-if" if="[[!hideImages]]">
+                            <img class="doc-image" src="pdplots.png">
+                          </template>
                           <div class="datapoint-info-block">
                             <div class="bold">Partial Dependence Plots</div>
                             <div>Explore plots for every feature that show the change in inference results across different valid values for that feature</div>
@@ -1732,6 +1740,12 @@ limitations under the License.
           type: Boolean,
           value: false,
           observer: 'localChanged_',
+        },
+        // Boolean for if documentation images should be hidden, needed when
+        // running in an environment where the images aren't available.
+        hideImages: {
+          type: Boolean,
+          value: false,
         },
         // Atlas URL for "local" demo mode.
         localAtlasUrl: String,
