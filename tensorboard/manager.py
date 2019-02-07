@@ -308,6 +308,9 @@ def get_all():
   return results
 
 
+# The following four types enumerate the possible return values of the
+# `start` function.
+
 # Indicates that a call to `start` was compatible with an existing
 # TensorBoard process, which can be reused according to the provided
 # info.
