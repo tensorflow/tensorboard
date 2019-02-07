@@ -34,7 +34,7 @@ from tensorboard import version
 from tensorboard.util import tb_logging
 
 
-# Type descriptors for `TensorboardInfo` fields.
+# Type descriptors for `TensorBoardInfo` fields.
 _FieldType = collections.namedtuple(
     "_FieldType",
     (
@@ -74,17 +74,17 @@ _TENSORBOARD_INFO_FIELDS = collections.OrderedDict((
     ("db", _type_str),  # may be empty
     ("cache_key", _type_str),  # opaque, as given by `cache_key` below
 ))
-TensorboardInfo = collections.namedtuple(
-    "TensorboardInfo",
+TensorBoardInfo = collections.namedtuple(
+    "TensorBoardInfo",
     _TENSORBOARD_INFO_FIELDS,
 )
 
 
 def data_source_from_info(info):
-  """Format the data location for the given TensorboardInfo.
+  """Format the data location for the given TensorBoardInfo.
 
   Args:
-    info: A TensorboardInfo value.
+    info: A TensorBoardInfo value.
 
   Returns:
     A human-readable string describing the logdir or database connection
@@ -97,19 +97,19 @@ def data_source_from_info(info):
 
 
 def _info_to_string(info):
-  """Convert a `TensorboardInfo` to string form to be stored on disk.
+  """Convert a `TensorBoardInfo` to string form to be stored on disk.
 
   The format returned by this function is opaque and should only be
   interpreted by `_info_from_string`.
 
   Args:
-    info: A valid `TensorboardInfo` object.
+    info: A valid `TensorBoardInfo` object.
 
   Raises:
     ValueError: If any field on `info` is not of the correct type.
 
   Returns:
-    A string representation of the provided `TensorboardInfo`.
+    A string representation of the provided `TensorBoardInfo`.
   """
   for key in _TENSORBOARD_INFO_FIELDS:
     field_type = _TENSORBOARD_INFO_FIELDS[key]
@@ -131,14 +131,14 @@ def _info_to_string(info):
 
 
 def _info_from_string(info_string):
-  """Parse a `TensorboardInfo` object from its string representation.
+  """Parse a `TensorBoardInfo` object from its string representation.
 
   Args:
-    info_string: A string representation of a `TensorboardInfo`, as
+    info_string: A string representation of a `TensorBoardInfo`, as
       produced by a previous call to `_info_to_string`.
 
   Returns:
-    A `TensorboardInfo` value.
+    A `TensorBoardInfo` value.
 
   Raises:
     ValueError: If the provided string is not valid JSON, or if it does
@@ -159,7 +159,7 @@ def _info_from_string(info_string):
   actual_keys = frozenset(json_value)
   if expected_keys != actual_keys:
     raise ValueError(
-        "bad keys on TensorboardInfo (missing: %s; extraneous: %s)"
+        "bad keys on TensorBoardInfo (missing: %s; extraneous: %s)"
         % (expected_keys - actual_keys, actual_keys - expected_keys)
     )
 
@@ -173,11 +173,11 @@ def _info_from_string(info_string):
       )
     json_value[key] = field_type.deserialize(json_value[key])
 
-  return TensorboardInfo(**json_value)
+  return TensorBoardInfo(**json_value)
 
 
 def cache_key(working_directory, arguments, configure_kwargs):
-  """Compute a `TensorboardInfo.cache_key` field.
+  """Compute a `TensorBoardInfo.cache_key` field.
 
   The format returned by this function is opaque. Clients may only
   inspect it by comparing it for equality with other results from this
@@ -254,13 +254,13 @@ def _get_info_file_path():
 
 
 def write_info_file(tensorboard_info):
-  """Write TensorboardInfo to the current process's info file.
+  """Write TensorBoardInfo to the current process's info file.
 
   This should be called by `main` once the server is ready. When the
   server shuts down, `remove_info_file` should be called.
 
   Args:
-    tensorboard_info: A valid `TensorboardInfo` object.
+    tensorboard_info: A valid `TensorBoardInfo` object.
 
   Raises:
     ValueError: If any field on `info` is not of the correct type.
@@ -271,7 +271,7 @@ def write_info_file(tensorboard_info):
 
 
 def remove_info_file():
-  """Remove the current process's TensorboardInfo file, if it exists.
+  """Remove the current process's TensorBoardInfo file, if it exists.
 
   If the file does not exist, no action is taken and no error is raised.
   """
@@ -287,7 +287,7 @@ def remove_info_file():
 
 
 def get_all():
-  """Return TensorboardInfo values for running TensorBoard processes.
+  """Return TensorBoardInfo values for running TensorBoard processes.
 
   This function may not provide a perfect snapshot of the set of running
   processes. Its result set may be incomplete if the user has cleaned
@@ -296,7 +296,7 @@ def get_all():
   (e.g., with SIGKILL or SIGQUIT).
 
   Returns:
-    A fresh list of `TensorboardInfo` objects.
+    A fresh list of `TensorBoardInfo` objects.
   """
   info_dir = _get_info_dir()
   results = []
@@ -374,7 +374,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=10)):
       `shlex.split`.)
     timeout: `datetime.timedelta` object describing how long to wait for
       the subprocess to initialize a TensorBoard server and write its
-      `TensorboardInfo` file. If the info file is not written within
+      `TensorBoardInfo` file. If the info file is not written within
       this time period, `start` will assume that the subprocess is stuck
       in a bad state, and will give up on waiting for it and return a
       `StartTimedOut` result. Note that in such a case the subprocess
@@ -429,7 +429,7 @@ def _find_matching_instance(cache_key):
   """Find a running TensorBoard instance compatible with the cache key.
 
   Returns:
-    A `TensorboardInfo` object, or `None` if none matches the cache key.
+    A `TensorBoardInfo` object, or `None` if none matches the cache key.
   """
   infos = get_all()
   candidates = [info for info in infos if info.cache_key == cache_key]

@@ -195,10 +195,10 @@ def start(args_string):
 
 
 def _time_delta_from_info(info):
-  """Format the elapsed time for the given TensorboardInfo.
+  """Format the elapsed time for the given TensorBoardInfo.
 
   Args:
-    info: A TensorboardInfo value.
+    info: A TensorBoardInfo value.
 
   Returns:
     A human-readable string describing the time since the server
