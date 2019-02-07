@@ -70,16 +70,66 @@ py_library(
 )
 
 py_library(
+    name = "manager",
+    srcs = ["manager.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":version",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_test",
+    size = "small",
+    srcs = ["manager_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        ":version",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_e2e_test",
+    size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
+    timeout = "short",  # about 15 seconds on my machine
+    # On Python 2, this test fails about 0.5% of the time when run with
+    # high parallelism; TensorBoard subprocess time out instead of
+    # launching successfully.
+    flaky = True,
+    srcs = ["manager_e2e_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+    data = [
+        ":tensorboard",
+    ],
+)
+
+py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":manager",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -358,4 +408,15 @@ py_library(
     name = "lazy",
     srcs = ["lazy.py"],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "lazy_test",
+    srcs = ["lazy_test.py"],
+    srcs_version = "PY2AND3",
+    size = "small",
+    deps = [
+        ":lazy",
+        "@org_pythonhosted_six",
+    ],
 )
