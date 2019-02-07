@@ -355,7 +355,8 @@ def start(arguments, timeout=datetime.timedelta(seconds=10)):
     timeout: `datetime.timedelta` object describing how long to wait
       after launching the subprocess before giving up on it. If the
       subprocess does not write its info file within this time period,
-      it will be left running in the background.
+      it will be left running in the background. Default is 10 seconds
+      (subject to change).
 
   Returns:
     A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`
