@@ -118,6 +118,16 @@ py_test(
 )
 
 py_library(
+    name = "notebook",
+    srcs = ["notebook.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":manager",
+    ],
+)
+
+py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
