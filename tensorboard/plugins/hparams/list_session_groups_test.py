@@ -20,7 +20,12 @@ from __future__ import print_function
 
 import operator
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import event_accumulator
@@ -47,9 +52,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
   maxDiff = None  # pylint: disable=invalid-name
 
   def setUp(self):
-    self._mock_tb_context = tf.test.mock.create_autospec(
+    self._mock_tb_context = mock.create_autospec(
         base_plugin.TBContext)
-    self._mock_multiplexer = tf.test.mock.create_autospec(
+    self._mock_multiplexer = mock.create_autospec(
         plugin_event_multiplexer.EventMultiplexer)
     self._mock_tb_context.multiplexer = self._mock_multiplexer
     self._mock_multiplexer.PluginRunToTagToContent.return_value = {
@@ -192,83 +197,83 @@ class ListSessionGroupsTest(tf.test.TestCase):
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(10.0))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(10.0))
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(20.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(20.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(15.0))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(15.0))
             ],
             'optional_metric': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(20.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(20.0)),
                 TensorEvent(
                     wall_time=2, step=20,
-                    tensor_proto=tf.make_tensor_proto(33.0))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(33.0))
             ]
         },
         'session_2': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(100.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(100.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(200.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(200.0)),
                 TensorEvent(
                     wall_time=11, step=3,
-                    tensor_proto=tf.make_tensor_proto(150.0))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(150.0))
             ]
         },
         'session_3': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(1.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(1.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(2.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(2.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(1.5))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(1.5))
             ]
         },
         'session_4': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(101.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(101.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(201.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(201.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(-151.0))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(-151.0))
             ]
         },
         'session_5': {
             'current_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(52.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(52.0)),
             ],
             'delta_temp': [
                 TensorEvent(
                     wall_time=1, step=1,
-                    tensor_proto=tf.make_tensor_proto(2.0)),
+                    tensor_proto=tf.compat.v1.make_tensor_proto(2.0)),
                 TensorEvent(
                     wall_time=10, step=2,
-                    tensor_proto=tf.make_tensor_proto(-18))
+                    tensor_proto=tf.compat.v1.make_tensor_proto(-18))
             ]
         },
     }

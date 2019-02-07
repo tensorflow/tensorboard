@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-r"""A CLI for writing hparams experiment and session summaries into event files.
+"""A CLI for writing hparams experiment and session summaries into event files.
 
 Usage examples: (See hparams_util.proto and api.proto for the definitions of the
 protobufs used below).

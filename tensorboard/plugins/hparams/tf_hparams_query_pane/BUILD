@@ -1,4 +1,4 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility =
@@ -22,6 +22,12 @@ tf_web_library(
         "@org_polymer_paper_item",
         "@org_polymer_paper_menu",
     ],
+)
+
+tf_web_test(
+    name = "test",
+    src = "/tf-hparams-query-pane/test/tf-hparams-query-pane-test.html",
+    web_library = ":test_lib",
 )
 
 tf_web_library(

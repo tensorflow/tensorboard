@@ -1,4 +1,4 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility =

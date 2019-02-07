@@ -1,4 +1,4 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility =
@@ -20,6 +20,12 @@ tf_web_library(
         "@org_polymer_paper_radio_button",
         "@org_polymer_paper_radio_group",
     ],
+)
+
+tf_web_test(
+    name = "test",
+    src = "/tf-hparams-scale-and-color-controls/test/tf-hparams-scale-and-color-controls-test.html",
+    web_library = ":test_lib",
 )
 
 tf_web_library(

@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 tf_web_library(
@@ -13,6 +13,12 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:polymer",
     ],
+)
+
+tf_web_test(
+    name = "test",
+    src = "/tf-hparams-google-analytics-tracker/test/tf-hparams-google-analytics-tracker-test.html",
+    web_library = ":test_lib",
 )
 
 tf_web_library(

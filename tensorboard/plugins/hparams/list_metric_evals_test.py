@@ -18,7 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.plugins.hparams import api_pb2
@@ -29,7 +34,7 @@ from tensorboard.plugins.scalar import scalars_plugin
 class ListMetricEvalsTest(tf.test.TestCase):
 
   def setUp(self):
-    self._mock_scalars_plugin = tf.test.mock.create_autospec(
+    self._mock_scalars_plugin = mock.create_autospec(
         scalars_plugin.ScalarsPlugin)
     self._mock_scalars_plugin.scalars_impl.side_effect = self._mock_scalars_impl
 

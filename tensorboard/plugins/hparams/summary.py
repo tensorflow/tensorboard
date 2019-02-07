@@ -39,7 +39,7 @@ import time
 
 import six
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
@@ -183,7 +183,7 @@ def _summary(tag, hparams_plugin_data):
     tag: string. The tag to use.
     hparams_plugin_data: The HParamsPluginData message to use.
   """
-  summary = tf.Summary()
+  summary = tf.compat.v1.Summary()
   summary.value.add(
       tag=tag,
       metadata=metadata.create_summary_metadata(hparams_plugin_data))

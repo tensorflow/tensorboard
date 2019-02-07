@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -50,8 +50,8 @@ def create_summary_metadata(hparams_plugin_data_pb):
   content = plugin_data_pb2.HParamsPluginData()
   content.CopyFrom(hparams_plugin_data_pb)
   content.version = PLUGIN_DATA_VERSION
-  return tf.SummaryMetadata(
-      plugin_data=tf.SummaryMetadata.PluginData(
+  return tf.compat.v1.SummaryMetadata(
+      plugin_data=tf.compat.v1.SummaryMetadata.PluginData(
           plugin_name=PLUGIN_NAME, content=content.SerializeToString()))
 
 

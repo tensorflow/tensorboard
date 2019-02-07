@@ -20,7 +20,12 @@ from __future__ import print_function
 
 import operator
 
-import tensorflow.compat.v1 as tf
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import event_accumulator
@@ -41,8 +46,8 @@ class BackendContextTest(tf.test.TestCase):
   maxDiff = None  # pylint: disable=invalid-name
 
   def setUp(self):
-    self._mock_tb_context = tf.test.mock.create_autospec(base_plugin.TBContext)
-    self._mock_multiplexer = tf.test.mock.create_autospec(
+    self._mock_tb_context = mock.create_autospec(base_plugin.TBContext)
+    self._mock_multiplexer = mock.create_autospec(
         plugin_event_multiplexer.EventMultiplexer)
     self._mock_tb_context.multiplexer = self._mock_multiplexer
     self._mock_multiplexer.PluginRunToTagToContent.side_effect = (

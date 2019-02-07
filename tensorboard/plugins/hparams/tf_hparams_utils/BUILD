@@ -1,4 +1,4 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility =
@@ -14,6 +14,12 @@ tf_web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
     ],
+)
+
+tf_web_test(
+    name = "test",
+    src = "/tf-hparams-utils/test/tf-hparams-utils-test.html",
+    web_library = ":test_lib",
 )
 
 tf_web_library(

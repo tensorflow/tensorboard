@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 from google.protobuf import struct_pb2
 
 from tensorboard.plugins.hparams import api_pb2
@@ -58,11 +58,11 @@ class SummaryTest(tf.test.TestCase):
     self.assertEqual(
         summary.experiment_pb(
             hparam_infos, metric_infos, time_created_secs=time_created_secs),
-        tf.Summary(value=[
-            tf.Summary.Value(
+        tf.compat.v1.Summary(value=[
+            tf.compat.v1.Summary.Value(
                 tag="_hparams_/experiment",
-                metadata=tf.SummaryMetadata(
-                    plugin_data=tf.SummaryMetadata.PluginData(
+                metadata=tf.compat.v1.SummaryMetadata(
+                    plugin_data=tf.compat.v1.SummaryMetadata.PluginData(
                         plugin_name="hparams",
                         content=(plugin_data_pb2.HParamsPluginData(
                             version=0,
@@ -77,11 +77,11 @@ class SummaryTest(tf.test.TestCase):
     end_time_secs = 1234.0
     self.assertEqual(
         summary.session_end_pb(api_pb2.STATUS_SUCCESS, end_time_secs),
-        tf.Summary(value=[
-            tf.Summary.Value(
+        tf.compat.v1.Summary(value=[
+            tf.compat.v1.Summary.Value(
                 tag="_hparams_/session_end_info",
-                metadata=tf.SummaryMetadata(
-                    plugin_data=tf.SummaryMetadata.PluginData(
+                metadata=tf.compat.v1.SummaryMetadata(
+                    plugin_data=tf.compat.v1.SummaryMetadata.PluginData(
                         plugin_name="hparams",
                         content=(plugin_data_pb2.HParamsPluginData(
                             version=0,

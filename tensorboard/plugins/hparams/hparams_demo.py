@@ -35,7 +35,7 @@ import os.path
 import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 from absl import flags
 from absl import app
 from google.protobuf import struct_pb2

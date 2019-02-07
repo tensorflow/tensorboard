@@ -81,48 +81,6 @@ py_test(
     ],
 )
 
-# To run the UI tests:
-#
-# bazel run //tensorboard/plugins/hparams:web_components_tests
-#
-# This will launch a webserver and print the port it listens on to stdout.
-# Open a browser and navigate to that port. Click on the
-# "/web_components_tests/web_components_tests.html" link. This will run the
-# tests and show the results in the browser.
-#
-# How to add a new component test:
-# 1. Add a 'test' subdir to the component dir: ./tf_hparams_<component>/test/
-#    and put the test in a a file named: tf-hparams-<component>-test.html in
-#    that directory.
-# 2. Add a 'test_lib' tf_web_library rule to the BUILD file of the component
-#    that contains the test.
-# 3. Update the 'web_components_tests.html' file to load
-#    '../tf-hparams-<component>/test/tf-hparams-<component>-test.html"
-# 4. Add "//tensorboard/plugins/hparams/tf_hparams_<component>:test_lib"
-#    as a dependency to the rule below.
-#
-# TODO(erez): Simplify adding a new test. It should not require touching so many files.
-tf_web_library(
-    name = "web_components_tests",
-    testonly = 1,
-    srcs = [
-        "web_components_tests.html",
-    ],
-    path = "/web_components_tests",
-    deps = [
-        # This is not really a dependency, but we have it here so that
-        # building the test would make sure the dashboard builds.
-        "//tensorboard/plugins/hparams/tf_hparams_dashboard",
-        "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_plot:test_lib",
-        "//tensorboard/plugins/hparams/tf_hparams_query_pane:test_lib",
-        "//tensorboard/plugins/hparams/tf_hparams_scale_and_color_controls:test_lib",
-        "//tensorboard/plugins/hparams/tf_hparams_utils:test_lib",
-        "//tensorboard/plugins/hparams/tf_hparams_google_analytics_tracker:test_lib",
-        "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-    ],
-)
-
 py_binary(
     name = "hparams_demo",
     srcs = ["hparams_demo.py"],
@@ -130,6 +88,8 @@ py_binary(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/scalar:summary",
         "@org_pythonhosted_six",
@@ -143,6 +103,8 @@ py_binary(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
