@@ -76,6 +76,7 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":version",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -89,6 +90,7 @@ py_test(
     deps = [
         ":manager",
         ":version",
+        "//tensorboard/util:tb_logging",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
