@@ -355,11 +355,13 @@ def start(arguments, timeout=datetime.timedelta(seconds=10)):
     arguments: List of strings to be passed as arguments to
       `tensorboard`. (If you have a raw command-line string, see
       `shlex.split`.)
-    timeout: `datetime.timedelta` object describing how long to wait
-      after launching the subprocess before giving up on it. If the
-      subprocess does not write its info file within this time period,
-      it will be left running in the background. Default is 10 seconds
-      (subject to change).
+    timeout: `datetime.timedelta` object describing how long to wait for
+      the subprocess to initialize a TensorBoard server and write its
+      `TensorboardInfo` file. If the info file is not written within
+      this time period, `start` will assume that the subprocess is stuck
+      in a bad state, and will give up on waiting for it and return a
+      `StartTimedOut` result. Note that in such a case the subprocess
+      will not be killed. Default value is 10 seconds.
 
   Returns:
     A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`
