@@ -173,9 +173,13 @@ def end_session():
 
 
 def write_summary(summary_pb):
-  w = tf.summary.FileWriter(FLAGS.logdir)
-  w.add_summary(summary_pb)
-  w.close()
+  tf.compat.v1.enable_eager_execution()
+  writer = tf.compat.v2.summary.create_file_writer(FLAGS.logdir)
+  with writer.as_default():
+    event = tf.compat.v1.Event(summary=summary_pb)
+    tf.compat.v2.summary.import_event(
+        tf.constant(event.SerializeToString(), dtype=tf.string))
+    tf.compat.v2.summary.flush()
 
 
 if __name__ == "__main__":

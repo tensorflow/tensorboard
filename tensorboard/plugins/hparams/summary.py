@@ -39,7 +39,7 @@ import time
 
 import six
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata

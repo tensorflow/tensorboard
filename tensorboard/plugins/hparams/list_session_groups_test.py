@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import operator
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import event_accumulator

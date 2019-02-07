@@ -20,6 +20,10 @@ related metric. See the function `run` below for more details.
 This demo is a slightly modified version of
 tensorboard/plugins/scalar/scalar_demo.py.
 """
+# TODO(erez): This code currently does not work with tf-nightly-2.0 since
+# it uses tf.compart.v1.summary.FileWriter which can't be used in eager
+# mode (which is the default in tensorflow V2). Fix this when we changet this
+# demo to be more typical to a machine learning experiment.
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,8 +35,9 @@ import os.path
 import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-from tensorflow import flags
+import tensorflow.compat.v1 as tf
+from absl import flags
+from absl import app
 from google.protobuf import struct_pb2
 
 from tensorboard.plugins.scalar import summary as scalar_summary
@@ -156,8 +161,9 @@ def run(logdir, session_id, hparams, group_name):
     # create a scalar summary to track its value over time. The name of
     # the summary will appear as 'temperature/current' due to the
     # name-scope above.
-    temperature = tf.Variable(tf.constant(initial_temperature),
-                              name='temperature')
+    temperature = tf.Variable(
+        tf.constant(initial_temperature),
+        name='temperature')
     scalar_summary.op('current', temperature,
                       display_name='Temperature',
                       description='The temperature of the object under '
@@ -249,4 +255,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  app.run(main)
