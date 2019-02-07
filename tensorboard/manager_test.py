@@ -40,15 +40,15 @@ from tensorboard.util import tb_logging
 
 
 def _make_info(i=0):
-  """Make a sample TensorboardInfo object.
+  """Make a sample TensorBoardInfo object.
 
   Args:
     i: Seed; vary this value to produce slightly different outputs.
 
   Returns:
-    A type-correct `TensorboardInfo` object.
+    A type-correct `TensorBoardInfo` object.
   """
-  return manager.TensorboardInfo(
+  return manager.TensorBoardInfo(
       version=version.VERSION,
       start_time=datetime.datetime.fromtimestamp(1548973541 + i),
       port=6060 + i,
@@ -60,8 +60,8 @@ def _make_info(i=0):
   )
 
 
-class TensorboardInfoTest(tf.test.TestCase):
-  """Unit tests for TensorboardInfo typechecking and serialization."""
+class TensorBoardInfoTest(tf.test.TestCase):
+  """Unit tests for TensorBoardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
     # This is also tested indirectly as part of `manager` integration
@@ -132,7 +132,7 @@ class TensorboardInfoTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "bad keys on TensorboardInfo"):
+        "bad keys on TensorBoardInfo"):
       manager._info_from_string(bad_input)
 
   def test_deserialization_rejects_missing_keys(self):
@@ -143,7 +143,7 @@ class TensorboardInfoTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "bad keys on TensorboardInfo"):
+        "bad keys on TensorBoardInfo"):
       manager._info_from_string(bad_input)
 
   def test_deserialization_rejects_bad_types(self):
@@ -253,11 +253,11 @@ class CacheKeyTest(tf.test.TestCase):
     self.assertEqual(with_list, with_tuple)
 
 
-class TensorboardInfoIoTest(tf.test.TestCase):
+class TensorBoardInfoIoTest(tf.test.TestCase):
   """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
   def setUp(self):
-    super(TensorboardInfoIoTest, self).setUp()
+    super(TensorBoardInfoIoTest, self).setUp()
     patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
     patcher.start()
     self.addCleanup(patcher.stop)
@@ -290,7 +290,7 @@ class TensorboardInfoIoTest(tf.test.TestCase):
 
   def test_write_info_file_rejects_bad_types(self):
     # The particulars of validation are tested more thoroughly in
-    # `TensorboardInfoTest` above.
+    # `TensorBoardInfoTest` above.
     info = _make_info()._replace(start_time=1549061116)
     with six.assertRaisesRegex(
         self,
@@ -301,7 +301,7 @@ class TensorboardInfoIoTest(tf.test.TestCase):
 
   def test_write_info_file_rejects_wrong_version(self):
     # The particulars of validation are tested more thoroughly in
-    # `TensorboardInfoTest` above.
+    # `TensorBoardInfoTest` above.
     info = _make_info()._replace(version="reversion")
     with six.assertRaisesRegex(
         self,
