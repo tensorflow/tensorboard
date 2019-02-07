@@ -22,7 +22,7 @@ tensorboard/plugins/scalar/scalar_demo.py.
 """
 # TODO(erez): This code currently does not work with tf-nightly-2.0 since
 # it uses tf.compart.v1.summary.FileWriter which can't be used in eager
-# mode (which is the default in tensorflow V2). Fix this when we changet this
+# mode (which is the default in tensorflow V2). Fix this when we change this
 # demo to be more typical to a machine learning experiment.
 
 from __future__ import absolute_import
