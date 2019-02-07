@@ -82,7 +82,11 @@ dest=/tmp/tensorboard
 if [ ! -e $dest ]; then
   mkdir $dest
 else
-  dest="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
+  if [ "$(uname)" == "Darwin" ]; then
+    dest="$(mktemp -d -t tensorboard-pip)"
+  else
+    dest="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
+  fi
 fi
 cd "${dest}"
 

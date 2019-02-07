@@ -44,10 +44,14 @@ def lazy_load(name):
     # make future lookups efficient (only failed lookups call __getattr__).
     @_memoize
     def load_once(self):
+      if load_once.loading:
+        raise ImportError("Circular import when resolving LazyModule %r" % name)
+      load_once.loading = True
       module = load_fn()
       self.__dict__.update(module.__dict__)
       load_once.loaded = True
       return module
+    load_once.loading = False
     load_once.loaded = False
 
     # Define a module that proxies getattr() and dir() to the result of calling
@@ -62,8 +66,8 @@ def lazy_load(name):
 
       def __repr__(self):
         if load_once.loaded:
-          return repr(load_once(self))
-        return '<module \'%s\' (LazyModule)>' % self.__name__
+          return '<%r via LazyModule (loaded)>' % load_once(self)
+        return '<module %r via LazyModule (not yet loaded)>' % self.__name__
 
     return LazyModule(name)
   return wrapper
