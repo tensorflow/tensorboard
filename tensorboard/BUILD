@@ -102,11 +102,13 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":manager",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
