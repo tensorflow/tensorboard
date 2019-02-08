@@ -33,13 +33,13 @@ BINARY="${TEST_SRCDIR}"/org_tensorflow_tensorboard/tensorboard/plugins/hparams/h
 "${BINARY}" \
   --logdir="${LOGDIR}"\
   --hparam_infos='
-hparam_infos:{
+hparam_infos: {
   name: "learning_rate"
   display_name: "learning_rate"
-  type:DATA_TYPE_STRING
+  type: DATA_TYPE_STRING
   domain_discrete: {
-    values: { string_value:"1e-3" }
-    values: { string_value:"1e-4" }
+    values: { string_value: "1e-3" }
+    values: { string_value: "1e-4" }
   }
 }
 hparam_infos: {
@@ -47,32 +47,32 @@ hparam_infos: {
   display_name: "num_keypoints"
   type: DATA_TYPE_STRING
   domain_discrete: {
-     values: {string_value:"100" }
-     values: {string_value:"200" }
+     values: { string_value: "100" }
+     values: { string_value: "200" }
   }
 }' \
   --metric_infos='
-metric_infos:{
-  name:{
-    group:"/eval_train"
-    tag:"loss"
+metric_infos: {
+  name: {
+    group: "/eval_train"
+    tag: "loss"
   }
   display_name:
     "eval_train/loss"
 }
-metric_infos:{
-  name:{
-     group:"/eval_test"
-     tag:"loss"
+metric_infos: {
+  name: {
+     group: "/eval_test"
+     tag: "loss"
   }
-  display_name:"eval_test/loss"
+  display_name: "eval_test/loss"
 }
-metric_infos:{
-  name:{
-     group:"/eval_train"
-     tag:"accuracy"
+metric_infos: {
+  name: {
+     group: "/eval_train"
+     tag: "accuracy"
   }
-  display_name:"eval_train/accuracy"
+  display_name: "eval_train/accuracy"
 }' \
 --description="" \
 --action=create_experiment || die "Failed in action 'create_experiment'."

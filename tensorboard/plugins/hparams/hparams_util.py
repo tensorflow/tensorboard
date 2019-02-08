@@ -179,6 +179,8 @@ def write_summary(summary_pb):
     event = tf.compat.v1.Event(summary=summary_pb)
     tf.compat.v2.summary.import_event(
         tf.constant(event.SerializeToString(), dtype=tf.string))
+    # The following may not be required since the context manager may
+    # already flush on __exit__, but it doesn't hurt to do it here, as well.
     tf.compat.v2.summary.flush()
 
 

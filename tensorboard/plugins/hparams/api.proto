@@ -44,6 +44,7 @@ package tensorboard.hparams;
 // log directory or run. For example, in a single session one process could
 // periodically compute the loss on the validation set, and another could
 // compute the loss on the training set.
+// NEXT_TAG: 7
 message Experiment {
   // -- Experiments are scoped by a global name.
   // Currently, Tensorboard supports displaying data for a single experiment.
@@ -65,6 +66,7 @@ message Experiment {
   repeated MetricInfo metric_infos = 5;
 }
 
+// NEXT_TAG: 7
 message HParamInfo {
   // An id for the hyperparameter.
   string name = 1;
@@ -93,6 +95,7 @@ message HParamInfo {
     Interval domain_interval = 6;
   }
 }
+
 enum DataType {
   DATA_TYPE_UNSET = 0;
   DATA_TYPE_STRING = 1;
@@ -101,11 +104,13 @@ enum DataType {
 }
 
 // Represents the closed interval [min_value, max_value] of the real line.
+// NEXT_TAG: 3
 message Interval {
   double min_value = 1;
   double max_value = 2;
 }
 
+// NEXT_TAG: 3
 message MetricName {
   // An identifier for a metric. A metric is a real-valued function of the
   // model. The UI can plot metrics for a session evaluated on the model at
@@ -138,6 +143,7 @@ message MetricName {
   string tag = 2;
 }
 
+// NEXT_TAG: 6
 message MetricInfo {
   MetricName name = 1;
 
@@ -165,6 +171,7 @@ enum DatasetType {
 // are partitioned into groups: each group consists of all training sessions
 // which share the same values for the hyperparameters. In experiments with no
 // repeated executions, each group consists of exactly one session.
+// NEXT_TAG: 6
 message SessionGroup {
   string name = 1;
 
@@ -187,6 +194,7 @@ message SessionGroup {
   string monitor_url = 5;
 }
 
+// NEXT_TAG: 5
 message MetricValue {
   MetricName name = 1;
 
@@ -199,6 +207,7 @@ message MetricValue {
   double wall_time_secs = 4;
 }
 
+// NEXT_TAG: 8
 message Session {
   // An id for the session. Unique within an experiment (not just the group).
   string name = 1;
@@ -238,6 +247,7 @@ enum Status {
 
 // Parameters for a GetExperiment API call.
 // Each experiment is scoped by a unique global id.
+// NEXT_TAG: 2
 message GetExperimentRequest {
   // REQUIRED
   string experiment_name = 1;
@@ -258,7 +268,7 @@ message ListSessionGroupsRequest {
 
   // A list of ColParams messages--one for each "column" of a session group. A
   // session group column contains either a metric evaluated at the current
-  // reported computation step or a hyperparameter value. In additon to
+  // reported computation step or a hyperparameter value. In addition to
   // 'regular' values, a column may take on a special 'missing-value' which
   // denotes that the hyperparameter or metric is not available
   // for the session group (for example, if the metric is not used in the
@@ -301,6 +311,7 @@ message ListSessionGroupsRequest {
 
 // Defines parmeters for a ListSessionGroupsRequest for a specific column.
 // See the comment for "ListSessionGroupsRequest" above for more details.
+// NEXT_TAG: 9
 message ColParams {
   oneof name {
     MetricName metric = 1;
@@ -366,6 +377,7 @@ enum AggregationType {
 }
 
 // See ListSessionGroups in http_api.md.
+// NEXT_TAG: 4
 message ListSessionGroupsResponse {
   repeated SessionGroup session_groups = 1;
 
@@ -377,6 +389,7 @@ message ListSessionGroupsResponse {
 }
 
 // See ListMetricEvalsRequest in http_api.md.
+// NEXT_TAG: 4
 message ListMetricEvalsRequest {
   string experiment_name = 3;
   string session_name = 1;
