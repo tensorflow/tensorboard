@@ -306,6 +306,7 @@ def _display_colab(port, height, display_handle):
             newScript.remove();
           }
         }
+        google.colab.output.setIframeHeight(%d);
         fetch(".")
           .then((x) => x.text())
           .then((html) => void (document.body.innerHTML = html))
@@ -313,7 +314,6 @@ def _display_colab(port, height, display_handle):
           .then(() => executeAllScripts());
       })();
     </script>
-    <div id="spacer" style="height: %dpx"></div>
   """ % (port, height)
   html = IPython.display.HTML(shell)
   if display_handle:
