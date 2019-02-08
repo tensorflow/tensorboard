@@ -285,6 +285,12 @@ def _display_colab(port, height, display_handle):
         document.querySelector("base").href = "https://localhost:%s";
         function fixUpTensorboard() {
           const tftb = document.querySelector("tf-tensorboard");
+          // Disable the fragment manipulation behavior in Colab. Not
+          // only is the behavior not useful (as the iframe's location
+          // is not visible to the user), it causes TensorBoard's usage
+          // of `window.replace` to navigate away from the page and to
+          // the `localhost:<port>` URL specified by the base URI, which
+          // in turn causes the frame to (likely) crash.
           tftb.removeAttribute("use-hash");
         }
         function executeAllScripts() {
