@@ -294,6 +294,10 @@ def _display_colab(port, height, display_handle):
           tftb.removeAttribute("use-hash");
         }
         function executeAllScripts() {
+          // When `script` elements are inserted into the DOM by
+          // assigning to an element's `innerHTML`, the scripts are not
+          // executed. Thus, we manually re-insert these scripts so that
+          // TensorBoard can initialize itself.
           for (const script of document.querySelectorAll("script")) {
             const newScript = document.createElement("script");
             newScript.type = script.type;
