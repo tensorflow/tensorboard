@@ -281,25 +281,27 @@ def _display_colab(port, height, display_handle):
   import IPython.display
   shell = """
     <script>
-      document.querySelector("base").href = "https://localhost:%s";
-      function fixUpTensorboard() {
-        const tftb = document.querySelector("tf-tensorboard");
-        tftb.removeAttribute("use-hash");
-      }
-      function executeAllScripts() {
-        for (const script of document.querySelectorAll("script")) {
-          const newScript = document.createElement("script");
-          newScript.type = script.type;
-          newScript.textContent = script.textContent;
-          document.body.appendChild(newScript);
-          newScript.remove();
+      (function() {
+        document.querySelector("base").href = "https://localhost:%s";
+        function fixUpTensorboard() {
+          const tftb = document.querySelector("tf-tensorboard");
+          tftb.removeAttribute("use-hash");
         }
-      }
-      fetch(".")
-        .then((x) => x.text())
-        .then((html) => void (document.body.innerHTML = html))
-        .then(() => fixUpTensorboard())
-        .then(() => executeAllScripts());
+        function executeAllScripts() {
+          for (const script of document.querySelectorAll("script")) {
+            const newScript = document.createElement("script");
+            newScript.type = script.type;
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+            newScript.remove();
+          }
+        }
+        fetch(".")
+          .then((x) => x.text())
+          .then((html) => void (document.body.innerHTML = html))
+          .then(() => fixUpTensorboard())
+          .then(() => executeAllScripts());
+      })();
     </script>
     <div id="spacer" style="height: %dpx"></div>
   """ % (port, height)
