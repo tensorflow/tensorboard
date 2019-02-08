@@ -286,7 +286,7 @@ def _display_colab(port, height, display_handle):
         const tftb = document.querySelector("tf-tensorboard");
         tftb.removeAttribute("use-hash");
       }
-      function rehydrate() {
+      function executeAllScripts() {
         for (const script of document.querySelectorAll("script")) {
           const newScript = document.createElement("script");
           newScript.type = script.type;
@@ -299,7 +299,7 @@ def _display_colab(port, height, display_handle):
         .then((x) => x.text())
         .then((html) => void (document.body.innerHTML = html))
         .then(() => fixUpTensorboard())
-        .then(() => rehydrate());
+        .then(() => executeAllScripts());
     </script>
     <div id="spacer" style="height: %dpx"></div>
   """ % (port, height)
