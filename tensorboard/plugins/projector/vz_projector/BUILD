@@ -58,6 +58,7 @@ tf_web_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
+        "//tensorboard/plugins/projector/vz_projector/umap:umap",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
