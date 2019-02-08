@@ -278,9 +278,36 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
 
 
 def _display_colab(port, height, display_handle):
-  # TODO(@wchargin): Implement this after merging this code into
-  # google3, where it's easier to develop and test against Colab.
-  raise NotImplementedError()
+  import IPython.display
+  shell = """
+    <script>
+      document.querySelector("base").href = "https://localhost:%s";
+      function fixUpTensorboard() {
+        const tftb = document.querySelector("tf-tensorboard");
+        tftb.removeAttribute("use-hash");
+      }
+      function rehydrate() {
+        for (const script of document.querySelectorAll("script")) {
+          const newScript = document.createElement("script");
+          newScript.type = script.type;
+          newScript.textContent = script.textContent;
+          document.body.appendChild(newScript);
+          newScript.remove();
+        }
+      }
+      fetch(".")
+        .then((x) => x.text())
+        .then((html) => void (document.body.innerHTML = html))
+        .then(() => fixUpTensorboard())
+        .then(() => rehydrate());
+    </script>
+    <div id="spacer" style="height: %dpx"></div>
+  """ % (port, height)
+  html = IPython.display.HTML(shell)
+  if display_handle:
+    display_handle.update(html)
+  else:
+    IPython.display.display(html)
 
 
 def _display_ipython(port, height, display_handle):
