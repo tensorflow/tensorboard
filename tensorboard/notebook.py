@@ -300,7 +300,7 @@ def _display_colab(port, height, display_handle):
   """
   import IPython.display
   shell = """
-    <div id="root" style="height: %HEIGHT%px"></div>
+    <div id="root"></div>
     <script>
       (function() {
         window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
@@ -329,12 +329,24 @@ def _display_colab(port, height, display_handle):
             script.remove();
           }
         }
+        function setHeight(root, height) {
+          // We set the height dynamically after the TensorBoard UI has
+          // been initialized. This avoids an intermediate state in
+          // which the container plus the UI become taller than the
+          // final width and cause the Colab output frame to be
+          // permanently resized, eventually leading to an empty
+          // vertical gap below the TensorBoard UI. It's not clear
+          // exactly what causes this problematic intermediate state,
+          // but setting the height late seems to fix it.
+          root.style.height = `${height}px`;
+        }
         const root = document.getElementById("root");
         fetch(".")
           .then((x) => x.text())
           .then((html) => void (root.innerHTML = html))
           .then(() => fixUpTensorboard())
-          .then(() => executeAllScripts(root));
+          .then(() => executeAllScripts(root))
+          .then(() => setHeight(root, %HEIGHT%));
       })();
     </script>
   """.replace("%PORT%", "%d" % port).replace("%HEIGHT%", "%d" % height)
