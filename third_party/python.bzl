@@ -45,16 +45,6 @@ def tensorboard_python_workspace():
     )
 
     http_archive(
-        name = "org_pythonhosted_attrs",
-        urls = [
-            "https://files.pythonhosted.org/packages/0f/9e/26b1d194aab960063b266170e53c39f73ea0d0d3f5ce23313e0ec8ee9bdf/attrs-18.2.0.tar.gz",
-        ],
-        sha256 = "10cbf6e27dbce8c30807caf056c8eb50917e0eaafe86347671b57254006c3e69",
-        strip_prefix = "attrs-18.2.0/src",
-        build_file = str(Label("//third_party:attrs.BUILD")),
-    )
-
-    http_archive(
         name = "org_html5lib",
         urls = [
             "https://mirror.bazel.build/github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",

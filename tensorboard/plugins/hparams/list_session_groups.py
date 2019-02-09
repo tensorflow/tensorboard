@@ -22,7 +22,6 @@ import collections
 import operator
 import re
 
-import attr
 import six
 
 from google.protobuf import struct_pb2
@@ -493,9 +492,6 @@ def _value_to_python(value):
 _MetricIdentifier = collections.namedtuple('_MetricIdentifier', 'group tag')
 
 
-# We use slots here to catch typos in attributes earlier. Note that this makes
-# this class incompatible with 'pickle'.
-@attr.s(slots=True)
 class _MetricStats(object):
   """A simple class to hold metric stats used in calculating metric averages.
 
@@ -509,10 +505,20 @@ class _MetricStats(object):
     total_wall_time_secs: float. The sum of the wall_time_secs at
         which the measurements were taken.
   """
-  total = attr.ib(default=0)
-  count = attr.ib(default=0)
-  total_step = attr.ib(default=0)
-  total_wall_time_secs = attr.ib(default=float(0))
+  # We use slots here to catch typos in attributes earlier. Note that this makes
+  # this class incompatible with 'pickle'.
+  __slots__ = [
+      'total',
+      'count',
+      'total_step',
+      'total_wall_time_secs',
+  ]
+
+  def __init__(self):
+    self.total = 0
+    self.count = 0
+    self.total_step = 0
+    self.total_wall_time_secs = 0.0
 
 
 def _set_avg_session_metrics(session_group):

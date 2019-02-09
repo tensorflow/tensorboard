@@ -117,16 +117,19 @@ TODO(erez): Add aggregation of repeated trials.
         // will have its own throttler, rather than using a global one.
         _throttledSendEventToGA: {
           type: Function,
-          value: () => _.throttle(_this => {
-            _this._handleGAEvent({
-              detail: {
-                hitType: "event",
-                eventCategory: "UserInteraction",
-                eventLabel: "Experiment: " + _this.experimentName
-              }
-            });
-          }, 60000 /* wait = 60000 milliseconds or 1 minute */,
-          {leading: true} /* Call on the leading edge of wait period. */)
+          value: () => _.throttle(
+              function() {
+                this._handleGAEvent({
+                  detail: {
+                    hitType: "event",
+                    eventCategory: "UserInteraction",
+                    eventLabel: "Experiment: " + _this.experimentName
+                  }
+                });
+              },
+              60000 /* wait = 60000 milliseconds or 1 minute */,
+              {leading: true} /* Call on the leading edge of wait period. */
+          )
         }
       },
 

@@ -20,10 +20,6 @@ related metric. See the function `run` below for more details.
 This demo is a slightly modified version of
 tensorboard/plugins/scalar/scalar_demo.py.
 """
-# TODO(erez): This code currently does not work with tf-nightly-2.0 since
-# it uses tf.compart.v1.summary.FileWriter which can't be used in eager
-# mode (which is the default in tensorflow V2). Fix this when we change this
-# demo to be more typical to a machine learning experiment.
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +31,14 @@ import os.path
 import shutil
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+
+# TODO(erez): This code currently does not support eager mode and can't
+# be run in tensorflow 2.0. Some of the issues are that it uses
+# uses tf.compart.v1.summary.FileWriter which can't be used in eager
+# mode (which is the default in 2.0). Fix this when we change this
+# demo to be more typical to a machine learning experiment (b/121228006).
+import tensorflow.compat.v1 as tf
+
 from absl import flags
 from absl import app
 from google.protobuf import struct_pb2
@@ -142,7 +145,7 @@ def run(logdir, session_id, hparams, group_name):
   Arguments:
     logdir: the top-level directory into which to write summary data
     session_id: an id for the session.
-    hparams: A dictionary mapping an hyperparameter name to its value.
+    hparams: A dictionary mapping a hyperparameter name to its value.
     group_name: an id for the session group this session belongs to.
   """
   tf.reset_default_graph()
@@ -185,7 +188,7 @@ def run(logdir, session_id, hparams, group_name):
   # coefficient. But in real life, not everything is quite so clean, so
   # we'll add in some noise. (The value of 50 is arbitrary, chosen to
   # make the data look somewhat interesting. :-) )
-  noise = 50 * tf.random_normal([])
+  noise = 50 * tf.random.normal([])
   delta = -heat_coefficient * (ambient_difference + noise)
   scalar_summary.op('delta', delta,
                     description='The change in temperature from the previous '
@@ -247,6 +250,10 @@ def run_all(logdir, verbose=False):
 
 
 def main(unused_argv):
+  if tf.executing_eagerly():
+    print('Sorry, this demo currently can\'t be run in eager mode.')
+    return
+
   init_temperature_list()
   shutil.rmtree(FLAGS.logdir, ignore_errors=True)
   print('Saving output to %s.' % FLAGS.logdir)

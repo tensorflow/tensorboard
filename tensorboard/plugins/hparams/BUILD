@@ -36,7 +36,6 @@ py_library(
         "//tensorboard/util",
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_attrs",
         "@org_pythonhosted_six",
     ],
 )
