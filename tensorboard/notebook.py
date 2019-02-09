@@ -302,6 +302,8 @@ def _display_colab(port, height, display_handle):
   shell = """
     <script>
       (function() {
+        window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
+        window.TENSORBOARD_ENV["IN_COLAB"] = true;
         document.querySelector("base").href = "https://localhost:%s";
         function fixUpTensorboard() {
           const tftb = document.querySelector("tf-tensorboard");
