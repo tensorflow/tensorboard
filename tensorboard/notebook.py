@@ -306,8 +306,8 @@ def _display_colab(port, height, display_handle):
         window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
         window.TENSORBOARD_ENV["IN_COLAB"] = true;
         document.querySelector("base").href = "https://localhost:%PORT%";
-        function fixUpTensorboard() {
-          const tftb = document.querySelector("tf-tensorboard");
+        function fixUpTensorboard(root) {
+          const tftb = root.querySelector("tf-tensorboard");
           // Disable the fragment manipulation behavior in Colab. Not
           // only is the behavior not useful (as the iframe's location
           // is not visible to the user), it causes TensorBoard's usage
@@ -344,7 +344,7 @@ def _display_colab(port, height, display_handle):
         fetch(".")
           .then((x) => x.text())
           .then((html) => void (root.innerHTML = html))
-          .then(() => fixUpTensorboard())
+          .then(() => fixUpTensorboard(root))
           .then(() => executeAllScripts(root))
           .then(() => setHeight(root, %HEIGHT%));
       })();
