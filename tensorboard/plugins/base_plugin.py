@@ -180,6 +180,10 @@ class TBLoader(object):
 
     Args:
       flags: The parsed argparse.Namespace object.
+
+    Raises:
+      base_plugin.FlagsError: If a flag is invalid or a required
+          flag is not passed.
     """
     pass
 
@@ -198,8 +202,6 @@ class BasicLoader(TBLoader):
     return self._plugin_class(context)
 
 
-class FlagsException(ValueError):
+class FlagsError(ValueError):
   """Raised when a command line flag is not specified or is invalid."""
   pass
-
-

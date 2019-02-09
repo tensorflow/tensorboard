@@ -64,9 +64,10 @@ def run_main():
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
     pass
-  except base_plugin.FlagsException as e:
-    print("Error: " + str(e))
-    sys.exit(-1)
+  except base_plugin.FlagsError as e:
+    print("Error: %s" % e, file=sys.stderr)
+    sys.exit(1)
+
   tensorboard.configure(sys.argv)
   sys.exit(tensorboard.main())
 

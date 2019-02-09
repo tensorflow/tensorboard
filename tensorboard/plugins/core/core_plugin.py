@@ -23,6 +23,7 @@ import functools
 import gzip
 import math
 import mimetypes
+import os
 import zipfile
 
 import six
@@ -450,19 +451,18 @@ flag.\
 
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
-    FlagsException = base_plugin.FlagsException
+    FlagsError = base_plugin.FlagsError
     if flags.inspect:
       if flags.logdir and flags.event_file:
-        raise FlagsException(
+        raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')
       if not (flags.logdir or flags.event_file):
-        raise FlagsException('Must specify either --logdir or --event_file.')
+        raise FlagsError('Must specify either --logdir or --event_file.')
     elif not flags.db and not flags.logdir:
-      raise FlagsException('A logdir or db must be specified.\n\n'
-                       'For example "tensorboard --logdir mylogdir"\n'
-                       'or `tensorboard --db sqlite:~/.tensorboard.db`.\n\n'
-                       'Run `tensorboard --helpshort` for a list of all options.\n'
-                       'Run `tensorboard --helpfull` for additional details and examples.\n')
+      raise FlagsError('A logdir or db must be specified. '
+                       'For example `tensorboard --logdir mylogdir` '
+                       'or `tensorboard --db sqlite:~/.tensorboard.db`. '
+                       'Run `tensorboard --helpfull` for details and examples.')
 
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
