@@ -300,11 +300,12 @@ def _display_colab(port, height, display_handle):
   """
   import IPython.display
   shell = """
+    <div id="root" style="height: %HEIGHT%px"></div>
     <script>
       (function() {
         window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
         window.TENSORBOARD_ENV["IN_COLAB"] = true;
-        document.querySelector("base").href = "https://localhost:%s";
+        document.querySelector("base").href = "https://localhost:%PORT%";
         function fixUpTensorboard() {
           const tftb = document.querySelector("tf-tensorboard");
           // Disable the fragment manipulation behavior in Colab. Not
@@ -315,28 +316,28 @@ def _display_colab(port, height, display_handle):
           // in turn causes the frame to (likely) crash.
           tftb.removeAttribute("use-hash");
         }
-        function executeAllScripts() {
+        function executeAllScripts(root) {
           // When `script` elements are inserted into the DOM by
           // assigning to an element's `innerHTML`, the scripts are not
           // executed. Thus, we manually re-insert these scripts so that
           // TensorBoard can initialize itself.
-          for (const script of document.querySelectorAll("script")) {
+          for (const script of root.querySelectorAll("script")) {
             const newScript = document.createElement("script");
             newScript.type = script.type;
             newScript.textContent = script.textContent;
-            document.body.appendChild(newScript);
-            newScript.remove();
+            root.appendChild(newScript);
+            script.remove();
           }
         }
-        google.colab.output.setIframeHeight(%d);
+        const root = document.getElementById("root");
         fetch(".")
           .then((x) => x.text())
-          .then((html) => void (document.body.innerHTML = html))
+          .then((html) => void (root.innerHTML = html))
           .then(() => fixUpTensorboard())
-          .then(() => executeAllScripts());
+          .then(() => executeAllScripts(root));
       })();
     </script>
-  """ % (port, height)
+  """.replace("%PORT%", "%d" % port).replace("%HEIGHT%", "%d" % height)
   html = IPython.display.HTML(shell)
   if display_handle:
     display_handle.update(html)
