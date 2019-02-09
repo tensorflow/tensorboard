@@ -48,6 +48,7 @@ import tensorflow as tf  # pylint: disable=unused-import
 
 from tensorboard import default
 from tensorboard import program
+from tensorboard.plugins import base_plugin
 
 
 def run_main():
@@ -63,6 +64,9 @@ def run_main():
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
     pass
+  except base_plugin.FlagsException as e:
+    print("Error: " + str(e))
+    sys.exit(-1)
   tensorboard.configure(sys.argv)
   sys.exit(tensorboard.main())
 

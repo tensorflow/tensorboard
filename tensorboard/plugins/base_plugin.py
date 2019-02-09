@@ -196,3 +196,10 @@ class BasicLoader(TBLoader):
 
   def load(self, context):
     return self._plugin_class(context)
+
+
+class FlagsException(ValueError):
+  """Raised when a command line flag is not specified or is invalid."""
+  pass
+
+
