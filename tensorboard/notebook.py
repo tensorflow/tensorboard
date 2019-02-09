@@ -278,9 +278,83 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
 
 
 def _display_colab(port, height, display_handle):
-  # TODO(@wchargin): Implement this after merging this code into
-  # google3, where it's easier to develop and test against Colab.
-  raise NotImplementedError()
+  """Display a TensorBoard instance in a Colab output frame.
+
+  The Colab VM is not directly exposed to the network, so the Colab
+  runtime provides a service worker tunnel to proxy requests from the
+  end user's browser through to servers running on the Colab VM: the
+  output frame may issue requests to https://localhost:<port> (HTTPS
+  only), which will be forwarded to the specified port on the VM.
+
+  It does not suffice to create an `iframe` and let the service worker
+  redirect its traffic (`<iframe src="https://localhost:6006">`),
+  because for security reasons service workers cannot intercept iframe
+  traffic. Instead, we manually fetch the TensorBoard index page with an
+  XHR in the output frame, and inject the raw HTML into `document.body`.
+
+  By default, the TensorBoard web app requests resources against
+  relative paths, like `./data/logdir`. Within the output frame, these
+  requests must instead hit `https://localhost:<port>/data/logdir`. To
+  redirect them, we change the document base URI, which transparently
+  affects all requests (XHRs and resources alike).
+  """
+  import IPython.display
+  shell = """
+    <div id="root"></div>
+    <script>
+      (function() {
+        window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
+        window.TENSORBOARD_ENV["IN_COLAB"] = true;
+        document.querySelector("base").href = "https://localhost:%PORT%";
+        function fixUpTensorboard(root) {
+          const tftb = root.querySelector("tf-tensorboard");
+          // Disable the fragment manipulation behavior in Colab. Not
+          // only is the behavior not useful (as the iframe's location
+          // is not visible to the user), it causes TensorBoard's usage
+          // of `window.replace` to navigate away from the page and to
+          // the `localhost:<port>` URL specified by the base URI, which
+          // in turn causes the frame to (likely) crash.
+          tftb.removeAttribute("use-hash");
+        }
+        function executeAllScripts(root) {
+          // When `script` elements are inserted into the DOM by
+          // assigning to an element's `innerHTML`, the scripts are not
+          // executed. Thus, we manually re-insert these scripts so that
+          // TensorBoard can initialize itself.
+          for (const script of root.querySelectorAll("script")) {
+            const newScript = document.createElement("script");
+            newScript.type = script.type;
+            newScript.textContent = script.textContent;
+            root.appendChild(newScript);
+            script.remove();
+          }
+        }
+        function setHeight(root, height) {
+          // We set the height dynamically after the TensorBoard UI has
+          // been initialized. This avoids an intermediate state in
+          // which the container plus the UI become taller than the
+          // final width and cause the Colab output frame to be
+          // permanently resized, eventually leading to an empty
+          // vertical gap below the TensorBoard UI. It's not clear
+          // exactly what causes this problematic intermediate state,
+          // but setting the height late seems to fix it.
+          root.style.height = `${height}px`;
+        }
+        const root = document.getElementById("root");
+        fetch(".")
+          .then((x) => x.text())
+          .then((html) => void (root.innerHTML = html))
+          .then(() => fixUpTensorboard(root))
+          .then(() => executeAllScripts(root))
+          .then(() => setHeight(root, %HEIGHT%));
+      })();
+    </script>
+  """.replace("%PORT%", "%d" % port).replace("%HEIGHT%", "%d" % height)
+  html = IPython.display.HTML(shell)
+  if display_handle:
+    display_handle.update(html)
+  else:
+    IPython.display.display(html)
 
 
 def _display_ipython(port, height, display_handle):
