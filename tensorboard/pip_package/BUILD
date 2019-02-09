@@ -20,7 +20,6 @@ sh_binary(
         "//tensorboard",  # Main tensorboard binary and everything it uses
         "//tensorboard:lib",  # User-facing overall TensorBoard API
         "//tensorboard:version",  # Version module (read by setup.py)
-        "//tensorboard:notebook",  # User-facing notebook API
         "//tensorboard/plugins/beholder",  # User-facing beholder API
         "//tensorboard/plugins/projector",  # User-facing projector API
     ],

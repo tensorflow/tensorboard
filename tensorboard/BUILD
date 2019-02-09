@@ -64,6 +64,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
+        ":notebook",
         ":program",
         "//tensorboard/summary",
     ],
