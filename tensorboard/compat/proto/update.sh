@@ -17,8 +17,8 @@
 set -e
 
 if [ $# -ne 1 ]; then
-  echo "usage: $0 <tensorflow-root-dir>" >&2;
-  exit 1;
+  echo "usage: $0 <tensorflow-root-dir>" >&2
+  exit 1
 fi
 
 rsync --existing "$1"/tensorflow/core/framework/*.proto tensorboard/compat/proto/
@@ -36,6 +36,6 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/python/framework|tensorboard/compat/proto|g;' \
   -e 's|package tensorflow.tfprof;|package tensorboard;|g;' \
   -e 's|package tensorflow;|package tensorboard;|g;' \
-  {} \;
+  {} +
 
 echo "Protos in tensorboard/compat/proto/ updated! You can now add and commit them."
