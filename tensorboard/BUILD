@@ -198,14 +198,6 @@ py_library(
 )
 
 py_library(
-    name = "expect_absl_app_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
-
-py_library(
     name = "tf_contrib_ffmpeg",
     # This is a dummy rule for the open source world, which indicates
     # that srcs dereference tf.contrib.ffmpeg.
@@ -370,9 +362,9 @@ py_library(
 
 py_test(
     name = "lazy_test",
-    size = "small",
     srcs = ["lazy_test.py"],
     srcs_version = "PY2AND3",
+    size = "small",
     deps = [
         ":lazy",
         "@org_pythonhosted_six",

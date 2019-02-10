@@ -197,22 +197,22 @@ clicks on a row in table-view or a curve in parallel-coords view.
         if (sessionGroup === null || metricInfo === null) {
           return [];
         }
-        let result = [];
-        sessionGroup.sessions.forEach(session => {
-          if (tf.hparams.utils.metricValueByName(
-              session.metricValues, metricInfo.name) === undefined) {
-            // If this session does not currently have a value for the given
-            // metric then we don't want to include its run.
-            return;
-          }
-          // Since the 'tag' and 'run' fields are essentially opaque
-          // for the tf-scalar-card element, and passed as is to the
-          // requestData function, we use them to encode the fields we
-          // need to supply to the eval_metrics API (called in our
-          // implementation of requestData above).
-          result.push({tag:metricInfo.name, run:session.name});
-        });
-        return result;
+        return sessionGroup.sessions
+            .filter(
+                // If this session does not currently have a value for the given
+                // metric then we don't want to include its run.
+                session =>
+                    tf.hparams.utils.metricValueByName(
+                        session.metricValues, metricInfo.name) !== undefined
+            )
+            .map(
+                // Since the 'tag' and 'run' fields are essentially opaque
+                // for the tf-scalar-card element, and passed as is to the
+                // requestData function, we use them to encode the fields we
+                // need to supply to the eval_metrics API (called in our
+                // implementation of requestData above).
+                session => ({tag: metricInfo.name, run: session.name})
+            );
       },
 
       // Computes the tag-metadata attribute to send to the

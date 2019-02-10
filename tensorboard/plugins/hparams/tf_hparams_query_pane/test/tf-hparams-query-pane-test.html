@@ -270,12 +270,9 @@ limitations under the License.
                      element._hparams,
                      [{info: experimentResponse.hparamInfos[0],
                        filter: {domainDiscrete:
-                                  [
-                                    {value:270, checked: true},
-                                    {value:320, checked: true},
-                                    {value:370, checked: true}
-                                  ]
-                                 },
+                                  [{value:270, checked: true},
+                                   {value:320, checked: true},
+                                   {value:370, checked: true}]},
                        displayed: true,
                       },
                       {info: experimentResponse.hparamInfos[1],
@@ -293,8 +290,8 @@ limitations under the License.
           return element._lastListSessionGroupsResponseProcessed.then(() => {
             element._hparams[0].filter =
                 {domainDiscrete: [{value:270, checked: true},
-                                    {value:320, checked: false},
-                                    {value:370, checked: false}]};
+                                  {value:320, checked: false},
+                                  {value:370, checked: false}]};
             element._hparams[1].filter = {
               interval: {min: {value: "300", invalid: false},
                          max: {value: "423", invalid: false}}

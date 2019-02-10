@@ -188,7 +188,6 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       /* Private methods */
       // Called when the schema property changes.
       _schemaChanged() {
-        const _this = this;
         // Populate options.columns with a linear scale for each column (
         // hparam or metric).
         const schema = this.schema;
@@ -196,7 +195,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           return {
             name: tf.hparams.utils.hparamName(info),
             index: index,
-            scale: _this._isNumericColumn(index) ? "LINEAR" : "NON_NUMERIC",
+            scale: this._isNumericColumn(index) ? "LINEAR" : "NON_NUMERIC",
           };
         };
         const newMetricColumn = (info, index) => {
@@ -239,12 +238,11 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           // disabled log scales.
           return;
         }
-        const _this = this;
         this.options.columns.forEach(col => {
           const colPath = "options.columns." + col.index;
-          if (!_this._allowLogScale(col) && col.scale === "LOG") {
+          if (!this._allowLogScale(col) && col.scale === "LOG") {
             // We need to use Polymer paths to make the change observable.
-            _this.set(colPath + ".scale", "LINEAR");
+            this.set(colPath + ".scale", "LINEAR");
           }
         });
       },
