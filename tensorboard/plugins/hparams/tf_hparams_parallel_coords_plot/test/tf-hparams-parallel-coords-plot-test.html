@@ -100,7 +100,7 @@ limitations under the License.
               epsilon);
         });
 
-        test("_quantileScaleInverseImage", function() {
+        test("quantileScaleInverseImage", function() {
           const quantileScaleInverseImage =
                 tf.hparams.parallel_coords_plot.quantileScaleInverseImage
           const scale=d3.scaleQuantile()
@@ -230,7 +230,7 @@ limitations under the License.
           });
         });
 
-        test("_createScale_throws", function() {
+        test("createScale_throws", function() {
           const createAxisScale =
                 tf.hparams.parallel_coords_plot.createAxisScale;
           assert.throws(
