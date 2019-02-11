@@ -44,16 +44,16 @@ limitations under the License.
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
-                id="show-download-links"
-                checked="{{_showDownloadLinks}}"
+              id="show-download-links"
+              checked="{{_showDownloadLinks}}"
             >Show data download links</paper-checkbox>
           </div>
         </div>
         <div class="sidebar-section">
           <tf-option-selector
-              id="histogramModeSelector"
-              name="Histogram mode"
-              selected-id="{{_histogramMode}}"
+            id="histogramModeSelector"
+            name="Histogram mode"
+            selected-id="{{_histogramMode}}"
           >
             <paper-button id="overlay">overlay</paper-button>
             <paper-button id="offset">offset</paper-button>
@@ -61,9 +61,9 @@ limitations under the License.
         </div>
         <div class="sidebar-section">
           <tf-option-selector
-              id="timePropertySelector"
-              name="Offset time axis"
-              selected-id="{{_timeProperty}}"
+            id="timePropertySelector"
+            name="Offset time axis"
+            selected-id="{{_timeProperty}}"
           >
             <paper-button id="step">step</paper-button>
             <paper-button id="relative">relative</paper-button>
@@ -86,38 +86,38 @@ limitations under the License.
               <li>TensorBoard can’t find your event files.
             </ul>
             <p>
-              If you’re new to using TensorBoard, and want to find out how
-              to add data and set up your event files, check out the
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-              and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+            If you’re new to using TensorBoard, and want to find out how
+            to add data and set up your event files, check out the
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
             <p>
-              If you think TensorBoard is configured properly, please see
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-              and consider filing an issue on GitHub.
+            If you think TensorBoard is configured properly, please see
+            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+            and consider filing an issue on GitHub.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane
-                category="[[category]]"
-                opened="[[_shouldOpen(index)]]"
-                restamp="[[_restamp]]"
+              category="[[category]]"
+              opened="[[_shouldOpen(index)]]"
+              restamp="[[_restamp]]"
             >
               <tf-paginated-view2
-                  items="[[category.items]]"
-                  get-item-key="[[_getItemKey]]"
-                  pages="{{category._pages}}"
+                items="[[category.items]]"
+                get-item-key="[[_getItemKey]]"
+                pages="{{category._pages}}"
               >
                 <template>
                   <tf-histogram-loader
-                      run="[[item.run]]"
-                      tag="[[item.tag]]"
-                      tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                      time-property="[[_timeProperty]]"
-                      show-download-links="[[_showDownloadLinks]]"
-                      histogram-mode="[[_histogramMode]]"
-                      request-manager="[[_requestManager]]"
+                    run="[[item.run]]"
+                    tag="[[item.tag]]"
+                    tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                    time-property="[[_timeProperty]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    histogram-mode="[[_histogramMode]]"
+                    request-manager="[[_requestManager]]"
                   ></tf-histogram-loader>
                 </template>
               </tf-paginated-view2>
@@ -201,7 +201,7 @@ limitations under the License.
       _redrawCategoryPane(event, val) {
         if (!val) return;
         event.target.querySelectorAll('tf-histogram-loader')
-          .forEach(histogram => histogram.redraw());
+            .forEach(histogram => histogram.redraw());
       },
 
       ready() {
