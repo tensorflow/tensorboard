@@ -182,6 +182,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_absl_app_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "expect_absl_flags_installed",
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via

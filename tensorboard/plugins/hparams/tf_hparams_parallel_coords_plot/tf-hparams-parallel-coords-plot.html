@@ -168,15 +168,10 @@ limitations under the License.
         '_redraw(options.*)',
       ],
 
-      created() {
-        // To add the offsetWidth property to this.root.
-        this.style.display = "block";
-      },
-
       ready() {
-        this._container = this.$["container"];
-        this._svg = d3.select(this.$["svg"]);
-        this._sessionGroupValues = d3.select(this.$["sessionGroupValues"]);
+        this._container = this.$.container;
+        this._svg = d3.select(this.$.svg);
+        this._sessionGroupValues = d3.select(this.$.sessionGroupValues);
         this._redraw();
       },
 
