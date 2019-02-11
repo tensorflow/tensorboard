@@ -317,8 +317,8 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # Apache License 2.0
       sha256 = "44fb83628edb77cb8392c165d4d99734750a6fbb00e5391f033962e56f14eba3",
       urls = [
-          "https://github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
           "https://mirror.bazel.build/github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
+          "https://github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
       ],
       srcs = ["vaadin-split-layout.html"],
       deps = [
@@ -334,8 +334,8 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # Apache License 2.0
       sha256 = "834679bedc1b6bafecac7e7f0e3458d99ace6cddbf154c56631ef6428b787fd1",
       urls = [
-          "https://github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
           "https://mirror.bazel.build/github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
+          "https://github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
       ],
       glob = ["*.html"],
       exclude = [
