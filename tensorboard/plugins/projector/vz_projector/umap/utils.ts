@@ -54,15 +54,19 @@ export function norm(vec: number[]) {
 }
 
 export function empty(n: number): undefined[] {
-  return [...new Array(n)];
-}
-
-export function filled(n: number, v: number): number[] {
-  return empty(n).map(() => v);
+  const output = [];
+  for (let i = 0; i < n; i++) {
+    output.push(undefined);
+  }
+  return output;
 }
 
 export function range(n: number): number[] {
   return empty(n).map((_, i) => i);
+}
+
+export function filled(n: number, v: number): number[] {
+  return empty(n).map(() => v);
 }
 
 export function zeros(n: number): number[] {

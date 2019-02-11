@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace vz_projector.umap.nn_descent {
+namespace vz_projector.umap.nnDescent {
 
 export function makeNNDescent(distanceFn: DistanceFn) {
   return function nNDescent(
@@ -93,4 +93,4 @@ export function makeNNDescent(distanceFn: DistanceFn) {
   };
 }
   
-}  // namespace vz_projector.umap.nn_descent
+}  // namespace vz_projector.umap.nnDescent

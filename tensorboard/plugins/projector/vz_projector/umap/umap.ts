@@ -15,15 +15,41 @@ limitations under the License.
 namespace vz_projector.umap {
 
 export type DistanceFn = (x: Point, y: Point) => number;
+export type EpochCallback = (epoch: number) => boolean | void;
 export type Point = number[];
 export type Points = Point[];
 
 const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
 
-export interface UMAPParamaters {
-  nNeighbors?: number;
+export interface UMAPParameters {
   nComponents?: number;
+  nEpochs?: number;
+  nNeighbors?: number;
+}
+
+class OptimizationState {
+  currentEpoch = 0;
+  isInitialized = false;
+
+  // Data tracked during optimization steps.
+  headEmbedding: number[][] = [];
+  tailEmbedding: number[][] = [];
+  head: number[] = [];
+  tail: number[] = [];
+  epochsPerSample: number[] = [];
+  epochOfNextSample: number[] = [];
+  epochOfNextNegativeSample: number[] = [];
+  epochsPerNegativeSample: number[] = [];
+  moveOther = true;
+  initialAlpha = 1.0;
+  alpha = 1.0;
+  gamma = 1.0;
+  a = 1.5769434603113077;
+  b = 0.8950608779109733;
+  dim = 2;
+  nEpochs = 500;
+  nVertices = 0;
 }
 
 function euclidean(x: Point, y: Point) {
@@ -35,389 +61,454 @@ function euclidean(x: Point, y: Point) {
 }
 
 export class UMAP {
-  nNeighbors = 15;
-  nComponents = 2;
-  distanceFn: DistanceFn = euclidean;
-  spectralInitialization: false;
+  private nNeighbors = 15;
+  private nComponents = 2;
+  private nEpochs = 0;
 
-  constructor(params: UMAPParamaters = {}) {
-    this.nNeighbors = params.nNeighbors || this.nNeighbors;
+  private distanceFn: DistanceFn = euclidean;
+
+  // KNN state (can be precomputed)
+  private knnIndices?: number[][];
+  private knnDistances?: number[][];
+
+  // Internal state during computation
+  graph: matrix.SparseMatrix;
+
+  // Projected embedding
+  private embedding: number[][] = [];
+
+  // Optimization state
+  private optimizationState = new OptimizationState();
+
+  constructor(params: UMAPParameters = {}) {
     this.nComponents = params.nComponents || this.nComponents;
+    this.nEpochs = params.nEpochs || this.nEpochs;
+    this.nNeighbors = params.nNeighbors || this.nNeighbors;
+  }
+
+  initializeKNN(knnIndices: number[][], knnDistances: number[][]) {
+    this.knnIndices = knnIndices;
+    this.knnDistances = knnDistances;
+  }
+
+  /**
+   * Initializes fit by computing KNN and a fuzzy simplicial set, as well as
+   * initializing the projected embeddings. Sets the optimization state ahead
+   * of optimization steps. Returns the number of epochs to be used for the
+   * SGD optimization.
+   */
+  initializeFit(X: Points): number {
+    if (!this.knnIndices || !this.knnDistances) {
+      const knnResults = this.nearestNeighbors(X);
+      this.knnIndices = knnResults.knnIndices;
+      this.knnDistances = knnResults.knnDistances;
+    }
+
+    this.graph = this.fuzzySimplicialSet(X);
+
+    const {
+      head,
+      tail,
+      epochsPerSample,
+    } = this.initializeSimplicialSetEmbedding();
+
+    // Set the optimization routine state
+    this.optimizationState.head = head;
+    this.optimizationState.tail = tail;
+    this.optimizationState.epochsPerSample = epochsPerSample;
+
+
+    return this.getNEpochs(this.graph);
   }
 
   fit(X: Points) {
-    const { distanceFn, nComponents, nNeighbors } = this;
+    this.initializeFit(X);
+    this.optimizeLayout();
 
-    const { knnIndices, knnDists } = nearestNeighbors(
+    return this.embedding;
+  }
+
+  async fitAsync(
+    X: Points,
+    callback: (epochNumber: number) => void | boolean = () => true
+  ) {
+    this.initializeFit(X);
+
+    const isFinished = await this.optimizeLayout(callback);
+    return isFinished;
+  }
+
+  step() {
+    const { currentEpoch, isInitialized  } = this.optimizationState;
+    if (!isInitialized) {
+      this.initializeOptimization();
+    }
+
+    return this.optimizeLayoutStep(currentEpoch)
+  }
+
+  getSolution() {
+    return this.embedding;
+  }
+
+  /**
+   * Compute the ``n_neighbors`` nearest points for each data point in ``X``
+   * under ``metric``. This may be exact, but more likely is approximated via
+   * nearest neighbor descent.
+   */
+  private nearestNeighbors(X: Points) {
+    const { distanceFn, nNeighbors } = this;
+    const log2 = (n: number) => Math.log(n) / Math.log(2);
+    const metricNNDescent = nnDescent.makeNNDescent(distanceFn);
+
+    // Handle python3 rounding down from 0.5 discrpancy
+    const round = (n: number) => {
+      return n === 0.5 ? 0 : Math.round(n);
+    };
+
+    const nTrees = 5 + Math.floor(round(X.length ** 0.5 / 20.0));
+    const nIters = Math.max(5, Math.floor(Math.round(log2(X.length))));
+
+    const rpForest = tree.makeForest(X, nNeighbors, nTrees);
+
+    const leafArray = tree.makeLeafArray(rpForest);
+    const { indices, weights } = metricNNDescent(
       X,
+      leafArray,
       nNeighbors,
-      distanceFn
+      nIters
+    );
+    return { knnIndices: indices, knnDistances: weights, rpForest };
+  }
+
+  /**
+   * Given a set of data X, a neighborhood size, and a measure of distance
+   * compute the fuzzy simplicial set (here represented as a fuzzy graph in
+   * the form of a sparse matrix) associated to the data. This is done by
+   * locally approximating geodesic distance at each point, creating a fuzzy
+   * simplicial set for each such point, and then combining all the local
+   * fuzzy simplicial sets into a global one via a fuzzy union.
+   */
+  private fuzzySimplicialSet(
+    X: Points,
+    localConnectivity = 1.0,
+    setOpMixRatio = 1.0
+  ) {
+    const { nNeighbors, knnIndices, knnDistances } = this;
+
+    const { sigmas, rhos } = this.smoothKNNDistance(
+      knnDistances,
+      nNeighbors,
+      localConnectivity
     );
 
-    const graph = fuzzySimplicialSet(X, nNeighbors, knnIndices, knnDists);
-    const embedding = simplicialSetEmbedding(X, graph, nComponents);
+    const { rows, cols, vals } = this.computeMembershipStrengths(
+      knnIndices,
+      knnDistances,
+      sigmas,
+      rhos
+    );
 
-    return embedding;
+    const size = [X.length, X.length];
+    const sparseMatrix = new matrix.SparseMatrix(rows, cols, vals, size);
+
+    const transpose = matrix.transpose(sparseMatrix);
+    const prodMatrix = matrix.dotMultiply(sparseMatrix, transpose);
+
+    const a = matrix.subtract(matrix.add(sparseMatrix, transpose), prodMatrix);
+    const b = matrix.multiplyScalar(a, setOpMixRatio);
+    const c = matrix.multiplyScalar(prodMatrix, 1.0 - setOpMixRatio);
+    const result = matrix.add(b, c);
+
+    return result;
   }
-}
 
-/**
- * Compute the ``nNeighbors`` nearest points for each data point in ``X``. This 
- * may be exact, but more likely is approximated via nearest neighbor descent.
- */
-function nearestNeighbors(
-  X: Points,
-  nNeighbors: number,
-  distanceFn: DistanceFn
-) {
-  const log2 = (n: number) => Math.log(n) / Math.log(2);
-  const metricNNDescent = nn_descent.makeNNDescent(distanceFn);
+  /**
+   * Compute a continuous version of the distance to the kth nearest
+   * neighbor. That is, this is similar to knn-distance but allows continuous
+   * k values rather than requiring an integral k. In esscence we are simply
+   * computing the distance such that the cardinality of fuzzy set we generate
+   * is k.
+   */
+  private smoothKNNDistance(
+    distances: Points,
+    k: number,
+    localConnectivity = 1.0,
+    nIter = 64,
+    bandwidth = 1.0
+  ) {
+    const target = (Math.log(k) / Math.log(2)) * bandwidth;
+    const rho = utils.zeros(distances.length);
+    const result = utils.zeros(distances.length);
 
-  // Handle python3 rounding down from 0.5 discrpancy
-  const round = (n: number) => {
-    return n === 0.5 ? 0 : Math.round(n);
-  };
+    for (let i = 0; i < distances.length; i++) {
+      let lo = 0.0;
+      let hi = Infinity;
+      let mid = 1.0;
 
-  const nTrees = 5 + Math.floor(round(X.length ** 0.5 / 20.0));
-  const nIters = Math.max(5, Math.floor(Math.round(log2(X.length))));
+      // TODO: This is very inefficient, but will do for now. FIXME
+      const ithDistances = distances[i];
+      const nonZeroDists = ithDistances.filter(d => d > 0.0);
 
-  const rpForest = tree.makeForest(X, nNeighbors, nTrees);
-  const leafArray = tree.makeLeafArray(rpForest);
-  const { indices, weights } = metricNNDescent(
-    X,
-    leafArray,
-    nNeighbors,
-    nIters
-  );
-  return { knnIndices: indices, knnDists: weights, rpForest };
-}
-
-/**
- * Given a set of data X, a neighborhood size, and a measure of distance
- * compute the fuzzy simplicial set (here represented as a fuzzy graph in
- * the form of a sparse matrix) associated to the data. This is done by
- * locally approximating geodesic distance at each point, creating a fuzzy
- * simplicial set for each such point, and then combining all the local
- * fuzzy simplicial sets into a global one via a fuzzy union.
- */
-function fuzzySimplicialSet(
-  X: Points,
-  nNeighbors: number,
-  knnIndices: Points,
-  knnDistances: Points,
-  localConnectivity = 1.0,
-  setOpMixRatio = 1.0
-) {
-  const { sigmas, rhos } = smoothKNNDistance(
-    knnDistances,
-    nNeighbors,
-    localConnectivity
-  );
-
-  const { rows, cols, vals } = computeMembershipStrengths(
-    knnIndices,
-    knnDistances,
-    sigmas,
-    rhos
-  );
-
-  const size = [X.length, X.length];
-  const sparseMatrix = new matrix.SparseMatrix(rows, cols, vals, size);
-
-  const transpose = matrix.transpose(sparseMatrix);
-  const prodMatrix = matrix.dotMultiply(sparseMatrix, transpose);
-
-  const a = matrix.subtract(matrix.add(sparseMatrix, transpose), prodMatrix);
-  const b = matrix.multiplyScalar(a, setOpMixRatio);
-  const c = matrix.multiplyScalar(prodMatrix, 1.0 - setOpMixRatio);
-  const result = matrix.add(b, c);
-
-  return result;
-}
-
-/**
- * Compute a continuous version of the distance to the kth nearest
- * neighbor. That is, this is similar to knn-distance but allows continuous
- * k values rather than requiring an integral k. In esscence we are simply
- * computing the distance such that the cardinality of fuzzy set we generate
- * is k.
- */
-function smoothKNNDistance(
-  distances: Points,
-  k: number,
-  localConnectivity = 1.0,
-  nIter = 64,
-  bandwidth = 1.0
-) {
-  const target = (Math.log(k) / Math.log(2)) * bandwidth;
-  const rho = utils.zeros(distances.length);
-  const result = utils.zeros(distances.length);
-
-  for (let i = 0; i < distances.length; i++) {
-    let lo = 0.0;
-    let hi = Infinity;
-    let mid = 1.0;
-
-    // TODO: This is very inefficient, but will do for now. FIXME
-    const ithDistances = distances[i];
-    const nonZeroDists = ithDistances.filter(d => d > 0.0);
-
-    if (nonZeroDists.length >= localConnectivity) {
-      let index = Math.floor(localConnectivity);
-      let interpolation = localConnectivity - index;
-      if (index > 0) {
-        rho[i] = nonZeroDists[index - 1];
-        if (interpolation > SMOOTH_K_TOLERANCE) {
-          rho[i] +=
-            interpolation * (nonZeroDists[index] - nonZeroDists[index - 1]);
-        }
-      } else {
-        rho[i] = interpolation * nonZeroDists[0];
-      }
-    } else if (nonZeroDists.length > 0) {
-      rho[i] = utils.max(nonZeroDists);
-    }
-
-    for (let n = 0; n < nIter; n++) {
-      let psum = 0.0;
-      for (let j = 1; j < distances[i].length; j++) {
-        const d = distances[i][j] - rho[i];
-        if (d > 0) {
-          psum += Math.exp(-(d / mid));
+      if (nonZeroDists.length >= localConnectivity) {
+        let index = Math.floor(localConnectivity);
+        let interpolation = localConnectivity - index;
+        if (index > 0) {
+          rho[i] = nonZeroDists[index - 1];
+          if (interpolation > SMOOTH_K_TOLERANCE) {
+            rho[i] +=
+              interpolation * (nonZeroDists[index] - nonZeroDists[index - 1]);
+          }
         } else {
-          psum += 1.0;
+          rho[i] = interpolation * nonZeroDists[0];
         }
+      } else if (nonZeroDists.length > 0) {
+        rho[i] = utils.max(nonZeroDists);
       }
 
-      if (Math.abs(psum - target) < SMOOTH_K_TOLERANCE) {
-        break;
-      }
+      for (let n = 0; n < nIter; n++) {
+        let psum = 0.0;
+        for (let j = 1; j < distances[i].length; j++) {
+          const d = distances[i][j] - rho[i];
+          if (d > 0) {
+            psum += Math.exp(-(d / mid));
+          } else {
+            psum += 1.0;
+          }
+        }
 
-      if (psum > target) {
-        hi = mid;
-        mid = (lo + hi) / 2.0;
-      } else {
-        lo = mid;
-        if (hi === Infinity) {
-          mid *= 2;
-        } else {
+        if (Math.abs(psum - target) < SMOOTH_K_TOLERANCE) {
+          break;
+        }
+
+        if (psum > target) {
+          hi = mid;
           mid = (lo + hi) / 2.0;
+        } else {
+          lo = mid;
+          if (hi === Infinity) {
+            mid *= 2;
+          } else {
+            mid = (lo + hi) / 2.0;
+          }
+        }
+      }
+
+      result[i] = mid;
+
+      // TODO: This is very inefficient, but will do for now. FIXME
+      if (rho[i] > 0.0) {
+        const meanIthDistances = utils.mean(ithDistances);
+        if (result[i] < MIN_K_DIST_SCALE * meanIthDistances) {
+          result[i] = MIN_K_DIST_SCALE * meanIthDistances;
+        }
+      } else {
+        const meanDistances = utils.mean(distances.map(utils.mean));
+        if (result[i] < MIN_K_DIST_SCALE * meanDistances) {
+          result[i] = MIN_K_DIST_SCALE * meanDistances;
         }
       }
     }
 
-    result[i] = mid;
-
-    // TODO: This is very inefficient, but will do for now. FIXME
-    if (rho[i] > 0.0) {
-      const meanIthDistances = utils.mean(ithDistances);
-      if (result[i] < MIN_K_DIST_SCALE * meanIthDistances) {
-        result[i] = MIN_K_DIST_SCALE * meanIthDistances;
-      }
-    } else {
-      const meanDistances = utils.mean(distances.map(utils.mean));
-      if (result[i] < MIN_K_DIST_SCALE * meanDistances) {
-        result[i] = MIN_K_DIST_SCALE * meanDistances;
-      }
-    }
+    return { sigmas: result, rhos: rho };
   }
 
-  return { sigmas: result, rhos: rho };
-}
+  /**
+   * Construct the membership strength data for the 1-skeleton of each local
+   * fuzzy simplicial set -- this is formed as a sparse matrix where each row is
+   * a local fuzzy simplicial set, with a membership strength for the
+   * 1-simplex to each other data point.
+   */
+  private computeMembershipStrengths(
+    knnIndices: Points,
+    knnDistances: Points,
+    sigmas: number[],
+    rhos: number[]
+  ): { rows: number[]; cols: number[]; vals: number[] } {
+    const nSamples = knnIndices.length;
+    const nNeighbors = knnIndices[0].length;
 
-/**
- * Construct the membership strength data for the 1-skeleton of each local
- * fuzzy simplicial set -- this is formed as a sparse matrix where each row is
- * a local fuzzy simplicial set, with a membership strength for the
- * 1-simplex to each other data point.
- */
-function computeMembershipStrengths(
-  knnIndices: Points,
-  knnDistances: Points,
-  sigmas: number[],
-  rhos: number[]
-): { rows: number[]; cols: number[]; vals: number[] } {
-  const nSamples = knnIndices.length;
-  const nNeighbors = knnIndices[0].length;
+    const rows = utils.zeros(nSamples * nNeighbors);
+    const cols = utils.zeros(nSamples * nNeighbors);
+    const vals = utils.zeros(nSamples * nNeighbors);
 
-  const rows = utils.zeros(nSamples * nNeighbors);
-  const cols = utils.zeros(nSamples * nNeighbors);
-  const vals = utils.zeros(nSamples * nNeighbors);
+    for (let i = 0; i < nSamples; i++) {
+      for (let j = 0; j < nNeighbors; j++) {
+        let val = 0;
+        if (knnIndices[i][j] === -1) {
+          continue; // We didn't get the full knn for i
+        }
+        if (knnIndices[i][j] === i) {
+          val = 0.0;
+        } else if (knnDistances[i][j] - rhos[i] <= 0.0) {
+          val = 1.0;
+        } else {
+          val = Math.exp(-((knnDistances[i][j] - rhos[i]) / sigmas[i]));
+        }
 
-  for (let i = 0; i < nSamples; i++) {
-    for (let j = 0; j < nNeighbors; j++) {
-      let val = 0;
-      if (knnIndices[i][j] === -1) {
-        continue; // We didn't get the full knn for i
+        rows[i * nNeighbors + j] = i;
+        cols[i * nNeighbors + j] = knnIndices[i][j];
+        vals[i * nNeighbors + j] = val;
       }
-      if (knnIndices[i][j] === i) {
-        val = 0.0;
-      } else if (knnDistances[i][j] - rhos[i] <= 0.0) {
-        val = 1.0;
+    }
+
+    return { rows, cols, vals };
+  }
+
+  /**
+   * Initialize a fuzzy simplicial set embedding, using a specified
+   * initialisation method and then minimizing the fuzzy set cross entropy
+   * between the 1-skeletons of the high and low dimensional fuzzy simplicial
+   * sets.
+   */
+  private initializeSimplicialSetEmbedding() {
+    const nEpochs = this.getNEpochs(this.graph);
+
+    const { nComponents } = this;
+    const graphValues = this.graph.getValues();
+    let graphMax = 0;
+    for (let i = 0; i < graphValues.length; i++) {
+      const value = graphValues[i];
+      if (graphMax < graphValues[i]) {
+        graphMax = value;
+      }
+    }
+
+    const graph = this.graph.map(value => {
+      if (value < graphMax / nEpochs) {
+        return 0;
       } else {
-        val = Math.exp(-((knnDistances[i][j] - rhos[i]) / sigmas[i]));
+        return value;
       }
-
-      rows[i * nNeighbors + j] = i;
-      cols[i * nNeighbors + j] = knnIndices[i][j];
-      vals[i * nNeighbors + j] = val;
-    }
-  }
-
-  return { rows, cols, vals };
-}
-
-/**
- * Perform a fuzzy simplicial set embedding, using a specified
- * initialisation method and then minimizing the fuzzy set cross entropy
- * between the 1-skeletons of the high and low dimensional fuzzy simplicial
- *  sets.
- */
-function simplicialSetEmbedding(
-  data: Points,
-  graph: matrix.SparseMatrix,
-  nComponents,
-  nEpochs = 0
-) {
-  const nVertices = graph.nCols;
-
-  if (nEpochs <= 0) {
-    const length = graph.nRows;
-    // NOTE: This heuristic differs from the python version
-    if (length <= 2500) {
-      nEpochs = 500;
-    } else if (length <= 5000) {
-      nEpochs = 400;
-    } else if (length <= 7500) {
-      nEpochs = 300;
-    } else {
-      nEpochs = 200;
-    }
-  }
-
-  const graphValues = graph.getValues();
-  let graphMax = 0;
-  for (let i = 0; i < graphValues.length; i++) {
-    const value = graphValues[i];
-    if (graphMax < graphValues[i]) {
-      graphMax = value;
-    }
-  }
-
-  graph = graph.map(value => {
-    if (value < graphMax / nEpochs) {
-      return 0;
-    } else {
-      return value;
-    }
-  });
-
-  // We're not computing the spectral initialization in this implementation
-  // until we determine a better eigenvalue/eigenvector computation
-  // approach
-  const embedding = utils.zeros(graph.nRows).map(() => {
-    return utils.zeros(nComponents).map(() => {
-      return utils.tauRand() * 20 + -10; // Random from -10 to 10
     });
-  });
 
-  // Get graph data in ordered way...
-  const weights = [];
-  const head = [];
-  const tail = [];
-  for (let i = 0; i < graph.nRows; i++) {
-    for (let j = 0; j < graph.nCols; j++) {
-      const value = graph.get(i, j);
-      if (value) {
-        weights.push(value);
-        tail.push(i);
-        head.push(j);
+    // We're not computing the spectral initialization in this implementation
+    // until we determine a better eigenvalue/eigenvector computation
+    // approach
+    this.embedding = utils.zeros(graph.nRows).map(() => {
+      return utils.zeros(nComponents).map(() => {
+        return utils.tauRand() * 20 + -10; // Random from -10 to 10
+      });
+    });
+
+    // Get graph data in ordered way...
+    const weights = [];
+    const head = [];
+    const tail = [];
+    for (let i = 0; i < graph.nRows; i++) {
+      for (let j = 0; j < graph.nCols; j++) {
+        const value = graph.get(i, j);
+        if (value) {
+          weights.push(value);
+          tail.push(i);
+          head.push(j);
+        }
       }
     }
+    const epochsPerSample = this.makeEpochsPerSample(weights, nEpochs);
+
+    return { head, tail, epochsPerSample };
   }
-  const epochsPerSample = makeEpochsPerSample(weights, nEpochs);
 
-  const result = optimizeLayout(
-    embedding,
-    embedding,
-    head,
-    tail,
-    nEpochs,
-    nVertices,
-    epochsPerSample
-  );
-
-  return result;
-}
-
-/**
- * Given a set of weights and number of epochs generate the number of
- * epochs per sample for each weight.
- */
-function makeEpochsPerSample(weights: number[], nEpochs: number) {
-  const result = utils.filled(weights.length, -1.0);
-  const max = utils.max(weights);
-  const nSamples = weights.map(w => (w / max) * nEpochs);
-  nSamples.forEach((n, i) => {
-    if (n > 0) result[i] = nEpochs / nSamples[i];
-  });
-  return result;
-}
-
-/**
- * Standard clamping of a value into a fixed range (in this case -4.0 to 4.0)
- */
-function clip(x: number) {
-  if (x > 4.0) return 4.0;
-  else if (x < -4.0) return -4.0;
-  else return x;
-}
-
-/**
- * Reduced Euclidean distance.
- */
-function rDist(x: number[], y: number[]) {
-  let result = 0.0;
-  for (let i = 0; i < x.length; i++) {
-    result += Math.pow(x[i] - y[i], 2);
+  /**
+   * Given a set of weights and number of epochs generate the number of
+   * epochs per sample for each weight.
+   */
+  private makeEpochsPerSample(weights: number[], nEpochs: number) {
+    const result = utils.filled(weights.length, -1.0);
+    const max = utils.max(weights);
+    const nSamples = weights.map(w => (w / max) * nEpochs);
+    nSamples.forEach((n, i) => {
+      if (n > 0) result[i] = nEpochs / nSamples[i];
+    });
+    return result;
   }
-  return result;
-}
 
-/**
- * Improve an embedding using stochastic gradient descent to minimize the
- * fuzzy set cross entropy between the 1-skeletons of the high dimensional
- * and low dimensional fuzzy simplicial sets. In practice this is done by
- * sampling edges based on their membership strength (with the (1-p) terms
- * coming from negative sampling similar to word2vec).
- */
-function optimizeLayout(
-  headEmbedding: number[][],
-  tailEmbedding: number[][],
-  head: number[],
-  tail: number[],
-  nEpochs: number,
-  nVertices: number,
-  epochsPerSample: number[],
-  gamma = 1.0,
-  initialAlpha = 1.0,
-  negativeSampleRate = 5
-) {
-  // TODO -> Compute these!!!!
-  const a = 1.5769434603113077;
-  const b = 0.8950608779109733;
+  /**
+   * Initializes optimization state for stepwise optimization
+   */
+  private initializeOptimization() {
+    // Algorithm state
+    const headEmbedding = this.embedding;
+    const tailEmbedding = this.embedding;
 
-  const dim = headEmbedding[0].length;
-  const moveOther = headEmbedding.length === tailEmbedding.length;
-  let alpha = initialAlpha;
+    // Initialized in initializeSimplicialSetEmbedding()
+    const { head, tail, epochsPerSample } = this.optimizationState;
 
-  const epochsPerNegativeSample = epochsPerSample.map(
-    e => e / negativeSampleRate
-  );
-  const epochOfNextNegativeSample = [...epochsPerNegativeSample];
-  const epochOfNextSample = [...epochsPerSample];
+    // Hyperparameters
+    const gamma = 1.0;
+    const initialAlpha = 1.0;
+    const negativeSampleRate = 5;
 
-  for (let n = 0; n < nEpochs; n++) {
+    const nEpochs = this.getNEpochs(this.graph);
+    const nVertices = this.graph.nCols;
+
+    // TODO -> Compute these values which are computed via a curve-fitting
+    // routine in the python implementation.
+    const a = 1.5769434603113077;
+    const b = 0.8950608779109733;
+
+    const dim = headEmbedding[0].length;
+    const moveOther = headEmbedding.length === tailEmbedding.length;
+    let alpha = initialAlpha;
+
+    const epochsPerNegativeSample = epochsPerSample.map(
+      e => e / negativeSampleRate
+    );
+    const epochOfNextNegativeSample = [...epochsPerNegativeSample];
+    const epochOfNextSample = [...epochsPerSample];
+
+    Object.assign(this.optimizationState, {
+      isInitialized: true,
+      headEmbedding,
+      tailEmbedding,
+      head,
+      tail,
+      epochsPerSample,
+      epochOfNextSample,
+      epochOfNextNegativeSample,
+      epochsPerNegativeSample,
+      moveOther,
+      initialAlpha,
+      alpha,
+      gamma,
+      a,
+      b,
+      dim,
+      nEpochs,
+      nVertices,
+    });
+  }
+
+  /**
+   * Improve an embedding using stochastic gradient descent to minimize the
+   * fuzzy set cross entropy between the 1-skeletons of the high dimensional
+   * and low dimensional fuzzy simplicial sets. In practice this is done by
+   * sampling edges based on their membership strength (with the (1-p) terms
+   * coming from negative sampling similar to word2vec).
+   */
+  private optimizeLayoutStep(n: number) {
+    const { optimizationState } = this;
+    const {
+      head,
+      tail,
+      headEmbedding,
+      tailEmbedding,
+      epochsPerSample,
+      epochOfNextSample,
+      epochOfNextNegativeSample,
+      epochsPerNegativeSample,
+      moveOther,
+      initialAlpha,
+      alpha,
+      gamma,
+      a,
+      b,
+      dim,
+      nEpochs,
+      nVertices,
+    } = optimizationState;
+
     for (let i = 0; i < epochsPerSample.length; i++) {
       if (epochOfNextSample[i] > n) {
         continue;
@@ -476,9 +567,87 @@ function optimizeLayout(
       }
       epochOfNextNegativeSample[i] += nNegSamples * epochsPerNegativeSample[i];
     }
-    alpha = initialAlpha * (1.0 - n / nEpochs);
+    optimizationState.alpha = initialAlpha * (1.0 - n / nEpochs);
+
+    optimizationState.currentEpoch += 1;
+    this.embedding = headEmbedding;
+    return optimizationState.currentEpoch;
   }
-  return headEmbedding;
-} 
+
+  /**
+   * Improve an embedding using stochastic gradient descent to minimize the
+   * fuzzy set cross entropy between the 1-skeletons of the high dimensional
+   * and low dimensional fuzzy simplicial sets. In practice this is done by
+   * sampling edges based on their membership strength (with the (1-p) terms
+   * coming from negative sampling similar to word2vec).
+   */
+  private optimizeLayout(
+    epochCallback: (epochNumber: number) => void | boolean = () => true
+  ): Promise<boolean> {
+    if (!this.optimizationState.isInitialized) {
+      this.initializeOptimization();
+    }
+
+    return new Promise((resolve, reject) => {
+      const step = async () => {
+        try {
+          const { nEpochs, currentEpoch } = this.optimizationState;
+          const epochCompleted = this.optimizeLayoutStep(currentEpoch);
+          const shouldStop = epochCallback(epochCompleted) === false;
+          const isFinished = epochCompleted === nEpochs;
+          if (!shouldStop && !isFinished) {
+            step();
+          } else {
+            return resolve(isFinished);
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      step();
+    });
+  }
+
+  /**
+   * Gets the number of epochs for optimizing the projection.
+   * NOTE: This heuristic differs from the python version
+   */
+  private getNEpochs(graph: matrix.SparseMatrix) {
+    if (this.nEpochs > 0) {
+      return this.nEpochs;
+    }
+
+    const length = graph.nRows;
+    if (length <= 2500) {
+      return 500;
+    } else if (length <= 5000) {
+      return 400;
+    } else if (length <= 7500) {
+      return 300;
+    } else {
+      return 200;
+    }
+  }
+}
+
+/**
+ * Standard clamping of a value into a fixed range (in this case -4.0 to 4.0)
+ */
+function clip(x: number) {
+  if (x > 4.0) return 4.0;
+  else if (x < -4.0) return -4.0;
+  else return x;
+}
+
+/**
+ * Reduced Euclidean distance.
+ */
+function rDist(x: number[], y: number[]) {
+  let result = 0.0;
+  for (let i = 0; i < x.length; i++) {
+    result += Math.pow(x[i] - y[i], 2);
+  }
+  return result;
+}
 
 }  // namespace vz_projector.umap

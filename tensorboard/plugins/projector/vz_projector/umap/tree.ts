@@ -62,7 +62,7 @@ function makeEuclideanTree(
   q: number
 ): RandomProjectionTreeNode {
   if (indices.length > leafSize) {
-    const splitResults = euclideanRandomProjectionSplit(data, indices, q);
+    const splitResults = euclideanRandomProjectionSplit(data, indices);
     const { indicesLeft, indicesRight, hyperplane, offset } = splitResults;
 
     const leftChild = makeEuclideanTree(data, indicesLeft, leafSize, q + 1);
@@ -79,7 +79,6 @@ function makeEuclideanTree(
 function euclideanRandomProjectionSplit(
   data: Points,
   indices: number[],
-  q: number
 ) {
   const dim = data[0].length;
 

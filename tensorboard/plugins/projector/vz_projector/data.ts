@@ -76,8 +76,9 @@ const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
 const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 
-export const TSNE_SAMPLE_SIZE = 10000;
-export const PCA_SAMPLE_SIZE = 50000;
+export const TSNE_SAMPLE_SIZE = 5000;
+export const UMAP_SAMPLE_SIZE = 5000;
+export const PCA_SAMPLE_SIZE = 5000;
 /** Number of dimensions to sample when doing approximate PCA. */
 export const PCA_SAMPLE_DIM = 200;
 /** Number of pca components to compute. */
@@ -122,6 +123,9 @@ export class DataSet {
   projections: {[projection: string]: boolean} = {};
   nearest: knn.NearestEntry[][];
   nearestK: number;
+  spriteAndMetadataInfo: SpriteAndMetadataInfo;
+  fracVariancesExplained: number[];
+
   tSNEIteration: number = 0;
   tSNEShouldPause = false;
   tSNEShouldStop = true;
@@ -130,10 +134,13 @@ export class DataSet {
   superviseInput: string = '';
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
-  spriteAndMetadataInfo: SpriteAndMetadataInfo;
-  fracVariancesExplained: number[];
-
   private tsne: TSNE;
+  
+  UMAPIteration: number = 0;
+  UMAPShouldPause = false;
+  UMAPShouldStop = true;
+  hasUMAPRun = false;
+  private umap: umap.UMAP;
 
   /** Creates a new Dataset */
   constructor(
@@ -306,11 +313,11 @@ export class DataSet {
 
   /** Runs tsne on the data. */
   projectTSNE(
-      perplexity: number, learningRate: number, tsneDim: number,
+      perplexity: number, learningRate: number, nDim: number,
       stepCallback: (iter: number) => void) {
     this.hasTSNERun = true;
     let k = Math.floor(3 * perplexity);
-    let opt = {epsilon: learningRate, perplexity: perplexity, dim: tsneDim};
+    let opt = {epsilon: learningRate, perplexity: perplexity, dim: nDim};
     this.tsne = new TSNE(opt);
     this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
     this.tsne.setSuperviseFactor(this.superviseFactor);
@@ -334,10 +341,10 @@ export class DataSet {
         sampledIndices.forEach((index, i) => {
           let dataPoint = this.points[index];
 
-          dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
-          dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
-          if (tsneDim === 3) {
-            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+          dataPoint.projections['tsne-0'] = result[i * nDim + 0];
+          dataPoint.projections['tsne-1'] = result[i * nDim + 1];
+          if (nDim === 3) {
+            dataPoint.projections['tsne-2'] = result[i * nDim + 2];
           }
         });
         this.projections['tsne'] = true;
@@ -369,6 +376,78 @@ export class DataSet {
           }).then(step);
     });
   }
+
+  /** Runs UMAP on the data. */
+  projectUMAP(nDim: number, stepCallback: (iter: number) => void) {
+    this.hasUMAPRun = true;
+    this.umap = new umap.UMAP({nComponents: nDim});
+    this.UMAPShouldPause = false;
+    this.UMAPShouldStop = false;
+    this.UMAPIteration = 0;
+
+    let nEpochs = 1;
+    let sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
+    
+
+    let firstStep = true;
+    let nStepsPerFrame = 1;
+    let currentStep = 0;
+
+    const step = () => {
+      if (this.UMAPShouldStop) {
+        this.projections['umap'] = false;
+        stepCallback(null);
+        this.umap = null;
+        this.hasUMAPRun = false;
+        return;
+      }
+
+      if (!this.UMAPShouldPause) {
+        const stepStart = Date.now();
+        const nStepsToTake = Math.min(nEpochs - currentStep, nStepsPerFrame);
+        for (let i = 0; i < nStepsToTake; i++) {
+          currentStep = this.umap.step();
+        }
+        const result = this.umap.getSolution();
+        sampledIndices.forEach((index, i) => {
+          let dataPoint = this.points[index];
+
+          dataPoint.projections['umap-0'] = result[i][0];
+          dataPoint.projections['umap-1'] = result[i][1];
+          if (nDim === 3) {
+            dataPoint.projections['umap-2'] = result[i][2];
+          }
+        });
+        this.projections['umap'] = true;
+        this.UMAPIteration = currentStep;
+
+        stepCallback(this.UMAPIteration);
+
+        if (currentStep >= nEpochs) {
+          this.UMAPShouldPause = true;
+        }
+        // Try to batch the steps to 3 frames per second in order to reduce 
+        // "thrashing" in the projected data, since the SGD phase of UMAP is
+        //  much more jittery than t-SNE.
+        if (firstStep) {
+          const took = Date.now() - stepStart;
+          nStepsPerFrame = 333 / took;
+          firstStep = false;
+        }
+      }
+      requestAnimationFrame(step);
+    };
+
+    const sampledData = sampledIndices.map(i => this.points[i]);
+    // TODO: Switch to a Float32-based UMAP internal
+    const X = sampledData.map(x => Array.from(x.vector));
+
+    // Perhaps do the KNN Computation ahead of time...
+
+    util.runAsyncTask('Initializing UMAP...', () => {
+      nEpochs = this.umap.initializeFit(X);
+    }).then(step);
+  }  
 
   /* Perturb TSNE and update dataset point coordinates. */
   perturbTsne() {
@@ -461,6 +540,10 @@ export class DataSet {
     this.tSNEShouldStop = true;
   }
 
+  stopUMAP() {
+    this.UMAPShouldStop = true;
+  }
+
   /**
    * Finds the nearest neighbors of the query point using a
    * user-specified distance metric.
@@ -490,7 +573,7 @@ export class DataSet {
   }
 }
 
-export type ProjectionType = 'tsne' | 'pca' | 'custom';
+export type ProjectionType = 'tsne' | 'umap' | 'pca' | 'custom';
 
 export class Projection {
   constructor(
@@ -533,6 +616,10 @@ export class State {
   tSNEPerplexity: number = 0;
   tSNELearningRate: number = 0;
   tSNEis3d: boolean = true;
+
+  /** UMAP parameters */
+  UMAPIteration: number = 0;
+  UMAPis3d: boolean = true;
 
   /** PCA projection component dimensions */
   pcaComponentDimensions: number[] = [];
