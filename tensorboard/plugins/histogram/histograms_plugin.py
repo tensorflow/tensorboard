@@ -266,8 +266,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     output_format = request.args.get('format')
     try:
       (body, mime_type) = self.histograms_impl(
-        tag, run, output_format,
-        downsample_to=self.SAMPLE_SIZE)
+        tag, run, downsample_to=self.SAMPLE_SIZE,
+        output_format=output_format)
       code = 200
     except ValueError as e:
       (body, mime_type) = (str(e), 'text/plain')
