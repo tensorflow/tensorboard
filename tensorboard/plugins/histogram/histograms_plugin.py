@@ -69,8 +69,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        '/histograms': self.histograms_route,
-        '/tags': self.tags_route,
+      '/histograms': self.histograms_route,
+      '/tags': self.tags_route,
     }
 
   def is_active(self):
@@ -132,30 +132,32 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
   def _get_csv_response(self, events):
     """
-    Returns a string response with all the events formatted in the csv format
-    :param events:
-    :return:
+
+    Args:
+      events: A list of (wall_time, step, tensor_as_list) event tuples.
+
+    Returns:
+      CSV string representation of the given events.
     """
-    csv_events = []
+    string_io = StringIO()
+    writer = csv.writer(string_io)
+    writer.writerow(['Wall time', 'Step', 'BinStart', 'BinEnd', 'BinValue'])
     # Convert the events in a way that we can sensibly export
     # them as csv. Therefore, we split the start, end, value of
     # each bin by semicolon.
     for e in events:
-      csv_events.append(
-        [e[0], e[1],
-         ';'.join(['{:.17f}'.format(el[0]) for el in e[2]]),
-         ';'.join(['{:.17f}'.format(el[1]) for el in e[2]]),
-         ';'.join(['{}'.format(el[2]) for el in e[2]]),
-         ]
+      writer.writerows(
+        [
+          e[0],
+          e[1],
+          ';'.join(['{:.17f}'.format(el[0]) for el in e[2]]),
+          ';'.join(['{:.17f}'.format(el[1]) for el in e[2]]),
+          ';'.join(['{}'.format(el[2]) for el in e[2]]),
+        ]
       )
-    string_io = StringIO()
-    writer = csv.writer(string_io)
-    writer.writerow(['Wall time', 'Step', 'BinStart', 'BinEnd', 'BinValue'])
-    writer.writerows(csv_events)
     return string_io.getvalue()
 
-
-  def histograms_impl(self, tag, run, output_format='json',
+  def histograms_impl(self, tag, run, output_format=OutputFormat.JSON,
                       downsample_to=None):
     """Result of the form `(body, mime_type)`, or `ValueError`.
 
@@ -168,17 +170,17 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       cursor = db.cursor()
       # Prefetch the tag ID matching this run and tag.
       cursor.execute(
-          '''
-          SELECT
-            tag_id
-          FROM Tags
-          JOIN Runs USING (run_id)
-          WHERE
-            Runs.run_name = :run
-            AND Tags.tag_name = :tag
-            AND Tags.plugin_name = :plugin
-          ''',
-          {'run': run, 'tag': tag, 'plugin': metadata.PLUGIN_NAME})
+        '''
+        SELECT
+          tag_id
+        FROM Tags
+        JOIN Runs USING (run_id)
+        WHERE
+          Runs.run_name = :run
+          AND Tags.tag_name = :tag
+          AND Tags.plugin_name = :plugin
+        ''',
+        {'run': run, 'tag': tag, 'plugin': metadata.PLUGIN_NAME})
       row = cursor.fetchone()
       if not row:
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
@@ -192,32 +194,32 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       # can be formally expressed as the following:
       #   [s_min + math.ceil(i / k * (s_max - s_min)) for i in range(0, k + 1)]
       cursor.execute(
-          '''
+        '''
+        SELECT
+          MIN(step) AS step,
+          computed_time,
+          data,
+          dtype,
+          shape
+        FROM Tensors
+        INNER JOIN (
           SELECT
-            MIN(step) AS step,
-            computed_time,
-            data,
-            dtype,
-            shape
+            MIN(step) AS min_step,
+            MAX(step) AS max_step
           FROM Tensors
-          INNER JOIN (
-            SELECT
-              MIN(step) AS min_step,
-              MAX(step) AS max_step
-            FROM Tensors
-            /* Filter out NULL so we can use TensorSeriesStepIndex. */
-            WHERE series = :tag_id AND step IS NOT NULL
-          )
-          /* Ensure we omit reserved rows, which have NULL step values. */
+          /* Filter out NULL so we can use TensorSeriesStepIndex. */
           WHERE series = :tag_id AND step IS NOT NULL
-          /* Bucket rows into sample_size linearly spaced buckets, or do
-             no sampling if sample_size is NULL. */
-          GROUP BY
-            IFNULL(:sample_size - 1, max_step - min_step)
-            * (step - min_step) / (max_step - min_step)
-          ORDER BY step
-          ''',
-          {'tag_id': tag_id, 'sample_size': downsample_to})
+        )
+        /* Ensure we omit reserved rows, which have NULL step values. */
+        WHERE series = :tag_id AND step IS NOT NULL
+        /* Bucket rows into sample_size linearly spaced buckets, or do
+           no sampling if sample_size is NULL. */
+        GROUP BY
+          IFNULL(:sample_size - 1, max_step - min_step)
+          * (step - min_step) / (max_step - min_step)
+        ORDER BY step
+        ''',
+        {'tag_id': tag_id, 'sample_size': downsample_to})
       events = [(computed_time, step, self._get_values(data, dtype, shape))
                 for step, computed_time, data, dtype, shape in cursor]
     else:
@@ -228,7 +230,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
       if downsample_to is not None and len(tensor_events) > downsample_to:
         rand_indices = random.Random(0).sample(
-            six.moves.xrange(len(tensor_events)), downsample_to)
+          six.moves.xrange(len(tensor_events)), downsample_to)
         indices = sorted(rand_indices)
         tensor_events = [tensor_events[i] for i in indices]
       events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
@@ -264,8 +266,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     output_format = request.args.get('format')
     try:
       (body, mime_type) = self.histograms_impl(
-          tag, run, output_format,
-          downsample_to=self.SAMPLE_SIZE)
+        tag, run, output_format,
+        downsample_to=self.SAMPLE_SIZE)
       code = 200
     except ValueError as e:
       (body, mime_type) = (str(e), 'text/plain')
