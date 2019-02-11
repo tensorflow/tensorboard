@@ -22,6 +22,12 @@ from __future__ import print_function
 from tensorboard import lazy
 
 
+@lazy.lazy_load('tensorboard.notebook')
+def notebook():
+  import tensorboard.notebook as module  # pylint: disable=g-import-not-at-top
+  return module
+
+
 @lazy.lazy_load('tensorboard.program')
 def program():
   import tensorboard.program as module  # pylint: disable=g-import-not-at-top
