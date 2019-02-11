@@ -109,10 +109,10 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       for row in cursor:
         tag_name, display_name, run_name = row
         result[run_name][tag_name] = {
-          'displayName': display_name,
-          # TODO(chihuahua): Populate the description. Currently, the tags
-          # table does not link with the description table.
-          'description': '',
+            'displayName': display_name,
+            # TODO(chihuahua): Populate the description. Currently, the tags
+            # table does not link with the description table.
+            'description': '',
         }
       return result
 
@@ -126,7 +126,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
-                              summary_metadata.summary_description)}
+                                summary_metadata.summary_description)}
 
     return result
 
