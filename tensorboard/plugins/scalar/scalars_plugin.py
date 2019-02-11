@@ -192,14 +192,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def scalars_route(self, request):
     """Given a tag and single run, return array of ScalarEvents."""
+    # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
     experiment = request.args.get('experiment')
     output_format = request.args.get('format')
-    try:
-      (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
-      code = 200
-    except ValueError as e:
-      (body, mime_type) = (str(e), 'text/plain')
-      code = 400
-    return http_util.Respond(request, body, mime_type, code=code)
+    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+
+    return http_util.Respond(request, body, mime_type)
