@@ -157,8 +157,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       )
     return string_io.getvalue()
 
-  def histograms_impl(self, tag, run, output_format=OutputFormat.JSON,
-                      downsample_to=None):
+  def histograms_impl(self, tag, run, downsample_to=None,
+                      output_format=OutputFormat.JSON):
     """Result of the form `(body, mime_type)`, or `ValueError`.
 
     At most `downsample_to` events will be returned. If this value is
