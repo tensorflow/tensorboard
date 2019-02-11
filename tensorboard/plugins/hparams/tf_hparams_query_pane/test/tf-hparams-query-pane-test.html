@@ -1,0 +1,339 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../tf-hparams-query-pane.html">
+  </head>
+  <body>
+    <test-fixture id="tf-hparams-query-pane">
+      <template>
+        <tf-hparams-query-pane api-url="/tb_hparams_api_url"
+                               experiment-name="my_experiment">
+        </tf-hparams-query-pane>
+      </template>
+    </test-fixture>
+    <script>
+      chai.config.truncateThreshold = 0;
+      suite('<tf-hparams-query-pane>-tests', function() {
+        var element;
+        var fakeBackendServer;
+        const experimentResponse = {
+          description: "",
+          timeCreatedSecs: 1528839883.156576,
+          hparamInfos: [
+            {
+              name: "initial_temperature",
+              displayName: "Initial temperature",
+              description: "",
+              domainDiscrete: [
+                270.0, 320.0, 370.0,
+              ],
+              type: "DATA_TYPE_FLOAT64"
+            },
+            {
+              name: "ambient_temperature",
+              displayName: "Ambient temperature",
+              description: "",
+              domainInterval: {
+                minValue: -5000,
+                maxValue: 5000
+              },
+              type: "DATA_TYPE_FLOAT64"
+            },
+          ],
+          metricInfos: [
+            {
+              name: {
+                group: "",
+                tag: "current"
+              },
+              displayName: "Current Temp.",
+              datasetType: "DATASET_UNKNOWN",
+              description: ""
+            },
+            {
+              name: {
+                group: "",
+                tag: "difference_to_ambient"
+              },
+              displayName: "Difference To Ambient Temp.",
+              datasetType: "DATASET_UNKNOWN",
+              description: ""
+            },
+          ],
+          user: ""
+        };
+        const sessionGroupsResponse = {
+          sessionGroups: [
+            {
+              name: "0163d6ebd35ff89c6c607a5a0639247c",
+              hparams: {
+                ambient_temperature: 270.0,
+                initial_temperature: 370.0,
+                heat_coefficient: 0.001
+              },
+              sessions: [
+                {
+                  name: "40",
+                  startTimeSecs: 1528839898.35078,
+                  monitorUrl: "",
+                  endTimeSecs: 1528839898.676126,
+                  metricValues: [
+                    {
+                      name: {
+                        group: "",
+                        tag: "current"
+                      },
+                      wallTimeSecs: 1528839898.676076,
+                      value: 359.4591979980469,
+                      trainingStep: 99
+                    },
+                    {
+                      name: {
+                        group: "",
+                        tag: "difference_to_ambient"
+                      },
+                      wallTimeSecs: 1528839898.676076,
+                      value: 89.45919799804688,
+                      trainingStep: 99
+                    },
+                  ],
+                  modelUri: "",
+                  status: "STATUS_SUCCESS"
+                }
+              ]
+            }
+          ]
+        };
+
+        // Fake the debounce method and make it call its given function
+        // synchronously to make the test synchronous (otherwise
+        // the _queryServer() method called on element initialization would
+        // end-up querying the server after a delay).
+        Polymer.Base.debounce = function(name, func, delay) { func(); };
+
+        // Make the window.alert() method a no-op so the element won't block
+        // awaiting user input.
+        window.alert = function() {};
+
+        setup(function() {
+          fakeBackendServer = sinon.fakeServer.create();
+          fakeBackendServer.respondWith(
+              "POST", /experiment$/, [
+                200 /* status */,
+                {"Content-Type": "application/json"} /* headers */,
+                JSON.stringify(experimentResponse) /* body */
+              ]);
+          fakeBackendServer.respondWith(
+              "POST", /session_groups$/, [
+                200 /* status */,
+                {"Content-Type": "application/json"} /* headers */,
+                JSON.stringify(sessionGroupsResponse) /* body */
+              ]);
+          originalDebounce = Polymer.Base.debounce;
+          fakeBackendServer.respondImmediately = true;
+          // Grab a fresh copy before each test.
+          element = fixture('tf-hparams-query-pane');
+        });
+
+        teardown(function() {
+          fakeBackendServer.restore();
+        });
+
+        test('element initialized correctly.', function() {
+          return element._lastListSessionGroupsResponseProcessed.then(()=>{
+            assert.deepEqual(
+                element._hparams,
+                [{info: experimentResponse.hparamInfos[0],
+                  filter: {domainDiscrete: [{value:270, checked: true},
+                                            {value:320, checked: true},
+                                            {value:370, checked: true}]
+                            },
+                  displayed: true},
+                 {info: experimentResponse.hparamInfos[1],
+                  filter: {interval: {min: {value: "", invalid: false},
+                                      max: {value: "", invalid: false}}},
+                  displayed: true}
+                ]);
+            assert.deepEqual(
+                element._metrics,
+                [{info: experimentResponse.metricInfos[0],
+                  filter: {interval: {min: {value: "", invalid: false},
+                                      max: {value: "", invalid: false}}},
+                  displayed: true},
+                 {info: experimentResponse.metricInfos[1],
+                  filter: {interval: {min: {value: "", invalid: false},
+                                      max: {value: "", invalid: false}}},
+                  displayed: true}
+                ]);
+            assert.deepEqual(element.sessionGroups,
+                             sessionGroupsResponse.sessionGroups);
+            assert.deepEqual(element.schema, {
+              hparamInfos: experimentResponse.hparamInfos,
+              metricInfos: experimentResponse.metricInfos,
+            });
+            assert.deepEqual(element._experiment, experimentResponse);
+            element._metrics[0].displayed=false
+            element._metrics[1].displayed=false
+            element._hparams[1].displayed=false
+            element._computeSchema()
+            assert.deepEqual(element.schema, {
+              hparamInfos: [experimentResponse.hparamInfos[0]],
+              metricInfos: [],
+            });
+          });
+        });
+
+        test('element updates "sessionGroups" in correct order', function() {
+          // Stop immediate-responding so we can have a server respond
+          // out-of-order.
+          fakeBackendServer.respondImmediately = false;
+          const oldRequests = fakeBackendServer.requests.length;
+          element._queryServer();
+          element._queryServer();
+          // Make sure we have two new requests.
+          assert.equal(fakeBackendServer.requests.length, oldRequests + 2);
+
+          // Respond first to the second request.
+          fakeBackendServer.requests[oldRequests+1].respond(
+              200 /* status */,
+              {"Content-Type": "application/json"} /* headers */,
+              JSON.stringify({sessionGroups:[]}) /* body */);
+          // And then to the first request.
+          fakeBackendServer.requests[oldRequests].respond(
+              200 /* status */,
+              {"Content-Type": "application/json"} /* headers */,
+              JSON.stringify(sessionGroupsResponse) /* body */);
+
+          return element._lastListSessionGroupsResponseProcessed.then(()=>{
+            assert.deepEqual(
+                element._hparams,
+                [{info: experimentResponse.hparamInfos[0],
+                  filter: {domainDiscrete: [{value:270, checked: true},
+                                            {value:320, checked: true},
+                                            {value:370, checked: true}]
+                            },
+                  displayed: true},
+                 {info: experimentResponse.hparamInfos[1],
+                  filter: {interval: {min: {value: "", invalid: false},
+                                      max: {value: "", invalid: false}}},
+                  displayed: true}
+                ]);
+            assert.deepEqual(element.sessionGroups, []);
+          })
+        });
+
+        test('element updates "sessionGroups" after a successful request' +
+             ' following a failed request', function() {
+               // Stop immediate-responding so we can have the server respond
+               // with errors.
+               fakeBackendServer.respondImmediately = false;
+               const oldRequests = fakeBackendServer.requests.length;
+               element._queryServer();
+               element._queryServer();
+               // Make sure we have two new requests.
+               assert.equal(fakeBackendServer.requests.length,
+                            oldRequests + 2);
+
+               // Respond with an error to the first request.
+               fakeBackendServer.requests[oldRequests].respond(
+                   500 /* status */,
+                   {} /* headers */,
+                   "" /* body */);
+               // And then with an OK status to the second request.
+               fakeBackendServer.requests[oldRequests+1].respond(
+                   200 /* status */,
+                   {"Content-Type": "application/json"} /* headers */,
+                   JSON.stringify(sessionGroupsResponse));
+
+               return element._lastListSessionGroupsResponseProcessed.then(()=>{
+                 assert.deepEqual(
+                     element._hparams,
+                     [{info: experimentResponse.hparamInfos[0],
+                       filter: {domainDiscrete:
+                                  [{value:270, checked: true},
+                                   {value:320, checked: true},
+                                   {value:370, checked: true}]},
+                       displayed: true,
+                      },
+                      {info: experimentResponse.hparamInfos[1],
+                       filter: {interval: {min: {value: "", invalid: false},
+                                           max: {value: "", invalid: false}}},
+                       displayed: true
+                      }
+                     ]);
+                 assert.deepEqual(element.sessionGroups,
+                                  sessionGroupsResponse.sessionGroups);
+               })
+             });
+
+        test('element sends correct ListSessionGroupsRequest', function() {
+          return element._lastListSessionGroupsResponseProcessed.then(() => {
+            element._hparams[0].filter =
+                {domainDiscrete: [{value:270, checked: true},
+                                  {value:320, checked: false},
+                                  {value:370, checked: false}]};
+            element._hparams[1].filter = {
+              interval: {min: {value: "300", invalid: false},
+                         max: {value: "423", invalid: false}}
+            };
+            element._metrics[0].filter = {
+              interval: {min: {value: "123", invalid: false},
+                         max: {value: "456", invalid: false}}
+            };
+            element._metrics[1].filter = {
+              interval: {min: {value: "", invalid: false},
+                         max: {value: "", invalid: false}}
+            };
+            // STATUS_UNKNONW
+            element._statuses[0].allowed = false;
+            // STATUS_SUCCESS
+            element._statuses[1].allowed = false;
+            // STATUS_FAILURE
+            element._statuses[2].allowed = true;
+            // STATUS_RUNNING
+            element._statuses[3].allowed = true;
+            element._sortByIndex = 2;  // Sort by the first metric.
+            element._sortDirection = 1; // In descending order.
+            assert.deepEqual(element._buildListSessionGroupsRequest(), {
+              experimentName: "my_experiment",
+              allowedStatuses: ["STATUS_FAILURE", "STATUS_RUNNING"],
+              colParams: [
+                {hparam: experimentResponse.hparamInfos[0].name,
+                 filterDiscrete: [270]},
+                {hparam: experimentResponse.hparamInfos[1].name,
+                 filterInterval: {minValue:300, maxValue: 423}},
+                {metric: {group: "", tag: "current"},
+                 filterInterval: {minValue:123, maxValue: 456},
+                 order: "ORDER_DESC"},
+                {metric: {group: "", tag: "difference_to_ambient"},
+                 filterInterval: {minValue: "-Infinity", maxValue: "Infinity"}}
+              ],
+              startIndex: 0,
+              sliceSize: 100
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
