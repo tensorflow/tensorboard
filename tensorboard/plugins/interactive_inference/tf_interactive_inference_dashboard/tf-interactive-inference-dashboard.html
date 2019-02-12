@@ -3095,6 +3095,8 @@ limitations under the License.
           ? this.examplesAndInferences[this.selected[0]] : null;
         if (this.selectedExampleAndInference == null) {
           this.globalPdPlots = true;
+        } else {
+          this.globalPdPlots = false;
         }
         requestAnimationFrame(() => this.setAttributions());
       },
