@@ -47,7 +47,10 @@ def lazy_load(name):
       if load_once.loading:
         raise ImportError("Circular import when resolving LazyModule %r" % name)
       load_once.loading = True
-      module = load_fn()
+      try:
+        module = load_fn()
+      finally:
+        load_once.loading = False
       self.__dict__.update(module.__dict__)
       load_once.loaded = True
       return module
