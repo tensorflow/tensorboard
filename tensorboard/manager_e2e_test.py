@@ -69,8 +69,10 @@ class ManagerEndToEndTest(tf.test.TestCase):
     self.assertEqual(tempfile.gettempdir(), self.tmproot)
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
 
-    # Add our Bazel-provided `tensorboard` to the system path.
-    tensorboard_binary_dir = os.path.realpath("./tensorboard/")
+    # Add our Bazel-provided `tensorboard` to the system path. (The
+    # //tensorboard:tensorboard target is made available in the same
+    # directory as //tensorboard:manager_e2e_test.)
+    tensorboard_binary_dir = os.path.dirname(os.environ["TEST_BINARY"])
     path_environ = {
         "PATH": os.pathsep.join((tensorboard_binary_dir, os.environ["PATH"])),
     }
