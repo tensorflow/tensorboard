@@ -3,6 +3,8 @@ package(default_visibility = ["//visibility:public"])
 load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
+licenses(["notice"])  # Apache 2.0
+
 tf_web_library(
     name = "tf_hparams_google_analytics_tracker",
     srcs = [

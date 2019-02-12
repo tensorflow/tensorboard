@@ -3,6 +3,8 @@ package(default_visibility = ["//visibility:public"])
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
+licenses(["notice"])  # Apache 2.0
+
 tf_web_library(
     name = "tf_hparams_main",
     srcs = [
@@ -25,7 +27,7 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_main"],
-    visibility = [":tf_hparams_main_users"],
+    visibility = ["//tensorboard/plugins/hparams/external_users:whitelist"],
     destdir = "tf-hparams-main",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
@@ -33,6 +35,5 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/hparams/tf_hparams_query_pane:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_sessions_pane:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/polymer_vaadin_split_layout:lib_v1",
     ],
 )
