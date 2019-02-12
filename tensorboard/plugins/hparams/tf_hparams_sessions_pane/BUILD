@@ -4,6 +4,8 @@ load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
+licenses(["notice"])  # Apache 2.0
+
 tf_web_library(
     name = "tf_hparams_sessions_pane",
     srcs = [
