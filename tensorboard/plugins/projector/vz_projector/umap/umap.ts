@@ -60,6 +60,26 @@ function euclidean(x: Point, y: Point) {
   return Math.sqrt(result);
 }
 
+function cosine(x: Point, y: Point) {
+  let result = 0.0;
+  let normX = 0.0;
+  let normY = 0.0;
+
+  for (let i = 0; i < x.length; i++) {
+    result += x[i] * y[i];
+    normX += x[i] ** 2;
+    normY += y[i] ** 2;
+  }
+
+  if (normX === 0 && normY === 0) {
+    return 0;
+  } else if (normX === 0 || normY === 0) {
+    return 1.0;
+  } else {
+    return 1.0 - (result / Math.sqrt(normX * normY))
+  }
+}
+
 export class UMAP {
   private nNeighbors = 15;
   private nComponents = 2;
@@ -103,7 +123,6 @@ export class UMAP {
       this.knnDistances = knnDistances;
     } else {
       const knnResults = this.nearestNeighbors(X);
-      console.log('🍪', knnResults)
       this.knnIndices = knnResults.knnIndices;
       this.knnDistances = knnResults.knnDistances;
     }

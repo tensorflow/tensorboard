@@ -76,8 +76,8 @@ const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
 const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 
-export const TSNE_SAMPLE_SIZE = 1000;
-export const UMAP_SAMPLE_SIZE = 1000;
+export const TSNE_SAMPLE_SIZE = 5000;
+export const UMAP_SAMPLE_SIZE = 5000;
 export const PCA_SAMPLE_SIZE = 5000;
 /** Number of dimensions to sample when doing approximate PCA. */
 export const PCA_SAMPLE_DIM = 200;
@@ -389,7 +389,6 @@ export class DataSet {
     let nEpochs = 1;
     let sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
     
-
     let firstStep = true;
     let nStepsPerFrame = 1;
     let currentStep = 0;
@@ -425,7 +424,7 @@ export class DataSet {
         stepCallback(this.UMAPIteration);
 
         if (currentStep >= nEpochs) {
-          this.UMAPShouldPause = true;
+          this.UMAPShouldStop = true;
         }
         // Try to batch the steps to 3 frames per second in order to reduce 
         // "thrashing" in the projected data, since the SGD phase of UMAP is
