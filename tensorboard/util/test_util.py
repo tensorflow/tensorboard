@@ -183,7 +183,7 @@ class FakeSleep(object):
     self._clock.advance(seconds)
 
 
-class FileWriter(tf.summary.FileWriter):
+class FileWriter(tf.compat.v1.summary.FileWriter):
   """FileWriter for test.
 
   TensorFlow FileWriter uses TensorFlow's Protobuf Python binding which is
