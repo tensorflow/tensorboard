@@ -4,5 +4,5 @@
 # This is currently only used internally at google.
 package_group(
     name = "whitelist",
-    packages = "//...",
+    packages = ["//..."],
 )
