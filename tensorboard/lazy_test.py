@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import six
-import re
 import unittest
 
 from tensorboard import lazy
@@ -79,11 +78,10 @@ class LazyTest(unittest.TestCase):
     self.assertEquals(repr(foo), "<%r via LazyModule (loaded)>" % collections)
 
   def test_failed_load_idempotent(self):
+    expected_message = "you will never stop me"
     @lazy.lazy_load("tensorboard.lazy_test_bad_import")
     def bad():
-      from tensorboard import lazy_test_bad_import
-      return lazy_test_bad_import
-    expected_message = re.escape("This module cannot be imported. :-(")
+      raise ValueError(expected_message)
     with six.assertRaisesRegex(self, ValueError, expected_message):
       bad.day
     with six.assertRaisesRegex(self, ValueError, expected_message):

@@ -431,10 +431,7 @@ py_library(
 
 py_test(
     name = "lazy_test",
-    srcs = [
-        "lazy_test.py",
-        "lazy_test_bad_import.py",
-    ],
+    srcs = ["lazy_test.py"],
     srcs_version = "PY2AND3",
     size = "small",
     deps = [
