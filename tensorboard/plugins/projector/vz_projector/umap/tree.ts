@@ -36,7 +36,7 @@ class FlatTree {
   ) {}
 }
 
-export function makeForest(data: Points, nNeighbors: number, nTrees: number) {
+export function makeForest(data: Vectors, nNeighbors: number, nTrees: number) {
   const leafSize = Math.max(10, nNeighbors);
 
   const trees = utils.range(nTrees).map((_, i) => makeTree(data, leafSize, i));
@@ -46,7 +46,7 @@ export function makeForest(data: Points, nNeighbors: number, nTrees: number) {
 }
 
 function makeTree(
-  data: Points,
+  data: Vectors,
   leafSize = 30,
   n: number
 ): RandomProjectionTreeNode {
@@ -56,7 +56,7 @@ function makeTree(
 }
 
 function makeEuclideanTree(
-  data: Points,
+  data: Vectors,
   indices: number[],
   leafSize = 30,
   q: number
@@ -77,7 +77,7 @@ function makeEuclideanTree(
 }
 
 function euclideanRandomProjectionSplit(
-  data: Points,
+  data: Vectors,
   indices: number[],
 ) {
   const dim = data[0].length;

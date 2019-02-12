@@ -408,7 +408,7 @@ export class DataSet {
         for (let i = 0; i < nStepsToTake; i++) {
           currentStep = this.umap.step();
         }
-        const result = this.umap.getSolution();
+        const result = this.umap.getEmbedding();
         sampledIndices.forEach((index, i) => {
           let dataPoint = this.points[index];
 

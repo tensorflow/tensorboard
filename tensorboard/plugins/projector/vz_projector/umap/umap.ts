@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_projector.umap {
 
-export type DistanceFn = (x: Point, y: Point) => number;
+export type DistanceFn = (x: Vector, y: Vector) => number;
 export type EpochCallback = (epoch: number) => boolean | void;
-export type Point = number[];
-export type Points = Point[];
+export type Vector = number[];
+export type Vectors = Vector[];
 
 const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
@@ -28,58 +28,28 @@ export interface UMAPParameters {
   nNeighbors?: number;
 }
 
-class OptimizationState {
-  currentEpoch = 0;
-  isInitialized = false;
-
-  // Data tracked during optimization steps.
-  headEmbedding: number[][] = [];
-  tailEmbedding: number[][] = [];
-  head: number[] = [];
-  tail: number[] = [];
-  epochsPerSample: number[] = [];
-  epochOfNextSample: number[] = [];
-  epochOfNextNegativeSample: number[] = [];
-  epochsPerNegativeSample: number[] = [];
-  moveOther = true;
-  initialAlpha = 1.0;
-  alpha = 1.0;
-  gamma = 1.0;
-  a = 1.5769434603113077;
-  b = 0.8950608779109733;
-  dim = 2;
-  nEpochs = 500;
-  nVertices = 0;
-}
-
-function euclidean(x: Point, y: Point) {
-  let result = 0;
-  for (let i = 0; i < x.length; i++) {
-    result += (x[i] - y[i]) ** 2;
-  }
-  return Math.sqrt(result);
-}
-
-function cosine(x: Point, y: Point) {
-  let result = 0.0;
-  let normX = 0.0;
-  let normY = 0.0;
-
-  for (let i = 0; i < x.length; i++) {
-    result += x[i] * y[i];
-    normX += x[i] ** 2;
-    normY += y[i] ** 2;
-  }
-
-  if (normX === 0 && normY === 0) {
-    return 0;
-  } else if (normX === 0 || normY === 0) {
-    return 1.0;
-  } else {
-    return 1.0 - (result / Math.sqrt(normX * normY))
-  }
-}
-
+/**
+ * UMAP projection system, based on the python implementation from McInnes, L, 
+ * Healy, J, UMAP: Uniform Manifold Approximation and Projection for Dimension 
+ * Reduction (https://github.com/lmcinnes/umap). 
+ * 
+ * This implementation differs in a few regards:
+ * a) The initialization of the embedding for optimization is not computed using
+ *    a spectral method, rather it is initialized randomly. This avoids some
+ *    computationally intensive matrix eigen computations that aren't easily 
+ *    ported to JavaScript.
+ * b) A lot of "extra" functionality has been omitted from this implementation,
+ *    most notably a great deal of alternate distance functions, the ability
+ *    to do supervised projection, and the ability to transform additional data
+ *    into an existing embedding space. 
+ * 
+ * This implementation provides three methods of reducing dimensionality:
+ * 1) fit: fit the data synchronously 
+ * 2) fitAsync: fit the data asynchronously, with a callback function provided
+ *      that is invoked on each optimization step.
+ * 3) initializeFit / step: manually initialize the algorithm then explictly 
+ *      step through each epoch of the SGD optimization
+ */
 export class UMAP {
   private nNeighbors = 15;
   private nComponents = 2;
@@ -87,17 +57,17 @@ export class UMAP {
 
   private distanceFn: DistanceFn = euclidean;
 
-  // KNN state (can be precomputed)
+  // KNN state (can be precomputed and supplied via initializeFit)
   private knnIndices?: number[][];
   private knnDistances?: number[][];
 
-  // Internal state during computation
-  graph: matrix.SparseMatrix;
+  // Internal graph connectivity representation
+  private graph: matrix.SparseMatrix;
+  private data: Vectors;
+  private isInitialized = false;
 
   // Projected embedding
   private embedding: number[][] = [];
-
-  // Optimization state
   private optimizationState = new OptimizationState();
 
   constructor(params: UMAPParameters = {}) {
@@ -106,9 +76,28 @@ export class UMAP {
     this.nNeighbors = params.nNeighbors || this.nNeighbors;
   }
 
-  initializeKNN(knnIndices: number[][], knnDistances: number[][]) {
-    this.knnIndices = knnIndices;
-    this.knnDistances = knnDistances;
+  /**
+   * Fit the data to a projected embedding space synchronously.
+   */
+  fit(X: Vectors) {
+    this.initializeFit(X);
+    this.optimizeLayout();
+
+    return this.embedding;
+  }
+
+  /**
+   * Fit the data to a projected embedding space asynchronously, with a callback
+   * function invoked on every epoch of optimization.
+   */
+  async fitAsync(
+    X: Vectors,
+    callback: (epochNumber: number) => void | boolean = () => true
+  ) {
+    this.initializeFit(X);
+
+    const isFinished = await this.optimizeLayout(callback);
+    return isFinished;
   }
 
   /**
@@ -117,7 +106,14 @@ export class UMAP {
    * of optimization steps. Returns the number of epochs to be used for the
    * SGD optimization.
    */
-  initializeFit(X: Points, knnIndices?: number[][], knnDistances?: number[][]): number {
+  initializeFit(X: Vectors, knnIndices?: number[][], knnDistances?: number[][]): number {
+    // We don't need to reinitialize if we've already initialized for this data.
+    if (this.data === X && this.isInitialized) {
+      return this.getNEpochs();
+    }
+    
+    this.data = X;
+
     if (knnIndices && knnDistances) {
       this.knnIndices = knnIndices;
       this.knnDistances = knnDistances;
@@ -140,46 +136,38 @@ export class UMAP {
     this.optimizationState.tail = tail;
     this.optimizationState.epochsPerSample = epochsPerSample;
 
-
-    return this.getNEpochs(this.graph);
+    this.isInitialized = true;
+    return this.getNEpochs();
   }
 
-  fit(X: Points) {
-    this.initializeFit(X);
-    this.optimizeLayout();
-
-    return this.embedding;
-  }
-
-  async fitAsync(
-    X: Points,
-    callback: (epochNumber: number) => void | boolean = () => true
-  ) {
-    this.initializeFit(X);
-
-    const isFinished = await this.optimizeLayout(callback);
-    return isFinished;
-  }
-
+  /**
+   * Manually step through the optimization process one epoch at a time.
+   */
   step() {
     const { currentEpoch, isInitialized  } = this.optimizationState;
     if (!isInitialized) {
       this.initializeOptimization();
     }
 
-    return this.optimizeLayoutStep(currentEpoch)
+    if (currentEpoch < this.getNEpochs()) {
+      this.optimizeLayoutStep(currentEpoch)
+    }
+    return this.optimizationState.currentEpoch;
   }
 
-  getSolution() {
+  /**
+   * Returns the computed projected embedding.
+   */
+  getEmbedding() {
     return this.embedding;
   }
 
   /**
-   * Compute the ``n_neighbors`` nearest points for each data point in ``X``
-   * under ``metric``. This may be exact, but more likely is approximated via
-   * nearest neighbor descent.
+   * Compute the ``nNeighbors`` nearest points for each data point in ``X``
+   * This may be exact, but more likely is approximated via nearest neighbor 
+   * descent.
    */
-  private nearestNeighbors(X: Points) {
+  private nearestNeighbors(X: Vectors) {
     const { distanceFn, nNeighbors } = this;
     const log2 = (n: number) => Math.log(n) / Math.log(2);
     const metricNNDescent = nnDescent.makeNNDescent(distanceFn);
@@ -213,7 +201,7 @@ export class UMAP {
    * fuzzy simplicial sets into a global one via a fuzzy union.
    */
   private fuzzySimplicialSet(
-    X: Points,
+    X: Vectors,
     localConnectivity = 1.0,
     setOpMixRatio = 1.0
   ) {
@@ -254,7 +242,7 @@ export class UMAP {
    * is k.
    */
   private smoothKNNDistance(
-    distances: Points,
+    distances: Vectors,
     k: number,
     localConnectivity = 1.0,
     nIter = 64,
@@ -343,8 +331,8 @@ export class UMAP {
    * 1-simplex to each other data point.
    */
   private computeMembershipStrengths(
-    knnIndices: Points,
-    knnDistances: Points,
+    knnIndices: Vectors,
+    knnDistances: Vectors,
     sigmas: number[],
     rhos: number[]
   ): { rows: number[]; cols: number[]; vals: number[] } {
@@ -385,7 +373,7 @@ export class UMAP {
    * sets.
    */
   private initializeSimplicialSetEmbedding() {
-    const nEpochs = this.getNEpochs(this.graph);
+    const nEpochs = this.getNEpochs();
 
     const { nComponents } = this;
     const graphValues = this.graph.getValues();
@@ -463,7 +451,7 @@ export class UMAP {
     const initialAlpha = 1.0;
     const negativeSampleRate = 5;
 
-    const nEpochs = this.getNEpochs(this.graph);
+    const nEpochs = this.getNEpochs();
     const nVertices = this.graph.nCols;
 
     // TODO -> Compute these values which are computed via a curve-fitting
@@ -532,6 +520,8 @@ export class UMAP {
       nVertices,
     } = optimizationState;
 
+    const clipValue = 4.0;
+
     for (let i = 0; i < epochsPerSample.length; i++) {
       if (epochOfNextSample[i] > n) {
         continue;
@@ -552,7 +542,7 @@ export class UMAP {
       }
 
       for (let d = 0; d < dim; d++) {
-        const gradD = clip(gradCoeff * (current[d] - other[d]));
+        const gradD = clip(gradCoeff * (current[d] - other[d]), clipValue);
         current[d] += gradD * alpha;
         if (moveOther) {
           other[d] += -gradD * alpha;
@@ -583,7 +573,7 @@ export class UMAP {
         for (let d = 0; d < dim; d++) {
           let gradD = 4.0;
           if (gradCoeff > 0.0) {
-            gradD = clip(gradCoeff * (current[d] - other[d]));
+            gradD = clip(gradCoeff * (current[d] - other[d]), clipValue);
           }
           current[d] += gradD * alpha;
         }
@@ -635,7 +625,9 @@ export class UMAP {
    * Gets the number of epochs for optimizing the projection.
    * NOTE: This heuristic differs from the python version
    */
-  private getNEpochs(graph: matrix.SparseMatrix) {
+  private getNEpochs() {
+    const graph = this.graph;
+
     if (this.nEpochs > 0) {
       return this.nEpochs;
     }
@@ -653,12 +645,70 @@ export class UMAP {
   }
 }
 
+
+function euclidean(x: Vector, y: Vector) {
+  let result = 0;
+  for (let i = 0; i < x.length; i++) {
+    result += (x[i] - y[i]) ** 2;
+  }
+  return Math.sqrt(result);
+}
+
+function cosine(x: Vector, y: Vector) {
+  let result = 0.0;
+  let normX = 0.0;
+  let normY = 0.0;
+
+  for (let i = 0; i < x.length; i++) {
+    result += x[i] * y[i];
+    normX += x[i] ** 2;
+    normY += y[i] ** 2;
+  }
+
+  if (normX === 0 && normY === 0) {
+    return 0;
+  } else if (normX === 0 || normY === 0) {
+    return 1.0;
+  } else {
+    return 1.0 - (result / Math.sqrt(normX * normY))
+  }
+}
+
+
 /**
- * Standard clamping of a value into a fixed range (in this case -4.0 to 4.0)
+ * An interface representing the optimization state tracked between steps of
+ * the SGD optimization
  */
-function clip(x: number) {
-  if (x > 4.0) return 4.0;
-  else if (x < -4.0) return -4.0;
+class OptimizationState {
+  currentEpoch = 0;
+  isInitialized = false;
+
+  // Data tracked during optimization steps.
+  headEmbedding: number[][] = [];
+  tailEmbedding: number[][] = [];
+  head: number[] = [];
+  tail: number[] = [];
+  epochsPerSample: number[] = [];
+  epochOfNextSample: number[] = [];
+  epochOfNextNegativeSample: number[] = [];
+  epochsPerNegativeSample: number[] = [];
+  moveOther = true;
+  initialAlpha = 1.0;
+  alpha = 1.0;
+  gamma = 1.0;
+  a = 1.5769434603113077;
+  b = 0.8950608779109733;
+  dim = 2;
+  nEpochs = 500;
+  nVertices = 0;
+}
+
+/**
+ * Standard clamping of a value into a fixed range
+ */
+function clip(x: number, clipValue: number) {
+  if (x > clipValue) return clipValue;
+  else if (x < -clipValue) return -clipValue;
   else return x;
 }
 

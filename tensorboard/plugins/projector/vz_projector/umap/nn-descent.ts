@@ -16,8 +16,8 @@ namespace vz_projector.umap.nnDescent {
 
 export function makeNNDescent(distanceFn: DistanceFn) {
   return function nNDescent(
-    data: Points,
-    leafArray: Points,
+    data: Vectors,
+    leafArray: Vectors,
     nNeighbors: number,
     nIters = 10,
     maxCandidates = 50,
