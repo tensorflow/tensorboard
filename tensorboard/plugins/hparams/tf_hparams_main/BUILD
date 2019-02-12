@@ -27,7 +27,7 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_main"],
-    visibility = [":tf_hparams_main_users"],
+    visibility = ["//tensorboard/plugins/hparams/external_users:whitelist"],
     destdir = "tf-hparams-main",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
