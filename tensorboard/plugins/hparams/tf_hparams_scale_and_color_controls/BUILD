@@ -51,11 +51,11 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
-        "//third_party/javascript/polymer/v1/paper_dropdown_menu:lib",
-        "//third_party/javascript/polymer/v1/paper_item:lib",
-        "//third_party/javascript/polymer/v1/paper_listbox:lib",
-        "//third_party/javascript/polymer/v1/paper_radio_button:lib",
-        "//third_party/javascript/polymer/v1/paper_radio_group:lib",
+        "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-item:lib",
+        "//third_party/javascript/polymer/v1/paper-listbox:lib",
+        "//third_party/javascript/polymer/v1/paper-radio-button:lib",
+        "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

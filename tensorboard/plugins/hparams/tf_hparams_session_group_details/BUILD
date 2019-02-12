@@ -30,7 +30,7 @@ tensorboard_webcomponent_library(
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card_legacy",
-        "//third_party/javascript/polymer/v1/iron_flex_layout:lib",
+        "//third_party/javascript/polymer/v1/iron-flex-layout:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
