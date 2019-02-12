@@ -4,6 +4,8 @@ load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
+licenses(["notice"])  # Apache 2.0
+
 tf_web_library(
     name = "tf_hparams_query_pane",
     srcs = [
@@ -52,12 +54,11 @@ tensorboard_webcomponent_library(
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
-        "//third_party/javascript/polymer/v1/paper_checkbox:lib",
-        "//third_party/javascript/polymer/v1/paper_dropdown_menu:lib",
-        "//third_party/javascript/polymer/v1/paper_input:lib",
-        "//third_party/javascript/polymer/v1/paper_item:lib",
-        "//third_party/javascript/polymer/v1/paper_menu:lib",
+        "//third_party/javascript/polymer/v1/paper-checkbox:lib",
+        "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-input:lib",
+        "//third_party/javascript/polymer/v1/paper-item:lib",
+        "//third_party/javascript/polymer/v1/paper-menu:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/polymer_vaadin_split_layout:lib_v1",
     ],
 )

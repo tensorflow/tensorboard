@@ -4,6 +4,8 @@ load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
+licenses(["notice"])  # Apache 2.0
+
 tf_web_library(
     name = "tf_hparams_sessions_pane",
     srcs = [
@@ -33,12 +35,12 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_view:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_scatter_plot_matrix_view:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_table_view:legacy",
-        "//third_party/javascript/polymer/v1/iron_pages:lib",
-        "//third_party/javascript/polymer/v1/paper_button:lib",
-        "//third_party/javascript/polymer/v1/paper_header_panel:lib",
-        "//third_party/javascript/polymer/v1/paper_icon_button:lib",
-        "//third_party/javascript/polymer/v1/paper_tabs:lib",
-        "//third_party/javascript/polymer/v1/paper_toolbar:lib",
+        "//third_party/javascript/polymer/v1/iron-pages:lib",
+        "//third_party/javascript/polymer/v1/paper-button:lib",
+        "//third_party/javascript/polymer/v1/paper-header-panel:lib",
+        "//third_party/javascript/polymer/v1/paper-icon-button:lib",
+        "//third_party/javascript/polymer/v1/paper-tabs:lib",
+        "//third_party/javascript/polymer/v1/paper-toolbar:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
