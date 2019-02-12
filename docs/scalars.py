@@ -50,15 +50,15 @@ model = keras.models.Sequential([
 
 model.compile(
     loss="mean_absolute_percentage_error",
-    optimizer=keras.optimizers.Adam(),
+    optimizer=keras.optimizers.Adam(lr=0.001),
 )
 
 # Set up TensorBoard.
 tb_callback = keras.callbacks.TensorBoard(log_dir="logs/{}".format(time()))
 
-model.fit(ds, epochs=10, steps_per_epoch=5000, callbacks=[tb_callback])
-loss = model.evaluate(ds, steps=1000)
-print("Loss: %r" % loss)
+model.fit(ds, epochs=5, steps_per_epoch=1000, callbacks=[tb_callback])
+#loss = model.evaluate(ds, steps=1000)
+#print("Loss: %r" % loss)
 
 #print("Prediction: ")
 #for _ in xrange(5):
