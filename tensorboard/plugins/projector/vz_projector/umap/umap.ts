@@ -97,9 +97,13 @@ export class UMAP {
    * of optimization steps. Returns the number of epochs to be used for the
    * SGD optimization.
    */
-  initializeFit(X: Points): number {
-    if (!this.knnIndices || !this.knnDistances) {
+  initializeFit(X: Points, knnIndices?: number[][], knnDistances?: number[][]): number {
+    if (knnIndices && knnDistances) {
+      this.knnIndices = knnIndices;
+      this.knnDistances = knnDistances;
+    } else {
       const knnResults = this.nearestNeighbors(X);
+      console.log('🍪', knnResults)
       this.knnIndices = knnResults.knnIndices;
       this.knnDistances = knnResults.knnDistances;
     }

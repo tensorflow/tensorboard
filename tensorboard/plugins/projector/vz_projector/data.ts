@@ -76,8 +76,8 @@ const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
 const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 
-export const TSNE_SAMPLE_SIZE = 5000;
-export const UMAP_SAMPLE_SIZE = 5000;
+export const TSNE_SAMPLE_SIZE = 1000;
+export const UMAP_SAMPLE_SIZE = 1000;
 export const PCA_SAMPLE_SIZE = 5000;
 /** Number of dimensions to sample when doing approximate PCA. */
 export const PCA_SAMPLE_DIM = 200;
@@ -380,6 +380,7 @@ export class DataSet {
   /** Runs UMAP on the data. */
   projectUMAP(nDim: number, stepCallback: (iter: number) => void) {
     this.hasUMAPRun = true;
+    const k = 15;
     this.umap = new umap.UMAP({nComponents: nDim});
     this.UMAPShouldPause = false;
     this.UMAPShouldStop = false;
@@ -442,11 +443,30 @@ export class DataSet {
     // TODO: Switch to a Float32-based UMAP internal
     const X = sampledData.map(x => Array.from(x.vector));
 
-    // Perhaps do the KNN Computation ahead of time...
+    // Nearest neighbors calculations.
+    let knnComputation: Promise<knn.NearestEntry[][]>;
 
-    util.runAsyncTask('Initializing UMAP...', () => {
-      nEpochs = this.umap.initializeFit(X);
-    }).then(step);
+    if (this.nearest != null && k === this.nearestK) {
+      // We found the nearest neighbors before and will reuse them.
+      knnComputation = Promise.resolve(this.nearest);
+    } else {
+      let sampledData = sampledIndices.map(i => this.points[i]);
+      this.nearestK = k;
+      knnComputation = KNN_GPU_ENABLED ?
+          knn.findKNNGPUCosine(sampledData, k, (d => d.vector)) :
+          knn.findKNN(
+              sampledData, k, (d => d.vector),
+              (a, b, limit) => vector.cosDistNorm(a, b));
+    }
+    knnComputation.then(nearest => {
+      this.nearest = nearest;
+      util.runAsyncTask('Initializing UMAP...', () => {
+        const knnIndices = nearest.map(row => row.map(entry => entry.index));
+        const knnDistances = nearest.map(row => row.map(entry => entry.dist));
+
+        nEpochs = this.umap.initializeFit(X, knnIndices, knnDistances);
+      }).then(step);
+    });
   }  
 
   /* Perturb TSNE and update dataset point coordinates. */
