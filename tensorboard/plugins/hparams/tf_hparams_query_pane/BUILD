@@ -60,6 +60,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/paper-menu:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/polymer_vaadin_split_layout:lib_v1",
     ],
 )

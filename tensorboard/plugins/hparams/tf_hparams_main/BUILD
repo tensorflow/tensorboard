@@ -35,6 +35,5 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/hparams/tf_hparams_query_pane:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_sessions_pane:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/polymer_vaadin_split_layout:lib_v1",
     ],
 )
