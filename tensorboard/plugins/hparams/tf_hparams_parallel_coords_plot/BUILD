@@ -49,6 +49,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-hparams-parallel-coords-plot",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/plugins/hparams/tf_hparams_session_group_values:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],

@@ -26,9 +26,9 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_table_view"],
     destdir = "tf-hparams-table-view",
     deps = [
+        "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_details:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/vaadin_grid:lib",
     ],
 )
