@@ -33,17 +33,20 @@ class IoWrapperTest(tf.test.TestCase):
   def tearDown(self):
     self.stubs.CleanUp()
 
-  def testIsGcsPathIsTrue(self):
-    self.assertTrue(io_wrapper.IsGCSPath('gs://bucket/foo'))
+  def testIsCloudPathGcsIsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('gs://bucket/foo'))
 
-  def testIsGcsPathIsFalse(self):
-    self.assertFalse(io_wrapper.IsGCSPath('/tmp/foo'))
+  def testIsCloudPathS3IsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('s3://bucket/foo'))
 
-  def testIsCnsPathTrue(self):
-    self.assertTrue(io_wrapper.IsCnsPath('/cns/foo/bar'))
+  def testIsCloudPathCnsIsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('/cns/foo/bar'))
 
-  def testIsCnsPathFalse(self):
-    self.assertFalse(io_wrapper.IsCnsPath('/tmp/foo'))
+  def testIsCloudPathFileIsFalse(self):
+    self.assertFalse(io_wrapper.IsCloudPath('file:///tmp/foo'))
+
+  def testIsCloudPathLocalIsFalse(self):
+    self.assertFalse(io_wrapper.IsCloudPath('/tmp/foo'))
 
   def testPathSeparator(self):
     # In nix systems, path separator would be the same as that of CNS/GCS

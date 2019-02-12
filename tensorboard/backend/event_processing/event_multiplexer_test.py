@@ -29,7 +29,7 @@ from tensorboard.backend.event_processing import event_multiplexer
 
 def _AddEvents(path):
   if not tf.io.gfile.isdir(path):
-    tf.io.gfile.makedirs(path)
+    os.makedirs(path)
   fpath = os.path.join(path, 'hypothetical.tfevents.out')
   with tf.io.gfile.GFile(fpath, 'w') as f:
     f.write('')
@@ -38,8 +38,8 @@ def _AddEvents(path):
 
 def _CreateCleanDirectory(path):
   if tf.io.gfile.isdir(path):
-    tf.io.gfile.rmtree(path)
-  tf.io.gfile.mkdir(path)
+    os.removedirs(path)
+  os.mkdir(path)
 
 
 class _FakeAccumulator(object):
@@ -206,7 +206,7 @@ class EventMultiplexerTest(tf.test.TestCase):
     self.assertEqual(x.Runs(), {}, 'loading empty directory had no effect')
 
     path1 = join(realdir, 'path1')
-    tf.io.gfile.mkdir(path1)
+    os.mkdir(path1)
     x.AddRunsFromDirectory(realdir)
     self.assertEqual(x.Runs(), {}, 'creating empty subdirectory had no effect')
 
