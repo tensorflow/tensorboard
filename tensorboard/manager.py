@@ -358,7 +358,7 @@ StartFailed = collections.namedtuple(
 StartTimedOut = collections.namedtuple("StartTimedOut", ("pid",))
 
 
-def start(arguments, timeout=datetime.timedelta(seconds=20)):
+def start(arguments, timeout=datetime.timedelta(seconds=60)):
   """Start a new TensorBoard instance, or reuse a compatible one.
 
   If the cache key determined by the provided arguments and the current
@@ -378,7 +378,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=20)):
       this time period, `start` will assume that the subprocess is stuck
       in a bad state, and will give up on waiting for it and return a
       `StartTimedOut` result. Note that in such a case the subprocess
-      will not be killed. Default value is 20 seconds.
+      will not be killed. Default value is 60 seconds.
 
   Returns:
     A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`
