@@ -35,12 +35,15 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat import tf as tf_compat
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.util import test_util
 
 tf.compat.v1.disable_v2_behavior()
+
+USING_REAL_TF = tf_compat.__version__ != 'stub'
 
 
 class ProjectorAppTest(tf.test.TestCase):
@@ -58,7 +61,10 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
     run_json = self._GetJson('/data/plugin/projector/runs')
-    self.assertTrue(run_json)
+    if USING_REAL_TF:
+        self.assertTrue(run_json)
+    else:
+        self.assertFalse(run_json)
 
   def testRunsWithNoCheckpoint(self):
     self._SetupWSGIApp()
@@ -76,6 +82,8 @@ class ProjectorAppTest(tf.test.TestCase):
     run_json = self._GetJson('/data/plugin/projector/runs')
     self.assertEqual(run_json, [])
 
+  # TODO(#2007): Cleanly separate out projector tests that require real TF
+  @unittest.skipUnless(USING_REAL_TF, 'Test only passes when using real TF')
   def testRunsWithInvalidModelCheckpointPathInConfig(self):
     config_path = os.path.join(self.log_dir, 'projector_config.pbtxt')
     config = projector_config_pb2.ProjectorConfig()
@@ -89,6 +97,8 @@ class ProjectorAppTest(tf.test.TestCase):
     run_json = self._GetJson('/data/plugin/projector/runs')
     self.assertEqual(run_json, [])
 
+  # TODO(#2007): Cleanly separate out projector tests that require real TF
+  @unittest.skipUnless(USING_REAL_TF, 'Test only passes when using real TF')
   def testInfoWithValidCheckpointNoEventsData(self):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
@@ -112,21 +122,26 @@ class ProjectorAppTest(tf.test.TestCase):
     self._SetupWSGIApp()
 
     run_json = self._GetJson('/data/plugin/projector/runs')
-    self.assertTrue(run_json)
-    run = run_json[0]
-    info_json = self._GetJson('/data/plugin/projector/info?run=%s' % run)
-    self.assertItemsEqual(info_json['embeddings'], [{
-        'tensorShape': [1, 2],
-        'tensorName': 'var1',
-        'bookmarksPath': 'bookmarks.json'
-    }, {
-        'tensorShape': [10, 10],
-        'tensorName': 'var2'
-    }, {
-        'tensorShape': [100, 100],
-        'tensorName': 'var3'
-    }])
+    if USING_REAL_TF:
+        self.assertTrue(run_json)
+        run = run_json[0]
+        info_json = self._GetJson('/data/plugin/projector/info?run=%s' % run)
+        self.assertItemsEqual(info_json['embeddings'], [{
+            'tensorShape': [1, 2],
+            'tensorName': 'var1',
+            'bookmarksPath': 'bookmarks.json'
+        }, {
+            'tensorShape': [10, 10],
+            'tensorName': 'var2'
+        }, {
+            'tensorShape': [100, 100],
+            'tensorName': 'var3'
+        }])
+    else:
+        self.assertFalse(run_json)
 
+  # TODO(#2007): Cleanly separate out projector tests that require real TF
+  @unittest.skipUnless(USING_REAL_TF, 'Test only passes when using real TF')
   def testTensorWithValidCheckpoint(self):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
@@ -171,6 +186,8 @@ class ProjectorAppTest(tf.test.TestCase):
     url = '/data/plugin/projector/bookmarks?run=.&name=unknown'
     self.assertEqual(self._Get(url).status_code, 400)
 
+  # TODO(#2007): Cleanly separate out projector tests that require real TF
+  @unittest.skipUnless(USING_REAL_TF, 'Test only passes when using real TF')
   def testBookmarks(self):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
@@ -215,13 +232,14 @@ class ProjectorAppTest(tf.test.TestCase):
 
     self.plugin._thread_for_determining_is_active.run()
 
-    # The plugin later finds that embedding data is available.
-    self.assertTrue(self.plugin.is_active())
+    if USING_REAL_TF:
+        # The plugin later finds that embedding data is available.
+        self.assertTrue(self.plugin.is_active())
 
-    # Subsequent calls to is_active should not start a new thread. The mock
-    # should only have been called once throughout this test.
-    self.assertTrue(self.plugin.is_active())
-    mock.assert_called_once_with(thread)
+        # Subsequent calls to is_active should not start a new thread. The mock
+        # should only have been called once throughout this test.
+        self.assertTrue(self.plugin.is_active())
+        mock.assert_called_once_with(thread)
 
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()

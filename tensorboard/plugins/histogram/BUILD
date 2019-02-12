@@ -47,6 +47,28 @@ py_test(
     ],
 )
 
+py_test(
+    name = "histograms_plugin_notf_test",
+    size = "small",
+    srcs = ["histograms_plugin_test.py"],
+    main = "histograms_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":histograms_plugin",
+        ":summary",
+        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],

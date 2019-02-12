@@ -68,6 +68,25 @@ py_test(
     ],
 )
 
+py_test(
+    name = "projector_plugin_test_notf",
+    size = "small",
+    srcs = ["projector_plugin_test.py"],
+    main = "projector_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":projector_plugin",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
 tb_proto_library(
     name = "protos_all",
     srcs = glob(["*.proto"]),

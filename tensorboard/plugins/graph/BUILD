@@ -63,6 +63,27 @@ py_test(
     ],
 )
 
+py_test(
+    name = "graphs_plugin_notf_test",
+    size = "small",
+    srcs = ["graphs_plugin_test.py"],
+    main = "graphs_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":graphs_plugin",
+        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "keras_util",
     srcs = ["keras_util.py"],

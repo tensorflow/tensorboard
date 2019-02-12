@@ -56,6 +56,26 @@ py_test(
     ],
 )
 
+py_test(
+    name = "pr_curves_plugin_test_notf",
+    size = "medium",  # tf integration test
+    srcs = ["pr_curves_plugin_test.py"],
+    main = "pr_curves_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metadata",
+        ":pr_curve_demo_lib",
+        ":pr_curves_plugin",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
