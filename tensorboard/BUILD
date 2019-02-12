@@ -64,6 +64,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
+        ":notebook",
         ":program",
         "//tensorboard/summary",
     ],
@@ -99,7 +100,7 @@ py_test(
 py_test(
     name = "manager_e2e_test",
     size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
-    timeout = "short",  # about 15 seconds on my machine
+    timeout = "moderate",
     # On Python 2, this test fails about 0.5% of the time when run with
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
@@ -114,6 +115,16 @@ py_test(
     ],
     data = [
         ":tensorboard",
+    ],
+)
+
+py_library(
+    name = "notebook",
+    srcs = ["notebook.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":manager",
     ],
 )
 
@@ -228,6 +239,14 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_absl_app_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
     visibility = ["//visibility:public"],
 )
 

@@ -252,13 +252,13 @@ class TensorBoard(object):
     return server.get_url()
 
   def _register_info(self, server):
-    """Write a TensorboardInfo file and arrange for its cleanup.
+    """Write a TensorBoardInfo file and arrange for its cleanup.
 
     Args:
       server: The result of `self._make_server()`.
     """
     server_url = urllib.parse.urlparse(server.get_url())
-    info = manager.TensorboardInfo(
+    info = manager.TensorBoardInfo(
         version=version.VERSION,
         start_time=datetime.datetime.now(),
         port=server_url.port,

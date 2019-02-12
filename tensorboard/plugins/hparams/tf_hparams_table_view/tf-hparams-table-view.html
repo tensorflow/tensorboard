@@ -1,0 +1,185 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+The tf-hparams-table-view element implements the table-view of the session
+groups list. It shows a table with each row representing a session group and
+each column representing either a metric of hparam. Additionally, it allows
+the user to expand rows to show graphs of the metrics associated with the
+session group.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/vaadin-grid.html">
+<link rel="import" href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html">
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+
+<dom-module id="tf-hparams-table-view">
+  <template>
+    <vaadin-grid class="session-group-table"
+                 id="sessionGroupsTable"
+                 column-reordering-allowed
+                 items="[[sessionGroups]]">
+      <vaadin-grid-column flex-grow="0" width="10em" resizable>
+        <template class="header">
+          <div class="table-header table-cell">Session Group Name.</div>
+        </template>
+        <template>
+          <div class="table-cell">[[item.name]]</div>
+        </template>
+      </vaadin-grid-column>
+      <template is="dom-if" if="[[enableShowMetrics]]">
+        <vaadin-grid-column flex-grow="0" width="5em" resizable>
+          <template class="header">
+            <div class="table-header table-cell">Show Metrics</div>
+          </template>
+          <template>
+            <paper-checkbox class="table-cell" checked="{{expanded}}">
+            </paper-checkbox>
+          </template>
+        </vaadin-grid-column>
+      </template>
+      <template is="dom-repeat" items="[[schema.hparamInfos]]"
+                as="hparamInfo"
+                index-as="hparamIndex">
+        <vaadin-grid-column flex-grow="2" width="10em" resizable>
+          <template class="header">
+            <div class="table-header table-cell">
+              [[_hparamName(hparamInfo)]]
+            </div>
+          </template>
+          <template>
+            <div class="table-cell">
+              [[_sessionGroupHParam(item, hparamInfo.name)]]
+            </div>
+          </template>
+        </vaadin-grid-column>
+      </template>
+      <template is="dom-repeat" items="{{schema.metricInfos}}"
+                as="metricInfo"
+                index-as="metricIndex">
+        <vaadin-grid-column flex-grow="2" width="10em" resizable>
+          <template class="header">
+            <div class="table-header table-cell">
+              [[_metricName(metricInfo)]]
+            </div>
+          </template>
+          <template>
+            <div class="table-cell">
+              [[_sessionGroupMetric(item, metricInfo.name)]]
+            </div>
+          </template>
+        </vaadin-grid-column>
+      </template>
+      <template class="row-details">
+        <tf-hparams-session-group-details
+          api-url="[[apiUrl]]"
+          experiment-name="[[experimentName]]"
+          session-group="[[item]]"
+          schema="[[schema]]"
+          class="session-group-details">
+        </tf-hparams-session-group-details>
+      </template>
+    </vaadin-grid>
+  </template>
+  <style>
+    :host {
+      display: block;
+    }
+    .table-cell {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .table-header {
+      /* line-break overflowing column headers */
+      white-space: normal;
+    }
+    .session-group-table {
+      height: 100%;
+    }
+    .session-group-details {
+      height: 360px;
+      overflow-y: auto;
+    }
+  </style>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-table-view',
+      properties: {
+        /* Public properties */
+        // See comment for the property in tf-hparams-query-pane.
+        schema: Object,
+
+        // See comment for the property in tf-hparams-query-pane.
+        sessionGroups: Array,
+
+        // Whether to enable the "show-metrics" column that allows expanding
+        // a row to see its details.
+        enableShowMetrics: Boolean,
+
+        // The url for the backend. Used only when a row is expanded to get
+        // the metric values. Can be omitted if enableShowMetrics is false.
+        apiUrl: String,
+
+        // The experiment name to use when calling the backend to get
+        // the metric values. Can be omitted if enableShowMetrics is false.
+        experimentName: String,
+      },
+      observers: [
+        '_schemaOrSessionGroupsChanged(schema.*, sessionGroups.*)'
+      ],
+
+      _schemaOrSessionGroupsChanged() {
+        this.$.sessionGroupsTable.set("expandedItems", []);
+      },
+
+      _hparamName: tf.hparams.utils.hparamName,
+      _metricName: tf.hparams.utils.metricName,
+
+      _sessionGroupHParam(sessionGroup, hparam) {
+        if (sessionGroup === null ||
+            !Object.prototype.hasOwnProperty.call(sessionGroup.hparams,
+                                                  hparam)) {
+          return "";
+        }
+        return tf.hparams.utils.prettyPrint(sessionGroup.hparams[hparam]);
+      },
+
+      // Returns the metric value of the given sessionGroup. The value is
+      // returned as a string suitable for display.
+      _sessionGroupMetric(sessionGroup, metricName) {
+        if (sessionGroup == null) {
+          return null;
+        }
+        for (let i = 0; i < sessionGroup.metricValues.length; ++i) {
+          let metricVal = sessionGroup.metricValues[i];
+          if (metricVal.name.group === metricName.group &&
+              metricVal.name.tag == metricName.tag) {
+            return tf.hparams.utils.prettyPrint(metricVal.value);
+          }
+        }
+        return "";
+      },
+
+      _rowNumber(rowIndex) {
+        return rowIndex + 1;
+      },
+    });
+  </script>
+</dom-module>
