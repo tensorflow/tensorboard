@@ -76,9 +76,9 @@ const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
 const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 
-export const TSNE_SAMPLE_SIZE = 5000;
+export const TSNE_SAMPLE_SIZE = 10000;
 export const UMAP_SAMPLE_SIZE = 5000;
-export const PCA_SAMPLE_SIZE = 5000;
+export const PCA_SAMPLE_SIZE = 50000;
 /** Number of dimensions to sample when doing approximate PCA. */
 export const PCA_SAMPLE_DIM = 200;
 /** Number of pca components to compute. */
