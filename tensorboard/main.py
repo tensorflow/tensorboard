@@ -35,16 +35,24 @@ import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
+import logging
 import sys
 
 from tensorboard import default
 from tensorboard import program
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 
+
+logger = logging.getLogger(__name__)
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
+
+  if getattr(tf, '__version__', 'stub') == 'stub':
+    logger.warn("TensorFlow installation not found - running with reduced feature set.")
+
   tensorboard = program.TensorBoard(default.get_plugins(),
                                     program.get_default_assets_zip_provider())
   try:
