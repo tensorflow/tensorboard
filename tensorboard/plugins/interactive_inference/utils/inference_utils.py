@@ -181,6 +181,7 @@ class ServingBundle(object):
       Predict API.
     estimator: An estimator to use instead of calling an external model.
     feature_spec: A feature spec for use with the estimator.
+    custom_predict_fn: A custom prediction function
 
   Raises:
     ValueError: If ServingBundle fails init validation.
@@ -188,7 +189,8 @@ class ServingBundle(object):
 
   def __init__(self, inference_address, model_name, model_type, model_version,
                signature, use_predict, predict_input_tensor,
-               predict_output_tensor, estimator=None, feature_spec=None):
+               predict_output_tensor, estimator=None, feature_spec=None,
+               custom_predict_fn=None):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -215,6 +217,7 @@ class ServingBundle(object):
     self.predict_output_tensor = predict_output_tensor
     self.estimator = estimator
     self.feature_spec = feature_spec
+    self.custom_predict_fn = custom_predict_fn
 
 
 def proto_value_for_feature(example, feature_name):
@@ -749,6 +752,11 @@ def run_inference(examples, serving_bundle):
     values = []
     for pred in preds:
       values.append(pred[preds_key])
+    return common_utils.convert_prediction_values(values, serving_bundle)
+  elif serving_bundle.custom_predict_fn:
+    # If custom_predict_fn is provided, pass examples directly for local
+    # inference.
+    values = serving_bundle.custom_predict_fn(examples)
     return common_utils.convert_prediction_values(values, serving_bundle)
   else:
     return platform_utils.call_servo(examples, serving_bundle)

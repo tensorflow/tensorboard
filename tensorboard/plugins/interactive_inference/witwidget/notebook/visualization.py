@@ -44,20 +44,24 @@ class WitConfigBuilder(object):
     self.set_examples(examples)
     self.set_model_type('classification')
     self.set_label_vocab([])
-  
+
   def build(self):
     """Returns the configuration set through use of this builder object.
 
     Used by WitWidget to set the settings on an instance of the What-If Tool.
     """
     return self.config
-  
+
   def store(self, key, value):
     self.config[key] = value
 
+  def delete(self, key):
+    if key in self.config:
+      del self.config[key]
+
   def set_examples(self, examples):
     """Sets the examples to be displayed in WIT.
-    
+
     Args:
       examples: List of example protos.
 
@@ -69,7 +73,7 @@ class WitConfigBuilder(object):
       self.store('are_sequence_examples',
                  isinstance(examples[0], tf.train.SequenceExample))
     return self
-      
+
   def set_model_type(self, model):
     """Sets the type of the model being used for inference.
 
@@ -82,7 +86,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_type', model)
     return self
-  
+
   def set_inference_address(self, address):
     """Sets the inference address for model inference through TF Serving.
 
@@ -95,7 +99,7 @@ class WitConfigBuilder(object):
     """
     self.store('inference_address', address)
     return self
-    
+
   def set_model_name(self, name):
     """Sets the model name for model inference through TF Serving.
 
@@ -111,7 +115,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_name', name)
     return self
-  
+
   def set_model_version(self, version):
     """Sets the optional model version for model inference through TF Serving.
 
@@ -125,7 +129,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_version', version)
     return self
-      
+
   def set_model_signature(self, signature):
     """Sets the optional model signature for model inference through TF Serving.
 
@@ -139,7 +143,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_signature', signature)
     return self
-      
+
   def set_compare_inference_address(self, address):
     """Sets the inference address for model inference for a second model hosted
     by TF Serving.
@@ -156,7 +160,7 @@ class WitConfigBuilder(object):
     """
     self.store('inference_address_2', address)
     return self
-      
+
   def set_compare_model_name(self, name):
     """Sets the model name for a second model hosted by TF Serving.
 
@@ -175,7 +179,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_name_2', name)
     return self
-  
+
   def set_compare_model_version(self, version):
     """Sets the optional model version for a second model hosted by TF Serving.
 
@@ -192,7 +196,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_version_2', version)
     return self
-      
+
   def set_compare_model_signature(self, signature):
     """Sets the optional model signature for a second model hosted by TF
     Serving.
@@ -210,7 +214,7 @@ class WitConfigBuilder(object):
     """
     self.store('model_signature_2', signature)
     return self
-      
+
   def set_uses_predict_api(self, predict):
     """Indicates that the model uses the Predict API, as opposed to the
     Classification or Regression API.
@@ -230,7 +234,7 @@ class WitConfigBuilder(object):
     """
     self.store('uses_predict_api', predict)
     return self
-  
+
   def set_max_classes_to_display(self, max_classes):
     """Sets the maximum number of class results to display for multiclass
     classification models.
@@ -249,7 +253,7 @@ class WitConfigBuilder(object):
     """
     self.store('max_classes', max_classes)
     return self
-  
+
   def set_multi_class(self, multiclass):
     """Sets if the model(s) to query are mutliclass classification models.
 
@@ -262,7 +266,7 @@ class WitConfigBuilder(object):
     """
     self.store('multiclass', multiclass)
     return self
-      
+
   def set_predict_input_tensor(self, tensor):
     """Sets the name of the input tensor for models that use the Predict API.
 
@@ -330,12 +334,16 @@ class WitConfigBuilder(object):
     Returns:
       self, in order to enabled method chaining.
     """
+    # If custom function is set, remove it before setting estimator
+    self.delete('custom_predict_fn')
+    self.delete('compare_custom_predict_fn')
+
     self.store('estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
     self.set_inference_address('estimator')
     self.set_model_name('estimator')
     return self
-  
+
   def set_compare_estimator_and_feature_spec(self, estimator, feature_spec):
     """Sets a second model for inference as a TF Estimator.
 
@@ -355,8 +363,71 @@ class WitConfigBuilder(object):
     Returns:
       self, in order to enabled method chaining.
     """
+    # If custom function is set, remove it before setting estimator
+    self.delete('custom_predict_fn')
+    self.delete('compare_custom_predict_fn')
+
     self.store('compare_estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
     self.set_compare_inference_address('estimator')
     self.set_compare_model_name('estimator')
+    return self
+
+  def set_custom_predict_fn(self, predict_fn):
+    """Sets a custom function for inference.
+
+    Instead of using TF Serving to host a model for WIT to query, WIT can
+    directly use a custom function as the model to query. In this case, the
+    provided function should accept example protos and return:
+      - For classification: A 2D list of numbers. The first dimension is for
+        each example being predicted. The second dimension are the probabilities
+        for each class ID in the prediction.
+      - For regression: A 1D list of numbers, with a regression score for each
+        example being predicted.
+
+    Args:
+      predict_fn: The custom python function which will be used for model
+      inference.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    # If estimator is set, remove it before setting predict_fn
+    self.delete('estimator_and_spec')
+    self.delete('compare_estimator_and_spec')
+
+    self.store('custom_predict_fn', predict_fn)
+    self.set_inference_address('custom_predict_fn')
+    self.set_model_name('custom_predict_fn')
+    return self
+
+  def set_compare_custom_predict_fn(self, predict_fn):
+    """Sets a second custom function for inference.
+
+    If you wish to compare the results of two models in WIT, use this method
+    to setup the details of the second model.
+
+    Instead of using TF Serving to host a model for WIT to query, WIT can
+    directly use a custom function as the model to query. In this case, the
+    provided function should accept example protos and return:
+      - For classification: A 2D list of numbers. The first dimension is for
+        each example being predicted. The second dimension are the probabilities
+        for each class ID in the prediction.
+      - For regression: A 1D list of numbers, with a regression score for each
+        example being predicted.
+
+    Args:
+      predict_fn: The custom python function which will be used for model
+      inference.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    # If estimator is set, remove it before setting predict_fn
+    self.delete('estimator_and_spec')
+    self.delete('compare_estimator_and_spec')
+
+    self.store('compare_custom_predict_fn', predict_fn)
+    self.set_compare_inference_address('custom_predict_fn')
+    self.set_compare_model_name('custom_predict_fn')
     return self
