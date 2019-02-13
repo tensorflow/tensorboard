@@ -965,7 +965,8 @@ limitations under the License.
                           <div title="Select a datapoint to use this feature">
                               <paper-icon-button class="datapoint-control-button" icon="editor:show-chart"
                                   disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                  on-tap="showPartialDependencePlots_" alt="Show partial dependence plots" title="Show partial dependence plots">
+                                  on-tap="showPartialDependencePlots_" alt="Show partial dependence plots for selected datapoint"
+                                  title="Show partial dependence plots for selected datapoint">
                               </paper-icon-button>
                             </div>
                           <div class="control-divider"></div>
@@ -2099,6 +2100,7 @@ limitations under the License.
       },
 
       showPartialDependencePlots_: function() {
+        this.globalPdPlots = false;
         this.sideTabSelected = 3;
         requestAnimationFrame(() => this.populatePdTabs());
       },
