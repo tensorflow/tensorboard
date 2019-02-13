@@ -34,7 +34,7 @@ PROTO_VERSION = 0
 CONCEPTUAL_GRAPH_SUMMARY_TAG = 'graph__conceptual_graph__'
 
 def create_summary_metadata(display_name, description):
-  """Create a `summary_pb2.SummaryMetadata` proto for image plugin data.
+  """Create a `summary_pb2.SummaryMetadata` proto for graph plugin data.
 
   Returns:
     A `summary_pb2.SummaryMetadata` protobuf object.
@@ -55,7 +55,7 @@ def parse_plugin_metadata(content):
 
   Arguments:
     content: The `content` field of a `SummaryMetadata` proto
-      corresponding to the image plugin.
+      corresponding to the graph plugin.
 
   Returns:
     An `GraphPluginData` protobuf object.
