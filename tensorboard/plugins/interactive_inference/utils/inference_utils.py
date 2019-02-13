@@ -181,7 +181,7 @@ class ServingBundle(object):
       Predict API.
     estimator: An estimator to use instead of calling an external model.
     feature_spec: A feature spec for use with the estimator.
-    custom_predict_fn: A custom prediction function
+    custom_predict_fn: A custom prediction function.
 
   Raises:
     ValueError: If ServingBundle fails init validation.

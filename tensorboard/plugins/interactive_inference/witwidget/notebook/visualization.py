@@ -342,7 +342,6 @@ class WitConfigBuilder(object):
     """
     # If custom function is set, remove it before setting estimator
     self.delete('custom_predict_fn')
-    self.delete('compare_custom_predict_fn')
 
     self.store('estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
@@ -372,7 +371,6 @@ class WitConfigBuilder(object):
       self, in order to enabled method chaining.
     """
     # If custom function is set, remove it before setting estimator
-    self.delete('custom_predict_fn')
     self.delete('compare_custom_predict_fn')
 
     self.store('compare_estimator_and_spec', {
@@ -404,7 +402,6 @@ class WitConfigBuilder(object):
     """
     # If estimator is set, remove it before setting predict_fn
     self.delete('estimator_and_spec')
-    self.delete('compare_estimator_and_spec')
 
     self.store('custom_predict_fn', predict_fn)
     self.set_inference_address('custom_predict_fn')
@@ -436,7 +433,6 @@ class WitConfigBuilder(object):
       self, in order to enabled method chaining.
     """
     # If estimator is set, remove it before setting predict_fn
-    self.delete('estimator_and_spec')
     self.delete('compare_estimator_and_spec')
 
     self.store('compare_custom_predict_fn', predict_fn)
