@@ -408,7 +408,9 @@ class WitConfigBuilder(object):
 
     self.store('custom_predict_fn', predict_fn)
     self.set_inference_address('custom_predict_fn')
-    self.set_model_name('custom_predict_fn')
+    # If no model name has been set, give a default
+    if not self.has_model_name():
+      self.set_model_name('1')
     return self
 
   def set_compare_custom_predict_fn(self, predict_fn):
@@ -439,5 +441,7 @@ class WitConfigBuilder(object):
 
     self.store('compare_custom_predict_fn', predict_fn)
     self.set_compare_inference_address('custom_predict_fn')
-    self.set_compare_model_name('custom_predict_fn')
+    # If no model name has been set, give a default
+    if not self.has_compare_model_name():
+      self.set_compare_model_name('2')
     return self
