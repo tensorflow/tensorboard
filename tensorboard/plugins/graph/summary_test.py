@@ -38,6 +38,12 @@ try:
 except ImportError:
   tf2 = None
 
+try:
+  tf.compat.v1.enable_eager_execution()
+except AttributeError:
+  # TF 2.0 doesn't have this symbol because eager is the default.
+  pass
+
 
 class SummaryV2OpTest(tf.test.TestCase):
 
