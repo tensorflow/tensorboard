@@ -119,7 +119,7 @@ Properties out:
       runSelectionState: {
         type: Object,
         observer: '_storeRunSelectionState',
-        value: () => tf_storage.getObject('runSelectionState') || {},
+        value: tf_storage.getObjectInitializer('runSelectionState', {defaultValue: {}}),
       },
       regexInput: {
         type: String,
