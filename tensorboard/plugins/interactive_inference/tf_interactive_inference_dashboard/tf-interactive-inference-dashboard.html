@@ -17,6 +17,7 @@ limitations under the License.
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icons/communication-icons.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-icons/editor-icons.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -286,6 +287,21 @@ limitations under the License.
         overflow: auto;
       }
 
+      .pd-tab {
+        width: 100%;
+        padding: 5px 10px;
+      }
+
+      .pd-plots-header {
+        height: 50px;
+        min-height: 50px;
+      }
+
+      .pdplots-holder {
+        flex-grow: 1;
+        overflow: auto;
+      }
+
       #overview {
         max-height: 100%;
         height: 100%;
@@ -338,7 +354,7 @@ limitations under the License.
 
       .tf-category-pane {
         background-color: white;
-        border: none;
+        border: 1px solid lightgrey;
         cursor: pointer;
         width: 100%;
         font-size: 15px;
@@ -386,14 +402,11 @@ limitations under the License.
       }
 
       .feature-container-holder {
-        position:absolute;
-        top: 0;
-        bottom: 0;
         width: 100%;
         height: 100%;
-        overflow: auto;
         background: white;
-        display: none;
+        display: flex;
+        flex-direction: column;
       }
 
       .datapoint-control-filter-input {
@@ -691,7 +704,7 @@ limitations under the License.
       }
 
       .pd-toggle {
-        margin: 4px 0 0 20px;
+        margin: 0 0 0 20px;
       }
 
       .info-icon {
@@ -907,12 +920,13 @@ limitations under the License.
         <div class="main-content">
               <div class="main-bottom-bar">
                 <div class="datapoint-left-controls-holder">
-                  <paper-tabs on-iron-select="onTabSelect_"
+                  <paper-tabs
                     noink
                     selected="{{sideTabSelected}}">
                     <paper-tab>Datapoint Editor</paper-tab>
                     <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
                     <paper-tab>Features</paper-tab>
+                    <paper-tab>Partial Dependence Plots</paper-tab>
                   </paper-tabs>
                 </div>
                 <div class="datapoint-right-controls-holder">
@@ -935,10 +949,12 @@ limitations under the License.
                                on-tap="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
                             </paper-icon-button>
                           </div>
-                          <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                              on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
-                              disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
-                          </paper-icon-button>
+                          <div title="Edit a datapoint to use this feature">
+                            <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
+                                on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
+                                disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                            </paper-icon-button>
+                          </div>
                           <div title="Select a datapoint to use this feature">
                             <paper-icon-button class="datapoint-control-button" icon="delete-forever"
                                 disabled$="[[!hasSelected(selectedExampleAndInference)]]"
@@ -946,17 +962,17 @@ limitations under the License.
                             </paper-icon-button>
                           </div>
                           <div class="control-divider"></div>
-                          <div>
-                            <paper-button class="control-button" disabled$="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
-                                on-tap="showPartialDependencePlots_" alt="show partial dependence plots">
-                                PD Plots
-                            </paper-button>
-                          </div>
+                          <div title="Select a datapoint to use this feature">
+                              <paper-icon-button class="datapoint-control-button" icon="editor:show-chart"
+                                  disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                                  on-tap="showPartialDependencePlots_" alt="Show partial dependence plots" title="Show partial dependence plots">
+                              </paper-icon-button>
+                            </div>
                           <div class="control-divider"></div>
                           <div title="Select a datapoint to use this feature">
                             <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="showDistanceClicked_" alt="create distance feature"
-                                title="Select a datapoint to use this feature">
+                                on-tap="showDistanceClicked_" alt="Create distance feature  for visualization"
+                                title="Create distance feature for visualization">
                                 Compute distance
                             </paper-button>
                           </div>
@@ -966,7 +982,7 @@ limitations under the License.
                               <div title="Select a datapoint to use this feature">
                                 <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                                   on-tap="findClosestCounterfactual_" alt="show nearest counterfactual"
-                                  title="Select a datapoint to use this feature">
+                                  title="Show nearest counterfactual">
                                   Nearest CF
                                 </paper-button>
                               </div>
@@ -1133,95 +1149,21 @@ limitations under the License.
                     </div>
                   </div>
                   <div class="center" id="center">
-                      <facets-dive id="dive" data="[[visdata]]"
-                                  selected-indices="[[selected]]"
-                                  compared-indices="[[comparedIndices]]"
-                                  on-selected-indices-changed="selectedIndicesChanged_"
-                                  on-stats-changed="statsChanged_"
-                                  hide-info-card="true"
-                                  sprite-image-width="32" sprite-image-height="32"
-                                  fit-grid-aspect-ratio-to-viewport="true"
-                                  stable-colors="true">
-                      </facets-dive>
-                      <div id="noexamples" class="noexamples info-text">
-                        Examples and their inference results will be displayed here.
-                      </div>
-                      <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
-                      <div class="feature-container-holder" id="partialplotholder">
-                        <div class="flex">
-                          <paper-icon-button icon="arrow-back" on-tap="hidePartialDependencePlots_" class="pd-arrow-icon" title="Close partial dependence plots"></paper-icon-button>
-                          <div class="pd-info-text">Partial Dependence Plots</div>
-                          <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
-                          </paper-icon-button>
-                          <paper-toggle-button class="pd-toggle" checked="{{globalPdPlots}}"
-                              on-change="hideAllPdElements_" disabled$="[[!hasSelected(selectedExampleAndInference)]]">
-                            Global
-                          </paper-toggle-button>
-                          <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                            <div class="dialog-title">Partial Dependence Plots</div>
-                            <div>Partial dependence plots visualize the change in inference results for every feature,
-                              as the value for that feature is changed to different valid values.
-                            </div>
-                            <div>For numeric features, you can set the minimum and maximum values to plot.</div>
-                            <div>For string features, the most popular feature values are shown as alternatives to
-                              the feature value for the selected example.
-                            </div>
-                            <div>For features with multiple feature values per example, a single plot is shown for for
-                              each feature value in the selected example. You can override which feature values have
-                              plots created for them by specifying the indices to shown partial dependence plots for,
-                              if the example contains multiple feature values for a feature.
-                            </div>
-                            <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
-                              changing a single feature across all datapoints. When it is turned off, the plots show the
-                              effect of a repeatedly changing a single feature on the selected datapoint.
-                            </div>
-                          </paper-dialog>
-                        </div>
-                        <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
-                          <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
-                        </template>
-                        <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
-                          <div class="feature-container" data-feature-name$="[[item.name]]">
-                            <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
-                              [[item.name]]
-          
-                              <div class="pd-input-container">
-                                <div class="range-input-container">
-                                  <span class="info-text"
-                                        title="The range of values to test (default values are automatically inferred)."
-                                        hidden$="[[item.samples]]">
-                                    Value range to test:
-                                  </span>
-                                  <input type="number"
-                                          class="style-input x-min"
-                                          value="[[item.observedMin]]"
-                                          title="The minimum value to test (default value is automatically inferred)."
-                                          hidden$="[[item.samples]]"
-                                          on-input="pdInputChanged">
-                                  <input type="number"
-                                          class="style-input x-max"
-                                          value="[[item.observedMax]]"
-                                          title="The maximum value to test (default value is automatically inferred)."
-                                          hidden$="[[item.samples]]"
-                                          on-input="pdInputChanged">
-          
-                                  <span title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields."
-                                        hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
-                                    <span class="info-text">Optional feature indices: </span>
-                                    <input type="text"
-                                            class="style-input feature-index-pattern"
-                                            on-input="pdInputChanged">
-                                  </span>
-                                </div>
-                                <iron-icon class="expand-collapse-button" icon="expand-less"></iron-icon>
-                              </div>
-                            </button>
-                            <div class="tf-category-pane-content" hidden>
-                            </div>
-                          </div>
-                        </template>
-                      </div>
+                    <facets-dive id="dive" data="[[visdata]]"
+                                selected-indices="[[selected]]"
+                                compared-indices="[[comparedIndices]]"
+                                on-selected-indices-changed="selectedIndicesChanged_"
+                                on-stats-changed="statsChanged_"
+                                hide-info-card="true"
+                                sprite-image-width="32" sprite-image-height="32"
+                                fit-grid-aspect-ratio-to-viewport="true"
+                                stable-colors="true">
+                    </facets-dive>
+                    <div id="noexamples" class="noexamples info-text">
+                      Examples and their inference results will be displayed here.
                     </div>
+                    <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+                  </div>
               </div>
                 <div class="config-tab">
                   <div class="heading-and-card">
@@ -1536,6 +1478,82 @@ limitations under the License.
                 </div>
                 <div class="stats-tab">
                   <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
+                </div>
+                <div class="pd-tab">
+                  <div class="feature-container-holder" id="partialplotholder">
+                    <div class="flex pd-plots-header">
+                      <div class="pd-info-text">Partial Dependence Plots</div>
+                      <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
+                      </paper-icon-button>
+                      <paper-toggle-button class="pd-toggle" checked="{{globalPdPlots}}"
+                          on-change="hideAllPdElements_" disabled$="[[!hasSelected(selectedExampleAndInference)]]">
+                        Global
+                      </paper-toggle-button>
+                      <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                        <div class="dialog-title">Partial Dependence Plots</div>
+                        <div>Partial dependence plots visualize the change in inference results for every feature,
+                          as the value for that feature is changed to different valid values.
+                        </div>
+                        <div>For numeric features, you can set the minimum and maximum values to plot.</div>
+                        <div>For string features, the most popular feature values are shown as alternatives to
+                          the feature value for the selected example.
+                        </div>
+                        <div>For features with multiple feature values per example, a single plot is shown for for
+                          each feature value in the selected example. You can override which feature values have
+                          plots created for them by specifying the indices to shown partial dependence plots for,
+                          if the example contains multiple feature values for a feature.
+                        </div>
+                        <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
+                          changing a single feature across all datapoints. When it is turned off, the plots show the
+                          effect of a repeatedly changing a single feature on the selected datapoint.
+                        </div>
+                      </paper-dialog>
+                    </div>
+                    <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
+                      <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
+                    </template>
+                    <div class="pdplots-holder">
+                      <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
+                        <div class="feature-container" data-feature-name$="[[item.name]]">
+                          <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
+                            [[item.name]]
+                            <div class="pd-input-container">
+                              <div class="range-input-container">
+                                <span class="info-text"
+                                      title="The range of values to test (default values are automatically inferred)."
+                                      hidden$="[[item.samples]]">
+                                  Value range to test:
+                                </span>
+                                <input type="number"
+                                        class="style-input x-min"
+                                        value="[[item.observedMin]]"
+                                        title="The minimum value to test (default value is automatically inferred)."
+                                        hidden$="[[item.samples]]"
+                                        on-input="pdInputChanged">
+                                <input type="number"
+                                        class="style-input x-max"
+                                        value="[[item.observedMax]]"
+                                        title="The maximum value to test (default value is automatically inferred)."
+                                        hidden$="[[item.samples]]"
+                                        on-input="pdInputChanged">
+                                <span title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields."
+                                      hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
+                                  <span class="info-text">Optional feature indices: </span>
+                                  <input type="text"
+                                          class="style-input feature-index-pattern"
+                                          on-input="pdInputChanged">
+                                </span>
+                              </div>
+                              <iron-icon class="expand-collapse-button" icon="expand-less"></iron-icon>
+                            </div>
+                          </button>
+                          <div class="tf-category-pane-content" hidden>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    </div>
+                  </div>
                 </div>
               </iron-pages>
             </div>
@@ -1944,10 +1962,6 @@ limitations under the License.
         this.$.inferencesettings.close();
       },
 
-      onTabSelect_: function() {
-        this.hidePartialDependencePlots_();
-      },
-
       showDistanceClicked_: function() {
         this.$.distancedialog.toggle();
       },
@@ -2084,12 +2098,8 @@ limitations under the License.
         return stats.probSameValue;
       },
 
-      hidePartialDependencePlots_: function() {
-        this.$.partialplotholder.style.display = 'none';
-      },
-
       showPartialDependencePlots_: function() {
-        this.$.partialplotholder.style.display = 'block';
+        this.sideTabSelected = 3;
         requestAnimationFrame(() => this.populatePdTabs());
       },
 
@@ -2102,10 +2112,6 @@ limitations under the License.
         this.comparedIndices = [];
         this.selected = event.detail.value;
         this.selectedDataUpdated_();
-        // When a datapoint is selected, switch to the datapoint tab.
-        if (this.selected.length > 0) {
-          this.sideTabSelected = 0;
-        }
       },
 
       selectNextDatapoint_: function() {
@@ -2354,6 +2360,8 @@ limitations under the License.
           requestAnimationFrame(() => {
             this.updateInferenceStats_(true);
           });
+        } else if (tab == 3) {
+          requestAnimationFrame(() => this.populatePdTabs());
         }
       },
 
@@ -3734,9 +3742,6 @@ limitations under the License.
         this.selectedExampleNum = this.selected.length > 0 ? this.selected[0] : "";
         if (this.visdata && this.visdata.length > 0) {
           this.partialDepPlotPendingFeatures = [];
-          if (this.$.partialplotholder.style.display != 'none') {
-            this.populatePdTabs();
-          }
         }
       },
 
