@@ -79,7 +79,7 @@ class LazyTest(unittest.TestCase):
 
   def test_failed_load_idempotent(self):
     expected_message = "you will never stop me"
-    @lazy.lazy_load("tensorboard.lazy_test_bad_import")
+    @lazy.lazy_load("bad")
     def bad():
       raise ValueError(expected_message)
     with six.assertRaisesRegex(self, ValueError, expected_message):
