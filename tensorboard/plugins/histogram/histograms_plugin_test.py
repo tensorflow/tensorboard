@@ -177,7 +177,6 @@ class HistogramsPluginTest(tf.test.TestCase):
 
   def _test_histograms_csv(self, run_name, tag_name, should_work=True):
     self.set_up_with_runs([self._RUN_WITH_LEGACY_HISTOGRAM,
-                           self._RUN_WITH_SCALARS,
                            self._RUN_WITH_HISTOGRAM])
     if should_work:
       (data, mime_type) = self.plugin.histograms_impl(
@@ -192,7 +191,7 @@ class HistogramsPluginTest(tf.test.TestCase):
     else:
       with self.assertRaises(KeyError):
         self.plugin.histograms_impl(
-          self._SCALAR_TAG, run_name,
+          self._HISTOGRAM_TAG, run_name,
           output_format=histograms_plugin.OutputFormat.CSV)
 
   def test_histograms_csv_with_legacy_histograms(self):
