@@ -116,6 +116,9 @@ class WitConfigBuilder(object):
     self.store('model_name', name)
     return self
 
+  def has_model_name(self):
+    return 'model_name' in self.config
+
   def set_model_version(self, version):
     """Sets the optional model version for model inference through TF Serving.
 
@@ -179,6 +182,9 @@ class WitConfigBuilder(object):
     """
     self.store('model_name_2', name)
     return self
+
+  def has_compare_model_name(self):
+    return 'model_name_2' in self.config
 
   def set_compare_model_version(self, version):
     """Sets the optional model version for a second model hosted by TF Serving.
@@ -341,7 +347,9 @@ class WitConfigBuilder(object):
     self.store('estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
     self.set_inference_address('estimator')
-    self.set_model_name('estimator')
+    # If no model name has been set, give a default
+    if not self.has_model_name():
+      self.set_model_name('1')
     return self
 
   def set_compare_estimator_and_feature_spec(self, estimator, feature_spec):
@@ -370,7 +378,9 @@ class WitConfigBuilder(object):
     self.store('compare_estimator_and_spec', {
       'estimator': estimator, 'feature_spec': feature_spec})
     self.set_compare_inference_address('estimator')
-    self.set_compare_model_name('estimator')
+    # If no model name has been set, give a default
+    if not self.has_compare_model_name():
+      self.set_compare_model_name('2')
     return self
 
   def set_custom_predict_fn(self, predict_fn):

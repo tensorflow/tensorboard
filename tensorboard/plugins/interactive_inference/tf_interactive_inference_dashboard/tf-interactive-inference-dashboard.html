@@ -1065,7 +1065,7 @@ limitations under the License.
                               </div>
                             </button>
                             <iron-collapse class="no-padding-card" id="collapseinference" opened="{{openedInferenceResults}}">
-                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]" model-names="[[parsedModelNames]]"
                                                     id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                               </tf-inference-viewer>
                             </iron-collapse>
@@ -1322,7 +1322,7 @@ limitations under the License.
                             <div class="flex-wrap">
                               <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                 <div>
-                                  <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[getPrintableModelNumber_(index)]]</div>
+                                  <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[getModelName_(index)]]</div>
                                   <div class="flex">
                                     <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
                                       value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
@@ -1377,7 +1377,7 @@ limitations under the License.
                             <div class="flex-wrap">
                               <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
                                 <div>
-                                  <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
+                                  <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[getModelName_(index)]]</div>
                                   <div class="flex">
                                     <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
                                       value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
@@ -1592,6 +1592,10 @@ limitations under the License.
           type: String,
         },
         modelName: {
+          type: String,
+          observer: 'modelNameChanged_',
+        },
+        parsedModelNames: {
           type: String,
         },
         inferenceAddress: {
@@ -1947,6 +1951,22 @@ limitations under the License.
         }
       },
 
+      modelNameChanged_: function() {
+        this.parsedModelNames = this.modelName.split(',').map(
+          str => str.trim());
+        // If any names are identical, then add an index-based postfix
+        // to make them unique, for display purposes.
+        for (let i = 0; i < this.parsedModelNames.length; i++) {
+          const currentName = this.parsedModelNames[i];
+          for (let j = i + 1; j < this.parsedModelNames.length; j++) {
+            if (this.parsedModelNames[j] == currentName) {
+              this.parsedModelNames[i] = currentName + ' ' + (i + 1)
+              this.parsedModelNames[j] = currentName + ' ' + (j + 1);
+            }
+          }
+        }
+      },
+
       closeSettings_: function() {
         this.$.inferencesettings.close();
       },
@@ -2002,7 +2022,7 @@ limitations under the License.
         this.neighborByL2 = useL2Distance;
         const selected = this.selected[0];
         const modelInferenceValueStr =
-            this.strWithModelIndex_(inferenceValueStr, 0);
+            this.strWithModelName_(inferenceValueStr, 0);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
@@ -2266,9 +2286,13 @@ limitations under the License.
         return inStr.lastIndexOf(prefixStr, 0) == 0;
       },
 
-      strWithModelIndex_: function(inStr, modelNumber){
-        if (this.numModels > 1){
-          return inStr + ' ' + (modelNumber + 1);
+      getModelName_: function(modelNumber) {
+        return this.parsedModelNames[modelNumber];
+      },
+
+      strWithModelName_: function(inStr, modelNumber) {
+        if (this.numModels > 1) {
+          return inStr + ' ' + this.getModelName_(modelNumber);
         } else {
           return inStr
         }
@@ -2501,7 +2525,7 @@ limitations under the License.
                     inferenceStats.results[item[this.selectedLabelFeature]];
                 }
                 const modelInferenceValueStr =
-                  this.strWithModelIndex_(inferenceValueStr, modelInd);
+                  this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
@@ -2541,7 +2565,7 @@ limitations under the License.
                   }
                 }
                 const inferenceError =
-                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+                  item[this.strWithModelName_(inferenceValueStr, modelInd)] -
                    item[this.selectedLabelFeature];
                 inferenceStats.results.errors.push(inferenceError);
                 if (facetedStats) {
@@ -2679,13 +2703,13 @@ limitations under the License.
             };
           }).reverse();
           chart.setSeriesData(
-            this.strWithModelIndex_('Threshold set', modelInd),
+            this.strWithModelName_('Threshold set', modelInd),
             [currentThresholdData]);
           if (regenInferenceStats) {
-            chart.setSeriesData(this.strWithModelIndex_('ROC', modelInd), data);
-            visibleCharts.push(this.strWithModelIndex_('ROC', modelInd));
+            chart.setSeriesData(this.strWithModelName_('ROC', modelInd), data);
+            visibleCharts.push(this.strWithModelName_('ROC', modelInd));
             visibleCharts.push(
-              this.strWithModelIndex_('Threshold set', modelInd));
+              this.strWithModelName_('Threshold set', modelInd));
           }
         }
         if (regenInferenceStats) {
@@ -3276,7 +3300,7 @@ limitations under the License.
           } else {
             for (let modelInd = 0; modelInd < self.numModels;
                  modelInd++) {
-              item[self.strWithModelIndex_(inferenceValueStr, modelInd)] =
+              item[self.strWithModelName_(inferenceValueStr, modelInd)] =
                 self.examplesAndInferences[index].inferences[
                   self.examplesAndInferences[index].inferences.length - 1][
                   modelInd][0].score;
@@ -3307,9 +3331,9 @@ limitations under the License.
               }
             }
             for (let modelInd = 0; modelInd < self.numModels; modelInd++) {
-              item[self.strWithModelIndex_(inferenceLabelStr, modelInd)] =
+              item[self.strWithModelName_(inferenceLabelStr, modelInd)] =
                 self.labelVocab[
-                  item[self.strWithModelIndex_(inferenceValueStr, modelInd)]];
+                  item[self.strWithModelName_(inferenceValueStr, modelInd)]];
             }
             hasInferenceLabels = true;
           }
@@ -3322,8 +3346,8 @@ limitations under the License.
         // don't override whatever coloring has been set.
         if (newInferencesCalculated) {
           this.$.dive.colorBy =
-            hasInferenceLabels ? this.strWithModelIndex_(inferenceLabelStr, 0)
-              : this.strWithModelIndex_(inferenceValueStr, 0);
+            hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
+              : this.strWithModelName_(inferenceValueStr, 0);
         }
         this.updatedExample = false;
       },
@@ -3336,7 +3360,7 @@ limitations under the License.
           this.examplesAndInferences[index].inferences.length - 1;
         if (this.multiClass) {
           for (let i = 0; i < this.numModels; i++){
-            item[this.strWithModelIndex_(inferenceValueStr, i)] =
+            item[this.strWithModelName_(inferenceValueStr, i)] =
             this.examplesAndInferences[index].inferences[inferenceIdx][i][
               0].label;
           }
@@ -3356,13 +3380,13 @@ limitations under the License.
         for (let modelNum = 0; modelNum < this.numModels; modelNum++){
           const nonZeroClassification =
             this.getClassificationBestNonZero(index, modelNum);
-          item[this.strWithModelIndex_(inferenceScoreStr, modelNum)] =
+          item[this.strWithModelName_(inferenceScoreStr, modelNum)] =
             nonZeroClassification.score;
           if (nonZeroClassification.score >= thresholds[modelNum].threshold) {
-            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+            item[this.strWithModelName_(inferenceValueStr, modelNum)] =
               nonZeroClassification.label;
           } else {
-            item[this.strWithModelIndex_(inferenceValueStr, modelNum)] =
+            item[this.strWithModelName_(inferenceValueStr, modelNum)] =
               this.defaultInferenceLabel.toString();
           }
         }
@@ -3389,21 +3413,21 @@ limitations under the License.
           for (let modelInd = 0; modelInd < this.numModels;
               modelInd++){
             if (this.modelType == 'classification') {
-              item[this.strWithModelIndex_(inferenceCorrectStr, modelInd)] =
+              item[this.strWithModelName_(inferenceCorrectStr, modelInd)] =
                 item[this.selectedLabelFeature] ==
-                  item[this.strWithModelIndex_(inferenceValueStr, modelInd)]
+                  item[this.strWithModelName_(inferenceValueStr, modelInd)]
                     ? "correct" : "incorrect";
             } else {
-              item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] =
-                item[this.strWithModelIndex_(inferenceValueStr, modelInd)] -
+              item[this.strWithModelName_(inferenceErrorStr, modelInd)] =
+                item[this.strWithModelName_(inferenceValueStr, modelInd)] -
                   item[this.selectedLabelFeature];
-              item[this.strWithModelIndex_(inferenceAbsErrorStr, modelInd)] =
+              item[this.strWithModelName_(inferenceAbsErrorStr, modelInd)] =
                 Math.abs(
-                  item[this.strWithModelIndex_(inferenceErrorStr, modelInd)]);
-              item[this.strWithModelIndex_(inferenceSquaredErrorStr,
+                  item[this.strWithModelName_(inferenceErrorStr, modelInd)]);
+              item[this.strWithModelName_(inferenceSquaredErrorStr,
                modelInd)] =
-                item[this.strWithModelIndex_(inferenceErrorStr, modelInd)] *
-                 item[this.strWithModelIndex_(inferenceErrorStr, modelInd)];
+                item[this.strWithModelName_(inferenceErrorStr, modelInd)] *
+                 item[this.strWithModelName_(inferenceErrorStr, modelInd)];
             }
           }
         }
@@ -3981,7 +4005,7 @@ limitations under the License.
             keyToChart = labelKey.substring(0, indexOfModelStr);
             modelToChart =
               labelKey.substring(indexOfModelStr + 7,
-                labelKey.indexOf(')', indexOfModelStr));
+                labelKey.lastIndexOf(')'));
           }
           return {'label': keyToChart, 'model': modelToChart};
       },
@@ -3990,7 +4014,7 @@ limitations under the License.
         if (numberOfModels == 1) {
           return labelKey;
         } else {
-          return labelKey + ' (model ' + (modelInd + 1) + ')'
+          return labelKey + ' (model ' + this.getModelName_(modelInd) + ')';
         }
       },
 
@@ -4386,10 +4410,6 @@ limitations under the License.
       getCompareSlicesTitle: function(modelType, multiClass) {
         return this.isBinaryClassification_(modelType, multiClass) ?
             'Compare Slices + Fairness Metrics' : 'Compare Slices';
-      },
-
-      getPrintableModelNumber_: function(index) {
-        return index + 1;
       },
     });
 
