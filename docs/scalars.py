@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import backend as K
 from time import time
-
-import random
+import numpy as np
 
 # TODO(maniv): Remove this once tensorflow contains the v2 summary API.
 from tensorflow.python.ops import summary_ops_v2 as tf_summary
@@ -14,55 +14,74 @@ import tensorboard.summary.v2 as summary
 print(tf.__version__)
 
 def my_function(x):
-  """Returns a 3-dimensional vector as a function of x, a one-dimensional input."""
-  return [5 * x, 6 * x + 10, 7 * (x - 1) + 100]
+  """Returns a simple linear function of the input x."""
+  #return (5 * x) + 10
+  return x * x
+
+DATA_LEN = 1000
 
 
-def generate_data():
-  """Generator that returns the pair (x, y), such that y = my_function(x), i.e.,
-  x is randomly generated 1-dimensional input data and y is the value returned by my_function(x)."""
-  # Initialize seed.
-  random.seed(None)
-  while True:
-    x = random.random()
-    y = my_function(x)
-    yield (x, y)
+def get_data():
+  """Returns input and output data as (input, output). Each is a 1-dimensional array."""
+  input_data = np.random.uniform(low=-100, high=100, size=DATA_LEN)
+  output_data = my_function(input_data)
+  return (input_data, output_data)
 
+input_data, output_data = get_data()
 
-def create_dataset():
-  """Returns a dataset that provides an infinite supply of data of the form (x, y), where
-  y = my_function(x)."""
-  dataset = tf.data.Dataset.from_generator(
-      generate_data,
-      (tf.float32, tf.float32),
-      (tf.TensorShape([]), tf.TensorShape([3])),
-  )
-  return dataset.batch(20)
+# Partition into training (80%) and test (20%) sets.
+TRAIN_END = int(DATA_LEN * 0.8)
+input_train = input_data[:TRAIN_END]
+input_test = input_data[TRAIN_END:]
 
-# Now, let's begin actual ML!
+output_train = output_data[:TRAIN_END]
+output_test = output_data[TRAIN_END:]
 
-ds = create_dataset()
+# Train the model.
+
+#model = keras.models.Sequential([
+#   keras.layers.BatchNormalization(input_shape=(1,)),
+#    keras.layers.Dense(32, 'relu'),
+#    keras.layers.Dense(32, 'elu'),
+#    keras.layers.Dense(1),
+#])
 
 model = keras.models.Sequential([
-    keras.layers.Dense(8, input_dim=1, activation='sigmoid'),
-    keras.layers.Dense(3, activation='linear')
+    keras.layers.Dense(32, activation='relu', input_dim=1),
+    keras.layers.Dense(32, activation='elu'),
+    keras.layers.Dense(1),
 ])
 
-model.compile(
-    loss="mean_absolute_percentage_error",
-    optimizer=keras.optimizers.Adam(lr=0.001),
-)
+
+def rmse(y_true, y_pred):
+  return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+model.compile(loss='mape', optimizer=keras.optimizers.Adam(lr=0.05))
+#model.compile(loss='mse', optimizer=keras.optimizers.Adam())
 
 # Set up TensorBoard.
 tb_callback = keras.callbacks.TensorBoard(log_dir="logs/{}".format(time()))
 
-model.fit(ds, epochs=5, steps_per_epoch=1000, callbacks=[tb_callback])
-#loss = model.evaluate(ds, steps=1000)
-#print("Loss: %r" % loss)
+model.fit(
+    x=input_data, y=output_data,
+    epochs=10000,
+    batch_size=len(input_train),
+    validation_data=(input_test, output_test),
+    callbacks=[tb_callback],
+    verbose=0,
+  )
 
-#print("Prediction: ")
+loss = model.evaluate(input_test, output_test, callbacks=[tb_callback])
+print("Loss: " + str(loss))
+
+#model.save('x_squared.h5')
+
+#print("Predictions: ")
 #for _ in xrange(5):
-#  xs =
+#  x = np.random.randint(low=-10000, high=10000)
+#  y_actual = my_function(x)
+#  y_predicted = model.predict([x])[0]
+#  print("x=%g, y_actual=%g, y_predicted=%g" % (x, y_actual, y_predicted))
 
 
 
