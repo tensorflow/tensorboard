@@ -57,8 +57,8 @@ You can use the What-If Tool to analyze a classification or regression
 that takes TensorFlow Example or SequenceExample protos
 (data points) as inputs directly in a jupyter or colab notebook.
 
-You can also use What-If-Tool with your own custom prediction function that takes
-Tensorflow Example and produces predictions. In this mode, you can load any model
+You can also use What-If-Tool with a custom prediction function that takes
+Tensorflow examples and produces predictions. In this mode, you can load any model
 (including non-TensorFlow models) as long as your custom function's input and output
 specifications are correct.
 
