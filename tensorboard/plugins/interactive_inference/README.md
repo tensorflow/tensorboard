@@ -59,8 +59,8 @@ that takes TensorFlow Example or SequenceExample protos
 
 You can also use What-If-Tool with your own custom prediction function that takes
 Tensorflow Example and produces predictions. In this mode, you can load any model
-(including non-TensorFlow models) as long as your custom functions input and output
-specifications match.
+(including non-TensorFlow models) as long as your custom function's input and output
+specifications are correct.
 
 If you want to train an ML model from a dataset and explore the dataset and
 model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
