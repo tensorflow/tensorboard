@@ -77,6 +77,16 @@ class LazyTest(unittest.TestCase):
     foo.namedtuple
     self.assertEquals(repr(foo), "<%r via LazyModule (loaded)>" % collections)
 
+  def test_failed_load_idempotent(self):
+    expected_message = "you will never stop me"
+    @lazy.lazy_load("bad")
+    def bad():
+      raise ValueError(expected_message)
+    with six.assertRaisesRegex(self, ValueError, expected_message):
+      bad.day
+    with six.assertRaisesRegex(self, ValueError, expected_message):
+      bad.day
+
 
 if __name__ == '__main__':
   unittest.main()
