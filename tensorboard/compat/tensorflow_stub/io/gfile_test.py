@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import io
 import os
 import shutil
 import six
@@ -122,7 +123,8 @@ class GFileTest(unittest.TestCase):
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level
             # directory.
-            pair[0] = os.path.join(temp_dir, pair[0]) if pair[0] else temp_dir
+            pair[0] = os.path.join(temp_dir,
+                pair[0].replace('/', os.path.sep)) if pair[0] else temp_dir
         gotten = gfile.walk(temp_dir)
         self._CompareFilesPerSubdirectory(expected, gotten)
 
@@ -156,10 +158,11 @@ class GFileTest(unittest.TestCase):
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         ckpt_lines = (
-            ['\n'] + ['line {}\n'.format(i) for i in range(10)] + ['\n']
+            [u'\n'] + [u'line {}\n'.format(i) for i in range(10)] + [u' ']
         )
-        with open(ckpt_path, 'w') as f:
-            f.write(''.join(ckpt_lines))
+        # Write out \n as newline even on Windows
+        with io.open(ckpt_path, 'w', newline='') as f:
+            f.write(u''.join(ckpt_lines))
         with gfile.GFile(ckpt_path, 'r') as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
             ckpt_read_lines = list(f)

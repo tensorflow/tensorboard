@@ -37,7 +37,7 @@ class GFileTest(unittest.TestCase):
     @mock_s3
     def testExists(self):
         temp_dir = self._CreateDeepS3Structure()
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = self._PathJoin(temp_dir, 'model.ckpt')
         self.assertTrue(gfile.exists(temp_dir))
         self.assertTrue(gfile.exists(ckpt_path))
 
@@ -61,8 +61,8 @@ class GFileTest(unittest.TestCase):
             'quuz/garply/grault/h.tfevents.1',
             'waldo/fred/i.tfevents.1'
         ]
-        expected_listing = [os.path.join(temp_dir, f) for f in expected]
-        gotten_listing = gfile.glob(os.path.join(temp_dir, "*"))
+        expected_listing = [self._PathJoin(temp_dir, f) for f in expected]
+        gotten_listing = gfile.glob(self._PathJoin(temp_dir, "*"))
         six.assertCountEqual(
             self,
             expected_listing,
@@ -134,7 +134,7 @@ class GFileTest(unittest.TestCase):
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level
             # directory.
-            pair[0] = os.path.join(temp_dir, pair[0]) if pair[0] else temp_dir
+            pair[0] = self._PathJoin(temp_dir, pair[0]) if pair[0] else temp_dir
         gotten = gfile.walk(temp_dir)
         self._CompareFilesPerSubdirectory(expected, gotten)
 
@@ -142,10 +142,10 @@ class GFileTest(unittest.TestCase):
     def testStat(self):
         ckpt_content = 'asdfasdfasdffoobarbuzz'
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = self._PathJoin(temp_dir, 'model.ckpt')
         ckpt_stat = gfile.stat(ckpt_path)
         self.assertEqual(ckpt_stat.length, len(ckpt_content))
-        bad_ckpt_path = os.path.join(temp_dir, 'bad_model.ckpt')
+        bad_ckpt_path = self._PathJoin(temp_dir, 'bad_model.ckpt')
         with self.assertRaises(errors.NotFoundError):
             gfile.stat(bad_ckpt_path)
 
@@ -153,7 +153,7 @@ class GFileTest(unittest.TestCase):
     def testRead(self):
         ckpt_content = 'asdfasdfasdffoobarbuzz'
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = self._PathJoin(temp_dir, 'model.ckpt')
         with gfile.GFile(ckpt_path, 'r') as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
             ckpt_read = f.read()
@@ -162,11 +162,11 @@ class GFileTest(unittest.TestCase):
     @mock_s3
     def testReadLines(self):
         ckpt_lines = (
-            ['\n'] + ['line {}\n'.format(i) for i in range(10)] + ['\n']
+            [u'\n'] + [u'line {}\n'.format(i) for i in range(10)] + [u' ']
         )
-        ckpt_content = ''.join(ckpt_lines)
+        ckpt_content = u''.join(ckpt_lines)
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = self._PathJoin(temp_dir, 'model.ckpt')
         with gfile.GFile(ckpt_path, 'r') as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
             ckpt_read_lines = list(f)
@@ -177,7 +177,7 @@ class GFileTest(unittest.TestCase):
         ckpt_content = 'asdfasdfasdffoobarbuzz'
         ckpt_b_content = b'asdfasdfasdffoobarbuzz'
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = self._PathJoin(temp_dir, 'model.ckpt')
         with gfile.GFile(ckpt_path, 'r') as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
             ckpt_read = f.read(12)
@@ -193,6 +193,10 @@ class GFileTest(unittest.TestCase):
         with gfile.GFile(ckpt_path, 'rb') as f:
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
+
+    def _PathJoin(self, top_directory, sub_path):
+        """Join directory and path with slash and not local separator"""
+        return top_directory + "/" + sub_path
 
     def _CreateDeepS3Structure(self, top_directory='top_dir', ckpt_content='',
                                region_name='us-east-1', bucket_name='test'):

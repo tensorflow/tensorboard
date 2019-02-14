@@ -311,6 +311,7 @@ class GFile(object):
     def __exit__(self, *args):
         self.buff = None
         self.buff_offset = 0
+        self.offset = 0
 
     def __iter__(self):
         return self
@@ -324,7 +325,7 @@ class GFile(object):
 
     def read(self, n=None):
         result = None
-        if self.buff is not None:
+        if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
             if n is not None:
                 chunk = self._read_buffer_to_offset(self.buff_offset + n)
@@ -359,7 +360,7 @@ class GFile(object):
             if not self.buff:
                 # read one unit into the buffer
                 line = self.read(1)
-                if line and line[-1] == '\n':
+                if line and (line[-1] == '\n' or not self.buff):
                     return line
                 if not self.buff:
                     raise StopIteration()
@@ -374,7 +375,7 @@ class GFile(object):
                 # read one unit past end of buffer
                 chunk = self.read(len(self.buff) + 1 - self.buff_offset)
                 line = line + chunk if line else chunk
-                if line and line[-1] == '\n':
+                if line and (line[-1] == '\n' or not self.buff):
                     return line
                 if not self.buff:
                     raise StopIteration()
