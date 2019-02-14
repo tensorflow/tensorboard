@@ -3371,12 +3371,17 @@ limitations under the License.
         this.refreshDive_();
 
         // If inferring from new examples, set the color in facets dive to
-        // inference results of the first model. When reinferring from changes,
-        // don't override whatever coloring has been set.
+        // inference results of the first model and use positioning to show
+        // inference scores. When reinferring from changes, don't override
+        // whatever options have been set.
         if (newInferencesCalculated) {
           this.$.dive.colorBy =
             hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
               : this.strWithModelName_(inferenceValueStr, 0);
+          this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
+          if (this.numModels > 1) {
+            this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
+          }
         }
         this.updatedExample = false;
       },
@@ -3722,7 +3727,7 @@ limitations under the License.
           return self.exampleToDataPoint_(ex.example, i);
         });
         this.$.dive.atlasUrl = '';
-        this.$.dive.imageFieldName = exampleIdKey;
+        this.$.dive.imageFieldName = '';
         this.hasSprite = hasSprite;
         this.updateSprite();
         if (!this.shouldDisableInferButton_(
