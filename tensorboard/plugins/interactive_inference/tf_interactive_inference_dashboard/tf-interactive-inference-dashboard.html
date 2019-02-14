@@ -3376,17 +3376,12 @@ limitations under the License.
         // whatever options have been set.
         if (newInferencesCalculated) {
           this.$.dive.colorBy =
-<<<<<<< HEAD
             hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
               : this.strWithModelName_(inferenceValueStr, 0);
           this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
           if (this.numModels > 1) {
             this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
           }
-=======
-            hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
-              : this.strWithModelName_(inferenceValueStr, 0);
->>>>>>> master
         }
         this.updatedExample = false;
       },
