@@ -1,0 +1,904 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-imports/vaadin-split-layout.html">
+
+<!--
+The tf-hparams-query-pane element implements controls for querying the
+server for a list of session groups. It provides filtering, and
+sorting controls.
+
+TODO(erez): Add aggregation controls for repeated sessions.
+-->
+<dom-module id="tf-hparams-query-pane">
+  <template>
+    <div class="pane">
+      <vaadin-split-layout vertical>
+        <vaadin-split-layout vertical id="hyperparameters-metrics-statuses">
+          <vaadin-split-layout vertical id="hyperparameters-metrics">
+            <div class="section hyperparmeters">
+              <div class="section-title">Hyperparameters</div>
+              <template is="dom-repeat"
+                        items="[[_hparams]]"
+                        as="hparam">
+                <div class="hparam">
+                  <paper-checkbox
+                    checked="{{hparam.displayed}}"
+                    on-change="_computeSchema"
+                    class="hparam-checkbox">
+                    [[_hparamName(hparam.info)]]
+                  </paper-checkbox>
+                  <!-- Precisely one of the templates below will be stamped.-->
+                  <!-- 1. A list of checkboxes -->
+                  <template is="dom-if"
+                            if="[[hparam.filter.domainDiscrete]]">
+                    <template is="dom-repeat"
+                              items="[[hparam.filter.domainDiscrete]]">
+                      <paper-checkbox checked="{{item.checked}}"
+                                      class="discrete-value-checkbox"
+                                      on-change="_queryServer">
+                        [[_prettyPrint(item.value)]]
+                      </paper-checkbox>
+                    </template>
+                  </template>
+                  <!-- 2. A numeric interval -->
+                  <template is="dom-if"
+                            if="[[hparam.filter.interval]]">
+                    <paper-input
+                      label="Min"
+                      value="{{hparam.filter.interval.min.value}}"
+                      allowed_pattern="[0-9.e\-]"
+                      on-value-changed="_queryServer"
+                      error-message="Invalid input"
+                      invalid="[[hparam.filter.interval.min.invalid]]"
+                      placeholder="-infinity">
+                    </paper-input>
+                    <paper-input
+                      label="Max"
+                      value="{{hparam.filter.interval.max.value}}"
+                      allowed_pattern="[0-9.e\-]"
+                      on-value-changed="_queryServer"
+                      error-message="Invalid input"
+                      invalid="[[hparam.filter.interval.max.invalid]]"
+                      placeholder="+infinity">
+                    </paper-input>
+                  </template>
+                  <!-- 3. A regexp -->
+                  <template is="dom-if"
+                            if="[[hparam.filter.regexp]]">
+                    <paper-input label="Regular expression"
+                                 value={{hparam.filter.regexp}}
+                                 on-value-changed="_queryServer">
+                    </paper-input>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div class="section metrics">
+              <div class="section-title">Metrics</div>
+              <template is="dom-repeat"
+                        items="{{_metrics}}"
+                        as="metric">
+                <div class="metric">
+                  <!-- TODO(erez): Make it easier to handle a large number of
+                       metrics:
+                       1. Add an 'isolator' radio-button to select just one
+                       metric and
+                       hide all the rest
+                       2. Add a 'toggle-all' button that will hide/unhide
+                          all the
+                       metrics.
+                       Use similar logic/appearance to the run-selector of
+                       scalars.-->
+                  <paper-checkbox
+                    checked="{{metric.displayed}}"
+                    on-change="_computeSchema"
+                    class="metric-checkbox">
+                    [[_metricName(metric.info)]]
+                  </paper-checkbox>
+                  <div class="inline-element">
+                    <paper-input
+                      label="Min"
+                      value="{{metric.filter.interval.min.value}}"
+                      allowed-pattern="[0-9.e\-]"
+                      on-value-changed="_queryServer"
+                      error-message="Invalid input"
+                      invalid="{{metric.filter.interval.min.invalid}}"
+                      placeholder="-infinity">
+                    </paper-input>
+                  </div>
+                  <div class="inline-element">
+                    <paper-input
+                      label="Max"
+                      allowed-pattern="[0-9.e\-]"
+                      value="{{metric.filter.interval.max.value}}"
+                      on-value-changed="_queryServer"
+                      error-message="Invalid input"
+                      invalid="{{metric.filter.interval.max.invalid}}"
+                      placeholder="+infinity">
+                    </paper-input>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </vaadin-split-layout>
+          <div class="section status">
+            <div class="section-title">Status</div>
+            <template is="dom-repeat"
+                      items="[[_statuses]]"
+                      as="status">
+              <paper-checkbox checked="{{status.allowed}}"
+                              on-change="_queryServer">
+                [[status.displayName]]
+              </paper-checkbox>
+            </template>
+          </div>
+        </vaadin-split-layout>
+        <vaadin-split-layout vertical id="sorting-paging">
+          <div class="section sorting">
+            <div class="section-title">Sorting</div>
+            <paper-dropdown-menu label="Sort by"
+                                 on-selected-item-changed="_queryServer"
+                                 horizontal-align="left">
+              <paper-menu class="dropdown-content"
+                          slot="dropdown-content"
+                          selected="{{_sortByIndex}}"
+                          on-selected-item-changed="_queryServer">
+                <template is="dom-repeat"
+                          items="[[_hparams]]"
+                          as="hparam">
+                  <paper-item>
+                    [[_hparamName(hparam.info)]]
+                  </paper-item>
+                </template>
+                <template is="dom-repeat"
+                          items="[[_metrics]]"
+                          as="metric">
+                  <paper-item>
+                    [[_metricName(metric.info)]]
+                  </paper-item>
+                </template>
+              </paper-menu>
+            </paper-dropdown-menu>
+            <paper-dropdown-menu label="Direction"
+                                 on-selected-item-changed="_queryServer"
+                                 horizontal-align="left">
+              <paper-menu class="dropdown-content"
+                          slot="dropdown-content"
+                          selected="{{_sortDirection}}">
+                <paper-item>Ascending</paper-item>
+                <paper-item>Descending</paper-item>
+              </paper-menu>
+            </paper-dropdown-menu>
+          </div>
+          <div class="section paging">
+            <div class="section-title">Paging</div>
+            <div>
+              Number of matching session groups:
+              [[_totalSessionGroupsCountStr]]
+            </div>
+            <div class="inline-element page-number-input">
+              <paper-input label="Page #"
+                           value="{{_pageNumberInput.value}}"
+                           allowed-pattern="[0-9]"
+                           error-message="Invalid input"
+                           invalid="[[_pageNumberInput.invalid]]"
+                           on-value-changed="_queryServer">
+                <div slot="suffix"> / [[_pageCountStr]]</div>
+              </paper-input>
+            </div>
+            <div class="inline-element page-size-input">
+              <paper-input label="Max # of session groups per page:"
+                           value="{{_pageSizeInput.value}}"
+                           allowed-pattern="[0-9]"
+                           error-message="Invalid input"
+                           invalid="[[_pageSizeInput.invalid]]"
+                           on-value-changed="_queryServer">
+              </paper-input>
+            </div>
+          </div>
+        </div>
+      </vaadin-split-layout>
+    </vaadin-split-layout>
+    <style>
+      .pane {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .section {
+        margin: 5px 10px 5px 10px;
+        overflow-y: auto;
+      }
+      .section-title {
+        display: block;
+        font-weight: bold;
+        text-decoration: underline;
+        margin-bottom: 7px;
+      }
+      #hyperparameters-metrics-statuses {
+        flex-basis: 70%;
+        flex-shrink: 1;
+        flex-grow: 1;
+      }
+      #hyperparameters-metrics {
+        flex-basis: 90%;
+        flex-shrink: 1;
+        flex-grow: 1;
+      }
+      .hyperparameters {
+        flex-basis: auto;
+        flex-shrink: 1;
+        flex-grow: 1;
+      }
+      .metrics {
+        flex-basis: auto;
+        flex-shrink: 1;
+        flex-grow: 1;
+      }
+      .statuses {
+        flex-basis: auto;
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+      #sorting-paging {
+        flex-basis: 30%;
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+      .sorting {
+        flex-basis: auto;
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+      .paging {
+        flex-basis: auto;
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+      .discrete-value-checkbox, .metric-checkbox, .hparam-checkbox {
+        display: block;
+      }
+      .discrete-value-checkbox {
+        margin-left: 20px;
+      }
+      .hparam, .metric {
+        display: block;
+      }
+      .inline-element {
+        display: inline-block;
+        width: 40%;
+        margin-left: 10px;
+      }
+      .page-number-input {
+        width: 20%;
+      }
+      .page-size-input {
+        width: 60%;
+      }
+      vaadin-split-layout {
+        height: 100%;
+      }
+      paper-menu {
+        max-height: 15em;
+      }
+    </style>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-query-pane',
+      properties: {
+        /* Public properties */
+        // The base URL for the hparams API.
+        apiUrl: String,
+
+        // The name of the experiment to use. Will be passed as is to
+        // the /experiment HTTP endpoint.
+        experimentName: String,
+
+        // Defines the type and id of each metric and hparam in the
+        // session groups.
+        // Contains two fields: "hparamInfos", and "metricInfos" containing
+        // arrays of HParamInfos and MetricInfos protocol buffers, respectively,
+        // as JavaScript objects. See the file api.proto for the
+        // definition of these protocol buffers.
+        schema: {
+          type: Object,
+          value: () => {
+            return {"hparamInfos": [], "metricInfos": []};
+          },
+          readOnly: true,
+          notify: true
+        },
+
+        // The latest list of session groups received from the server.
+        // Note that we limit this list to only the first K session groups
+        // to avoid consuming a large amount of memory in the browser.
+        // See the comments in the _buildListSessionGroupsRequest() methods for
+        // more details.
+        sessionGroups: {
+          type:Array,
+          value: () => [],
+          readOnly: true,
+          notify: true
+        },
+
+        // ---- Private properties --------------------------------------------
+        // The experiment object returned by the backend. See the definition of
+        // the Experiment protocol buffer in api.proto.
+        _experiment: Object,
+
+        // An array of objects--each storing information about the user settings
+        // for a single hparam. Each object has the following fields:
+        // info: The HParamInfo object returned by the backend in the
+        //   experiment object. Not strictly a user-setting, but we need it
+        //   for displaying the name in the element.
+        // displayed: Whether the hparam is displayed or not (the value of
+        //   the checkbox next to the hparam).
+        // filter: The current filter settings of the hparam. Only session
+        //   groups whose hparam values pass this filter will be displayed in
+        //   the session groups table. The object stored in this field depends
+        //   on the type of filter used as follows:
+        //
+        //   1. For a discrete filter, the object will have the form:
+        //   domainDiscrete: [
+        //     {value:v1, checked: bool_1},
+        //     {value:v2, checked: bool_2}, ...
+        //   ], namely an array with entries corresponding to the discrete
+        //   domain of the hparam. The 'value' field for each entry stores the
+        //   discrete value corresponding to the entry, and 'checked' is a
+        //   boolean denoting whether the value is allowed (true) or not
+        //   (false)
+        //
+        //   2. For an interval, the object will have the form:
+        //   interval: {min: {value: string invalid: boolean},
+        //              max: {value: string invalid: boolean} },
+        //   where each 'value' field denote the corresponding input-box's
+        //   current value and 'invalid' is the input-box' invalid property.
+        //
+        //   3. Finally for a regexp filter, the object will have a single
+        //   'regexp' string field containing the filtering regexp.
+        _hparams: Array,
+
+        // An array of objects--each storing information about the user
+        // setting for a single metric. Each object has the following fields:
+        // info: The MetricInfo object returned by the backend in the
+        //   experiment object. Not strictly a user-setting, but we need it
+        //   for displaying the name in the element.
+        // filter: The current filter "settings" of the metric. Only session
+        //   groups whose metric values pass this filter will be displayed in
+        //   the session groups table. The object stored in this field has the
+        //   form:
+        //   interval: {min: {value: string invalid: boolean},
+        //              max: {value: string invalid: boolean} },
+        //   where each 'value' field denote the corresponding input-box's
+        //   current value and 'invalid' is the input-box' invalid property.
+
+        // displayed: Whether the metric is displayed or not (can be toggled
+        //   by the user by a checkbox next to the metric.)
+        _metrics: Array,
+
+        // An array of objects each representing information about a session
+        // status and whether it is currently allowed by the user.
+        _statuses: {
+          type: Array,
+          value: () => {
+            return [
+              {value: "STATUS_UNKNOWN", displayName: "Unknown", allowed: true},
+              {value: "STATUS_SUCCESS", displayName: "Success", allowed: true},
+              {value: "STATUS_FAILURE", displayName: "Failure", allowed: true},
+              {value: "STATUS_RUNNING", displayName: "Running", allowed: true}
+            ];
+          }
+        },
+
+        // A promise that resolves when the latest session groups response
+        // from the server has been copied to the sessionGroups property.
+        // Used in testing.
+        _lastListSessionGroupsResponseProcessed: Object,
+
+        // A tf_backend.canceller used to keep track of pending
+        // ListSessionGroups requests and cancel their resulting UI updates
+        // when a new ListSessionGroups request is made.
+        _listSessionGroupsCanceller: {
+          type: Object,
+          value: () => {
+            return new tf_backend.Canceller();
+          }
+        },
+
+        // The index of the "column" by which to sort. HParams column indices
+        // are the hparams indices in the _hparams array. Metrics column indices
+        // are their index in the _metrics array offset by this._hparams.length.
+        // See also the method _metricSortByIndex() below.
+        _sortByIndex: Number,
+
+        // The sort direction (ascending/descending).
+        // 0 means ascending, 1 means descending.
+        _sortDirection: Number,
+
+        // The value and invalid properties of the 'page-size' input box.
+        _pageSizeInput: {
+          type: Object,
+          value: {value: "100", invalid: false}
+        },
+
+        // The value and invalid properties of the 'page-number' input box.
+        _pageNumberInput: {
+          type: Object,
+          value: {value: "1", invalid: false}
+        },
+
+        // The string displaying the total number of pages or '?' if unknown.
+        _pageCountStr: {
+          type: String,
+          value: "?"
+        },
+
+        // The string displaying the total number of session groups matched
+        // by the query, or 'unknown' if the server didn't send that
+        // information.
+        _totalSessionGroupsCountStr: String,
+      }  /* properties */,
+
+      observers: [
+        '_computeExperimentAndRelatedProps(apiUrl, experimentName)'
+      ],
+
+      reload() {
+      },
+
+      // Sends a request for experiment to the server, and updates
+      // the state of this element accordingly. Currently, only called
+      // once on element initialization.
+      _computeExperimentAndRelatedProps() {
+        const utils = tf.hparams.utils;
+        if (utils.isNullOrUndefined(this.apiUrl)
+            || utils.isNullOrUndefined(this.experimentName)) {
+          return;
+        }
+        const url = this.apiUrl + '/experiment'
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true /* async */);
+        // The following is needed in case this component is used with a
+        // backend server that redirects API calls to a different server
+        // -- which will make this a cross-site call.
+        xhr.withCredentials = true;
+        xhr.onreadystatechange = ()=>{
+          if (xhr.readyState !== 4) {
+            return;
+          }
+          if (xhr.status !== 200) {
+            if (xhr.status == 0) {
+              console.log("Experiment request seemed to have been cancelled.");
+              // Don't display a message box here, since this may happen if the
+              // user navigated from the page before the request completed.
+              return;
+            }
+            // TODO(erez): Use a better styled message box for errors.
+            window.alert("Server responded with error status " + xhr.status
+                         + " for url: " + url);
+            return;
+          }
+          let experiment = {};
+          if (xhr.responseType === "" || xhr.responseType === "text") {
+            if (typeof(xhr.response) !== 'string') {
+              console.error('typeof(xhr.response) is: ' + typeof(xhr.response)
+                            + ' yet xhr.responseType is: ' + xhr.responseType);
+              return;
+            }
+            // WE use the following annotation to suppress warning from closure.
+            /**
+             * @type {string}
+             */
+            const response = xhr.response;
+            experiment = JSON.parse(response);
+          } else if (xhr.responseType === "json") {
+            experiment = xhr.response;
+          } else {
+            window.alert("Expected a JSON or TEXT response from: " +
+                         url +" got: " + xhr.responseType);
+            return;
+          }
+          if (_.isEqual(experiment, this._experiment)) {
+            // No need to update anything if there are no changes.
+            return;
+          }
+          this.set("_experiment", experiment);
+          this._computeHParams();
+          this._computeMetrics();
+          this._computeSchema();
+          this._queryServer();
+        };
+        xhr.setRequestHeader('Content-Type', 'text/plain');
+        const experimentRequest = JSON.stringify(
+            {experimentName: this.experimentName});
+        xhr.send(experimentRequest);
+      },
+
+      // Updates the _hparams property from the _experiment property.
+      _computeHParams() {
+        const result = [];
+        const kNumHParamsToDisplayByDefault = 5;
+        this._experiment.hparamInfos.forEach((anInfo, index) => {
+          const hparam = {
+            info: anInfo,
+            displayed: (index < kNumHParamsToDisplayByDefault),
+            filter: {}
+          };
+          if (hparam.info.hasOwnProperty('domainDiscrete')) {
+            hparam.filter.domainDiscrete = []
+            hparam.info.domainDiscrete.forEach(val => {
+              hparam.filter.domainDiscrete.push({
+                value: val,
+                checked: true,
+              });
+            });
+          } else if (hparam.info.type === "DATA_TYPE_BOOL") {
+            hparam.filter.domainDiscrete = [
+              {
+                value: false,
+                checked: true,
+              },
+              {
+                value: true,
+                checked: true,
+              }
+            ];
+          } else if (hparam.info.type === "DATA_TYPE_FLOAT64") {
+            hparam.filter.interval = {
+              min: {value: "",  // Empty string means -infinity.
+                    invalid: false},
+              max: {value: "",  // Empty string means +infinity.
+                    invalid: false},
+            }
+          } else if (hparam.info.type === "DATA_TYPE_STRING") {
+            hparam.filter.regexp = ""
+          } else {
+            console.warn("unknown hparam.info.type: %s", hparam.info.type)
+          }
+          result.push(hparam);
+        });
+        this.set("_hparams", result);
+      },
+
+      // Updates the _metrics property from the _experiment property.
+      _computeMetrics() {
+        const result = [];
+        // By default we display the first kNumMetricsToDisplayByDefault metrics
+        // and not the rest.
+        const kNumMetricsToDisplayByDefault = 5;
+        this._experiment.metricInfos.forEach((info, index) => {
+          const metric = {
+            info: info,
+            filter: {
+              interval: {
+                min: {value: "",  // Empty string means -infinity
+                      invalid: false},
+                max: {value: "",  // Empty string means +infinity
+                      invalid: false},
+              },
+            },
+            displayed: (index < kNumMetricsToDisplayByDefault)
+          };
+          result.push(metric);
+        });
+        this.set("_metrics", result);
+      },
+
+      // Computes the _schema property from the _experiment and _metrics
+      // properties.
+      _computeSchema() {
+        // We have to use Polymer's 'path'-based array mutations so that
+        // other elements (like a dom-repeat template) that depend on
+        // schema.metricInfos and schema.hparamInfos would be notified of the
+        // change and update correctly.
+        const newHParamInfos =
+              this._hparams
+                .filter(hparam => hparam.displayed)
+                .map(hparam => hparam.info);
+        const newMetricInfos =
+            this._metrics
+              .filter(metric => metric.displayed)
+              .map(metric => metric.info);
+        this.splice.apply(
+            this,
+            ["schema.hparamInfos", 0, this.schema.hparamInfos.length].concat(
+                newHParamInfos));
+        this.splice.apply(
+            this,
+            ["schema.metricInfos", 0, this.schema.metricInfos.length].concat(
+                newMetricInfos));
+      },
+
+      // Sends a query to the server for the list of session groups.
+      // Asynchronously updates the sessionGroups property with the response.
+      _queryServer() {
+        this.debounce("queryServer", () => {
+          this._lastListSessionGroupsResponseProcessed =
+              this._sendListSessionGroupsRequest().then(
+                  this._listSessionGroupsCanceller.cancellable(
+                      ({value, cancelled}) => {
+                        if (cancelled) {
+                          return;
+                        }
+                        // The server may not support a "totalSize" field in
+                        // which case this field would be negative, and we
+                        // populate the page count with a "?".
+                        if (value.totalSize >= 0) {
+                          const pageSize = +this._pageSizeInput.value;
+                          this.set(
+                              "_pageCountStr",
+                              String(Math.ceil(value.totalSize / pageSize)));
+                          this.set(
+                              "_totalSessionGroupsCountStr", value.totalSize);
+                        } else {
+                          this.set("_pageCountStr", "?");
+                          this.set(
+                              "_totalSessionGroupsCountStr", "Unknown");
+                        }
+                        tf.hparams.utils.setArrayObservably(
+                            this, "sessionGroups", value.sessionGroups);
+                      }));
+        }, 100);
+      },
+
+      _sendListSessionGroupsRequest() {
+        return new Promise((resolve, reject) => {
+          const request = this._buildListSessionGroupsRequest();
+          if (request === null) {
+            // If query configuration is not valid don't send a request.
+            return;
+          }
+          const url = this.apiUrl + '/session_groups';
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", url, true /* async */);
+          // The following is needed in case this component is used with a
+          // backend server that redirects API calls to a different server
+          // -- which will make this a cross-site call.
+          xhr.withCredentials = true;
+          xhr.onreadystatechange = () => {
+            if (xhr.readyState !== 4) {
+              return;
+            }
+            if (xhr.status !== 200) {
+              if (xhr.status == 0) {
+                console.log("SessionGroups request seemed to have been" +
+                            " cancelled.");
+                // Don't display a message box here, since this may happen
+                // if the user navigated from the page before the request
+                // completed.
+                reject("request cancelled")
+              }
+              const errorMessage = "Server responded with error status " +
+                    xhr.status + " for url: " + url;
+              // TODO(erez): Use a better styled message box for errors.
+              window.alert(errorMessage);
+              reject(errorMessage);
+              return;
+            }
+            let response = {};
+            if (xhr.responseType === "" || xhr.responseType === "text") {
+              if (typeof(xhr.response) !== 'string') {
+                const errorMessage =
+                      'typeof(xhr.response) is: ' + typeof(xhr.response)
+                      + ' yet xhr.responseType is: ' + xhr.responseType;
+                console.error(errorMessage);
+                reject(errorMessage);
+                return;
+              }
+              // WE use the following annotation to suppress warning from
+              // closure.
+              /**
+               * @type {string}
+               */
+              const strResponse = xhr.response;
+              response = JSON.parse(strResponse);
+            } else if (xhr.responseType === "json") {
+              response = xhr.response;
+            } else {
+              const errorMessage =
+                    "Expected a JSON or TEXT response from: " + url + " got: " +
+                    xhr.responseType;
+              window.alert(errorMessage);
+              reject(errorMessage);
+              return;
+            }
+            resolve(response);
+          };
+          xhr.setRequestHeader('Content-Type', 'text/plain');
+          // Note that the responses to the RPCs sent
+          // to the backend may return in a different order than the order in
+          // which they were sent. If we just update sessionGroups in the
+          // order of responses received, we can end up
+          // with a sessionGroups object that doesn't match the filtering and
+          // sorting configuration. For example, if the last response received
+          // was for a query belonging to the penultimate filtering and
+          // sorting configuration. To solve this, we use tf_backend.canceller
+          // to cancel all the pending promises from previous queries for which
+          // we haven't received a response yet.
+          this._listSessionGroupsCanceller.cancelAll();
+          xhr.send(JSON.stringify(request));
+        });
+      },
+
+      // Reads the values of the properties bound to the query elements
+      // and builds the corresponding ListSessionGroupsRequest.
+      // If the user settings are invalid (e.g. an input-box doesn't containt
+      // a parsable number), marks the corresponding elements (if they exist,
+      // see next paragraph) as invalid so that they will display an
+      // error message and returns null.
+      //
+      // Note, that this method can be called before the elements have
+      // been rendered (when the tf-hparams-query is first created), in which
+      // case it will not try to mark the elements as invalid.
+      _buildListSessionGroupsRequest() {
+        const _this = this;
+        // Will be set to false if we encounter any invalid inputs.
+        let queryValid = true;
+
+        // Parses an inputInterval object of the form:
+        // {min: {value: string, invalid: boolean},
+        //  max: {value: string  invalid: boolean}}. Returns an object
+        // of the form: {minValue: number, maxValue: number} suitable to
+        // be included as an interval in ListSessionGroupsRequest. If the
+        // min or max values cannot be parsed, returns null. In both cases
+        // sets the 'invalid' fields to denote whether the inputs is invalid.
+        //
+        // The inputIntervalPath should be a Polymer path for the inputInterval
+        // object. We work with paths, rather than the object, so that we
+        // can make observable changes.
+        function parseInputInterval(inputIntervalPath) {
+          const minValueStr = _this.get(inputIntervalPath + ".min.value");
+          console.assert(minValueStr !== undefined);
+          // The protobuffer JSON mapping maps the strings "-Infinity" and "Infinity"
+          // to the floating-point infinity and -infinity values.
+          const minValue =
+                minValueStr === "" ? "-Infinity" : +minValueStr;
+          _this.set(inputIntervalPath + ".min.invalid",
+                    isNaN(minValue));
+          queryValid = queryValid && !isNaN(minValue);
+          const maxValueStr = _this.get(inputIntervalPath + ".max.value");
+          console.assert(maxValueStr !== undefined);
+          const maxValue =
+                maxValueStr === "" ? "Infinity" : +maxValueStr;
+          _this.set(inputIntervalPath + ".max.invalid",
+                    isNaN(maxValue));
+          queryValid = queryValid && !isNaN(maxValue);
+          if (isNaN(minValue) || isNaN(maxValue)) {
+            return null;
+          }
+          return {minValue: minValue, maxValue: maxValue};
+        };
+        // Parses the value of an input object of the form:
+        // {value: string, invalid: boolean} as a positive integer and returns
+        // the integer or null if the parsing fails.
+        // If parsing fails, also sets the 'invalid' property of the input
+        // object to false.
+        //
+        // The inputPath should be a Polymer path to input object. We work
+        // with paths, rather than the object, so that we can make observable
+        // changes.
+        function parseInputAsPositiveInt(inputPath) {
+          const inputValueStr = _this.get(inputPath + ".value");
+          console.assert(inputValueStr !== undefined);
+          const result = +inputValueStr;
+          const validResult = Number.isInteger(result) && (result > 0);
+          _this.set(inputPath + ".invalid", !validResult);
+          queryValid = queryValid && validResult;
+          if (validResult) {
+            return result;
+          }
+          return null;
+        }
+
+        // Build the allowed status filters.
+        const allowedStatuses =
+              this._statuses.filter(s=>s.allowed).map(s=>s.value);
+
+        let colParams = [];
+        // Build the hparams filters in the request.
+        this._hparams.forEach((hparam, index) => {
+          let colParam = {hparam: hparam.info.name}
+          if (hparam.filter.domainDiscrete) {
+            colParam.filterDiscrete = [];
+            hparam.filter.domainDiscrete.forEach(filterVal => {
+              if (filterVal.checked) {
+                colParam.filterDiscrete.push(filterVal.value)
+              }
+            });
+          } else if (hparam.filter.interval) {
+            colParam.filterInterval = parseInputInterval(
+                "_hparams." + index + ".filter.interval");
+          } else if (hparam.filter.regexp) {
+            colParam.filterRegexp = hparam.filter.regexp
+          } else {
+            console.error(
+                "hparam.filter with no domainDiscrete, interval or regexp" +
+                  " properties set: %s", hparam)
+            return null;
+          }
+          colParams.push(colParam);
+        });
+
+        // Build the metric filters in the request.
+        this._metrics.forEach((metric, index) => {
+          let colParam = {
+            metric: metric.info.name,
+            filterInterval: parseInputInterval(
+                "_metrics." + index + ".filter.interval"),
+          };
+          colParams.push(colParam);
+        });
+
+        // Sorting.
+        // TODO(erez): Support sorting by multiple columns.
+        if (this._sortByIndex !== undefined &&
+            this._sortDirection !== undefined) {
+          if (!(this._sortByIndex in colParams)) {
+            console.error(
+              "No column in colParams with index sortByIndex: %s",
+              this._sortByIndex);
+            return null;
+          }
+          colParams[this._sortByIndex].order = (this._sortDirection === 0
+                                                ? "ORDER_ASC"
+                                                : "ORDER_DESC");
+        }
+
+        // Paging.
+        const pageNum = parseInputAsPositiveInt("_pageNumberInput");
+        const pageSize = parseInputAsPositiveInt("_pageSizeInput");
+        if (!queryValid) {
+          return null;
+        }
+        const startIndex = pageSize * (pageNum - 1);
+        return {
+          experimentName: this.experimentName,
+          allowedStatuses: allowedStatuses,
+          colParams: colParams,
+          startIndex: startIndex,
+          sliceSize: pageSize,
+        };
+      },
+
+      // We allow sorting by any column of a session group. A column is either a
+      // metric or a hyperparameter.
+      // For the purpose of sorting, we identify each such column by its index
+      // in the list formed by concatenating the metric in _metrics after the
+      // hparams in _hparams. This method computes this sorting index of the
+      // metric column represented by _metrics[metricIndex].
+      _metricSortByIndex(metricIndex) {
+        return metricIndex + this._hparams.length;
+      },
+
+      _hparamName: tf.hparams.utils.hparamName,
+      _metricName: tf.hparams.utils.metricName,
+      _prettyPrint: tf.hparams.utils.prettyPrint,
+    });
+  </script>
+</dom-module>
