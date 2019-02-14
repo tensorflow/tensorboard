@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../iron-icons/communication-icons.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-icons/editor-icons.html">
+<link rel="import" href="../iron-icons/hardware-icons.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -215,9 +216,7 @@ limitations under the License.
       }
 
       .slider {
-        margin-top: -18px;
-        margin-left: -12px;
-        width: 340px;
+        width: 280px;
         --paper-slider-input: {
           width: 80px;
         }
@@ -290,7 +289,9 @@ limitations under the License.
 
       .config-main-content {
         width: 70%;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        background: #EFEFEF;
       }
 
       .stats-tab {
@@ -335,6 +336,7 @@ limitations under the License.
 
       .conf-matrix {
         margin-left: 20px;
+        margin-top: 20px;
       }
 
       .datapoint-controls-holder.datapoint-control-buttons-holder {
@@ -880,6 +882,95 @@ limitations under the License.
         display: flex;
         flex-direction: column;
       }
+
+      .perf-table-clickable {
+        cursor: pointer;
+      }
+
+      .perf-table-header {
+        background: white;
+        width: 100%;
+        font-weight: 500;
+        color: grey;
+        display: flex;
+        border-bottom: 1px solid lightgrey;
+        min-height: 30px;
+        height: 30px;
+      }
+
+      .perf-table-entries-holder {
+        overflow-y: overlay;
+        flex-grow: 1;
+      }
+
+      .perf-table-entry {
+        background: white;
+      }
+
+      .perf-table-entry-expanded {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 10px;
+        border-left: 1px solid lightgrey;
+        border-bottom: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
+        background: white;
+      }
+
+      .perf-table-row {
+        width: 100%;
+        display: flex;
+        background: white;
+      }
+      
+      .perf-table-row-expanded {
+        width: 100%;
+        display: flex;
+        border-bottom: 1px solid lightgrey;
+        border-top: 1px solid lightgrey;
+        border-radius: 5px;
+        box-shadow: 0 1px 4px #888888;
+        background: white;
+      }
+
+      .perf-table-text-entry {
+        height: 40px;
+        padding-top: 16px;
+      }
+      .perf-table-arrow {
+        min-width: 40px;
+        width: 40px;
+        margin-top: 8px;
+      }
+      .perf-table-val {
+        flex-grow: 1;
+      }
+      .perf-table-count {
+        min-width: 90px;
+        width: 90px;
+      }
+      .perf-table-model {
+        min-width: 100px;
+        width: 100px;
+      }
+      .perf-table-model-single {
+        display: none;
+      }
+      .perf-table-threshold {
+        width: 280px;
+      }
+      .perf-table-fp {
+        min-width: 140px;
+        width: 140px;
+      }
+      .perf-table-fn {
+        min-width: 140px;
+        width: 140px;
+      }
+      .perf-table-acc {
+        min-width: 140px;
+        width: 140px;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
@@ -1311,137 +1402,235 @@ limitations under the License.
                 </div>
                 <div class="config-main-content">
                   <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
-                    <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
-                      <div class="feature-breakdown">
-                        <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
-                        <div class="flex-wrap">
-                          <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                            <div>
-                              <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[getPrintableModelNumber_(index)]]</div>
-                              <div class="flex">
-                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                  value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
-                                </paper-slider>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
-                                    above this
-                                    threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
-                                  </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                    false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
+                    <div class="perf-table-header">
+                      <div class="perf-table-arrow">
+                          <iron-icon class="expand-collapse-button"></iron-icon>
+                      </div>
+                      <div class="perf-table-val">Feature Value</div>
+                      <div class="perf-table-count">Count</div>
+                      <div class$="[[getPerfTableModelClass(numModels)]]">Model</div>
+                      <div class="perf-table-threshold">Threshold
+                        <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                        </paper-icon-button>
+                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                          <div class="dialog-title">Exploring Classification Performance</div>
+                          <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
+                            above this
+                            threshold
+                            are considered a positive classification, while inference values below this threshold are considered
+                            a negative classification.
+                          </div>
+                          <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                            are updated as the classification threshold changes.
+                          </div>
+                          <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                            false
+                            positive rate (FPR) at various classification thresholds. Find out more
+                            <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                              here
+                            </a>.
+                          </div>
+                        </paper-dialog>
+                      </div>
+                      <div class="perf-table-fp">False Positives</div>
+                      <div class="perf-table-fn">False Negatives</div>
+                      <div class="perf-table-acc">Accuracy</div>
+                    </div>
+                    <div class="perf-table-entries-holder">
+                      <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
+                        <div class="perf-table-entry">
+                            <div class$="[[getPerfTableRowClass(featureValueThreshold.opened)]]" data-index$="[[index]]">
+                              <div class="perf-table-arrow">
+                                <paper-icon-button icon="[[getExpandCollapsePerfIcon(featureValueThreshold.opened)]]" class="expand-collapse-button" on-tap="togglePerfRow"></paper-icon-button>
                               </div>
+                              <div class="perf-table-val perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getPrintableValue_(featureValueThreshold)]]</div>
+                              <div class="perf-table-count perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getFeatureValueCount(inferenceStats_, featureValueThreshold.threshold, featureValueThreshold)]]</div>
+                              <div class$="[[getPerfTableModelClass(numModels)]]" on-tap="togglePerfRow">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                  <div class="perf-table-text-entry perf-table-clickable">[[getPrintableModelNumber_(index)]]</div>
+                                </template>
+                              </div>
+                              <div class="perf-table-threshold">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    </paper-slider>
+                                </template>
+                              </div>
+                              <div class="perf-table-fp perf-table-clickable" on-tap="togglePerfRow">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                  <div class="perf-table-text-entry">[[getFPModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                </template>
+                              </div>
+                              <div class="perf-table-fn perf-table-clickable" on-tap="togglePerfRow">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                  <div class="perf-table-text-entry">[[getFNModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                </template>
+                              </div>
+                              <div class="perf-table-acc perf-table-clickable" on-tap="togglePerfRow">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                  <div class="perf-table-text-entry">[[getAccuracyModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                </template>
+                              </div>
+                            </div>
+                        </div>
+                        <iron-collapse opened="{{featureValueThreshold.opened}}">
+                          <div class="perf-table-entry-expanded">
+                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                              <div class="roc-holder">
+                                <div class="roc-x-label">FPR</div>
+                                <div class="roc-y-label">TPR</div>
+                                <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                </vz-line-chart>
+                              </div>
+                            </template>
+                            <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                               <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                <div>
-                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
-                                    class="conf-matrix">
-                                  </tf-confusion-matrix>
-                                </div>
+                                <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                  label="[[getConfusionMatrixLabel(index)]]"
+                                  class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
+                            </template>
+                          </div>
+                        </iron-collapse>
+                      </template>
+                      <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
+                        <div class="perf-table-entry">
+                          <div class="perf-table-row-expanded">
+                            <div class="perf-table-arrow">
+                            </div>
+                            <div class="perf-table-val perf-table-text-entry">All datapoints</div>
+                            <div class="perf-table-count perf-table-text-entry">[[getFeatureValueCount(inferenceStats_, overallThresholds)]]</div>
+                            <div class$="[[getPerfTableModelClass(numModels)]]">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-text-entry">[[getPrintableModelNumber_(index)]]</div>
                               </template>
                             </div>
-                          </template>
-                          <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                            <div class="roc-holder">
+                            <div class="perf-table-threshold">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                  <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                  </paper-slider>
+                              </template>
+                            </div>
+                            <div class="perf-table-fp">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-text-entry">[[getFPModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                              </template>
+                            </div>
+                            <div class="perf-table-fn">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-text-entry">[[getFNModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                              </template>
+                            </div>
+                            <div class="perf-table-acc">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-text-entry">[[getAccuracyModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                              </template>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="perf-table-entry-expanded">
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">                            <div class="roc-holder">
                               <div class="roc-x-label">FPR</div>
                               <div class="roc-y-label">TPR</div>
-                              <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                              <vz-line-chart id="prchart" class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                               </vz-line-chart>
                             </div>
                           </template>
+                          <template is="dom-repeat" items="{{overallThresholds}}">
+                            <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                              <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                label="[[getConfusionMatrixLabel(index)]]"
+                                class="conf-matrix">
+                              </tf-confusion-matrix>
+                            </template>
+                          </template>
                         </div>
+                      </template>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
+                    <div class="perf-table-header">
+                      <div class="perf-table-arrow">
+                          <iron-icon class="expand-collapse-button"></iron-icon>
                       </div>
-                    </template>
-                    <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
-                      <div class="feature-breakdown">
-                        <div class="slider-label">Threshold for positive classification</div>
-                        <div class="flex-wrap">
-                          <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
-                            <div>
-                              <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
-                              <div class="flex">
-                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
-                                  value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
-                                </paper-slider>
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                  <div class="dialog-title">Exploring Classification Performance</div>
-                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this
-                                    threshold
-                                    are considered a positive classification, while inference values below this threshold are considered
-                                    a negative classification.
-                                  </div>
-                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                    are updated as the classification threshold changes.
-                                  </div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                    false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
-                                  </div>
-                                </paper-dialog>
-                              </div>
-                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                <div>
-                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
-                                    class="conf-matrix"></tf-confusion-matrix>
-                                  </tf-confusion-matrix>
+                      <div class="perf-table-val">Feature Value</div>
+                      <div class="perf-table-count">Count</div>
+                      <div class$="[[getPerfTableModelClass(numModels)]]">Model</div>
+                      <div class="perf-table-acc">Accuracy</div>
+                    </div>
+                    <div class="perf-table-entries-holder">
+                      <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
+                        <div class="perf-table-entry">
+                          <div class$="[[getPerfTableRowClass(featureValueThreshold.opened)]]" data-index$="[[index]]">
+                            <div class="perf-table-arrow">
+                              <paper-icon-button icon="[[getExpandCollapsePerfIcon(featureValueThreshold.opened)]]" class="expand-collapse-button" on-tap="togglePerfRow"></paper-icon-button>
+                            </div>
+                            <div class="perf-table-val perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getPrintableValue_(featureValueThreshold)]]</div>
+                            <div class="perf-table-count perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">
+                              [[getMultiClassFeatureValueCount(inferenceStats_, featureValueThreshold)]]</div>
+                            <div class$="[[getPerfTableModelClass(numModels)]]" on-tap="togglePerfRow">
+                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                <div class="perf-table-text-entry perf-table-clickable">[[getPrintableModelNumber_(index)]]</div>
+                              </template>
+                            </div>
+                            <div class="perf-table-acc perf-table-clickable" on-tap="togglePerfRow">
+                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                <div class="perf-table-text-entry">
+                                    [[getMultiClassAccuracyModelIndex(inferenceStats_, index, featureValueThreshold)]]
                                 </div>
                               </template>
                             </div>
-                          </template>
-                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                            <div class="roc-holder">
-                              <div class="roc-x-label">FPR</div>
-                              <div class="roc-y-label">TPR</div>
-                              <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                              </vz-line-chart>
-                            </div>
-                          </template>
+                          </div>
                         </div>
-                      </div>
-                    </template>
-                  </template>
-                  <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
-                    <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
-                        <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat)]]"
-                                              class="conf-matrix">
-                        </tf-confusion-matrix>
+                        <iron-collapse opened="{{featureValueThreshold.opened}}">
+                          <div class="perf-table-entry-expanded">
+                            <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
+                              <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
+                                                    class="conf-matrix">
+                              </tf-confusion-matrix>
+                            </template>
+                          </div>
+                        </iron-collapse>
                       </template>
-                    </template>
-                    <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                      <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
-                        <div class="feature-breakdown">
-                          <paper-input value="[[getPrintableValue_(featureValueThreshold)]]" readonly=true
-                                        class="facet-label" no-label-float=true>
-                          </paper-input>
-                          <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
-                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat, featureValueThreshold)]]"
-                                                  class="conf-matrix">
+                      <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
+                        <div class="perf-table-entry">
+                          <div class="perf-table-row-expanded">
+                            <div class="perf-table-arrow">
+                            </div>
+                            <div class="perf-table-val perf-table-text-entry">All datapoints</div>
+                            <div class="perf-table-count perf-table-text-entry">
+                                [[getMultiClassFeatureValueCount(inferenceStats_)]]
+                            </div>
+                            <div class$="[[getPerfTableModelClass(numModels)]]">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-text-entry">[[getPrintableModelNumber_(index)]]</div>
+                              </template>
+                            </div>
+                            <div class="perf-table-acc">
+                              <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
+                                <div class="perf-table-text-entry">
+                                    [[getMultiClassAccuracyModelIndex(inferenceStats_, index)]]
+                                </div>
+                              </template>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="perf-table-entry-expanded">
+                          <template is="dom-repeat" items="[[inferenceStats_]]">
+                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
+                                                 class="conf-matrix">
                             </tf-confusion-matrix>
                           </template>
                         </div>
                       </template>
-                    </template>
+                    </div>
                   </template>
                   <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
                     <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
@@ -2229,7 +2418,7 @@ limitations under the License.
       },
 
       strWithModelIndex_: function(inStr, modelNumber){
-        if (this.numModels > 1){
+        if (this.numModels > 1) {
           return inStr + ' ' + (modelNumber + 1);
         } else {
           return inStr
@@ -2311,7 +2500,7 @@ limitations under the License.
                       {threshold: this.overallThresholds[i].threshold});
                   }
                   const thresh = {value: feature1Value, value2: feature2Value,
-                                  threshold: modelThresholds};
+                                  threshold: modelThresholds, opened: false};
                   thresholds.push(thresh);
                   const mapKey = this.createCombinedValueString_(
                     feature1Value, feature2Value);
@@ -2920,7 +3109,7 @@ limitations under the License.
       /**
        * Gets confusion counts for a single model index modelInd
        */
-      getConfusionCountsModelIndex: function (inferenceStats, thresholds,
+      getConfusionCountsModelIndex: function(inferenceStats, thresholds,
           modelInd, item) {
         // During updates inferenceStats and overallThresholds may get out of
         // sync, this if protects against indexing them before final state
@@ -2931,6 +3120,65 @@ limitations under the License.
           return this.getConfusionCounts(this.inferenceStats_[modelInd],
             thresholds[modelInd].threshold, item);
         }
+      },
+
+      getTotalEntriesInConfCounts: function(counts) {
+        if (counts == null) {
+          return 0;
+        }
+        let total = 0;
+        const outerKeys = Object.keys(counts);
+        for (let i = 0; i < outerKeys.length; i++) {
+          const inner = counts[outerKeys[i]];
+          const innerKeys = Object.keys(inner);
+          for (let j = 0; j < innerKeys.length; j++) {
+            total += inner[innerKeys[j]];
+          }
+        }
+        return total;
+      },
+
+      getFPModelIndex: function (inferenceStats, thresholds, modelInd, item) {
+        const confCounts = this.getConfusionCountsModelIndex(
+          inferenceStats, thresholds, modelInd, item);
+        if (Object.keys(confCounts).length == 0) {
+          return null;
+        }
+        const val = confCounts['No']['Yes'];
+        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+      },
+
+      getFNModelIndex: function(inferenceStats, thresholds, modelInd, item) {
+        const confCounts = this.getConfusionCountsModelIndex(
+          inferenceStats, thresholds, modelInd, item);
+        if (Object.keys(confCounts).length == 0) {
+          return 0;
+        }
+        const val = confCounts['Yes']['No'];
+        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+      },
+
+      getAccuracyModelIndex: function(inferenceStats, thresholds, modelInd, item) {
+        const confCounts = this.getConfusionCountsModelIndex(
+          inferenceStats, thresholds, modelInd, item);
+        if (Object.keys(confCounts).length == 0) {
+          return 0;
+        }
+        const val = confCounts['Yes']['Yes'] + confCounts['No']['No'];
+        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+      },
+
+      getFeatureValueCount: function(inferenceStats, thresholds, item) {
+        const confCounts = this.getConfusionCountsModelIndex(
+          inferenceStats, thresholds, 0, item);
+        return this.getTotalEntriesInConfCounts(confCounts);
+      },
+
+      getConfusionMatrixLabel: function(index) {
+        if (this.numModels < 2) {
+          return '';
+        }
+        return 'Model ' + (index + 1);
       },
 
       /**
@@ -2982,13 +3230,41 @@ limitations under the License.
       /**
        * Gets multi-class confusion matrix from inference stats.
        */
-      getMultiClassConfMatrix: function(inferenceStats, facetItem) {
-        if (facetItem == null) {
-          return inferenceStats.results;
+      getMultiClassConfMatrix: function(inferenceStats, modelInd, facetItem) {
+        if (inferenceStats.length == 0) {
+          return {};
+        } else if (facetItem == null) {
+          return inferenceStats[modelInd].results;
         } else {
           const key = this.getPrintableValue_(facetItem);
-          return inferenceStats.faceted[key];
+          console.log(inferenceStats[modelInd]);
+          console.log(key);
+          return inferenceStats[modelInd].faceted[key];
         }
+      },
+
+      getMultiClassFeatureValueCount: function(inferenceStats, facetItem) {
+        const confCounts = this.getMultiClassConfMatrix(inferenceStats, 0, facetItem);
+        return this.getTotalEntriesInConfCounts(confCounts);
+      },
+
+      getMultiClassAccuracyModelIndex: function(inferenceStats, modelInd, facetItem) {
+        const confCounts = this.getMultiClassConfMatrix(inferenceStats, modelInd, facetItem);
+        if (confCounts == null) {
+          return null;
+        }
+        let matches = 0;
+        const outerKeys = Object.keys(confCounts);
+        for (let i = 0; i < outerKeys.length; i++) {
+          const inner = confCounts[outerKeys[i]];
+          const innerKeys = Object.keys(inner);
+          for (let j = 0; j < innerKeys.length; j++) {
+            if (outerKeys[i] == innerKeys[j]) {
+              matches += inner[innerKeys[j]];
+            }
+          }
+        }
+        return d3.format(",.1%")(matches / this.getTotalEntriesInConfCounts(confCounts));
       },
 
       /**
@@ -4379,6 +4655,32 @@ limitations under the License.
 
       getExpandCollapseIcon: function(opened) {
         return opened ? 'expand-less' : 'expand-more';
+      },
+
+      getExpandCollapsePerfIcon: function(opened) {
+        return opened ? 'hardware:keyboard-arrow-down' : 'hardware:keyboard-arrow-right';
+      },
+
+      getPerfTableRowClass: function(opened) {
+        return opened ? 'perf-table-row-expanded' : 'perf-table-row';
+      },
+
+      getPerfTableModelClass: function(numModels) {
+        return numModels < 2 ? 'perf-table-model-single' : 'perf-table-model';
+      },
+
+      togglePerfRow: function(event) {
+        console.log(event);
+        let el = event.target;
+        while (el != null && !el.dataset.index) {
+          el = el.parentNode;
+        }
+        if (el == null) {
+          return;
+        }
+        const index = el.dataset.index;
+        this.set('featureValueThresholds.' + index + '.opened',
+                 !this.featureValueThresholds[index].opened);
       },
 
       getPerformanceTabTitle: function(modelType, multiClass) {
