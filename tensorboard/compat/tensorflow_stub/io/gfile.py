@@ -82,6 +82,10 @@ class LocalFileSystem(object):
         """Determines whether a path exists or not."""
         return os.path.exists(compat.as_bytes(filename))
 
+    def join(self, path, *paths):
+        """Join paths with path delimiter."""
+        return os.path.join(path, *paths)
+
     def read(self, filename, binary_mode=False, size=None, offset=None):
         """Reads contents of a file to a string.
 
@@ -172,6 +176,10 @@ class S3FileSystem(object):
         if r.get("Contents") or r.get("CommonPrefixes"):
             return True
         return False
+
+    def join(self, path, *paths):
+        """Join paths with a slash."""
+        return path + "/" + "/".join(paths)
 
     def read(self, filename, binary_mode=False, size=None, offset=None):
         """Reads contents of a file to a string.
@@ -466,6 +474,7 @@ def walk(top, topdown=True, onerror=None):
       as strings
     """
     top = compat.as_str_any(top)
+    fs = get_filesystem(top)
     try:
         listing = listdir(top)
     except errors.NotFoundError as err:
@@ -477,7 +486,7 @@ def walk(top, topdown=True, onerror=None):
     files = []
     subdirs = []
     for item in listing:
-        full_path = os.path.join(top, compat.as_str_any(item))
+        full_path = fs.join(top, compat.as_str_any(item))
         if isdir(full_path):
             subdirs.append(item)
         else:
@@ -489,7 +498,7 @@ def walk(top, topdown=True, onerror=None):
         yield here
 
     for subdir in subdirs:
-        joined_subdir = os.path.join(top, compat.as_str_any(subdir))
+        joined_subdir = fs.join(top, compat.as_str_any(subdir))
         for subitem in walk(joined_subdir, topdown, onerror=onerror):
             yield subitem
 
