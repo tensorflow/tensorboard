@@ -57,6 +57,11 @@ You can use the What-If Tool to analyze a classification or regression
 that takes TensorFlow Example or SequenceExample protos
 (data points) as inputs directly in a jupyter or colab notebook.
 
+You can also use What-If-Tool with a custom prediction function that takes
+Tensorflow examples and produces predictions. In this mode, you can load any model
+(including non-TensorFlow models) as long as your custom function's input and output
+specifications are correct.
+
 If you want to train an ML model from a dataset and explore the dataset and
 model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
 converts the data to tf.Example protos, trains a classifier, and then uses the
@@ -254,11 +259,13 @@ The WitConfigBuilder object takes a list of tf.Example or tf.SequenceExample
 protos as a constructor argument. These protos will be shown in the tool and
 inferred in the specified model.
 
-The model to be used for inference by the tool can be specified one of two ways:
+The model to be used for inference by the tool can be specified one of three ways:
 - As a TensorFlow [Estimator](https://www.tensorflow.org/guide/estimators)
   object that is provided through the `set_estimator_and_feature_spec` method.
   In this case the inference will be done inside the notebook using the
   provided estimator.
+- As a custom prediction function provided through `set_custom_predict_fn` method.
+  In this case WIT will directly call the function for inference.
 - As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
   through the `set_inference_address` and `set_model_name` methods. In this case
   the inference will be done on the model server specified. To query a model served

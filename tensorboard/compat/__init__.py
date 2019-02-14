@@ -44,13 +44,15 @@ def tf():
     ImportError: if a TF-like API is not available.
   """
   try:
-    _importlib.import_module('tensorboard.compat.notf')
+    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
   except ImportError:
     try:
-      return _importlib.import_module('tensorflow')
+      import tensorflow  # pylint: disable=g-import-not-at-top
+      return tensorflow
     except ImportError:
       pass
-  return _importlib.import_module('tensorboard.compat.tensorflow_stub')  # pylint: disable=line-too-long
+  from tensorboard.compat import tensorflow_stub  # pylint: disable=g-import-not-at-top
+  return tensorflow_stub
 
 
 @_lazy.lazy_load('tensorboard.compat.tf2')
