@@ -1893,6 +1893,35 @@ limitations under the License.
           type: Number,
           readOnly: true,
         },
+        // Colors for lines and bars in partial dependence plots.
+        pdPlotColors: {
+          type: Array,
+          value: () => ([d3.color('rgb(31, 119, 180)'),
+                         d3.color('rgb(255, 127, 14)'),
+                         d3.color('rgb(44, 160, 44)'),
+                         d3.color('rgb(214, 39, 40)'),
+                         d3.color('rgb(148, 103, 189)'),
+                         d3.color('rgb(140, 86, 75)'),
+                         d3.color('rgb(227, 119, 194)'),
+                         d3.color('rgb(127, 127, 127)'),
+                         d3.color('rgb(188, 189, 34)'),
+                         d3.color('rgb(23, 190, 207)')]),
+        },
+        // Transparent version of colors for partial dependence plots for
+        // indicating classification threshold values.
+        pdPlotTransparentColors: {
+          type: Array,
+          value: () => ([d3.color('rgba(31, 119, 180, 0.3)'),
+                         d3.color('rgba(255, 127, 14, 0.3)'),
+                         d3.color('rgba(44, 160, 44, 0.3)'),
+                         d3.color('rgba(214, 39, 40, 0.3)'),
+                         d3.color('rgba(148, 103, 189, 0.3)'),
+                         d3.color('rgba(140, 86, 75, 0.3)'),
+                         d3.color('rgba(227, 119, 194, 0.3)'),
+                         d3.color('rgba(127, 127, 127, 0.3)'),
+                         d3.color('rgba(188, 189, 34, 0.3)'),
+                         d3.color('rgba(23, 190, 207, 0.3)')]),
+        }
       },
 
       observers: [
@@ -3927,6 +3956,15 @@ limitations under the License.
           };
         };
 
+        function convertThreshold(point, origKey, threshold){
+          return {
+            x: (point.step ==
+              origKey) ? point.step + ' - original value' : point.step,
+            scalar: point.scalar,
+            y: threshold
+          };
+        };
+
         // Overwrite the key for original value so that it reads under the bar
         let origKey = '';
         const firstModelValues = data[0];
@@ -3941,15 +3979,30 @@ limitations under the License.
         // Convert the data into the format expected by vz-bar-chart.
         // Stack models and labels so that each (model,label) is a separate
         // series
+        const lines = {};
         const mapped = {};
+        const self = this;
         _.forEach(data, (modelValues, modelInd) => {
           const obj = _.forEach(modelValues,
             (pointsForSeries, labelKey) => {
+              // Sort bars by their inference values for display.
               mapped[this.formatChartKey(labelKey, modelInd, data.length)] =
-                _.map(pointsForSeries, point => convertPoint(point, origKey));
+                _.map(pointsForSeries, point => convertPoint(
+                  point, origKey)).sort((a, b) => b.y - a.y);
+              // For binary classifiers, also create lines to indicate the
+              // classification threshold for each model, with datapoints
+              // sorted by the inference values to match the bar order for
+              // the bar chart it will be displayed over.
+              if (this.isBinaryClassification_(
+                    this.modelType, this.multiClass)) {
+                lines[this.formatChartKey(labelKey, modelInd, data.length)] =
+                  _.map(pointsForSeries, point => convertThreshold(
+                    point, origKey,
+                    this.overallThresholds[modelInd].threshold)).sort(
+                      (a, b) => b.scalar - a.scalar);
+              }
             });
         });
-
 
         const toolTipColumns = [
           {
@@ -3989,7 +4042,12 @@ limitations under the License.
         }
 
         const chart = document.createElement('vz-bar-chart');
+        chart.colorScale = new Plottable.Scales.Color().range(
+          this.pdPlotColors);
+        chart.lineColorScale = new Plottable.Scales.Color().range(
+          this.pdPlotTransparentColors);
         chart.data = mapped;
+        chart.lines = lines;
         chart.tooltipColumns = toolTipColumns;
 
         return chart;
@@ -4025,8 +4083,8 @@ limitations under the License.
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562}]}}
 
         const chart = document.createElement('vz-line-chart');
-        chart.colorScale = new Plottable.Scales.Color().range(
-          d3.schemeCategory10);
+        const colorScale = [];
+        const thresholdSeries = [];
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
           vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const formatValueOrNaN = function (x) {
@@ -4076,16 +4134,20 @@ limitations under the License.
         chart.tooltipColumns = toolTipColumns;
 
         const allSeries = [];
+        let colorIndex = 0;
         for (let modelInd = 0; modelInd < data.length; modelInd++){
           const modelData = data[modelInd];
           const series = _.keys(modelData);
+          colorIndex = modelInd * series.length;
           series.forEach(label => {
+            colorScale.push(this.pdPlotColors[colorIndex++]);
             const thisLabel = this.formatChartKey(label, modelInd, data.length);
             chart.setSeriesData(thisLabel, modelData[label]);
             allSeries.push(thisLabel);
           });
           // Make a series for the current value of the feature to show in the
           // plot.
+          colorIndex = modelInd * series.length;
           if (!this.globalPdPlots) {
             const origValEntry =
               this.createPdEntryForCurrentValue(featureName, modelData,
@@ -4096,11 +4158,27 @@ limitations under the License.
                   data.length);
               chart.setSeriesData(showKey, [origValEntry]);
               allSeries.push(showKey);
+              colorScale.push(this.pdPlotColors[colorIndex].brighter());
             }
           }
+          if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+            const label = this.formatChartKey(
+              "classification threshold", modelInd, data.length);
+            const thresholdData = data[0][_.keys(data[0])].map(point => {
+              return {'step': point.step,
+                      'scalar': this.overallThresholds[modelInd].threshold};
+              });
+            colorScale.push(this.pdPlotTransparentColors[colorIndex]);
+            chart.setSeriesData(label, thresholdData);
+            thresholdSeries.push(label);
+            allSeries.push(label);
+          }
         }
+        chart.colorScale = new Plottable.Scales.Color().range(colorScale);
         chart.xAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
         chart.yAxisFormatter = this.getSimpleAxisFormatter(this.axisPrecision);
+        // Do not show tooltips for the lines indicating model threshold values.
+        chart.seriesWithoutTooltips = thresholdSeries;
         chart.colorScale.domain(allSeries);
         chart.setVisibleSeries(allSeries);
         return chart;

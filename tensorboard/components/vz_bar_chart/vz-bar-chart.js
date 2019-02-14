@@ -35,6 +35,26 @@ var vz_bar_chart;
              */
             data: Object,
             /**
+             * How to feed optional overlaid lines into the bar chart.
+             *
+             * Each key within the `lines` object corresponds to a data series,
+             * each of which is associated with its own line color.
+             *
+             * Each entry within a list corresponds to an X-axis label (the string
+             * 'x' property) and line's y value (The numeric 'y' property).
+             *
+             * Example:
+             * lines = {'series0':[{ x: 'a', y: 1 }, { x: 'b', y: 3 }],
+             *          'series1':[{ x: 'a', y: 4 }, { x: 'b', y: 3 }]}
+             *
+             * This will generate a Plottable line chart with two series over the
+             * ClusteredBar chart created for the `data` object.
+             */
+            lines: {
+                type: Object,
+                value: function () { return ({}); }
+            },
+            /**
              * Scale that maps series names to colors. The default colors are from
              * d3.schemeCategory10. Use this property to replace the default coloration.
              *
@@ -44,6 +64,22 @@ var vz_bar_chart;
              * @type {Plottable.Scales.Color}
              */
             colorScale: {
+                type: Object,
+                value: function () {
+                    return new Plottable.Scales.Color().range(d3.schemeCategory10);
+                }
+            },
+            /**
+             * Scale that maps series names to colors for the optional overlaid line
+             * chart. The default colors are from d3.schemeCategory10. Use this
+             * property to replace the default coloration.
+             *
+             * Note that if a `linesColorScale` gets passed in, it gets mutated within
+             * this component to have its domain set to the sorted keys of the `lines`
+             * object. e.g. .domain(['series0', 'series1'])
+             * @type {Plottable.Scales.Color}
+             */
+            linesColorScale: {
                 type: Object,
                 value: function () {
                     return new Plottable.Scales.Color().range(d3.schemeCategory10);
@@ -85,7 +121,7 @@ var vz_bar_chart;
             _chart: Object,
         },
         observers: [
-            '_makeChart(data, colorScale, tooltipColumns, _attached)',
+            '_makeChart(data, lines, colorScale, linesColorScale, tooltipColumns, _attached)',
         ],
         /**
          * Re-renders the chart. Useful if e.g. the container size changed.
@@ -111,34 +147,37 @@ var vz_bar_chart;
          * Creates a chart, and asynchronously renders it. Fires a chart-rendered
          * event after the chart is rendered.
          */
-        _makeChart: function (data, colorScale, tooltipColumns, _attached) {
+        _makeChart: function (data, lines, colorScale, linesColorScale, tooltipColumns, _attached) {
             if (this._chart)
                 this._chart.destroy();
             var tooltip = d3.select(this.$.tooltip);
             // We directly reference properties of `this` because this call is
             // asynchronous, and values may have changed in between the call being
             // initiated and actually being run.
-            var chart = new BarChart(this.data, this.colorScale, tooltip, this.tooltipColumns);
+            var chart = new BarChart(this.data, this.lines, this.colorScale, this.linesColorScale, tooltip, this.tooltipColumns);
             var div = d3.select(this.$.chartdiv);
             chart.renderTo(div);
             this._chart = chart;
         },
     });
     var BarChart = /** @class */ (function () {
-        function BarChart(data, colorScale, tooltip, tooltipColumns) {
+        function BarChart(data, lines, colorScale, linesColorScale, tooltip, tooltipColumns) {
             // Assign each class a color.
             colorScale.domain(_.sortBy(_.keys(data)));
             // Assign arguments passed in constructor for future use.
             this.data = data;
+            this.lines = lines;
             this.colorScale = colorScale;
+            this.linesColorScale = linesColorScale;
             this.tooltip = tooltip;
             this.plot = null;
             this.outer = null;
             // Do things to actually build the chart.
-            this.buildChart(data, colorScale);
+            this.buildChart(data, lines, colorScale, linesColorScale);
             this.setupTooltips(tooltipColumns);
         }
-        BarChart.prototype.buildChart = function (data, colorScale) {
+        BarChart.prototype.buildChart = function (data, lines, colorScale, linesColorScale) {
+            var _this = this;
             if (this.outer) {
                 this.outer.destroy();
             }
@@ -159,7 +198,27 @@ var vz_bar_chart;
                 return colorScale.scale(dataset.metadata());
             });
             this.plot = plot;
-            this.outer = new Plottable.Components.Table([[yAxis, plot], [null, xAxis]]);
+            // If lines have been provided to overlay on the bar chart, then
+            // create a line plot and put it in a group with the bar chart.
+            var lineNames = _.keys(lines);
+            if (lineNames.length > 0) {
+                var linePlot_1 = new Plottable.Plots.Line();
+                linePlot_1.x(function (d) {
+                    return d.x;
+                }, xScale);
+                linePlot_1.y(function (d) {
+                    return d.y;
+                }, yScale);
+                lineNames.forEach(function (lineName) { return linePlot_1.addDataset(new Plottable.Dataset(lines[lineName]).metadata(lineName)); });
+                linePlot_1.attr('stroke', function (d, i, dataset) {
+                    return _this.linesColorScale.scale(dataset.metadata());
+                });
+                var group = new Plottable.Components.Group([plot, linePlot_1]);
+                this.outer = new Plottable.Components.Table([[yAxis, group], [null, xAxis]]);
+            }
+            else {
+                this.outer = new Plottable.Components.Table([[yAxis, plot], [null, xAxis]]);
+            }
         };
         BarChart.prototype.setupTooltips = function (tooltipColumns) {
             var _this = this;

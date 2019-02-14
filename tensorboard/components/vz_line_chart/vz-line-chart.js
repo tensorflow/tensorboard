@@ -213,6 +213,14 @@ var vz_line_chart;
              * - "right" - Position the tooltip to the right of the chart.
              */
             tooltipPosition: { type: String, value: 'bottom' },
+            /**
+             * A list of series for which to not show tooltips. Optional,
+             * defaults to the empty list.
+             */
+            seriesWithoutTooltips: {
+                type: Array,
+                value: function () { return ([]); }
+            },
             _attached: Boolean,
             _chart: Object,
             _visibleSeriesCache: {
@@ -230,7 +238,7 @@ var vz_line_chart;
             _makeChartAsyncCallbackId: { type: Number, value: null },
         },
         observers: [
-            '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
+            '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, seriesWithoutTooltips, _attached)',
             '_reloadFromCache(_chart)',
             '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
             '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -301,7 +309,7 @@ var vz_line_chart;
          * Creates a chart, and asynchronously renders it. Fires a chart-rendered
          * event after the chart is rendered.
          */
-        _makeChart: function (xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached) {
+        _makeChart: function (xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, seriesWithoutTooltips, _attached) {
             // Find the actual xComponentsCreationMethod.
             if (!xType && !xComponentsCreationMethod) {
                 xComponentsCreationMethod = vz_chart_helpers.stepX;
@@ -327,7 +335,7 @@ var vz_line_chart;
                 // We directly reference properties of `this` because this call is
                 // asynchronous, and values may have changed in between the call being
                 // initiated and actually being run.
-                var chart = new LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter, this.yAxisFormatter);
+                var chart = new LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter, this.yAxisFormatter, this.seriesWithoutTooltips);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
                 if (this._chart)
@@ -383,7 +391,7 @@ var vz_line_chart;
         },
     });
     var LineChart = /** @class */ (function () {
-        function LineChart(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter, yAxisFormatter) {
+        function LineChart(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter, yAxisFormatter, seriesWithoutTooltips) {
             this.seriesNames = [];
             this.name2datasets = {};
             this.colorScale = colorScale;
@@ -404,6 +412,7 @@ var vz_line_chart;
             this._defaultXRange = defaultXRange;
             this._defaultYRange = defaultYRange;
             this.tooltipColumns = tooltipColumns;
+            this.seriesWithoutTooltips = seriesWithoutTooltips;
             this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter);
         }
         LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter) {
@@ -662,9 +671,12 @@ var vz_line_chart;
                     .map(function (dataset) { return _this.findClosestPoint(target, dataset); })
                     .filter(Boolean);
                 var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-                // We draw tooltips for points that are NaN, or are currently visible
-                var ptsForTooltips = pts.filter(function (p) { return intersectsBBox(p.x, p.y, bbox) ||
-                    isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
+                // We draw tooltips for points that are not explicity ignored,
+                // and are NaN or are currently visible.
+                var ptsForTooltips = pts.filter(function (p) { return (intersectsBBox(p.x, p.y, bbox) ||
+                    isNaN(_this.yValueAccessor(p.datum, 0, p.dataset))) &&
+                    (!_this.seriesWithoutTooltips ||
+                        _this.seriesWithoutTooltips.indexOf(p.dataset.metadata().name) == -1); });
                 // Only draw little indicator circles for the non-NaN points
                 var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
                 var ptsSelection = _this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
