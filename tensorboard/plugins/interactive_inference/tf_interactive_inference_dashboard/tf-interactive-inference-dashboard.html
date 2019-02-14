@@ -3653,9 +3653,11 @@ limitations under the License.
           this.$.dive.colorBy =
             hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
               : this.strWithModelName_(inferenceValueStr, 0);
-          this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
-          if (this.numModels > 1) {
-            this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
+          if (!this.isMultiClass_(this.modelType, this.multiClass)) {
+            this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
+            if (this.numModels > 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
+            }
           }
         }
         this.updatedExample = false;
