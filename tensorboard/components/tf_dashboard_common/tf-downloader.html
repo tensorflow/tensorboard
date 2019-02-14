@@ -70,9 +70,14 @@ limitations under the License.
       is: "tf-downloader",
       properties: {
         _run: String,
-        runs: Array,
+        runs: Array,  // Array<string>
         tag: String,
-        urlFn: Function,  // (tag: string, run: string) => string (JSON URL)
+        // Clients pass `urlFn: (tag: string, run: string) => string`,
+        // which should generate a URL to download data for a given
+        // run/tag combination. The data at the URL should be in JSON
+        // form, and the URL should be such that adding a query
+        // parameter `format=csv` instead yields CSV data.
+        urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
         return tf_backend.addParams(urlFn(tag, run), {format: "csv"});
