@@ -1388,7 +1388,7 @@ limitations under the License.
                             <div class="help-text">Select a strategy to set classification tresholds based on the set cost ratio and slices.</div>
                             <div class="help-text">Manually altering thresholds or changing cost ratio will default back to custom thresholds.</div>
                             <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
-                              <paper-radio-button name="custom" class="optimization-radio">Custom thresholds</paper-radio-button>
+                              <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds</paper-radio-button>
                               <paper-radio-button name="unaware" class="optimization-radio">Group unaware</paper-radio-button>
                               <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity</paper-radio-button>
                               <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity</paper-radio-button>
@@ -1453,7 +1453,7 @@ limitations under the License.
                               <div class="perf-table-threshold">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                     <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                     </paper-slider>
                                 </template>
                               </div>
@@ -1512,7 +1512,7 @@ limitations under the License.
                             <div class="perf-table-threshold">
                               <template is="dom-repeat" items="{{overallThresholds}}">
                                   <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                   </paper-slider>
                               </template>
                             </div>
@@ -2513,6 +2513,10 @@ limitations under the License.
        * inference stats per breakdown.
        */
       breakdownFeatureSelected_: function() {
+        // When features to slice by change, set optimization strategy
+        // back to custom (default).
+        this.resetOptimizationSelected_();
+
         const feature1 = this.selectedBreakdownFeature;
         if (feature1 == '') {
           this.selectedSecondBreakdownFeature = '';
@@ -2991,7 +2995,10 @@ limitations under the License.
       },
 
       resetOptimizationSelected_: function() {
-        this.optimizationSelected = 'custom';
+        const button = this.$$('#customthresh');
+        if (button != null) {
+          button.click();
+        }
       },
 
       optimizeThresholdClicked_: function() {
@@ -3575,9 +3582,6 @@ limitations under the License.
       },
 
       refreshInferencesNoRegen_: function() {
-        // When inferences change, need to reset optimization selection
-        // back to custom (default).
-        this.resetOptimizationSelected_();
         this.refreshInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
