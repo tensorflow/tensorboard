@@ -4843,6 +4843,12 @@ limitations under the License.
         // that backs the performance table.
         this.set('featureValueThresholds.' + index + '.opened',
                  !this.featureValueThresholds[index].opened);
+
+        // If expanding a section, update inference stats to ensure
+        // properly rendered ROC curve.
+        if (this.featureValueThresholds[index].opened) {
+          requestAnimationFrame(() => this.updateInferenceStats_(true));
+        }
       },
 
       getPerformanceTabTitle: function(modelType, multiClass) {
