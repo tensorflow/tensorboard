@@ -196,7 +196,8 @@ limitations under the License.
 
       .threshold-dropdown {
         display: block;
-        width: 250px;
+        width: 150px;
+        min-width: 150px;
         padding-right: 16px;
       }
 
@@ -278,7 +279,18 @@ limitations under the License.
       .config-tab {
         padding-left: 10px;
         width: 100%;
-        overflow: auto;
+        display: flex;
+      }
+
+      .config-side-content {
+        width: 30%;
+        overflow-y: auto;
+        border-right: 1px solid lightgrey;
+      }
+
+      .config-main-content {
+        width: 70%;
+        overflow-y: auto;
       }
 
       .stats-tab {
@@ -457,8 +469,8 @@ limitations under the License.
 
       .optimize-threshold-button {
         margin: 5px 0;
-        width: 250px;
-        min-width: 250px;
+        width: 150px;
+        min-width: 150px;
         margin-right: 16px;
       }
 
@@ -536,8 +548,8 @@ limitations under the License.
       }
 
       .threshold-cost-input {
-        width: 250px;
-        min-width: 250px;
+        width: 150px;
+        min-width: 150px;
         margin-right: 16px;
       }
 
@@ -858,6 +870,16 @@ limitations under the License.
         width: 5px;
         border-left: 1px solid lightgrey;
       }
+
+      .optimization-radio {
+        display: block;
+        border: 1px solid lightgrey;
+      }
+
+      .optimization-radio-group {
+        display: flex;
+        flex-direction: column;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
@@ -1167,316 +1189,265 @@ limitations under the License.
                   </div>
               </div>
                 <div class="config-tab">
-                  <div class="heading-and-card">
-                    <button class="heading" on-tap="toggleTrueLabelSetup">Set Ground Truth
-                      <div class="right-side right-side-performance-tab">
-                        <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
-                      </div>
-                    </button>
-                    <iron-collapse class="card" id="collapsetruelabel" opened="{{openedTrueLabel}}">
-                      <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
-                        <div class="flex">
-                          <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
-                            <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
-                              <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                                <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <div>
-                            <div class="help-title help-title-margin">What is this?</div>
-                            <div class="help-text">
-                              <div>Select the feature to set as a ground true label for all loaded examples</div>
-                              <div>in order to in order to investigate model performance.
-                                <span class="dialog-link" on-tap="openDialog">More.
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Ground Truth Feature</div>
-                                    <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
-                                      to predict, then selecting that feature here allows the tool to investigate the performance of
-                                      the model by comparing the model's results to the ground truth feature.
-                                    </div>
-                                  </paper-dialog>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                  <div class="config-side-content">
+                    <div class="heading-and-card">
+                      <button class="heading" on-tap="toggleTrueLabelSetup">Performance Configuration
+                        <div class="right-side right-side-performance-tab">
+                          <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
                         </div>
-                        <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
+                      </button>
+                      <iron-collapse class="card" id="collapsetruelabel" opened="{{openedTrueLabel}}">
+                        <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                           <div class="flex">
-                            <paper-input value="{{incorrectPredCostRatio}}"
-                              label="Cost Ratio (FP/FN)"
-                              type="number" class="threshold-cost-input">
-                            </paper-input>
+                            <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
+                              <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                                <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                                  <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
                             <div>
-                              <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
+                              <div class="help-title help-title-margin">What is this?</div>
                               <div class="help-text">
-                                <div>Necessary to optimize the classification threshold.</div>
-                                <div>1.00 = false positives and false negatives are equally as costly</div>
-                                <div>4.00 = false positives are 4 times more costly than false negatives</div>
-                                <div>0.25 = false negatives are 4 times more costly than false positives.
+                                <div>Select the feature to set as a ground true label for all loaded examples in order
+                                  to in order to investigate model performance.
                                   <span class="dialog-link" on-tap="openDialog">More.
                                     <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                      <div class="dialog-title">Why do I need a cost ratio?</div>
-                                      <div>Click
-                                        <a target="_blank" href="https://manoa.hawaii.edu/exploringourfluidearth/chemical/matter/properties-matter/practices-science-false-positives-and-false-negatives">
-                                          here
-                                        </a>
-                                         for an article about false positives, false negatives and when why one might wish to weight them differently.</div>
+                                      <div class="dialog-title">Ground Truth Feature</div>
+                                      <div>If the datapoints contain a feature that represents the ground truth for what the model is attempting
+                                        to predict, then selecting that feature here allows the tool to investigate the performance of
+                                        the model by comparing the model's results to the ground truth feature.
+                                      </div>
                                     </paper-dialog>
                                   </span>
                                 </div>
                               </div>
                             </div>
                           </div>
-                          <template is="dom-if" if="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <template is="dom-if" if="[[shouldShowCostRatio_(selectedLabelFeature, modelType, multiClass)]]">
                             <div class="flex">
-                              <paper-button class="control-button optimize-threshold-button" on-tap="optimizeThresholdClicked_">
-                                  Optimize threshold
-                              </paper-button>
+                              <paper-input value="{{incorrectPredCostRatio}}"
+                                label="Cost Ratio (FP/FN)"
+                                type="number" class="threshold-cost-input">
+                              </paper-input>
                               <div>
-                                <div class="help-title help-title-margin-button">What am I optimizing for?</div>
-                                <div class="help-text">Finds the least costly decision threshold for the cost ratio defined above.
+                                <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
+                                <div class="help-text">
+                                  <div>Necessary to optimize the classification threshold.</div>
+                                  <div>1.00 = false positives and false negatives are equally as costly</div>
+                                  <div>4.00 = false positives are 4 times more costly than false negatives</div>
+                                  <div>0.25 = false negatives are 4 times more costly than false positives.
+                                    <span class="dialog-link" on-tap="openDialog">More.
+                                      <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                        <div class="dialog-title">Why do I need a cost ratio?</div>
+                                        <div>Click
+                                          <a target="_blank" href="https://manoa.hawaii.edu/exploringourfluidearth/chemical/matter/properties-matter/practices-science-false-positives-and-false-negatives">
+                                            here
+                                          </a>
+                                          for an article about false positives, false negatives and when why one might wish to weight them differently.</div>
+                                      </paper-dialog>
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </template>
-                        </template>
-                      </template>
-                    </iron-collapse>
-                  </div>
-
-                  <div class="heading-and-card">
-                    <button class="heading" on-tap="toggleExplorerSetup">[[getCompareSlicesTitle(modelType, multiClass)]]
-                      <div class="right-side right-side-performance-tab">
-                        <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
-                      </div>
-                    </button>
-                    <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
-                      <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
-                        <div class="flex">
-                          <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
-                            <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
-                              <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                                <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <div>
-                            <div class="help-title help-title-margin">What does slicing do?</div>
-                            <div class="help-text">
-                              <div>Investigate performance for the groups of examples with each unique</div>
-                              <div>value of the selected feature.</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="flex">
-                          <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
-                            <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
-                              <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
-                                <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
-                                  <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
-                                </template>
-                              </paper-listbox>
-                            </paper-dropdown-menu>
-                            <div class="help-text help-title-margin">Specify a second feature to slice the data by.</div>
-                          </template>
-                        </div>
-                        <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
-                          <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                             <div class="flex">
-                              <div class="optimize-text title-width">Optimize sliced thresholds for:</div>
-                              <div class="help-title help-title-margin-title">What am I optimizing for?
-                                <span class="help-text dialog-link" on-tap="openDialog">More.
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Classification Threshold Optimization Options</div>
-                                    <div><span class="bold">Group unaware</span> - Optimize a single threshold across all slices</div>
-                                    <div><span class="bold">Demographic parity</span> - Ensure a similar percentage of datapoints from each slices are predicted yes (1)</div>
-                                    <div><span class="bold">Equal opportunity</span> - Ensure a similar percentage of correct predictions among all those with an actual value of yes (1) from each slices</div>
-                                    <div><span class="bold">Equal accuracy</span> - Ensure a similar percentage of datapoints from each slices are correctly predicted either as yes (1) or no (0)</div>
-                                    <div><span class="bold">Group thresholds</span> - Optimize the thresholds for each slice individually</div>
-                                    <div>To learn more about ML fairness, see the
-                                      <a target="_blank" href="https://developers.google.com/machine-learning/crash-course/fairness/video-lecture">
-                                        fairness module of the Machine Learning Crash Course
-                                      </a>
-                                      and this
-                                      <a target="_blank" href="https://research.google.com/bigpicture/attacking-discrimination-in-ml/">
-                                        article on fairness in threshold classifiers
-                                      </a>
-                                      .
-                                    </div>
-                                  </paper-dialog>
-                                </span>
+                              <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
+                                <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
+                                  <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                                    <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                                  </template>
+                                </paper-listbox>
+                              </paper-dropdown-menu>
+                              <div>
+                                <div class="help-title help-title-margin">What does slicing do?</div>
+                                <div class="help-text">
+                                  <div>Investigate performance for the groups of examples with each unique value of the selected feature.</div>
+                                </div>
                               </div>
                             </div>
-                            <div class="flex-wrap">
-                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeThresholdClicked_">
-                                  Group unaware
-                              </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-tap="demoParityClicked_">
-                                  Demographic parity
-                              </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-tap="equalOppoClicked_">
-                                  Equal opportunity
-                              </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-tap="equalAccClicked_">
-                                  Equal accuracy
-                              </paper-button>
-                              <paper-button class="control-button optimize-selection-button" on-tap="optimizeFacetedThresholdsClicked_">
-                                  Group thresholds
-                              </paper-button>
+                            <div class="flex">
+                              <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
+                                <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
+                                  <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                                    <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
+                                      <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
+                                    </template>
+                                  </paper-listbox>
+                                </paper-dropdown-menu>
+                                <div class="help-text help-title-margin">Specify a second feature to slice the data by.</div>
+                              </template>
                             </div>
                           </template>
                         </template>
-                      </template>
-                    </iron-collapse>
-                  </div>
-
-                  <div class="heading-and-card">
-                    <button class="heading" on-tap="togglePerformance">Explore Performance
-                      <div class="right-side right-side-performance-tab">
-                        <iron-icon icon="[[getExpandCollapseIcon(openedPerformance)]]" class="expand-collapse-button"></iron-icon>
+                      </iron-collapse>
+                    </div>
+                    <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
+                      <div class="heading-and-card">
+                        <button class="heading" on-tap="toggleExplorerSetup">Fairness Optimization Explorer
+                          <div class="right-side right-side-performance-tab">
+                            <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
+                          </div>
+                        </button>
+                        <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
+                          <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
+                            <div class="help-title help-title-margin-button">Apply an optimization strategy</div>
+                            <div class="help-text">Select a strategy to set classification tresholds based on the set cost ratio and slices.</div>
+                            <div class="help-text">Manually altering thresholds or changing cost ratio will default back to custom thresholds.</div>
+                            <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
+                              <paper-radio-button name="custom" class="optimization-radio">Custom thresholds</paper-radio-button>
+                              <paper-radio-button name="unaware" class="optimization-radio">Group unaware</paper-radio-button>
+                              <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity</paper-radio-button>
+                              <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity</paper-radio-button>
+                              <paper-radio-button name="equalacc" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal accuracy</paper-radio-button>
+                              <paper-radio-button name="group" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Group thresholds</paper-radio-button>
+                            </paper-radio-group>
+                          </template>
+                        </iron-collapse>
                       </div>
-                    </button>
-                    <iron-collapse class="no-padding-card" id="collapseperformance" opened="{{openedPerformance}}">
-                      <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
-                        <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
-                          <div class="feature-breakdown">
-                            <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
-                            <div class="flex-wrap">
-                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                <div>
-                                  <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[getPrintableModelNumber_(index)]]</div>
-                                  <div class="flex">
-                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
-                                    </paper-slider>
-                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                    </paper-icon-button>
-                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                      <div class="dialog-title">Exploring Classification Performance</div>
-                                      <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
-                                        above this
-                                        threshold
-                                        are considered a positive classification, while inference values below this threshold are considered
-                                        a negative classification.
-                                      </div>
-                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                        are updated as the classification threshold changes.
-                                      </div>
-                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                        false
-                                        positive rate (FPR) at various classification thresholds. Find out more
-                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                          here
-                                        </a>.
-                                      </div>
-                                    </paper-dialog>
+                    </template>
+                </div>
+                <div class="config-main-content">
+                  <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
+                    <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
+                      <div class="feature-breakdown">
+                        <div class="slider-label">[[getPrintableValue_(featureValueThreshold)]]</div>
+                        <div class="flex-wrap">
+                          <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                            <div>
+                              <div hidden$=[[showModelNumbers_(featureValueThreshold)]]>Model: [[getPrintableModelNumber_(index)]]</div>
+                              <div class="flex">
+                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                  value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                </paper-slider>
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Exploring Classification Performance</div>
+                                  <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
+                                    above this
+                                    threshold
+                                    are considered a positive classification, while inference values below this threshold are considered
+                                    a negative classification.
                                   </div>
-                                  <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                    <div>
-                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
-                                        class="conf-matrix">
-                                      </tf-confusion-matrix>
-                                    </div>
-                                  </template>
-                                </div>
-                              </template>
+                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                    are updated as the classification threshold changes.
+                                  </div>
+                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                    false
+                                    positive rate (FPR) at various classification thresholds. Find out more
+                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                      here
+                                    </a>.
+                                  </div>
+                                </paper-dialog>
+                              </div>
                               <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                <div class="roc-holder">
-                                  <div class="roc-x-label">FPR</div>
-                                  <div class="roc-y-label">TPR</div>
-                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
-                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
-                                </div>
-                              </template>
-                            </div>
-                          </div>
-                        </template>
-                        <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
-                          <div class="feature-breakdown">
-                            <div class="slider-label">Threshold for positive classification</div>
-                            <div class="flex-wrap">
-                              <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
                                 <div>
-                                  <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
-                                  <div class="flex">
-                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
-                                      value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
-                                    </paper-slider>
-                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                    </paper-icon-button>
-                                    <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                      <div class="dialog-title">Exploring Classification Performance</div>
-                                      <div>Use this slider to adjust the classification threshold. Inference values at or above this
-                                        threshold
-                                        are considered a positive classification, while inference values below this threshold are considered
-                                        a negative classification.
-                                      </div>
-                                      <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                                        are updated as the classification threshold changes.
-                                      </div>
-                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                        false
-                                        positive rate (FPR) at various classification thresholds. Find out more
-                                        <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                          here
-                                        </a>.
-                                      </div>
-                                    </paper-dialog>
-                                  </div>
-                                  <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                    <div>
-                                      <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
-                                        class="conf-matrix"></tf-confusion-matrix>
-                                      </tf-confusion-matrix>
-                                    </div>
-                                  </template>
-                                </div>
-                              </template>
-                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                <div class="roc-holder">
-                                  <div class="roc-x-label">FPR</div>
-                                  <div class="roc-y-label">TPR</div>
-                                  <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                    class="conf-matrix">
+                                  </tf-confusion-matrix>
                                 </div>
                               </template>
                             </div>
-                          </div>
-                        </template>
+                          </template>
+                          <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="roc-holder">
+                              <div class="roc-x-label">FPR</div>
+                              <div class="roc-y-label">TPR</div>
+                              <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                  x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                  y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                              </vz-line-chart>
+                            </div>
+                          </template>
+                        </div>
+                      </div>
+                    </template>
+                    <template is="dom-if" if="[[shouldShowOverallThresholder_(selectedBreakdownFeature)]]">
+                      <div class="feature-breakdown">
+                        <div class="slider-label">Threshold for positive classification</div>
+                        <div class="flex-wrap">
+                          <template is="dom-repeat" items="{{overallThresholds}}" as="overallThreshold">
+                            <div>
+                              <div hidden$=[[showModelNumbers_(overallThreshold)]]>Model: [[index]]</div>
+                              <div class="flex">
+                                <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{overallThreshold.threshold}}"
+                                  value="[[overallThreshold.threshold]]" on-value-changed="refreshInferencesNoRegen_">
+                                </paper-slider>
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Exploring Classification Performance</div>
+                                  <div>Use this slider to adjust the classification threshold. Inference values at or above this
+                                    threshold
+                                    are considered a positive classification, while inference values below this threshold are considered
+                                    a negative classification.
+                                  </div>
+                                  <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
+                                    are updated as the classification threshold changes.
+                                  </div>
+                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                    false
+                                    positive rate (FPR) at various classification thresholds. Find out more
+                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                      here
+                                    </a>.
+                                  </div>
+                                </paper-dialog>
+                              </div>
+                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                <div>
+                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                    class="conf-matrix"></tf-confusion-matrix>
+                                  </tf-confusion-matrix>
+                                </div>
+                              </template>
+                            </div>
+                          </template>
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="roc-holder">
+                              <div class="roc-x-label">FPR</div>
+                              <div class="roc-y-label">TPR</div>
+                              <vz-line-chart id="prchart" class="pr-line-chart" x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                              </vz-line-chart>
+                            </div>
+                          </template>
+                        </div>
+                      </div>
+                    </template>
+                  </template>
+                  <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
+                    <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                      <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
+                        <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat)]]"
+                                              class="conf-matrix">
+                        </tf-confusion-matrix>
                       </template>
-                      <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
-                        <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
-                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat)]]"
+                    </template>
+                    <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                      <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
+                        <div class="feature-breakdown">
+                          <paper-input value="[[getPrintableValue_(featureValueThreshold)]]" readonly=true
+                                        class="facet-label" no-label-float=true>
+                          </paper-input>
+                          <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
+                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat, featureValueThreshold)]]"
                                                   class="conf-matrix">
                             </tf-confusion-matrix>
                           </template>
-                        </template>
-                        <template is="dom-if" if="[[!shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                          <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
-                            <div class="feature-breakdown">
-                              <paper-input value="[[getPrintableValue_(featureValueThreshold)]]" readonly=true
-                                            class="facet-label" no-label-float=true>
-                              </paper-input>
-                              <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
-                                <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStat, featureValueThreshold)]]"
-                                                      class="conf-matrix">
-                                </tf-confusion-matrix>
-                              </template>
-                            </div>
-                          </template>
-                        </template>
+                        </div>
                       </template>
-                      <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
-                        <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
-                      </template>
-                    </iron-collapse>
-                  </div>
+                    </template>
+                  </template>
+                  <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
+                    <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
+                  </template>
                 </div>
+              </div>
                 <div class="stats-tab">
                   <facets-overview id="overview" search-string="{{featureSearchValue}}"></facets-overview>
                 </div>
@@ -1786,7 +1757,8 @@ limitations under the License.
         // thresholds.
         incorrectPredCostRatio: {
           type: Number,
-          value: 1
+          value: 1,
+          observer: 'costRatioChanged_',
         },
         // If the classification model is a multi-class model.
         multiClass: {
@@ -1880,6 +1852,11 @@ limitations under the License.
         neighborByL2: {
           type: Boolean,
           value: false
+        },
+        optimizationSelected: {
+          type: String,
+          value: 'custom',
+          observer: 'optimizationSelectedChanged_',
         },
         compareTitle: String,
         // Dictionary of features to feature value attributions for display
@@ -2737,6 +2714,35 @@ limitations under the License.
         }
       },
 
+      optimizationSelectedChanged_: function(selection) {
+        if (selection == 'custom') {
+          return;
+        }
+        else if (selection == 'unaware') {
+          this.optimizeThresholdClicked_();
+        }
+        else if (selection == 'group') {
+          this.optimizeFacetedThresholdsClicked_();
+        }
+        else if (selection == 'demoparity') {
+          this.demoParityClicked_();
+        }
+        else if (selection == 'equalacc') {
+          this.equalAccClicked_();
+        }
+        else if (selection == 'equalopp') {
+          this.equalOppoClicked_();
+        }
+      },
+
+      costRatioChanged_: function() {
+        this.resetOptimizationSelected_();
+      },
+
+      resetOptimizationSelected_: function() {
+        this.optimizationSelected = 'custom';
+      },
+
       optimizeThresholdClicked_: function() {
         // Find the optimal threshold for all examples, then set all thresholds
         // to that value.
@@ -3195,6 +3201,7 @@ limitations under the License.
       },
 
       refreshInferencesNoRegen_: function() {
+        this.resetOptimizationSelected_();
         this.refreshInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
@@ -4339,7 +4346,7 @@ limitations under the License.
       },
 
       toggleExplorerSetup: function() {
-        this.$.collapseexplorer.toggle();
+        this.$$('#collapseexplorer').toggle();
       },
 
       togglePerformance: function() {
