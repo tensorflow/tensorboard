@@ -251,6 +251,15 @@ Polymer({
      */
     tooltipPosition: {type: String, value: 'bottom'},
 
+    /**
+     * A list of series for which to not show tooltips. Optional,
+     * defaults to the empty list.
+     */
+    seriesWithoutTooltips: {
+      type: Array,
+      value: () => ([])
+    },
+
     _attached: Boolean,
     _chart: Object,
     _visibleSeriesCache: {
@@ -268,7 +277,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null},
   },
   observers: [
-    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
+    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, seriesWithoutTooltips, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -353,6 +362,7 @@ Polymer({
       yScaleType,
       tooltipColumns,
       colorScale,
+      seriesWithoutTooltips,
       _attached) {
     // Find the actual xComponentsCreationMethod.
     if (!xType && !xComponentsCreationMethod) {
@@ -391,7 +401,8 @@ Polymer({
           this.defaultYRange,
           this.symbolFunction,
           this.xAxisFormatter,
-          this.yAxisFormatter);
+          this.yAxisFormatter,
+          this.seriesWithoutTooltips);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       if (this._chart) this._chart.destroy();
@@ -485,6 +496,7 @@ class LineChart {
   private smoothingEnabled: boolean;
   private tooltipSortingMethod: string;
   private tooltipPosition: string;
+  private seriesWithoutTooltips?: string[];
   private _ignoreYOutliers: boolean;
 
   // An optional list of 2 numbers.
@@ -506,7 +518,8 @@ class LineChart {
       defaultYRange?: number[],
       symbolFunction?: vz_chart_helpers.SymbolFn,
       xAxisFormatter?: (number) => string,
-      yAxisFormatter?: (number) => string) {
+      yAxisFormatter?: (number) => string,
+      seriesWithoutTooltips?: string[]) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -530,6 +543,7 @@ class LineChart {
     this._defaultXRange = defaultXRange;
     this._defaultYRange = defaultYRange;
     this.tooltipColumns = tooltipColumns;
+    this.seriesWithoutTooltips = seriesWithoutTooltips;
 
     this.buildChart(
         xComponentsCreationMethod,
@@ -839,10 +853,14 @@ class LineChart {
                     .map((dataset) => this.findClosestPoint(target, dataset))
                     .filter(Boolean);
       let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-      // We draw tooltips for points that are NaN, or are currently visible
+      // We draw tooltips for points that are not explicity ignored,
+      // and are NaN or are currently visible.
       let ptsForTooltips = pts.filter(
-          (p) => intersectsBBox(p.x, p.y, bbox) ||
-              isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+          (p) => (intersectsBBox(p.x, p.y, bbox) ||
+                  isNaN(this.yValueAccessor(p.datum, 0, p.dataset))) &&
+                  (!this.seriesWithoutTooltips ||
+                   this.seriesWithoutTooltips.indexOf(
+                     p.dataset.metadata().name) == -1));
       // Only draw little indicator circles for the non-NaN points
       let ptsToCircle = ptsForTooltips.filter(
           (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
