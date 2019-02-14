@@ -2046,6 +2046,8 @@ limitations under the License.
           type: Boolean,
           value: false
         },
+        // The optimization setting selected for setting classification
+        // thresholds.
         optimizationSelected: {
           type: String,
           value: 'custom',
@@ -2315,6 +2317,8 @@ limitations under the License.
       },
 
       showPartialDependencePlots_: function() {
+        // When clicking to show a partial dependence plot from the datapoint
+        // editor, switch to non-global PD plot mode.
         this.globalPdPlots = false;
         this.sideTabSelected = 3;
         requestAnimationFrame(() => this.populatePdTabs());
@@ -2956,6 +2960,9 @@ limitations under the License.
         }
       },
 
+      /**
+       * Runs the appropriate treshold optimizer.
+       */
       optimizationSelectedChanged_: function(selection) {
         if (selection == 'custom') {
           return;
@@ -2978,6 +2985,8 @@ limitations under the License.
       },
 
       costRatioChanged_: function() {
+        // When cost ratio changes, set optimization strategy
+        // back to custom (default).
         this.resetOptimizationSelected_();
       },
 
@@ -3175,6 +3184,9 @@ limitations under the License.
         }
       },
 
+      /**
+       * Returns the total number of entries in a confusion matrix.
+       */
       getTotalEntriesInConfCounts: function(counts) {
         if (counts == null) {
           return 0;
@@ -3191,6 +3203,10 @@ limitations under the License.
         return total;
       },
 
+      /**
+       * Returns the false positive percentage for a given confusion matrix
+       * from the threshold selected, model index, and facet to view.
+       */
       getFPModelIndex: function (inferenceStats, thresholds, modelInd, item) {
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
@@ -3198,9 +3214,14 @@ limitations under the License.
           return null;
         }
         const val = confCounts['No']['Yes'];
-        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1%")(
+          val / this.getTotalEntriesInConfCounts(confCounts));
       },
 
+      /**
+       * Returns the false negative percentage for a given confusion matrix
+       * from the threshold selected, model index, and facet to view.
+       */
       getFNModelIndex: function(inferenceStats, thresholds, modelInd, item) {
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
@@ -3208,9 +3229,15 @@ limitations under the License.
           return 0;
         }
         const val = confCounts['Yes']['No'];
-        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1%")(
+          val / this.getTotalEntriesInConfCounts(confCounts));
       },
 
+
+      /**
+       * Returns the accuracy percentage for a given confusion matrix
+       * from the threshold selected, model index, and facet to view.
+       */
       getAccuracyModelIndex: function(inferenceStats, thresholds, modelInd, item) {
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
@@ -3218,15 +3245,23 @@ limitations under the License.
           return 0;
         }
         const val = confCounts['Yes']['Yes'] + confCounts['No']['No'];
-        return d3.format(",.1%")(val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1%")(
+          val / this.getTotalEntriesInConfCounts(confCounts));
       },
 
+      /**
+       * Returns the number of examples in a given facet.
+       */
       getFeatureValueCount: function(inferenceStats, thresholds, item) {
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, 0, item);
         return this.getTotalEntriesInConfCounts(confCounts);
       },
 
+      /**
+       * Returns the label of a confusion matrix for a given model index.
+       * When only using 1 model, no label is needed.
+       */
       getConfusionMatrixLabel: function(index) {
         if (this.numModels < 2) {
           return '';
@@ -3290,19 +3325,28 @@ limitations under the License.
           return inferenceStats[modelInd].results;
         } else {
           const key = this.getPrintableValue_(facetItem);
-          console.log(inferenceStats[modelInd]);
-          console.log(key);
           return inferenceStats[modelInd].faceted[key];
         }
       },
 
+
+      /**
+       * Returns the number of examples in a given facet from a
+       * multi-class confusion matrix.
+       */
       getMultiClassFeatureValueCount: function(inferenceStats, facetItem) {
         const confCounts = this.getMultiClassConfMatrix(inferenceStats, 0, facetItem);
         return this.getTotalEntriesInConfCounts(confCounts);
       },
 
-      getMultiClassAccuracyModelIndex: function(inferenceStats, modelInd, facetItem) {
-        const confCounts = this.getMultiClassConfMatrix(inferenceStats, modelInd, facetItem);
+      /**
+       * Returns the accuracy percentage for a given multi-class confusion
+       * matrix from the threshold selected, model index, and facet to view.
+       */
+      getMultiClassAccuracyModelIndex: function(
+          inferenceStats, modelInd, facetItem) {
+        const confCounts = this.getMultiClassConfMatrix(
+          inferenceStats, modelInd, facetItem);
         if (confCounts == null) {
           return null;
         }
@@ -3317,7 +3361,8 @@ limitations under the License.
             }
           }
         }
-        return d3.format(",.1%")(matches / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1%")(
+          matches / this.getTotalEntriesInConfCounts(confCounts));
       },
 
       /**
@@ -3530,6 +3575,8 @@ limitations under the License.
       },
 
       refreshInferencesNoRegen_: function() {
+        // When inferences change, need to reset optimization selection
+        // back to custom (default).
         this.resetOptimizationSelected_();
         this.refreshInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
@@ -4778,8 +4825,11 @@ limitations under the License.
         return numModels < 2 ? 'perf-table-model-single' : 'perf-table-model';
       },
 
+      /**
+       * Expands/collapses a row in the performance table based on a click.
+       */
       togglePerfRow: function(event) {
-        console.log(event);
+        // Find the table index for which the click was made.
         let el = event.target;
         while (el != null && !el.dataset.index) {
           el = el.parentNode;
@@ -4788,6 +4838,9 @@ limitations under the License.
           return;
         }
         const index = el.dataset.index;
+
+        // Toggle the appropriate 'opened' variable in the list
+        // that backs the performance table.
         this.set('featureValueThresholds.' + index + '.opened',
                  !this.featureValueThresholds[index].opened);
       },
