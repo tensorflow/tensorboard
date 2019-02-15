@@ -417,6 +417,8 @@ limitations under the License.
 
       .feature-search-input {
         padding-top: 3px;
+        flex-grow: 1;
+        max-width: 150px;
       }
 
       .control-button {
@@ -502,14 +504,6 @@ limitations under the License.
         color: #3c4043;
         padding: 0px;
         font-weight: 500;
-      }
-
-      .on-switch-button {
-        color: var(--tb-orange-strong);
-      }
-
-      .off-switch-button {
-        color: black;
       }
 
       .flex {
@@ -1043,7 +1037,7 @@ limitations under the License.
                           <iron-icon icon="[[getExpandCollapseIcon(openedContextTools)]]" class="expand-collapse-button"></iron-icon>
                         </div>
                       </button>
-                      <iron-collapse class="card" id="collapsecontexttools" opened="{{openedContextTools}}">
+                      <iron-collapse class="no-padding-card" id="collapsecontexttools" opened="{{openedContextTools}}">
                         <paper-radio-group selected="{{visMode}}">
                           <paper-radio-button name="dive">Datapoints</paper-radio-button>
                           <paper-radio-button name="pd">Partial Dependence Plots</paper-radio-button>
@@ -1097,7 +1091,7 @@ limitations under the License.
                     <div class="heading-and-card editor-heading-and-card">
                       <button class="heading">[[getDatapointEditorTitle(selectedExampleNum)]]
                       </button>
-                      <div class="card">
+                      <div class="no-padding-card">
                         <div class="datapoint-controls-holder datapoint-control-buttons-holder">
                           <div class="datapoint-left-controls-holder">
                             <paper-icon-button class="datapoint-control-button" icon="chevron-left"
@@ -1127,25 +1121,23 @@ limitations under the License.
                               </paper-icon-button>
                             </div>
                             <div class="control-divider"></div>
-                            <paper-icon-button class="datapoint-control-button" icon="list"
+                            <paper-icon-button class="datapoint-control-button" icon="list" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                                 on-tap="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
                             </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="line-weight"
-                                on-tap="setExampleExpanded_" alt="expand all features" title="Expand all features">
+                            <paper-icon-button class="datapoint-control-button" icon="line-weight" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                                on-tap="setExampleShow_" alt="show all features" title="Show all features">
                             </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="view-module"
-                              class$="[[getGridButtonClass(exampleDisplayMode)]]"
-                              on-tap="setExampleGridMode_" alt="show example values in grid" title="Grid example values">
+                            <paper-icon-button class="datapoint-control-button" icon="view-module" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                              on-tap="setExampleExpanded_" alt="expand all features" title="Expand all features">
                             </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="view-headline"
-                              class$="[[getStackedButtonClass(exampleDisplayMode)]]"
-                              on-tap="setExampleStackedMode_" alt="show example values stacked" title="Stack example values">
-                            </paper-icon-button>
-                          </div>
-                          <div class="datapoint-right-controls-holder">
-                            <paper-input value="{{featureSearchValue}}" label="Search features" class="datapoint-control-filter-input feature-search-input" no-label-float>
+                            <div class="control-divider"></div>
+                            <paper-input value="{{featureSearchValue}}" label="Search features"
+                                class="datapoint-control-filter-input feature-search-input"
+                                disabled$="[[!hasSelected(selectedExampleAndInference)]]" no-label-float>
                               <iron-icon icon="icons:search" prefix></iron-icon>
                             </paper-input>
+                          </div>
+                          <div class="datapoint-right-controls-holder">
                           </div>
                         </div>
                         <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
@@ -1167,19 +1159,17 @@ limitations under the License.
                           <div class="datapoint-info-holder">
                             <div class="datapoint-info-content">
                               <div class="flex space-between">
-                                <div class="datapoint-info-header">Select a datapoint and begin exploring model behavior</div>
+                                <div class="datapoint-info-header">Select a datapoint to begin exploring model behavior for your selection.</div>
                               </div>
                               <div class="datapoint-info-bullet">
-                                <span class="bold">Editor and Inference:</span>
-                                Edit your datapoint in the Editor panel and see difference in model behavior in the Inference panel.
+                                <span class="bold">Edit and Infer:</span>
+                                Edit your datapoint here and run inference in the Infer table to see differences in model behavior.
                               </div>
                               <div class="datapoint-info-bullet">
-                                <span class="bold">Context Tools:</span>
-                                Use Context Tools to explore counterfactuals to your selection or compute new features based on distance.
-                              </div>
-                              <div class="datapoint-info-bullet">
-                                <span class="bold">Visualization Playground:</span>
-                                Switch between Facets Dive and Partial Dependence Plots to gain insights using different visualizations.
+                                <span class="bold">Visualize:</span>
+                                Switch between visualizing datapoints and exploring partial dependence plots to gain insights into your
+                                model's behavior. Explore counterfactuals or see how similar (or different) the rest of your dataset is from
+                                your selection.
                               </div>
                             </div>
                           </div>
@@ -1209,7 +1199,7 @@ limitations under the License.
                             </tf-inference-viewer>
                           </template>
                           <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
-                            <div class="infer-info">Select a datapoint to see its inference results here</div>
+                            <div class="infer-info">Select a datapoint to see its inference results here.</div>
                           </template>
                         </iron-collapse>
                       </div>
@@ -2359,32 +2349,21 @@ limitations under the License.
         this.$.dive.selectedIndices = [id];
       },
 
-      setExampleStackedMode_: function() {
-        this.exampleDisplayMode = 'stacked';
-      },
-
-      setExampleGridMode_: function() {
-        this.exampleDisplayMode = 'grid';
-      },
-
       setExampleCollapsed_: function() {
+        this.exampleDisplayMode = 'grid';
         this.$$('#viewer').expandedFeatures = {};
         this.$$('#viewer').expandAllFeatures = false;
         this.$$('#viewer').refreshExampleViewer();
       },
 
-      setExampleExpanded_: function() {
+      setExampleShow_: function() {
+        this.exampleDisplayMode = 'grid';
         this.$$('#viewer').expandAllFeatures = true;
       },
 
-      getStackedButtonClass: function(exampleDisplayMode) {
-        return exampleDisplayMode == 'stacked'
-          ? 'on-switch-button' : 'off-switch-button';
-      },
-
-      getGridButtonClass: function(exampleDisplayMode) {
-        return exampleDisplayMode == 'grid'
-          ? 'on-switch-button' : 'off-switch-button';
+      setExampleExpanded_: function() {
+        this.exampleDisplayMode = 'stacked';
+        this.$$('#viewer').expandAllFeatures = true;
       },
 
       statsChanged_: function(event) {
