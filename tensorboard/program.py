@@ -45,6 +45,7 @@ import inspect
 
 import six
 from six.moves import urllib
+from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 
 from tensorboard import manager
@@ -52,6 +53,7 @@ from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
 from tensorboard.util import util
 
@@ -347,36 +349,67 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   def __init__(self, wsgi_app, flags):
     self._flags = flags
     host = flags.host
+
+    # base_port: what's the first port to which we should try to bind?
+    # should_scan: if that fails, shall we try additional ports?
+    (base_port, should_scan) = (
+        (flags.port, False)
+        if flags.port is not None
+        else (core_plugin.DEFAULT_PORT, True)
+    )
+    if base_port > 0xFFFF:
+      raise TensorBoardServerException(
+          'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
+      )
+    max_attempts = 10 if should_scan else 1
+    base_port = min(base_port + max_attempts, 65536) - max_attempts
+
     self._auto_wildcard = False
     if not host:
       # Without an explicit host, we default to serving on all interfaces,
       # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
-      host = self._get_wildcard_address(flags.port)
+      host = self._get_wildcard_address(base_port)
       self._auto_wildcard = True
-    try:
-      super(WerkzeugServer, self).__init__(host, flags.port, wsgi_app)
-    except socket.error as e:
-      if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
-        raise TensorBoardServerException(
-            'TensorBoard must be run as superuser to bind to port %d' %
-            flags.port)
-      elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
-        if flags.port == 0:
+
+    for (attempt_index, port) in (
+        enumerate(xrange(base_port, base_port + max_attempts))):
+      try:
+        # Yes, this invokes the super initializer potentially many
+        # times. This seems to work fine, and looking at the superclass
+        # chain (type(self).__mro__) it doesn't seem that anything
+        # _should_ go wrong (nor does any superclass provide a facility
+        # to do this natively).
+        super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+        break
+      except socket.error as e:
+        if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
           raise TensorBoardServerException(
-              'TensorBoard unable to find any open port')
-        else:
+              'TensorBoard must be run as superuser to bind to port %d' %
+              port)
+        elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
+          if attempt_index < max_attempts - 1:
+            continue
+          if port == 0:
+            raise TensorBoardServerException(
+                'TensorBoard unable to find any open port')
+          elif should_scan:
+            raise TensorBoardServerException(
+                'TensorBoard could not bind to any port around %s '
+                '(tried %d times)'
+                % (base_port, max_attempts))
+          else:
+            raise TensorBoardServerException(
+                'TensorBoard could not bind to port %d, it was already in use' %
+                port)
+        elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
           raise TensorBoardServerException(
-              'TensorBoard could not bind to port %d, it was already in use' %
-              flags.port)
-      elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
-        raise TensorBoardServerException(
-            'TensorBoard could not bind to unavailable address %s' % host)
-      elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
-        raise TensorBoardServerException(
-            'Tensorboard could not bind to unsupported address family %s' %
-            host)
-      # Raise the raw exception if it wasn't identifiable as a user error.
-      raise
+              'TensorBoard could not bind to unavailable address %s' % host)
+        elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
+          raise TensorBoardServerException(
+              'Tensorboard could not bind to unsupported address family %s' %
+              host)
+        # Raise the raw exception if it wasn't identifiable as a user error.
+        raise
 
   def _get_wildcard_address(self, port):
     """Returns a wildcard address for the port in question.
