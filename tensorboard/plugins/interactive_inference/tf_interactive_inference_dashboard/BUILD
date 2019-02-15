@@ -6,24 +6,12 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "wit_assets",
-    srcs = [
-        "distance.png",
-        "editedexample.png",
-        "explorecounterfactuals.png",
-        "pdplots.png",
-    ],
-    path = "/tf-interactive-inference-dashboard",
-)
-
-tf_web_library(
     name = "tf_interactive_inference_dashboard",
     srcs = [
         "tf-interactive-inference-dashboard.html",
     ],
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        ":wit_assets",
         ":tf_confusion_matrix",
         ":tf_inference_panel",
         ":tf_inference_viewer",
