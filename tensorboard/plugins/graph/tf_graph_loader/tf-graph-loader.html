@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
 
 <!--
@@ -40,8 +41,9 @@ Polymer({
       type: Object,
       notify: true,
     },
-    datasets: Array,
-    selectedDataset: Number,
+    selection: {
+      type: Object,
+    },
     selectedFile: Object,
     compatibilityProvider: {
       type: Object,
@@ -81,18 +83,33 @@ Polymer({
     },
   },
   observers: [
-    '_selectedDatasetChanged(selectedDataset, datasets, overridingHierarchyParams, compatibilityProvider)',
+    '_selectionChanged(selection, overridingHierarchyParams, compatibilityProvider)',
     '_selectedFileChanged(selectedFile, overridingHierarchyParams, compatibilityProvider)',
-    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)',
   ],
-  _readAndParseMetadata: function(metadataIndex) {
-    if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
-        this.datasets[this.selectedDataset].runMetadata == null ||
-        this.datasets[this.selectedDataset].runMetadata[metadataIndex] == null) {
+  _selectionChanged() {
+    // selection can change a lot within a microtask.
+    // Don't fetch too much too fast and introduce race condition.
+    this.debounce('selectionchange', () => this._load());
+  },
+  _load: function() {
+    const {selection, overridingHierarchyParams, compatibilityProvider} = this;
+    const {run, tag, type: selectionType} = selection;
+    if (selectionType == tf.graph.SelectionType.OP_GRAPH) {
+      // Clear stats about the previous graph.
       this._setOutStats(null);
-      return;
+      const graphPath = tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('graphs', '/graph'),
+          {tag, run});
+      this._fetchAndConstructHierarchicalGraph(
+          graphPath, null, overridingHierarchyParams);
+    } else if (selectionType == tf.graph.SelectionType.PROFILE) {
+      const metadataPath = tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
+          {tag, run});
+      this._readAndParseMetadata(metadataPath);
     }
-    var path = this.datasets[this.selectedDataset].runMetadata[metadataIndex].path;
+  },
+  _readAndParseMetadata: function(path) {
     // Reset the progress bar to 0.
     this.set('progress', {
       value: 0,
@@ -109,7 +126,7 @@ Polymer({
    * @param {string=} pbTxtFile
    * @param {Object=} overridingHierarchyParams
    */
-  _parseAndConstructHierarchicalGraph: function(
+  _fetchAndConstructHierarchicalGraph: function(
       path, pbTxtFile, overridingHierarchyParams) {
     // Reset the progress bar to 0.
     this.set('progress', {
@@ -188,11 +205,6 @@ Polymer({
       tracker.reportError("Graph visualization failed: " + e, e);
     });
   },
-  _selectedDatasetChanged: function(
-      datasetIndex, datasets, overridingHierarchyParams) {
-    this._parseAndConstructHierarchicalGraph(
-        datasets[datasetIndex].path, undefined, overridingHierarchyParams);
-  },
   _selectedFileChanged: function(e, overridingHierarchyParams) {
     if (!e) {
       return;
@@ -206,7 +218,7 @@ Polymer({
     // selects the same file, we'll re-read it.
     e.target.value = '';
 
-    this._parseAndConstructHierarchicalGraph(
+    this._fetchAndConstructHierarchicalGraph(
         null, file, overridingHierarchyParams);
   }
 });
