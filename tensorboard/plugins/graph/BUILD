@@ -42,3 +42,26 @@ py_test(
         "@org_pythonhosted_six",
     ],
 )
+
+py_library(
+    name = "graph_util",
+    srcs = ["graph_util.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
+    ],
+)
+
+py_test(
+    name = "graph_util_test",
+    size = "small",
+    srcs = ["graph_util_test.py"],
+    main = "graph_util_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":graph_util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
