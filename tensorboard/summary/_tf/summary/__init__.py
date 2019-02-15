@@ -22,10 +22,21 @@ import tensorflow as tf
 
 # Re-export all symbols from the original tf.summary.
 # pylint: disable=wildcard-import,unused-import,g-import-not-at-top
-if tf.__version__.startswith('2.'):
+
+if getattr(tf, '__version__', '').startswith('2.'):
   from tensorflow.summary import *
 else:
-  from tensorflow.compat.v2.summary import *
+  # Check if we can directly import tf.compat.v2. We may not be able to if we
+  # reached this import itself while importing tf.compat.v2.
+  try:
+    import tensorflow.compat.v2 as test_import
+    del test_import
+  except ImportError:
+    # If that failed, go "under the hood" to directly import the module that
+    # will become tf.compat.v2.summary.
+    from tensorflow._api.v1.compat.v2.summary import *
+  else:
+    from tensorflow.compat.v2 import *
 
 from tensorboard.summary.v2 import audio
 from tensorboard.summary.v2 import histogram
