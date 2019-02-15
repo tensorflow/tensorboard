@@ -99,7 +99,8 @@ def keras_model_to_graph_def(keras_layer):
     node_def.name = node_name
 
     if layer.get('class_name') is not None:
-      node_def.attr['keras_class'].s = str(layer.get('class_name'))
+      keras_cls_name = layer.get('class_name').encode('ascii')
+      node_def.attr['keras_class'].s = keras_cls_name
 
     if layer_config.get('dtype') is not None:
       tf_dtype = dtypes.as_dtype(layer_config.get('dtype'))
