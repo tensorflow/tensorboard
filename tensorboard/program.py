@@ -349,7 +349,6 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   def __init__(self, wsgi_app, flags):
     self._flags = flags
     host = flags.host
-    self._auto_wildcard = False
 
     # base_port: what's the first port to which we should try to bind?
     # should_scan: if that fails, shall we try additional ports?
@@ -365,11 +364,13 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     max_attempts = 10 if should_scan else 1
     base_port = min(base_port + max_attempts, 65536) - max_attempts
 
+    self._auto_wildcard = False
     if not host:
       # Without an explicit host, we default to serving on all interfaces,
       # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
       host = self._get_wildcard_address(base_port)
       self._auto_wildcard = True
+
     for (attempt_index, port) in (
         enumerate(xrange(base_port, base_port + max_attempts))):
       try:
