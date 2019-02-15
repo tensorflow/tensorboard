@@ -949,6 +949,12 @@ limitations under the License.
         min-width: 140px;
         width: 140px;
       }
+      .counterfactual-toggle {
+        margin: 10px 0 0 8px;
+      }
+      .distance-button {
+        color: grey;
+      }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
@@ -984,15 +990,15 @@ limitations under the License.
       </div>
     </paper-dialog>
     <paper-dialog id="distancedialog">
-      <h2>Create a distance feature</h2>
-      <paper-input value="{{facetDistFeatureName}}" label="Enter feature name" class="datapoint-control-filter-input">
+      <h2>Show similarity to selected datapoint</h2>
+      <paper-input value="{{facetDistFeatureName}}" label="Metric name" class="datapoint-control-filter-input">
       </paper-input>
       <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
         <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
-      <paper-dropdown-menu label="Apply to visualization" class="threshold-dropdown distance-vis-dropdown">
+      <paper-dropdown-menu label="Apply to datapoints visualization" class="threshold-dropdown distance-vis-dropdown">
         <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
           <paper-item name="colorBy">Color By</paper-item>
           <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
@@ -1045,13 +1051,16 @@ limitations under the License.
                         <template is="dom-if" if="[[!isRegression_(modelType)]]">
                           <div class="flex">
                             <div title="Select a datapoint to use this feature">
-                              <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="findClosestCounterfactual_" alt="show nearest counterfactual"
-                                title="Show nearest counterfactual">
-                                Show nearest counterfactual
-                              </paper-button>
+                              <paper-toggle-button class="counterfactual-toggle"
+                                  checked="{{showNearestCounterfactual}}"
+                                  disabled$="[[!hasSelected(selectedExampleAndInference)]]">
+                                Show nearest counterfactual datapoint
+                              </paper-toggle-button>
                             </div>
-                            <paper-toggle-button checked="{{neighborByL2}}">L2</paper-toggle-button>
+                            <paper-radio-group selected="{{nearestCounterfactualDist}}">
+                              <paper-radio-button name="L1">L1</paper-radio-button>
+                              <paper-radio-button name="L2">L2</paper-radio-button>
+                            </paper-radio-group>
                             <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
                             </paper-icon-button>
                             <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
@@ -1066,11 +1075,22 @@ limitations under the License.
                           </div>
                         </template>
                         <div title="Select a datapoint to use this feature">
-                          <paper-button class="control-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                              on-tap="showDistanceClicked_" alt="Create distance feature  for visualization"
-                              title="Create distance feature for visualization">
-                              Create distance feature
-                          </paper-button>
+                          <div class="flex">
+                            <paper-button class="control-button distance-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                                on-tap="showDistanceClicked_" alt="Show similarity to selected datapoint"
+                                title="Show similarity to selected datapoint">
+                                Show similarity to selected datapoint
+                            </paper-button>
+                            <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
+                            </paper-icon-button>
+                            <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                              <div class="dialog-title">Show similarity to selected datapoint</div>
+                              <div>
+                                Calculates the distance between the selected datapoint and all other datapoints and applies this
+                                metric to the specified setting in the datapoints visualization to the right.
+                              </div>
+                            </paper-dialog>
+                          </div>
                         </div>
                       </iron-collapse>
                     </div>
@@ -1195,7 +1215,7 @@ limitations under the License.
                       </div>
                       <template is="dom-if" if="[[counterfactualExampleAndInference]]">
                         <div class="inference-section">
-                          <button class="inference-header heading" on-tap="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, neighborByL2)]]
+                          <button class="inference-header heading" on-tap="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, nearestCounterfactualDist)]]
                             <div class="right-side right-side-performance-tab">
                               <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                             </div>
@@ -1984,9 +2004,10 @@ limitations under the License.
         regressionEntries_: {
           type: Array
         },
-        neighborByL2: {
-          type: Boolean,
-          value: false
+        nearestCounterfactualDist: {
+          type: String,
+          value: "L1",
+          observer: 'nearestCounterfactualDistChanged_',
         },
         visMode: {
           type: String,
@@ -2019,6 +2040,14 @@ limitations under the License.
         numModels: {
           type: Number,
           readOnly: true,
+        },
+        // Timer for debounding of refreshing dive/stats after data changes.
+        refreshDiveTimer_: Number,
+        // Show nearest counterfactual toggle button setting.
+        showNearestCounterfactual: {
+          type: Boolean,
+          value: false,
+          observer: 'showNearestCounterfactualChanged_',
         },
         // Colors for lines and bars in partial dependence plots.
         pdPlotColors: {
@@ -2157,6 +2186,24 @@ limitations under the License.
             ' distance to example ' + selected[0];
       },
 
+      showNearestCounterfactualChanged_: function(show) {
+        if (show) {
+          this.findClosestCounterfactual_();
+        } else {
+          this.comparedIndices = [];
+          this.counterfactualExampleAndInference = null;
+          const temp = this.selectedExampleAndInference;
+          this.selectedExampleAndInference = null;
+          this.selectedExampleAndInference = temp;
+        }
+      },
+
+      nearestCounterfactualDistChanged_: function() {
+        if (this.showNearestCounterfactual) {
+          this.findClosestCounterfactual_();
+        }
+      },
+
       // TODO (tolgab) Update for model comparison
       findClosestCounterfactual_: function() {
         const selected = this.selected[0];
@@ -2172,7 +2219,8 @@ limitations under the License.
             continue;
           }
           let dist = this.getDist(
-            this.visdata[selected], this.visdata[i], this.neighborByL2);
+            this.visdata[selected], this.visdata[i],
+            this.nearestCounterfactualDist == 'L2');
           if (dist < closestDist) {
             closestDist = dist;
             closest = i;
@@ -2183,7 +2231,7 @@ limitations under the License.
           this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
-          this.compareTitle = (this.neighborByL2 ? 'L2' : 'L1') + ' counterfactual'
+          this.compareTitle = this.nearestCounterfactualDist + ' counterfactual'
         }
       },
 
@@ -2280,9 +2328,13 @@ limitations under the License.
       },
 
       selectedIndicesChanged_: function(event) {
-        this.comparedIndices = [];
         this.selected = event.detail.value;
         this.selectedDataUpdated_();
+        if (this.showNearestCounterfactual && this.selected.length != 0) {
+          this.findClosestCounterfactual_();
+        } else {
+          this.comparedIndices = [];
+        }
       },
 
       selectNextDatapoint_: function() {
@@ -3778,7 +3830,7 @@ limitations under the License.
         this.selectedDataUpdated_();
       },
 
-      refreshDive_: function() {
+      refreshDiveImpl_: function() {
         const temp = this.visdata;
         this.visdata = [];
         this.visdata = temp;
@@ -3790,6 +3842,13 @@ limitations under the License.
         this.$.dive.selectedData = [];
         this.$.dive.selectedData = tempSelected;
         this.updateSprite();
+      },
+
+      refreshDive_: function() {
+        // Debounce a refresh request, for when multiple updates are happening
+        // in succession.
+        clearTimeout(this.refreshDiveTimer_);
+        this.refreshDiveTimer_ = setTimeout(() => this.refreshDiveImpl_(), 500);
       },
 
       /**
@@ -4739,8 +4798,8 @@ limitations under the License.
         this.$$('#collapsesecondinference').toggle();
       },
 
-      getCompareInferenceResultsHeaderText: function(indices, useL2Distance) {
-        let str = (useL2Distance ? 'L2' : 'L1') + ': ';
+      getCompareInferenceResultsHeaderText: function(indices, distanceType) {
+        let str = distanceType + ': ';
         if (indices && indices.length > 0) {
           str += 'Example ' + indices[0];
         }
