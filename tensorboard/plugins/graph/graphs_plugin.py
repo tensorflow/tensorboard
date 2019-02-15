@@ -18,14 +18,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 _PLUGIN_PREFIX_ROUTE = 'graphs'
+
+_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_with_graph'
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
@@ -44,9 +50,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return {
         '/graph': self.graph_route,
-        '/runs': self.runs_route,
+        '/index': self.index_route,
         '/run_metadata': self.run_metadata_route,
-        '/run_metadata_tags': self.run_metadata_tags_route,
     }
 
   def is_active(self):
@@ -55,17 +60,44 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   def index_impl(self):
     """Returns a list of all runs that have a graph."""
-    return [run_name
-            for (run_name, run_data) in self._multiplexer.Runs().items()
-            if run_data.get(event_accumulator.GRAPH)]
+    result = {}
+    def add_row_item(run, tag=None):
+      run_item = result.setdefault(run, {
+          'run': run,
+          'tags': {},
+          'run_graph': False})
 
-  def run_metadata_index_impl(self):
-    """Returns a run-to-tag mapping for metadata."""
-    return {
-        run_name: run_data[event_accumulator.RUN_METADATA]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.RUN_METADATA in run_data
-    }
+      tag_item = None
+      if tag:
+        tag_item = run_item.get('tags').setdefault(tag, {
+            'tag': tag,
+            'conceptual_graph': False,
+            'op_graph': False,
+            'profile': False})
+      return (run_item, tag_item)
+
+    mapping = self._multiplexer.PluginRunToTagToContent(
+        _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH)
+    for (run_name, tag_to_content) in six.iteritems(mapping):
+      for (tag, content) in six.iteritems(tag_to_content):
+        if content is not '1':
+          logger.warn('Ignoring unrecognizable version of RunMetadata.')
+          continue
+        (_, tag_item) = add_row_item(run_name, tag)
+        tag_item['op_graph'] = True
+
+    for (run_name, run_data) in self._multiplexer.Runs().items():
+      if run_data.get(event_accumulator.GRAPH):
+        (run_item, _) = add_row_item(run_name, None)
+        run_item['run_graph'] = True
+
+    for (run_name, run_data) in self._multiplexer.Runs().items():
+      if event_accumulator.RUN_METADATA in run_data:
+        for tag in run_data[event_accumulator.RUN_METADATA]:
+          (_, tag_item) = add_row_item(run_name, tag)
+          tag_item['profile'] = True
+
+    return result
 
   def graph_impl(self, run, limit_attr_size=None, large_attrs_key=None):
     """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
@@ -87,13 +119,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
     return (str(run_metadata), 'text/x-protobuf')  # pbtxt
 
   @wrappers.Request.application
-  def runs_route(self, request):
+  def index_route(self, request):
     index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
-
-  @wrappers.Request.application
-  def run_metadata_tags_route(self, request):
-    index = self.run_metadata_index_impl()
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
