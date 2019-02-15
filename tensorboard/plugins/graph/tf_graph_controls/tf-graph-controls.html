@@ -825,7 +825,8 @@ Polymer({
     },
     datasets: {
       type: Array,
-      observer: '_datasetsChanged'
+      observer: '_datasetsChanged',
+      value: () => [],
     },
     renderHierarchy: {
       type: Object,
@@ -977,6 +978,9 @@ Polymer({
     return this._getTags(datasets, _selectedRunIndex).length;
   },
   _getTags: function(datasets, _selectedRunIndex) {
+    if (!datasets || !datasets[_selectedRunIndex]) {
+      return [];
+    }
     return datasets[_selectedRunIndex].tags;
   },
   fit: function() {
@@ -1078,14 +1082,13 @@ Polymer({
     }
   },
   _selectedRunIndexChanged: function(newDataset, oldDataset) {
-    if (this.datasets) {
-      // Reset the states when user pick a different run.
-      this.colorBy = 'structure';
-      this._selectedTagIndex = 0;
-      this._selectedGraphType = this._getDefaultSelectionType();
-      this.$['trace-inputs'].active = false; // Set trace input to off-state.
-      this._setDownloadFilename(this.datasets[newDataset].name);
-    }
+    if (!this.datasets) return;
+    // Reset the states when user pick a different run.
+    this.colorBy = 'structure';
+    this._selectedTagIndex = 0;
+    this._selectedGraphType = this._getDefaultSelectionType();
+    this.$['trace-inputs'].active = false; // Set trace input to off-state.
+    this._setDownloadFilename(this.datasets[newDataset] ? this.datasets[newDataset].name : '');
   },
   _selectedTagIndexChanged() {
      this._selectedGraphType = this._getDefaultSelectionType();
