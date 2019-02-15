@@ -1,4 +1,4 @@
-# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/)
+# TensorBoard [![Travis build status](https://www.travis-ci.com/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.com/tensorflow/tensorboard/)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
