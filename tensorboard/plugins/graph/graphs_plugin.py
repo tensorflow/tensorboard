@@ -31,7 +31,7 @@ logger = tb_logging.get_logger()
 
 _PLUGIN_PREFIX_ROUTE = 'graphs'
 
-_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_with_graph'
+_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_graph'
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
