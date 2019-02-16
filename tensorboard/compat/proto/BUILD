@@ -38,6 +38,7 @@ tb_proto_library(
         "tensor_shape.proto",
         "tfprof_log.proto",
         "types.proto",
+        "verifier_config.proto",
         "versions.proto",
     ],
     visibility = ["//visibility:public"],
