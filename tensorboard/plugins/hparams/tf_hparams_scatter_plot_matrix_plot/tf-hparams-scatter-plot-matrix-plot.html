@@ -121,7 +121,7 @@ the vulcanization build step. Figure out why.
       },
 
       observers: [
-        '_redraw(sessionGroups.*)',
+        '_sessionGroupsChanged(sessionGroups.*)',
         '_redraw(schema.*)',
         '_redraw(options.*)',
       ],
@@ -132,6 +132,22 @@ the vulcanization build step. Figure out why.
         this._redraw();
       },
 
+      _sessionGroupsChanged() {
+        if (this.selectedSessionGroup !== null) {
+          // Try to keep the selected session group: if the new sessionGroups
+          // array has a sessionGroup with the same name as the one that was
+          // selected before, select it.
+          const newSelectedSessionGroup = this.sessionGroups.find(
+              sg => sg.name === this.selectedSessionGroup.name);
+          if (newSelectedSessionGroup !== undefined) {
+            this._setSelectedSessionGroup(newSelectedSessionGroup);
+          } else {
+            this._setSelectedSessionGroup(null);
+          }
+        }
+        this._redraw();
+      },
+      
       // Redraws the plot.
       _redraw() {
         this.debounce("_redraw", ()=>{
@@ -152,10 +168,8 @@ the vulcanization build step. Figure out why.
               .attr("width", this.width)
               .attr("height", this.height)
 
-          // Delete all elements in the svg subtree and remove any
-          // selected group
+          // Delete all elements in the svg subtree
           this._svg.selectAll("g").remove()
-          this._setSelectedSessionGroup(null);
 
           // Draw.
           this._draw();
@@ -520,7 +534,7 @@ the vulcanization build step. Figure out why.
         let visibleMarkers = new Set(markers.nodes());
 
         // For each cell, we index the markers in a quad-tree to quickly
-        // find the intersection of the markers with the selection.
+        // find the intersection of the markers with the (brush) selection.
         // The following function creates this quad-tree for the cell indexed by
         // (col, metric). Each quad tree datum is the corresponding marker's
         // element.
@@ -641,6 +655,12 @@ the vulcanization build step. Figure out why.
         // markers of the currently selected session group or null if no
         // session group is selected.
         let selectedMarkers = null;
+        if (this.selectedSessionGroup !== null) {
+          selectedMarkers =
+              d3.selectAll(
+                  sessionGroupMarkersMap.get(this.selectedSessionGroup))
+                .classed("selected-marker", true);
+        }
         cells
             .on("click",
                 function () {
