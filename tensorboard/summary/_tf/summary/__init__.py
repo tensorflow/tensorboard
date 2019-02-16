@@ -39,9 +39,10 @@ else:
     #   import tensorflow.compat.v2 as other
     #   from tensorflow.compat import v2
     #
-    # The former raises AttributeError until issue 30024 is fixed in python 3.7.
-    # The latter raises ImportError even when it should succeed, until issue
-    # 17636 is fixed in python 3.5.
+    # The former raises AttributeError until python 3.7:
+    # <https://bugs.python.org/issue30024>
+    # The latter raises ImportError even when it shouldn't, until python 3.5:
+    # <https://bugs.python.org/issue17636>
     #
     # In commemoration of this fiasco, I offer the following haiku:
     #
