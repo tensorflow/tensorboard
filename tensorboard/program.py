@@ -379,6 +379,10 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         # chain (type(self).__mro__) it doesn't seem that anything
         # _should_ go wrong (nor does any superclass provide a facility
         # to do this natively).
+        #
+        # TODO(@wchargin): Refactor so that this is no longer necessary,
+        # probably by switching composing around a Werkzeug server
+        # rather than inheriting from it.
         super(WerkzeugServer, self).__init__(host, port, wsgi_app)
         break
       except socket.error as e:
