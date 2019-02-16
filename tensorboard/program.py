@@ -352,33 +352,37 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
     # base_port: what's the first port to which we should try to bind?
     # should_scan: if that fails, shall we try additional ports?
-    (base_port, should_scan) = (
-        (flags.port, False)
-        if flags.port is not None
-        else (core_plugin.DEFAULT_PORT, True)
-    )
+    # max_attempts: how many ports shall we try?
+    should_scan = flags.port is None
+    base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
+    max_attempts = 10 if should_scan else 1
+
     if base_port > 0xFFFF:
       raise TensorBoardServerException(
           'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
       )
     max_attempts = 10 if should_scan else 1
-    base_port = min(base_port + max_attempts, 65536) - max_attempts
+    base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
-    self._auto_wildcard = False
-    if not host:
-      # Without an explicit host, we default to serving on all interfaces,
-      # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
-      host = self._get_wildcard_address(base_port)
-      self._auto_wildcard = True
+    # Without an explicit host, we default to serving on all interfaces,
+    # and will attempt to serve both IPv4 and IPv6 traffic through one
+    # socket.
+    self._auto_wildcard = not host
 
     for (attempt_index, port) in (
         enumerate(xrange(base_port, base_port + max_attempts))):
+      if self._auto_wildcard:
+        host = self._get_wildcard_address(port)
       try:
         # Yes, this invokes the super initializer potentially many
         # times. This seems to work fine, and looking at the superclass
         # chain (type(self).__mro__) it doesn't seem that anything
         # _should_ go wrong (nor does any superclass provide a facility
         # to do this natively).
+        #
+        # TODO(@wchargin): Refactor so that this is no longer necessary,
+        # probably by switching composing around a Werkzeug server
+        # rather than inheriting from it.
         super(WerkzeugServer, self).__init__(host, port, wsgi_app)
         break
       except socket.error as e:
