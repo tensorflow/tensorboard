@@ -352,11 +352,11 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
     # base_port: what's the first port to which we should try to bind?
     # should_scan: if that fails, shall we try additional ports?
-    (base_port, should_scan) = (
-        (flags.port, False)
-        if flags.port is not None
-        else (core_plugin.DEFAULT_PORT, True)
-    )
+    # max_attempts: how many ports shall we try?
+    should_scan = flags.port is None
+    base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
+    max_attempts = 10 if should_scan else 1
+
     if base_port > 0xFFFF:
       raise TensorBoardServerException(
           'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
