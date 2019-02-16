@@ -362,7 +362,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
           'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
       )
     max_attempts = 10 if should_scan else 1
-    base_port = min(base_port + max_attempts, 65536) - max_attempts
+    base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
     self._auto_wildcard = False
     if not host:
