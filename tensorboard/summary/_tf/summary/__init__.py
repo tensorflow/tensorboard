@@ -32,13 +32,23 @@ else:
     # Check if we can directly import tf.compat.v2. We may not be able to if we
     # reached this import itself while importing tf.compat.v2. Use importlib
     # to simulate 'import tensorflow.compat.v2' but without binding local names
-    # which are hard to clean up. We can't use either of the following:
+    # which are hard to clean up.
+    #
+    # Note that we can't use either of the following internally:
     #
     #   import tensorflow.compat.v2 as other
     #   from tensorflow.compat import v2
     #
-    # because they each fail in a way that doesn't raise ImportError in
-    # different TF API generation contexts. Yay.
+    # The former raises AttributeError until issue 30024 is fixed in python 3.7.
+    # The latter raises ImportError even when it should succeed, until issue
+    # 17636 is fixed in python 3.5.
+    #
+    # In commemoration of this fiasco, I offer the following haiku:
+    #
+    #   import a module
+    #   it works. but add "as other"
+    #   AttributeError
+    #
     importlib.import_module('tensorflow.compat.v2')
   except ImportError:
     # If that failed, go "under the hood" and attempt to directly import the
