@@ -100,6 +100,11 @@ limitations under the License.
 
       .inference-viewer {
         max-height: 35%;
+        flex-grow: 1;
+      }
+
+      .compare-inference-viewer {
+        border-left: 1px solid lightgrey;
       }
 
       .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
@@ -821,12 +826,12 @@ limitations under the License.
       }
 
       .run-button-container {
-        margin-top: -8px;
-        height: 28px;
+        display: flex;
       }
 
       .main-button.run-button {
         padding: 5px;
+        flex-grow: 1;
       }
 
       .doc-image {
@@ -946,8 +951,11 @@ limitations under the License.
       .counterfactual-toggle {
         margin: 10px 0 0 8px;
       }
-      .distance-button {
-        color: grey;
+      .datapoint-button {
+        color: black;
+      }
+      .flex-grow {
+        flex-grow: 1;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1040,7 +1048,7 @@ limitations under the License.
                       <iron-collapse class="no-padding-card" id="collapsecontexttools" opened="{{openedContextTools}}">
                         <paper-radio-group selected="{{visMode}}">
                           <paper-radio-button name="dive">Datapoints</paper-radio-button>
-                          <paper-radio-button name="pd">Partial Dependence Plots</paper-radio-button>
+                          <paper-radio-button name="pd">Partial dependence plots</paper-radio-button>
                         </paper-radio-group>
                         <template is="dom-if" if="[[!isRegression_(modelType)]]">
                           <div class="flex">
@@ -1070,7 +1078,7 @@ limitations under the License.
                         </template>
                         <div title="Select a datapoint to use this feature">
                           <div class="flex">
-                            <paper-button class="control-button distance-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                            <paper-button class="control-button datapoint-button" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                                 on-tap="showDistanceClicked_" alt="Show similarity to selected datapoint"
                                 title="Show similarity to selected datapoint">
                                 Show similarity to selected datapoint
@@ -1089,7 +1097,7 @@ limitations under the License.
                       </iron-collapse>
                     </div>
                     <div class="heading-and-card editor-heading-and-card">
-                      <button class="heading">[[getDatapointEditorTitle(selectedExampleNum)]]
+                      <button class="heading">[[getDatapointEditorTitle(selectedExampleNum, comparedIndices)]]
                       </button>
                       <div class="no-padding-card">
                         <div class="datapoint-controls-holder datapoint-control-buttons-holder">
@@ -1121,14 +1129,14 @@ limitations under the License.
                               </paper-icon-button>
                             </div>
                             <div class="control-divider"></div>
-                            <paper-icon-button class="datapoint-control-button" icon="list" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="setExampleCollapsed_" alt="collapse all features" title="Collapse all features">
+                            <paper-icon-button class="datapoint-control-button" icon="subject" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                                on-tap="setExampleCollapsed_" alt="collapse feature values" title="Collapse feature values">
                             </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="line-weight" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="setExampleShow_" alt="show all features" title="Show all features">
+                            <paper-icon-button class="datapoint-control-button" icon="editor:format-line-spacing" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                                on-tap="setExampleShow_" alt="show all feature values" title="Show all feature values">
                             </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="view-module" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                              on-tap="setExampleExpanded_" alt="expand all features" title="Expand all features">
+                            <paper-icon-button class="datapoint-control-button" icon="editor:format-align-justify" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
+                              on-tap="setExampleExpanded_" alt="expand all feature values" title="Expand all feature values">
                             </paper-icon-button>
                             <div class="control-divider"></div>
                             <paper-input value="{{featureSearchValue}}" label="Search features"
@@ -1180,43 +1188,33 @@ limitations under the License.
                       <div class="inference-section">
                         <button class="inference-header heading" on-tap="toggleInferenceResults">
                           <div class="flex">
-                            <div>Infer</div>
-                            <div class="run-button-container" title="Edit the datapoint to use this feature">
-                              <paper-button on-tap="inferClicked_" class="main-button run-button"
-                                disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
-                                Run inference
-                              </paper-button>
-                            </div>
+                            <div>[[getInferTitle(selectedExampleNum, comparedIndices)]]</div>
                             <div class="right-side right-side-performance-tab">
                               <iron-icon icon="[[getExpandCollapseIcon(openedInferenceResults)]]" class="expand-collapse-button"></iron-icon>
                             </div>
                           </div>
                         </button>
                         <iron-collapse class="no-padding-card" id="collapseinference" opened="{{openedInferenceResults}}">
-                          <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
-                            <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                              id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                            </tf-inference-viewer>
-                          </template>
-                          <template is="dom-if" if="[[!hasSelected(selectedExampleAndInference)]]">
-                            <div class="infer-info">Select a datapoint to see its inference results here.</div>
-                          </template>
+                          <div class="run-button-container" title="Edit a datapoint to use this feature">
+                            <paper-button on-tap="inferClicked_" class="control-button datapoint-button flex-grow"
+                              disabled$="[[shouldDisableInferButton_(examplesAndInferences, modelName, inferenceAddress, updatedExample)]]">
+                              Run inference
+                            </paper-button>
+                          </div>
+                          <div class="flex">
+                            <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
+                              <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
+                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                              </tf-inference-viewer>
+                            </template>
+                            <template is="dom-if" if="[[counterfactualExampleAndInference]]">
+                              <tf-inference-viewer class="inference-viewer compare-inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
+                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                              </tf-inference-viewer>
+                            </template>
+                          </div>
                         </iron-collapse>
                       </div>
-                      <template is="dom-if" if="[[counterfactualExampleAndInference]]">
-                        <div class="inference-section">
-                          <button class="inference-header heading" on-tap="toggleSecondInferenceResults">[[getCompareInferenceResultsHeaderText(comparedIndices, nearestCounterfactualDist)]]
-                            <div class="right-side right-side-performance-tab">
-                              <iron-icon icon="[[getExpandCollapseIcon(openedSecondInferenceResults)]]" class="expand-collapse-button"></iron-icon>
-                            </div>
-                          </button>
-                          <iron-collapse class="no-padding-card" id="collapsesecondinference" opened="{{openedSecondInferenceResults}}">
-                            <tf-inference-viewer class="inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
-                            </tf-inference-viewer>
-                          </iron-collapse>
-                        </div>
-                      </template>
                     </div>
                     </div>
                     <div class="resizer" id="resizer">
@@ -1987,10 +1985,6 @@ limitations under the License.
           type: Boolean,
           value: true
         },
-        openedSecondInferenceResults: {
-          type: Boolean,
-          value: true
-        },
         regressionEntries_: {
           type: Array
         },
@@ -2221,7 +2215,7 @@ limitations under the License.
           this.comparedIndices = [closest];
           this.counterfactualExampleAndInference =
             this.examplesAndInferences[closest];
-          this.compareTitle = this.nearestCounterfactualDist + ' counterfactual'
+          this.compareTitle = 'Counterfactual value(s)'
         }
       },
 
@@ -4773,18 +4767,6 @@ limitations under the License.
         this.$$('#collapseinference').toggle();
       },
 
-      toggleSecondInferenceResults: function() {
-        this.$$('#collapsesecondinference').toggle();
-      },
-
-      getCompareInferenceResultsHeaderText: function(indices, distanceType) {
-        let str = distanceType + ': ';
-        if (indices && indices.length > 0) {
-          str += 'Example ' + indices[0];
-        }
-        return str;
-      },
-
       getExpandCollapseIcon: function(opened) {
         return opened ? 'expand-less' : 'expand-more';
       },
@@ -4801,10 +4783,25 @@ limitations under the License.
         return numModels < 2 ? 'perf-table-model-single' : 'perf-table-model';
       },
 
-      getDatapointEditorTitle: function(selectedExampleNum) {
-        let name = 'Edit';
+      getDatapointEditorTitle: function(selectedExampleNum, comparedIndices) {
+        return this.getSectionTitle(
+          'Edit', selectedExampleNum, comparedIndices);
+      },
+
+      getInferTitle: function(selectedExampleNum, comparedIndices) {
+        return this.getSectionTitle(
+          'Infer', selectedExampleNum, comparedIndices);
+      },
+
+      getSectionTitle: function(title, selectedExampleNum, comparedIndices) {
+        let name = title;
         if (selectedExampleNum != null && selectedExampleNum != '') {
-          name += ' | Example ' + selectedExampleNum;
+          if (comparedIndices != null && comparedIndices.length > 0) {
+          name += ' | Examples ' + selectedExampleNum + ' and ' + comparedIndices[0];
+          }
+          else {
+            name += ' | Example ' + selectedExampleNum;
+          }
         }
         return name;
       },
@@ -4838,11 +4835,6 @@ limitations under the License.
       getPerformanceTabTitle: function(modelType, multiClass) {
         return this.isBinaryClassification_(modelType, multiClass) ?
             'Performance + Fairness' : 'Performance';
-      },
-
-      getCompareSlicesTitle: function(modelType, multiClass) {
-        return this.isBinaryClassification_(modelType, multiClass) ?
-            'Compare Slices + Fairness Metrics' : 'Compare Slices';
       },
     });
 
