@@ -2549,8 +2549,12 @@ limitations under the License.
           requestAnimationFrame(() => {
             this.updateInferenceStats_(true);
           });
-        } else if (tab == 3) {
-          requestAnimationFrame(() => this.populatePdTabs());
+        } else if (tab == 2) {
+          // Force redraw of facets overview tables to ensure proper sizing.
+          const tables = this.$.overview.querySelectorAll('facets-overview-table');
+          for (let i = 0; i < tables.length; i++) {
+            tables[i]._handleResize();
+          }
         }
       },
 
