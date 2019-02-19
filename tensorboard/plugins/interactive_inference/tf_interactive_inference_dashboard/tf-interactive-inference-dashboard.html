@@ -335,6 +335,7 @@ limitations under the License.
         padding-left: 2px;
       }
 
+
       .datapoint-controls-holder.datapoint-control-search-holder {
         padding-left: 10px;
       }
@@ -498,6 +499,7 @@ limitations under the License.
         width: 300px;
         height: 235px;
         margin-top: 20px;
+        margin-bottom: 20px;
         margin-right: 50px;
         position: relative;
       }
@@ -1005,6 +1007,14 @@ limitations under the License.
         text-align: right;
         margin-right: 20px;
       }
+      .perf-button {
+        margin-top: 10px;
+      }
+
+      .perf-sort-box {
+        display: flex;
+        flex-direction: row-reverse;
+      }
       .counterfactual-toggle {
         margin: 10px 0 0 8px;
       }
@@ -1496,13 +1506,23 @@ limitations under the License.
                   <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
                       <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
-                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
-                          <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
-                            <paper-item name="[[item]]">[[item]]</paper-item>
-                          </template>
-                        </paper-listbox>
-                      </paper-dropdown-menu>
+                      <div class="perf-sort-box">
+                        <div>
+                          <paper-icon-button icon="unfold-more" class="datapoint-control-button perf-button" on-tap="expandAllPerformance"
+                            alt="expand all slices" title="Expand all slices">
+                          </paper-icon-button>
+                          <paper-icon-button icon="unfold-less" class="datapoint-control-button perf-button" on-tap="collapseAllPerformance"
+                            alt="collapse all slices" title="Collapse all slices">
+                          </paper-icon-button>
+                        </div>
+                        <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                            <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
+                              <paper-item name="[[item]]">[[item]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                      </div>
                     </div>
                     <div class="perf-table-header">
                       <div class="perf-table-arrow">
@@ -1683,13 +1703,23 @@ limitations under the License.
                   <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
                       <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
-                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
-                          <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
-                            <paper-item name="[[item]]">[[item]]</paper-item>
-                          </template>
-                        </paper-listbox>
-                      </paper-dropdown-menu>
+                      <div class="perf-sort-box">
+                        <div>
+                          <paper-icon-button icon="unfold-more" class="datapoint-control-button perf-button" on-tap="expandAllPerformance"
+                            alt="expand all slices" title="Expand all slices">
+                          </paper-icon-button>
+                          <paper-icon-button icon="unfold-less" class="datapoint-control-button perf-button" on-tap="collapseAllPerformance"
+                            alt="collapse all slices" title="Collapse all slices">
+                          </paper-icon-button>
+                        </div>
+                        <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                            <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
+                              <paper-item name="[[item]]">[[item]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                      </div>
                     </div>
                     <div class="perf-table-header">
                       <div class="perf-table-arrow"></div>
@@ -5139,6 +5169,25 @@ limitations under the License.
 
        formatError: function(error) {
         return d3.format('.3f')(error);
+       },
+
+       expandAllPerformance: function() {
+         if (this.featureValueThresholds == null) {
+           return;
+         }
+         for (let i = 0; i < this.featureValueThresholds.length; i++) {
+           this.set('featureValueThresholds.' + i + '.opened', true);
+         }
+         requestAnimationFrame(() => this.updateInferenceStats_(true));
+       },
+
+       collapseAllPerformance: function() {
+         if (this.featureValueThresholds == null) {
+           return;
+         }
+         for (let i = 0; i < this.featureValueThresholds.length; i++) {
+           this.set('featureValueThresholds.' + i + '.opened', false);
+         }
        },
     });
 
