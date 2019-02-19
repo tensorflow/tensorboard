@@ -819,16 +819,12 @@ limitations under the License.
       .datapoint-info-header {
         font-size: 26px;
         margin-top: 5px;
-        margin-bottom: 15px;
+        margin-bottom: 35px;
       }
 
       .datapoint-info-bullet {
         font-size: 16px;
-        margin-bottom: 5px;
-      }
-
-      .datapoint-info-block {
-        margin-left: 5px;
+        margin-bottom: 15px;
       }
 
       .button-prefix-label {
@@ -961,11 +957,10 @@ limitations under the License.
         margin-top: 8px;
       }
       .perf-table-val {
-        flex-grow: 1;
+        width: 30%;
       }
       .perf-table-count {
-        min-width: 90px;
-        width: 90px;
+        width: 10%;
         margin-right: 20px;
         text-align: right;
       }
@@ -978,32 +973,28 @@ limitations under the License.
       }
       .perf-table-threshold {
         width: 280px;
+        min-width: 280px;
         text-align: center;
       }
       .perf-table-error {
-        min-width: 160px;
-        width: 160px;
+        width: 15%;
         text-align: right;
       }
       .perf-table-sq-error {
-        min-width: 160px;
-        width: 160px;
+        width: 15%;
         text-align: right;
         margin-right: 20px;
       }
       .perf-table-fp {
-        min-width: 140px;
-        width: 140px;
+        width: 15%;
         text-align: right;
       }
       .perf-table-fn {
-        min-width: 160px;
-        width: 160px;
+        width: 15%;
         text-align: right;
       }
       .perf-table-acc {
-        min-width: 140px;
-        width: 140px;
+        width: 15%;
         text-align: right;
         margin-right: 20px;
       }
@@ -1026,6 +1017,12 @@ limitations under the License.
       }
       .flex-row-reverse {
         flex-direction: row-reverse;
+      }
+      .threshold-info-holder {
+        margin-top: -2px;
+      }
+      .tabs {
+        text-transform: none;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1055,7 +1052,7 @@ limitations under the License.
       </div>
     </paper-dialog>
     <paper-dialog id="deletedialog">
-      <p>Are you sure you want to delete the selected example?</p>
+      <p>Are you sure you want to delete the selected datapoint?</p>
       <div class="buttons">
         <paper-button dialog-dismiss class="control-button">Cancel</paper-button>
         <paper-button dialog-confirm autofocus on-tap="deleteDatapoint_" class="main-button">Delete</paper-button>
@@ -1089,7 +1086,7 @@ limitations under the License.
         <div class="main-content">
               <div class="main-bottom-bar">
                 <div class="datapoint-left-controls-holder">
-                  <paper-tabs
+                  <paper-tabs class="tabs"
                     noink
                     selected="{{sideTabSelected}}">
                     <paper-tab>Datapoint Editor</paper-tab>
@@ -1137,12 +1134,7 @@ limitations under the License.
                             </paper-icon-button>
                             <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                               <div class="dialog-title">Nearest counterfactual (neighbor of different classification)</div>
-                              <div>Compares the selected example with its nearest neighbor from a different classification using L1 or L2 distance,
-                                which are two popular distance measures. Find out more
-                                <a target="_blank" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">
-                                  here
-                                </a>.
-                              </div>
+                              <div>Compares the selected datapoint with its nearest neighbor from a different classification using L1 or L2 distance.</div>
                             </paper-dialog>
                           </div>
                         </template>
@@ -1158,8 +1150,8 @@ limitations under the License.
                             <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                               <div class="dialog-title">Show similarity to selected datapoint</div>
                               <div>
-                                Calculates the distance between the selected datapoint and all other datapoints and applies this
-                                metric to the specified setting in the datapoints visualization to the right.
+                                Calculates the distance between the selected datapoint and all other datapoints and shows this
+                                in the datapoints visualization.
                               </div>
                             </paper-dialog>
                           </div>
@@ -1303,7 +1295,7 @@ limitations under the License.
                                 stable-colors="true">
                     </facets-dive>
                     <div id="noexamples" class="noexamples info-text">
-                      Examples and their inference results will be displayed here.
+                      Datapoints and their inference results will be displayed here.
                     </div>
                     <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
@@ -1322,12 +1314,12 @@ limitations under the License.
                           </div>
                           <div>For numeric features, you can set the minimum and maximum values to plot.</div>
                           <div>For string features, the most popular feature values are shown as alternatives to
-                            the feature value for the selected example.
+                            the feature value for the selected datapoint.
                           </div>
-                          <div>For features with multiple feature values per example, a single plot is shown for for
-                            each feature value in the selected example. You can override which feature values have
+                          <div>For features with multiple feature values per datapoint, a single plot is shown for for
+                            each feature value in the selected datapoint. You can override which feature values have
                             plots created for them by specifying the indices to shown partial dependence plots for,
-                            if the example contains multiple feature values for a feature.
+                            if the datapoint contains multiple feature values for a feature.
                           </div>
                           <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
                             changing a single feature across all datapoints. When it is turned off, the plots show the
@@ -1400,10 +1392,9 @@ limitations under the License.
                               </paper-listbox>
                             </paper-dropdown-menu>
                             <div>
-                              <div class="help-title help-title-margin">What is this?</div>
+                              <div class="help-title help-title-margin">What is ground truth?</div>
                               <div class="help-text">
-                                <div>Select the feature to set as a ground true label for all loaded examples in order
-                                  to in order to investigate model performance.
+                                <div>Select the feature that your model is trying to predict.
                                   <span class="dialog-link" on-tap="openDialog">More.
                                     <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                       <div class="dialog-title">Ground Truth Feature</div>
@@ -1424,20 +1415,17 @@ limitations under the License.
                                 type="number" class="threshold-cost-input">
                               </paper-input>
                               <div>
-                                <div class="help-title help-title-margin">Why do I need a cost ratio?</div>
+                                <div class="help-title help-title-margin">What is cost ratio?</div>
                                 <div class="help-text">
-                                  <div>Necessary to optimize the classification threshold.</div>
-                                  <div>1.00 = false positives and false negatives are equally as costly</div>
-                                  <div>4.00 = false positives are 4 times more costly than false negatives</div>
-                                  <div>0.25 = false negatives are 4 times more costly than false positives.
+                                  <div>This tells the tool how to optimize the classification thresholds.</div>
+                                  <div>For example, a cost ratio of 4.0 means that false positives are four times as costly as false negatives.
                                     <span class="dialog-link" on-tap="openDialog">More.
                                       <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                        <div class="dialog-title">Why do I need a cost ratio?</div>
-                                        <div>Click
-                                          <a target="_blank" href="https://manoa.hawaii.edu/exploringourfluidearth/chemical/matter/properties-matter/practices-science-false-positives-and-false-negatives">
-                                            here
-                                          </a>
-                                          for an article about false positives, false negatives and when why one might wish to weight them differently.</div>
+                                        <div class="dialog-title">What is cost ratio?</div>
+                                        <div>This tells the tool how to optimize the classification thresholds when you use the optimization strategy controls.</div>
+                                        <div>1.00 = false positives are equally as costly as false negatives.</div>
+                                        <div>4.00 = false positives are 4 times more costly than false negatives</div>
+                                        <div>0.25 = false negatives are 4 times more costly than false positives.</div>
                                       </paper-dialog>
                                     </span>
                                   </div>
@@ -1457,7 +1445,7 @@ limitations under the License.
                               <div>
                                 <div class="help-title help-title-margin">What does slicing do?</div>
                                 <div class="help-text">
-                                  <div>Investigate performance for the groups of examples with each unique value of the selected feature.</div>
+                                  <div>Investigate performance for the groups of datapoint with each unique value of the selected feature.</div>
                                 </div>
                               </div>
                             </div>
@@ -1470,7 +1458,7 @@ limitations under the License.
                                     </template>
                                   </paper-listbox>
                                 </paper-dropdown-menu>
-                                <div class="help-text help-title-margin">Specify a second feature to slice the data by.</div>
+                                <div class="help-text help-title-margin">Optionally specify a second feature to slice the data by.</div>
                               </template>
                             </div>
                           </template>
@@ -1487,7 +1475,7 @@ limitations under the License.
                         <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
                           <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                             <div class="help-title help-title-margin-button">Apply an optimization strategy</div>
-                            <div class="help-text">Select a strategy to set classification tresholds based on the set cost ratio and slices.</div>
+                            <div class="help-text">Select a strategy to set classification tresholds based on the set cost ratio and data slices.</div>
                             <div class="help-text">Manually altering thresholds or changing cost ratio will default back to custom thresholds.</div>
                             <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
                               <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds</paper-radio-button>
@@ -1531,18 +1519,19 @@ limitations under the License.
                       <div class="perf-table-val">Feature Value</div>
                       <div class="perf-table-count">Count</div>
                       <div class$="[[getPerfTableModelClass(numModels)]]">Model</div>
-                      <div class="perf-table-threshold">Threshold
-                        <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                        </paper-icon-button>
-                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                          <div class="dialog-title">Exploring Classification Performance</div>
-                          <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
-                            above this
-                            threshold
-                            are considered a positive classification, while inference values below this threshold are considered
-                            a negative classification.
-                          </div>
-                        </paper-dialog>
+                      <div class="perf-table-threshold flex">
+                        <div>Threshold</div>
+                        <div class="threshold-info-holder">
+                          <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                          </paper-icon-button>
+                          <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                            <div class="dialog-title">Exploring Classification Performance</div>
+                            <div>Use this slider to adjust the classification threshold for this slice. Inference values at or
+                              above this threshold are considered a positive classification, while inference values below this
+                              threshold are considered a negative classification.
+                            </div>
+                          </paper-dialog>
+                        </div>
                       </div>
                       <div class="perf-table-fp">False Positives (%)</div>
                       <div class="perf-table-fn">False Negatives (%)</div>
@@ -1606,11 +1595,7 @@ limitations under the License.
                                   <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                     <div class="dialog-title">ROC curve</div>
                                     <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                      false
-                                      positive rate (FPR) at various classification thresholds. Find out more
-                                      <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                        here
-                                      </a>.
+                                      false positive rate (FPR) at various classification thresholds.
                                     </div>
                                   </paper-dialog>
                                 </div>
@@ -1860,7 +1845,7 @@ limitations under the License.
     const inferenceAbsErrorStr = ' Inference absolute error';
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
-    const exampleIdKey = ' Example ID';
+    const exampleIdKey = ' Datapoint ID';
     const classificationResultsKey = 'probabilities';
     const regressionResultsKey = 'score';
     const attributionPrefix = 'pig_';
@@ -2130,7 +2115,7 @@ limitations under the License.
         },
         exampleStatusStr: {
           type: String,
-          value: 'No examples loaded yet'
+          value: 'No datapoints loaded yet'
         },
         // The example ID number selected in the text input
         selectedExampleNum: {
@@ -2353,7 +2338,7 @@ limitations under the License.
 
       setFacetDistFeatureName: function(facetDistSwitch, selected) {
         this.facetDistFeatureName = ' ' + facetDistSwitch +
-            ' distance to example ' + selected[0];
+            ' distance to datapoint ' + selected[0];
       },
 
       showNearestCounterfactualChanged_: function(show) {
@@ -4270,7 +4255,7 @@ limitations under the License.
        * Callback for when new examples are received from the backend.
        */
       updateExampleContents: function(examples, hasSprite) {
-        this.exampleStatusStr = examples.length + ' examples loaded';
+        this.exampleStatusStr = examples.length + ' datapoints loaded';
         this.$.noexamples.style.display = 'none';
         this.$.spinner.hidden = true;
         this.examplesAndInferences = examples.map(function(ex) {
@@ -4344,7 +4329,7 @@ limitations under the License.
           this.updateExampleContents(
             result.value.examples, result.value.sprite);
         };
-        this.exampleStatusStr = 'Loading examples...'
+        this.exampleStatusStr = 'Loading datapoints...'
         this.makeAsyncRequest_(url, updateExampleContents, null);
         this.$.spinner.hidden = false;
       },
@@ -5054,10 +5039,10 @@ limitations under the License.
         let name = title;
         if (selectedExampleNum != null && selectedExampleNum != '') {
           if (comparedIndices != null && comparedIndices.length > 0) {
-          name += ' | Examples ' + selectedExampleNum + ' and ' + comparedIndices[0];
+          name += ' | Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
           }
           else {
-            name += ' | Example ' + selectedExampleNum;
+            name += ' | Datapoint ' + selectedExampleNum;
           }
         }
         return name;
@@ -5091,7 +5076,7 @@ limitations under the License.
 
       getPerformanceTabTitle: function(modelType, multiClass) {
         return this.isBinaryClassification_(modelType, multiClass) ?
-            'Performance + Fairness' : 'Performance';
+            'Performance & Fairness' : 'Performance';
       },
 
       getPerfTableTitle: function(
