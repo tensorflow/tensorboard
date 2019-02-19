@@ -322,17 +322,6 @@ disappearance. (default: %(default)s)\
 ''')
 
     parser.add_argument(
-        '--reload_interval',
-        metavar='SECONDS',
-        type=float,
-        default=5.0,
-        help='''\
-How often the backend should load more data, in seconds. Set to 0 to
-load just once at startup and a negative number to never reload at all.
-Not relevant for DB read-only mode. (default: %(default)s)\
-''')
-
-    parser.add_argument(
         '--db',
         metavar='URI',
         type=str,
@@ -436,6 +425,17 @@ relevant for db read-only mode. Each thread reloads one run at a time.
 ''')
 
     parser.add_argument(
+        '--reload_interval',
+        metavar='SECONDS',
+        type=float,
+        default=5.0,
+        help='''\
+How often the backend should load more data, in seconds. Set to 0 to
+load just once at startup and a negative number to never reload at all.
+Not relevant for DB read-only mode. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--reload_task',
         metavar='TYPE',
         type=str,
@@ -447,6 +447,39 @@ The default "auto" option will conditionally use threads for legacy reloading
 and a child process for DB import reloading. The "process" option is only
 useful with DB import mode. The "blocking" option will block startup until
 reload finishes, and requires --load_interval=0. (default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile',
+        metavar='BOOL',
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
+        default=False,
+        help='''\
+[experimental] If true, this enables experimental support for continuously
+polling multiple event files in each run directory for newly appended data
+(rather than only polling the last event file). Event files will only be
+polled as long as their most recently read data is newer than the threshold
+defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
+of running out of memory if the logdir contains many active eventfiles.
+(default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile_inactive_secs',
+        metavar='SECONDS',
+        type=int,
+        default=4000,
+        help='''\
+[experimental] Configures the age threshold in seconds at which an eventfile
+that has no event wall time more recent than that will be considered an
+inactive file and no longer polled (to limit resource usage). If set to -1,
+no maximum age will be enforced, but beware of running out of memory and
+heavier filesystem read traffic. If set to 0, this reverts to the older
+last-file-only polling strategy (akin to --reload_multifile=false).
+(default: %(default)s - intended to ensure an eventfile remains active if
+it receives new data at least once per hour)\
 ''')
 
     parser.add_argument(
