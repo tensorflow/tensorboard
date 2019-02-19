@@ -848,7 +848,6 @@ limitations under the License.
 
       .optimization-radio {
         display: block;
-        border: 1px solid lightgrey;
       }
 
       .optimization-radio-group {
@@ -864,6 +863,23 @@ limitations under the License.
         cursor: pointer;
       }
 
+      .perf-table-title-row {
+        background: white;
+        width: 100%;
+        display: flex;
+        border-bottom: 1px solid lightgrey;
+        min-height: 50px;
+        height: 50px;
+        justify-content: space-between;
+      }
+      .perf-table-title {
+        font-size: 20px;
+        margin-left: 14px;
+        margin-top: 16px;
+      }
+      .perf-table-sort-menu {
+        margin-top: -10px;
+      }
       .perf-table-header {
         background: white;
         width: 100%;
@@ -873,6 +889,7 @@ limitations under the License.
         border-bottom: 1px solid lightgrey;
         min-height: 30px;
         height: 30px;
+        padding-top: 10px;
       }
 
       .perf-table-entries-holder {
@@ -914,6 +931,11 @@ limitations under the License.
         height: 40px;
         padding-top: 16px;
       }
+      .perf-table-num-entry {
+        height: 40px;
+        padding-top: 16px;
+        text-align: right;
+      }
       .perf-table-arrow {
         min-width: 40px;
         width: 40px;
@@ -925,6 +947,7 @@ limitations under the License.
       .perf-table-count {
         min-width: 90px;
         width: 90px;
+        text-align: right;
       }
       .perf-table-model {
         min-width: 100px;
@@ -935,18 +958,23 @@ limitations under the License.
       }
       .perf-table-threshold {
         width: 280px;
+        text-align: center;
       }
       .perf-table-fp {
         min-width: 140px;
         width: 140px;
+        text-align: right;
       }
       .perf-table-fn {
         min-width: 140px;
         width: 140px;
+        text-align: right;
       }
       .perf-table-acc {
         min-width: 140px;
         width: 140px;
+        text-align: right;
+        margin-right: 10px;
       }
       .counterfactual-toggle {
         margin: 10px 0 0 8px;
@@ -1434,6 +1462,16 @@ limitations under the License.
                 </div>
                 <div class="config-main-content">
                   <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
+                    <div class="perf-table-title-row">
+                      <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
+                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
+                            <paper-item name="[[item]]">[[item]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </div>
                     <div class="perf-table-header">
                       <div class="perf-table-arrow">
                           <iron-icon class="expand-collapse-button"></iron-icon>
@@ -1464,9 +1502,9 @@ limitations under the License.
                           </div>
                         </paper-dialog>
                       </div>
-                      <div class="perf-table-fp">False Positives</div>
-                      <div class="perf-table-fn">False Negatives</div>
-                      <div class="perf-table-acc">Accuracy</div>
+                      <div class="perf-table-fp">False Positives (%)</div>
+                      <div class="perf-table-fn">False Negatives (%)</div>
+                      <div class="perf-table-acc">Accuracy (%)</div>
                     </div>
                     <div class="perf-table-entries-holder">
                       <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
@@ -1476,7 +1514,7 @@ limitations under the License.
                                 <paper-icon-button icon="[[getExpandCollapsePerfIcon(featureValueThreshold.opened)]]" class="expand-collapse-button" on-tap="togglePerfRow"></paper-icon-button>
                               </div>
                               <div class="perf-table-val perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getPrintableValue_(featureValueThreshold)]]</div>
-                              <div class="perf-table-count perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getFeatureValueCount(inferenceStats_, featureValueThreshold.threshold, featureValueThreshold)]]</div>
+                              <div class="perf-table-count perf-table-clickable perf-table-num-entry" on-tap="togglePerfRow">[[getFeatureValueCount(inferenceStats_, featureValueThreshold.threshold, featureValueThreshold)]]</div>
                               <div class$="[[getPerfTableModelClass(numModels)]]" on-tap="togglePerfRow">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                   <div class="perf-table-text-entry perf-table-clickable">[[getModelName_(index)]]</div>
@@ -1491,17 +1529,17 @@ limitations under the License.
                               </div>
                               <div class="perf-table-fp perf-table-clickable" on-tap="togglePerfRow">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                  <div class="perf-table-text-entry">[[getFPModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                  <div class="perf-table-num-entry">[[getFPModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
                                 </template>
                               </div>
                               <div class="perf-table-fn perf-table-clickable" on-tap="togglePerfRow">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                  <div class="perf-table-text-entry">[[getFNModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                  <div class="perf-table-num-entry">[[getFNModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
                                 </template>
                               </div>
                               <div class="perf-table-acc perf-table-clickable" on-tap="togglePerfRow">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                  <div class="perf-table-text-entry">[[getAccuracyModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                  <div class="perf-table-num-entry">[[getAccuracyModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
                                 </template>
                               </div>
                             </div>
@@ -1535,7 +1573,7 @@ limitations under the License.
                             <div class="perf-table-arrow">
                             </div>
                             <div class="perf-table-val perf-table-text-entry">All datapoints</div>
-                            <div class="perf-table-count perf-table-text-entry">[[getFeatureValueCount(inferenceStats_, overallThresholds)]]</div>
+                            <div class="perf-table-count perf-table-num-entry">[[getFeatureValueCount(inferenceStats_, overallThresholds)]]</div>
                             <div class$="[[getPerfTableModelClass(numModels)]]">
                               <template is="dom-repeat" items="{{overallThresholds}}">
                                 <div class="perf-table-text-entry">[[getModelName_(index)]]</div>
@@ -1550,17 +1588,17 @@ limitations under the License.
                             </div>
                             <div class="perf-table-fp">
                               <template is="dom-repeat" items="{{overallThresholds}}">
-                                <div class="perf-table-text-entry">[[getFPModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                                <div class="perf-table-num-entry">[[getFPModelIndex(inferenceStats_, overallThresholds, index)]]</div>
                               </template>
                             </div>
                             <div class="perf-table-fn">
                               <template is="dom-repeat" items="{{overallThresholds}}">
-                                <div class="perf-table-text-entry">[[getFNModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                                <div class="perf-table-num-entry">[[getFNModelIndex(inferenceStats_, overallThresholds, index)]]</div>
                               </template>
                             </div>
                             <div class="perf-table-acc">
                               <template is="dom-repeat" items="{{overallThresholds}}">
-                                <div class="perf-table-text-entry">[[getAccuracyModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                                <div class="perf-table-num-entry">[[getAccuracyModelIndex(inferenceStats_, overallThresholds, index)]]</div>
                               </template>
                             </div>
                           </div>
@@ -1588,6 +1626,16 @@ limitations under the License.
                     </div>
                   </template>
                   <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
+                    <div class="perf-table-title-row">
+                      <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
+                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
+                            <paper-item name="[[item]]">[[item]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </div>
                     <div class="perf-table-header">
                       <div class="perf-table-arrow">
                           <iron-icon class="expand-collapse-button"></iron-icon>
@@ -1605,7 +1653,7 @@ limitations under the License.
                               <paper-icon-button icon="[[getExpandCollapsePerfIcon(featureValueThreshold.opened)]]" class="expand-collapse-button" on-tap="togglePerfRow"></paper-icon-button>
                             </div>
                             <div class="perf-table-val perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">[[getPrintableValue_(featureValueThreshold)]]</div>
-                            <div class="perf-table-count perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">
+                            <div class="perf-table-count perf-table-num-entry perf-table-clickable perf-table-text-entry" on-tap="togglePerfRow">
                               [[getMultiClassFeatureValueCount(inferenceStats_, featureValueThreshold)]]</div>
                             <div class$="[[getPerfTableModelClass(numModels)]]" on-tap="togglePerfRow">
                               <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
@@ -1614,7 +1662,7 @@ limitations under the License.
                             </div>
                             <div class="perf-table-acc perf-table-clickable" on-tap="togglePerfRow">
                               <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                <div class="perf-table-text-entry">
+                                <div class="perf-table-text-entry perf-table-num-entry">
                                     [[getMultiClassAccuracyModelIndex(inferenceStats_, index, featureValueThreshold)]]
                                 </div>
                               </template>
@@ -1637,7 +1685,7 @@ limitations under the License.
                             <div class="perf-table-arrow">
                             </div>
                             <div class="perf-table-val perf-table-text-entry">All datapoints</div>
-                            <div class="perf-table-count perf-table-text-entry">
+                            <div class="perf-table-count perf-table-num-entry">
                                 [[getMultiClassFeatureValueCount(inferenceStats_)]]
                             </div>
                             <div class$="[[getPerfTableModelClass(numModels)]]">
@@ -1647,7 +1695,7 @@ limitations under the License.
                             </div>
                             <div class="perf-table-acc">
                               <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
-                                <div class="perf-table-text-entry">
+                                <div class="perf-table-text-entry perf-table-num-entry">
                                     [[getMultiClassAccuracyModelIndex(inferenceStats_, index)]]
                                 </div>
                               </template>
@@ -1839,7 +1887,10 @@ limitations under the License.
         },
         // Array of feature values and their set classification thresholds, for
         // Polymer display purposes.
-        featureValueThresholds: Array,
+        featureValueThresholds: {
+          type: Array,
+          value: () => ([]),
+        },
         // A map of feature name to the featureValueThresholds items, for quick
         // lookup.
         featureValueThresholdsMap: Object,
@@ -2032,6 +2083,11 @@ limitations under the License.
           type: Boolean,
           value: false,
           observer: 'showNearestCounterfactualChanged_',
+        },
+        selectedFeatureSort: {
+          type: String,
+          value: 'Count',
+          observer: 'selectedFeatureSortChanged_',
         },
         // Colors for lines and bars in partial dependence plots.
         pdPlotColors: {
@@ -2747,28 +2803,7 @@ limitations under the License.
         // Polymer does not recognize updates to elements within the array
         const tempArray = this.featureValueThresholds;
         this.featureValueThresholds = [];
-        // featureValueThresholds are sorted by number of samples per group
-        // so that the groups appear from larger to smaller in GUI
-        // Since group counts are model agnostic we only sort w.r.t. the
-        // statistics of the first model
-        // a, b here are only used to identify facet key string so we don't
-        // have to index by model
-        const inferenceStats = this.inferenceStats_[0];
-        tempArray.sort((a, b) => {
-          if (this.isRegression_(this.modelType)) {
-            return this.getRegressionCount(inferenceStats, b) -
-                this.getRegressionCount(inferenceStats, a);
-          } else if (this.isBinaryClassification_(
-            this.modelType, this.multiClass)) {
-            return this.getBinaryClassificationCount(inferenceStats, b) -
-                this.getBinaryClassificationCount(inferenceStats, a);
-          } else {
-            return this.getMulticlassClassificationCount(
-              inferenceStats, b) - this.getMulticlassClassificationCount(
-                inferenceStats, a);
-          }
-        });
-        this.featureValueThresholds = tempArray;
+        this.featureValueThresholds = this.sortFeatureValues(tempArray);
 
         // ROC curves should only exist for the binary case
         if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
@@ -2803,6 +2838,58 @@ limitations under the License.
             plotThresholds, regenInferenceStats);
         }
         this.updateCorrectness_();
+      },
+
+      sortFeatureValues: function(values) {
+        const inferenceStats = this.inferenceStats_[0];
+        values = values.filter(a => {
+          if (this.isRegression_(this.modelType)) {
+            return this.getRegressionCount(inferenceStats, a) > 0
+          } else if (this.isBinaryClassification_(
+            this.modelType, this.multiClass)) {
+            return this.getBinaryClassificationCount(inferenceStats, a) > 0
+          } else {
+            return this.getMulticlassClassificationCount(
+              inferenceStats, a) > 0;
+          }
+        });
+        return values.sort((a, b) => {
+          if (this.selectedFeatureSort == 'Count') {
+            if (this.isRegression_(this.modelType)) {
+              return this.getRegressionCount(inferenceStats, b) -
+                  this.getRegressionCount(inferenceStats, a);
+            } else if (this.isBinaryClassification_(
+              this.modelType, this.multiClass)) {
+              return this.getBinaryClassificationCount(inferenceStats, b) -
+                  this.getBinaryClassificationCount(inferenceStats, a);
+            } else {
+              return this.getMulticlassClassificationCount(
+                inferenceStats, b) - this.getMulticlassClassificationCount(
+                  inferenceStats, a);
+            }
+          } else if (this.selectedFeatureSort == 'Alphabetical') {
+            return this.getPrintableValue_(a).localeCompare(this.getPrintableValue_(b));
+          } else if (this.selectedFeatureSort == 'Accuracy') {
+            console.log('a acc' + this.getAccuracyModelIndex(
+                this.inferenceStats_, a.threshold, 0, a));
+            console.log('b acc' + this.getAccuracyModelIndex(
+                this.inferenceStats_, b.threshold, 0, b));
+            return +this.getAccuracyModelIndex(
+                this.inferenceStats_, b.threshold, 0, b) -
+              +this.getAccuracyModelIndex(
+                this.inferenceStats_, a.threshold, 0, a)
+          } else if (this.selectedFeatureSort == 'False positives') {
+            return +this.getFPModelIndex(
+                this.inferenceStats_, b.threshold, 0, b) -
+              +this.getFPModelIndex(
+                this.inferenceStats_, a.threshold, 0, a)
+          } else if (this.selectedFeatureSort == 'False negatives') {
+            return this.getFNModelIndex(
+                +this.inferenceStats_, b.threshold, 0, b) -
+              +this.getFNModelIndex(
+                this.inferenceStats_, a.threshold, 0, a)
+          }
+        });
       },
 
       fillInRegressionStats: function(regressionStats, name) {
@@ -2869,7 +2956,7 @@ limitations under the License.
         if (regenInferenceStats) {
           const valueFormatter = d3.format('.2f');
           chart.xAxisFormatter = d3.format('.2f');
-          const percentageFormatter = d3.format(",.1%");
+          const percentageFormatter = d3.format(",.1");
           const tooltipColumns = [
             {
                 title: 'Threshold',
@@ -3185,8 +3272,8 @@ limitations under the License.
           return null;
         }
         const val = confCounts['No']['Yes'];
-        return d3.format(",.1%")(
-          val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1f")(
+          val / this.getTotalEntriesInConfCounts(confCounts) * 100);
       },
 
       /**
@@ -3200,8 +3287,8 @@ limitations under the License.
           return 0;
         }
         const val = confCounts['Yes']['No'];
-        return d3.format(",.1%")(
-          val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1f")(
+          val / this.getTotalEntriesInConfCounts(confCounts) * 100);
       },
 
 
@@ -3216,8 +3303,8 @@ limitations under the License.
           return 0;
         }
         const val = confCounts['Yes']['Yes'] + confCounts['No']['No'];
-        return d3.format(",.1%")(
-          val / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1f")(
+          val / this.getTotalEntriesInConfCounts(confCounts) * 100);
       },
 
       /**
@@ -3332,8 +3419,8 @@ limitations under the License.
             }
           }
         }
-        return d3.format(",.1%")(
-          matches / this.getTotalEntriesInConfCounts(confCounts));
+        return d3.format(",.1f")(
+          matches / this.getTotalEntriesInConfCounts(confCounts) * 100);
       },
 
       /**
@@ -3391,7 +3478,15 @@ limitations under the License.
         // stat because in multi class case inferenceStats does not have
         // thresholds
         return this.getInferenceStat(classificationStats, facetItem,
-          stat => Object.values(stat).reduce((a, b) => a + b), null);
+          stat => Object.values(stat).reduce(
+            (a, b) => {
+              let total = 0;
+              const iKeys = Object.keys(b);
+              for (let i = 0; i < iKeys.length; i++) {
+                total += b[iKeys[i]];
+              }
+              return a + total;
+            }, 0), null);
       },
 
       getPrChartId: function(index) {
@@ -3407,7 +3502,7 @@ limitations under the License.
         if (!item.value && item.value !== 0) {
           str = '<feature value missing>';
         } else {
-          str = item.value;
+          str = String(item.value);
         }
         if (this.selectedSecondBreakdownFeature == '') {
           return str;
@@ -4840,6 +4935,51 @@ limitations under the License.
         return this.isBinaryClassification_(modelType, multiClass) ?
             'Performance + Fairness' : 'Performance';
       },
+
+      getPerfTableTitle: function(
+          feature1, feature2, optimization, thresholds) {
+        if (feature1 == null || feature1.length == 0) {
+          return this.getPrintableOptimizationName(optimization)
+        } else {
+          let str = feature1;
+          if (feature2 != null && feature2.length != 0) {
+            str += '/' + feature2;
+          }
+          return str + ' (' + this.getPrintableOptimizationName(optimization) + ' for ' + thresholds.length + ' values)';
+        }
+      },
+
+      getPrintableOptimizationName: function(optimization) {
+        if (optimization == 'custom') {
+          return 'custom thresholds';
+        } else if (optimization == 'unaware') {
+          return 'optimal single threshold';
+        } else if (optimization == 'demoparity') {
+          return 'demographic parity thresholds';
+        } else if (optimization == 'equalopp') {
+          return 'equal opporitunity thresholds';
+        } else if (optimization == 'equalacc') {
+          return 'equal accuracy thresholds';
+        } else {
+          return 'optimal group thresholds';
+        }
+      },
+
+      getFeatureSortBy: function(modelType, multiClass) {
+        let sorts = ['Count', 'Alphabetical'];
+        if (this.isBinaryClassification_(modelType, multiClass)) {
+          sorts = sorts.concat(['Accuracy', 'False positives', 'False negatives']);
+        } else if (this.isMultiClass_(modelType, multiClass)) {
+          sorts = sorts.concat(['Accuracy']);
+        }
+        return sorts;
+      },
+
+       selectedFeatureSortChanged_: function(sort) {
+         const temp = this.featureValueThresholds;
+         this.featureValueThresholds = [];
+         this.featureValueThresholds = this.sortFeatureValues(temp);
+       },
     });
 
     tf_tensorboard.registerDashboard({
