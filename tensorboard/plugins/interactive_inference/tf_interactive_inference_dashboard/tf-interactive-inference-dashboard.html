@@ -47,7 +47,6 @@ limitations under the License.
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
-<link rel="import" href="./tf-regression-table.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
 <link rel="import" href="../facets-overview/components/facets-overview/facets-overview.html">
 <link rel="import" href="../vz-example-viewer/vz-example-viewer.html">
@@ -979,6 +978,17 @@ limitations under the License.
         width: 280px;
         text-align: center;
       }
+      .perf-table-error {
+        min-width: 160px;
+        width: 160px;
+        text-align: right;
+      }
+      .perf-table-sq-error {
+        min-width: 160px;
+        width: 160px;
+        text-align: right;
+        margin-right: 20px;
+      }
       .perf-table-fp {
         min-width: 140px;
         width: 140px;
@@ -1496,7 +1506,7 @@ limitations under the License.
                     </div>
                     <div class="perf-table-header">
                       <div class="perf-table-arrow">
-                          <iron-icon class="expand-collapse-button"></iron-icon>
+                        <iron-icon class="expand-collapse-button"></iron-icon>
                       </div>
                       <div class="perf-table-val">Feature Value</div>
                       <div class="perf-table-count">Count</div>
@@ -1672,7 +1682,7 @@ limitations under the License.
                   </template>
                   <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
-                      <div class="perf-table-title">[[getMulticlassPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
+                      <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
                       <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
                         <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
@@ -1682,9 +1692,7 @@ limitations under the License.
                       </paper-dropdown-menu>
                     </div>
                     <div class="perf-table-header">
-                      <div class="perf-table-arrow">
-                          <iron-icon class="expand-collapse-button"></iron-icon>
-                      </div>
+                      <div class="perf-table-arrow"></div>
                       <div class="perf-table-val">Feature Value</div>
                       <div class="perf-table-count">Count</div>
                       <div class$="[[getPerfTableModelClass(numModels)]]">Model</div>
@@ -1760,7 +1768,46 @@ limitations under the License.
                     </div>
                   </template>
                   <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
-                    <tf-regression-table entries="[[regressionEntries_]]"></tf-regression-table>
+                    <div class="perf-table-title-row">
+                      <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
+                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
+                            <paper-item name="[[item]]">[[item]]</paper-item>
+                          </template>
+                        </paper-listbox>
+                      </paper-dropdown-menu>
+                    </div>
+                    <div class="perf-table-header">
+                      <div class="perf-table-arrow"></div>
+                      <div class="perf-table-val">Feature Value</div>
+                      <div class="perf-table-count">Count</div>
+                      <div class="perf-table-error">Mean error</div>
+                      <div class="perf-table-error">Mean absolute error</div>
+                      <div class="perf-table-sq-error">Mean squared error</div>
+                    </div>
+                    <div class="perf-table-entries-holder">
+                      <template is="dom-repeat" items="[[regressionEntries_]]">
+                        <div class="perf-table-entry">
+                          <div class="perf-table-row">
+                            <div class="perf-table-arrow"></div>
+                            <div class="perf-table-val perf-table-text-entry">[[item.name]]</div>
+                            <div class="perf-table-count perf-table-num-entry perf-table-text-entry">
+                              [[item.count]]
+                            </div>
+                            <div class="perf-table-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.meanError)]]
+                            </div>
+                            <div class="perf-table-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.meanAbsError)]]
+                            </div>
+                            <div class="perf-table-sq-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.meanSquaredError)]]
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
                   </template>
                 </div>
               </div>
@@ -2692,7 +2739,7 @@ limitations under the License.
         }
         if (regenInferenceStats) {
           const inferenceStatsArray = [];
-          const regressionEntries = [];
+          let regressionEntries = [];
           for (let modelInd = 0; modelInd < this.numModels;
               modelInd++) {
             let inferenceStats = {};
@@ -2837,7 +2884,7 @@ limitations under the License.
               }
               regressionEntries.push(
                 this.fillInRegressionStats(inferenceStats.results,
-                  this.formatChartKey('Total', modelInd, this.numModels)));
+                  this.formatChartKey('All datapoints', modelInd, this.numModels)));
               for (let key in inferenceStats.faceted) {
                 regressionEntries.push(
                   this.fillInRegressionStats(inferenceStats.faceted[key],
@@ -2846,7 +2893,7 @@ limitations under the License.
             }
             inferenceStatsArray.push(inferenceStats);
           }
-          regressionEntries.sort((a, b) => b.count - a.count);
+          regressionEntries = this.sortRegressionEntries(regressionEntries);
           this.regressionEntries_ = [];
           this.regressionEntries_ = regressionEntries;
           this.inferenceStats_ = inferenceStatsArray;
@@ -2948,6 +2995,22 @@ limitations under the License.
                 +this.inferenceStats_, b.threshold, 0, b) -
               +this.getFNModelIndex(
                 this.inferenceStats_, a.threshold, 0, a)
+          }
+        });
+      },
+
+      sortRegressionEntries: function(regressionEntries) {
+        return regressionEntries.sort((a, b) => {
+          if (this.selectedFeatureSort == 'Count') {
+            return b.count - a.count;
+          } else if (this.selectedFeatureSort == 'Alphabetical') {
+            return a.name.localeCompare(b.name);
+          } else if (this.selectedFeatureSort == 'Mean error') {
+            return b.meanError - a.meanError;
+          } else if (this.selectedFeatureSort == 'Mean absolute error') {
+            return b.meanAbsError - a.meanAbsError;
+          } else if (this.selectedFeatureSort == 'Mean squared error') {
+            return b.meanSquaredError - a.meanSquaredError;
           }
         });
       },
@@ -5014,7 +5077,7 @@ limitations under the License.
         }
       },
 
-      getMulticlassPerfTableTitle: function(feature1, feature2, thresholds) {
+      getNoThresholdPerfTableTitle: function(feature1, feature2, thresholds) {
         if (feature1 == null || feature1.length == 0) {
           return 'Overall performance'
         } else {
@@ -5045,24 +5108,38 @@ limitations under the License.
       getFeatureSortBy: function(modelType, multiClass) {
         let sorts = ['Count', 'Alphabetical'];
         if (this.isBinaryClassification_(modelType, multiClass)) {
-          sorts = sorts.concat(['Accuracy', 'False positives', 'False negatives']);
+          sorts = sorts.concat(
+            ['Accuracy', 'False positives', 'False negatives']);
         } else if (this.isMultiClass_(modelType, multiClass)) {
           sorts = sorts.concat(['Accuracy']);
+        } else {
+          sorts = sorts.concat(
+            ['Mean error', 'Mean absolute error', 'Mean squared error']);
         }
         return sorts;
       },
 
-       selectedFeatureSortChanged_: function(sort) {
-         const temp = this.featureValueThresholds;
-         this.featureValueThresholds = [];
-         this.featureValueThresholds = this.sortFeatureValues(temp);
+      selectedFeatureSortChanged_: function(sort) {
+        const temp = this.featureValueThresholds;
+        this.featureValueThresholds = [];
+        this.featureValueThresholds = this.sortFeatureValues(temp);
+
+        if (this.regressionEntries_ != null) {
+          const temp = this.regressionEntries_;
+          this.regressionEntries_ = [];
+          this.regressionEntries_ = this.sortRegressionEntries(temp);
+        }
        },
 
        getSliderClass: function(index) {
          let str = 'slider ';
          str += (index == 0 ? 'slider-model-one' : 'slider-model-two');
          return str;
-       }
+       },
+
+       formatError: function(error) {
+        return d3.format('.3f')(error);
+       },
     });
 
     tf_tensorboard.registerDashboard({

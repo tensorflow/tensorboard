@@ -15,7 +15,6 @@ tf_web_library(
         ":tf_confusion_matrix",
         ":tf_inference_panel",
         ":tf_inference_viewer",
-        ":tf_regression_table",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_bar_chart",
         "//tensorboard/components/vz_line_chart",
@@ -109,16 +108,5 @@ tf_web_library(
         "@org_polymer_paper_input",
         "@org_polymer_paper_radio_button",
         "@org_polymer_paper_radio_group",
-    ],
-)
-
-tf_web_library(
-    name = "tf_regression_table",
-    srcs = [
-        "tf-regression-table.html",
-    ],
-    path = "/tf-interactive-inference-dashboard",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
     ],
 )
