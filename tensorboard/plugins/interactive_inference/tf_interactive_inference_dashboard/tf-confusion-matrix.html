@@ -46,14 +46,8 @@ limitations under the License.
         font-size: 10px;
         vertical-align: bottom;
       }
-      .correct {
-        border-left: 3px solid DarkSeaGreen;
-      }
-      .incorrect {
-        border-left: 3px solid lightcoral;
-      }
-      .blank {
-        background: darkgray;
+      .value-cell {
+        border: 1px solid lightgrey;
       }
       .parenthetical {
         padding-right: 5px;
@@ -197,12 +191,8 @@ limitations under the License.
           .append('td').attr('class', (d, i) => {
             if (i == 0) {
               return 'actual-label';
-            } else if (d.value == 0) {
-              return '';
-            } else if (i - 1 == d.row) {
-              return 'correct';
             } else if (i <= countMatrix.length) {
-              return 'incorrect';
+              return 'value-cell';
             } else {
               return '';
             }
@@ -210,15 +200,34 @@ limitations under the License.
             if (i == 0 || i > countMatrix.length) {
               return '#FFFFFF';
             } else {
-              let c = d3.color('darkgrey');
+              let c = d3.color('#2270E8');
               c.opacity = d.value / total;
               return c + '';
+            }
+          }).style('color', (d, i) => {
+            if (i == 0 || i > countMatrix.length) {
+              return '#000000';
+            } else {
+              const opacity = d.value / total;
+              if (opacity < .70) {
+                return '#000000';
+              } else {
+                return '#FFFFFF';
+              }
             }
           });
         const cellDivs = cells.append('div').classed('flex', true);
         cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
             .text(d =>
-              'row' in d ? '(' + d.value + ')' : '');
+              'row' in d ? '(' + d.value + ')' : '')
+            .style('color', (d, i) => {
+              const opacity = d.value / total;
+              if (opacity < .70 || i > countMatrix.length) {
+                return 'gray';
+              } else {
+                return 'lightgray';
+              }
+            });
         cellDivs.append('div').text(
           (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
 

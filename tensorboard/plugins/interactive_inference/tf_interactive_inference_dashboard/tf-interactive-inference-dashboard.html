@@ -205,6 +205,16 @@ limitations under the License.
         }
       }
 
+      .slider-model-one {
+        --paper-slider-knob-color: var(--tb-orange-dark);
+        --paper-slider-active-color: var(--tb-orange-dark);
+      }
+
+      .slider-model-two {
+        --paper-slider-knob-color: green;
+        --paper-slider-active-color: green;
+      }
+
       .pr-line-chart {
         margin: 6px;
         height: 200px;
@@ -487,6 +497,9 @@ limitations under the License.
 
       .roc-holder {
         width: 300px;
+        height: 235px;
+        margin-top: 20px;
+        margin-right: 50px;
         position: relative;
       }
 
@@ -776,8 +789,14 @@ limitations under the License.
         cursor: pointer;
       }
 
+      .roc-text {
+        text-align: center;
+        padding-left: 75px;
+      }
+
       .dialog-text {
         font-style: normal;
+        text-align: left;
       }
 
       .dialog-title {
@@ -888,7 +907,6 @@ limitations under the License.
         display: flex;
         border-bottom: 1px solid lightgrey;
         min-height: 30px;
-        height: 30px;
         padding-top: 10px;
       }
 
@@ -947,6 +965,7 @@ limitations under the License.
       .perf-table-count {
         min-width: 90px;
         width: 90px;
+        margin-right: 20px;
         text-align: right;
       }
       .perf-table-model {
@@ -966,15 +985,15 @@ limitations under the License.
         text-align: right;
       }
       .perf-table-fn {
-        min-width: 140px;
-        width: 140px;
+        min-width: 160px;
+        width: 160px;
         text-align: right;
       }
       .perf-table-acc {
         min-width: 140px;
         width: 140px;
         text-align: right;
-        margin-right: 10px;
+        margin-right: 20px;
       }
       .counterfactual-toggle {
         margin: 10px 0 0 8px;
@@ -984,6 +1003,9 @@ limitations under the License.
       }
       .flex-grow {
         flex-grow: 1;
+      }
+      .flex-row-reverse {
+        flex-direction: row-reverse;
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1449,7 +1471,7 @@ limitations under the License.
                             <div class="help-text">Manually altering thresholds or changing cost ratio will default back to custom thresholds.</div>
                             <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
                               <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds</paper-radio-button>
-                              <paper-radio-button name="unaware" class="optimization-radio">Group unaware</paper-radio-button>
+                              <paper-radio-button name="unaware" class="optimization-radio">Single threshold</paper-radio-button>
                               <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity</paper-radio-button>
                               <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity</paper-radio-button>
                               <paper-radio-button name="equalacc" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal accuracy</paper-radio-button>
@@ -1490,16 +1512,6 @@ limitations under the License.
                             are considered a positive classification, while inference values below this threshold are considered
                             a negative classification.
                           </div>
-                          <div>When the ground truth feature has been set, an ROC curve and confusion matrix are also shown and
-                            are updated as the classification threshold changes.
-                          </div>
-                          <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                            false
-                            positive rate (FPR) at various classification thresholds. Find out more
-                            <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                              here
-                            </a>.
-                          </div>
                         </paper-dialog>
                       </div>
                       <div class="perf-table-fp">False Positives (%)</div>
@@ -1522,7 +1534,7 @@ limitations under the License.
                               </div>
                               <div class="perf-table-threshold">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                    <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                    <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
                                       value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                     </paper-slider>
                                 </template>
@@ -1545,9 +1557,33 @@ limitations under the License.
                             </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
-                          <div class="perf-table-entry-expanded">
+                          <div class="perf-table-entry-expanded flex-row-reverse">
+                            <div>
+                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                  <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                    label="[[getConfusionMatrixLabel(index)]]"
+                                    class="conf-matrix">
+                                  </tf-confusion-matrix>
+                                </template>
+                              </template>
+                            </div>
                             <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                               <div class="roc-holder">
+                                <div class="roc-text">ROC curve
+                                  <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                  </paper-icon-button>
+                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                    <div class="dialog-title">ROC curve</div>
+                                    <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                      false
+                                      positive rate (FPR) at various classification thresholds. Find out more
+                                      <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                        here
+                                      </a>.
+                                    </div>
+                                  </paper-dialog>
+                                </div>
                                 <div class="roc-x-label">FPR</div>
                                 <div class="roc-y-label">TPR</div>
                                 <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
@@ -1555,14 +1591,6 @@ limitations under the License.
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
                                 </vz-line-chart>
                               </div>
-                            </template>
-                            <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                              <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                                <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
-                                  label="[[getConfusionMatrixLabel(index)]]"
-                                  class="conf-matrix">
-                                </tf-confusion-matrix>
-                              </template>
                             </template>
                           </div>
                         </iron-collapse>
@@ -1581,7 +1609,7 @@ limitations under the License.
                             </div>
                             <div class="perf-table-threshold">
                               <template is="dom-repeat" items="{{overallThresholds}}">
-                                  <paper-slider class="slider" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
+                                  <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
                                     value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                   </paper-slider>
                               </template>
@@ -1603,8 +1631,33 @@ limitations under the License.
                             </div>
                           </div>
                         </div>
-                        <div class="perf-table-entry-expanded">
-                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">                            <div class="roc-holder">
+                        <div class="perf-table-entry-expanded flex-row-reverse">
+                          <div>
+                            <template is="dom-repeat" items="{{overallThresholds}}">
+                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                  label="[[getConfusionMatrixLabel(index)]]"
+                                  class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
+                            </template>
+                          </div>
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="roc-holder">
+                              <div class="roc-text">ROC curve
+                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">ROC curve</div>
+                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                    false
+                                    positive rate (FPR) at various classification thresholds. Find out more
+                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
+                                      here
+                                    </a>.
+                                  </div>
+                                </paper-dialog>
+                              </div>
                               <div class="roc-x-label">FPR</div>
                               <div class="roc-y-label">TPR</div>
                               <vz-line-chart id="prchart" class="pr-line-chart"
@@ -1613,21 +1666,13 @@ limitations under the License.
                               </vz-line-chart>
                             </div>
                           </template>
-                          <template is="dom-repeat" items="{{overallThresholds}}">
-                            <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
-                              <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
-                                label="[[getConfusionMatrixLabel(index)]]"
-                                class="conf-matrix">
-                              </tf-confusion-matrix>
-                            </template>
-                          </template>
                         </div>
                       </template>
                     </div>
                   </template>
                   <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
-                      <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
+                      <div class="perf-table-title">[[getMulticlassPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
                       <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
                         <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
@@ -1670,12 +1715,14 @@ limitations under the License.
                           </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
-                          <div class="perf-table-entry-expanded">
-                            <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
-                              <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
-                                                    class="conf-matrix">
-                              </tf-confusion-matrix>
-                            </template>
+                          <div class="perf-table-entry-expanded flex-row-reverse">
+                            <div>
+                              <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
+                                <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
+                                                      class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
+                            </div>
                           </div>
                         </iron-collapse>
                       </template>
@@ -1702,7 +1749,7 @@ limitations under the License.
                             </div>
                           </div>
                         </div>
-                        <div class="perf-table-entry-expanded">
+                        <div class="perf-table-entry-expanded flex-row-reverse">
                           <template is="dom-repeat" items="[[inferenceStats_]]">
                             <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
                                                  class="conf-matrix">
@@ -2117,7 +2164,13 @@ limitations under the License.
                          d3.color('rgba(127, 127, 127, 0.3)'),
                          d3.color('rgba(188, 189, 34, 0.3)'),
                          d3.color('rgba(23, 190, 207, 0.3)')]),
-        }
+        },
+        // Colors for lines in ROC curves
+        rocCurveColors: {
+          type: Array,
+          value: () => ([d3.color('rgb(220, 115, 32)'),
+                         d3.color('rgb(0, 128, 0)')]),
+        },
       },
 
       observers: [
@@ -2874,10 +2927,17 @@ limitations under the License.
                 this.inferenceStats_, a.threshold, 0, a));
             console.log('b acc' + this.getAccuracyModelIndex(
                 this.inferenceStats_, b.threshold, 0, b));
-            return +this.getAccuracyModelIndex(
-                this.inferenceStats_, b.threshold, 0, b) -
-              +this.getAccuracyModelIndex(
-                this.inferenceStats_, a.threshold, 0, a)
+            if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+              return +this.getAccuracyModelIndex(
+                  this.inferenceStats_, b.threshold, 0, b) -
+                +this.getAccuracyModelIndex(
+                  this.inferenceStats_, a.threshold, 0, a)
+            } else {
+              return +this.getMultiClassAccuracyModelIndex(
+                  this.inferenceStats_, 0, b) -
+                +this.getMultiClassAccuracyModelIndex(
+                  this.inferenceStats_, 0, a);
+            }
           } else if (this.selectedFeatureSort == 'False positives') {
             return +this.getFPModelIndex(
                 this.inferenceStats_, b.threshold, 0, b) -
@@ -2924,7 +2984,8 @@ limitations under the License.
         if (!thresholdStats || !thresholdStats[0] || !chart) {
           return;
         }
-        const visibleCharts = []
+        const visibleCharts = [];
+        const seriesColors = [];
         for (let modelInd = 0; modelInd < thresholdStats.length; modelInd++) {
           let currentThresholdData = null;
           const data = thresholdStats[modelInd].map((thresh, i) => {
@@ -2951,6 +3012,8 @@ limitations under the License.
             visibleCharts.push(this.strWithModelName_('ROC', modelInd));
             visibleCharts.push(
               this.strWithModelName_('Threshold set', modelInd));
+            seriesColors.push(this.rocCurveColors[modelInd].brighter());
+            seriesColors.push(this.rocCurveColors[modelInd]);
           }
         }
         if (regenInferenceStats) {
@@ -2991,6 +3054,8 @@ limitations under the License.
             );
           }
           chart.tooltipColumns = tooltipColumns;
+          chart.colorScale = new Plottable.Scales.Color().range(seriesColors);
+          chart.colorScale.domain(visibleCharts);
           chart.setVisibleSeries(visibleCharts);
         }
       },
@@ -4949,6 +5014,18 @@ limitations under the License.
         }
       },
 
+      getMulticlassPerfTableTitle: function(feature1, feature2, thresholds) {
+        if (feature1 == null || feature1.length == 0) {
+          return 'Overall performance'
+        } else {
+          let str = feature1;
+          if (feature2 != null && feature2.length != 0) {
+            str += '/' + feature2;
+          }
+          return str + ' (' + thresholds.length + ' values)';
+        }
+      },
+
       getPrintableOptimizationName: function(optimization) {
         if (optimization == 'custom') {
           return 'custom thresholds';
@@ -4980,6 +5057,12 @@ limitations under the License.
          this.featureValueThresholds = [];
          this.featureValueThresholds = this.sortFeatureValues(temp);
        },
+
+       getSliderClass: function(index) {
+         let str = 'slider ';
+         str += (index == 0 ? 'slider-model-one' : 'slider-model-two');
+         return str;
+       }
     });
 
     tf_tensorboard.registerDashboard({
