@@ -126,6 +126,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":directory_loader",
         ":directory_watcher",
         ":event_file_loader",
         ":io_wrapper",
@@ -215,6 +216,8 @@ py_test(
         ":event_accumulator",
         ":event_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:test_util",
     ],
 )
 
