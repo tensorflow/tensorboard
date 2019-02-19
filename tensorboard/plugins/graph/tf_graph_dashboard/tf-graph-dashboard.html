@@ -145,6 +145,18 @@ const RUN_STORAGE_KEY = 'run';
 Polymer({
   is: 'tf-graph-dashboard',
   properties: {
+    /**
+     * Array<{
+     *   name: string,
+     *   tags: Array<{
+     *     tag: ?string,
+     *     tagName: !string,
+     *     conceptualGraph: boolean,
+     *     opGraph: boolean,
+     *     profile: boolean,
+     *   }>,
+     * }>
+     */
     _datasets: Array,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
