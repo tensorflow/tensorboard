@@ -249,6 +249,11 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
+> **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+> now be used to poll multiple files per directory for new data, rather than
+> just the most recent one as described below. You may need to install our
+> nightly build [`tb-nightly`][tb-nightly] for this option to be available.
+
 This issue usually comes about because of how TensorBoard iterates through the
 `tfevents` files: it progresses through the events file in timestamp order, and
 only reads one file at a time. Let's suppose we have files with timestamps `a`
@@ -259,6 +264,11 @@ more recent file. This could cause an issue if, for example, you have two
 multiple summary writers, each one should be writing to a separate directory.
 
 ### Does TensorBoard support multiple or distributed summary writers?
+
+> **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+> now be used to poll multiple files per directory for new data. You may need
+> to install our nightly build [`tb-nightly`][tb-nightly] for this option to
+> be available.
 
 No. TensorBoard expects that only one events file will be written to at a time,
 and multiple summary writers means multiple events files. If you are running a
@@ -274,6 +284,11 @@ with itself, there are a few possible explanations.
 
 * You may have multiple execution of TensorFlow that all wrote to the same log
 directory. Please have each TensorFlow run write to its own logdir.
+
+  > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+  > now be used to poll multiple files per directory for new data. You may need
+  > to install our nightly build [`tb-nightly`][tb-nightly] for this option to
+  > be available.
 
 * You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
@@ -372,3 +387,5 @@ information as you can provide (e.g. attaching events files, including the outpu
 of `tensorboard --inspect`, etc.).
 
 [stack-overflow]: https://stackoverflow.com/questions/tagged/tensorboard
+[pr-1867]: https://github.com/tensorflow/tensorboard/pull/1867
+[tb-nightly]: https://pypi.org/project/tb-nightly/
