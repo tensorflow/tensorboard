@@ -44,8 +44,8 @@ py_test(
 )
 
 py_library(
-    name = "graph_util",
-    srcs = ["graph_util.py"],
+    name = "keras_util",
+    srcs = ["keras_util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:private"],
     deps = [
@@ -55,13 +55,13 @@ py_library(
 )
 
 py_test(
-    name = "graph_util_test",
+    name = "keras_util_test",
     size = "small",
-    srcs = ["graph_util_test.py"],
-    main = "graph_util_test.py",
+    srcs = ["keras_util_test.py"],
+    main = "keras_util_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":graph_util",
+        ":keras_util",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

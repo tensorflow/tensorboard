@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for google3.third_party.tensorflow.python.keras.engine.network."""
+"""Tests for Keras Utility."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ import json
 import tensorflow as tf
 
 from tensorflow.python.platform import test
-from tensorboard.plugins.graph import graph_util
+from tensorboard.plugins.graph import keras_util
 
 
 class GraphUtilTest(tf.test.TestCase):
@@ -31,7 +31,7 @@ class GraphUtilTest(tf.test.TestCase):
     model_config = json.loads(model.to_json())
 
     self.assertProtoEquals(
-        expected_proto, graph_util.keras_model_to_graph_def(model_config))
+        expected_proto, keras_util.keras_model_to_graph_def(model_config))
 
   def test_keras_model_to_graph_def_sequential_model(self):
     expected_proto = """

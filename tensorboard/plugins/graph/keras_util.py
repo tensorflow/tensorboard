@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for graph plugin."""
+"""Utilities for handling Keras model in graph plugin."""
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
 
