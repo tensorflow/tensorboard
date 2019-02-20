@@ -24,8 +24,9 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import sys
+import unittest
 
-import tensorflow as tf
 import tensorboard.summary as tb_summary
 import tensorboard.summary.v1 as tb_summary_v1
 import tensorboard.summary.v2 as tb_summary_v2
@@ -63,7 +64,7 @@ class SummaryExportsBaseTest(object):
           'module.' % bad_exports)
 
 
-class SummaryExportsTest(SummaryExportsBaseTest, tf.test.TestCase):
+class SummaryExportsTest(SummaryExportsBaseTest, unittest.TestCase):
   module = tb_summary
   allowed = frozenset(('v1', 'v2'))
   plugins = frozenset([
@@ -77,7 +78,7 @@ class SummaryExportsTest(SummaryExportsBaseTest, tf.test.TestCase):
   ])
 
 
-class SummaryExportsV1Test(SummaryExportsBaseTest, tf.test.TestCase):
+class SummaryExportsV1Test(SummaryExportsBaseTest, unittest.TestCase):
   module = tb_summary_v1
   plugins = frozenset([
     'audio',
@@ -90,7 +91,7 @@ class SummaryExportsV1Test(SummaryExportsBaseTest, tf.test.TestCase):
   ])
 
 
-class SummaryExportsV2Test(SummaryExportsBaseTest, tf.test.TestCase):
+class SummaryExportsV2Test(SummaryExportsBaseTest, unittest.TestCase):
   module = tb_summary_v2
   plugins = frozenset([
     'audio',
@@ -103,5 +104,19 @@ class SummaryExportsV2Test(SummaryExportsBaseTest, tf.test.TestCase):
   def test_plugins_export_pb_functions(self):
     self.skipTest('V2 summary API _pb functions are not finalized yet')
 
+
+class SummaryDepTest(unittest.TestCase):
+
+  def test_no_tf_dep(self):
+    # Check as a precondition that TF wasn't already imported.
+    self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
+    # Check that referencing summary API symbols still avoids a TF import
+    # as long as we don't actually invoke any API functions.
+    for module in (tb_summary, tb_summary_v1, tb_summary_v2):
+      print(dir(module))
+      print(module.scalar)
+    self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
+
+
 if __name__ == '__main__':
-  tf.test.main()
+  unittest.main()

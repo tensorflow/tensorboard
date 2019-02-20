@@ -80,6 +80,9 @@ limitations under the License.
          * 4 false negatives.
          */
         counts: {type: Object, observer: 'drawMatrix'},
+
+        // Label appears in top-right corner of confusion matrix.
+        label: String,
       },
 
       ready: function() {
@@ -161,7 +164,7 @@ limitations under the License.
           .append('th')
             .text(column => {
               if (column == 0) {
-                return this.getNText(total);
+                return this.label;
               } else if (column <= countMatrix.length) {
                 return 'Predicted ' + labelsList[column - 1];
               } else {
@@ -253,10 +256,6 @@ limitations under the License.
        */
       getIndices: function(tableDim) {
         return Array.apply(null, {length: tableDim}).map(Number.call, Number);
-      },
-
-      getNText: function(total) {
-        return 'n=' + total;
       },
     });
 
