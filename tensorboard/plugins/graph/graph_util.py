@@ -18,6 +18,139 @@ from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
 
 
+def _walk_layers(keras_layer):
+  """Walks the nested keras layer configuration in preorder.
+  Args:
+    keras_layer: Keras configuration from model.to_json.
+
+  Yields:
+    (name_scope, layer_config)
+  """
+  yield ('', keras_layer)
+  if keras_layer.get('config').get('layers'):
+    name_scope = keras_layer.get('config').get('name')
+    for layer in keras_layer.get('config').get('layers'):
+      for (sub_name_scope, sublayer) in _walk_layers(layer):
+        sub_name_scope = '%s/%s' % (
+            name_scope, sub_name_scope) if sub_name_scope else name_scope
+        yield (sub_name_scope, sublayer)
+
+
+def _scoped_name(name_scope, node_name):
+  """Returns scoped name for a node.
+
+  Args:
+    name_scope: scope names similar to that of tf.name_scope.
+    node_name: current node name.
+
+  Returns
+    A scoped name.
+  """
+  if name_scope:
+    return '%s/%s' % (name_scope, node_name)
+  return node_name
+
+
+def _is_model(layer):
+  """Returns true if layer is a model."""
+  return layer.get('config').get('layers') is not None
+
+
+def _norm_to_list_of_layers(maybe_layers):
+  """Normalizes to a list of layers.
+
+  A Functional model has fields 'inbound_nodes' and 'output_layers'
+  which looks like below.
+  - ['in_layer_name', 0, 0, {}]
+  - [['in_layer_is_model', 1, 0, {}], ['in_layer_is_model', 1, 1, {}]]
+  An item seems to consist of [name, size, index, unknown] but this
+  format is not well-defined.
+  """
+  return (maybe_layers if isinstance(maybe_layers[0], (list,))
+          else [maybe_layers])
+
+
+def _update_dicts(name_scope,
+                  model_layer,
+                  input_to_in_layer,
+                  model_name_to_output,
+                  prev_node_name):
+  """Updates input_to_in_layer and model_name_to_output based on layer.
+
+  Args:
+    name_scope: Name scope of a model
+    model_layer: Model configuration
+    input_to_in_layer: Keras.layers.Input to inbound layer
+    model_name_to_output: Keras Model name to output layer of the model
+    prev_node_name: Previous, in sequential model layout, node name
+
+  Returns:
+    (input_to_in_layer, model_name_to_output, prev_node_name)
+
+  Two canonical types of Keras model are Functional and Sequential.
+  They have distinct structures to the configuration like below:
+  Functional:
+    config
+      name: Name of the model. If not specified, it is 'model' with
+            an optional suffix if there are more than one instance.
+      input_layers: Keras.layers.Inputs in the model.
+      output_layers: Layer names that are outputs of the model.
+      layers: list of layer configurations.
+        layer: [1]
+          inbound_nodes: inputs to this layer.
+
+  Sequential:
+    config
+      name: Name of the model. If not specified, it is 'sequential' with
+            an optional suffix if there are more than one instance.
+      layers: list of layer configurations.
+        layer: [1]
+
+  [1]: Note that a model can be a layer.
+  """
+  layer_config = model_layer.get('config')
+  if not layer_config.get('layers'):
+    raise ValueError('layer is not a model.')
+
+  node_name = _scoped_name(name_scope, layer_config.get('name'))
+  input_layers = layer_config.get('input_layers')
+  output_layers = layer_config.get('output_layers')
+  inbound_nodes = model_layer.get('inbound_nodes')
+
+  is_functional_model = bool(input_layers and output_layers)
+  # In case of [1] and the parent model is functional, current layer
+  # will have the 'inbound_nodes' property.
+  is_parent_functional_model = bool(inbound_nodes)
+
+  if is_parent_functional_model and is_functional_model:
+    for (input_layer, inbound_node) in zip(input_layers, inbound_nodes):
+      input_layer_name = _scoped_name(node_name, input_layer)
+      inbound_node_name = _scoped_name(name_scope, inbound_node[0])
+      input_to_in_layer[input_layer_name] = inbound_node_name
+  elif is_parent_functional_model and not is_functional_model:
+    # Sequential model can take only one input. Make sure inbound to the
+    # model is linked to the first layer in the Sequential model.
+    prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0])
+  elif not is_parent_functional_model and prev_node_name and is_functional_model:
+    assert len(input_layers) == 1, (
+        'Cannot have multi-input Functional model when parent model '
+        'is not Functional. Number of input layers: %d' % len(input_layer))
+    input_layer = input_layers[0]
+    input_layer_name = _scoped_name(node_name, input_layer)
+    input_to_in_layer[input_layer_name] = prev_node_name
+
+  if is_functional_model and output_layers:
+    layers = _norm_to_list_of_layers(output_layers)
+    layer_names = [_scoped_name(node_name, layer[0]) for layer in layers]
+    model_name_to_output[node_name] = layer_names
+  else:
+    last_layer = layer_config.get('layers')[-1]
+    last_layer_name = last_layer.get('config').get('name')
+    output_node = _scoped_name(node_name, last_layer_name)
+    model_name_to_output[node_name] = [output_node]
+  return (input_to_in_layer, model_name_to_output, prev_node_name)
+
+
 def keras_model_to_graph_def(keras_layer):
   """Returns GraphDef representation of the model.
 
@@ -29,71 +162,23 @@ def keras_model_to_graph_def(keras_layer):
   Returns:
     A GraphDef representation of layers.
   """
-
-  def get_layers(keras_layer):
-    yield ('', keras_layer)
-    if keras_layer.get('config').get('layers'):
-      name_scope = keras_layer.get('config').get('name')
-      for layer in keras_layer.get('config').get('layers'):
-        for (sub_name_scope, sublayer) in get_layers(layer):
-          sub_name_scope = '%s/%s' % (
-              name_scope, sub_name_scope) if sub_name_scope else name_scope
-          yield (sub_name_scope, sublayer)
-
-  def scoped_name(name_scope, node_name):
-    if name_scope:
-      return '%s/%s' % (name_scope, node_name)
-    return node_name
-
-  model_inputs_to_layer = {}
-  model_name_to_output_layer = {}
+  input_to_layer = {}
+  model_name_to_output = {}
   g = GraphDef()
 
   # Sequential model layers do not have "inbound_nodes".
-  # Must assume all nodes are connected linearly.
+  # Must assume all nodes are connected linearly by keeping track
+  # of the previous node.
   prev_node_name = None
-  for (name_scope, layer) in get_layers(keras_layer):
-    layer_config = layer.get('config')
-    node_name = scoped_name(name_scope, layer_config.get('name'))
 
-    if layer_config.get('layers'):
-      # Do not add models to GraphDef. Store information for models.
-      input_layers = layer_config.get('input_layers')
-      inbound_nodes = layer.get('inbound_nodes')
-      if input_layers and inbound_nodes:
-        # Parent is Functional and current model is Functional.
-        for (input_layer, inbound_node) in zip(input_layers, inbound_nodes):
-          input_layer_name = scoped_name(node_name, input_layer)
-          inbound_node_name = scoped_name(name_scope, inbound_node[0])
-          model_inputs_to_layer[input_layer_name] = inbound_node_name
-      elif inbound_nodes:
-        # Parent is Functional but current model is Sequential.
-        # Sequential model can take only one input. Make sure inbound to the
-        # model is linked to the first layer in the Sequential model.
-        prev_node_name = scoped_name(name_scope, inbound_nodes[0][0])
-      elif input_layers and prev_node_name:
-        # Parent is Sequential but current model is Functional.
-        for input_layer in input_layers:
-          input_layer_name = scoped_name(node_name, input_layer)
-          model_inputs_to_layer[input_layer_name] = prev_node_name
-
-      # Unlike the name, there is only one item in the output_layers.
-      if layer_config.get('output_layers'):
-        maybe_layers = layer_config.get('output_layers')
-        # Normalizae output_layers.
-        # - single output: an array of values
-        # - multi outputs: an array of arrays of values
-        layers = maybe_layers if isinstance(
-            maybe_layers[0], (list,)) else [maybe_layers]
-        layer_names = [scoped_name(node_name, layer[0]) for layer in layers]
-        model_name_to_output_layer[node_name] = layer_names
-      else:
-        last_layer = layer_config.get('layers')[-1]
-        last_layer_name = last_layer.get('config').get('name')
-        output_node = scoped_name(node_name, last_layer_name)
-        model_name_to_output_layer[node_name] = [output_node]
-
+  for (name_scope, layer) in _walk_layers(keras_layer):
+    if _is_model(layer):
+      (input_to_layer, model_name_to_output, prev_node_name) = _update_dicts(
+          name_scope, layer, input_to_layer, model_name_to_output, prev_node_name)
       continue
+
+    layer_config = layer.get('config')
+    node_name = _scoped_name(name_scope, layer_config.get('name'))
 
     node_def = g.node.add()
     node_def.name = node_name
@@ -106,30 +191,24 @@ def keras_model_to_graph_def(keras_layer):
       tf_dtype = dtypes.as_dtype(layer_config.get('dtype'))
       node_def.attr['dtype'].type = tf_dtype.as_datatype_enum
 
-    # functional configs have inbound_nodes
+    # Functional model has inbound_nodes
     if layer.get('inbound_nodes') is not None:
       for maybe_inbound_node in layer.get('inbound_nodes'):
-        # Normalizae inbound_nodes. It can be an array of values or an array of
-        # arrays of values. e.g., it can be:
-        # - [['in_layer_name', 0, 0, {}]]
-        # - [[['in_layer_is_model', 1, 0, {}], ['in_layer_is_model', 1, 1, {}]]]
-        inbound_nodes = maybe_inbound_node if isinstance(
-            maybe_inbound_node[0], (list,)) else [maybe_inbound_node]
-
+        inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)
         for [name, size, ind, _] in inbound_nodes:
-          inbound_name = scoped_name(name_scope, name)
+          inbound_name = _scoped_name(name_scope, name)
           # An input to a layer can be output from a model. In that case, the name
           # of inbound_nodes to a layer is a name of a model. Remap the name of the
           # model to output layer of the model. Also, since there can be multiple
           # outputs in a model, make sure we pick the right output_layer from the model.
-          inbound_node_names = model_name_to_output_layer.get(
+          inbound_node_names = model_name_to_output.get(
               inbound_name, [inbound_name])
           node_def.input.append(inbound_node_names[ind])
     elif prev_node_name is not None:
       node_def.input.append(prev_node_name)
 
-    if node_name in model_inputs_to_layer:
-      node_def.input.append(model_inputs_to_layer.get(node_name))
+    if node_name in input_to_layer:
+      node_def.input.append(input_to_layer.get(node_name))
 
     prev_node_name = node_def.name
 
