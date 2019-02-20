@@ -140,6 +140,7 @@ limitations under the License.
         color: #777;
         padding-top: 12px;
         padding-right: 5px;
+        padding-left: 15px;
       }
 
       .pd-no-features-text {
@@ -245,6 +246,7 @@ limitations under the License.
       }
 
       .side-content {
+        padding-left: 5px;
         width: calc(100% - 10px);
         display: flex;
         flex-direction: column;
@@ -268,12 +270,12 @@ limitations under the License.
       }
 
       .config-tab {
-        padding-left: 10px;
         width: 100%;
         display: flex;
       }
 
       .config-side-content {
+        padding-left: 5px;
         width: 30%;
         overflow-y: auto;
         border-right: 1px solid lightgrey;
@@ -300,6 +302,7 @@ limitations under the License.
       .pd-plots-header {
         height: 50px;
         min-height: 50px;
+        max-height: 50px;
       }
 
       .pdplots-holder {
@@ -487,12 +490,18 @@ limitations under the License.
         text-transform: uppercase;
       }
 
+      paper-tab {
+        font-size: 18px;
+        font-weight: 400;
+      }
+
       paper-tab:not(.iron-selected) {
         color: dimgrey;
       }
 
       paper-tab.iron-selected {
         color: var(--tb-orange-dark);
+        font-weight: 700;
       }
 
       .roc-holder {
@@ -891,7 +900,6 @@ limitations under the License.
         display: flex;
         border-bottom: 1px solid lightgrey;
         min-height: 50px;
-        height: 50px;
         justify-content: space-between;
       }
       .perf-table-title {
@@ -1029,6 +1037,11 @@ limitations under the License.
       }
       .tabs {
         text-transform: none;
+      }
+      paper-toggle-button {
+        --paper-toggle-button-checked-bar-color: var(--tb-orange-dark);
+        --paper-toggle-button-checked-button-color: var(--tb-orange-dark);
+        --paper-toggle-button-checked-ink-color: var(--tb-orange-dark);
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1272,12 +1285,12 @@ limitations under the License.
                           <div class="flex">
                             <template is="dom-if" if="[[hasSelected(selectedExampleAndInference)]]">
                               <tf-inference-viewer class="inference-viewer" inferences="[[selectedExampleAndInference.inferences]]"
-                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                                id$="[[getInferenceHolderId_()]]" model-type="[[modelType]]" model-names="[[parsedModelNames]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                               </tf-inference-viewer>
                             </template>
                             <template is="dom-if" if="[[counterfactualExampleAndInference]]">
                               <tf-inference-viewer class="inference-viewer compare-inference-viewer" inferences="[[counterfactualExampleAndInference.inferences]]"
-                                model-type="[[modelType]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
+                                model-type="[[modelType]]" model-names="[[parsedModelNames]]" max-entries-per-run="[[maxInferenceEntriesPerRun]]">
                               </tf-inference-viewer>
                             </template>
                           </div>
@@ -3781,7 +3794,6 @@ limitations under the License.
         } else {
           this.globalPdPlots = false;
         }
-        requestAnimationFrame(() => this.setAttributions());
       },
 
       /**
@@ -3982,15 +3994,19 @@ limitations under the License.
         this.updateCorrectness_();
         this.refreshDive_();
 
-        // If inferring from new examples, set the color in facets dive to
+        // If inferring for the first time, set the color in facets dive to
         // inference results of the first model and use positioning to show
         // inference scores. When reinferring from changes, don't override
         // whatever options have been set.
-        if (newInferencesCalculated) {
+        if (this.inferences.indices.length ==
+            this.examplesAndInferences.length) {
           this.$.dive.colorBy =
             hasInferenceLabels ? this.strWithModelName_(inferenceLabelStr, 0)
               : this.strWithModelName_(inferenceValueStr, 0);
-          if (!this.isMultiClass_(this.modelType, this.multiClass)) {
+          if (this.isRegression_(this.modelType)) {
+            this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
+          }
+          else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
             if (this.numModels > 1) {
               this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
@@ -4124,6 +4140,7 @@ limitations under the License.
         inferenceViewer.inference = null;
         this.visdata[index] =
           this.exampleToDataPoint_(event.target.json, index);
+        this.showNearestCounterfactual = false;
         this.refreshDive_();
         this.updatedExample = true;
         this.selectedDataUpdated_();
@@ -4452,6 +4469,8 @@ limitations under the License.
           this.exampleToDataPoint_(exampleAndInference.example,
                                    this.visdata.length));
         const duplicatedIndex = this.selected[0];
+
+        this.showNearestCounterfactual = false;
 
         // Automatically select the new datapoint.
         this.selected[0] = this.visdata.length - 1;
