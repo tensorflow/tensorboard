@@ -175,7 +175,7 @@ def keras_model_to_graph_def(keras_layer):
   g = GraphDef()
 
   # Sequential model layers do not have a field "inbound_nodes" but
-  # instead of defined implicitly via order of layers.
+  # instead are defined implicitly via order of layers.
   prev_node_name = None
 
   for (name_scope, layer) in _walk_layers(keras_layer):
