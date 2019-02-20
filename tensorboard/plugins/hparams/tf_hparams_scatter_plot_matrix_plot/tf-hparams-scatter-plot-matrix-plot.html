@@ -110,20 +110,35 @@ the vulcanization build step. Figure out why.
         },
 
         width: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
         },
 
         height: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
+        },
+
+        // The index of the cell containing a bursh selection or null if no
+        // cell has an active brush selection.
+        _brushedCellIndex: {
+          type: Array,
+          value: null,
+        },
+        
+        // The the active brush selection in the form
+        // [[x0,y0],[x1,y1]] where the coordinates are relative to the cell
+        // indexed by _brushedCellIndex. Set to null, if there is no active
+        // brush.
+        _brushedSelection: {
+          type: Array,
+          value: null,
         },
       },
 
       observers: [
         '_sessionGroupsChanged(sessionGroups.*)',
-        '_redraw(schema.*)',
-        '_redraw(options.*)',
+        '_schemaOrOptionsChanged(schema.*, options.*)',
       ],
 
       ready() {
@@ -137,17 +152,21 @@ the vulcanization build step. Figure out why.
           // Try to keep the selected session group: if the new sessionGroups
           // array has a sessionGroup with the same name as the one that was
           // selected before, select it.
-          const newSelectedSessionGroup = this.sessionGroups.find(
-              sg => sg.name === this.selectedSessionGroup.name);
-          if (newSelectedSessionGroup !== undefined) {
-            this._setSelectedSessionGroup(newSelectedSessionGroup);
-          } else {
-            this._setSelectedSessionGroup(null);
-          }
+          this._setSelectedSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.selectedSessionGroup.name)
+                || null);
         }
         this._redraw();
       },
-      
+
+      _schemaOrOptionsChanged() {
+        this._brushedCellIndex = null;
+        this._brushedSelection = null;
+        this._redraw();
+      },
+
       // Redraws the plot.
       _redraw() {
         this.debounce("_redraw", ()=>{
@@ -427,8 +446,8 @@ the vulcanization build step. Figure out why.
         // A function mapping a sessionGroup to its marker's color.
         const markerColorFn =
               _this.options.colorByColumnIndex === undefined
-              /* Use default class color if no color-by column is selected. */
-              ? () => null
+              /* Use default color if no color-by column is selected. */
+              ? () => "red"
               : ({sessionGroup}) => (
                 colorScale(
                     this._colValue(sessionGroup,
@@ -516,7 +535,7 @@ the vulcanization build step. Figure out why.
         // the markers associated with session groups whose markers
         // in the brushed cell lie within the brush selection. By "visibile"
         // here, we man colored according to color-by column. Markers that
-        // are not "visibile" will actually be shown and will be grayed out.
+        // are not "visibile" will be shown as grayed out.
         // ---------------------------------------------------------------------
         // The <g> element of the last cell that had the brush selection or
         // null if no cell was brushed yet.
@@ -578,7 +597,6 @@ the vulcanization build step. Figure out why.
                 updateMarkersForBrushSelection(col, metric,
                                                d3.brushSelection(this));
               });
-        cells.append("g").call(brush);
 
         // Updates marker visibility so that only markers whose
         // associated session group markers in the cell indexed by 'col, metric'
@@ -592,6 +610,8 @@ the vulcanization build step. Figure out why.
             // Nothing to do if selection hasn't changed.
             return;
           }
+          _this._brushSelection = selection;
+          _this._brushedCellIndex = [col, metric];
           const newVisibleMarkers =
                 findMarkersInSelection(col, metric, selection);
           // Highlight the new visible markers.
@@ -636,6 +656,20 @@ the vulcanization build step. Figure out why.
           return selection === null ||
               selection[0][0] === selection[1][0] ||
               selection[0][1] === selection[1][1];
+        }
+
+        // Render the brush elements on each cell.
+        cellBrushes = cells.append("g").call(brush);
+
+        // Set the initial selection to what it was before the redraw().
+        if (this._brushedCellIndex !== null) {
+          const cellBrush = cellBrushes.filter(
+              ([col, metric])=>
+                (col === this._brushedCellIndex[0] &&
+                 metric == this._brushedCellIndex[1]));
+          if (!cellBrush.empty()) {
+            brush.move(cellBrush, this._brushSelection);
+          }
         }
 
         // ---------------------------------------------------------------------

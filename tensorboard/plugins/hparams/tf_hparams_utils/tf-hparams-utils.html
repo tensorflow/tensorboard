@@ -175,6 +175,13 @@ var tf;
       }
       utils.prettyPrintMetricValueByName = prettyPrintMetricValueByName;
 
+      // Returns the session group with name 'name' in sessionGroups or
+      // undefined of no such element exist.
+      function sessionGroupWithName(sessionGroups, name) {
+        return sessionGroups.find(sg => sg.name === name);
+      }
+      utils.sessionGroupWithName = sessionGroupWithName;
+
       // ---- Misc functions ---------------------------------------------------
       // Returns a string representation of 'value' suitable for display.
       function prettyPrint(value) {
@@ -366,6 +373,10 @@ var tf;
             [pathToArray, 0, currentArray.length].concat(newArray));
       }
       utils.setArrayObservably = setArrayObservably;
+
+      function findSessionGroupByName(sessionGroup, newSessionGroupArray) {
+        
+      }
     })(hparams.utils || (hparams.utils = {}))  // namespace utils
   })(tf.hparams || (tf.hparams = {}))  // namespace hparams
 })(tf || (tf = {}))  // namespace tf

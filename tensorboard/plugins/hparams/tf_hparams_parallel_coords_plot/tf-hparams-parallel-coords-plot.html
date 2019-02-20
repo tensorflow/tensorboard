@@ -46,7 +46,6 @@ limitations under the License.
 
       .foreground path {
         fill: none;
-        stroke: red;  /* Used if the color-by column is not selected. */
         stroke-opacity: 0.7;
         stroke-width: 1;
       }
@@ -155,13 +154,20 @@ limitations under the License.
           value: null
         },
 
+        _cols: {
+          type: Array,
+          value: [],
+        },
 
+        _brushSelections: {
+          type: Array,
+          value: [],
+        }
       },
 
       observers: [
-        '_redraw(sessionGroups.*)',
-        '_redraw(schema.*)',
-        '_redraw(options.*)',
+        '_sessionGroupsChanged(sessionGroups.*)',
+        '_schemaOrOptionsChanged(schema.*, options.*)',
       ],
 
       ready() {
@@ -173,19 +179,27 @@ limitations under the License.
 
       _sessionGroupsChanged() {
         if (this.selectedSessionGroup !== null) {
-          // Try to keep the selected session group: if the new sessionGroups
-          // array has a sessionGroup with the same name as the one that was
-          // selected before, select it.
-          const newSelectedSessionGroup = this.sessionGroups.find(
-              sg => sg.name === this.selectedSessionGroup.name);
-          if (newSelectedSessionGroup !== undefined) {
-            this._setSelectedSessionGroup(newSelectedSessionGroup);
-          } else {
-            this._setSelectedSessionGroup(null);
-          }
+          // Try to keep the selected and closest session groups:
+          this._setSelectedSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.selectedSessionGroup.name) || null);
+        }
+        if (this.closestSessionGroup !== null) {
+          this._setClosestSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.closestSessionGroup.name) || null);
         }
         this._redraw();
       },
+
+      _schemaOrOptionsChanged() {
+        this._cols = d3.range(this._numCols());
+        this._brushSelections = this._cols.map(c=>null);
+        this._redraw();
+      },
+
       // Redraws the plot.
       _redraw() {
         this.debounce("_redraw", ()=>{
@@ -198,9 +212,8 @@ limitations under the License.
           this._container.style.height = this.height + "px";
 
           // Delete all elements in the svg subtree and reset the
-          // selected and closest groups
+          // closest session group.
           this._svg.selectAll("g").remove()
-          this._setClosestSessionGroup(null);
 
           // Draw.
           this._draw();
@@ -244,18 +257,12 @@ limitations under the License.
               .attr("transform",
                     tf.hparams.utils.translateStr(margin.left, margin.top));
 
-        // 'cols' is an array that stores the column indices for the axes
-        // in the order they appear on the screen from left to right.
-        // Initially the ith axis from the left contains the ith column index,
-        // but the user can drag axes and change this order later.
-        const cols = d3.range(this._numCols());
-
         // Create a point-scale for the columns (axes) x coordinates.
         const x = d3.scalePoint().range([1, width-1]).padding(0.5);
-        x.domain(cols);
+        x.domain(_this._cols);
 
         // Create the scales for each axis y coordinates.
-        const y = cols.map(
+        const y = d3.range(this._numCols()).map(
             colIndex => {
               const domainValues = _this._validSessionGroups.map(
                   sg=>_this._colValue(sg, colIndex));
@@ -281,8 +288,8 @@ limitations under the License.
         // given session group 'sg'. These are the points on the axes through
         // which the path passes.
         function controlPointsFn(sg) {
-          return cols.map(c=>[colPositionFn(c),
-                              y[c](_this._colValue(sg, c))]);
+          return _this._cols.map(c=>[colPositionFn(c),
+                                     y[c](_this._colValue(sg, c))]);
         }
 
         const line = d3.line().curve(d3.curveLinear);
@@ -335,17 +342,28 @@ limitations under the License.
         const colorScale = this._createColorScale();
         const lineColorFn =
               options.colorByColumnIndex === undefined
-              /* Use default class color if no color-by column is selected. */
-              ? () => null
+              /* Use default color if no color-by column is selected. */
+              ? () => "red"
               : sessionGroup => colorScale(
                   this._colValue(sessionGroup, options.colorByColumnIndex))
-        foregroundPaths.style("stroke", lineColorFn)
+        foregroundPaths.attr("stroke", lineColorFn)
 
         // --- Foreground path selection ---------------------------------------
         // Clicking on a path selects it (and shows metric details in a
         // different component).
-        // The currently selected <path> element.
+        // The currently selected <path> element or null if no session group is
+        // selected.
         let selectedPath = null;
+        if (this.selectedSessionGroup !== null) {
+          const selectedPathSel = visiblePaths
+                .filter(sg=>sg.name === this.selectedSessionGroup.name)
+                .classed("selected-path", true);
+          if (selectedPathSel.empty()) {
+            this.setSelectedSessionGroup(null);
+          } else {
+            selectedPath = selectedPathSel.node();
+          }
+        }
         // The path closest to the mouse pointer.
         let closestPath = null;
 
@@ -365,13 +383,11 @@ limitations under the License.
               if (selectedPath !== null) {
                 d3.select(selectedPath)
                     .classed("selected-path", false)
-                    .style("stroke", lineColorFn);
               }
               selectedPath = newSelectedPath;
               if (selectedPath !== null) {
                 d3.select(selectedPath)
                     .classed("selected-path", true)
-                    .style("stroke", null);
               }
               const newSg = (selectedPath === null)
                     ? null
@@ -385,7 +401,7 @@ limitations under the License.
               }
               const newClosestPath = parallel_coords_plot.findClosestPath(
                   visiblePaths.nodes(),
-                  cols.map(colPositionFn),
+                  _this._cols.map(colPositionFn),
                   d3.mouse(svgG.node()),
                   /* threshold */ 100);
               if (closestPath === newClosestPath) {
@@ -404,14 +420,17 @@ limitations under the License.
               }
             })
             .on("mouseleave", function() {
-              closestPath = null;
-              _this._setClosestSessionGroup(null);
+              if (closestPath !== null) {
+                d3.select(closestPath).classed("closest-path", false);
+                closestPath = null;
+                _this._setClosestSessionGroup(null);
+              }
             });
 
         // ---- Column axes ----------------------------------------------------
         // Add a <g> element for each dimension.
         const axes = svgG.selectAll(".axis-parent")
-              .data(cols)
+              .data(_this._cols)
             .enter().append("g")
               .attr("class", "axis-parent")
               .attr("transform",
@@ -451,10 +470,10 @@ limitations under the License.
                     if (draggedColPos > width) {
                       draggedColPos = width;
                     }
-                    cols.sort(function(a, b) {
+                    _this._cols.sort(function(a, b) {
                       return colPositionFn(a) - colPositionFn(b);
                     });
-                    x.domain(cols);
+                    x.domain(_this._cols);
 
                     // Reposition the foreground lines and axes.
                     foregroundPaths.each(setPathControlPointsFn);
@@ -507,13 +526,6 @@ limitations under the License.
               .on("end", ()=>brushChangedFn(i, d3.event.selection))
         }
 
-        // Render the brush DOM elements.
-        axes.append("g")
-            .attr("class", "brush")
-            .each(function (colIndex) {
-              d3.select(this).call(brush[colIndex]);
-            });
-
         // For each axis having an active brush, we store the brushedExtent
         // which represents the subset of the domain of the column that is
         // currently brushed (selected). The representation of this set is
@@ -557,8 +569,10 @@ limitations under the License.
           if (selection) {
             brushedExtent[colIndex] =
                 calculateBrushedExtent(colIndex, selection);
+            _this._brushSelections[colIndex] = selection;
           } else {
             delete brushedExtent[colIndex];
+            _this._brushSelections[colIndex] = null;
           }
           // Hide all foreground lines that do not satisfy all the brushed
           // extents.
@@ -579,6 +593,15 @@ limitations under the License.
           });
           updateVisiblePaths();
         }
+
+        // Render the brush DOM elements.
+        axes.append("g")
+            .attr("class", "brush")
+            .each(function (colIndex) {
+              d3.select(this).call(brush[colIndex]);
+              brush[colIndex].move(
+                  d3.select(this), _this._brushSelections[colIndex]);
+            });
 
         // Polymer adds an extra ".tf-hparams-parallel-coords-plot" class to
         // each rule selector in the <style> section written above. When
