@@ -24,6 +24,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
 
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-card.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
@@ -48,6 +49,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
         <template is="dom-repeat" items="[[schema.metricInfos]]"
                   as="metricInfo">
           <tf-scalar-card
+            class="scalar-card"
             color-scale="[[_constantColorScale()]]"
             data-to-load="[[_computeSeriesForSessionGroupMetric(sessionGroup,
                           metricInfo)]]"
@@ -179,6 +181,34 @@ clicks on a row in table-view or a curve in parallel-coords view.
             });
           }
         },
+      },
+
+      // Whenever the backend sends a new 'sessionGroups' array reply to the
+      // ListSessionGroups RPC, we recreate the tf-session-group-detail
+      // elements that correspond to session groups whose name is in the new
+      // sessionGroups array. As such this element can be constructed when one
+      // of its parents container is invisible: for example, if sessionGroups
+      // was replaced when the user was on the parallel-coordinates view tab
+      // and the new sessionGroups contains a session group object
+      // whose metrics were open in the table view tab (i.e. the old
+      // sessionGroups array contained a distinct JavaScript sessionGroup
+      // object with same name).
+      // If this happens, the tf-scalar-card child elements of this element
+      // would measure a 0 size of their bounding boxes and would render
+      // incorrectly. To avoid that, we listen for the 'iron-resize' event
+      // that is fired by 'iron-pages' whenever the active page changes and
+      // redraw each tf-scalar-card child.
+      behaviors: [
+        Polymer.IronResizableBehavior
+      ],
+
+      listeners: {
+        'iron-resize': 'redraw',
+      },
+
+      redraw() {
+        Polymer.dom(this.root).querySelectorAll(".scalar-card").forEach(
+            c=>c.redraw());
       },
 
       _haveMetrics() {

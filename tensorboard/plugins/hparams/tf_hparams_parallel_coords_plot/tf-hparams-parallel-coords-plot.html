@@ -92,10 +92,6 @@ limitations under the License.
     Polymer({
       is: 'tf-hparams-parallel-coords-plot',
 
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
-
       properties: {
         // Public properties
         // See the property description in tf-hparams-query-pane.html
@@ -175,6 +171,21 @@ limitations under the License.
         this._redraw();
       },
 
+      _sessionGroupsChanged() {
+        if (this.selectedSessionGroup !== null) {
+          // Try to keep the selected session group: if the new sessionGroups
+          // array has a sessionGroup with the same name as the one that was
+          // selected before, select it.
+          const newSelectedSessionGroup = this.sessionGroups.find(
+              sg => sg.name === this.selectedSessionGroup.name);
+          if (newSelectedSessionGroup !== undefined) {
+            this._setSelectedSessionGroup(newSelectedSessionGroup);
+          } else {
+            this._setSelectedSessionGroup(null);
+          }
+        }
+        this._redraw();
+      },
       // Redraws the plot.
       _redraw() {
         this.debounce("_redraw", ()=>{
@@ -189,7 +200,6 @@ limitations under the License.
           // Delete all elements in the svg subtree and reset the
           // selected and closest groups
           this._svg.selectAll("g").remove()
-          this._setSelectedSessionGroup(null);
           this._setClosestSessionGroup(null);
 
           // Draw.
@@ -218,7 +228,7 @@ limitations under the License.
         // If we don't have any session groups or not enough axes,
         // don't draw anything.
         if (!_this._validSessionGroups
-            || _this._validSessionGroups.length == 0
+            || _this._validSessionGroups.length === 0
             || _this._numCols() < 2) {
           return;
         }
