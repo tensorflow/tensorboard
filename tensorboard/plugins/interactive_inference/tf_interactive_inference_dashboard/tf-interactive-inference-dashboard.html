@@ -155,7 +155,6 @@ limitations under the License.
       }
 
       .settings-button {
-        color: black;
         margin-top: 4px;
       }
 
@@ -183,6 +182,10 @@ limitations under the License.
         width: 150px;
         min-width: 150px;
         padding-right: 16px;
+        --paper-input-container-input: {
+          font-size: 14px;
+          color: #3C4043;
+        }
       }
 
       .slider-label {
@@ -427,6 +430,14 @@ limitations under the License.
         border-radius: 2px;
         max-width: 60%;
         --paper-input-container: { padding: 4px 6px 2px 4px; };
+        --paper-input-container-input: {
+          font-size: 14px;
+          color: #3C4043;
+        }
+        --paper-input-container-label: {
+          font-size: 14px;
+          color: #80868B;
+        }
       }
 
       .datapoint-control-filter-input iron-icon {
@@ -441,17 +452,18 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid lightgray;
+        border: 1px solid #DADCE0;
         color: var(--tb-orange-dark);
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 400;
         padding: 8px 12px;
         text-transform: none;
         margin: 5px;
       }
 
       .control-button[disabled] {
-        color: lightgray;
+        color: #5F6368;
+        background-color: #f4f4f4;
       }
 
       .main-button {
@@ -459,7 +471,7 @@ limitations under the License.
         border: 1px solid var(--tb-orange-dark);
         color: white;
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 400;
         padding: 8px 12px;
         text-transform: none;
         margin: 5px;
@@ -487,21 +499,19 @@ limitations under the License.
         width: 100%;
         height: 100%;
         --paper-tabs-selection-bar-color: var(--tb-orange-dark);
-        text-transform: uppercase;
       }
 
       paper-tab {
-        font-size: 18px;
-        font-weight: 400;
+        font-size: 14px;
+        font-weight: 500;
       }
 
       paper-tab:not(.iron-selected) {
-        color: dimgrey;
+        color: #5F6368
       }
 
       paper-tab.iron-selected {
-        color: var(--tb-orange-dark);
-        font-weight: 700;
+        color: #202124;
       }
 
       .roc-holder {
@@ -557,6 +567,14 @@ limitations under the License.
         width: 150px;
         min-width: 150px;
         margin-right: 16px;
+        --paper-input-container-input: {
+          font-size: 14px;
+          color: #3C4043;
+        }
+        --paper-input-container-label: {
+          font-size: 14px;
+          color: #80868B;
+        }
       }
 
       .bold {
@@ -628,8 +646,22 @@ limitations under the License.
       }
 
       paper-radio-button {
-        --paper-radio-button-checked-color: #f57c00;
-        --paper-radio-button-checked-ink-color: #f57c00;
+        --paper-radio-button-label: {
+          font-size: 14px;
+          color: #3C4043;
+        }
+        --paper-radio-button-unchecked-color: #3C4043;
+        --paper-radio-button-unchecked-ink-color: #3C4043;
+        --paper-radio-button-checked-color: #3C4043;
+        --paper-radio-button-checked-ink-color: #3C4043;
+      }
+
+      paper-icon-button {
+        color: #3C4043;
+      }
+
+      paper-icon-button[disabled] {
+        color: #80868B;
       }
 
       .resizer {
@@ -643,7 +675,7 @@ limitations under the License.
 
       .example-status {
         font-size: 12px;
-        color: #777;
+        color: #5F6368;
         white-space: nowrap;
         overflow: hidden;
         padding-top: 16px;
@@ -671,6 +703,7 @@ limitations under the License.
       }
 
       .heading {
+        color: #5F6368;
         position: relative;
         padding: 10px 8px;
         background-color: #f7ecd9;
@@ -678,7 +711,8 @@ limitations under the License.
         border-top: none;
         border-left: none;
         border-right: none;
-        font-size: 18px;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
         -webkit-tap-highlight-color: rgba(0,0,0,0);
         width: 100%;
@@ -773,15 +807,15 @@ limitations under the License.
       }
 
       .help-text {
-        color: grey;
-        font-size: 14px;
-        font-weight: 400;
+        color: #5F6368;
+        font-size: 10px;
       }
 
       .help-title {
-        color: var(--tb-orange-dark);
-        font-size: 14px;
+        color: #D56E0C;
+        font-size: 11px;
         font-weight: 500;
+        text-transform: uppercase;
       }
 
       .help-title-margin {
@@ -797,8 +831,8 @@ limitations under the License.
       }
 
       .dialog-link {
-        color: grey;
-        font-size: 14px;
+        color: #5F6368;
+        font-size: 10px;
         font-style: italic;
         text-decoration: underline;
         cursor: pointer;
@@ -807,6 +841,8 @@ limitations under the License.
       .roc-text {
         text-align: center;
         padding-left: 75px;
+        color: #3C4043;
+        font-size: 14px;
       }
 
       .dialog-text {
@@ -830,14 +866,29 @@ limitations under the License.
         padding-top: 20px;
       }
 
-      .datapoint-info-header {
-        font-size: 26px;
-        margin-top: 5px;
-        margin-bottom: 35px;
+      .onboarding-header {
+        color: #202124;
+        font-size: 22px;
+        margin-bottom: 28px;
       }
 
-      .datapoint-info-bullet {
-        font-size: 16px;
+      .onboarding-text {
+        color: #3C4043;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .control-info-header {
+        color: #3C4043;
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 10px;
+        margin-bottom: 15px;
+      }
+
+      .control-info-text {
+        color: #3C4043;
+        font-size: 14px;
         margin-bottom: 15px;
       }
 
@@ -852,6 +903,7 @@ limitations under the License.
       }
 
       paper-dialog {
+        color: #3C4043;
         border-radius: 10px;
       }
 
@@ -878,6 +930,7 @@ limitations under the License.
 
       .optimization-radio {
         display: block;
+        padding: 7px;
       }
 
       .optimization-radio-group {
@@ -903,7 +956,8 @@ limitations under the License.
         justify-content: space-between;
       }
       .perf-table-title {
-        font-size: 20px;
+        color: #3C4043;
+        font-size: 18px;
         margin-left: 14px;
         margin-top: 16px;
       }
@@ -914,7 +968,8 @@ limitations under the License.
         background: white;
         width: 100%;
         font-weight: 500;
-        color: grey;
+        color: #80868B;
+        font-size: 14px;
         display: flex;
         border-bottom: 1px solid lightgrey;
         min-height: 30px;
@@ -928,6 +983,8 @@ limitations under the License.
 
       .perf-table-entry {
         background: white;
+        color: #3C4043;
+        font-size: 14px;
       }
 
       .perf-table-entry-expanded {
@@ -1024,7 +1081,7 @@ limitations under the License.
         margin: 10px 0 0 8px;
       }
       .datapoint-button {
-        color: black;
+        color: #202124;
       }
       .flex-grow {
         flex-grow: 1;
@@ -1039,9 +1096,11 @@ limitations under the License.
         text-transform: none;
       }
       paper-toggle-button {
-        --paper-toggle-button-checked-bar-color: var(--tb-orange-dark);
-        --paper-toggle-button-checked-button-color: var(--tb-orange-dark);
-        --paper-toggle-button-checked-ink-color: var(--tb-orange-dark);
+        font-size: 14px;
+        --paper-toggle-button-checked-button-color: white;
+        --paper-toggle-button-label-color: #3C4043;
+
+        }
       }
     </style>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1248,13 +1307,13 @@ limitations under the License.
                           <div class="datapoint-info-holder">
                             <div class="datapoint-info-content">
                               <div class="flex space-between">
-                                <div class="datapoint-info-header">Select a datapoint to begin exploring model behavior for your selection.</div>
+                                <div class="onboarding-header">Select a datapoint to begin exploring model behavior for your selection.</div>
                               </div>
-                              <div class="datapoint-info-bullet">
+                              <div class="onboarding-text">
                                 <span class="bold">Edit and Infer:</span>
                                 Edit your datapoint here and run inference in the Infer table to see differences in model behavior.
                               </div>
-                              <div class="datapoint-info-bullet">
+                              <div class="onboarding-text">
                                 <span class="bold">Visualize:</span>
                                 Switch between visualizing datapoints and exploring partial dependence plots to gain insights into your
                                 model's behavior. Explore counterfactuals or see how similar (or different) the rest of your dataset is from
@@ -1493,8 +1552,8 @@ limitations under the License.
                         </button>
                         <iron-collapse class="card" id="collapseexplorer" opened="{{openedExplorer}}">
                           <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
-                            <div class="help-title help-title-margin-button">Apply an optimization strategy</div>
-                            <div class="help-text">Select a strategy to set classification thresholds based on the set cost ratio and data slices.
+                            <div class="control-info-header help-title-margin-button">Apply an optimization strategy</div>
+                            <div class="control-info-text">Select a strategy to set classification thresholds based on the set cost ratio and data slices.
                               Manually altering thresholds or changing cost ratio will default back to custom thresholds.
                             </div>
                             <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
