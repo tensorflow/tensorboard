@@ -13,7 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for handling Keras model in graph plugin."""
+"""Utilities for handling Keras model in graph plugin.
+
+Two canonical types of Keras model are Functional and Sequential.
+A model can be serialized as JSON and deserialized to reconstruct a model.
+This utility helps with dealing with the serialized Keras model.
+
+They have distinct structures to the configurations in shapes below:
+Functional:
+  config
+    name: Name of the model. If not specified, it is 'model' with
+          an optional suffix if there are more than one instance.
+    input_layers: Keras.layers.Inputs in the model.
+    output_layers: Layer names that are outputs of the model.
+    layers: list of layer configurations.
+      layer: [*]
+        inbound_nodes: inputs to this layer.
+
+Sequential:
+  config
+    name: Name of the model. If not specified, it is 'sequential' with
+          an optional suffix if there are more than one instance.
+    layers: list of layer configurations.
+      layer: [*]
+
+[*]: Note that a model can be a layer.
+Please refer to https://github.com/tensorflow/tfjs-layers/blob/master/src/keras_format/model_serialization.ts
+for more complete definition.
+"""
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
 
@@ -92,29 +119,6 @@ def _update_dicts(name_scope,
 
   Returns:
     (input_to_in_layer, model_name_to_output, prev_node_name)
-
-  Two canonical types of Keras model are Functional and Sequential.
-  They have distinct structures to the configurations in shapes below:
-  Functional:
-    config
-      name: Name of the model. If not specified, it is 'model' with
-            an optional suffix if there are more than one instance.
-      input_layers: Keras.layers.Inputs in the model.
-      output_layers: Layer names that are outputs of the model.
-      layers: list of layer configurations.
-        layer: [*]
-          inbound_nodes: inputs to this layer.
-
-  Sequential:
-    config
-      name: Name of the model. If not specified, it is 'sequential' with
-            an optional suffix if there are more than one instance.
-      layers: list of layer configurations.
-        layer: [*]
-
-  [*]: Note that a model can be a layer.
-  Please refer to https://github.com/tensorflow/tfjs-layers/blob/master/src/keras_format/model_serialization.ts
-  for more complete definition.
   """
   layer_config = model_layer.get('config')
   if not layer_config.get('layers'):
@@ -160,7 +164,7 @@ def _update_dicts(name_scope,
 
 
 def keras_model_to_graph_def(keras_layer):
-  """Returns GraphDef representation of the model.
+  """Returns GraphDef representation of the Keras model in a dict form.
 
   Note that it only supports models that implemented get_config().
 
