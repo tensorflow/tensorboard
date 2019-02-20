@@ -85,16 +85,5 @@ py_test(
         ":summary",
         ":summary_v1",
         ":summary_v2",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
-py_test(
-    name = "summary_dep_test",
-    size = "small",
-    srcs = ["summary_dep_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":summary_v2",
     ],
 )
