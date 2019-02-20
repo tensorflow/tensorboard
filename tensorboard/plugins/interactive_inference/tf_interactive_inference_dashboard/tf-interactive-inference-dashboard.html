@@ -3215,6 +3215,8 @@ limitations under the License.
        * from the threshold selected, model index, and facet to view.
        */
       getFPModelIndex: function (inferenceStats, thresholds, modelInd, item) {
+        // TODO(jameswex): This unnecessarily recalculates confusion matrix.
+        // Can speed this up.
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
         if (Object.keys(confCounts).length == 0) {
@@ -3230,6 +3232,8 @@ limitations under the License.
        * from the threshold selected, model index, and facet to view.
        */
       getFNModelIndex: function(inferenceStats, thresholds, modelInd, item) {
+        // TODO(jameswex): This unnecessarily recalculates confusion matrix.
+        // Can speed this up.
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
         if (Object.keys(confCounts).length == 0) {
@@ -3246,6 +3250,8 @@ limitations under the License.
        * from the threshold selected, model index, and facet to view.
        */
       getAccuracyModelIndex: function(inferenceStats, thresholds, modelInd, item) {
+        // TODO(jameswex): This unnecessarily recalculates confusion matrix.
+        // Can speed this up.
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, modelInd, item);
         if (Object.keys(confCounts).length == 0) {
@@ -3260,6 +3266,8 @@ limitations under the License.
        * Returns the number of examples in a given facet.
        */
       getFeatureValueCount: function(inferenceStats, thresholds, item) {
+        // TODO(jameswex): This unnecessarily recalculates confusion matrix.
+        // Can speed this up.
         const confCounts = this.getConfusionCountsModelIndex(
           inferenceStats, thresholds, 0, item);
         return this.getTotalEntriesInConfCounts(confCounts);
