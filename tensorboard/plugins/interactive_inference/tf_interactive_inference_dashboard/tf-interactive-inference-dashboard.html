@@ -743,6 +743,11 @@ limitations under the License.
         margin-top: 12px;
       }
 
+      .info-icon.thresh-info-icon {
+        margin-top: -3px;
+        vertical-align: middle;
+      }
+
       .info-icon.pd-info-icon {
         margin-top: 15px;
       }
@@ -879,11 +884,6 @@ limitations under the License.
         display: flex;
         flex-grow: 1;
         flex-direction: column;
-      }
-
-      .opt-help-holder {
-        margin-top: 2px;
-        margin-bottom: 13px;
       }
 
       .infer-info {
@@ -1497,91 +1497,81 @@ limitations under the License.
                             <div class="help-text">Select a strategy to set classification thresholds based on the set cost ratio and data slices.
                               Manually altering thresholds or changing cost ratio will default back to custom thresholds.
                             </div>
-                            <div class="flex">
-                              <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
-                                <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds</paper-radio-button>
-                                <paper-radio-button name="unaware" class="optimization-radio">Single threshold</paper-radio-button>
-                                <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity</paper-radio-button>
-                                <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity</paper-radio-button>
-                                <paper-radio-button name="equalacc" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal accuracy</paper-radio-button>
-                                <paper-radio-button name="group" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Group thresholds</paper-radio-button>
-                              </paper-radio-group>
-                              <div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Custom thresholds</div>
-                                    <div>
-                                      Set your own thresholds using the threshold sliders.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Single threshold</div>
-                                    <div>
-                                      Optimize a single threshold for all datapoints based on the specified cost ratio.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Demographic parity</div>
-                                    <div>
-                                      Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
-                                      demographic party.
-                                    </div>
-                                    <div>
-                                      Demographic parity means that similar percentages of datapoints from each slice are predicted as positive classifications.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Equal opporitunity</div>
-                                    <div>
-                                      Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
-                                      equal opporitunity.
-                                    </div>
-                                    <div>
-                                      Equal opporitunity means that among those predicted as positive classifications, there is a similar percentage of
-                                      correct predictions in each slice.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Equal accuracy</div>
-                                    <div>
-                                      Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
-                                      equal accuracy.
-                                    </div>
-                                    <div>
-                                      Equal accuracy means that there is a similar percentage of correct predictions in each slice.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                                <div class="opt-help-holder">
-                                  <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                                    <div class="dialog-title">Group thresholds</div>
-                                    <div>
-                                      Optimize a separate threshold for each slice based on the specified cost ratio.
-                                    </div>
-                                  </paper-dialog>
-                                </div>
-                              </div>
-                            </div>
+                            <paper-radio-group class="optimization-radio-group" selected="{{optimizationSelected}}">
+                              <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Custom thresholds</div>
+                                  <div>
+                                    Set your own thresholds using the threshold sliders.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                              <paper-radio-button name="unaware" class="optimization-radio">Single threshold
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Single threshold</div>
+                                  <div>
+                                    Optimize a single threshold for all datapoints based on the specified cost ratio.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                              <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Demographic parity</div>
+                                  <div>
+                                    Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
+                                    demographic party.
+                                  </div>
+                                  <div>
+                                    Demographic parity means that similar percentages of datapoints from each slice are predicted as positive classifications.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                              <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Equal opporitunity</div>
+                                  <div>
+                                    Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
+                                    equal opporitunity.
+                                  </div>
+                                  <div>
+                                    Equal opporitunity means that among those predicted as positive classifications, there is a similar percentage of
+                                    correct predictions in each slice.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                              <paper-radio-button name="equalacc" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal accuracy
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Equal accuracy</div>
+                                  <div>
+                                    Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
+                                    equal accuracy.
+                                  </div>
+                                  <div>
+                                    Equal accuracy means that there is a similar percentage of correct predictions in each slice.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                              <paper-radio-button name="group" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Group thresholds
+                                <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
+                                </paper-icon-button>
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <div class="dialog-title">Group thresholds</div>
+                                  <div>
+                                    Optimize a separate threshold for each slice based on the specified cost ratio.
+                                  </div>
+                                </paper-dialog>
+                              </paper-radio-button>
+                            </paper-radio-group>
                           </template>
                         </iron-collapse>
                       </div>
@@ -2341,9 +2331,9 @@ limitations under the License.
       },
 
       openDialog: function(event) {
+        event.stopPropagation();
         const dialog = event.target.parentElement.parentElement
           .querySelector('paper-dialog');
-        //dialog.positionTarget = event.target;
         dialog.open();
       },
 
