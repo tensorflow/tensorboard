@@ -51,7 +51,7 @@ limitations under the License.
       }
       .parenthetical {
         padding-right: 5px;
-        color: gray;
+        color: #3C4043;
         width: 50px;
       }
     </style>
@@ -77,6 +77,13 @@ limitations under the License.
 
         // Label appears in top-right corner of confusion matrix.
         label: String,
+
+        // Color string for the base color to make the matrix cell
+        // backgrounds.
+        background: {
+          type: Object,
+          value: d3.color('gray'),
+        },
       },
 
       ready: function() {
@@ -201,34 +208,16 @@ limitations under the License.
             if (i == 0 || i > countMatrix.length) {
               return '#FFFFFF';
             } else {
-              let c = d3.color('#2270E8');
+              let c = this.background;
               c.opacity = d.value / total;
               return c + '';
             }
-          }).style('color', (d, i) => {
-            if (i == 0 || i > countMatrix.length) {
-              return '#000000';
-            } else {
-              const opacity = d.value / total;
-              if (opacity < .70) {
-                return '#000000';
-              } else {
-                return '#FFFFFF';
-              }
-            }
-          });
+          }).style('color', (d, i) => '#202124');
         const cellDivs = cells.append('div').classed('flex', true);
         cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
             .text(d =>
               'row' in d ? '(' + d.value + ')' : '')
-            .style('color', (d, i) => {
-              const opacity = d.value / total;
-              if (opacity < .70 || i > countMatrix.length) {
-                return 'gray';
-              } else {
-                return 'lightgray';
-              }
-            });
+            .style('color', (d, i) => '#3C4043');
         cellDivs.append('div').text(
           (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
 
