@@ -75,7 +75,8 @@ def _update_dicts(name_scope,
                   input_to_in_layer,
                   model_name_to_output,
                   prev_node_name):
-  """Updates input_to_in_layer and model_name_to_output based on layer.
+  """Updates input_to_in_layer, model_name_to_output, and prev_node_name
+  based on the model_layer.
 
   Args:
     name_scope: Name scope of a model
@@ -88,7 +89,7 @@ def _update_dicts(name_scope,
     (input_to_in_layer, model_name_to_output, prev_node_name)
 
   Two canonical types of Keras model are Functional and Sequential.
-  They have distinct structures to the configuration like below:
+  They have distinct structures to the configurations in shapes below:
   Functional:
     config
       name: Name of the model. If not specified, it is 'model' with
@@ -191,7 +192,6 @@ def keras_model_to_graph_def(keras_layer):
       tf_dtype = dtypes.as_dtype(layer_config.get('dtype'))
       node_def.attr['dtype'].type = tf_dtype.as_datatype_enum
 
-    # Functional model has inbound_nodes
     if layer.get('inbound_nodes') is not None:
       for maybe_inbound_node in layer.get('inbound_nodes'):
         inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)
