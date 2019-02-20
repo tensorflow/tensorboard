@@ -37,7 +37,7 @@ def _walk_layers(keras_layer):
 
 
 def _scoped_name(name_scope, node_name):
-  """Returns scoped name for a node.
+  """Returns scoped name for a node as a string in the form '<scope>/<node name>'.
 
   Args:
     name_scope: scope names similar to that of tf.name_scope.
@@ -52,19 +52,24 @@ def _scoped_name(name_scope, node_name):
 
 
 def _is_model(layer):
-  """Returns true if layer is a model."""
+  """Returns True if layer is a model."""
   return layer.get('config').get('layers') is not None
 
 
 def _norm_to_list_of_layers(maybe_layers):
   """Normalizes to a list of layers.
 
-  A Functional model has fields 'inbound_nodes' and 'output_layers'
-  which looks like below.
-  - ['in_layer_name', 0, 0, {}]
-  - [['in_layer_is_model', 1, 0, {}], ['in_layer_is_model', 1, 1, {}]]
-  An item seems to consist of [name, size, index, unknown] but this
-  format is not well-defined.
+  Args:
+    maybe_layers: A list of data[1] or a list of list of data.
+
+  Returns:
+    List of list of data.
+
+  [1]: A Functional model has fields 'inbound_nodes' and 'output_layers' which can
+  look like below:
+  - ['in_layer_name', 0, 0]
+  - [['in_layer_is_model', 1, 0], ['in_layer_is_model', 1, 1]]
+  The data inside the list seems to describe [name, size, index].
   """
   return (maybe_layers if isinstance(maybe_layers[0], (list,))
           else [maybe_layers])
@@ -97,7 +102,7 @@ def _update_dicts(name_scope,
       input_layers: Keras.layers.Inputs in the model.
       output_layers: Layer names that are outputs of the model.
       layers: list of layer configurations.
-        layer: [1]
+        layer: [*]
           inbound_nodes: inputs to this layer.
 
   Sequential:
@@ -105,9 +110,11 @@ def _update_dicts(name_scope,
       name: Name of the model. If not specified, it is 'sequential' with
             an optional suffix if there are more than one instance.
       layers: list of layer configurations.
-        layer: [1]
+        layer: [*]
 
-  [1]: Note that a model can be a layer.
+  [*]: Note that a model can be a layer.
+  Please refer to https://github.com/tensorflow/tfjs-layers/blob/master/src/keras_format/model_serialization.ts
+  for more complete definition.
   """
   layer_config = model_layer.get('config')
   if not layer_config.get('layers'):
@@ -161,15 +168,14 @@ def keras_model_to_graph_def(keras_layer):
     keras_layer: A dict from Keras model.to_json()
 
   Returns:
-    A GraphDef representation of layers.
+    A GraphDef representation of the layers in the model.
   """
   input_to_layer = {}
   model_name_to_output = {}
   g = GraphDef()
 
-  # Sequential model layers do not have "inbound_nodes".
-  # Must assume all nodes are connected linearly by keeping track
-  # of the previous node.
+  # Sequential model layers do not have a field "inbound_nodes" but
+  # instead of defined implicitly via order of layers.
   prev_node_name = None
 
   for (name_scope, layer) in _walk_layers(keras_layer):
@@ -195,7 +201,7 @@ def keras_model_to_graph_def(keras_layer):
     if layer.get('inbound_nodes') is not None:
       for maybe_inbound_node in layer.get('inbound_nodes'):
         inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)
-        for [name, size, ind, _] in inbound_nodes:
+        for [name, size, index, _] in inbound_nodes:
           inbound_name = _scoped_name(name_scope, name)
           # An input to a layer can be output from a model. In that case, the name
           # of inbound_nodes to a layer is a name of a model. Remap the name of the
@@ -203,7 +209,7 @@ def keras_model_to_graph_def(keras_layer):
           # outputs in a model, make sure we pick the right output_layer from the model.
           inbound_node_names = model_name_to_output.get(
               inbound_name, [inbound_name])
-          node_def.input.append(inbound_node_names[ind])
+          node_def.input.append(inbound_node_names[index])
     elif prev_node_name is not None:
       node_def.input.append(prev_node_name)
 

@@ -22,8 +22,6 @@ import json
 
 import tensorflow as tf
 
-from tensorflow.python.keras.layers import Activation, Dense, Embedding, LSTM, Input, concatenate
-from tensorflow.python.keras.models import Model, Sequential
 from tensorflow.python.platform import test
 from tensorboard.plugins.graph import graph_util
 
@@ -101,11 +99,11 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    model = Sequential([
-        Dense(32, input_shape=(784,)),
-        Activation('relu', name='my_relu'),
-        Dense(10),
-        Activation('softmax'),
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(32, input_shape=(784,)),
+        tf.keras.layers.Activation('relu', name='my_relu'),
+        tf.keras.layers.Dense(10),
+        tf.keras.layers.Activation('softmax'),
     ])
     self.assertGraphDefToModel(expected_proto, model)
 
@@ -175,12 +173,12 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = Input(shape=(784,), name='functional_input')
-    d0 = Dense(64, activation='relu')
-    d1 = Dense(64, activation='relu')
-    d2 = Dense(64, activation='relu')
+    inputs = tf.keras.layers.Input(shape=(784,), name='functional_input')
+    d0 = tf.keras.layers.Dense(64, activation='relu')
+    d1 = tf.keras.layers.Dense(64, activation='relu')
+    d2 = tf.keras.layers.Dense(64, activation='relu')
 
-    model = Model(inputs=inputs, outputs=d2(d1(d0(inputs))))
+    model = tf.keras.models.Model(inputs=inputs, outputs=d2(d1(d0(inputs))))
     self.assertGraphDefToModel(expected_proto, model)
 
   def test_keras_model_to_graph_def_functional_model_with_cycle(self):
@@ -250,12 +248,12 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = Input(shape=(784,), name='cycle_input')
-    d0 = Dense(64, activation='relu')
-    d1 = Dense(64, activation='relu')
-    d2 = Dense(64, activation='relu')
+    inputs = tf.keras.layers.Input(shape=(784,), name='cycle_input')
+    d0 = tf.keras.layers.Dense(64, activation='relu')
+    d1 = tf.keras.layers.Dense(64, activation='relu')
+    d2 = tf.keras.layers.Dense(64, activation='relu')
 
-    model = Model(inputs=inputs, outputs=d1(d2(d1(d0(inputs)))))
+    model = tf.keras.models.Model(inputs=inputs, outputs=d1(d2(d1(d0(inputs)))))
     self.assertGraphDefToModel(expected_proto, model)
 
   def test_keras_model_to_graph_def_lstm_model(self):
@@ -292,10 +290,10 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = Input(shape=(None, 5), name='lstm_input')
-    encoder = LSTM(256)
+    inputs = tf.keras.layers.Input(shape=(None, 5), name='lstm_input')
+    encoder = tf.keras.layers.LSTM(256)
 
-    model = Model(inputs=inputs, outputs=encoder(inputs))
+    model = tf.keras.models.Model(inputs=inputs, outputs=encoder(inputs))
     self.assertGraphDefToModel(expected_proto, model)
 
   def test_keras_model_to_graph_def_nested_sequential_model(self):
@@ -380,20 +378,20 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    sub_sub_model = Sequential([
-        Dense(32, input_shape=(784,)),
-        Activation('relu'),
+    sub_sub_model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(32, input_shape=(784,)),
+        tf.keras.layers.Activation('relu'),
     ])
 
-    sub_model = Sequential([
+    sub_model = tf.keras.models.Sequential([
         sub_sub_model,
-        Activation('relu', name='my_relu'),
+        tf.keras.layers.Activation('relu', name='my_relu'),
     ])
 
-    model = Sequential([
+    model = tf.keras.models.Sequential([
         sub_model,
-        Dense(10),
-        Activation('softmax'),
+        tf.keras.layers.Dense(10),
+        tf.keras.layers.Activation('softmax'),
     ])
 
     self.assertGraphDefToModel(expected_proto, model)
@@ -528,19 +526,23 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    main_input = Input(shape=(100,), dtype='int32', name='main_input')
-    x = Embedding(output_dim=512, input_dim=10000, input_length=100)(main_input)
-    lstm_out = LSTM(32)(x)
+    main_input = tf.keras.layers.Input(shape=(100,), dtype='int32', name='main_input')
+    x = tf.keras.layers.Embedding(
+        output_dim=512, input_dim=10000, input_length=100)(main_input)
+    lstm_out = tf.keras.layers.LSTM(32)(x)
 
-    auxiliary_output = Dense(1, activation='sigmoid', name='aux_output')(lstm_out)
-    auxiliary_input = Input(shape=(5,), name='aux_input')
+    auxiliary_output = tf.keras.layers.Dense(
+        1, activation='sigmoid', name='aux_output')(lstm_out)
+    auxiliary_input = tf.keras.layers.Input(shape=(5,), name='aux_input')
 
-    x = concatenate([lstm_out, auxiliary_input])
-    x = Dense(64, activation='relu')(x)
+    x = tf.keras.layers.concatenate([lstm_out, auxiliary_input])
+    x = tf.keras.layers.Dense(64, activation='relu')(x)
 
-    main_output = Dense(1, activation='sigmoid', name='main_output')(x)
+    main_output = tf.keras.layers.Dense(1, activation='sigmoid', name='main_output')(x)
 
-    model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
+    model = tf.keras.models.Model(
+        inputs=[main_input, auxiliary_input],
+        outputs=[main_output, auxiliary_output])
 
     self.assertGraphDefToModel(expected_proto, model)
 
@@ -672,17 +674,18 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs1 = Input(shape=(784,), name='sub_func_input_1')
-    inputs2 = Input(shape=(784,), name='sub_func_input_2')
-    d0 = Dense(64, activation='relu')
-    d1 = Dense(64, activation='relu')
-    d2 = Dense(64, activation='relu')
+    inputs1 = tf.keras.layers.Input(shape=(784,), name='sub_func_input_1')
+    inputs2 = tf.keras.layers.Input(shape=(784,), name='sub_func_input_2')
+    d0 = tf.keras.layers.Dense(64, activation='relu')
+    d1 = tf.keras.layers.Dense(64, activation='relu')
+    d2 = tf.keras.layers.Dense(64, activation='relu')
 
-    sub_model = Model(inputs=[inputs2, inputs1],
+    sub_model = tf.keras.models.Model(inputs=[inputs2, inputs1],
                       outputs=[d0(inputs1), d1(inputs2)])
 
-    main_outputs = d2(concatenate(sub_model([inputs2, inputs1])))
-    model = Model(inputs=[inputs2, inputs1], outputs=main_outputs)
+    main_outputs = d2(tf.keras.layers.concatenate(sub_model([inputs2, inputs1])))
+    model = tf.keras.models.Model(
+        inputs=[inputs2, inputs1], outputs=main_outputs)
 
     self.assertGraphDefToModel(expected_proto, model)
 
@@ -752,14 +755,14 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = Input(shape=(784,), name='func_seq_input')
-    sub_model = Sequential([
-        Dense(32, input_shape=(784,)),
-        Activation('relu', name='my_relu'),
+    inputs = tf.keras.layers.Input(shape=(784,), name='func_seq_input')
+    sub_model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(32, input_shape=(784,)),
+        tf.keras.layers.Activation('relu', name='my_relu'),
     ])
-    dense = Dense(64, activation='relu')
+    dense = tf.keras.layers.Dense(64, activation='relu')
 
-    model = Model(inputs=inputs, outputs=dense(sub_model(inputs)))
+    model = tf.keras.models.Model(inputs=inputs, outputs=dense(sub_model(inputs)))
 
     self.assertGraphDefToModel(expected_proto, model)
 
@@ -829,14 +832,14 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = Input(shape=(784,), name='func_seq_input')
-    dense = Dense(64, activation='relu')
+    inputs = tf.keras.layers.Input(shape=(784,), name='func_seq_input')
+    dense = tf.keras.layers.Dense(64, activation='relu')
 
-    sub_model = Model(inputs=inputs, outputs=dense(inputs))
-    model = Sequential([
+    sub_model = tf.keras.models.Model(inputs=inputs, outputs=dense(inputs))
+    model = tf.keras.models.Sequential([
         sub_model,
-        Dense(32, input_shape=(784,)),
-        Activation('relu', name='my_relu'),
+        tf.keras.layers.Dense(32, input_shape=(784,)),
+        tf.keras.layers.Activation('relu', name='my_relu'),
     ])
 
     self.assertGraphDefToModel(expected_proto, model)
