@@ -14,6 +14,7 @@ tf_web_library(
     path = "/tf-hparams-session-group-details",
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/hparams/tf_hparams_utils",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card",
@@ -29,6 +30,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-hparams-session-group-details",
     deps = [
         "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_color_scale:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card_legacy",
         "//third_party/javascript/polymer/v1/iron-flex-layout:lib",

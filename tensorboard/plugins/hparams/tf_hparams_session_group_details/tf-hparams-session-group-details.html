@@ -28,6 +28,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-card.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-color-scale/tf-color-scale.html">
 
 <dom-module id="tf-hparams-session-group-details">
   <template>
@@ -254,8 +255,14 @@ clicks on a row in table-view or a curve in parallel-coords view.
         };
       },
 
-      _constantColorScale() {
-        return { scale: () => '#db4437' };
+      _colorScale() {
+        return {
+          scale: function(name) {
+            const palette = tf_color_scale.standard;
+            const hash = tf.hparams.utils.stringHash;
+            return palette[hash(name) % palette.length];
+          }
+        };
       }
     });
   </script>
