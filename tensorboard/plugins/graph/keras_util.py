@@ -51,7 +51,9 @@ def _walk_layers(keras_layer):
     keras_layer: Keras configuration from model.to_json.
 
   Yields:
-    (name_scope, layer_config)
+    A tuple of (name_scope, layer_config).
+    name_scope: a string representing a scope name, similar to that of tf.name_scope.
+    layer_config: a dict representing a Keras layer configuration.
   """
   yield ('', keras_layer)
   if keras_layer.get('config').get('layers'):
@@ -67,11 +69,11 @@ def _scoped_name(name_scope, node_name):
   """Returns scoped name for a node as a string in the form '<scope>/<node name>'.
 
   Args:
-    name_scope: scope names similar to that of tf.name_scope.
-    node_name: current node name.
+    name_scope: a string representing a scope name, similar to that of tf.name_scope.
+    node_name: a string representing the current node name.
 
   Returns
-    A scoped name.
+    A string representing a scoped name.
   """
   if name_scope:
     return '%s/%s' % (name_scope, node_name)
@@ -79,7 +81,14 @@ def _scoped_name(name_scope, node_name):
 
 
 def _is_model(layer):
-  """Returns True if layer is a model."""
+  """Returns True if layer is a model.
+
+  Args:
+    layer: a dict representing a Keras model configuration.
+
+  Returns:
+    bool: True if layer is a model.
+  """
   return layer.get('config').get('layers') is not None
 
 
@@ -111,14 +120,19 @@ def _update_dicts(name_scope,
   based on the model_layer.
 
   Args:
-    name_scope: Name scope of a model
-    model_layer: Model configuration
-    input_to_in_layer: Keras.layers.Input to inbound layer
-    model_name_to_output: Keras Model name to output layer of the model
-    prev_node_name: Previous, in sequential model layout, node name
+    name_scope: a string representing a scope name, similar to that of tf.name_scope.
+    model_layer: a dict representing a Keras model configuration.
+    input_to_in_layer: a dict mapping Keras.layers.Input to inbound layer.
+    model_name_to_output: a dict mapping Keras Model name to output layer of the model.
+    prev_node_name: a string representing a previous, in sequential model layout,
+                    node name.
 
   Returns:
-    (input_to_in_layer, model_name_to_output, prev_node_name)
+    A tuple of (input_to_in_layer, model_name_to_output, prev_node_name).
+    input_to_in_layer: a dict mapping Keras.layers.Input to inbound layer.
+    model_name_to_output: a dict mapping Keras Model name to output layer of the model.
+    prev_node_name: a string representing a previous, in sequential model layout,
+                    node name.
   """
   layer_config = model_layer.get('config')
   if not layer_config.get('layers'):
@@ -164,12 +178,12 @@ def _update_dicts(name_scope,
 
 
 def keras_model_to_graph_def(keras_layer):
-  """Returns GraphDef representation of the Keras model in a dict form.
+  """Returns a GraphDef representation of the Keras model in a dict form.
 
-  Note that it only supports models that implemented get_config().
+  Note that it only supports models that implemented to_json().
 
   Args:
-    keras_layer: A dict from Keras model.to_json()
+    keras_layer: A dict from Keras model.to_json().
 
   Returns:
     A GraphDef representation of the layers in the model.
