@@ -225,9 +225,10 @@ limitations under the License.
         display: inline-block;
       }
 
-      .inference-settings {
+      paper-dialog.inference-settings {
         padding: 20px;
-        width: 30%;
+        width: 40%;
+        max-width: 40%;
         overflow-y: auto;
         border-radius: 10px;
       }
@@ -882,6 +883,7 @@ limitations under the License.
         padding-left: 20px;
         padding-right: 20px;
         padding-top: 20px;
+        max-width: 460px;
       }
 
       .onboarding-header {
@@ -908,6 +910,7 @@ limitations under the License.
         color: #3C4043;
         font-size: 14px;
         margin-bottom: 15px;
+        max-width: 460px;
       }
 
       .button-prefix-label {
@@ -923,6 +926,7 @@ limitations under the License.
       paper-dialog {
         color: #3C4043;
         border-radius: 10px;
+        max-width: 600px;
       }
 
       .main-button.run-button {
@@ -1120,7 +1124,7 @@ limitations under the License.
         font-size: 14px;
         --paper-toggle-button-checked-button-color: white;
         --paper-toggle-button-label-color: #3C4043;
-
+        --paper-toggle-button-checked-bar-color: #81C995;
         }
       }
     </style>
@@ -1579,7 +1583,7 @@ limitations under the License.
                               <paper-radio-button name="custom" class="optimization-radio" id="customthresh">Custom thresholds
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Custom thresholds</div>
                                   <div>
                                     Set your own thresholds using the threshold sliders.
@@ -1589,7 +1593,7 @@ limitations under the License.
                               <paper-radio-button name="unaware" class="optimization-radio">Single threshold
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Single threshold</div>
                                   <div>
                                     Optimize a single threshold for all datapoints based on the specified cost ratio.
@@ -1599,7 +1603,7 @@ limitations under the License.
                               <paper-radio-button name="demoparity" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Demographic parity
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Demographic parity</div>
                                   <div>
                                     Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
@@ -1613,7 +1617,7 @@ limitations under the License.
                               <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Equal opporitunity</div>
                                   <div>
                                     Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
@@ -1628,7 +1632,7 @@ limitations under the License.
                               <paper-radio-button name="equalacc" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal accuracy
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Equal accuracy</div>
                                   <div>
                                     Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
@@ -1642,7 +1646,7 @@ limitations under the License.
                               <paper-radio-button name="group" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Group thresholds
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
                                   <div class="dialog-title">Group thresholds</div>
                                   <div>
                                     Optimize a separate threshold for each slice based on the specified cost ratio.
@@ -1769,7 +1773,7 @@ limitations under the License.
                                 <div class="roc-text">ROC curve
                                   <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                   </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                  <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
                                     <div class="dialog-title">ROC curve</div>
                                     <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
                                       false positive rate (FPR) at various classification thresholds.
@@ -1842,7 +1846,7 @@ limitations under the License.
                               <div class="roc-text">ROC curve
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                                <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
                                   <div class="dialog-title">ROC curve</div>
                                   <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
                                     false positive rate (FPR) at various classification thresholds.
