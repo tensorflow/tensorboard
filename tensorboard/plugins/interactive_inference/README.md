@@ -273,7 +273,7 @@ The model to be used for inference by the tool can be specified one of three way
   builder
   `builder.set_inference_address('localhost:8888').set_model_name('my_model')`.
 
-See the documentation of [WitConfigBuilder]https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/witwidget/notebook/visualization.py)
+See the documentation of [WitConfigBuilder](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/witwidget/notebook/visualization.py)
 for all options you can provide, including how to specify other model types
 (defaults to binary classification) and how to specify an optional second model
 to compare to the first model.
