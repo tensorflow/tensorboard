@@ -54,21 +54,22 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return {
         '/graph': self.graph_route,
-        '/meta': self.meta_route,
+        '/info': self.info_route,
         '/run_metadata': self.run_metadata_route,
     }
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.meta_impl())
+    return bool(self._multiplexer and self.info_impl())
 
-  def meta_impl(self):
+  def info_impl(self):
     """Returns a dict of all runs and tags and their data availabilities."""
     result = {}
     def add_row_item(run, tag=None):
       run_item = result.setdefault(run, {
           'run': run,
           'tags': {},
+          # A run-wide GraphDef of ops.
           'run_graph': False})
 
       tag_item = None
@@ -76,6 +77,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         tag_item = run_item.get('tags').setdefault(tag, {
             'tag': tag,
             'conceptual_graph': False,
+            # A tagged GraphDef of ops.
             'op_graph': False,
             'profile': False})
       return (run_item, tag_item)
@@ -126,8 +128,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
     return (str(run_metadata), 'text/x-protobuf')  # pbtxt
 
   @wrappers.Request.application
-  def meta_route(self, request):
-    meta = self.meta_impl()
+  def info_route(self, request):
+    meta = self.info_impl()
     return http_util.Respond(request, meta, 'application/json')
 
   @wrappers.Request.application

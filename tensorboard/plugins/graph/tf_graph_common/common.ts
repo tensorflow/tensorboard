@@ -35,7 +35,7 @@ namespace tf.graph {
   // Note that tf-graph-control depends on the value of the enum.
   // Polymer does not let one use JS variable as a prop.
   export enum SelectionType {
-    OP_GRAPH = 'opgraph',
+    OP_GRAPH = 'op_graph',
     CONCEPTUAL_GRAPH = 'conceptual_graph',
     PROFILE = 'profile',
   };

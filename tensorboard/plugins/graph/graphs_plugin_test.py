@@ -104,7 +104,7 @@ class GraphsPluginTest(tf.test.TestCase):
     routes = self.plugin.get_plugin_apps()
     self.assertIsInstance(routes['/graph'], collections.Callable)
     self.assertIsInstance(routes['/run_metadata'], collections.Callable)
-    self.assertIsInstance(routes['/meta'], collections.Callable)
+    self.assertIsInstance(routes['/info'], collections.Callable)
 
   def test_meta(self):
     expected = {
@@ -143,7 +143,7 @@ class GraphsPluginTest(tf.test.TestCase):
                       include_run_metadata=False)
     self.bootstrap_plugin()
 
-    self.assertItemsEqual(expected, self.plugin.meta_impl())
+    self.assertItemsEqual(expected, self.plugin.info_impl())
 
   def _get_graph(self, *args, **kwargs):
     """Set up runs, then fetch and return the graph as a proto."""

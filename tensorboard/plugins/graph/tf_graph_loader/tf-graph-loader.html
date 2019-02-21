@@ -92,7 +92,7 @@ Polymer({
     this.debounce('selectionchange', () => this._load());
   },
   _load: function() {
-    const {selection, overridingHierarchyParams, compatibilityProvider} = this;
+    const {selection, overridingHierarchyParams} = this;
     const {run, tag, type: selectionType} = selection;
     if (selectionType == tf.graph.SelectionType.OP_GRAPH) {
       // Clear stats about the previous graph.

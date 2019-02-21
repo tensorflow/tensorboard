@@ -284,7 +284,7 @@ table.tf-graph-controls td.input-element-table-data {
 
 /** Override inline styles that suppress pointer events for disabled buttons. Otherwise, the */
 /*  tooltips do not appear. */
-#color-by-radio-group paper-radio-button {
+paper-radio-group paper-radio-button {
   pointer-events: auto !important;
 }
 
@@ -350,7 +350,7 @@ paper-dropdown-menu {
   <div class="control-holder runs">
     <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
     <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
-      <paper-menu id="select" class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
+      <paper-menu class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[datasets]]">
           <paper-item>[[item.name]]</paper-item>
         </template>
@@ -361,9 +361,9 @@ paper-dropdown-menu {
     <div class="control-holder">
       <div class="title">Tag <span class="counter">([[_numTags(datasets, _selectedRunIndex)]])</span></div>
       <paper-dropdown-menu no-label-float no-animations horizontal-align="left" noink class="run-dropdown">
-        <paper-menu id="select" class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
+        <paper-menu class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
           <template is="dom-repeat" items="[[_getTags(datasets, _selectedRunIndex)]]">
-            <paper-item>[[item.tagName]]</paper-item>
+            <paper-item>[[item.displayName]]</paper-item>
           </template>
         </paper-menu>
       </paper-dropdown-menu>
@@ -388,9 +388,9 @@ paper-dropdown-menu {
     </div>
   </template>
   <div class="control-holder">
-    <paper-radio-group id="color-by-radio-group" selected="{{_selectedGraphType}}">
+    <paper-radio-group selected="{{_selectedGraphType}}">
       <!-- Note that the name has to match that of tf.graph.SelectionType. -->
-      <paper-radio-button name="opgraph"
+      <paper-radio-button name="op_graph"
           disabled="{{_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)}}"
       >Graph</paper-radio-button>
       <paper-radio-button name="profile"
@@ -413,7 +413,7 @@ paper-dropdown-menu {
   </template>
   <div class="control-holder">
     <div class="title">Color</div>
-    <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
+    <paper-radio-group selected="{{colorBy}}">
       <paper-radio-button name="structure">Structure</paper-radio-button>
 
       <paper-radio-button name="device">Device</paper-radio-button>
@@ -809,7 +809,7 @@ Polymer({
       value: null,
       type: Object,
       notify: true,
-      // TODO(stephanwlee): FIX this to readOnly and fix the setter.
+      // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
       readonly: true,
     },
     colorBy: {
@@ -820,7 +820,7 @@ Polymer({
     colorByParams: {
       type: Object,
       notify: true,
-      // TODO(stephanwlee): FIX this to readOnly and fix the setter.
+      // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
       readonly: true,
     },
     datasets: {
@@ -860,7 +860,7 @@ Polymer({
       observer: '_selectedTagIndexChanged',
     },
     _selectedGraphType: {
-      type: Number,
+      type: String,
       value: tf.graph.SelectionType.OP_GRAPH,
     },
     selectedNode: {
@@ -1073,7 +1073,6 @@ Polymer({
     if (oldDatasets != null) {
       // Select the first dataset by default.
       this._selectedRunIndex = 0;
-      this._setDownloadFilename(this.datasets[this._selectedRunIndex].name);
     }
   },
   _computeSelection: function(datasets, _selectedRunIndex, _selectedTagIndex, _selectedGraphType) {
@@ -1088,14 +1087,14 @@ Polymer({
       type: _selectedGraphType,
     }
   },
-  _selectedRunIndexChanged: function(newDataset, oldDataset) {
+  _selectedRunIndexChanged: function(runIndex) {
     if (!this.datasets) return;
     // Reset the states when user pick a different run.
     this.colorBy = 'structure';
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
     this.$['trace-inputs'].active = false; // Set trace input to off-state.
-    this._setDownloadFilename(this.datasets[newDataset] ? this.datasets[newDataset].name : '');
+    this._setDownloadFilename(this.datasets[runIndex] ? this.datasets[runIndex].name : '');
   },
   _selectedTagIndexChanged() {
      this._selectedGraphType = this._getDefaultSelectionType();

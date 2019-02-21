@@ -142,20 +142,32 @@ paper-dialog {
  */
 const RUN_STORAGE_KEY = 'run';
 
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   tag: ?string,
+ *   displayName: string,
+ *   conceptualGraph: boolean,
+ *   opGraph: boolean,
+ *   profile: boolean,
+ * }}
+ */
+ const TagItem = {};
+
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   name: string,
+ *   tags: Arary<!TagItem>,
+ * }}
+ */
+const RunItem = {};
+
 Polymer({
   is: 'tf-graph-dashboard',
   properties: {
     /**
-     * Array<{
-     *   name: string,
-     *   tags: Array<{
-     *     tag: ?string,
-     *     tagName: !string,
-     *     conceptualGraph: boolean,
-     *     opGraph: boolean,
-     *     profile: boolean,
-     *   }>,
-     * }>
+     * Array<!RunItem>
      */
     _datasets: Array,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
@@ -273,7 +285,7 @@ Polymer({
       }),
   _fetchDataset() {
     return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('graphs', '/meta'));
+        tf_backend.getRouter().pluginRoute('graphs', '/info'));
   },
   /*
    * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
@@ -339,22 +351,25 @@ Polymer({
             .map(name => runData.tags[name])
             .map(({tag, conceptual_graph, op_graph, profile}) => ({
               tag,
-              tagName: tag,
+              displayName: tag,
               conceptualGraph: conceptual_graph,
               opGraph: op_graph,
               profile,
             }));
 
+        // Translate a run-wide GraphDef into specially named (without a tag) op graph
+        // to abstract the difference between run_graph vs. op_graph from other
+        // components.
         const tagsWithV1Graph = runData.run_graph ?
             [
                 {
                   tag: null,
-                  tagName: 'Default',
+                  displayName: 'Default',
                   conceptualGraph: false,
                   opGraph: true,
                   profile: false,
                 },
-                ...tags
+                ...tags,
             ] : tags;
 
         return {name: runName, tags: tagsWithV1Graph};

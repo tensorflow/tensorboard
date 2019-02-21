@@ -3,15 +3,16 @@
 The graph plugin name is `graphs`, so all its routes are under
 `/data/plugin/graphs`.
 
-## `/data/plugin/graphs/meta`
+## `/data/plugin/graphs/info`
 
 Returns meta information about data availabilities for a given run and a tag.
 Below fields describe the data availabilities:
-- "run_graph": Whether a GraphDef is present for entire run. Note that this is
-      for v1 compatibility and, in v2, all graphs should have a tag.
-- "op_graph": Whether a GraphDef of Op nodes is present.
-- "profile": Whether a profile information is present with a RunMetadata.
-- "conceptual_graph": Whether a GraphDef descriving conceptual graph is present.
+- "run_graph": v1 only. Whether a GraphDef of op nodes is present for an entire run.
+      Historically, in v1, an op graph was written out for an entire run as a field on
+      Event proto. In v2, graphs are written out as a Summary with respective tags.
+- "op_graph": v2 only. Whether a GraphDef of op nodes is present with a tag.
+- "profile": Whether a profile information is present with a RunMetadata and a tag.
+- "conceptual_graph": Whether a GraphDef describing conceptual graph is present.
       The graph plugin currently only supports a Keras model written out as a
       JSON.
 
