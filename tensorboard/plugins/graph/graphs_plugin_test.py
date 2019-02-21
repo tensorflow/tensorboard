@@ -106,7 +106,7 @@ class GraphsPluginTest(tf.test.TestCase):
     self.assertIsInstance(routes['/run_metadata'], collections.Callable)
     self.assertIsInstance(routes['/info'], collections.Callable)
 
-  def test_meta(self):
+  def test_info(self):
     expected = {
       'w_graph_w_meta': {
         'run': 'w_graph_w_meta',
