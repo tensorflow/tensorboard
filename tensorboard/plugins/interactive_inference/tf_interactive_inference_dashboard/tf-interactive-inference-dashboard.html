@@ -800,6 +800,12 @@ limitations under the License.
         margin-left: 5px;
       }
 
+      .info-icon.performance-info-icon {
+        margin-top: 18px;
+        margin-bottom: 10px;
+        margin-left: 5px;
+      }
+
       .no-padding {
         padding: 0;
       }
@@ -820,7 +826,7 @@ limitations under the License.
       }
 
       .help-title {
-        color: #D56E0C;
+        color: #128EAF;
         font-size: 11px;
         font-weight: 500;
         text-transform: uppercase;
@@ -1652,7 +1658,17 @@ limitations under the License.
                 <div class="config-main-content">
                   <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
-                      <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
+                      <div class="flex">
+                        <div class="perf-table-title">[[getPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, optimizationSelected, featureValueThresholds)]]</div>
+                        <paper-icon-button icon="info-outline" class="info-icon performance-info-icon no-padding" on-tap="openDialog">
+                        </paper-icon-button>
+                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                          <div class="dialog-title">Classification Performance Table</div>
+                          <div>Set the ground truth feature to explore model performance including ROC curves and confusion matrices.</div>
+                          <div>Slice the dataset by features and explore model performance by slice.</div>
+                          <div>Use the fairness optimization strategies and see the impact on the thresholds and performance of the individual slices.</div>
+                        </paper-dialog>
+                      </div>
                       <div class="perf-sort-box">
                         <div>
                           <paper-icon-button icon="unfold-more" class="datapoint-control-button perf-button" on-tap="expandAllPerformance"
@@ -1829,11 +1845,7 @@ limitations under the License.
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
                                   <div class="dialog-title">ROC curve</div>
                                   <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                    false
-                                    positive rate (FPR) at various classification thresholds. Find out more
-                                    <a target="_blank" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">
-                                      here
-                                    </a>.
+                                    false positive rate (FPR) at various classification thresholds.
                                   </div>
                                 </paper-dialog>
                               </div>
@@ -1851,7 +1863,16 @@ limitations under the License.
                   </template>
                   <template is="dom-if" if="[[isMultiClass_(modelType, multiClass)]]" restamp>
                     <div class="perf-table-title-row">
-                      <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
+                      <div class="flex">
+                        <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
+                        <paper-icon-button icon="info-outline" class="info-icon performance-info-icon no-padding" on-tap="openDialog">
+                        </paper-icon-button>
+                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                          <div class="dialog-title">Classification Performance Table</div>
+                          <div>Set the ground truth feature to explore model performance including confusion matrices.</div>
+                          <div>Slice the dataset and explore model performance by slice.</div>
+                        </paper-dialog>
+                      </div>
                       <div class="perf-sort-box">
                         <div>
                           <paper-icon-button icon="unfold-more" class="datapoint-control-button perf-button" on-tap="expandAllPerformance"
@@ -1949,8 +1970,17 @@ limitations under the License.
                   </template>
                   <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
                     <div class="perf-table-title-row">
-                      <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
-                      <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
+                      <div class="flex">
+                        <div class="perf-table-title">[[getNoThresholdPerfTableTitle(selectedBreakdownFeature, selectedSecondBreakdownFeature, featureValueThresholds)]]</div>
+                        <paper-icon-button icon="info-outline" class="info-icon performance-info-icon no-padding" on-tap="openDialog">
+                        </paper-icon-button>
+                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                          <div class="dialog-title">Regression Performance Table</div>
+                          <div>Set the ground truth feature to explore model performance.</div>
+                          <div>Slice the dataset and explore model performance by slice.</div>
+                        </paper-dialog>
+                      </div>
+                        <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
                         <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                             <paper-item name="[[item]]">[[item]]</paper-item>
@@ -5272,14 +5302,15 @@ limitations under the License.
 
       getPerfTableTitle: function(
           feature1, feature2, optimization, thresholds) {
+        let str = this.getPrintableOptimizationName(optimization);
         if (feature1 == null || feature1.length == 0) {
-          return this.getPrintableOptimizationName(optimization)
+          return str;
         } else {
-          let str = feature1;
+          let featStr = feature1;
           if (feature2 != null && feature2.length != 0) {
-            str += '/' + feature2;
+            featStr += '/' + feature2;
           }
-          return str + ' (' + this.getPrintableOptimizationName(optimization) + ' for ' + thresholds.length + ' values)';
+          return str + ' for ' + thresholds.length + ' values of ' + featStr;
         }
       },
 
@@ -5297,17 +5328,17 @@ limitations under the License.
 
       getPrintableOptimizationName: function(optimization) {
         if (optimization == 'custom') {
-          return 'custom thresholds';
+          return 'Custom thresholds';
         } else if (optimization == 'unaware') {
-          return 'optimal single threshold';
+          return 'Optimal single threshold';
         } else if (optimization == 'demoparity') {
-          return 'demographic parity thresholds';
+          return 'Demographic parity thresholds';
         } else if (optimization == 'equalopp') {
-          return 'equal opporitunity thresholds';
+          return 'Equal opporitunity thresholds';
         } else if (optimization == 'equalacc') {
-          return 'equal accuracy thresholds';
+          return 'Equal accuracy thresholds';
         } else {
-          return 'optimal group thresholds';
+          return 'Optimal group thresholds';
         }
       },
 
