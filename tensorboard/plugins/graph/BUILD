@@ -42,3 +42,26 @@ py_test(
         "@org_pythonhosted_six",
     ],
 )
+
+py_library(
+    name = "keras_util",
+    srcs = ["keras_util.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
+    ],
+)
+
+py_test(
+    name = "keras_util_test",
+    size = "small",
+    srcs = ["keras_util_test.py"],
+    main = "keras_util_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":keras_util",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
