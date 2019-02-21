@@ -1756,19 +1756,17 @@ limitations under the License.
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
                           <div class="perf-table-entry-expanded flex-row-reverse">
-                            <div class="conf-matrix-holder">
-                              <div class="conf-text">Confusion matrix</div>
-                              <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
-                                <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                              <div class="conf-matrix-holder">
+                                <div class="conf-text">Confusion matrix</div>
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                   <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
                                     label="[[getConfusionMatrixLabel(index)]]"
                                     background="[[getConfusionMatrixColor(index)]]"
                                     class="conf-matrix">
                                   </tf-confusion-matrix>
                                 </template>
-                              </template>
-                            </div>
-                            <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                              </div>
                               <div class="roc-holder">
                                 <div class="roc-text">ROC curve
                                   <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
@@ -1829,19 +1827,17 @@ limitations under the License.
                           </div>
                         </div>
                         <div class="perf-table-entry-expanded flex-row-reverse">
-                          <div class="conf-matrix-holder">
-                            <div class="conf-text">Confusion matrix</div>
-                            <template is="dom-repeat" items="{{overallThresholds}}">
-                              <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="conf-matrix-holder">
+                              <div class="conf-text">Confusion matrix</div>
+                              <template is="dom-repeat" items="{{overallThresholds}}">
                                 <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
                                   label="[[getConfusionMatrixLabel(index)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
                               </template>
-                            </template>
-                          </div>
-                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            </div>
                             <div class="roc-holder">
                               <div class="roc-text">ROC curve
                                 <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
@@ -1929,10 +1925,17 @@ limitations under the License.
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
                           <div class="perf-table-entry-expanded flex-row-reverse">
                             <div>
-                              <template is="dom-repeat" items="[[inferenceStats_]]", as="inferenceStat">
-                                <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
-                                                      class="conf-matrix">
-                                </tf-confusion-matrix>
+                              <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                                <div class="conf-matrix-holder">
+                                  <div class="conf-text">Confusion matrix</div>
+                                  <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
+                                    <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
+                                      label="[[getConfusionMatrixLabel(index)]]"
+                                      background="[[getConfusionMatrixColor(index)]]"
+                                      class="conf-matrix">
+                                    </tf-confusion-matrix>
+                                    </template>
+                                </div>
                               </template>
                             </div>
                           </div>
@@ -1963,10 +1966,17 @@ limitations under the License.
                           </div>
                         </div>
                         <div class="perf-table-entry-expanded flex-row-reverse">
-                          <template is="dom-repeat" items="[[inferenceStats_]]">
-                            <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
-                                                 class="conf-matrix">
-                            </tf-confusion-matrix>
+                          <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
+                            <div class="conf-matrix-holder">
+                              <div class="conf-text">Confusion matrix</div>
+                              <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
+                                <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
+                                  label="[[getConfusionMatrixLabel(index)]]"
+                                  background="[[getConfusionMatrixColor(index)]]"
+                                  class="conf-matrix">
+                                </tf-confusion-matrix>
+                              </template>
+                            </div>
                           </template>
                         </div>
                       </template>
