@@ -359,7 +359,7 @@ limitations under the License.
                 .filter(sg=>sg.name === this.selectedSessionGroup.name)
                 .classed("selected-path", true);
           if (selectedPathSel.empty()) {
-            this.setSelectedSessionGroup(null);
+            this._setSelectedSessionGroup(null);
           } else {
             selectedPath = selectedPathSel.node();
           }
