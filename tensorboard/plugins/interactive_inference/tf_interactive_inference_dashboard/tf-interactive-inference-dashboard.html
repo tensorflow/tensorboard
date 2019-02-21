@@ -240,12 +240,12 @@ limitations under the License.
       }
 
       .center {
-        width: 50%;
+        width: 60%;
       }
 
       .side-holder {
         position: relative;
-        width: 50%;
+        width: 40%;
         display: flex;
       }
 
@@ -1103,7 +1103,7 @@ limitations under the License.
       }
       .datapoint-button {
         color: #202124;
-        background: #FBBC04;
+        background: #FDE293;
       }
       .infer-button {
         color: white;
@@ -1119,6 +1119,7 @@ limitations under the License.
         margin-top: -2px;
       }
       .tabs {
+        padding-left: 36px;
         text-transform: none;
       }
       .rotated-icon {
@@ -1278,20 +1279,20 @@ limitations under the License.
                               disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                               on-tap="selectNextDatapoint_" alt="select next datapoint" title="Select next datapoint">
                             </paper-icon-button>
+                            <div title="Edit a datapoint to use this feature">
+                              <paper-icon-button class="datapoint-control-button" icon="history"
+                                  on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
+                                  disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
+                              </paper-icon-button>
+                            </div>
                             <div title="Select a datapoint to use this feature">
                               <paper-icon-button class="datapoint-control-button" icon="content-copy"
                                   disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                                   on-tap="copyDatapoint_" alt="duplicate datapoint" title="Duplicate datapoint">
                               </paper-icon-button>
                             </div>
-                            <div title="Edit a datapoint to use this feature">
-                              <paper-icon-button class="datapoint-control-button" icon="settings-backup-restore"
-                                  on-tap="resetDatapoint_" alt="undo changes" title="Undo changes"
-                                  disabled$="[[shouldDisableReset_(selectedExampleAndInference.changed)]]">
-                              </paper-icon-button>
-                            </div>
                             <div title="Select a datapoint to use this feature">
-                              <paper-icon-button class="datapoint-control-button" icon="delete-forever"
+                              <paper-icon-button class="datapoint-control-button" icon="delete"
                                   disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                                   on-tap="deleteDatapointDialog_" alt="delete datapoint" title="Delete datapoint">
                               </paper-icon-button>
