@@ -715,7 +715,7 @@ limitations under the License.
         color: #5F6368;
         position: relative;
         padding: 10px 8px;
-        background-color: #FEEFE3;;
+        background-color: #FEF7E0;
         border-bottom: 1px solid #dedede;
         border-top: none;
         border-left: none;
@@ -1764,7 +1764,7 @@ limitations under the License.
                                 <div class="conf-text">Confusion matrix</div>
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                   <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
-                                    label="[[getConfusionMatrixLabel(index)]]"
+                                    label="[[getConfusionMatrixLabel(index, numModels)]]"
                                     background="[[getConfusionMatrixColor(index)]]"
                                     class="conf-matrix">
                                   </tf-confusion-matrix>
@@ -1835,7 +1835,7 @@ limitations under the License.
                               <div class="conf-text">Confusion matrix</div>
                               <template is="dom-repeat" items="{{overallThresholds}}">
                                 <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
-                                  label="[[getConfusionMatrixLabel(index)]]"
+                                  label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
@@ -1933,7 +1933,7 @@ limitations under the License.
                                   <div class="conf-text">Confusion matrix</div>
                                   <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
                                     <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
-                                      label="[[getConfusionMatrixLabel(index)]]"
+                                      label="[[getConfusionMatrixLabel(index, numModels)]]"
                                       background="[[getConfusionMatrixColor(index)]]"
                                       class="conf-matrix">
                                     </tf-confusion-matrix>
@@ -1974,7 +1974,7 @@ limitations under the License.
                               <div class="conf-text">Confusion matrix</div>
                               <template is="dom-repeat" items="[[inferenceStats_]]" as="inferenceStat">
                                 <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
-                                  label="[[getConfusionMatrixLabel(index)]]"
+                                  label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
@@ -3690,8 +3690,8 @@ limitations under the License.
        * Returns the label of a confusion matrix for a given model index.
        * When only using 1 model, no label is needed.
        */
-      getConfusionMatrixLabel: function(index) {
-        if (this.numModels < 2) {
+      getConfusionMatrixLabel: function(index, numModels) {
+        if (numModels < 2) {
           return '';
         }
         return this.getModelName_(index);
@@ -5324,7 +5324,11 @@ limitations under the License.
           feature1, feature2, optimization, thresholds) {
         let str = this.getPrintableOptimizationName(optimization);
         if (feature1 == null || feature1.length == 0) {
-          return str;
+          if (optimization == 'custom') {
+            return 'Explore overall performance';
+          } else {
+            return str;
+          }
         } else {
           let featStr = feature1;
           if (feature2 != null && feature2.length != 0) {
@@ -5336,7 +5340,7 @@ limitations under the License.
 
       getNoThresholdPerfTableTitle: function(feature1, feature2, thresholds) {
         if (feature1 == null || feature1.length == 0) {
-          return 'Overall performance'
+          return 'Explore overall performance'
         } else {
           let str = feature1;
           if (feature2 != null && feature2.length != 0) {
