@@ -665,7 +665,7 @@ limitations under the License.
       }
 
       paper-icon-button {
-        color: #5F6368
+        color: #5F6368;
       }
 
       paper-icon-button[disabled] {
@@ -714,7 +714,7 @@ limitations under the License.
         color: #5F6368;
         position: relative;
         padding: 10px 8px;
-        background-color: #f7ecd9;
+        background-color: #fff8e1;
         border-bottom: 1px solid #dedede;
         border-top: none;
         border-left: none;
@@ -1469,7 +1469,7 @@ limitations under the License.
                 <div class="config-tab">
                   <div class="config-side-content">
                     <div class="heading-and-card">
-                      <button class="heading" on-tap="toggleTrueLabelSetup">Configure
+                      <button class="inference-header heading" on-tap="toggleTrueLabelSetup">Configure
                         <div class="right-side right-side-performance-tab">
                           <iron-icon icon="[[getExpandCollapseIcon(openedTrueLabel)]]" class="expand-collapse-button"></iron-icon>
                         </div>
@@ -1558,7 +1558,7 @@ limitations under the License.
                     </div>
                     <template is="dom-if" if="[[isBinaryClassification_(modelType, multiClass)]]">
                       <div class="heading-and-card">
-                        <button class="heading" on-tap="toggleExplorerSetup">Fairness
+                        <button class="inference-header heading" on-tap="toggleExplorerSetup">Fairness
                           <div class="right-side right-side-performance-tab">
                             <iron-icon icon="[[getExpandCollapseIcon(openedExplorer)]]" class="expand-collapse-button"></iron-icon>
                           </div>
@@ -3161,10 +3161,6 @@ limitations under the License.
           } else if (this.selectedFeatureSort == 'Alphabetical') {
             return this.getPrintableValue_(a).localeCompare(this.getPrintableValue_(b));
           } else if (this.selectedFeatureSort == 'Accuracy') {
-            console.log('a acc' + this.getAccuracyModelIndex(
-                this.inferenceStats_, a.threshold, 0, a));
-            console.log('b acc' + this.getAccuracyModelIndex(
-                this.inferenceStats_, b.threshold, 0, b));
             if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
               return +this.getAccuracyModelIndex(
                   this.inferenceStats_, b.threshold, 0, b) -
@@ -4195,10 +4191,7 @@ limitations under the License.
       /**
        * Handler for when running inference, calls the backend.
        */
-      inferClicked_: function(event) {
-        if (event != null) {
-          event.stopPropagation();
-        }
+      inferClicked_: function() {
         const inferParams = {'inference_address': this.inferenceAddress,
                              'model_name': this.modelName,
                              'model_type': this.modelType,

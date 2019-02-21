@@ -116,13 +116,13 @@ limitations under the License.
       }
 
       .value-pill:hover {
-        border: 1px solid rgba(224,145,31,0.8);
+        border: 1px solid #ffeb3b;
         background: #FAFAFB;
       }
 
       .value-pill:focus {
         background: white;
-        border: 1px solid rgba(224,145,31,0.8);
+        border: 1px solid #ffeb3b;
         outline: none;
       }
 
@@ -228,8 +228,8 @@ limitations under the License.
 
       .delete-value-button {
         position: absolute;
-        background: #DA7421;
-        color: white;
+        background: #ffeb3b;
+        color: #5F6368;
         border-radius: 10px;
         max-width: 20px;
         max-height: 20px;
@@ -337,20 +337,12 @@ limitations under the License.
         color: lightgray;
       }
 
-      .box {
-        width: 22px;
-        height: 12px;
-        margin: 2px 0 0 5px;
+      .value-text {
+        border-bottom: 4px solid #ffeb3b;
       }
 
-      .yellow {
-        background: rgb(250, 212, 17);
-        border: 2px solid black;
-      }
-
-      .green {
-        background: rgb(29, 107, 29);
-        border: 2px solid #44FF44;
+      .compare-value-text {
+        border-bottom: 4px solid #34A853;
       }
     </style>
     <div class="outer">
@@ -362,13 +354,11 @@ limitations under the License.
       <div class="feature-name feature-name-header">
         <div class="feature-name-header-text">Feature name</div>
         <div class="value-pills-holder flex-controls value-header-text">
-          <div>Value(s)</div>
-          <div class="box yellow"></div>
+          <div class="value-text">Value(s)</div>
         </div>
         <template is="dom-if" if="[[compareMode]]">
           <div class="value-pills-holder flex-controls value-header-text">
-            <div>[[compareTitle]]</div>
-            <div class="box green"></div>
+            <div class="compare-value-text">[[compareTitle]]</div>
           </div>
         </template>
         <div class="space-for-more-button"></div>

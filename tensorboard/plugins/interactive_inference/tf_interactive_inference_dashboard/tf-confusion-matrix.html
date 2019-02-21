@@ -47,6 +47,8 @@ limitations under the License.
         vertical-align: bottom;
       }
       .value-cell {
+        font-size: 14px;
+        color: #202124;
         border: 1px solid lightgrey;
       }
       .parenthetical {
@@ -212,12 +214,11 @@ limitations under the License.
               c.opacity = d.value / total;
               return c + '';
             }
-          }).style('color', (d, i) => '#202124');
+          });
         const cellDivs = cells.append('div').classed('flex', true);
         cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
             .text(d =>
-              'row' in d ? '(' + d.value + ')' : '')
-            .style('color', (d, i) => '#3C4043');
+              'row' in d ? '(' + d.value + ')' : '');
         cellDivs.append('div').text(
           (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
 
