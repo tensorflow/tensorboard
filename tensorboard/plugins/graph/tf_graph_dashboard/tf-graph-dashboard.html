@@ -273,11 +273,7 @@ Polymer({
       }),
   _fetchDataset() {
     return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('graphs', '/index'));
-  },
-  _fetchRunMetadataTags() {
-    return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
+        tf_backend.getRouter().pluginRoute('graphs', '/meta'));
   },
   /*
    * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.

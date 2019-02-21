@@ -3,7 +3,7 @@
 The graph plugin name is `graphs`, so all its routes are under
 `/data/plugin/graphs`.
 
-## `/data/plugin/graphs/index`
+## `/data/plugin/graphs/meta`
 
 Returns meta information about data availabilities for a given run and a tag.
 Below fields describe the data availabilities:

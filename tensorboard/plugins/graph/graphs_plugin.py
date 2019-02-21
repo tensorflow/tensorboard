@@ -31,6 +31,10 @@ logger = tb_logging.get_logger()
 
 _PLUGIN_PREFIX_ROUTE = 'graphs'
 
+# The Summary API is implemented in TensorFlow because it uses TensorFlow internal APIs.
+# As a result, this SummaryMetadata is a bit unconventional and uses non-public
+# hardcoded name as the plugin name. Please refer to link below for the summary ops.
+# https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L788
 _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_graph'
 
 
@@ -50,16 +54,16 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return {
         '/graph': self.graph_route,
-        '/index': self.index_route,
+        '/meta': self.meta_route,
         '/run_metadata': self.run_metadata_route,
     }
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.index_impl())
+    return bool(self._multiplexer and self.meta_impl())
 
-  def index_impl(self):
-    """Returns a list of all runs that have a graph."""
+  def meta_impl(self):
+    """Returns a dict of all runs and tags and their data availabilities."""
     result = {}
     def add_row_item(run, tag=None):
       run_item = result.setdefault(run, {
@@ -80,18 +84,21 @@ class GraphsPlugin(base_plugin.TBPlugin):
         _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH)
     for (run_name, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
+        # The Summary op is defined in TensorFlow and does not use a stringified proto
+        # as a content of plugin data. It contains single string that denotes a version.
+        # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
         if content is not '1':
           logger.warn('Ignoring unrecognizable version of RunMetadata.')
           continue
         (_, tag_item) = add_row_item(run_name, tag)
         tag_item['op_graph'] = True
 
-    for (run_name, run_data) in self._multiplexer.Runs().items():
+    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
       if run_data.get(event_accumulator.GRAPH):
         (run_item, _) = add_row_item(run_name, None)
         run_item['run_graph'] = True
 
-    for (run_name, run_data) in self._multiplexer.Runs().items():
+    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
       if event_accumulator.RUN_METADATA in run_data:
         for tag in run_data[event_accumulator.RUN_METADATA]:
           (_, tag_item) = add_row_item(run_name, tag)
@@ -119,9 +126,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
     return (str(run_metadata), 'text/x-protobuf')  # pbtxt
 
   @wrappers.Request.application
-  def index_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+  def meta_route(self, request):
+    meta = self.meta_impl()
+    return http_util.Respond(request, meta, 'application/json')
 
   @wrappers.Request.application
   def graph_route(self, request):
