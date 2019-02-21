@@ -796,6 +796,16 @@ var DEVICE_STATS_DEFAULT_OFF = [
 //  }
 ];
 
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   run: string,
+ *   tag: ?string,
+ *   type: tf.graph.SelectionType,
+ * }}
+ */
+const Selection = {};
+
 Polymer({
   is: 'tf-graph-controls',
   properties: {
@@ -833,11 +843,7 @@ Polymer({
       notify: true,
     },
     /**
-     * {
-     *    run: string,
-     *    tag: string,
-     *    type: tf.graph.SelectionType,
-     * }
+     * @type {!Selection}
      */
     selection: {
       type: Object,
