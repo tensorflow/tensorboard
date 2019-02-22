@@ -20,6 +20,7 @@ def combine_graph_defs(to_proto, from_proto):
   """Combines two GraphDefs by adding nodes from from_proto into to_proto.
 
   All GraphDefs are expected to be of TensorBoard's.
+  It assumes node names are unique across GraphDefs.
 
   Args:
     to_proto: A destination TensorBoard GraphDef.
