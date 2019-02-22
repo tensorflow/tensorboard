@@ -238,6 +238,10 @@ class S3FileSystem(object):
                 "{} not supported by compat glob".format(filename))
         if star_i != len(filename) - 1:
             # Just return empty so we can use glob from directory watcher
+            #
+            # TODO: Remove and instead handle in GetLogdirSubdirectories.
+            # However, we would need to handle it for all non-local registered
+            # filesystems in some way.
             return []
         filename = filename[:-1]
         client = boto3.client("s3")
