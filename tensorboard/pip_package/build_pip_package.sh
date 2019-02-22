@@ -23,60 +23,40 @@ else
   sedi="sed -i"
 fi
 
-run_smoke_test=1
+tf_version="tf-nightly"
+if [ -n "$TF_VERSION" ]; then
+  tf_version="tensorflow==${TF_VERSION}"
+fi
+smoke="all"
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    "--tf-version")
+      tf_version="$2"
+      shift
+      shift
+      ;;
+    "--smoke")
+      smoke=1
+      shift
+      ;;
+    "--smoke-all")
+      smoke="all"
+      shift
+      ;;
     "--no-smoke")
-      run_smoke_test=0
+      smoke=0
+      shift
       ;;
     *)
       echo >&2 'fatal: unknown argument:' "$1"
       exit 1
       ;;
   esac
-  shift
 done
-
-smoke() {
-  TF_PACKAGE=tf-nightly
-  if [ -n "$TF_VERSION" ]; then
-    TF_PACKAGE="tensorflow==${TF_VERSION}"
-  fi
-  virtualenv -qp python$1 venv$1
-  cd venv$1
-  . bin/activate
-  pip install -qU pip
-  pip install -qU "$TF_PACKAGE"
-  pip install -qU ../dist/*py$1*.whl >/dev/null
-  # Test TensorBoard application
-  [ -x ./bin/tensorboard ]  # Ensure pip package included binary
-  mkfifo pipe
-  tensorboard --port=0 --logdir=smokedir 2>pipe &
-  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
-  curl -fs http://localhost:$(cat port) >index.html
-  grep '<tf-tensorboard' index.html
-  curl -fs http://localhost:$(cat port)/data/logdir >logdir.json
-  grep 'smokedir' logdir.json
-  kill $!
-  # Test TensorBoard APIs
-  python -c "
-import tensorboard as tb
-tb.summary.scalar_pb('test', 42)
-from tensorboard.plugins.projector import visualize_embeddings
-from tensorboard.plugins.beholder import Beholder, BeholderHook
-tb.notebook.start  # don't invoke; just check existence
-import tensorboard.summary._tf.summary as tf_summary
-"
-  deactivate
-  cd ..
-  rm -rf venv$1
-}
 
 set -x
 command -v curl >/dev/null
 command -v perl >/dev/null
-command -v python2 >/dev/null
-command -v python3 >/dev/null
 command -v virtualenv >/dev/null
 [ -d "${RUNFILES}" ]
 
@@ -135,9 +115,66 @@ pip install -qU wheel 'setuptools>=36.2.0'
 python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-if [ "$run_smoke_test" = 1 ]; then
-  smoke 2
-  smoke 3
-fi
+smoke() {
+  pymajorversion="$1"
+  if [ -z "${pymajorversion}" ]; then
+    pymajorversion="$(python -c 'import sys; print(sys.version_info[0])')"
+  fi
+  smokepython="python$1"
+  smokevenv="smoke-venv$1"
+  smoketf="$2"
+  set +x
+  printf '\n\n%70s\n' | tr ' ' '='
+  printf "Smoke testing with ${smokepython} and ${smoketf}...\n\n"
+  set -x
+  command -v "${smokepython}" >/dev/null
+  virtualenv -qp "${smokepython}" "${smokevenv}"
+  cd "${smokevenv}"
+  . bin/activate
+  pip install -qU pip
+  pip install -qU "${smoketf}"
+  pip install -qU ../dist/*"py${pymajorversion}"*.whl >/dev/null
+  # Test TensorBoard application
+  [ -x ./bin/tensorboard ]  # Ensure pip package included binary
+  mkfifo pipe
+  tensorboard --port=0 --logdir=smokedir 2>pipe &
+  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
+  curl -fs http://localhost:$(cat port) >index.html
+  grep '<tf-tensorboard' index.html
+  curl -fs http://localhost:$(cat port)/data/logdir >logdir.json
+  grep 'smokedir' logdir.json
+  kill $!
+  # Test TensorBoard APIs
+  python -c "
+import tensorboard as tb
+tb.summary.scalar_pb('test', 42)
+from tensorboard.plugins.projector import visualize_embeddings
+from tensorboard.plugins.beholder import Beholder, BeholderHook
+tb.notebook.start  # don't invoke; just check existence
+import tensorboard.summary._tf.summary as tf_summary
+"
+  deactivate
+  cd ..
+  rm -rf "${smokevenv}"
+}
 
-ls -hal "$PWD/dist"
+case "${smoke}" in
+  "all")
+    smoke 2 "${tf_version}"
+    smoke 3 "${tf_version}"
+    ;;
+  "1")
+    # Empty string indicates to use the default "python".
+    smoke "" "${tf_version}"
+    ;;
+  "0")
+    printf "\nSkipping smoke test\n\n"
+    ;;
+  *)
+    echo >&2 'fatal: unknown smoke value:' "${smoke}"
+    exit 1
+    ;;
+esac
+
+# Print the wheel files we built.
+du -hs "$PWD"/dist/*
