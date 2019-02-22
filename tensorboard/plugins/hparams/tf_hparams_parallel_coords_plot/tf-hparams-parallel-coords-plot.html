@@ -58,6 +58,7 @@ limitations under the License.
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
 <link rel="import" href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html">
 <link rel="import" href="../tf-hparams-parallel-coords-plot/utils.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <dom-module id="tf-hparams-parallel-coords-plot">
   <template>
@@ -102,16 +103,6 @@ limitations under the License.
       .foreground .selected-path {
         stroke-width: 3 !important;
         stroke: #0f0    !important;
-      }
-
-      #sessionGroupValues {
-        background: black;
-        border-radius: 5px;
-        border: 2px solid black;
-        padding: 8px;
-        box-shadow: 2px 2px #777;
-        max-width: 100%;
-        max-height: 100%;
       }
 
       .axis text {
@@ -214,13 +205,26 @@ limitations under the License.
         '_schemaChanged(schema.*)',
         '_redraw(options.*)',
       ],
+      
+      behaviors: [
+        Polymer.IronResizableBehavior,
+      ],
+
+      listeners: {
+        'iron-resize': 'resized',
+      },
+
+      resized() {
+        console.log("resized!");
+      },
 
       ready() {
         this._container = this.$.container;
         this._svg = d3.select(this.$.svg);
-        this._sessionGroupValues = d3.select(this.$.sessionGroupValues);
         this._redraw();
       },
+
+      
 
       _sessionGroupsChanged() {
         if (this.selectedSessionGroup !== null) {
