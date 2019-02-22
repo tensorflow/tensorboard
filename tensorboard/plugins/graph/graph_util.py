@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +19,11 @@ from tensorboard.compat.proto import function_pb2
 def combine_graph_defs(to_proto, from_proto):
   """Combines two GraphDefs by adding nodes from from_proto into to_proto.
 
+  All GraphDefs are expected to be of TensorBoard's.
+
   Args:
-    to_proto: a destination GraphDef.
-    from_proto: a GraphDef to copy contents from.
+    to_proto: A destination TensorBoard GraphDef.
+    from_proto: A TensorBoard GraphDef to copy contents from.
 
   Returns:
     to_proto

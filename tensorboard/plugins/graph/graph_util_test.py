@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,6 @@ import tensorflow as tf
 
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.plugins.graph import graph_util
-from tensorflow.python.platform import test
 
 
 class GraphUtilTest(tf.test.TestCase):
