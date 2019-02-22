@@ -15,14 +15,19 @@
 """Utilities for graph plugin."""
 from tensorboard.compat.proto import function_pb2
 
-def _is_present(key_to_proto, proto, get_key, error_msg):
-  """Checks for key in a dict and raises if content in the dict differ from proto.
+
+def _safe_copy_proto_list_values(to_proto_list, from_proto_list, get_key, error_msg):
+  """Safely copies the value from from_proto_list to to_proto_list.
+
+  Copies if to_proto_list does not contain an item with the same key. In case an item
+  is found with the same key, it checks whether contents match and, if not, it raises
+  a ValueError.
 
   Args:
-    key_to_proto: A dict that maps key to a proto.
+    to_proto_list: A dict that maps key to a proto.
     proto: A proto.
     get_key: A lambda that returns a string key from a proto.
-    error_msg: Error message.
+    error_msg: User friendly error message.
 
   Raises:
     ValueError when there is the key in the dict but contents mismatch.
@@ -30,10 +35,18 @@ def _is_present(key_to_proto, proto, get_key, error_msg):
   Returns:
     True if key from proto is present in the key_to_proto.
   """
-  key = get_key(proto)
-  if key in key_to_proto and proto != key_to_proto.get(key):
-    raise ValueError(error_msg + ': %s' % key)
-  return key in key_to_proto
+  key_to_proto = {}
+  for proto in to_proto_list:
+    key = get_key(proto)
+    key_to_proto[key] = proto
+
+  for proto in from_proto_list:
+    key = get_key(proto)
+    if key in key_to_proto:
+      if proto != key_to_proto.get(key):
+        raise ValueError(error_msg + ': %s' % key)
+    else:
+      to_proto_list.add().CopyFrom(proto)
 
 
 def combine_graph_defs(to_proto, from_proto):
@@ -53,41 +66,23 @@ def combine_graph_defs(to_proto, from_proto):
   if from_proto.version != to_proto.version:
     raise ValueError('Cannot combine GraphDefs of different versions.')
 
-  node_name_to_nodedef = {}
-  for node in to_proto.node:
-    node_name_to_nodedef[node.name] = node
+  _safe_copy_proto_list_values(
+      to_proto.node,
+      from_proto.node,
+      lambda n: n.name,
+      'Cannot combine GraphDefs because nodes share a name but are different')
 
-  func_name_to_func = {}
-  for func in to_proto.library.function:
-    func_name_to_func[func.signature.name] = func
+  _safe_copy_proto_list_values(
+      to_proto.library.function,
+      from_proto.library.function,
+      lambda n: n.signature.name,
+      'Cannot combine GraphDefs because nodes share a name but are different')
 
-  gradient_name_to_def = {}
-  for gradient_def in to_proto.library.gradient:
-    gradient_name_to_def[gradient_def.gradient_func] = gradient_def
-
-  for from_node in from_proto.node:
-    if not _is_present(
-        node_name_to_nodedef,
-        from_node,
-        lambda n: n.name,
-        'Cannot combine GraphDefs because nodes share a name but are different'):
-      to_proto.node.add().CopyFrom(from_node)
-
-  for from_function in from_proto.library.function:
-    if not _is_present(
-        func_name_to_func,
-        from_function,
-        lambda f: f.signature.name,
-        'Cannot combine GraphDefs because functions share a name but are different'):
-      to_proto.library.function.add().CopyFrom(from_function)
-
-  for from_gradient in from_proto.library.gradient:
-    if not _is_present(
-        gradient_name_to_def,
-        from_gradient,
-        lambda g: g.gradient_func,
-        ('Cannot combine GraphDefs because gradients share a gradient_func name '
-        'but maps to a different function')):
-      to_proto.library.gradient.add().CopyFrom(from_gradient)
+  _safe_copy_proto_list_values(
+      to_proto.library.gradient,
+      from_proto.library.gradient,
+      lambda g: g.gradient_func,
+      ('Cannot combine GraphDefs because gradients share a gradient_func name '
+      'but maps to a different function'))
 
   return to_proto
