@@ -16,6 +16,7 @@
 """Utilities for graph plugin."""
 from tensorboard.compat.proto import function_pb2
 
+
 def combine_graph_defs(to_proto, from_proto):
   """Combines two GraphDefs by adding nodes from from_proto into to_proto.
 

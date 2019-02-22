@@ -20,6 +20,7 @@ from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.plugins.graph import graph_util
 from tensorflow.python.platform import test
 
+
 class GraphUtilTest(tf.test.TestCase):
   def test_combine_graph_defs(self):
       expected_proto = '''
