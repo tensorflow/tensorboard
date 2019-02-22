@@ -25,18 +25,25 @@ limitations under the License.
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
 <link rel="import" href="../tf-graph-node-search/tf-graph-node-search.html">
 
 <dom-module id="tf-graph-controls">
 <template>
+<style include="dashboard-style"></style>
 <style>
 :host {
   color: gray;
   display: flex;
   flex-direction: column;
   font-size: 12px;
+  overflow: hidden;
+  /**
+   * Requires relative: otherwise, tooltip that positions absolute
+   * will make this a weirdly tall and mess up the scrollbar. */
+  position: relative;
   width: 100%;
 
   --paper-font-subhead: {
@@ -83,9 +90,9 @@ table td {
 }
 
 .allcontrols {
-  padding: 0 20px 20px;
   flex-grow: 1;
   overflow-y: auto;
+  padding-right: 20px;
 }
 
 .legend-holder {
@@ -107,10 +114,15 @@ table td {
   vertical-align: middle;
 }
 
+paper-radio-group paper-tooltip {
+  padding: 0;
+}
+
 paper-radio-button {
   display: block;
   padding: 5px;
 }
+
 svg.icon {
   width: 60px;
   height: 18px;
@@ -131,10 +143,6 @@ svg.icon {
   stroke: #CCC;
   stroke-width: 2px;
   fill: #D9D9D9;
-}
-.domainValues {
-  margin-bottom: 10px;
-  width: 165px;
 }
 .domainStart {
   float: left;
@@ -162,13 +170,23 @@ svg.icon {
 }
 
 .title {
-  font-size: 16px;
+  font-size: 15px;
   margin: 8px 5px 8px 0;
   color: black;
 }
 .title small {
   font-weight: normal;
 }
+
+.gradient-scale {
+  margin: 10px 0;
+}
+
+.gradient-svg {
+  height: 20px;
+  width: 100%;
+}
+
 .deviceList, .xlaClusterList {
   max-height: 200px;
   overflow-y: auto;
@@ -178,21 +196,25 @@ svg.icon {
   padding: 8px 0;
 }
 
+.sidebar-section.colors {
+  flex-direction: column;
+}
+
 .color-legend-row {
-  clear: both;
+  align-items: center;
+  display: flex;
   height: 20px;
   margin-top: 5px;
-  position: relative;
 }
 
-.color-legend-row svg {
-  position: absolute;
-  top: -1px;
-  width: 40px;
+.color-legend-row :first-child {
+  flex: 0 0 50px;
 }
 
-.color-legend-row span.color-legend-value {
-  margin-left: 60px;
+.color-legend-row svg:first-child {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
 }
 
 #grey-rect {
@@ -244,14 +266,10 @@ svg.icon {
   overflow:hidden;
 }
 
-.allcontrols .control-holder {
+.control-holder {
   clear: both;
   display: flex;
   justify-content: space-between;
-}
-
-.allcontrols .control-holder paper-radio-group {
-  margin-top: 5px;
 }
 
 span.counter {
@@ -276,6 +294,13 @@ table.tf-graph-controls td.input-element-table-data {
 
 .spacer {
   flex-grow: 1;
+}
+
+.color-title {
+  align-items: center;
+  display: inline-flex;
+  height: 26px;
+  margin: 0 8px 0 0;
 }
 
 .color-text {
@@ -329,256 +354,265 @@ paper-dropdown-menu {
   </defs>
 </svg>
 <div class="allcontrols">
-  <div class="control-holder">
-    <tf-graph-node-search
-      selected-node="{{selectedNode}}"
-      render-hierarchy="[[renderHierarchy]]"></tf-graph-node-search>
-  </div>
-  <div class="control-holder">
-    <paper-button class="icon-button" on-click="fit" alt="Fit to screen">
-      <iron-icon icon="aspect-ratio" class="button-icon"></iron-icon>
-      <span class="button-text">Fit to Screen</span>
-    </paper-button>
-  </div>
-  <div class="control-holder">
-    <paper-button class="icon-button" on-click="download" alt="Download PNG">
-      <iron-icon icon="file-download" class="button-icon"></iron-icon>
-      <span class="button-text">Download PNG</span>
-    </paper-button>
-    <a href="#" id="graphdownload" class="title" download="graph.png"></a>
-  </div>
-  <div class="control-holder runs">
-    <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
-    <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
-      <paper-menu class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
-        <template is="dom-repeat" items="[[datasets]]">
-          <paper-item>[[item.name]]</paper-item>
-        </template>
-      </paper-menu>
-    </paper-dropdown-menu>
-  </div>
-  <template is="dom-if" if="[[showSessionRunsDropdown]]">
+  <div class="sidebar-section">
     <div class="control-holder">
-      <div class="title">Tag <span class="counter">([[_numTags(datasets, _selectedRunIndex)]])</span></div>
-      <paper-dropdown-menu no-label-float no-animations horizontal-align="left" noink class="run-dropdown">
-        <paper-menu class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
-          <template is="dom-repeat" items="[[_getTags(datasets, _selectedRunIndex)]]">
-            <paper-item>[[item.displayName]]</paper-item>
+      <tf-graph-node-search
+        selected-node="{{selectedNode}}"
+        render-hierarchy="[[renderHierarchy]]"></tf-graph-node-search>
+    </div>
+    <div class="control-holder">
+      <paper-button class="icon-button" on-click="fit" alt="Fit to screen">
+        <iron-icon icon="aspect-ratio" class="button-icon"></iron-icon>
+        <span class="button-text">Fit to Screen</span>
+      </paper-button>
+    </div>
+    <div class="control-holder">
+      <paper-button class="icon-button" on-click="download" alt="Download PNG">
+        <iron-icon icon="file-download" class="button-icon"></iron-icon>
+        <span class="button-text">Download PNG</span>
+      </paper-button>
+      <a href="#" id="graphdownload" class="title" download="graph.png"></a>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="control-holder runs">
+      <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
+      <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
+        <paper-menu id="select" class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
+          <template is="dom-repeat" items="[[datasets]]">
+            <paper-item>[[item.name]]</paper-item>
           </template>
         </paper-menu>
       </paper-dropdown-menu>
     </div>
-  </template>
-  <template is="dom-if" if="[[showUploadButton]]">
-    <div class="control-holder">
-      <div class="title">Upload</div>
-      <paper-button raised class="upload-button"
-          on-click="_getFile"
-          title="Upload a graph pbtxt file to view the graph">
-        Choose File
-      </paper-button>
-      <div class="hidden-input">
-        <input
-            type="file"
-            id="file"
-            name="file"
-            on-change="_updateFileInput"
-            accept=".pbtxt" />
-      </div>
-    </div>
-  </template>
-  <div class="control-holder">
-    <paper-radio-group selected="{{_selectedGraphType}}">
-      <!-- Note that the name has to match that of tf.graph.SelectionType. -->
-      <paper-radio-button name="op_graph"
-          disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
-      >Graph</paper-radio-button>
-      <paper-radio-button name="conceptual_graph"
-          disabled="[[_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
-      >Conceptual Graph</paper-radio-button>
-      <paper-radio-button name="profile"
-          disabled="[[_getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
-      >Profile</paper-radio-button>
-    </paper-radio-group>
-  </div>
-  <div class="control-holder">
-    <div>
-      <paper-toggle-button id="trace-inputs" class="title">
-        Trace inputs
-      </paper-toggle-button>
-    </div>
-  </div>
-  <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
-    <div class="control-holder">
-      <paper-toggle-button checked="{{healthPillsToggledOn}}"></paper-toggle-button>
-      <div class="title">Show health pills</div>
-    </div>
-  </template>
-  <div class="control-holder">
-    <div class="title">Color</div>
-    <paper-radio-group selected="{{colorBy}}">
-      <paper-radio-button name="structure">Structure</paper-radio-button>
-
-      <paper-radio-button name="device">Device</paper-radio-button>
-
-      <paper-radio-button id="xla-cluster-radio-button"
-                          name="xla_cluster"
-                          disabled="[[!_xlaClustersProvided(renderHierarchy)]]">
-        XLA Cluster
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right" offset="0">
-        Coloring by XLA cluster is only enabled if at least 1 op specifies an XLA cluster.
-      </paper-tooltip>
-
-      <paper-radio-button id="compute-time-radio-button"
-                          name="compute_time"
-                          disabled="[[!stats]]">
-        Compute time
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right" offset="0">
-        Coloring by compute time is only enabled if the RunMetadata proto is passed to the
-        FileWriter when a specific session is run.
-      </paper-tooltip>
-
-      <paper-radio-button id="memory-radio-button"
-                          name="memory"
-                          disabled="[[!stats]]">
-        Memory
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="memory-radio-button" position="right" offset="0">
-        Coloring by memory is only enabled if the RunMetadata proto is passed to the
-        FileWriter when a specific session is run.
-      </paper-tooltip>
-
-      <paper-radio-button id="tpu-compatibility-radio-button"
-                          name="op_compatibility">
-        TPU Compatibility
-      </paper-radio-button>
-      <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right" offset="0">
-        Coloring by whether an operation is compatible for the TPU device.
-      </paper-tooltip>
-
-    </paper-radio-group>
-    <span class="spacer"></span>
-  </div>
-  <div>
-    <template is="dom-if" if="[[_isGradientColoring(stats, colorBy)]]">
-      <svg width="140" height="20" style="margin: 0 5px" class="color-text">
-        <defs>
-          <linearGradient id="linearGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop class="start" offset="0%"
-                stop-color$="[[_currentGradientParams.startColor]]"/>
-            <stop class="end" offset="100%"
-                stop-color$="[[_currentGradientParams.endColor]]"/>
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="135" height="20" fill="url(#linearGradient)"
-            stroke="black" />
-      </svg>
-      <div class="domainValues color-text">
-        <div class="domainStart">[[_currentGradientParams.minValue]]</div>
-        <div class="domainEnd">[[_currentGradientParams.maxValue]]</div>
-      </div>
-      <br style="clear: both">
-      <div>Devices included in stats:</div>
-      <div class="deviceList">
-        <template is="dom-repeat" items="[[_currentDevices]]">
-          <div class="color-legend-row devices-checkbox">
-            <span><input type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/></span>
-            <span>[[item.suffix]]</span>
-            <template is="dom-if" if="[[item.ignoredMsg]]">
-              <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-              <paper-tooltip position="right" offset="0" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
+    <template is="dom-if" if="[[showSessionRunsDropdown]]">
+      <div class="control-holder">
+        <div class="title">Tag <span class="counter">([[_numTags(datasets, _selectedRunIndex)]])</span></div>
+        <paper-dropdown-menu no-label-float no-animations horizontal-align="left" noink class="run-dropdown">
+          <paper-menu id="select" class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
+            <template is="dom-repeat" items="[[_getTags(datasets, _selectedRunIndex)]]">
+              <paper-item>[[item.displayName]]</paper-item>
             </template>
-          </div>
-        </template>
+          </paper-menu>
+        </paper-dropdown-menu>
       </div>
     </template>
-    <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
-      <div class="color-text">
-        <div class="color-legend-row">
-          <div style="position: absolute;">
-            colors
-          </div>
-          <span class="color-legend-value">same substructure</span>
+    <template is="dom-if" if="[[showUploadButton]]">
+      <div class="control-holder">
+        <div class="title">Upload</div>
+        <paper-button raised class="upload-button"
+            on-click="_getFile"
+            title="Upload a graph pbtxt file to view the graph">
+          Choose File
+        </paper-button>
+        <div class="hidden-input">
+          <input
+              type="file"
+              id="file"
+              name="file"
+              on-change="_updateFileInput"
+              accept=".pbtxt" />
         </div>
-        <div class="color-legend-row">
-          <svg>
-            <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="#grey-rect" x="0" y="0"/>
+      </div>
+    </template>
+  </div>
+  <div class="sidebar-section">
+    <div class="control-holder">
+      <paper-radio-group id="color-by-radio-group" selected="{{_selectedGraphType}}">
+        <!-- Note that the name has to match that of tf.graph.SelectionType. -->
+        <paper-radio-button name="op_graph"
+            disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+        >Graph</paper-radio-button>
+        <paper-radio-button name="conceptual_graph"
+            disabled="[[_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+        >Conceptual graph</paper-radio-button>
+        <paper-radio-button name="profile"
+            disabled="[[_getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+        >Profile</paper-radio-button>
+      </paper-radio-group>
+    </div>
+  </div>
+  <div class="sidebar-section colors">
+    <div class="control-holder">
+        <paper-toggle-button id="trace-inputs" class="title">
+          Trace inputs
+        </paper-toggle-button>
+    </div>
+
+    <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
+      <div class="control-holder">
+        <paper-toggle-button checked="{{healthPillsToggledOn}}" class="title">
+            Show health pills
+        </paper-toggle-button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[_isColorSelectionEnabled(selection)]]">
+      <div class="control-holder">
+        <div class="color-title title">Color</div>
+        <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
+          <paper-radio-button name="structure">Structure</paper-radio-button>
+
+          <paper-radio-button name="device">Device</paper-radio-button>
+
+          <paper-radio-button id="xla-cluster-radio-button"
+                              name="xla_cluster"
+                              disabled="[[!_xlaClustersProvided(renderHierarchy)]]">
+            XLA Cluster
+          </paper-radio-button>
+          <paper-tooltip animation-delay="0" for="xla-cluster-radio-button" position="right" offset="0">
+            Coloring by XLA cluster is only enabled if at least 1 op specifies an XLA cluster.
+          </paper-tooltip>
+
+          <paper-radio-button id="compute-time-radio-button"
+                              name="compute_time"
+                              disabled="[[!stats]]">
+            Compute time
+          </paper-radio-button>
+          <paper-tooltip animation-delay="0" for="compute-time-radio-button" position="right" offset="0">
+            Coloring by compute time is only enabled if the RunMetadata proto is passed to the
+            FileWriter when a specific session is run.
+          </paper-tooltip>
+
+          <paper-radio-button id="memory-radio-button"
+                              name="memory"
+                              disabled="[[!stats]]">
+            Memory
+          </paper-radio-button>
+          <paper-tooltip animation-delay="0" for="memory-radio-button" position="right" offset="0">
+            Coloring by memory is only enabled if the RunMetadata proto is passed to the
+            FileWriter when a specific session is run.
+          </paper-tooltip>
+
+          <paper-radio-button id="tpu-compatibility-radio-button"
+                              name="op_compatibility">
+            TPU Compatibility
+          </paper-radio-button>
+          <paper-tooltip animation-delay="0" for="tpu-compatibility-radio-button" position="right" offset="0">
+            Coloring by whether an operation is compatible for the TPU device.
+          </paper-tooltip>
+
+        </paper-radio-group>
+        <span class="spacer"></span>
+      </div>
+
+      <template is="dom-if" if="[[_isGradientColoring(stats, colorBy)]]">
+        <div class="gradient-scale">
+          <svg preserveAspectRatio="none" viewBox="0 0 135 20" class="gradient-svg">
+            <defs>
+              <linearGradient id="linearGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop class="start" offset="0%"
+                    stop-color$="[[_currentGradientParams.startColor]]"/>
+                <stop class="end" offset="100%"
+                    stop-color$="[[_currentGradientParams.endColor]]"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="135" height="20" fill="url(#linearGradient)"
+                stroke="black" />
           </svg>
-          <span class="color-legend-value">unique substructure</span>
+          <div class="color-text">
+            <div class="domainStart">[[_currentGradientParams.minValue]]</div>
+            <div class="domainEnd">[[_currentGradientParams.maxValue]]</div>
+          </div>
         </div>
-      </div>
-    </template>
-    <template is="dom-if" if="[[_equals(colorBy, 'device')]]">
-      <div>
-        <template is="dom-repeat" items="[[_currentDeviceParams]]">
+        <div>Devices included in stats:</div>
+        <div class="deviceList">
+          <template is="dom-repeat" items="[[_currentDevices]]">
+            <div class="color-legend-row devices-checkbox">
+              <span><input type="checkbox" value$="[[item.device]]" checked$="[[item.used]]" on-click="_deviceCheckboxClicked"/></span>
+              <span>[[item.suffix]]</span>
+              <template is="dom-if" if="[[item.ignoredMsg]]">
+                <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+                <paper-tooltip position="right" offset="0" animation-delay="0">[[item.ignoredMsg]]</paper-tooltip>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
+        <div class="color-text">
+          <div class="color-legend-row">
+            <span>colors</span>
+            <span class="color-legend-value">same substructure</span>
+          </div>
           <div class="color-legend-row">
             <svg>
               <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+                    xlink:href="#grey-rect" x="0" y="0"/>
             </svg>
-            <span class="color-legend-value">[[item.device]]</span>
+            <span class="color-legend-value">unique substructure</span>
           </div>
-        </template>
-        <div class="color-legend-row">
-          <svg>
-            <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="#grey-rect" x="0" y="0"/>
-          </svg>
-          <span class="color-legend-value">unknown device</span>
         </div>
-      </div>
-    </template>
-    <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
-      <div>
-        <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+      </template>
+      <template is="dom-if" if="[[_equals(colorBy, 'device')]]">
+        <div>
+          <template is="dom-repeat" items="[[_currentDeviceParams]]">
+            <div class="color-legend-row">
+              <svg>
+                <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+              </svg>
+              <span class="color-legend-value">[[item.device]]</span>
+            </div>
+          </template>
           <div class="color-legend-row">
             <svg>
               <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+                    xlink:href="#grey-rect" x="0" y="0"/>
             </svg>
-            <span class="color-legend-value">[[item.xla_cluster]]</span>
+            <span class="color-legend-value">unknown device</span>
           </div>
-        </template>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
+        <div>
+          <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+            <div class="color-legend-row">
+              <svg>
+                <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
+              </svg>
+              <span class="color-legend-value">[[item.xla_cluster]]</span>
+            </div>
+          </template>
+          <div class="color-legend-row">
+            <svg>
+              <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                    xlink:href="#grey-rect" x="0" y="0"/>
+            </svg>
+            <span class="color-legend-value">unknown XLA cluster</span>
+          </div>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
+        <div class="color-text">
+          <div class="color-legend-row">
+            <svg class="icon" preserveAspectRatio="xMinYMid slice"
+                  viewBox="0 0 24 12">
+              <use xlink:href="#op-node-stamp" fill="#0f9d58" stroke="#ccc"
+                  x="9" y="6" />
+            </svg>
+            <span class="color-legend-value">Valid Op</span>
+          </div>
+          <div class="color-legend-row">
+            <svg class="icon" preserveAspectRatio="xMinYMid slice"
+                  viewBox="0 0 24 12">
+              <use xlink:href="#op-node-stamp" fill="#db4437" stroke="#ccc"
+                  x="9" y="6" />
+            </svg>
+            <span class="color-legend-value">Invalid Op</span>
+          </div>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_statsNotNull(stats)]]">
         <div class="color-legend-row">
           <svg>
             <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="#grey-rect" x="0" y="0"/>
+                  xlink:href="#faded-rect" x="0" y="0"/>
           </svg>
-          <span class="color-legend-value">unknown XLA cluster</span>
+          <span class="color-legend-value">unused substructure</span>
         </div>
-      </div>
-    </template>
-    <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
-      <div class="color-text">
-        <div class="color-legend-row">
-          <svg class="icon" preserveAspectRatio="xMinYMid meet"
-               viewBox="0 0 10 10">
-            <use xlink:href="#op-node-stamp" fill="#0f9d58" stroke="#ccc" x="9.5"
-                 y="6" />
-          </svg>
-          <span class="color-legend-value">Valid Op</span>
-        </div>
-        <div class="color-legend-row">
-          <svg class="icon" preserveAspectRatio="xMinYMid meet"
-               viewBox="0 0 10 10">
-            <use xlink:href="#op-node-stamp" fill="#db4437" stroke="#ccc" x="9.5"
-                 y="6" />
-          </svg>
-          <span class="color-legend-value">Invalid Op</span>
-        </div>
-      </div>
-    </template>
-    <template is="dom-if" if="[[_statsNotNull(stats)]]">
-      <div class="color-legend-row">
-        <svg>
-          <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                xlink:href="#faded-rect" x="0" y="0"/>
-        </svg>
-        <span class="color-legend-value">unused substructure</span>
-      </div>
+      </template>
     </template>
   </div>
 </div>
@@ -1168,6 +1202,9 @@ Polymer({
     return !datasets[_selectedRunIndex] ||
         !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
         !datasets[_selectedRunIndex].tags[_selectedTagIndex].conceptualGraph;
+  },
+  _isColorSelectionEnabled(selection) {
+    return selection.type !== tf.graph.SelectionType.CONCEPTUAL_GRAPH;
   },
 });
 })(); // Closing private scope.
