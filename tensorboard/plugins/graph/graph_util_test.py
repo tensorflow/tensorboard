@@ -102,7 +102,31 @@ class GraphUtilTest(tf.test.TestCase):
         expected_proto,
         graph_util.combine_graph_defs(graph_def_a, graph_def_b))
 
-  def test_combine_graph_defs_name_collided(self):
+  def test_combine_graph_defs_name_collided_but_same_content(self):
+    expected_proto = '''
+      node {
+        name: "X"
+        op: "Input"
+      }
+      node {
+        name: "W"
+        op: "Input"
+      }
+      node {
+        name: "Y"
+        op: "MatMul"
+        input: "X"
+        input: "W"
+      }
+      node {
+        name: "A"
+        op: "Input"
+      }
+      versions {
+        producer: 21
+      }
+    '''
+
     graph_def_a = GraphDef()
     text_format.Merge('''
       node {
@@ -131,6 +155,48 @@ class GraphUtilTest(tf.test.TestCase):
         op: "Input"
       }
       node {
+        name: "A"
+        op: "Input"
+      }
+      versions {
+        producer: 21
+      }
+    ''', graph_def_b)
+
+    self.assertProtoEquals(
+        expected_proto,
+        graph_util.combine_graph_defs(graph_def_a, graph_def_b))
+
+  def test_combine_graph_defs_name_collided_differnt_content(self):
+    graph_def_a = GraphDef()
+    text_format.Merge('''
+      node {
+        name: "X"
+        op: "Input"
+      }
+      node {
+        name: "W"
+        op: "Input"
+      }
+      node {
+        name: "Y"
+        op: "MatMul"
+        input: "X"
+        input: "W"
+      }
+      versions {
+        producer: 21
+      }
+    ''', graph_def_a)
+
+    graph_def_b = GraphDef()
+    text_format.Merge('''
+      node {
+        name: "X"
+        op: "Input"
+        device: "cpu:0"
+      }
+      node {
         name: "Z"
         op: "Input"
       }
@@ -145,7 +211,276 @@ class GraphUtilTest(tf.test.TestCase):
       }
     ''', graph_def_b)
 
-    with six.assertRaisesRegex(self, ValueError, r'node names collide: X'):
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        r'Cannot combine GraphDefs because nodes share a name but are different. X'):
+      graph_util.combine_graph_defs(graph_def_a, graph_def_b)
+
+  def test_combine_graph_defs_function(self):
+    expected_proto = '''
+      library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+        function {
+          signature {
+            name: "foo_1"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+      }
+    '''
+
+    graph_def_a = GraphDef()
+    text_format.Merge('''
+      library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+      }
+    ''', graph_def_a)
+
+    graph_def_b = GraphDef()
+    text_format.Merge('''
+      library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+        function {
+          signature {
+            name: "foo_1"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+      }
+    ''', graph_def_b)
+
+    self.assertProtoEquals(
+        expected_proto,
+        graph_util.combine_graph_defs(graph_def_a, graph_def_b))
+
+  def test_combine_graph_defs_function_collison(self):
+    graph_def_a = GraphDef()
+    text_format.Merge('''
+      library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+      }
+    ''', graph_def_a)
+
+    graph_def_b = GraphDef()
+    text_format.Merge('''
+      library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "div"
+            op: "Div"
+            input: "x"
+            input: "y"
+          }
+        }
+        function {
+          signature {
+            name: "foo_1"
+            input_arg {
+              name: "x"
+              type: DT_HALF
+            }
+            output_arg {
+              name: "identity"
+              type: DT_HALF
+            }
+          }
+          node_def {
+            name: "add"
+            op: "Add"
+            input: "x"
+            input: "y"
+          }
+        }
+      }
+    ''', graph_def_b)
+
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        r'Cannot combine GraphDefs because functions share a name but are different. foo'):
+      graph_util.combine_graph_defs(graph_def_a, graph_def_b)
+
+  def test_combine_graph_defs_gradient(self):
+    expected_proto = '''
+      library {
+        gradient {
+          function_name: "foo"
+          gradient_func: "foo_grad"
+        }
+        gradient {
+          function_name: "bar"
+          gradient_func: "bar_grad"
+        }
+      }
+    '''
+
+    graph_def_a = GraphDef()
+    text_format.Merge('''
+      library {
+        gradient {
+          function_name: "foo"
+          gradient_func: "foo_grad"
+        }
+      }
+    ''', graph_def_a)
+
+    graph_def_b = GraphDef()
+    text_format.Merge('''
+      library {
+        gradient {
+          function_name: "foo"
+          gradient_func: "foo_grad"
+        }
+        gradient {
+          function_name: "bar"
+          gradient_func: "bar_grad"
+        }
+      }
+    ''', graph_def_b)
+
+    self.assertProtoEquals(
+        expected_proto,
+        graph_util.combine_graph_defs(graph_def_a, graph_def_b))
+
+  def test_combine_graph_defs_function_collison(self):
+    graph_def_a = GraphDef()
+    text_format.Merge('''
+      library {
+        gradient {
+          function_name: "foo"
+          gradient_func: "foo_grad"
+        }
+      }
+    ''', graph_def_a)
+
+    graph_def_b = GraphDef()
+    text_format.Merge('''
+      library {
+        gradient {
+          function_name: "bar"
+          gradient_func: "bar_grad"
+        }
+        gradient {
+          function_name: "foo_1"
+          gradient_func: "foo_grad"
+        }
+      }
+    ''', graph_def_b)
+
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        r' share a gradient_func name but maps to a different function. foo_grad'):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
 

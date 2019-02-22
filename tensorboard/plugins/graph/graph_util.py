@@ -15,12 +15,33 @@
 """Utilities for graph plugin."""
 from tensorboard.compat.proto import function_pb2
 
+def _is_present(key_to_proto, proto, get_key, error_msg):
+  """Checks for key in a dict and raises if content in the dict differ from proto.
+
+  Args:
+    key_to_proto: A dict that maps key to a proto.
+    proto: A proto.
+    get_key: A lambda that returns a string key from a proto.
+    error_msg: Error message.
+
+  Raises:
+    ValueError when there is the key in the dict but contents mismatch.
+
+  Returns:
+    True if key from proto is present in the key_to_proto.
+  """
+  key = get_key(proto)
+  if key in key_to_proto and proto != key_to_proto.get(key):
+    raise ValueError(error_msg + ': %s' % key)
+  return key in key_to_proto
+
 
 def combine_graph_defs(to_proto, from_proto):
   """Combines two GraphDefs by adding nodes from from_proto into to_proto.
 
   All GraphDefs are expected to be of TensorBoard's.
-  It assumes node names are unique across GraphDefs.
+  It assumes node names are unique across GraphDefs if contents differ. The
+  names can be the same if the NodeDef content are exactly the same.
 
   Args:
     to_proto: A destination TensorBoard GraphDef.
@@ -32,25 +53,41 @@ def combine_graph_defs(to_proto, from_proto):
   if from_proto.version != to_proto.version:
     raise ValueError('Cannot combine GraphDefs of different versions.')
 
-  node_names = set([node.name for node in to_proto.node])
+  node_name_to_nodedef = {}
+  for node in to_proto.node:
+    node_name_to_nodedef[node.name] = node
+
+  func_name_to_func = {}
+  for func in to_proto.library.function:
+    func_name_to_func[func.signature.name] = func
+
+  gradient_name_to_def = {}
+  for gradient_def in to_proto.library.gradient:
+    gradient_name_to_def[gradient_def.gradient_func] = gradient_def
 
   for from_node in from_proto.node:
-    if from_node.name in node_names:
-      raise ValueError(
-          'Cannot combine GraphDefs when node names collide: %s' % from_node.name)
+    if not _is_present(
+        node_name_to_nodedef,
+        from_node,
+        lambda n: n.name,
+        'Cannot combine GraphDefs because nodes share a name but are different'):
+      to_proto.node.add().CopyFrom(from_node)
 
-    to_node = to_proto.node.add()
-    to_node.CopyFrom(from_node)
+  for from_function in from_proto.library.function:
+    if not _is_present(
+        func_name_to_func,
+        from_function,
+        lambda f: f.signature.name,
+        'Cannot combine GraphDefs because functions share a name but are different'):
+      to_proto.library.function.add().CopyFrom(from_function)
 
-  if from_proto.library:
-    if not to_proto.library:
-      to_proto.library = function_pb2.FunctionDefLibrary()
-
-    for from_function in from_proto.library.function:
-      to_function = to_proto.library.function.add()
-      to_function.CopyFrom(from_function)
-    for from_gradient in from_proto.library.gradient:
-      to_gradient = to_proto.library.gradient.add()
-      to_gradient.CopyFrom(from_gradient)
+  for from_gradient in from_proto.library.gradient:
+    if not _is_present(
+        gradient_name_to_def,
+        from_gradient,
+        lambda g: g.gradient_func,
+        ('Cannot combine GraphDefs because gradients share a gradient_func name '
+        'but maps to a different function')):
+      to_proto.library.gradient.add().CopyFrom(from_gradient)
 
   return to_proto
