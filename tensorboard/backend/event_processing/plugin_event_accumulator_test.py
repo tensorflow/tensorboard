@@ -558,8 +558,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     directory = os.path.join(self.get_temp_dir(), 'values_dir')
     if tf.io.gfile.isdir(directory):
-      os.removedirs(directory)
-    os.mkdir(directory)
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 
@@ -636,8 +636,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     directory = os.path.join(self.get_temp_dir(), 'metagraph_test_values_dir')
     if tf.io.gfile.isdir(directory):
-      os.removedirs(directory)
-    os.mkdir(directory)
+      tf.io.gfile.rmtree(directory)
+    tf.io.gfile.mkdir(directory)
 
     writer = test_util.FileWriter(directory, max_queue=100)
 

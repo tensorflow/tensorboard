@@ -33,7 +33,6 @@ from google.protobuf import text_format
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
-from tensorboard.compat import tf as tf_compat
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import projector_config_pb2
 from tensorboard.plugins.projector import projector_plugin
@@ -57,10 +56,7 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
     run_json = self._GetJson('/data/plugin/projector/runs')
-    if tf_compat.__version__ != 'stub':
-        self.assertTrue(run_json)
-    else:
-        self.assertFalse(run_json)
+    self.assertTrue(run_json)
 
   def testRunsWithNoCheckpoint(self):
     self._SetupWSGIApp()
@@ -89,26 +85,24 @@ class ProjectorAppTest(tf.test.TestCase):
     self._SetupWSGIApp()
 
     run_json = self._GetJson('/data/plugin/projector/runs')
-    if tf_compat.__version__ != 'stub':
-        self.assertEqual(run_json, [])
+    self.assertEqual(run_json, [])
 
   def testInfoWithValidCheckpointNoEventsData(self):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    if tf_compat.__version__ != 'stub':
-        info_json = self._GetJson('/data/plugin/projector/info?run=.')
-        self.assertItemsEqual(info_json['embeddings'], [{
-            'tensorShape': [1, 2],
-            'tensorName': 'var1',
-            'bookmarksPath': 'bookmarks.json'
-        }, {
-            'tensorShape': [10, 10],
-            'tensorName': 'var2'
-        }, {
-            'tensorShape': [100, 100],
-            'tensorName': 'var3'
-        }])
+    info_json = self._GetJson('/data/plugin/projector/info?run=.')
+    self.assertItemsEqual(info_json['embeddings'], [{
+        'tensorShape': [1, 2],
+        'tensorName': 'var1',
+        'bookmarksPath': 'bookmarks.json'
+    }, {
+        'tensorShape': [10, 10],
+        'tensorName': 'var2'
+    }, {
+        'tensorShape': [100, 100],
+        'tensorName': 'var3'
+    }])
 
   def testInfoWithValidCheckpointAndEventsData(self):
     self._GenerateProjectorTestData()
@@ -116,33 +110,29 @@ class ProjectorAppTest(tf.test.TestCase):
     self._SetupWSGIApp()
 
     run_json = self._GetJson('/data/plugin/projector/runs')
-    if tf_compat.__version__ != 'stub':
-        self.assertTrue(run_json)
-        run = run_json[0]
-        info_json = self._GetJson('/data/plugin/projector/info?run=%s' % run)
-        self.assertItemsEqual(info_json['embeddings'], [{
-            'tensorShape': [1, 2],
-            'tensorName': 'var1',
-            'bookmarksPath': 'bookmarks.json'
-        }, {
-            'tensorShape': [10, 10],
-            'tensorName': 'var2'
-        }, {
-            'tensorShape': [100, 100],
-            'tensorName': 'var3'
-        }])
-    else:
-        self.assertFalse(run_json)
+    self.assertTrue(run_json)
+    run = run_json[0]
+    info_json = self._GetJson('/data/plugin/projector/info?run=%s' % run)
+    self.assertItemsEqual(info_json['embeddings'], [{
+        'tensorShape': [1, 2],
+        'tensorName': 'var1',
+        'bookmarksPath': 'bookmarks.json'
+    }, {
+        'tensorShape': [10, 10],
+        'tensorName': 'var2'
+    }, {
+        'tensorShape': [100, 100],
+        'tensorName': 'var3'
+    }])
 
   def testTensorWithValidCheckpoint(self):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    if tf_compat.__version__ != 'stub':
-        url = '/data/plugin/projector/tensor?run=.&name=var1'
-        tensor_bytes = self._Get(url).data
-        expected_tensor = np.array([[6, 6]], dtype=np.float32)
-        self._AssertTensorResponse(tensor_bytes, expected_tensor)
+    url = '/data/plugin/projector/tensor?run=.&name=var1'
+    tensor_bytes = self._Get(url).data
+    expected_tensor = np.array([[6, 6]], dtype=np.float32)
+    self._AssertTensorResponse(tensor_bytes, expected_tensor)
 
   def testBookmarksRequestMissingRunAndName(self):
     self._GenerateProjectorTestData()
@@ -183,10 +173,9 @@ class ProjectorAppTest(tf.test.TestCase):
     self._GenerateProjectorTestData()
     self._SetupWSGIApp()
 
-    if tf_compat.__version__ != 'stub':
-        url = '/data/plugin/projector/bookmarks?run=.&name=var1'
-        bookmark = self._GetJson(url)
-        self.assertEqual(bookmark, {'a': 'b'})
+    url = '/data/plugin/projector/bookmarks?run=.&name=var1'
+    bookmark = self._GetJson(url)
+    self.assertEqual(bookmark, {'a': 'b'})
 
   def testEndpointsNoAssets(self):
     g = tf.Graph()
@@ -224,14 +213,13 @@ class ProjectorAppTest(tf.test.TestCase):
 
     self.plugin._thread_for_determining_is_active.run()
 
-    if tf_compat.__version__ != 'stub':
-        # The plugin later finds that embedding data is available.
-        self.assertTrue(self.plugin.is_active())
+    # The plugin later finds that embedding data is available.
+    self.assertTrue(self.plugin.is_active())
 
-        # Subsequent calls to is_active should not start a new thread. The mock
-        # should only have been called once throughout this test.
-        self.assertTrue(self.plugin.is_active())
-        mock.assert_called_once_with(thread)
+    # Subsequent calls to is_active should not start a new thread. The mock
+    # should only have been called once throughout this test.
+    self.assertTrue(self.plugin.is_active())
+    mock.assert_called_once_with(thread)
 
   def testPluginIsNotActive(self):
     self._SetupWSGIApp()
