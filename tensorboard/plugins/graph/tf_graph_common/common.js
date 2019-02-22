@@ -12,3 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+var tf;
+(function (tf) {
+    var graph;
+    (function (graph) {
+        // Note that tf-graph-control depends on the value of the enum.
+        // Polymer does not let one use JS variable as a prop.
+        var SelectionType;
+        (function (SelectionType) {
+            SelectionType["OP_GRAPH"] = "op_graph";
+            SelectionType["CONCEPTUAL_GRAPH"] = "conceptual_graph";
+            SelectionType["PROFILE"] = "profile";
+        })(SelectionType = graph.SelectionType || (graph.SelectionType = {}));
+        ;
+    })(graph = tf.graph || (tf.graph = {}));
+})(tf || (tf = {})); // namespace tf.graph
