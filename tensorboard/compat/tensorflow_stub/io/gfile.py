@@ -179,7 +179,7 @@ class S3FileSystem(object):
 
     def join(self, path, *paths):
         """Join paths with a slash."""
-        return path + "/" + "/".join(paths)
+        return "/".join([path] + paths)
 
     def read(self, filename, binary_mode=False, size=None, offset=None):
         """Reads contents of a file to a string.
