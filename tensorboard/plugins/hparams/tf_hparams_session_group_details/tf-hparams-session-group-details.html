@@ -108,6 +108,15 @@ clicks on a row in table-view or a curve in parallel-coords view.
           value: false
         },
 
+        // A Map mapping each of the sessionGroup's session's name
+        // to its index in the group. Used by '_colorScale' to choose the color
+        // of the plot of each session.
+        _indexOfSession: Object,
+
+        // A tf.hparams.utils.stringHash of sessionGroup.name. Used in
+        // '_colorScale'.
+        _sessionGroupNameHash: Number,
+
         _requestData: {
           type: Function,
           value: function() {
@@ -207,9 +216,26 @@ clicks on a row in table-view or a curve in parallel-coords view.
         'iron-resize': 'redraw',
       },
 
+      observers: [
+        '_sessionGroupChanged(sessionGroup.*)',
+      ],
+
       redraw() {
         Polymer.dom(this.root).querySelectorAll(".scalar-card").forEach(
             c=>c.redraw());
+      },
+
+      _sessionGroupChanged() {
+        if (!this.sessionGroup) {
+          this._indexOfSession = new Map();
+          this._sessionGroupNameHash = 0;
+        } else {
+          this._indexOfSession = new Map(
+              this.sessionGroup.sessions.map(
+                  (session, index)=>[session.name, index]));
+          this._sessionGroupNameHash = tf.hparams.utils.stringHash(
+              this.sessionGroup.name);
+        }
       },
 
       _haveMetrics() {
@@ -220,6 +246,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
 
       _haveMetricsAndSessionGroup() {
         return this.sessionGroup && this._haveMetrics();
+
       },
 
       // Returns an array of the tensorboard 'runs' and 'tags' corresponding to
@@ -256,11 +283,22 @@ clicks on a row in table-view or a curve in parallel-coords view.
       },
 
       _colorScale() {
+        const palette = tf_color_scale.standard;
         return {
-          scale: function(name) {
-            const palette = tf_color_scale.standard;
-            const hash = tf.hparams.utils.stringHash;
-            return palette[hash(name) % palette.length];
+          scale: (seriesName) => {
+            // The color of a session is determined by choosing a
+            // starting point in 'palette' based on the sessionGroup name and
+            // walking cyclicly 'sessionIndex' steps in the array, where
+            // sesionIndex is the index of the session in the
+            // group. We do this instead of just hashing the session name,
+            // to guarantee that we don't repeat a color if the number
+            // of sessions is at most the size of the palette.
+            // Note that this method is called every time the user moves
+            // over the metric plot, so it needs to be reasonably fast.
+            const sessionName = JSON.parse(seriesName)[1];
+            const sessionIndex = this._indexOfSession.get(sessionName);
+            return palette[(this._sessionGroupNameHash + sessionIndex)
+                           % palette.length];
           }
         };
       }

@@ -378,7 +378,7 @@ var tf;
       function stringHash(str) {
         let result = 0;
         for (let i = 0; i < str.length ;++i) {
-          result = ((result << 5) + str.charCodeAt(i)) & 0xFFFFFFFF;
+          result = (result*31 + str.charCodeAt(i)) & 0xFFFFFFFF;
         }
         // Bitwise operations in JavaScript convert operands to 32-bit 2's
         // complement representation in the range [-2**31,(2**31)-1]. Shift it

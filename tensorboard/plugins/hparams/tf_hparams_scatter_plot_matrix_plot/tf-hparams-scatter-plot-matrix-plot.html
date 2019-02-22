@@ -137,7 +137,8 @@ the vulcanization build step. Figure out why.
 
       observers: [
         '_sessionGroupsChanged(sessionGroups.*)',
-        '_schemaOrOptionsChanged(schema.*, options.*)',
+        '_schemaChanged(schema.*)',
+        '_redraw(options.*)',
       ],
 
       ready() {
@@ -160,7 +161,7 @@ the vulcanization build step. Figure out why.
         this._redraw();
       },
 
-      _schemaOrOptionsChanged() {
+      _schemaChanged() {
         this._brushedCellIndex = null;
         this._brushSelection = null;
         this._redraw();

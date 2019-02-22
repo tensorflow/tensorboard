@@ -154,11 +154,17 @@ limitations under the License.
           value: null
         },
 
+        // An array whose ith entry is the column index corresponding to
+        // the ith displayed axis from the left (i.e axis 0 is the leftmost
+        // axis) .
         _cols: {
           type: Array,
           value: [],
         },
 
+        // An array whose ith entry contains the brush selection of the axis
+        // corresponding to the column with index i or null if that axis does
+        // not have an active brush selection.
         _brushSelections: {
           type: Array,
           value: [],
@@ -167,7 +173,8 @@ limitations under the License.
 
       observers: [
         '_sessionGroupsChanged(sessionGroups.*)',
-        '_schemaOrOptionsChanged(schema.*, options.*)',
+        '_schemaChanged(schema.*)',
+        '_redraw(options.*)',
       ],
 
       ready() {
@@ -194,7 +201,7 @@ limitations under the License.
         this._redraw();
       },
 
-      _schemaOrOptionsChanged() {
+      _schemaChanged() {
         this._cols = d3.range(this._numCols());
         this._brushSelections = this._cols.map(c=>null);
         this._redraw();
