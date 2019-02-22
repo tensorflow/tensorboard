@@ -4154,8 +4154,10 @@ limitations under the License.
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
           }
           else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
-            this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
-            if (this.numModels > 1) {
+            if (this.numModels == 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 0);
+            } else {
+              this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
               this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
             }
           }
