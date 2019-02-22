@@ -112,7 +112,12 @@ class GraphsPluginTest(tf.test.TestCase):
         'run': 'w_graph_w_meta',
         'run_graph': True,
         'tags': {
-          'secret-stats': {'conceptual_graph': False, 'profile': True, 'tag': 'secret-stats', 'op_graph': False},
+          'secret-stats': {
+            'conceptual_graph': False,
+            'profile': True,
+            'tag': 'secret-stats',
+            'op_graph': False,
+          },
         },
       },
       'w_graph_wo_meta': {
@@ -124,7 +129,12 @@ class GraphsPluginTest(tf.test.TestCase):
         'run': 'wo_graph_w_meta',
         'run_graph': False,
         'tags': {
-          'secret-stats': {'conceptual_graph': False, 'profile': True, 'tag': 'secret-stats', 'op_graph': False},
+          'secret-stats': {
+            'conceptual_graph': False,
+            'profile': True,
+            'tag': 'secret-stats',
+            'op_graph': False,
+          },
         },
       },
     }
