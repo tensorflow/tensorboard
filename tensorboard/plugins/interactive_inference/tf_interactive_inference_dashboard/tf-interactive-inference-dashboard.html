@@ -4380,7 +4380,7 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeAsyncRequest_: function(url, thenDoFn, postData){
+      makeAsyncRequest_: function(url, thenDoFn, postData, errorFn) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -4389,6 +4389,9 @@ limitations under the License.
             // show toast with the error
             this.showToast_(result.value.error);
             this.$.spinner.hidden = true;
+            if (errorFn != null) {
+              errorFn();
+            }
           } else if (thenDoFn) {
             thenDoFn(result);
           }
@@ -4398,6 +4401,9 @@ limitations under the License.
               this.exampleStatusStr = 'Request failed';
               this.showToast_('Request failed: ' + reason);
               this.$.spinner.hidden = true;
+              if (errorFn != null) {
+                errorFn();
+              }
             });
       },
 
@@ -5023,10 +5029,13 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeChartForFeature: function(chartType, featureName, data) {
-        // Delete spinner
+      deletePdPlotSpinner: function(featureName) {
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
+      },
+
+      makeChartForFeature: function(chartType, featureName, data) {
+        this.deletePdPlotSpinner(featureName);
         // A separate chart per feature index for features with multiple values
         data.forEach(
           subfeature => this.addChart(chartType, featureName, subfeature));
@@ -5067,11 +5076,14 @@ limitations under the License.
         if (!this.local) {
           const url = tf_backend.addParams(
             '/data/plugin/whatif/infer_mutants', urlParams);
-          const chartMakerCallback = function(result){
+          const chartMakerCallback = result =>
             this.makeChartForFeature(
               result.value.chartType, featureName, result.value.data);
-          };
-          this.makeAsyncRequest_(url, chartMakerCallback.bind(this), null);
+          const chartErrorCallback = () =>
+            this.handleChartErrorForFeature(featureName);
+          this.makeAsyncRequest_(
+            url, chartMakerCallback.bind(this), null,
+            chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5082,6 +5094,17 @@ limitations under the License.
         const spinner = document.createElement('paper-spinner-lite');
         spinner.setAttribute('active', true);
         Polymer.dom(container).appendChild(spinner);
+      },
+
+      handleChartErrorForFeature: function(featureName) {
+        // Remove the feature from pending queue, so it can be called again.
+        const featureInd =
+          this.partialDepPlotPendingFeatures.indexOf(featureName);
+        if (featureInd > -1) {
+          this.partialDepPlotPendingFeatures.splice(featureInd, 1);
+        }
+        // Delete the spinner.
+        this.deletePdPlotSpinner(featureName);
       },
 
       shouldHideFeatureIndiciesSelector: function(featureName, selected) {
