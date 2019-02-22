@@ -205,7 +205,6 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_assets",
         "@com_google_fonts_roboto",
     ],
 )

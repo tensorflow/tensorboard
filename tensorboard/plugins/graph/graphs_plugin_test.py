@@ -48,7 +48,10 @@ class GraphsPluginTest(tf.test.TestCase):
     self.logdir = None
     self.plugin = None
 
-  def generate_run(self, run_name, include_graph):
+  def setUp(self):
+    self.logdir = self.get_temp_dir()
+
+  def generate_run(self, run_name, include_graph, include_run_metadata):
     """Create a run with a text summary, metadata, and optionally a graph."""
     tf.compat.v1.reset_default_graph()
     k1 = tf.constant(math.pi, name='k1')
@@ -73,15 +76,22 @@ class GraphsPluginTest(tf.test.TestCase):
     run_metadata = config_pb2.RunMetadata()
     s = sess.run(summary_message, options=options, run_metadata=run_metadata)
     writer.add_summary(s)
-    writer.add_run_metadata(run_metadata, self._METADATA_TAG)
+    if include_run_metadata:
+      writer.add_run_metadata(run_metadata, self._METADATA_TAG)
     writer.close()
 
   def set_up_with_runs(self, with_graph=True, without_graph=True):
-    self.logdir = self.get_temp_dir()
     if with_graph:
-      self.generate_run(self._RUN_WITH_GRAPH, include_graph=True)
+      self.generate_run(self._RUN_WITH_GRAPH,
+                        include_graph=True,
+                        include_run_metadata=True)
     if without_graph:
-      self.generate_run(self._RUN_WITHOUT_GRAPH, include_graph=False)
+      self.generate_run(self._RUN_WITHOUT_GRAPH,
+                        include_graph=False,
+                        include_run_metadata=True)
+    self.bootstrap_plugin()
+
+  def bootstrap_plugin(self):
     multiplexer = event_multiplexer.EventMultiplexer()
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
@@ -90,23 +100,60 @@ class GraphsPluginTest(tf.test.TestCase):
 
   def testRoutesProvided(self):
     """Tests that the plugin offers the correct routes."""
-    self.set_up_with_runs(with_graph=True, without_graph=False)
+    self.set_up_with_runs()
     routes = self.plugin.get_plugin_apps()
     self.assertIsInstance(routes['/graph'], collections.Callable)
-    self.assertIsInstance(routes['/runs'], collections.Callable)
     self.assertIsInstance(routes['/run_metadata'], collections.Callable)
-    self.assertIsInstance(routes['/run_metadata_tags'], collections.Callable)
+    self.assertIsInstance(routes['/info'], collections.Callable)
 
-  def test_index(self):
-    self.set_up_with_runs()
-    self.assertItemsEqual([self._RUN_WITH_GRAPH], self.plugin.index_impl())
+  def test_info(self):
+    expected = {
+      'w_graph_w_meta': {
+        'run': 'w_graph_w_meta',
+        'run_graph': True,
+        'tags': {
+          'secret-stats': {
+            'conceptual_graph': False,
+            'profile': True,
+            'tag': 'secret-stats',
+            'op_graph': False,
+          },
+        },
+      },
+      'w_graph_wo_meta': {
+        'run': 'w_graph_wo_meta',
+        'run_graph': True,
+        'tags': {},
+      },
+      'wo_graph_w_meta': {
+        'run': 'wo_graph_w_meta',
+        'run_graph': False,
+        'tags': {
+          'secret-stats': {
+            'conceptual_graph': False,
+            'profile': True,
+            'tag': 'secret-stats',
+            'op_graph': False,
+          },
+        },
+      },
+    }
 
-  def test_run_metadata_index(self):
-    self.set_up_with_runs()
-    self.assertDictEqual({
-        self._RUN_WITH_GRAPH: [self._METADATA_TAG],
-        self._RUN_WITHOUT_GRAPH: [self._METADATA_TAG],
-    }, self.plugin.run_metadata_index_impl())
+    self.generate_run('w_graph_w_meta',
+                      include_graph=True,
+                      include_run_metadata=True)
+    self.generate_run('w_graph_wo_meta',
+                      include_graph=True,
+                      include_run_metadata=False)
+    self.generate_run('wo_graph_w_meta',
+                      include_graph=False,
+                      include_run_metadata=True)
+    self.generate_run('wo_graph_wo_meta',
+                      include_graph=False,
+                      include_run_metadata=False)
+    self.bootstrap_plugin()
+
+    self.assertItemsEqual(expected, self.plugin.info_impl())
 
   def _get_graph(self, *args, **kwargs):
     """Set up runs, then fetch and return the graph as a proto."""
@@ -146,17 +193,33 @@ class GraphsPluginTest(tf.test.TestCase):
     text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
     # If it parses, we're happy.
 
-  def test_is_active_with_graph(self):
-    self.set_up_with_runs(with_graph=True, without_graph=False)
+  def test_is_active_with_graph_without_run_metadata(self):
+    self.generate_run('w_graph_wo_meta',
+                      include_graph=True,
+                      include_run_metadata=False)
+    self.bootstrap_plugin()
     self.assertTrue(self.plugin.is_active())
 
-  def test_is_active_without_graph(self):
-    self.set_up_with_runs(with_graph=False, without_graph=True)
-    self.assertFalse(self.plugin.is_active())
+  def test_is_active_without_graph_with_run_metadata(self):
+    self.generate_run('wo_graph_w_meta',
+                      include_graph=False,
+                      include_run_metadata=True)
+    self.bootstrap_plugin()
+    self.assertTrue(self.plugin.is_active())
 
   def test_is_active_with_both(self):
-    self.set_up_with_runs(with_graph=True, without_graph=True)
+    self.generate_run('w_graph_w_meta',
+                      include_graph=True,
+                      include_run_metadata=True)
+    self.bootstrap_plugin()
     self.assertTrue(self.plugin.is_active())
+
+  def test_is_active_without_both(self):
+    self.generate_run('wo_graph_wo_meta',
+                      include_graph=False,
+                      include_run_metadata=False)
+    self.bootstrap_plugin()
+    self.assertFalse(self.plugin.is_active())
 
 
 if __name__ == '__main__':

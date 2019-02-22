@@ -18,14 +18,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 _PLUGIN_PREFIX_ROUTE = 'graphs'
+
+# The Summary API is implemented in TensorFlow because it uses TensorFlow internal APIs.
+# As a result, this SummaryMetadata is a bit unconventional and uses non-public
+# hardcoded name as the plugin name. Please refer to link below for the summary ops.
+# https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L788
+_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_graph'
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
@@ -44,28 +54,59 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return {
         '/graph': self.graph_route,
-        '/runs': self.runs_route,
+        '/info': self.info_route,
         '/run_metadata': self.run_metadata_route,
-        '/run_metadata_tags': self.run_metadata_tags_route,
     }
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.index_impl())
+    return bool(self._multiplexer and self.info_impl())
 
-  def index_impl(self):
-    """Returns a list of all runs that have a graph."""
-    return [run_name
-            for (run_name, run_data) in self._multiplexer.Runs().items()
-            if run_data.get(event_accumulator.GRAPH)]
+  def info_impl(self):
+    """Returns a dict of all runs and tags and their data availabilities."""
+    result = {}
+    def add_row_item(run, tag=None):
+      run_item = result.setdefault(run, {
+          'run': run,
+          'tags': {},
+          # A run-wide GraphDef of ops.
+          'run_graph': False})
 
-  def run_metadata_index_impl(self):
-    """Returns a run-to-tag mapping for metadata."""
-    return {
-        run_name: run_data[event_accumulator.RUN_METADATA]
-        for (run_name, run_data) in self._multiplexer.Runs().items()
-        if event_accumulator.RUN_METADATA in run_data
-    }
+      tag_item = None
+      if tag:
+        tag_item = run_item.get('tags').setdefault(tag, {
+            'tag': tag,
+            'conceptual_graph': False,
+            # A tagged GraphDef of ops.
+            'op_graph': False,
+            'profile': False})
+      return (run_item, tag_item)
+
+    mapping = self._multiplexer.PluginRunToTagToContent(
+        _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH)
+    for (run_name, tag_to_content) in six.iteritems(mapping):
+      for (tag, content) in six.iteritems(tag_to_content):
+        # The Summary op is defined in TensorFlow and does not use a stringified proto
+        # as a content of plugin data. It contains single string that denotes a version.
+        # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
+        if content is not '1':
+          logger.warn('Ignoring unrecognizable version of RunMetadata.')
+          continue
+        (_, tag_item) = add_row_item(run_name, tag)
+        tag_item['op_graph'] = True
+
+    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
+      if run_data.get(event_accumulator.GRAPH):
+        (run_item, _) = add_row_item(run_name, None)
+        run_item['run_graph'] = True
+
+    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
+      if event_accumulator.RUN_METADATA in run_data:
+        for tag in run_data[event_accumulator.RUN_METADATA]:
+          (_, tag_item) = add_row_item(run_name, tag)
+          tag_item['profile'] = True
+
+    return result
 
   def graph_impl(self, run, limit_attr_size=None, large_attrs_key=None):
     """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
@@ -87,14 +128,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
     return (str(run_metadata), 'text/x-protobuf')  # pbtxt
 
   @wrappers.Request.application
-  def runs_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
-
-  @wrappers.Request.application
-  def run_metadata_tags_route(self, request):
-    index = self.run_metadata_index_impl()
-    return http_util.Respond(request, index, 'application/json')
+  def info_route(self, request):
+    meta = self.info_impl()
+    return http_util.Respond(request, meta, 'application/json')
 
   @wrappers.Request.application
   def graph_route(self, request):
