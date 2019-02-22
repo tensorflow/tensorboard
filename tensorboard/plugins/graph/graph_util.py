@@ -32,10 +32,7 @@ def combine_graph_defs(to_proto, from_proto):
   if from_proto.version != to_proto.version:
     raise ValueError('Cannot combine GraphDefs of different versions.')
 
-  node_names = {}
-
-  for node in to_proto.node:
-    node_names[node.name] = True
+  node_names = set([node.name for node in to_proto.node])
 
   for from_node in from_proto.node:
     if from_node.name in node_names:
