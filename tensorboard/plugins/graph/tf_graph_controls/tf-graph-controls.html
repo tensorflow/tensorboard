@@ -865,6 +865,9 @@ Polymer({
       value: 0,
       observer: '_selectedTagIndexChanged',
     },
+    /**
+     * @type {tf.graph.SelectionType}
+     */
     _selectedGraphType: {
       type: String,
       value: tf.graph.SelectionType.OP_GRAPH,
