@@ -46,18 +46,14 @@ limitations under the License.
         font-size: 10px;
         vertical-align: bottom;
       }
-      .correct {
-        border-left: 3px solid DarkSeaGreen;
-      }
-      .incorrect {
-        border-left: 3px solid lightcoral;
-      }
-      .blank {
-        background: darkgray;
+      .value-cell {
+        font-size: 14px;
+        color: #202124;
+        border: 1px solid lightgrey;
       }
       .parenthetical {
         padding-right: 5px;
-        color: gray;
+        color: #3C4043;
         width: 50px;
       }
     </style>
@@ -83,6 +79,13 @@ limitations under the License.
 
         // Label appears in top-right corner of confusion matrix.
         label: String,
+
+        // Color string for the base color to make the matrix cell
+        // backgrounds.
+        background: {
+          type: Object,
+          value: d3.color('gray'),
+        },
       },
 
       ready: function() {
@@ -198,12 +201,8 @@ limitations under the License.
           .append('td').attr('class', (d, i) => {
             if (i == 0) {
               return 'actual-label';
-            } else if (d.value == 0) {
-              return '';
-            } else if (i - 1 == d.row) {
-              return 'correct';
             } else if (i <= countMatrix.length) {
-              return 'incorrect';
+              return 'value-cell';
             } else {
               return '';
             }
@@ -211,7 +210,7 @@ limitations under the License.
             if (i == 0 || i > countMatrix.length) {
               return '#FFFFFF';
             } else {
-              let c = d3.color('darkgrey');
+              let c = this.background;
               c.opacity = d.value / total;
               return c + '';
             }
