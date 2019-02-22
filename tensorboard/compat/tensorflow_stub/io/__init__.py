@@ -17,7 +17,4 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# Set this in tensorboard/compat/tensorflow_stub/__init__.py to eliminate
-# any cycles on import
-#
-# from tensorboard.compat.tensorflow_stub import pywrap_tensorflow  # noqa
+from . import gfile  # noqa

@@ -167,9 +167,9 @@ class CorePlugin(base_plugin.TBPlugin):
       def get_first_event_timestamp(run_name):
         try:
           return self._multiplexer.FirstEventTimestamp(run_name)
-        except ValueError:
+        except ValueError as e:
           logger.warn(
-              'Unable to get first event timestamp for run %s', run_name)
+              'Unable to get first event timestamp for run %s: %s', run_name, e)
           # Put runs without a timestamp at the end.
           return float('inf')
       run_names.sort(key=get_first_event_timestamp)
