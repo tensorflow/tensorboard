@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+from google.protobuf import text_format
+import tensorflow as tf
+
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.plugins.graph import graph_util
 from tensorflow.python.platform import test

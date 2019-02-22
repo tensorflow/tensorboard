@@ -89,5 +89,6 @@ py_test(
         ":graph_util",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )

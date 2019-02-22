@@ -14,9 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for graph plugin."""
-from tensorboard.compat.proto.graph_pb2 import GraphDef
-from tensorboard.compat.tensorflow_stub import dtypes
-
+from tensorboard.compat.proto import function_pb2
 
 def combine_graph_defs(to_proto, from_proto):
   """Combines two GraphDefs by adding nodes from from_proto into to_proto.
