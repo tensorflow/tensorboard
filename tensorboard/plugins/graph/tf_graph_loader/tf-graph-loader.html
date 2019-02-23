@@ -111,13 +111,13 @@ Polymer({
       case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
         // Clear stats about the previous graph.
         this._setOutStats(null);
+        const args = {
+          run,
+          conceptual: selectionType == tf.graph.SelectionType.CONCEPTUAL_GRAPH,
+        };
+        if (tag) args.tag = tag;
         const graphPath = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('graphs', '/graph'),
-            {
-              run,
-              tag,
-              conceptual: selectionType == tf.graph.SelectionType.CONCEPTUAL_GRAPH,
-            });
+            tf_backend.getRouter().pluginRoute('graphs', '/graph'), args);
         return this._fetchAndConstructHierarchicalGraph(
             graphPath, null, overridingHierarchyParams).then(() => {
               this._graphRunTag = {run, tag};
