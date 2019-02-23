@@ -1458,7 +1458,7 @@ limitations under the License.
                         </paper-dialog>
                       </div>
                       <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
-                        <div class="pd-no-features-text">The loaded dataset has no features to display partial dependence plots.</div>
+                        <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
                       </template>
                       <div class="pdplots-holder">
                         <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
@@ -5334,7 +5334,7 @@ limitations under the License.
         let name = title;
         if (selectedExampleNum != null && selectedExampleNum != '') {
           if (comparedIndices != null && comparedIndices.length > 0) {
-          name += ' - Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
+            name += ' - Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
           }
           else {
             name += ' - Datapoint ' + selectedExampleNum;

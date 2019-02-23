@@ -31,9 +31,12 @@ from . import dtypes  # noqa
 from . import error_codes  # noqa
 from . import errors  # noqa
 from . import flags  # noqa
-from . import gfile  # noqa
+from . import io  # noqa
 from . import pywrap_tensorflow  # noqa
 from . import tensor_shape  # noqa
+
+# Set pywrap_tensorflow on v1 and avoid cycles on some imports
+compat.v1.pywrap_tensorflow = pywrap_tensorflow
 
 # Set a fake __version__ to help distinguish this as our own stub API.
 __version__ = 'stub'
