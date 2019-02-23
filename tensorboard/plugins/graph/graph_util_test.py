@@ -167,7 +167,7 @@ class GraphUtilTest(tf.test.TestCase):
         expected_proto,
         graph_util.combine_graph_defs(graph_def_a, graph_def_b))
 
-  def test_combine_graph_defs_name_collided_differnt_content(self):
+  def test_combine_graph_defs_name_collided_different_content(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       node {
@@ -407,7 +407,8 @@ class GraphUtilTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        r'Cannot combine GraphDefs because functions share a name but are different. foo'):
+        ('Cannot combine GraphDefs because functions share a name but '
+         'are different: foo')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
   def test_combine_graph_defs_gradient(self):
@@ -452,7 +453,7 @@ class GraphUtilTest(tf.test.TestCase):
         expected_proto,
         graph_util.combine_graph_defs(graph_def_a, graph_def_b))
 
-  def test_combine_graph_defs_function_collison(self):
+  def test_combine_graph_defs_gradient_collison(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       library {
@@ -480,7 +481,8 @@ class GraphUtilTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        r' share a gradient_func name but maps to a different function. foo_grad'):
+        ('share a gradient_func name but maps to a different function. '
+         'foo_grad')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
 

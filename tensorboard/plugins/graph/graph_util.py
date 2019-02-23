@@ -16,37 +16,43 @@
 from tensorboard.compat.proto import function_pb2
 
 
-def _safe_copy_proto_list_values(to_proto_list, from_proto_list, get_key, error_msg):
-  """Safely copies the value from from_proto_list to to_proto_list.
+def _safe_copy_proto_list_values(dst_proto_list, src_proto_list, get_key, error_msg):
+  """Safely copies the value from src_proto_list to dst_proto_list.
 
-  Copies if to_proto_list does not contain an item with the same key. In case an item
+  Copies if dst_proto_list does not contain an item with the same key. In case an item
   is found with the same key, it checks whether contents match and, if not, it raises
   a ValueError.
 
   Args:
-    to_proto_list: A dict that maps key to a proto.
-    proto: A proto.
-    get_key: A lambda that returns a string key from a proto.
-    error_msg: User friendly error message.
+    dst_proto_list: A `RepeatedCompositeContainer` or
+      `RepeatedScalarContainer` into which values should be copied.
+    src_proto_list: A container holding the same kind of values as in
+      `dst_proto_list` from which values should be copied.
+    get_key: A function that takes an element of `dst_proto_list` or
+      `src_proto_list` and returns a key, such that if two elements have
+      the same key then it is required that they be deep-equal. For
+      instance, if `dst_proto_list` is a list of nodes, then `get_key`
+      might be `lambda node: node.name` to indicate that if two nodes
+      have the same name then they must be the same node. All keys must
+      be hashable.
+    error_msg: A user-friendly error message to be raised in the case
+      that two nodes share a key but are distinct.
 
   Raises:
     ValueError when there is the key in the dict but contents mismatch.
-
-  Returns:
-    True if key from proto is present in the key_to_proto.
   """
   key_to_proto = {}
-  for proto in to_proto_list:
+  for proto in dst_proto_list:
     key = get_key(proto)
     key_to_proto[key] = proto
 
-  for proto in from_proto_list:
+  for proto in src_proto_list:
     key = get_key(proto)
     if key in key_to_proto:
       if proto != key_to_proto.get(key):
-        raise ValueError(error_msg + ': %s' % key)
+        raise ValueError('%s: %s' % (error_msg, key))
     else:
-      to_proto_list.add().CopyFrom(proto)
+      dst_proto_list.add().CopyFrom(proto)
 
 
 def combine_graph_defs(to_proto, from_proto):
@@ -76,13 +82,14 @@ def combine_graph_defs(to_proto, from_proto):
       to_proto.library.function,
       from_proto.library.function,
       lambda n: n.signature.name,
-      'Cannot combine GraphDefs because nodes share a name but are different')
+      ('Cannot combine GraphDefs because functions share a name but '
+       'are different'))
 
   _safe_copy_proto_list_values(
       to_proto.library.gradient,
       from_proto.library.gradient,
       lambda g: g.gradient_func,
       ('Cannot combine GraphDefs because gradients share a gradient_func name '
-      'but maps to a different function'))
+       'but maps to a different function'))
 
   return to_proto
