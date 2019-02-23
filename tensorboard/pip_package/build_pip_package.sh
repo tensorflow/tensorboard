@@ -24,7 +24,7 @@ else
 fi
 
 tf_version="tf-nightly"
-if [ -n "$TF_VERSION" ]; then
+if [ -n "${TF_VERSION}" ]; then
   tf_version="tensorflow==${TF_VERSION}"
 fi
 smoke="all"
@@ -116,32 +116,33 @@ python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
 smoke() {
-  pymajorversion="$1"
-  if [ -z "${pymajorversion}" ]; then
-    pymajorversion="$(python -c 'import sys; print(sys.version_info[0])')"
+  py_major_version="$1"
+  if [ -z "${py_major_version}" ]; then
+    py_major_version="$(python -c 'import sys; print(sys.version_info[0])')"
   fi
-  smokepython="python$1"
-  smokevenv="smoke-venv$1"
-  smoketf="$2"
+  smoke_python="python$1"
+  smoke_venv="smoke-venv$1"
+  smoke_tf="$2"
   set +x
   printf '\n\n%70s\n' | tr ' ' '='
-  printf "Smoke testing with ${smokepython} and ${smoketf}...\n\n"
+  echo "Smoke testing with ${smoke_python} and ${smoke_tf}..."
+  printf '\n'
   set -x
-  command -v "${smokepython}" >/dev/null
-  virtualenv -qp "${smokepython}" "${smokevenv}"
-  cd "${smokevenv}"
+  command -v "${smoke_python}" >/dev/null
+  virtualenv -qp "${smoke_python}" "${smoke_venv}"
+  cd "${smoke_venv}"
   . bin/activate
   pip install -qU pip
-  pip install -qU "${smoketf}"
-  pip install -qU ../dist/*"py${pymajorversion}"*.whl >/dev/null
+  pip install -qU "${smoke_tf}"
+  pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
   # Test TensorBoard application
   [ -x ./bin/tensorboard ]  # Ensure pip package included binary
   mkfifo pipe
   tensorboard --port=0 --logdir=smokedir 2>pipe &
   perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
-  curl -fs http://localhost:$(cat port) >index.html
+  curl -fs "http://localhost:$(cat port)" >index.html
   grep '<tf-tensorboard' index.html
-  curl -fs http://localhost:$(cat port)/data/logdir >logdir.json
+  curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
   grep 'smokedir' logdir.json
   kill $!
   # Test TensorBoard APIs
@@ -155,7 +156,7 @@ import tensorboard.summary._tf.summary as tf_summary
 "
   deactivate
   cd ..
-  rm -rf "${smokevenv}"
+  rm -rf "${smoke_venv}"
 }
 
 case "${smoke}" in
