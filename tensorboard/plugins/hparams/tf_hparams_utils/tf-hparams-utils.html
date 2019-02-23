@@ -198,7 +198,7 @@ var tf;
 
       // Returns the square of the L2-norm of (x, y).
       function l2NormSquared(x, y) {
-        return x*x + y*y;
+        return x * x + y * y;
       }
       utils.l2NormSquared = l2NormSquared;
 
@@ -377,8 +377,8 @@ var tf;
       // Computes a simple not-secure 32-bit integer hash value for a string.
       function stringHash(str) {
         let result = 0;
-        for (let i = 0; i < str.length ;++i) {
-          result = (result*31 + str.charCodeAt(i)) & 0xFFFFFFFF;
+        for (let i = 0; i < str.length; ++i) {
+          result = (result * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
         }
         // Bitwise operations in JavaScript convert operands to 32-bit 2's
         // complement representation in the range [-2**31,(2**31)-1]. Shift it

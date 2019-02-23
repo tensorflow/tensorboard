@@ -91,8 +91,8 @@ py_test(
     deps = [
         ":manager",
         ":version",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -101,20 +101,20 @@ py_test(
     name = "manager_e2e_test",
     size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
     timeout = "moderate",
-    srcs = ["manager_e2e_test.py"],
-    data = [
-        ":tensorboard",
-    ],
     # On Python 2, this test fails about 0.5% of the time when run with
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
     flaky = True,
+    srcs = ["manager_e2e_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
+    ],
+    data = [
+        ":tensorboard",
     ],
 )
 
@@ -431,9 +431,9 @@ py_library(
 
 py_test(
     name = "lazy_test",
-    size = "small",
     srcs = ["lazy_test.py"],
     srcs_version = "PY2AND3",
+    size = "small",
     deps = [
         ":lazy",
         "@org_pythonhosted_six",
