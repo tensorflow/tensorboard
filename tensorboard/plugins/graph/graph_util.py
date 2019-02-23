@@ -39,7 +39,8 @@ def _safe_copy_proto_list_values(dst_proto_list, src_proto_list, get_key, error_
       that two nodes share a key but are distinct.
 
   Raises:
-    ValueError when there is the key in the dict but contents mismatch.
+    ValueError with error_msg when there is an item with the same key
+    but contents mismatch.
   """
   key_to_proto = {}
   for proto in dst_proto_list:
