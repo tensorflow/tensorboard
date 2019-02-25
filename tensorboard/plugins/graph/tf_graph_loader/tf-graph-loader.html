@@ -79,7 +79,7 @@ Polymer({
       notify: true
     },
     /**
-     * @type{?GraphRunTag}
+     * @type {?GraphRunTag}
      */
     _graphRunTag: Object,
     outHierarchyParams: {
@@ -101,7 +101,9 @@ Polymer({
   _selectionChanged() {
     // selection can change a lot within a microtask.
     // Don't fetch too much too fast and introduce race condition.
-    this.debounce('selectionchange', () => this._load(this.selection));
+    this.debounce('selectionchange', () => {
+      this._load(this.selection);
+    });
   },
   _load: function({run, tag, type: selectionType}) {
     const {overridingHierarchyParams} = this;
@@ -113,7 +115,7 @@ Polymer({
         this._setOutStats(null);
         const args = {
           run,
-          conceptual: selectionType == tf.graph.SelectionType.CONCEPTUAL_GRAPH,
+          conceptual: selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH,
         };
         if (tag) args.tag = tag;
         const graphPath = tf_backend.addParams(
@@ -124,20 +126,20 @@ Polymer({
             });
       }
       case tf.graph.SelectionType.PROFILE: {
-        const {tags} = this.datasets.find(({name}) => name == run);
-        const tagMeta = tags.find(t => t.tag == tag);
+        const {tags} = this.datasets.find(({name}) => name === run);
+        const tagMeta = tags.find(t => t.tag === tag);
         // In case current tag misses opGraph but has profile information,
         // we fallback to the v1 behavior of fetching the run graph.
         const requiredOpGraphTag = tagMeta.opGraph ? tag : null;
 
         console.assert(
-            tags.find(t => t.tag == requiredOpGraphTag),
+            tags.find(t => t.tag === requiredOpGraphTag),
             `Required tag (${requiredOpGraphTag}) is missing.`);
 
         const shouldFetchGraph = !this._graphRunTag ||
             this._graphRunTag.run !== run ||
             this._graphRunTag.tag !== requiredOpGraphTag;
-        const maybeFetchGraph = shouldFetchGraph ?
+        const maybeFetchGraphPromise = shouldFetchGraph ?
             this._load({
               run,
               tag: requiredOpGraphTag,
@@ -146,10 +148,11 @@ Polymer({
         const metadataPath = tf_backend.addParams(
             tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
             {tag, run});
-        return maybeFetchGraph.then(() => this._readAndParseMetadata(metadataPath));
+        return maybeFetchGraphPromise
+            .then(() => this._readAndParseMetadata(metadataPath));
       }
       default:
-        console.assert(false, `Unknown selection type: ${selectionType}`);
+        return Promise.reject(`Unknown selection type: ${selectionType}`);
     }
   },
   _readAndParseMetadata: function(path) {
@@ -168,7 +171,7 @@ Polymer({
    * @param {?string} path
    * @param {string=} pbTxtFile
    * @param {Object=} overridingHierarchyParams
-   * @returns {!Promise}
+   * @returns {!Promise<>}
    */
   _fetchAndConstructHierarchicalGraph: function(
       path, pbTxtFile, overridingHierarchyParams) {

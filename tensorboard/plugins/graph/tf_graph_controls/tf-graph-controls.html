@@ -391,13 +391,13 @@ paper-dropdown-menu {
     <paper-radio-group selected="{{_selectedGraphType}}">
       <!-- Note that the name has to match that of tf.graph.SelectionType. -->
       <paper-radio-button name="op_graph"
-          disabled="{{_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)}}"
+          disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
       >Graph</paper-radio-button>
       <paper-radio-button name="conceptual_graph"
-          disabled="{{_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)}}"
+          disabled="[[_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
       >Conceptual Graph</paper-radio-button>
       <paper-radio-button name="profile"
-          disabled="{{_getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex)}}"
+          disabled="[[_getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
       >Profile</paper-radio-button>
     </paper-radio-group>
   </div>
