@@ -79,14 +79,11 @@ class VizParams(object):
       pieces = [token.strip() for token in pattern.split(',')]
       indices = []
       for piece in pieces:
-        try:
-          if '-' in piece:
-            lower, upper = [int(x.strip()) for x in piece.split('-')]
-            indices.extend(range(lower, upper + 1))
-          else:
-            indices.append(int(piece.strip()))
-        except ValueError as e:
-          raise common_utils.InvalidUserInputError(e)
+        if '-' in piece:
+          lower, upper = [int(x.strip()) for x in piece.split('-', 1)]
+          indices.extend(range(lower, upper + 1))
+        else:
+          indices.append(int(piece.strip()))
       return sorted(indices)
 
     self.x_min = to_float_or_none(x_min)
@@ -97,7 +94,12 @@ class VizParams(object):
     # By default, there are no specific user-requested feature indices.
     self.feature_indices = []
     if feature_index_pattern:
-      self.feature_indices = convert_pattern_to_indices(feature_index_pattern)
+      try:
+        self.feature_indices = convert_pattern_to_indices(
+            feature_index_pattern)
+      except ValueError as e:
+        # If the user-requested range is invalid, use the default range.
+        pass
 
 
 class OriginalFeatureList(object):
