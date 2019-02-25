@@ -36,10 +36,11 @@ from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
+from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.interactive_inference import interactive_inference_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
@@ -67,6 +68,7 @@ _PLUGINS = [
     interactive_inference_plugin.InteractiveInferencePlugin,
     profile_plugin.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
+    hparams_plugin.HParamsPlugin,
 ]
 
 def get_plugins():
