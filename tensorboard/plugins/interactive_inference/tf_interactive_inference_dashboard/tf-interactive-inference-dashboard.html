@@ -4381,7 +4381,8 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeAsyncRequest_: function(url, thenDoFn, postData, errorFn) {
+      makeAsyncRequest_: function(
+          url, thenDoFn, postData, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -5079,11 +5080,13 @@ limitations under the License.
         if (!this.local) {
           const url = tf_backend.addParams(
             '/data/plugin/whatif/infer_mutants', urlParams);
-          const chartMakerCallback = result =>
-            this.makeChartForFeature(
+          const chartMakerCallback = result => {
+            return this.makeChartForFeature(
               result.value.chartType, featureName, result.value.data);
-          const chartErrorCallback = () =>
-            this.handleChartErrorForFeature(featureName);
+          }
+          const chartErrorCallback = () => {
+            return this.handleChartErrorForFeature(featureName);
+          }
           this.makeAsyncRequest_(
             url, chartMakerCallback.bind(this), null,
             chartErrorCallback.bind(this));

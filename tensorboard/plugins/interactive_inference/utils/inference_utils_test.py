@@ -476,6 +476,20 @@ class InferenceUtilsTest(tf.test.TestCase):
         x_max=10,
         examples=[],
         num_mutants=0,
+        feature_index_pattern='3-1')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='1-1')
+    self.assertEqual([1], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
         feature_index_pattern='3, 1')
     self.assertEqual([1, 3], viz_params.feature_indices)
     viz_params = inference_utils.VizParams(
@@ -484,6 +498,20 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples=[],
         num_mutants=0,
         feature_index_pattern='0-')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='0-error')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='0-3-5')
     self.assertEqual([], viz_params.feature_indices)
 
 

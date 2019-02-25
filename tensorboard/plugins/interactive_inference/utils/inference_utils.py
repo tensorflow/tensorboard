@@ -80,7 +80,7 @@ class VizParams(object):
       indices = []
       for piece in pieces:
         if '-' in piece:
-          lower, upper = [int(x.strip()) for x in piece.split('-')]
+          lower, upper = [int(x.strip()) for x in piece.split('-', 1)]
           indices.extend(range(lower, upper + 1))
         else:
           indices.append(int(piece.strip()))
@@ -96,7 +96,7 @@ class VizParams(object):
     if feature_index_pattern:
       try:
         self.feature_indices = convert_pattern_to_indices(
-          feature_index_pattern)
+            feature_index_pattern)
       except ValueError as e:
         # If the user-requested range is invalid, use the default range.
         pass
