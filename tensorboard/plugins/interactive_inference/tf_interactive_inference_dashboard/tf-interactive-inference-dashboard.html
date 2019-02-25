@@ -72,20 +72,15 @@ limitations under the License.
     <style>
       :host {
         --paper-tab-ink: var(--tb-orange-dark);
+        --wit-color-gray300: #DADCE0;
       }
 
       #classification {
         width: 40%;
       }
 
-      .example-and-inference-holder {
-        margin-left: 6px;
-      }
-
       .example-holder {
         width: 100%;
-        margin-left: -5px;
-        margin-top: -5px;
       }
 
       .inference-section-holder {
@@ -96,7 +91,7 @@ limitations under the License.
 
       .inference-section {
         width: 100%;
-        border: 1px solid #DADCE0;
+        border: 1px solid var(--wit-color-gray300);
       }
 
       .inference-viewer {
@@ -105,7 +100,7 @@ limitations under the License.
       }
 
       .compare-inference-viewer {
-        border-left: 1px solid #DADCE0;
+        border-left: 1px solid var(--wit-color-gray300);
       }
 
       .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
@@ -281,7 +276,7 @@ limitations under the License.
         padding-left: 5px;
         width: 30%;
         overflow-y: auto;
-        border-right: 1px solid #DADCE0;
+        border-right: 1px solid var(--wit-color-gray300);
       }
 
       .config-main-content {
@@ -306,7 +301,7 @@ limitations under the License.
         height: 52px;
         min-height: 52px;
         max-height: 52px;
-        border-bottom: solid 2px #DADCE0;
+        border-bottom: solid 2px var(--wit-color-gray300);
       }
 
       .pdplots-holder {
@@ -373,7 +368,7 @@ limitations under the License.
       }
 
       .datapoint-controls-holder {
-        border-bottom: 1px solid #DADCE0;
+        border-bottom: 1px solid var(--wit-color-gray300);
         display: flex;
         flex-grow: 0;
         flex-shrink: 0;
@@ -395,7 +390,7 @@ limitations under the License.
         flex-wrap: wrap;
         flex-grow: 1;
         padding: 12px;
-        border: 1px solid #dadce0;
+        border: 1px solid var(--wit-color-gray300);
         border-top: none;
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
@@ -468,7 +463,7 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid #DADCE0;
+        border: 1px solid var(--wit-color-gray300);
         color: var(--tb-orange-dark);
         font-size: 14px;
         font-weight: 400;
@@ -683,8 +678,8 @@ limitations under the License.
         display: table;
         height: 100%;
         width: 10px;
-        border-left: 1px solid #DADCE0;
-        border-right: 1px solid #DADCE0;
+        border-left: 1px solid var(--wit-color-gray300);
+        border-right: 1px solid var(--wit-color-gray300);
         cursor: pointer;
       }
 
@@ -722,7 +717,7 @@ limitations under the License.
         position: relative;
         padding: 10px 8px;
         background-color: #FEF7E0;
-        border-bottom: 1px solid #dadce0;
+        border-bottom: 1px solid var(--wit-color-gray300);
         border-top: none;
         border-left: none;
         border-right: none;
@@ -934,7 +929,7 @@ limitations under the License.
       }
 
       .border-right {
-        border-right: 1px solid #DADCE0;
+        border-right: 1px solid var(--wit-color-gray300);
       }
 
       paper-dialog {
@@ -951,13 +946,13 @@ limitations under the License.
       .doc-image {
         width: 128px;
         height: 96px;
-        border: 1px solid #DADCE0;
+        border: 1px solid var(--wit-color-gray300);
       }
 
       .control-divider {
         margin: 5px 0 5px 5px;
         width: 5px;
-        border-left: 1px solid #DADCE0;
+        border-left: 1px solid var(--wit-color-gray300);
       }
 
       .optimization-radio {
@@ -983,7 +978,7 @@ limitations under the License.
         background: white;
         width: 100%;
         display: flex;
-        border-bottom: 1px solid #DADCE0;
+        border-bottom: 1px solid var(--wit-color-gray300);
         min-height: 52px;
         justify-content: space-between;
       }
@@ -1005,7 +1000,7 @@ limitations under the License.
         line-height:16px;
         letter-spacing: 0.25;
         display: flex;
-        border-bottom: 1px solid #DADCE0;
+        border-bottom: 1px solid var(--wit-color-gray300);
         min-height: min-content;
         padding-top: 12px;
         padding-bottom: 4px;
@@ -1020,16 +1015,16 @@ limitations under the License.
         background: white;
         color: #3C4043;
         font-size: 14px;
-        border-bottom: solid 1px #DADCE0;
+        border-bottom: solid 1px var(--wit-color-gray300);
       }
 
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
         margin: 0 12px;
-        border-left: 1px solid #DADCE0;
-        border-bottom: 1px solid #DADCE0;
-        border-right: 1px solid #DADCE0;
+        border-left: 1px solid var(--wit-color-gray300);
+        border-bottom: 1px solid var(--wit-color-gray300);
+        border-right: 1px solid var(--wit-color-gray300);
         background: white;
       }
 
@@ -1043,10 +1038,10 @@ limitations under the License.
       .perf-table-row-expanded {
         width: 100%;
         display: flex;
-        border-bottom: 1px solid #DADCE0;
-        border-top: 1px solid #DADCE0;
+        border-bottom: 1px solid var(--wit-color-gray300);
+        border-top: 1px solid var(--wit-color-gray300);
         border-radius: 2px;
-        box-shadow: 0px 1px 2px 0px rgba(60,64,67,0.3), 0px 1px 3px 1px rgba(60,64,67,0.15);
+        box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
         background: white;
         position: relative;
       }
@@ -2427,10 +2422,6 @@ limitations under the License.
           type: Number,
           readOnly: true,
         },
-        // Timer for debouncing of refreshing dive/stats after data changes.
-        refreshPDPlotTimer_: Number,
-        // Timer for debouncing of refreshing dive/stats after data changes.
-        refreshDiveTimer_: Number,
         // Show nearest counterfactual toggle button setting.
         showNearestCounterfactual: {
           type: Boolean,
@@ -4333,8 +4324,8 @@ limitations under the License.
       refreshDive_: function() {
         // Debounce a refresh request, for when multiple updates are happening
         // in succession.
-        clearTimeout(this.refreshDiveTimer_);
-        this.refreshDiveTimer_ = setTimeout(() => this.refreshDiveImpl_(), 500);
+        this.debounce('refreshDiveDebounce',
+                      () => this.refreshDiveImpl_(), 500);
       },
 
       /**
@@ -5246,8 +5237,8 @@ limitations under the License.
       pdInputChanged: function(event) {
         // Debounce a refresh request, for when multiple updates are happening
         // in succession.
-        clearTimeout(this.refreshPDPlotTimer_);
-        this.refreshPDPlotTimer_ = setTimeout(() => this.pdInputChangedImpl(event), 500);
+        this.debounce('pdInputChangedDebounce',
+                      () => this.pdInputChangedImpl(event), 500);
       },
 
       /**
