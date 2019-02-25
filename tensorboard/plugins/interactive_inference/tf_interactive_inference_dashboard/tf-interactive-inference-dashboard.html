@@ -302,6 +302,8 @@ limitations under the License.
         min-height: 52px;
         max-height: 52px;
         border-bottom: solid 2px var(--wit-color-gray300);
+        display: flex;
+        justify-content: space-between;
       }
 
       .pdplots-holder {
@@ -772,7 +774,7 @@ limitations under the License.
       }
 
       .pd-toggle {
-        margin: 0 0 0 20px;
+        margin: 0 8px 0 20px;
       }
 
       .pd-entry-container {
@@ -1425,33 +1427,35 @@ limitations under the License.
                     </div>
                     <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
-                      <div class="flex pd-plots-header">
-                        <div class="pd-info-text">Partial Dependence Plots</div>
-                        <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
-                        </paper-icon-button>
+                      <div class="pd-plots-header">
+                        <div class="flex">
+                          <div class="pd-info-text">Partial Dependence Plots</div>
+                          <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
+                          </paper-icon-button>
+                          <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                            <div class="dialog-title">Partial Dependence Plots</div>
+                            <div>Partial dependence plots visualize the change in inference results for every feature,
+                              as the value for that feature is changed to different valid values.
+                            </div>
+                            <div>For numeric features, you can set the minimum and maximum values to plot.</div>
+                            <div>For string features, the most popular feature values are shown as alternatives to
+                              the feature value for the selected datapoint.
+                            </div>
+                            <div>For features with multiple feature values per datapoint, a single plot is shown for for
+                              each feature value in the selected datapoint. You can override which feature values have
+                              plots created for them by specifying the indices to shown partial dependence plots for,
+                              if the datapoint contains multiple feature values for a feature.
+                            </div>
+                            <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
+                              changing a single feature across all datapoints. When it is turned off, the plots show the
+                              effect of a repeatedly changing a single feature on the selected datapoint.
+                            </div>
+                          </paper-dialog>
+                        </div>
                         <paper-toggle-button class="pd-toggle" checked="{{globalPdPlots}}"
                             on-change="hideAllPdElements_" disabled$="[[!hasSelected(selectedExampleAndInference)]]">
                           Global partial dependence plots
                         </paper-toggle-button>
-                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                          <div class="dialog-title">Partial Dependence Plots</div>
-                          <div>Partial dependence plots visualize the change in inference results for every feature,
-                            as the value for that feature is changed to different valid values.
-                          </div>
-                          <div>For numeric features, you can set the minimum and maximum values to plot.</div>
-                          <div>For string features, the most popular feature values are shown as alternatives to
-                            the feature value for the selected datapoint.
-                          </div>
-                          <div>For features with multiple feature values per datapoint, a single plot is shown for for
-                            each feature value in the selected datapoint. You can override which feature values have
-                            plots created for them by specifying the indices to shown partial dependence plots for,
-                            if the datapoint contains multiple feature values for a feature.
-                          </div>
-                          <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
-                            changing a single feature across all datapoints. When it is turned off, the plots show the
-                            effect of a repeatedly changing a single feature on the selected datapoint.
-                          </div>
-                        </paper-dialog>
                       </div>
                       <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
                         <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
