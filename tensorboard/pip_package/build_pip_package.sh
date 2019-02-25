@@ -152,8 +152,9 @@ tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
 from tensorboard.plugins.beholder import Beholder, BeholderHook
 tb.notebook.start  # don't invoke; just check existence
-import tensorboard.summary._tf.summary as tf_summary
 "
+  # Removed "import tensorboard.summary._tf.summary as tf_summary" test for the
+  # 1.13 release since it won't pass until TF 1.14.
   deactivate
   cd ..
   rm -rf "${smoke_venv}"
