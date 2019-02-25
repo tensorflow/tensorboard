@@ -111,9 +111,9 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.node,
         from_proto.node,
         lambda n: n.name)
-  except _ProtoListNonUniqueKeyError, exc:
+  except _ProtoListNonUniqueKeyError as exc:
     raise ValueError('A GraphDef contains non-unique node names: %s' % exc)
-  except _SameKeyDiffContentError, exc:
+  except _SameKeyDiffContentError as exc:
     raise ValueError(
       ('Cannot combine GraphDefs because nodes share a name '
        'but contents are different: %s') % exc)
@@ -122,9 +122,9 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.library.function,
         from_proto.library.function,
         lambda n: n.signature.name)
-  except _ProtoListNonUniqueKeyError, exc:
+  except _ProtoListNonUniqueKeyError as exc:
     raise ValueError('A GraphDef contains non-unique function names: %s' % exc)
-  except _SameKeyDiffContentError, exc:
+  except _SameKeyDiffContentError as exc:
     raise ValueError(
       ('Cannot combine GraphDefs because functions share a name '
        'but are different: %s') % exc)
@@ -134,10 +134,10 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.library.gradient,
         from_proto.library.gradient,
         lambda g: g.gradient_func)
-  except _ProtoListNonUniqueKeyError, exc:
+  except _ProtoListNonUniqueKeyError as exc:
     raise ValueError(
       'A GraphDef contains non-unique gradient function names: %s' % exc)
-  except _SameKeyDiffContentError, exc:
+  except _SameKeyDiffContentError as exc:
     raise ValueError(
       ('Cannot combine GraphDefs because gradients share a gradient_func name '
        'but maps to a different function: %s') % exc)
