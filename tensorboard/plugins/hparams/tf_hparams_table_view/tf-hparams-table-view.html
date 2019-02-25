@@ -160,7 +160,7 @@ session group.
             "expandedItems",
             expandedItems
               .map(sg => sessionGroupsByName.get(sg.name))
-              .filter(Boolean);
+              .filter(Boolean));
       },
 
       _hparamName: tf.hparams.utils.hparamName,

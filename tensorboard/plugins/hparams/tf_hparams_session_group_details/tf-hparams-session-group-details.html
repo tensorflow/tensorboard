@@ -113,7 +113,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
         // of the plot of each session.
         _indexOfSession: Object,
 
-        // A tf.hparams.utils.stringHash of sessionGroup.name. Used in
+        // A tf.hparams.utils.hashOfString of sessionGroup.name. Used in
         // '_colorScale'.
         _sessionGroupNameHash: Number,
 
@@ -263,7 +263,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
           this._indexOfSession = new Map(
               this.sessionGroup.sessions.map(
                   (session, index) => [session.name, index]));
-          this._sessionGroupNameHash = tf.hparams.utils.stringHash(
+          this._sessionGroupNameHash = tf.hparams.utils.hashOfString(
               this.sessionGroup.name);
         }
       },
