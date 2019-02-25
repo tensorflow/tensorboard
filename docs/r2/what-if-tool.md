@@ -44,7 +44,7 @@ understanding and fairness investigations, see the walkthrough on the
 
 If you want to test out WIT in TensorBoard with a pre-trained model, you can
 download and unzip a pre-trained model and dataset from
-https://storage.googleapis.com/what-if-tool-resources/uci-census-demo.zip.
+https://storage.googleapis.com/what-if-tool-resources/uci-census-demo/uci-census-demo.zip.
 The model is a binary classification model that uses the
 [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income) dataset
 to predict whether a person earns more than $50k a year. This dataset and
