@@ -19,6 +19,7 @@ py_library(
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -63,5 +64,32 @@ py_test(
     deps = [
         ":keras_util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+    ],
+)
+
+py_library(
+    name = "graph_util",
+    srcs = ["graph_util.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+    ],
+)
+
+py_test(
+    name = "graph_util_test",
+    size = "small",
+    srcs = ["graph_util_test.py"],
+    main = "graph_util_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":graph_util",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_six",
     ],
 )
