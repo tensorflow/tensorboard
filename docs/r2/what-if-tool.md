@@ -77,6 +77,7 @@ Some things to try with the What-If Tool on this demo include:
   the model's inference results through partial dependence plots.
 - Slicing the dataset into subsets and comparing the performance between
   slices.
+
 For an in-depth look at tool's features, check out the
 [What-If Tool walkthrough](https://pair-code.github.io/what-if-tool/walkthrough.html).
 
