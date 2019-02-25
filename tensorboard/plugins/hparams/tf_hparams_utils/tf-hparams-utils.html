@@ -375,7 +375,7 @@ var tf;
       utils.setArrayObservably = setArrayObservably;
 
       // Computes a simple not-secure 32-bit integer hash value for a string.
-      function stringHash(str) {
+      function hashOfString(str) {
         let result = 0;
         for (let i = 0; i < str.length; ++i) {
           result = (result * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
@@ -385,7 +385,7 @@ var tf;
         // to the range [0, (2**32)-1].
         return result + 2**31;
       }
-      utils.stringHash = stringHash;
+      utils.hashOfString = hashOfString;
 
     })(hparams.utils || (hparams.utils = {}))  // namespace utils
   })(tf.hparams || (tf.hparams = {}))  // namespace hparams
