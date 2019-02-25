@@ -97,9 +97,11 @@ Polymer({
     if (selectionType == tf.graph.SelectionType.OP_GRAPH) {
       // Clear stats about the previous graph.
       this._setOutStats(null);
+      const args = {run};
+      if (tag) args.tag = tag;
       const graphPath = tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('graphs', '/graph'),
-          {tag, run});
+          args);
       this._fetchAndConstructHierarchicalGraph(
           graphPath, null, overridingHierarchyParams);
     } else if (selectionType == tf.graph.SelectionType.PROFILE) {
