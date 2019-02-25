@@ -27,6 +27,7 @@ limitations under the License.
         text-align: right;
       }
       th, td {
+        font-size: 14px;
         padding: 3px;
         font-weight: normal;
       }
@@ -38,6 +39,14 @@ limitations under the License.
         text-align: left;
         font-size: 10px;
       }
+      .total-label {
+        color: #5F6368;
+        font-size: 10px;
+        text-align: left;
+      }
+      .total-cell {
+        color: #5F6368;
+      }
       .actual-label {
         text-align: right;
         font-size: 10px;
@@ -47,13 +56,11 @@ limitations under the License.
         vertical-align: bottom;
       }
       .value-cell {
-        font-size: 14px;
         color: #202124;
         border: 1px solid lightgrey;
       }
       .parenthetical {
         padding-right: 5px;
-        color: #3C4043;
         width: 50px;
       }
     </style>
@@ -177,8 +184,10 @@ limitations under the License.
             .attr('class', column => {
               if (column == 0) {
                 return 'n-label';
-              } else {
+              } else if (column <= countMatrix.length) {
                 return 'pred-label';
+              } else {
+                return 'total-label';
               }
             });
 
@@ -204,7 +213,7 @@ limitations under the License.
             } else if (i <= countMatrix.length) {
               return 'value-cell';
             } else {
-              return '';
+              return 'total-cell';
             }
           }).style('background', (d, i) => {
             if (i == 0 || i > countMatrix.length) {
@@ -227,7 +236,8 @@ limitations under the License.
           .selectAll('td')
           .data(indices).enter()
           .append('td');
-        footCells.classed('actual-label', (d, i) => i == 0);
+        footCells.classed('total-label', (d, i) => i == 0);
+        footCells.classed('total-cell', (d, i) => i != 0);
         const footCellDivs = footCells.append('div').classed('flex', true);
         footCellDivs.append('div').classed('parenthetical', (d, i) => !!i).text(
           column => {
