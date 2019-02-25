@@ -21,6 +21,7 @@ from tensorboard.plugins.graph import graph_util
 
 
 class GraphUtilTest(tf.test.TestCase):
+
   def test_combine_graph_defs(self):
     expected_proto = '''
       node {
@@ -218,7 +219,7 @@ class GraphUtilTest(tf.test.TestCase):
          'contents are different: X')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
-  def test_combine_graph_defs_dst_nodes_keys_non_unique(self):
+  def test_combine_graph_defs_dst_nodes_duplicate_keys(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       node {
@@ -239,7 +240,6 @@ class GraphUtilTest(tf.test.TestCase):
       node {
         name: "X"
         op: "Input"
-        device: "cpu:0"
       }
       node {
         name: "Z"
@@ -253,10 +253,10 @@ class GraphUtilTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        ('A GraphDef contains non-unique node names: X')):
+        'A GraphDef contains non-unique node names: X'):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
-  def test_combine_graph_defs_src_nodes_keys_non_unique(self):
+  def test_combine_graph_defs_src_nodes_duplicate_keys(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       node {
@@ -488,7 +488,7 @@ class GraphUtilTest(tf.test.TestCase):
          'are different: foo')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
-  def test_combine_graph_defs_dst_function_keys_non_unique(self):
+  def test_combine_graph_defs_dst_function_duplicate_keys(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       library {
@@ -558,7 +558,7 @@ class GraphUtilTest(tf.test.TestCase):
         ('A GraphDef contains non-unique function names: foo')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
-  def test_combine_graph_defs_src_function_keys_non_unique(self):
+  def test_combine_graph_defs_src_function_duplicate_keys(self):
     graph_def_a = GraphDef()
     text_format.Merge('''
       library {
@@ -619,7 +619,7 @@ class GraphUtilTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        ('A GraphDef contains non-unique function names: bar')):
+        'A GraphDef contains non-unique function names: bar'):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
   def test_combine_graph_defs_gradient(self):
@@ -692,7 +692,7 @@ class GraphUtilTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        ('share a gradient_func name but maps to a different function. '
+        ('share a gradient_func name but map to different functions: '
          'foo_grad')):
       graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 

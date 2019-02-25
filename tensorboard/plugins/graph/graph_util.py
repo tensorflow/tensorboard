@@ -16,7 +16,7 @@
 from tensorboard.compat.proto import function_pb2
 
 
-class _ProtoListNonUniqueKeyError(Exception):
+class _ProtoListDuplicateKeyError(Exception):
   pass
 
 
@@ -25,13 +25,12 @@ class _SameKeyDiffContentError(Exception):
 
 
 def _safe_copy_proto_list_values(dst_proto_list, src_proto_list, get_key):
-  """Safely copies the value from src_proto_list to dst_proto_list.
+  """Safely merge values from `src_proto_list` into `dst_proto_list`.
 
-  First checks whether keys in both dst_proto_list and src_proto_list are
-  unique. If not, it raises a _ProtoListNonUniqueKeyError. It copies if
-  dst_proto_list does not contain an item with the same key. In case an item
-  is found with the same key, it checks whether contents match and, if not, it
-  raises a _SameKeyDiffContentError.
+  Each element in `dst_proto_list` must be mapped by `get_key` to a key
+  value that is unique within that list; likewise for `src_proto_list`.
+  If an element of `src_proto_list` has the same key as an existing
+  element in `dst_proto_list`, then the elements must also be equal.
 
   Args:
     dst_proto_list: A `RepeatedCompositeContainer` or
@@ -47,22 +46,28 @@ def _safe_copy_proto_list_values(dst_proto_list, src_proto_list, get_key):
       be hashable.
 
   Raises:
-    _ProtoListNonUniqueKeyError: a proto_list contains items with duplicate
+    _ProtoListDuplicateKeyError: A proto_list contains items with duplicate
       keys.
-    _SameKeyDiffContentError: an item with the same key has different contents.
+    _SameKeyDiffContentError: An item with the same key has different contents.
   """
 
   def _assert_proto_container_unique_keys(proto_list, get_key):
-    """Asserts whether proto_list only contains unique keys.
+    """Asserts proto_list to only contains unique keys.
 
     Args:
-      proto_list
+      proto_list: A `RepeatedCompositeContainer` or `RepeatedScalarContainer`.
+      get_key: A function that takes an element of `proto_list` and returns a
+        hashable key.
+
+    Raises:
+      _ProtoListDuplicateKeyError: A proto_list contains items with duplicate
+        keys.
     """
     keys = set()
     for item in proto_list:
       key = get_key(item)
       if key in keys:
-        raise _ProtoListNonUniqueKeyError(key)
+        raise _ProtoListDuplicateKeyError(key)
       keys.add(key)
 
   _assert_proto_container_unique_keys(dst_proto_list, get_key)
@@ -111,7 +116,7 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.node,
         from_proto.node,
         lambda n: n.name)
-  except _ProtoListNonUniqueKeyError as exc:
+  except _ProtoListDuplicateKeyError as exc:
     raise ValueError('A GraphDef contains non-unique node names: %s' % exc)
   except _SameKeyDiffContentError as exc:
     raise ValueError(
@@ -122,7 +127,7 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.library.function,
         from_proto.library.function,
         lambda n: n.signature.name)
-  except _ProtoListNonUniqueKeyError as exc:
+  except _ProtoListDuplicateKeyError as exc:
     raise ValueError('A GraphDef contains non-unique function names: %s' % exc)
   except _SameKeyDiffContentError as exc:
     raise ValueError(
@@ -134,12 +139,12 @@ def combine_graph_defs(to_proto, from_proto):
         to_proto.library.gradient,
         from_proto.library.gradient,
         lambda g: g.gradient_func)
-  except _ProtoListNonUniqueKeyError as exc:
+  except _ProtoListDuplicateKeyError as exc:
     raise ValueError(
       'A GraphDef contains non-unique gradient function names: %s' % exc)
   except _SameKeyDiffContentError as exc:
     raise ValueError(
       ('Cannot combine GraphDefs because gradients share a gradient_func name '
-       'but maps to a different function: %s') % exc)
+       'but map to different functions: %s') % exc)
 
   return to_proto
