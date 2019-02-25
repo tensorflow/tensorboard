@@ -514,6 +514,7 @@ limitations under the License.
       paper-tab {
         font-size: 14px;
         font-weight: 500;
+        padding: 0 32px;
       }
 
       paper-tab:not(.iron-selected) {
@@ -4801,6 +4802,8 @@ limitations under the License.
             });
         });
 
+        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const toolTipColumns = [
           {
               title: 'Inference value',
@@ -4823,7 +4826,7 @@ limitations under the License.
           },
           {
               title: 'Score',
-              evaluate: d => d.value.y,
+              evaluate: d => valueFormatter(d.value.y),
           },
         ];
         // If there is more than 1 model, show model number tooltip
@@ -4841,7 +4844,7 @@ limitations under the License.
         const chart = document.createElement('vz-bar-chart');
         chart.colorScale = new Plottable.Scales.Color().range(
           this.pdPlotColors);
-        chart.lineColorScale = new Plottable.Scales.Color().range(
+        chart.linesColorScale = new Plottable.Scales.Color().range(
           this.pdPlotTransparentColors);
         chart.data = mapped;
         chart.lines = lines;
