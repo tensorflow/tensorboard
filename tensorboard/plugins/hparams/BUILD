@@ -116,6 +116,10 @@ sh_test(
     data = [
         ":hparams_util",
     ],
+    tags = [
+	# Suppress for 1.13 release; this test won't pass until TF 1.14.
+        "manual",
+    ],
 )
 
 py_library(
