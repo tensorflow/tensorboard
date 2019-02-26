@@ -203,8 +203,8 @@ limitations under the License.
               new Promise(resolve => resolveSecondQuery = resolve));
           return element._getExperimentResolved.then(() => {
             const prevCallCount = fakeBackend.listSessionGroups.callCount;
-            firstQueryDone = element._queryServerNoDebounce();
-            secondQueryDone = element._queryServerNoDebounce();
+            const firstQueryDone = element._queryServerNoDebounce();
+            const secondQueryDone = element._queryServerNoDebounce();
 
             assert.equal(prevCallCount + 2,
                          fakeBackend.listSessionGroups.callCount);
@@ -248,10 +248,10 @@ limitations under the License.
               new Promise(resolve => resolveSecondQuery = resolve));
           return element._getExperimentResolved.then(() => {
             const prevCallCount = fakeBackend.listSessionGroups.callCount;
-            firstQueryDone = element._queryServerNoDebounce().then(
+            const firstQueryDone = element._queryServerNoDebounce().then(
                 ()=>{assert.fail("Expected first query to fail!")},
                 ()=>{/* Ok. First query failed.  */});
-            secondQueryDone = element._queryServerNoDebounce();
+            const secondQueryDone = element._queryServerNoDebounce();
 
             assert.equal(prevCallCount + 2,
                          fakeBackend.listSessionGroups.callCount);
