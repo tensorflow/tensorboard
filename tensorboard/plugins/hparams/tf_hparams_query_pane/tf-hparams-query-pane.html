@@ -416,10 +416,17 @@ TODO(erez): Add aggregation controls for repeated sessions.
           }
         },
 
-        // A promise that resolves when the latest session groups response
-        // from the server has been copied to the sessionGroups property.
-        // Used in testing.
-        _lastListSessionGroupsResponseProcessed: Object,
+        // A promise that resolves after the initial getExperiment network RPC
+        // resolves. Used for unit-test to allow testing to run after the
+        // element has initialized.
+        _getExperimentResolved: {
+          type: Object,
+          value: function() {
+            return new Promise(resolve=>{
+              this._resolveGetExperiment = resolve;
+            });
+          }
+        },
 
         // A tf_backend.canceller used to keep track of pending
         // ListSessionGroups requests and cancel their resulting UI updates
@@ -482,8 +489,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
             || utils.isNullOrUndefined(this.experimentName)) {
           return;
         }
-        const experimentRequest = JSON.stringify(
-            {experimentName: this.experimentName});
+        const experimentRequest = {
+          experimentName: this.experimentName
+        };
         this.backend.getExperiment(experimentRequest).then(experiment=>{
           if (_.isEqual(experiment, this._experiment)) {
             // No need to update anything if there are no changes.
@@ -494,6 +502,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this._computeMetrics();
           this._computeSchema();
           this._queryServer();
+          this._resolveGetExperiment();
         });
       },
 
@@ -596,31 +605,30 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // Asynchronously updates the sessionGroups property with the response.
       _queryServer() {
         this.debounce("queryServer", () => {
-          this._lastListSessionGroupsResponseProcessed =
-              this._sendListSessionGroupsRequest().then(
-                  this._listSessionGroupsCanceller.cancellable(
-                      ({value, cancelled}) => {
-                        if (cancelled) {
-                          return;
-                        }
-                        // The server may not support a "totalSize" field in
-                        // which case this field would be negative, and we
-                        // populate the page count with a "?".
-                        if (value.totalSize >= 0) {
-                          const pageSize = +this._pageSizeInput.value;
-                          this.set(
-                              "_pageCountStr",
-                              String(Math.ceil(value.totalSize / pageSize)));
-                          this.set(
-                              "_totalSessionGroupsCountStr", value.totalSize);
-                        } else {
-                          this.set("_pageCountStr", "?");
-                          this.set(
-                              "_totalSessionGroupsCountStr", "Unknown");
-                        }
-                        tf.hparams.utils.setArrayObservably(
-                            this, "sessionGroups", value.sessionGroups);
-                      }));
+          this._sendListSessionGroupsRequest().then(
+              this._listSessionGroupsCanceller.cancellable(
+                  ({value, cancelled}) => {
+                    if (cancelled) {
+                      return;
+                    }
+                    // The server may not support a "totalSize" field in
+                    // which case this field would be negative, and we
+                    // populate the page count with a "?".
+                    if (value.totalSize >= 0) {
+                      const pageSize = +this._pageSizeInput.value;
+                      this.set(
+                          "_pageCountStr",
+                          String(Math.ceil(value.totalSize / pageSize)));
+                      this.set(
+                          "_totalSessionGroupsCountStr", value.totalSize);
+                    } else {
+                      this.set("_pageCountStr", "?");
+                      this.set(
+                          "_totalSessionGroupsCountStr", "Unknown");
+                    }
+                    tf.hparams.utils.setArrayObservably(
+                        this, "sessionGroups", value.sessionGroups);
+                  }));
         }, 100);
       },
 

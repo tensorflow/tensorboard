@@ -118,11 +118,11 @@ clicks on a row in table-view or a curve in parallel-coords view.
           type: Function,
           value: function() {
             return ({tag, run}) => {
-              const request = JSON.stringify({
+              const request = {
                 experimentName: this.experimentName,
                 sessionName: run,
                 metricName: tag,
-              });
+              };
               return this.backend.listMetricEvals(request);
             }
           }
