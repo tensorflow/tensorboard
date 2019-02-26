@@ -17,14 +17,16 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-hparams-main/tf-hparams-main.html">
+<link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html">
 
 <dom-module id="tf-hparams-dashboard">
   <template>
-    <!-- Tensorboard doesn't specify an experimentName. Currently it only
+    <!-- Tensorboard does not specify an experimentName. Currently it only
          supports one experiment per invocation. -->
     <tf-hparams-main
       id="hparams-main"
-      api-url="data/plugin/hparams"
+      data/plugin/hparams
+      backend="[[_backend]]"
       experiment-name="">
     </tf-hparams-main>
   </template>
@@ -32,6 +34,16 @@ limitations under the License.
     'use strict';
     Polymer({
       is: 'tf-hparams-dashboard',
+      properties: {
+        _backend: {
+          type: Object,
+          value: () => {
+            return new tf.hparams.Backend(
+                /* apiUrl= */ 'data/plugin/hparams',
+                new tf_backend.RequestManager())
+          }
+        }
+      },
 
       // This is called by the tensorboard web framework to refresh the plugin.
       reload() {

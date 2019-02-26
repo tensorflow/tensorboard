@@ -40,7 +40,7 @@ TODO(erez): Add aggregation of repeated trials.
       <div class="sidebar">
         <tf-hparams-query-pane
           id="query-pane"
-          api-url="[[apiUrl]]"
+          backend="[[backend]]"
           experiment-name="[[experimentName]]"
           schema="{{_schema}}"
           session-groups="{{_sessionGroups}}">
@@ -49,7 +49,7 @@ TODO(erez): Add aggregation of repeated trials.
       <div class="center">
         <tf-hparams-sessions-pane
           id="sessions-pane"
-          api-url="[[apiUrl]]"
+          backend="[[backend]]"
           help-url="[[helpUrl]]"
           bug-report-url="[[bugReportUrl]]"
           experiment-name="[[experimentName]]"
@@ -97,8 +97,8 @@ TODO(erez): Add aggregation of repeated trials.
     Polymer({
       is: 'tf-hparams-main',
       properties: {
-        // The base URL for the hparams API.
-        apiUrl: String,
+        // An object for making HParams API requests to the backend.
+        backend: Object,
         // The experimentName to pass to the 'GetExperiment' API call.
         experimentName: String,
         // The google-analytics tracking-id to use. If not specified or empty

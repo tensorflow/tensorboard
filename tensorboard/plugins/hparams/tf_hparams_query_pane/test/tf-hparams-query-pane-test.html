@@ -22,12 +22,12 @@ limitations under the License.
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../tf-hparams-query-pane.html">
+    <link rel="import" href="../../tf-hparams-backend/tf-hparams-backend.html">
   </head>
   <body>
     <test-fixture id="tf-hparams-query-pane">
       <template>
-        <tf-hparams-query-pane api-url="/tb_hparams_api_url"
-                               experiment-name="my_experiment">
+        <tf-hparams-query-pane experiment-name="my_experiment">
         </tf-hparams-query-pane>
       </template>
     </test-fixture>
@@ -138,13 +138,13 @@ limitations under the License.
         setup(function() {
           fakeBackendServer = sinon.fakeServer.create();
           fakeBackendServer.respondWith(
-              "POST", /experiment$/, [
+              "GET", /.*experiment.*/, [
                 200 /* status */,
                 {"Content-Type": "application/json"} /* headers */,
                 JSON.stringify(experimentResponse) /* body */
               ]);
           fakeBackendServer.respondWith(
-              "POST", /session_groups$/, [
+              "GET", /session_groups/, [
                 200 /* status */,
                 {"Content-Type": "application/json"} /* headers */,
                 JSON.stringify(sessionGroupsResponse) /* body */
@@ -153,6 +153,12 @@ limitations under the License.
           fakeBackendServer.respondImmediately = true;
           // Grab a fresh copy before each test.
           element = fixture('tf-hparams-query-pane');
+          // TODO(erez): Instead of using sinon.fakeServer we can just
+          // mock out the tf.hparams.Backend here, which will be simpler.
+          element.set("backend",
+                      new tf.hparams.Backend(
+                          /* apiUrl = */ '/tb_hparams_api_url',
+                          new tf_backend.RequestManager()));
         });
 
         teardown(function() {
@@ -160,14 +166,14 @@ limitations under the License.
         });
 
         test('element initialized correctly.', function() {
-          return element._lastListSessionGroupsResponseProcessed.then(()=>{
+          flush(function() {
             assert.deepEqual(
                 element._hparams,
                 [{info: experimentResponse.hparamInfos[0],
                   filter: {domainDiscrete: [{value:270, checked: true},
                                             {value:320, checked: true},
                                             {value:370, checked: true}]
-                            },
+                          },
                   displayed: true},
                  {info: experimentResponse.hparamInfos[1],
                   filter: {interval: {min: {value: "", invalid: false},
@@ -200,6 +206,7 @@ limitations under the License.
               hparamInfos: [experimentResponse.hparamInfos[0]],
               metricInfos: [],
             });
+            done();
           });
         });
 
