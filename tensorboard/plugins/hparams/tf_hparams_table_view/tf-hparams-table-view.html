@@ -87,7 +87,7 @@ session group.
       </template>
       <template class="row-details">
         <tf-hparams-session-group-details
-          api-url="[[apiUrl]]"
+          backend="[[backend]]"
           experiment-name="[[experimentName]]"
           session-group="[[item]]"
           schema="[[schema]]"
@@ -133,9 +133,10 @@ session group.
         // a row to see its details.
         enableShowMetrics: Boolean,
 
-        // The url for the backend. Used only when a row is expanded to get
-        // the metric values. Can be omitted if enableShowMetrics is false.
-        apiUrl: String,
+        // An object for making HParams API requests to the backend.
+        // This is used only when a row is expanded to call the backend to
+        // get metric values. It can be omitted if enableShowMetrics is false.
+        backend: Object,
 
         // The experiment name to use when calling the backend to get
         // the metric values. Can be omitted if enableShowMetrics is false.
