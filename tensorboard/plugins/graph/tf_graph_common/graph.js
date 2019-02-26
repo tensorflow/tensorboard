@@ -832,7 +832,7 @@ var tf;
                 // check types
                 for (var i = 0; i < types.length; i++) {
                     var regExp = new RegExp(types[i]);
-                    if (node.op.match(regExp)) {
+                    if (typeof node.op === 'string' && node.op.match(regExp)) {
                         return true;
                     }
                 }
