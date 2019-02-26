@@ -35,7 +35,10 @@ from tensorboard.util import test_util
 tf.compat.v1.disable_v2_behavior()
 
 
-class GraphsPluginTest(tf.test.TestCase):
+# TODO(stephanwlee): Move more tests into the base class when v2 test
+# can write graph and metadata with a TF public API.
+
+class GraphsPluginBaseTest(object):
 
   _RUN_WITH_GRAPH = '_RUN_WITH_GRAPH'
   _RUN_WITHOUT_GRAPH = '_RUN_WITHOUT_GRAPH'
@@ -44,12 +47,46 @@ class GraphsPluginTest(tf.test.TestCase):
   _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
   def __init__(self, *args, **kwargs):
-    super(GraphsPluginTest, self).__init__(*args, **kwargs)
+    super(GraphsPluginBaseTest, self).__init__(*args, **kwargs)
     self.logdir = None
     self.plugin = None
 
   def setUp(self):
+    super(GraphsPluginBaseTest, self).setUp()
     self.logdir = self.get_temp_dir()
+
+  def generate_run(self, run_name, include_graph, include_run_metadata):
+    """Create a run"""
+    raise NotImplementedError('Please implement generate_run')
+
+  def set_up_with_runs(self, with_graph=True, without_graph=True):
+    if with_graph:
+      self.generate_run(self._RUN_WITH_GRAPH,
+                        include_graph=True,
+                        include_run_metadata=True)
+    if without_graph:
+      self.generate_run(self._RUN_WITHOUT_GRAPH,
+                        include_graph=False,
+                        include_run_metadata=True)
+    self.bootstrap_plugin()
+
+  def bootstrap_plugin(self):
+    multiplexer = event_multiplexer.EventMultiplexer()
+    multiplexer.AddRunsFromDirectory(self.logdir)
+    multiplexer.Reload()
+    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
+    self.plugin = graphs_plugin.GraphsPlugin(context)
+
+  def testRoutesProvided(self):
+    """Tests that the plugin offers the correct routes."""
+    self.set_up_with_runs()
+    routes = self.plugin.get_plugin_apps()
+    self.assertIsInstance(routes['/graph'], collections.Callable)
+    self.assertIsInstance(routes['/run_metadata'], collections.Callable)
+    self.assertIsInstance(routes['/info'], collections.Callable)
+
+
+class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
   def generate_run(self, run_name, include_graph, include_run_metadata):
     """Create a run with a text summary, metadata, and optionally a graph."""
@@ -80,31 +117,13 @@ class GraphsPluginTest(tf.test.TestCase):
       writer.add_run_metadata(run_metadata, self._METADATA_TAG)
     writer.close()
 
-  def set_up_with_runs(self, with_graph=True, without_graph=True):
-    if with_graph:
-      self.generate_run(self._RUN_WITH_GRAPH,
-                        include_graph=True,
-                        include_run_metadata=True)
-    if without_graph:
-      self.generate_run(self._RUN_WITHOUT_GRAPH,
-                        include_graph=False,
-                        include_run_metadata=True)
-    self.bootstrap_plugin()
-
-  def bootstrap_plugin(self):
-    multiplexer = event_multiplexer.EventMultiplexer()
-    multiplexer.AddRunsFromDirectory(self.logdir)
-    multiplexer.Reload()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    self.plugin = graphs_plugin.GraphsPlugin(context)
-
-  def testRoutesProvided(self):
-    """Tests that the plugin offers the correct routes."""
+  def _get_graph(self, *args, **kwargs):
+    """Set up runs, then fetch and return the graph as a proto."""
     self.set_up_with_runs()
-    routes = self.plugin.get_plugin_apps()
-    self.assertIsInstance(routes['/graph'], collections.Callable)
-    self.assertIsInstance(routes['/run_metadata'], collections.Callable)
-    self.assertIsInstance(routes['/info'], collections.Callable)
+    (graph_pbtxt, mime_type) = self.plugin.graph_impl(
+        self._RUN_WITH_GRAPH, *args, **kwargs)
+    self.assertEqual(mime_type, 'text/x-protobuf')
+    return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
 
   def test_info(self):
     expected = {
@@ -155,16 +174,8 @@ class GraphsPluginTest(tf.test.TestCase):
 
     self.assertItemsEqual(expected, self.plugin.info_impl())
 
-  def _get_graph(self, *args, **kwargs):
-    """Set up runs, then fetch and return the graph as a proto."""
-    self.set_up_with_runs()
-    (graph_pbtxt, mime_type) = self.plugin.graph_impl(
-        self._RUN_WITH_GRAPH, *args, **kwargs)
-    self.assertEqual(mime_type, 'text/x-protobuf')
-    return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
-
   def test_graph_simple(self):
-    graph = self._get_graph()
+    graph = self._get_graph(tag=None, is_conceptual=False)
     node_names = set(node.name for node in graph.node)
     self.assertEqual({
         'k1', 'k2', 'pow', 'sub', 'expected', 'sub_1', 'error',
@@ -175,6 +186,8 @@ class GraphsPluginTest(tf.test.TestCase):
   def test_graph_large_attrs(self):
     key = 'o---;;-;'
     graph = self._get_graph(
+        tag=None,
+        is_conceptual=False,
         limit_attr_size=self._MESSAGE_PREFIX_LENGTH_LOWER_BOUND,
         large_attrs_key=key)
     large_attrs = {
@@ -220,7 +233,6 @@ class GraphsPluginTest(tf.test.TestCase):
                       include_run_metadata=False)
     self.bootstrap_plugin()
     self.assertFalse(self.plugin.is_active())
-
 
 if __name__ == '__main__':
   tf.test.main()
