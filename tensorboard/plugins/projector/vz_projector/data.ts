@@ -77,11 +77,16 @@ const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 
 export const TSNE_SAMPLE_SIZE = 10000;
+export const UMAP_SAMPLE_SIZE = 5000;
 export const PCA_SAMPLE_SIZE = 50000;
 /** Number of dimensions to sample when doing approximate PCA. */
 export const PCA_SAMPLE_DIM = 200;
 /** Number of pca components to compute. */
 const NUM_PCA_COMPONENTS = 10;
+
+/** Id of message box used for umap optimization progress bar. */
+const UMAP_MSG_ID = 'umap-optimization';
+
 /**
  * Reserved metadata attributes used for sequence information
  * NOTE: Use "__seq_next__" as "__next__" is deprecated.
@@ -122,6 +127,9 @@ export class DataSet {
   projections: {[projection: string]: boolean} = {};
   nearest: knn.NearestEntry[][];
   nearestK: number;
+  spriteAndMetadataInfo: SpriteAndMetadataInfo;
+  fracVariancesExplained: number[];
+
   tSNEIteration: number = 0;
   tSNEShouldPause = false;
   tSNEShouldStop = true;
@@ -130,10 +138,10 @@ export class DataSet {
   superviseInput: string = '';
   dim: [number, number] = [0, 0];
   hasTSNERun: boolean = false;
-  spriteAndMetadataInfo: SpriteAndMetadataInfo;
-  fracVariancesExplained: number[];
-
   private tsne: TSNE;
+
+  hasUmapRun = false;
+  private umap: UMAP;
 
   /** Creates a new Dataset */
   constructor(
@@ -370,6 +378,84 @@ export class DataSet {
     });
   }
 
+  /** Runs UMAP on the data. */
+  projectUmap(nComponents: number, nNeighbors: number, stepCallback: (iter: number) => void) {
+    this.hasUmapRun = true;
+    this.umap = new UMAP({nComponents, nNeighbors});
+
+    let nEpochs = 1;
+    let currentEpoch = 0;
+    const epochStepSize = 10;
+    let sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
+
+    const optimizeUmap = () => new Promise((resolve) => {
+      const step = () => {
+        const epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
+        for (let i = 0; i < epochsBatch; i++) {
+          currentEpoch = this.umap.step();
+        }
+        let progressMsg = `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`
+        
+        util.runAsyncTask(progressMsg, () => {
+        }, UMAP_MSG_ID, 0).then(() => {
+          if (currentEpoch < nEpochs) {
+            step();
+          } else {
+            const result = this.umap.getEmbedding();
+            sampledIndices.forEach((index, i) => {
+              let dataPoint = this.points[index];
+    
+              dataPoint.projections['umap-0'] = result[i][0];
+              dataPoint.projections['umap-1'] = result[i][1];
+              if (nComponents === 3) {
+                dataPoint.projections['umap-2'] = result[i][2];
+              }
+            });
+            this.projections['umap'] = true;
+    
+            logging.setModalMessage(null, UMAP_MSG_ID);
+            this.hasUmapRun = true;
+            stepCallback(currentEpoch);
+            resolve();
+          }
+        }, _error => {
+          logging.setModalMessage(null, UMAP_MSG_ID);
+        });
+      }
+
+      requestAnimationFrame(step);
+    });
+  
+    const sampledData = sampledIndices.map(i => this.points[i]);
+    // TODO: Switch to a Float32-based UMAP internal
+    const X = sampledData.map(x => Array.from(x.vector));
+
+    // Nearest neighbors calculations.
+    let knnComputation: Promise<knn.NearestEntry[][]>;
+
+    if (this.nearest != null && nNeighbors === this.nearestK) {
+      // We found the nearest neighbors before and will reuse them.
+      knnComputation = Promise.resolve(this.nearest);
+    } else {
+      let sampledData = sampledIndices.map(i => this.points[i]);
+      this.nearestK = nNeighbors;
+      knnComputation = KNN_GPU_ENABLED ?
+          knn.findKNNGPUCosine(sampledData, nNeighbors, (d => d.vector)) :
+          knn.findKNN(
+              sampledData, nNeighbors, (d => d.vector),
+              (a, b, limit) => vector.cosDistNorm(a, b));
+    }
+    knnComputation.then(nearest => {
+      this.nearest = nearest;
+      util.runAsyncTask('Initializing UMAP...', () => {
+        const knnIndices = nearest.map(row => row.map(entry => entry.index));
+        const knnDistances = nearest.map(row => row.map(entry => entry.dist));
+
+        nEpochs = this.umap.initializeFit(X, knnIndices, knnDistances);
+      }, UMAP_MSG_ID).then(() => optimizeUmap());
+    });
+  }  
+
   /* Perturb TSNE and update dataset point coordinates. */
   perturbTsne() {
     if (this.hasTSNERun && this.tsne) {
@@ -490,7 +576,7 @@ export class DataSet {
   }
 }
 
-export type ProjectionType = 'tsne' | 'pca' | 'custom';
+export type ProjectionType = 'tsne' | 'umap' | 'pca' | 'custom';
 
 export class Projection {
   constructor(
@@ -533,6 +619,9 @@ export class State {
   tSNEPerplexity: number = 0;
   tSNELearningRate: number = 0;
   tSNEis3d: boolean = true;
+
+  /** UMAP parameters */
+  umapIs3d: boolean = true;
 
   /** PCA projection component dimensions */
   pcaComponentDimensions: number[] = [];
