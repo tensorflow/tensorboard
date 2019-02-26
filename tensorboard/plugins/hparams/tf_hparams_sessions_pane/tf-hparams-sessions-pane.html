@@ -69,7 +69,7 @@ view.
       <iron-pages selected="[[_selectedTab]]" class="fit tab-view">
         <div id="0" class="tab">
           <tf-hparams-table-view
-            api-url="[[apiUrl]]"
+            backend="[[backend]]"
             experiment-name="[[experimentName]]"
             schema="[[schema]]"
             session-groups="[[sessionGroups]]"
@@ -78,7 +78,7 @@ view.
         </div>
         <div id="1" class="tab">
           <tf-hparams-parallel-coords-view
-            api-url="[[apiUrl]]"
+            backend="[[backend]]"
             experiment-name="[[experimentName]]"
             schema="[[schema]]"
             session-groups="[[sessionGroups]]">
@@ -86,7 +86,7 @@ view.
         </div>
         <div id="2" class="tab">
           <tf-hparams-scatter-plot-matrix-view
-            api-url="[[apiUrl]]"
+            backend="[[backend]]"
             experiment-name="[[experimentName]]"
             schema="[[schema]]"
             session-groups="[[sessionGroups]]">
@@ -148,7 +148,8 @@ view.
       is: 'tf-hparams-sessions-pane',
       properties: {
         /* Public properties */
-        apiUrl: String,
+        // An object for making HParams API requests to the backend.
+        backend: Object,
         // The URL to use for the help button.
         helpUrl: String,
         // The URL to use for the bug-report button.

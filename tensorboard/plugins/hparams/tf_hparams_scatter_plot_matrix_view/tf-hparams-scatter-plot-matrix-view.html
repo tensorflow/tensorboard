@@ -75,7 +75,7 @@ limitations under the License.
             <tf-hparams-session-group-details
               class="section"
               id="details"
-              api-url="[[apiUrl]]"
+              backend="[[backend]]"
               experiment-name="[[experimentName]]"
               session-group="[[_selectedGroup]]"
               schema="[[schema]]">
@@ -139,7 +139,7 @@ limitations under the License.
       properties: {
         /* Public properties */
         // See the property description in tf-hparams-query-pane.html
-        apiUrl: String,
+        backend: Object,
         // See the property description in tf-hparams-query-pane.html
         experimentName: String,
         // See the property description in tf-hparams-query-pane.html

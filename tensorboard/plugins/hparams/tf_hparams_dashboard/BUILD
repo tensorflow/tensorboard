@@ -13,6 +13,7 @@ tf_web_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/hparams/tf_hparams_backend",
         "//tensorboard/plugins/hparams/tf_hparams_main",
     ],
 )

@@ -43,6 +43,7 @@ tf_web_library(
         ":tf_hparams_query_pane",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/hparams/tf_hparams_backend",
     ],
 )
 

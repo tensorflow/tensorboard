@@ -45,7 +45,9 @@ logger = tb_logging.get_logger()
 
 
 class HParamsPlugin(base_plugin.TBPlugin):
-  """HParams Plugin for TensorBoard."""
+  """HParams Plugin for TensorBoard.
+  It supports both GETs and POSTs. See 'http_api.md' for more details.
+  """
 
   plugin_name = metadata.PLUGIN_NAME
 
@@ -85,11 +87,10 @@ class HParamsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def get_experiment_route(self, request):
     try:
-      _verify_request_is_post(request, '/experiment')
-      # This backend currently ignores the request parameters, but we must
-      # advance the input stream to skip them -- otherwise the next HTTP
+      # This backend currently ignores the request parameters, but (for a POST)
+      # we must advance the input stream to skip them -- otherwise the next HTTP
       # request will be parsed incorrectly.
-      _ = request.stream.exhaust()
+      _ = _parse_request_argument(request, api_pb2.GetExperimentRequest)
       return http_util.Respond(
           request,
           json_format.MessageToJson(
@@ -104,9 +105,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def list_session_groups_route(self, request):
     try:
-      _verify_request_is_post(request, '/session_groups')
-      request_proto = json_format.Parse(request.data,
-                                        api_pb2.ListSessionGroupsRequest())
+      request_proto = _parse_request_argument(
+          request, api_pb2.ListSessionGroupsRequest)
       return http_util.Respond(
           request,
           json_format.MessageToJson(
@@ -122,9 +122,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def list_metric_evals_route(self, request):
     try:
-      _verify_request_is_post(request, '/metric_evals')
-      request_proto = json_format.Parse(request.data,
-                                        api_pb2.ListMetricEvalsRequest())
+      request_proto = _parse_request_argument(
+          request, api_pb2.ListMetricEvalsRequest)
       scalars_plugin = self._get_scalars_plugin()
       if not scalars_plugin:
         raise error.HParamsError('Internal error: the scalars plugin is not'
@@ -149,7 +148,13 @@ class HParamsPlugin(base_plugin.TBPlugin):
         scalars_metadata.PLUGIN_NAME)
 
 
-def _verify_request_is_post(request, end_point):
-  if request.method != 'POST':
-    raise error.HParamsError('%s must be a POST. Got: %s' %
-                             (end_point, request.method))
+def _parse_request_argument(request, proto_class):
+  if request.method == 'POST':
+    return json_format.Parse(request.data, proto_class())
+
+  # args.get() returns the request URI-unescaped.
+  request_json = request.args.get('request')
+  if request_json is None:
+    raise error.HParamsError(
+        'Expected a JSON-formatted \'request\' arg of type: %s' % proto_class)
+  return json_format.Parse(request_json, proto_class())
