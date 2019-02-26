@@ -140,6 +140,11 @@ aren't editable as there is no way to get new inference results when an example
 changes.
 
 ## What can it do?
+
+Details on the capabilities of the tool, including a guided walkthrough, can be
+found on the [What-If Tool website](https://pair-code.github.io/what-if-tool).
+Here is a basic rundown of what it can do:
+
 * Visualize a dataset of TensorFlow Example protos.
   * The main panel shows the dataset using [Facets Dive](https://pair-code.github.io/facets),
     where the examples can be organized/sliced/positioned/colored by any of the
@@ -157,8 +162,6 @@ changes.
     selected example.
   * Aggregate statistics for all loaded examples can be viewed in the side panel
     using [Facets Overview](https://pair-code.github.io/facets/).
-
-![Faceted examples and their aggregate statistics](/tensorboard/plugins/interactive_inference/img/wit-census-overview.png "Faceted examples and their aggregate statistics")
 
 * Visualize the results of the inference
   * By default, examples in the main panel are colored by their inference
@@ -202,11 +205,6 @@ changes.
     with the provided data on both models and you can compare the results
     between the two models using all the features defined above.
 
-
-![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/tensorboard/plugins/interactive_inference/img/wit-census-edit-rerun.png "The side panel showing new inference results after the “capital-gain” feature value has been edited")
-
-![Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change](/tensorboard/plugins/interactive_inference/img/wit-census-pd.png "Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change")
-
 * If using a binary classification model and your examples include a feature
   that describes the true label, you can do the following:
   * See the ROC curve and numeric confusion matrices in the side panel,
@@ -221,8 +219,6 @@ changes.
   * Set the positive classification thresholds with one click based on concepts
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
-
-![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:
