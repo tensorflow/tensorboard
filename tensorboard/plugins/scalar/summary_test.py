@@ -165,6 +165,17 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     event = self.read_single_event_from_eventfile()
     self.assertEqual(333, event.step)
 
+  def test_default_step(self):
+    try:
+      tf2.summary.experimental.set_step(333)
+      # TODO(nickfelt): change test logic so we can just omit `step` entirely.
+      self.scalar('a', 1.0, step=None)
+      event = self.read_single_event_from_eventfile()
+      self.assertEqual(333, event.step)
+    finally:
+      # Reset to default state for other tests.
+      tf2.summary.experimental.set_step(None)
+
 
 class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
   def scalar(self, *args, **kwargs):
