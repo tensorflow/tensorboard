@@ -72,14 +72,11 @@ limitations under the License.
     <style>
       :host {
         --paper-tab-ink: var(--tb-orange-dark);
+        --wit-color-gray300: #DADCE0;
       }
 
       #classification {
         width: 40%;
-      }
-
-      .example-and-inference-holder {
-        margin-left: 6px;
       }
 
       .example-holder {
@@ -88,13 +85,13 @@ limitations under the License.
 
       .inference-section-holder {
         display: flex;
-        margin-top: 5px;
-        margin-right: 5px;
+        margin-top: 6px;
+        margin-right: 6px;
       }
 
       .inference-section {
         width: 100%;
-        border: 1px solid lightgrey;
+        border: 1px solid var(--wit-color-gray300);
       }
 
       .inference-viewer {
@@ -103,7 +100,7 @@ limitations under the License.
       }
 
       .compare-inference-viewer {
-        border-left: 1px solid lightgrey;
+        border-left: 1px solid var(--wit-color-gray300);
       }
 
       .tf-option-selector-0 .content-wrapper.tf-option-selector  > * {
@@ -130,23 +127,26 @@ limitations under the License.
       }
 
       .info-text {
-        font-size: 12px;
-        color: #777;
-        margin: 20px 0px;
+        font-size: 14px;
+        color: #3C4043;
+        letter-spacing: 0.25px;
+        line-height: 20px;
+        margin: 12px auto;
       }
 
       .pd-info-text {
         font-size: 18px;
-        color: #777;
+        color: #3C4043;
+        line-height: 24px;
         padding-top: 12px;
-        padding-right: 5px;
-        padding-left: 15px;
+        padding-right: 4px;
+        padding-left: 12px;
       }
 
       .pd-no-features-text {
         font-size: 18px;
-        color: #777;
-        padding: 12px 40px;
+        color: #3C4043;
+        padding: 12px 48px;
       }
 
       .accept-button-holder {
@@ -256,12 +256,6 @@ limitations under the License.
         flex-direction: column;
       }
 
-      .top-side {
-        display: flex;
-        padding: 0 8px 10px 0;
-        border-bottom: 1px solid gray;
-      }
-
       .side-tabs {
         display: flex;
         height: calc(100% - 50px);
@@ -282,14 +276,14 @@ limitations under the License.
         padding-left: 5px;
         width: 30%;
         overflow-y: auto;
-        border-right: 1px solid lightgrey;
+        border-right: 1px solid var(--wit-color-gray300);
       }
 
       .config-main-content {
         width: 70%;
         display: flex;
         flex-direction: column;
-        background: #EFEFEF;
+        background: #F8F9FA;
       }
 
       .stats-tab {
@@ -304,14 +298,33 @@ limitations under the License.
       }
 
       .pd-plots-header {
-        height: 50px;
-        min-height: 50px;
-        max-height: 50px;
+        height: 52px;
+        min-height: 52px;
+        max-height: 52px;
+        border-bottom: solid 2px var(--wit-color-gray300);
+        display: flex;
+        justify-content: space-between;
       }
 
       .pdplots-holder {
         flex-grow: 1;
-        overflow: auto;
+        overflow-y: overlay;
+        background: #F8F9FA;
+      }
+
+      .pd-range-hyphen {
+        padding-right: 6px;
+        padding-top: 8px;
+      }
+
+      .pd-range-control {
+        border-bottom: solid 1px #FCC934;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        height: 36px;
+        width: 104px;
+        margin-right: 6px;
       }
 
       #overview {
@@ -330,7 +343,7 @@ limitations under the License.
       }
 
       .right-side-performance-tab {
-        margin-top: 8px;
+        margin: 4px;
       }
 
       tf-confusion-matrix {
@@ -357,7 +370,7 @@ limitations under the License.
       }
 
       .datapoint-controls-holder {
-        border-bottom: 1px solid lightgrey;
+        border-bottom: 1px solid var(--wit-color-gray300);
         display: flex;
         flex-grow: 0;
         flex-shrink: 0;
@@ -376,20 +389,14 @@ limitations under the License.
       }
 
       .tf-category-pane {
-        background-color: white;
-        border: 1px solid lightgrey;
-        cursor: pointer;
-        width: 100%;
-        font-size: 15px;
-        line-height: 1;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
-        padding: 10px 15px;
-        text-align: left;
+        flex-grow: 1;
       }
 
       .tf-category-pane-content {
-        padding: 15px;
-        border: 1px solid #dedede;
+        flex-wrap: wrap;
+        flex-grow: 1;
+        padding: 12px;
+        border: 1px solid var(--wit-color-gray300);
         border-top: none;
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
@@ -397,31 +404,31 @@ limitations under the License.
       }
 
       :host vz-line-chart {
-        height: 120px;
-        width: 200px;
+        margin: 12px 12px 12px 24px;
+        height: 180px;
+        width: 300px;
         display: inline-block;
       }
 
       :host vz-bar-chart {
-        height: 300px;
-        width: 400px;
+        margin: 12px 12px 12px 24px;
+        height: 240px;
+        width: 450px;
         display: inline-block;
       }
 
       .pd-input-container {
-        display: flex;
-        position: absolute;
-        right: 4px;
-        top:4px;
+        display: block;
+        flex-grow: 0;
+        padding: 12px 48px 24px 24px;
+        background: #FeF7E0;
+        border: solid 1px #FDE293;
       }
 
       .style-input {
         width: 50px;
         text-align: right;
-      }
-
-      pre {
-        white-space: pre-wrap;
+        background: white;
       }
 
       .feature-container-holder {
@@ -462,7 +469,7 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid #DADCE0;
+        border: 1px solid var(--wit-color-gray300);
         color: var(--tb-orange-dark);
         font-size: 14px;
         font-weight: 400;
@@ -678,8 +685,8 @@ limitations under the License.
         display: table;
         height: 100%;
         width: 10px;
-        border-left: 1px solid lightgrey;
-        border-right: 1px solid lightgrey;
+        border-left: 1px solid var(--wit-color-gray300);
+        border-right: 1px solid var(--wit-color-gray300);
         cursor: pointer;
       }
 
@@ -717,7 +724,7 @@ limitations under the License.
         position: relative;
         padding: 10px 8px;
         background-color: #FEF7E0;
-        border-bottom: 1px solid #dedede;
+        border-bottom: 1px solid var(--wit-color-gray300);
         border-top: none;
         border-left: none;
         border-right: none;
@@ -771,7 +778,14 @@ limitations under the License.
       }
 
       .pd-toggle {
-        margin: 0 0 0 20px;
+        margin: 0 8px 0 20px;
+      }
+
+      .pd-entry-container {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        flex-grow: 1;
       }
 
       .info-icon {
@@ -922,7 +936,7 @@ limitations under the License.
       }
 
       .border-right {
-        border-right: 1px solid lightgrey;
+        border-right: 1px solid var(--wit-color-gray300);
       }
 
       paper-dialog {
@@ -939,13 +953,13 @@ limitations under the License.
       .doc-image {
         width: 128px;
         height: 96px;
-        border: 1px solid lightgrey;
+        border: 1px solid var(--wit-color-gray300);
       }
 
       .control-divider {
         margin: 5px 0 5px 5px;
         width: 5px;
-        border-left: 1px solid lightgrey;
+        border-left: 1px solid var(--wit-color-gray300);
       }
 
       .optimization-radio {
@@ -971,8 +985,8 @@ limitations under the License.
         background: white;
         width: 100%;
         display: flex;
-        border-bottom: 1px solid lightgrey;
-        min-height: 50px;
+        border-bottom: 1px solid var(--wit-color-gray300);
+        min-height: 52px;
         justify-content: space-between;
       }
       .perf-table-title {
@@ -990,10 +1004,12 @@ limitations under the License.
         font-weight: 500;
         color: #80868B;
         font-size: 14px;
+        line-height:16px;
+        letter-spacing: 0.25;
         display: flex;
-        border-bottom: 1px solid lightgrey;
+        border-bottom: 1px solid var(--wit-color-gray300);
         min-height: min-content;
-        padding-top: 10px;
+        padding-top: 12px;
         padding-bottom: 4px;
       }
 
@@ -1006,15 +1022,16 @@ limitations under the License.
         background: white;
         color: #3C4043;
         font-size: 14px;
+        border-bottom: solid 1px var(--wit-color-gray300);
       }
 
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
-        margin: 0 10px;
-        border-left: 1px solid lightgrey;
-        border-bottom: 1px solid lightgrey;
-        border-right: 1px solid lightgrey;
+        margin: 0 12px;
+        border-left: 1px solid var(--wit-color-gray300);
+        border-bottom: 1px solid var(--wit-color-gray300);
+        border-right: 1px solid var(--wit-color-gray300);
         background: white;
       }
 
@@ -1022,16 +1039,18 @@ limitations under the License.
         width: 100%;
         display: flex;
         background: white;
+        position:relative;
       }
-      
+
       .perf-table-row-expanded {
         width: 100%;
         display: flex;
-        border-bottom: 1px solid lightgrey;
-        border-top: 1px solid lightgrey;
-        border-radius: 5px;
-        box-shadow: 0 1px 4px #888888;
+        border-bottom: 1px solid var(--wit-color-gray300);
+        border-top: 1px solid var(--wit-color-gray300);
+        border-radius: 2px;
+        box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
         background: white;
+        position: relative;
       }
 
       .perf-table-text-entry {
@@ -1412,33 +1431,35 @@ limitations under the License.
                     </div>
                     <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
-                      <div class="flex pd-plots-header">
-                        <div class="pd-info-text">Partial Dependence Plots</div>
-                        <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
-                        </paper-icon-button>
+                      <div class="pd-plots-header">
+                        <div class="flex">
+                          <div class="pd-info-text">Partial Dependence Plots</div>
+                          <paper-icon-button icon="info-outline" class="info-icon pd-info-icon no-padding" on-tap="openDialog">
+                          </paper-icon-button>
+                          <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
+                            <div class="dialog-title">Partial Dependence Plots</div>
+                            <div>Partial dependence plots visualize the change in inference results for every feature,
+                              as the value for that feature is changed to different valid values.
+                            </div>
+                            <div>For numeric features, you can set the minimum and maximum values to plot.</div>
+                            <div>For string features, the most popular feature values are shown as alternatives to
+                              the feature value for the selected datapoint.
+                            </div>
+                            <div>For features with multiple feature values per datapoint, a single plot is shown for for
+                              each feature value in the selected datapoint. You can override which feature values have
+                              plots created for them by specifying the indices to shown partial dependence plots for,
+                              if the datapoint contains multiple feature values for a feature.
+                            </div>
+                            <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
+                              changing a single feature across all datapoints. When it is turned off, the plots show the
+                              effect of a repeatedly changing a single feature on the selected datapoint.
+                            </div>
+                          </paper-dialog>
+                        </div>
                         <paper-toggle-button class="pd-toggle" checked="{{globalPdPlots}}"
                             on-change="hideAllPdElements_" disabled$="[[!hasSelected(selectedExampleAndInference)]]">
-                          Global
+                          Global partial dependence plots
                         </paper-toggle-button>
-                        <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
-                          <div class="dialog-title">Partial Dependence Plots</div>
-                          <div>Partial dependence plots visualize the change in inference results for every feature,
-                            as the value for that feature is changed to different valid values.
-                          </div>
-                          <div>For numeric features, you can set the minimum and maximum values to plot.</div>
-                          <div>For string features, the most popular feature values are shown as alternatives to
-                            the feature value for the selected datapoint.
-                          </div>
-                          <div>For features with multiple feature values per datapoint, a single plot is shown for for
-                            each feature value in the selected datapoint. You can override which feature values have
-                            plots created for them by specifying the indices to shown partial dependence plots for,
-                            if the datapoint contains multiple feature values for a feature.
-                          </div>
-                          <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
-                            changing a single feature across all datapoints. When it is turned off, the plots show the
-                            effect of a repeatedly changing a single feature on the selected datapoint.
-                          </div>
-                        </paper-dialog>
                       </div>
                       <template is="dom-if" if="[[!areTherePdPlotFeatures_(partialDepPlotEligibleFeatures)]]">
                         <div class="pd-no-features-text">The loaded dataset has no features to show partial dependence plots for.</div>
@@ -1446,39 +1467,45 @@ limitations under the License.
                       <div class="pdplots-holder">
                         <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                           <div class="feature-container" data-feature-name$="[[item.name]]">
-                            <button class="tf-category-pane" on-tap="categoryPaneClicked" style="position:relative">
-                              [[item.name]]
-                              <div class="pd-input-container">
-                                <div class="range-input-container">
-                                  <span class="info-text"
-                                        title="The range of values to test (default values are automatically inferred)."
-                                        hidden$="[[item.samples]]">
-                                    Value range to test:
-                                  </span>
-                                  <input type="number"
-                                          class="style-input x-min"
-                                          value="[[item.observedMin]]"
-                                          title="The minimum value to test (default value is automatically inferred)."
-                                          hidden$="[[item.samples]]"
-                                          on-input="pdInputChanged">
-                                  <input type="number"
-                                          class="style-input x-max"
-                                          value="[[item.observedMax]]"
-                                          title="The maximum value to test (default value is automatically inferred)."
-                                          hidden$="[[item.samples]]"
-                                          on-input="pdInputChanged">
-                                  <span title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields."
-                                        hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]">
-                                    <span class="info-text">Optional feature indices: </span>
-                                    <input type="text"
-                                            class="style-input feature-index-pattern"
-                                            on-input="pdInputChanged">
-                                  </span>
-                                </div>
-                                <iron-icon class="expand-collapse-button" icon="expand-less"></iron-icon>
+                            <div class="perf-table-entry perf-table-row">
+                              <div class="perf-table-arrow">
+                                <paper-icon-button class="pd-row-arrow rotated-icon" icon="arrow-drop-down" on-tap="categoryPaneClicked"></paper-icon-button>
                               </div>
-                            </button>
-                            <div class="tf-category-pane-content" hidden>
+                              <div class="perf-table-val perf-table-clickable tf-category-pane perf-table-text-entry" on-tap="categoryPaneClicked">[[item.name]]
+                              </div>
+                            </div>
+                            <div class="pd-entry-container perf-table-entry-expanded" hidden>
+                              <div class="pd-input-container" hidden$="[[shouldHidePdInputContainer(item.samples, item.name, selected)]]">
+                                  <div class="range-input-container" hidden$="[[item.samples]]">
+                                    <div class="info-text"
+                                      title="The range of values to test (default values are automatically inferred).">
+                                      Set range of values to test
+                                    </div>
+                                    <div class="flex">
+                                      <input type="number"
+                                              class="style-input x-min pd-range-control"
+                                              value="[[item.observedMin]]"
+                                              title="The minimum value to test (default value is automatically inferred)."
+                                              on-input="pdInputChanged"/>
+                                      <div class="pd-range-hyphen">-</div>
+                                      <input type="number"
+                                              class="style-input x-max pd-range-control"
+                                              value="[[item.observedMax]]"
+                                              title="The maximum value to test (default value is automatically inferred)."
+                                              on-input="pdInputChanged"/>
+                                    </div>
+                                  </div>
+                                  <div class="feature-index-container" hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]"
+                                       title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields.">
+                                    <div class="info-text">
+                                      Set feature indices <i>(optional)</i>
+                                    </div>
+                                    <input type="text"
+                                            class="style-input feature-index-pattern pd-range-control"
+                                            on-input="pdInputChanged"/>
+                                  </div>
+                              </div>
+                              <div class="tf-category-pane-content"></div>
                             </div>
                           </div>
                         </template>
@@ -2404,8 +2431,6 @@ limitations under the License.
           type: Number,
           readOnly: true,
         },
-        // Timer for debounding of refreshing dive/stats after data changes.
-        refreshDiveTimer_: Number,
         // Show nearest counterfactual toggle button setting.
         showNearestCounterfactual: {
           type: Boolean,
@@ -4310,8 +4335,8 @@ limitations under the License.
       refreshDive_: function() {
         // Debounce a refresh request, for when multiple updates are happening
         // in succession.
-        clearTimeout(this.refreshDiveTimer_);
-        this.refreshDiveTimer_ = setTimeout(() => this.refreshDiveImpl_(), 500);
+        this.debounce('refreshDiveDebounce',
+                      () => this.refreshDiveImpl_(), 500);
       },
 
       /**
@@ -5122,6 +5147,17 @@ limitations under the License.
         return !Array.isArray(item[featureName]);
       },
 
+      /** Check if pd-input-container has any elements in it and hide it if it
+        does not*/
+      shouldHidePdInputContainer: function(samples, featureName, selected) {
+        if (!this.shouldHideFeatureIndiciesSelector(featureName, selected)
+            || !samples){
+          return false;
+        } else {
+          return true;
+        }
+      },
+
       /** Returns the feature container associated with the feature name. */
       featureContainerByName: function(featureName){
         return this.$$('[data-feature-name="' + featureName + '"]');
@@ -5129,32 +5165,16 @@ limitations under the License.
 
       /** Return the feature container associated with the specific event. */
       featureContainerByEvent: function(event){
-        let el = Polymer.dom(event).localTarget;
+        let el = event.target;
         while (!el.classList.contains('feature-container')) {
           el = el.parentNode;
        }
        return el;
       },
 
-      /** Returns bool for whether an ancestor has targetClass. */
-      hasAncestorClass: function(event, targetClass){
-        let el = Polymer.dom(event).localTarget;
-        while (!el.classList.contains('feature-container')) {
-          if (el.classList.contains(targetClass)) {
-              return true;
-          }
-          el = el.parentNode;
-       }
-       return false;
-      },
-
       /** Gets the selector within .feature-container for the event. */
       getUniqueByEvent(event, selector){
         return this.featureContainerByEvent(event).querySelector(selector);
-      },
-
-      shouldToggleCategoryPane: function(event){
-        return !this.hasAncestorClass(event, 'range-input-container');
       },
 
       partialDepPlotEligibleFeaturesSet: function(features) {
@@ -5163,7 +5183,7 @@ limitations under the License.
         }
         // Open up the first PD plot pane after the category panes have loaded.
         setTimeout(() => {
-          if (this.$$('.tf-category-pane-content').hidden) {
+          if (this.$$('.pd-entry-container').hidden) {
             this.$$('.tf-category-pane').click();
           }
         }, 100);
@@ -5174,41 +5194,36 @@ limitations under the License.
        * a feature.
        */
       categoryPaneClicked: function(event){
-        // Make sure the user meant to trigger a get-request.
-        if (!this.shouldToggleCategoryPane(event)){
-          return;
-        }
+        const featureContainer = this.featureContainerByEvent(event);
 
-        const element =
-          this.getUniqueByEvent(event, '.tf-category-pane-content');
-        const icon =
-          this.getUniqueByEvent(event, 'iron-icon');
+        const element = featureContainer.querySelector('.pd-entry-container')
 
         if (element.hasAttribute('hidden')){
-          element.removeAttribute('hidden');
-
-          // Make sure the feature wasn't already requested.
-          const featureName = event.model.get('item').name;
-          if (this.partialDepPlotPendingFeatures.indexOf(featureName) > -1) {
-            return;
-          }
-          this.partialDepPlotPendingFeatures.push(featureName);
-
-          this.getInferenceVisualization(featureName, event);
-
-          icon.icon = 'expand-more';
+          this.drawPdCharts_(event);
+          this.showPdElement_(featureContainer);
         } else {
-          this.hidePdElement_(element);
-          icon.icon = 'expand-less';
+          this.hidePdElement_(featureContainer);
         }
       },
 
       /**
-       * Handler for closing the partial dependence plots holder for a feature.
+       * Handler for drawing partial dependence plots for a feature.
        */
-      hidePdElement_: function(element) {
-        element.setAttribute('hidden', true);
+      drawPdCharts_: function(event) {
+        // Make sure the feature wasn't already requested.
+        const featureName = event.model.get('item').name;
+        if (this.partialDepPlotPendingFeatures.indexOf(featureName) > -1) {
+          return;
+        }
+        this.partialDepPlotPendingFeatures.push(featureName);
 
+        this.getInferenceVisualization(featureName, event);
+      },
+
+      /**
+       * Handler for clearing the partial dependence plots for a feature.
+       */
+       clearPdElementCharts_: function(element) {
         // Delete all the charts.
         let charts = element.querySelectorAll('vz-line-chart');
         charts.forEach(function(chart){
@@ -5220,27 +5235,62 @@ limitations under the License.
         });
       },
 
+      /**
+       * Handler for closing the partial dependence plots holder for a feature.
+       */
+      hidePdElement_: function(featureContainer) {
+        // Clear the plots
+        const element = featureContainer.querySelector('.pd-entry-container');
+        this.clearPdElementCharts_(element);
+        element.setAttribute('hidden', true)
+        // Handle icon
+        const icon = featureContainer.querySelector('.pd-row-arrow');
+        icon.classList.remove('normal-icon');
+        icon.classList.add('rotated-icon');
+        // Handle row style
+        const row = featureContainer.querySelector('.perf-table-entry');
+        row.classList.add('perf-table-row');
+        row.classList.remove('perf-table-row-expanded');
+      },
+
+      showPdElement_: function(featureContainer) {
+        const element = featureContainer.querySelector('.pd-entry-container');
+        element.removeAttribute('hidden')
+        // Handle icon
+        const icon = featureContainer.querySelector('.pd-row-arrow');
+        icon.classList.add('normal-icon');
+        icon.classList.remove('rotated-icon');
+        // Handle row style
+        const row = featureContainer.querySelector('.perf-table-entry');
+        row.classList.remove('perf-table-row');
+        row.classList.add('perf-table-row-expanded');
+      },
+
       hideAllPdElements_: function() {
-        const elements = Polymer.dom(this.root).querySelectorAll('.tf-category-pane-content');
+        const elements = Polymer.dom(this.root).querySelectorAll('.feature-container');
         for (let i = 0; i < elements.length; i++) {
           this.hidePdElement_(elements[i]);
         }
       },
 
+      pdInputChanged: function(event) {
+        // Debounce a refresh request, for when multiple updates are happening
+        // in succession.
+        this.debounce('pdInputChangedDebounce',
+                      () => this.pdInputChangedImpl(event), 500);
+      },
+
       /**
        * Handler for changes in settings for a partial dependence plot.
        */
-      pdInputChanged: function(event) {
+      pdInputChangedImpl: function(event) {
         // Hide all existing plots so they can be regenerated with the new
         // settings.
         const element =
           this.getUniqueByEvent(event, '.tf-category-pane-content');
-        if (!element.hasAttribute('hidden')) {
-          this.hidePdElement_(element);
-          const icon =
-            this.getUniqueByEvent(event, 'iron-icon');
-          icon.icon = 'expand-less';
-        }
+        this.clearPdElementCharts_(element);
+        // Draw new plots
+        this.drawPdCharts_(event);
       },
 
       /**
@@ -5248,10 +5298,7 @@ limitations under the License.
        */
       populatePdTabs: function() {
         // First hide all existing PD plots before refreshing.
-        const elements = document.querySelectorAll('.tf-category-pane-content');
-        for (let i = 0; i < elements.length; i++) {
-          this.hidePdElement_(elements[i]);
-        }
+        this.hideAllPdElements_();
 
         // Call into the backend to get the possible features to show plots for.
         if (!this.local) {
@@ -5317,10 +5364,10 @@ limitations under the License.
         let name = title;
         if (selectedExampleNum != null && selectedExampleNum != '') {
           if (comparedIndices != null && comparedIndices.length > 0) {
-          name += ' | Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
+            name += ' - Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
           }
           else {
-            name += ' | Datapoint ' + selectedExampleNum;
+            name += ' - Datapoint ' + selectedExampleNum;
           }
         }
         return name;
