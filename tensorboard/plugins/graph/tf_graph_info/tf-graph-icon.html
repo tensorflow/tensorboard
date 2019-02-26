@@ -274,7 +274,7 @@ limitations under the License.
         _isSummary: function(inputNode, inputSummary) {
           if (inputNode) {
             return this._isType(inputNode, null, 'OP') &&
-                inputNode.op.substr(-7) === 'Summary';
+                typeof inputNode.op === 'string' && inputNode.op.substr(-7) === 'Summary';
           }
           return !!inputSummary;
         },
