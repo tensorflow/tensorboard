@@ -45,7 +45,9 @@ logger = tb_logging.get_logger()
 
 
 class HParamsPlugin(base_plugin.TBPlugin):
-  """HParams Plugin for TensorBoard."""
+  """HParams Plugin for TensorBoard.
+  It supports both GETs and POSTs. See 'http_api.md' for more details.
+  """
 
   plugin_name = metadata.PLUGIN_NAME
 
@@ -151,8 +153,8 @@ def _parse_request_argument(request, proto_class):
     return json_format.Parse(request.data, proto_class())
 
   # args.get() returns the request URI-unescaped.
-  request_proto = request.args.get('request')
-  if request_proto is None:
+  request_json = request.args.get('request')
+  if request_json is None:
     raise error.HParamsError(
-        'Expected a \'request\' arg of type: %s' % proto_class)
-  return json_format.Parse(request_proto, proto_class())
+        'Expected a JSON-formatted \'request\' arg of type: %s' % proto_class)
+  return json_format.Parse(request_json, proto_class())

@@ -25,7 +25,6 @@ limitations under the License.
          supports one experiment per invocation. -->
     <tf-hparams-main
       id="hparams-main"
-      data/plugin/hparams
       backend="[[_backend]]"
       experiment-name="">
     </tf-hparams-main>
@@ -39,7 +38,10 @@ limitations under the License.
           type: Object,
           value: () => {
             return new tf.hparams.Backend(
-                /* apiUrl= */ 'data/plugin/hparams',
+                /* apiUrl= */ tf_backend.getRouter().pluginRoute(
+                    /* pluginName= */ 'hparams',
+                    /* route= */ '',
+                    /* params= */ {}),
                 new tf_backend.RequestManager())
           }
         }

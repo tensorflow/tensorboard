@@ -18,33 +18,49 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 
 <script>
+/* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
+   backend.
+   Any implementation with the same public interface can be passed to 
+   tf-hparams-main as the 'backend' property.
+*/
 'use strict';
 var tf;
 (function (tf) {
   (function (hparams) {
-    function Backend(apiUrl, requestManager) {
-      this._apiUrl = apiUrl;
-      this._requestManager = requestManager;
-    }
+    class Backend {
+      // Constructs a backend that uses the given tf_backend.requestManager to
+      // send "GET" requests. The apiUrl parameter should denote the base
+      // url to use.
+      constructor(apiUrl, requestManager) {
+        this._apiUrl = apiUrl;
+        this._requestManager = requestManager;
+      }
 
-    Backend.prototype.getExperiment = function(request) {
-      return this._requestManager.request(
-          this._buildUrl('experiment', request));
-    }
+      // In the API methods below, 'request' should be a JSON translated request
+      // protocol buffer and the response is a JSON translated response protocol
+      // buffer. See api.proto for the details.
 
-    Backend.prototype.listSessionGroups = function(request) {
-      return this._requestManager.request(
-          this._buildUrl('session_groups', request));
-    }
+      getExperiment(experimentRequest) {
+        return this._requestManager.request(
+            this._buildUrl('experiment', experimentRequest));
+      }
 
-    Backend.prototype.listMetricEvals = function(request) {
-      return this._requestManager.request(
-          this._buildUrl('metric_evals', request));
-    }
+      listSessionGroups(listSessionGroupsRequest) {
+        return this._requestManager.request(
+            this._buildUrl('session_groups', listSessionGroupsRequest));
+      }
 
-    Backend.prototype._buildUrl = function(methodName, request) {
-      const encodedRequest = encodeURIComponent(JSON.stringify(request));
-      return this._apiUrl + '/' + methodName + '?request=' + encodedRequest;
+      listMetricEvals(listMetricEvalsRequest) {
+        return this._requestManager.request(
+            this._buildUrl('metric_evals', listMetricEvalsRequest));
+      }
+
+      // ---- Private methods below -------------------------------------------
+      _buildUrl(methodName, request_proto) {
+        const encodedRequest = encodeURIComponent(
+            JSON.stringify(request_proto));
+        return this._apiUrl + '/' + methodName + '?request=' + encodedRequest;
+      }
     }
 
     hparams.Backend = Backend;
