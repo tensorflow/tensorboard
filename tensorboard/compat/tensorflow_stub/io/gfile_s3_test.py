@@ -26,7 +26,7 @@ from moto import mock_s3
 from tensorboard.compat.tensorflow_stub import errors
 from tensorboard.compat.tensorflow_stub.io import gfile
 
-# Placeholder values to make sure any local keys are overriden
+# Placeholder values to make sure any local keys are overridden
 # and moto mock is being called
 os.environ.setdefault("AWS_ACCESS_KEY_ID", "foobar_key")
 os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "foobar_secret")
