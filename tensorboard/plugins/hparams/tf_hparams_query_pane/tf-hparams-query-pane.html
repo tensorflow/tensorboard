@@ -470,6 +470,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       ],
 
       reload() {
+        this._queryServer();
       },
 
       // Sends a request for experiment to the server, and updates
@@ -711,7 +712,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                 reject(errorMessage);
                 return;
               }
-              // WE use the following annotation to suppress warning from
+              // We use the following annotation to suppress a warning from
               // closure.
               /**
                * @type {string}
