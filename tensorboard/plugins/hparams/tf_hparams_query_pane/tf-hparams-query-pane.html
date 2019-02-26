@@ -428,6 +428,10 @@ TODO(erez): Add aggregation controls for repeated sessions.
           }
         },
 
+        // The resolve() callback for the _getExperimentResolved promise.
+        // See the _getExperimentResolved property.
+        _resolveGetExperiment: Function,
+
         // A tf_backend.canceller used to keep track of pending
         // ListSessionGroups requests and cancel their resulting UI updates
         // when a new ListSessionGroups request is made.
@@ -604,32 +608,37 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // Sends a query to the server for the list of session groups.
       // Asynchronously updates the sessionGroups property with the response.
       _queryServer() {
-        this.debounce("queryServer", () => {
-          this._sendListSessionGroupsRequest().then(
-              this._listSessionGroupsCanceller.cancellable(
-                  ({value, cancelled}) => {
-                    if (cancelled) {
-                      return;
-                    }
-                    // The server may not support a "totalSize" field in
-                    // which case this field would be negative, and we
-                    // populate the page count with a "?".
-                    if (value.totalSize >= 0) {
-                      const pageSize = +this._pageSizeInput.value;
-                      this.set(
-                          "_pageCountStr",
-                          String(Math.ceil(value.totalSize / pageSize)));
-                      this.set(
-                          "_totalSessionGroupsCountStr", value.totalSize);
-                    } else {
-                      this.set("_pageCountStr", "?");
-                      this.set(
-                          "_totalSessionGroupsCountStr", "Unknown");
-                    }
-                    tf.hparams.utils.setArrayObservably(
-                        this, "sessionGroups", value.sessionGroups);
-                  }));
-        }, 100);
+        this.debounce("queryServer", ()=>this._queryServerNoDebounce(), 100);
+      },
+
+      // Directly queries the server without a debounce, called in queryServer()
+      // above. Returns a promise, for use in unit-tests, that resolves (with
+      // 'undefined') when the ListSessionGroups RPC returns.
+      _queryServerNoDebounce() {
+        return this._sendListSessionGroupsRequest().then(
+            this._listSessionGroupsCanceller.cancellable(
+                ({value, cancelled}) => {
+                  if (cancelled) {
+                    return;
+                  }
+                  // The server may not support a "totalSize" field in
+                  // which case this field would be negative, and we
+                  // populate the page count with a "?".
+                  if (value.totalSize >= 0) {
+                    const pageSize = +this._pageSizeInput.value;
+                    this.set(
+                        "_pageCountStr",
+                        String(Math.ceil(value.totalSize / pageSize)));
+                    this.set(
+                        "_totalSessionGroupsCountStr", value.totalSize);
+                  } else {
+                    this.set("_pageCountStr", "?");
+                    this.set(
+                        "_totalSessionGroupsCountStr", "Unknown");
+                  }
+                  tf.hparams.utils.setArrayObservably(
+                      this, "sessionGroups", value.sessionGroups);
+                }));
       },
 
       _sendListSessionGroupsRequest() {
@@ -681,8 +690,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
         function parseInputInterval(inputIntervalPath) {
           const minValueStr = _this.get(inputIntervalPath + ".min.value");
           console.assert(minValueStr !== undefined);
-          // The protobuffer JSON mapping maps the strings "-Infinity" and "Infinity"
-          // to the floating-point infinity and -infinity values.
+          // The protobuffer JSON mapping maps the strings "-Infinity" and
+          // "Infinity" to the floating-point infinity and -infinity values.
           const minValue =
                 minValueStr === "" ? "-Infinity" : +minValueStr;
           _this.set(inputIntervalPath + ".min.invalid",
