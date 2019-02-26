@@ -514,6 +514,7 @@ limitations under the License.
       paper-tab {
         font-size: 14px;
         font-weight: 500;
+        padding: 0 32px;
       }
 
       paper-tab:not(.iron-selected) {
@@ -4154,8 +4155,10 @@ limitations under the License.
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
           }
           else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
-            this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
-            if (this.numModels > 1) {
+            if (this.numModels == 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 0);
+            } else {
+              this.$.dive.horizontalPosition = this.strWithModelName_(inferenceScoreStr, 0);
               this.$.dive.verticalPosition = this.strWithModelName_(inferenceScoreStr, 1);
             }
           }
@@ -4378,7 +4381,8 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeAsyncRequest_: function(url, thenDoFn, postData){
+      makeAsyncRequest_: function(
+          url, thenDoFn, postData, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -4387,6 +4391,9 @@ limitations under the License.
             // show toast with the error
             this.showToast_(result.value.error);
             this.$.spinner.hidden = true;
+            if (errorFn != null) {
+              errorFn();
+            }
           } else if (thenDoFn) {
             thenDoFn(result);
           }
@@ -4396,6 +4403,9 @@ limitations under the License.
               this.exampleStatusStr = 'Request failed';
               this.showToast_('Request failed: ' + reason);
               this.$.spinner.hidden = true;
+              if (errorFn != null) {
+                errorFn();
+              }
             });
       },
 
@@ -4793,6 +4803,8 @@ limitations under the License.
             });
         });
 
+        const valueFormatter = vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
         const toolTipColumns = [
           {
               title: 'Inference value',
@@ -4815,7 +4827,7 @@ limitations under the License.
           },
           {
               title: 'Score',
-              evaluate: d => d.value.y,
+              evaluate: d => valueFormatter(d.value.y),
           },
         ];
         // If there is more than 1 model, show model number tooltip
@@ -4833,7 +4845,7 @@ limitations under the License.
         const chart = document.createElement('vz-bar-chart');
         chart.colorScale = new Plottable.Scales.Color().range(
           this.pdPlotColors);
-        chart.lineColorScale = new Plottable.Scales.Color().range(
+        chart.linesColorScale = new Plottable.Scales.Color().range(
           this.pdPlotTransparentColors);
         chart.data = mapped;
         chart.lines = lines;
@@ -5021,10 +5033,13 @@ limitations under the License.
         console.error(msg);
       },
 
-      makeChartForFeature: function(chartType, featureName, data) {
-        // Delete spinner
+      deletePdPlotSpinner: function(featureName) {
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
+      },
+
+      makeChartForFeature: function(chartType, featureName, data) {
+        this.deletePdPlotSpinner(featureName);
         // A separate chart per feature index for features with multiple values
         data.forEach(
           subfeature => this.addChart(chartType, featureName, subfeature));
@@ -5065,11 +5080,16 @@ limitations under the License.
         if (!this.local) {
           const url = tf_backend.addParams(
             '/data/plugin/whatif/infer_mutants', urlParams);
-          const chartMakerCallback = function(result){
-            this.makeChartForFeature(
+          const chartMakerCallback = result => {
+            return this.makeChartForFeature(
               result.value.chartType, featureName, result.value.data);
-          };
-          this.makeAsyncRequest_(url, chartMakerCallback.bind(this), null);
+          }
+          const chartErrorCallback = () => {
+            return this.handleChartErrorForFeature(featureName);
+          }
+          this.makeAsyncRequest_(
+            url, chartMakerCallback.bind(this), null,
+            chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5080,6 +5100,17 @@ limitations under the License.
         const spinner = document.createElement('paper-spinner-lite');
         spinner.setAttribute('active', true);
         Polymer.dom(container).appendChild(spinner);
+      },
+
+      handleChartErrorForFeature: function(featureName) {
+        // Remove the feature from pending queue, so it can be called again.
+        const featureInd =
+          this.partialDepPlotPendingFeatures.indexOf(featureName);
+        if (featureInd > -1) {
+          this.partialDepPlotPendingFeatures.splice(featureInd, 1);
+        }
+        // Delete the spinner.
+        this.deletePdPlotSpinner(featureName);
       },
 
       shouldHideFeatureIndiciesSelector: function(featureName, selected) {

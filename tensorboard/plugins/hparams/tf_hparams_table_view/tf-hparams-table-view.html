@@ -146,7 +146,21 @@ session group.
       ],
 
       _schemaOrSessionGroupsChanged() {
+        // Vaadin-grid removes 'row-details' if the schema changes
+        // and doesn't update 'expandedItems'. So we first close the
+        // expanded items, call Polymer.dom.flush() to update the grid,
+        // and then re-open the groups that were open before.
+        const expandedItems = this.$.sessionGroupsTable.get("expandedItems");
         this.$.sessionGroupsTable.set("expandedItems", []);
+        Polymer.dom.flush();
+        // Index sessionGroups by name.
+        const sessionGroupsByName = new Map();
+        this.sessionGroups.forEach(sg=>{sessionGroupsByName.set(sg.name, sg);});
+        this.$.sessionGroupsTable.set(
+            "expandedItems",
+            expandedItems
+              .map(sg => sessionGroupsByName.get(sg.name))
+              .filter(Boolean));
       },
 
       _hparamName: tf.hparams.utils.hparamName,

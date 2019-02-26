@@ -16,21 +16,11 @@ limitations under the License.
 -->
 
 <!--
-     A D3-based implementation of a parallel-coordinates plot of the sessions
-     groups.
-     Heavily based on Vizier parallel-coordinates elements in
-     //learning/vizier/service/web/elements/vizier_visualization_parallel,
-     which in turn is based on the implementations of Mike Bostock and
-     Jason Davies at https://bl.ocks.org/mbostock/1341021, and
-     https://bl.ocks.org/jasondavies/1341281, respectively.
-
-     For more details on parallel coordinates visualizations see the Wikipedia
-     page at: https://en.wikipedia.org/wiki/Parallel_coordinates.
-
      There are 3 elements involved in the parallel coordinates visualization:
 
      1. <tf-hparams-parallel-coords-plot>
-       Renders the actual parallel coordinate plot
+       Renders the actual parallel coordinate plot. See the comments in the
+       code for that element for more details.
      2. <tf-hparams-scale-and-color-controls>
        A control panel for configuring the behavior of the plot (e.g. scale
        of each axis, colormap, etc.)

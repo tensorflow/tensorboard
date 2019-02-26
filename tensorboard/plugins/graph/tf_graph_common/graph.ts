@@ -1292,7 +1292,9 @@ function getEmbedPredicate(types: string[]) {
     // check types
     for (let i = 0; i < types.length; i++) {
       let regExp = new RegExp(types[i]);
-      if (node.op.match(regExp)) { return true; }
+      if (typeof node.op === 'string' && node.op.match(regExp)) {
+        return true;
+      }
     }
     return false;
   };

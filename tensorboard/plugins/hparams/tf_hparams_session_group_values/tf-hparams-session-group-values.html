@@ -82,6 +82,9 @@ tf-hparams-session-group-metric-plots
       },
 
       _singletonSessionGroups : function(sessionGroup) {
+        if (sessionGroup === null || sessionGroup === undefined) {
+          return [];
+        }
         return [sessionGroup];
       },
     });

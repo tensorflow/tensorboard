@@ -14,11 +14,14 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":keras_util",
+        ":graph_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -38,8 +41,25 @@ py_test(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "graphs_plugin_v2_test",
+    size = "small",
+    srcs = ["graphs_plugin_v2_test.py"],
+    main = "graphs_plugin_v2_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":graphs_plugin",
+        ":graphs_plugin_test",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -63,5 +83,32 @@ py_test(
     deps = [
         ":keras_util",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+    ],
+)
+
+py_library(
+    name = "graph_util",
+    srcs = ["graph_util.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+    ],
+)
+
+py_test(
+    name = "graph_util_test",
+    size = "small",
+    srcs = ["graph_util_test.py"],
+    main = "graph_util_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":graph_util",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_six",
     ],
 )

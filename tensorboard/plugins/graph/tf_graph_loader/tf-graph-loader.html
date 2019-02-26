@@ -26,11 +26,21 @@ An element which provides a filter parsing for pbtxt to graph output.
 </dom-module>
 
 <script>
+
+/**
+ * @typedef {{
+ *   run: string,
+ *   tag: ?string,
+ * }}
+ */
+const GraphRunTag = {};
+
 Polymer({
 
   is: 'tf-graph-loader',
 
   properties: {
+    datasets: Array,
     /**
      * @type {{value: number, msg: string}}
      *
@@ -41,9 +51,7 @@ Polymer({
       type: Object,
       notify: true,
     },
-    selection: {
-      type: Object,
-    },
+    selection: Object,
     selectedFile: Object,
     compatibilityProvider: {
       type: Object,
@@ -70,6 +78,10 @@ Polymer({
       readOnly: true, //readonly so outsider can't change this via binding
       notify: true
     },
+    /**
+     * @type {?GraphRunTag}
+     */
+    _graphRunTag: Object,
     outHierarchyParams: {
       type: Object,
       readOnly: true,
@@ -89,24 +101,58 @@ Polymer({
   _selectionChanged() {
     // selection can change a lot within a microtask.
     // Don't fetch too much too fast and introduce race condition.
-    this.debounce('selectionchange', () => this._load());
+    this.debounce('selectionchange', () => {
+      this._load(this.selection);
+    });
   },
-  _load: function() {
-    const {selection, overridingHierarchyParams} = this;
-    const {run, tag, type: selectionType} = selection;
-    if (selectionType == tf.graph.SelectionType.OP_GRAPH) {
-      // Clear stats about the previous graph.
-      this._setOutStats(null);
-      const graphPath = tf_backend.addParams(
-          tf_backend.getRouter().pluginRoute('graphs', '/graph'),
-          {tag, run});
-      this._fetchAndConstructHierarchicalGraph(
-          graphPath, null, overridingHierarchyParams);
-    } else if (selectionType == tf.graph.SelectionType.PROFILE) {
-      const metadataPath = tf_backend.addParams(
-          tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
-          {tag, run});
-      this._readAndParseMetadata(metadataPath);
+  _load: function({run, tag, type: selectionType}) {
+    const {overridingHierarchyParams} = this;
+
+    switch (selectionType) {
+      case tf.graph.SelectionType.OP_GRAPH:
+      case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
+        // Clear stats about the previous graph.
+        this._setOutStats(null);
+        const args = {
+          run,
+          conceptual: selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH,
+        };
+        if (tag) args.tag = tag;
+        const graphPath = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('graphs', '/graph'), args);
+        return this._fetchAndConstructHierarchicalGraph(
+            graphPath, null, overridingHierarchyParams).then(() => {
+              this._graphRunTag = {run, tag};
+            });
+      }
+      case tf.graph.SelectionType.PROFILE: {
+        const {tags} = this.datasets.find(({name}) => name === run);
+        const tagMeta = tags.find(t => t.tag === tag);
+        // In case current tag misses opGraph but has profile information,
+        // we fallback to the v1 behavior of fetching the run graph.
+        const requiredOpGraphTag = tagMeta.opGraph ? tag : null;
+
+        console.assert(
+            tags.find(t => t.tag === requiredOpGraphTag),
+            `Required tag (${requiredOpGraphTag}) is missing.`);
+
+        const shouldFetchGraph = !this._graphRunTag ||
+            this._graphRunTag.run !== run ||
+            this._graphRunTag.tag !== requiredOpGraphTag;
+        const maybeFetchGraphPromise = shouldFetchGraph ?
+            this._load({
+              run,
+              tag: requiredOpGraphTag,
+              type: tf.graph.SelectionType.OP_GRAPH,
+            }) : Promise.resolve();
+        const metadataPath = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
+            {tag, run});
+        return maybeFetchGraphPromise
+            .then(() => this._readAndParseMetadata(metadataPath));
+      }
+      default:
+        return Promise.reject(new Error(`Unknown selection type: ${selectionType}`));
     }
   },
   _readAndParseMetadata: function(path) {
@@ -125,6 +171,7 @@ Polymer({
    * @param {?string} path
    * @param {string=} pbTxtFile
    * @param {Object=} overridingHierarchyParams
+   * @returns {!Promise<void, Error>}
    */
   _fetchAndConstructHierarchicalGraph: function(
       path, pbTxtFile, overridingHierarchyParams) {
@@ -150,11 +197,11 @@ Polymer({
     });
     this._setOutHierarchyParams(hierarchyParams);
     var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
-    tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
+    return tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
     .then(function(graph) {
       if (!graph.node) {
-        throw 'The graph is empty. Make sure that the graph is passed to the ' +
-            'tf.summary.FileWriter after the graph is defined.';
+        throw new Error('The graph is empty. Make sure that the graph is ' +
+            'passed to the tf.summary.FileWriter after the graph is defined.');
       }
 
       // Build the flat graph (consists only of Op nodes).
@@ -203,6 +250,8 @@ Polymer({
       // Generic error catch, for errors that happened outside
       // asynchronous tasks.
       tracker.reportError("Graph visualization failed: " + e, e);
+      // Don't swallow the error.
+      throw e;
     });
   },
   _selectedFileChanged: function(e, overridingHierarchyParams) {
