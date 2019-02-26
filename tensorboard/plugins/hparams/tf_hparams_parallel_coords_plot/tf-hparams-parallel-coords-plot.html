@@ -15,8 +15,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!-- Renders the actual parallel coordinates plot.
-     See tf-hparams-parallel-coords-view for an overview. -->
+<!--
+     A D3-based implementation of a parallel-coordinates plot of the sessions
+     groups.
+     Heavily based on the implementations of Mike Bostock and
+     Jason Davies at https://bl.ocks.org/mbostock/1341021, and
+     https://bl.ocks.org/jasondavies/1341281, respectively.
+
+     See tf-hparams-parallel-coords-view for an overview.
+
+     This element displays a collection of parallel vertical axes uniformally
+     spaced with each axis corresponding to a column--either an hyperparameter
+     or a metric. Additionally each session group is represented by a polyline
+     whose vertices are points on the axes; the vertex on the axis
+     corresponding to a given column is the point on that axis representing the
+     column-value of the session group.
+
+     Since the relations shown by the plot depends on the ordering of
+     the axes, the element allows re-ordering of the axes by dragging the axes
+     titles. For columns with a numeric domain (e.g. metrics), it allows
+     setting the scale of an axis to be 'linear', 'logarithmic' or 'quantile'.
+     The element also colors each line based on a given 'color-by' column value
+     of the represented session group. The 'color-by' column can be selected
+     to be any column with numeric domain.
+     See the code below and the tf-hparams-scale-and-color-controls element
+     for more details.
+
+     Finally, the user can filter the displayed session groups by "brushing"
+     axes. By clicking and dragging the mouse pointer vertically along an axis
+     the user can select part of the axes represented by a semi-transparent
+     overlay on the axis. We call that rectangle the brush-selection for the
+     axis. The user can cancel the brush-selection by clicking on the axis
+     outside the selection. Brush selections "filter" the polylines that are
+     displayed as follows. At any given time--for the axes that have a brush
+     selection--only the polylines that have each of these axes' vertices be
+     inside the axis' brush-selection are displayed colored; the rest
+     of the polylines are grayed-out.
+-->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-imports/d3.html">
 <link rel="import" href="../tf-imports/lodash.html">
@@ -46,7 +81,6 @@ limitations under the License.
 
       .foreground path {
         fill: none;
-        stroke: red;  /* Used if the color-by column is not selected. */
         stroke-opacity: 0.7;
         stroke-width: 1;
       }
@@ -91,10 +125,6 @@ limitations under the License.
   <script>
     Polymer({
       is: 'tf-hparams-parallel-coords-plot',
-
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
 
       properties: {
         // Public properties
@@ -159,12 +189,29 @@ limitations under the License.
           value: null
         },
 
+        // An array whose ith entry is the column index corresponding to
+        // the ith displayed axis from the left (i.e., axis 0 is the leftmost
+        // axis). Note that the user can re-order the axes by dragging, so
+        // this array changes to reflect that current order.
+        _colOfAxis: {
+          type: Array,
+          value: [],
+        },
 
+        // An array whose ith entry contains the brush selection of the axis
+        // corresponding to the column with index i or null if that axis does
+        // not have an active brush selection. A brush-selection is a 2-element
+        // array [y_min, y_max] denoting the <svg> y-coordinates of the upper
+        // and lower edges of the brush-selection's rectangular overlay.
+        _brushSelections: {
+          type: Array,
+          value: [],
+        }
       },
 
       observers: [
-        '_redraw(sessionGroups.*)',
-        '_redraw(schema.*)',
+        '_sessionGroupsChanged(sessionGroups.*)',
+        '_schemaChanged(schema.*)',
         '_redraw(options.*)',
       ],
 
@@ -172,6 +219,29 @@ limitations under the License.
         this._container = this.$.container;
         this._svg = d3.select(this.$.svg);
         this._sessionGroupValues = d3.select(this.$.sessionGroupValues);
+        this._redraw();
+      },
+
+      _sessionGroupsChanged() {
+        if (this.selectedSessionGroup !== null) {
+          // Try to keep the selected and closest session groups:
+          this._setSelectedSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.selectedSessionGroup.name) || null);
+        }
+        if (this.closestSessionGroup !== null) {
+          this._setClosestSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.closestSessionGroup.name) || null);
+        }
+        this._redraw();
+      },
+
+      _schemaChanged() {
+        this._colOfAxis = d3.range(this._numCols());
+        this._brushSelections = this._colOfAxis.slice().fill(null);
         this._redraw();
       },
 
@@ -187,10 +257,8 @@ limitations under the License.
           this._container.style.height = this.height + "px";
 
           // Delete all elements in the svg subtree and reset the
-          // selected and closest groups
+          // closest session group.
           this._svg.selectAll("g").remove()
-          this._setSelectedSessionGroup(null);
-          this._setClosestSessionGroup(null);
 
           // Draw.
           this._draw();
@@ -218,7 +286,7 @@ limitations under the License.
         // If we don't have any session groups or not enough axes,
         // don't draw anything.
         if (!_this._validSessionGroups
-            || _this._validSessionGroups.length == 0
+            || _this._validSessionGroups.length === 0
             || _this._numCols() < 2) {
           return;
         }
@@ -234,18 +302,28 @@ limitations under the License.
               .attr("transform",
                     tf.hparams.utils.translateStr(margin.left, margin.top));
 
-        // 'cols' is an array that stores the column indices for the axes
-        // in the order they appear on the screen from left to right.
-        // Initially the ith axis from the left contains the ith column index,
-        // but the user can drag axes and change this order later.
-        const cols = d3.range(this._numCols());
-
         // Create a point-scale for the columns (axes) x coordinates.
+        // x(i) is the x coordinate of the axis corresponding to column
+        // with index 'i' if that axis is not being actively dragged.
         const x = d3.scalePoint().range([1, width-1]).padding(0.5);
-        x.domain(cols);
+        x.domain(_this._colOfAxis);
+        // draggedColIndex, and draggedColPos denote the x-coordinate and
+        // index of the currently dragged axis. If no column is being dragged
+        // their value is null.
+        let draggedColIndex = null;
+        let draggedColPos = null;
+        // colPositionFn denotes the x-coordinate of the axis corresponding to
+        // colIndex whether or not its being dragged.
+        function colPositionFn(colIndex) {
+          if (colIndex === draggedColIndex) {
+            return draggedColPos;
+          }
+          return x(colIndex);
+        };
 
-        // Create the scales for each axis y coordinates.
-        const y = cols.map(
+        // Create the scales for each axis y coordinates. y[i] is the scale
+        // for the axis corresponding to the column with index 'i'.
+        const y = d3.range(this._numCols()).map(
             colIndex => {
               const domainValues = _this._validSessionGroups.map(
                   sg=>_this._colValue(sg, colIndex));
@@ -254,55 +332,48 @@ limitations under the License.
                   domainValues, height, scaleType);
             });
 
-        // draggedColIndex, and draggedColPos denote the x-coordinate and
-        // index of the currently dragged axis. If no column is being dragged
-        // their value is null.
-        let draggedColIndex = null;
-        let draggedColPos = null;
-        function colPositionFn(colIndex) {
-          if (colIndex === draggedColIndex) {
-            return draggedColPos;
-          }
-          return x(colIndex);
-        };
 
         // --- Foreground and Background lines ---------------------------------
         // Returns the control points defining the path that represents the
         // given session group 'sg'. These are the points on the axes through
         // which the path passes.
         function controlPointsFn(sg) {
-          return cols.map(c=>[colPositionFn(c),
-                              y[c](_this._colValue(sg, c))]);
-        }
-
-        const line = d3.line().curve(d3.curveLinear);
-        // Sets the control points for the <path> element representing a given
-        // session group.
-        // Should be called from a d3.selection method such as 'each',
-        // so within the function 'this' is assumed to point to the
-        // <path> element.
-        function setPathControlPointsFn(sessionGroup) {
-          this.controlPoints = controlPointsFn(sessionGroup);
-          d3.select(this).attr("d", line(this.controlPoints));
+          return _this._colOfAxis.map(c=>[colPositionFn(c),
+                                          y[c](_this._colValue(sg, c))]);
         }
 
         // Returns the <svg> path-data string for the path representing
         // a given session group.
+        const line = d3.line().curve(d3.curveLinear);
         function pathDataFn(sessionGroup) {
           return line(controlPointsFn(sessionGroup));
         }
 
-        // Add background lines for context. These will remain unchanged
-        // when we brush.
+        // Sets the control points for the <path> element representing a given
+        // session group.
+        // This function also saves the control-points array in the property
+        // 'controlPoints' of the path element which will later be used
+        // to find the closest line to the mouse pointer. See
+        // tf.hparams.parallel_coords_plot.findClosestPath.
+        // This function should be called from a d3.selection method such as
+        // 'each', so within the function 'this' is assumed to point to the
+        // <path> element.
+        function setPathControlPointsFn(sessionGroup) {
+          this.controlPoints = controlPointsFn(sessionGroup);
+          d3.select(this).attr("d", pathDataFn(sessionGroup));
+        }
+
+        // Add background (grayed-out) lines for context. These will remain
+        // unchanged when we brush.
         const backgroundPaths = svgG.append("g")
               .attr("class", "background")
             .selectAll("path")
               .data(_this._validSessionGroups)
             .enter().append("path")
-              .attr("d", pathDataFn);
+              .each(setPathControlPointsFn);
 
-        // Add foreground lines to show the current brushed data
-        // or all data if we're not currently brushing.
+        // Add foreground (colored) lines to show the data passing the
+        // filtering done by the brush-selections.
         const foregroundPaths = svgG.append("g")
               .attr("class", "foreground")
             .selectAll("path")
@@ -311,8 +382,8 @@ limitations under the License.
               .each(setPathControlPointsFn);
 
         // D3-selection of all foreground paths that are visible.
-        // A path can be invisible if it's not "contained" in the current
-        // axes brushes. See the brush section below. Initially all paths are
+        // A path is invisible if it has a vertex that falls outside of an
+        // active brush-selection. Initially all paths are
         // visible.
         let visiblePaths;
         function updateVisiblePaths() {
@@ -325,17 +396,28 @@ limitations under the License.
         const colorScale = this._createColorScale();
         const lineColorFn =
               options.colorByColumnIndex === undefined
-              /* Use default class color if no color-by column is selected. */
-              ? () => null
+              /* Use default color if no color-by column is selected. */
+              ? () => "red"
               : sessionGroup => colorScale(
                   this._colValue(sessionGroup, options.colorByColumnIndex))
-        foregroundPaths.style("stroke", lineColorFn)
+        foregroundPaths.attr("stroke", lineColorFn)
 
         // --- Foreground path selection ---------------------------------------
         // Clicking on a path selects it (and shows metric details in a
         // different component).
-        // The currently selected <path> element.
+        // The currently selected <path> element or null if no session group is
+        // selected.
         let selectedPath = null;
+        if (this.selectedSessionGroup !== null) {
+          const selectedPathSel = visiblePaths
+                .filter(sg=>sg.name === this.selectedSessionGroup.name)
+                .classed("selected-path", true);
+          if (selectedPathSel.empty()) {
+            this._setSelectedSessionGroup(null);
+          } else {
+            selectedPath = selectedPathSel.node();
+          }
+        }
         // The path closest to the mouse pointer.
         let closestPath = null;
 
@@ -355,13 +437,11 @@ limitations under the License.
               if (selectedPath !== null) {
                 d3.select(selectedPath)
                     .classed("selected-path", false)
-                    .style("stroke", lineColorFn);
               }
               selectedPath = newSelectedPath;
               if (selectedPath !== null) {
                 d3.select(selectedPath)
                     .classed("selected-path", true)
-                    .style("stroke", null);
               }
               const newSg = (selectedPath === null)
                     ? null
@@ -375,7 +455,7 @@ limitations under the License.
               }
               const newClosestPath = parallel_coords_plot.findClosestPath(
                   visiblePaths.nodes(),
-                  cols.map(colPositionFn),
+                  _this._colOfAxis.map(colPositionFn),
                   d3.mouse(svgG.node()),
                   /* threshold */ 100);
               if (closestPath === newClosestPath) {
@@ -394,18 +474,22 @@ limitations under the License.
               }
             })
             .on("mouseleave", function() {
-              closestPath = null;
-              _this._setClosestSessionGroup(null);
+              if (closestPath !== null) {
+                d3.select(closestPath).classed("closest-path", false);
+                closestPath = null;
+                _this._setClosestSessionGroup(null);
+              }
             });
 
         // ---- Column axes ----------------------------------------------------
         // Add a <g> element for each dimension.
         const axes = svgG.selectAll(".axis-parent")
-              .data(cols)
+              .data(_this._colOfAxis)
             .enter().append("g")
               .attr("class", "axis-parent")
               .attr("transform",
-                    colIndex=>tf.hparams.utils.translateStr(x(colIndex)));
+                    colIndex=>tf.hparams.utils.translateStr(
+                        colPositionFn(colIndex)));
         axes.append("g")
               .attr("class", "axis")
               .each(function(colIndex) {
@@ -441,18 +525,16 @@ limitations under the License.
                     if (draggedColPos > width) {
                       draggedColPos = width;
                     }
-                    cols.sort(function(a, b) {
+                    // Reorder the axes (and update the foreground lines)
+                    // to respect the new location of the dragged axis.
+                    _this._colOfAxis.sort(function(a, b) {
                       return colPositionFn(a) - colPositionFn(b);
                     });
-                    x.domain(cols);
-
-                    // Reposition the foreground lines and axes.
-                    foregroundPaths.each(setPathControlPointsFn);
+                    x.domain(_this._colOfAxis);
                     axes.attr("transform",
-                              colIndex => (
-                                  "translate(" + colPositionFn(colIndex) + ")"
-                              )
-                             );
+                              colIndex=>tf.hparams.utils.translateStr(
+                                  colPositionFn(colIndex)));
+                    foregroundPaths.each(setPathControlPointsFn);
                   })
                   .on("end", function(colIndex) {
                     draggedColIndex = null;
@@ -484,10 +566,8 @@ limitations under the License.
                   }));
 
         // ---- Axis brushing functionality ------------------------------------
-        // 'brush' is an array that stores a d3-brush object for each axis.
-        // It is indexed by colIndex.
-        // A brush is the semi-transparent rectangular overlay in each axis
-        // that can be moved and resized.
+        // 'brush' is an array that stores a d3-brush object. brush[i] stores
+        // the d3-brush for the axis representing the column with index i.
         const brush=[];
         for (let i = 0; i < _this._numCols(); ++i) {
           brush[i] = d3.brushY()
@@ -497,23 +577,17 @@ limitations under the License.
               .on("end", ()=>brushChangedFn(i, d3.event.selection))
         }
 
-        // Render the brush DOM elements.
-        axes.append("g")
-            .attr("class", "brush")
-            .each(function (colIndex) {
-              d3.select(this).call(brush[colIndex]);
-            });
-
-        // For each axis having an active brush, we store the brushedExtent
-        // which represents the subset of the domain of the column that is
-        // currently brushed (selected). The representation of this set is
+        // For each axis having an active brush selection, we store a
+        // 'brushedExtent' object. This object stores the subset of the domain
+        // of the column that is represented by points inside the axis' brush
+        // selection. The representation of this set is
         // slightly different depending on the type of the column and the
         // scale of the corresponding axis. The following function
-        // calculates this representation.
-        // The 'selection' parameter denotes the current selection extent of
-        // the brush in the form [top, bottom], where 'top' and 'bottom' are
+        // calculates this representation for the axis corresponding to the
+        // column indexed by colIndex.
+        // The 'selection' parameter denotes the brush-selection
+        // of the axis in the form [top, bottom], where 'top' and 'bottom' are
         // in the <svg> coordinate system.
-        // TODO(erez): Add tests for the conversions in this function.
         function calculateBrushedExtent(colIndex, selection) {
           const axisScale = y[colIndex];
           const colScale = options.columns[colIndex].scale;
@@ -540,15 +614,17 @@ limitations under the License.
         // element is deleted.
         const brushedExtent=[];
 
-        // Called when the brush is resized or moved.
-        // 'selection' is the current brush selection extent in [bottom, top]
-        // form or a falsey value if no selection.
+        // Called when the brush-selection is resized or moved.
+        // 'selection' is the current brush selection or a falsey value
+        // if no selection.
         function brushChangedFn(colIndex, selection) {
           if (selection) {
             brushedExtent[colIndex] =
                 calculateBrushedExtent(colIndex, selection);
+            _this._brushSelections[colIndex] = selection;
           } else {
             delete brushedExtent[colIndex];
+            _this._brushSelections[colIndex] = null;
           }
           // Hide all foreground lines that do not satisfy all the brushed
           // extents.
@@ -569,6 +645,15 @@ limitations under the License.
           });
           updateVisiblePaths();
         }
+
+        // Render the brush DOM elements.
+        axes.append("g")
+            .attr("class", "brush")
+            .each(function (colIndex) {
+              d3.select(this).call(brush[colIndex]);
+              brush[colIndex].move(
+                  d3.select(this), _this._brushSelections[colIndex]);
+            });
 
         // Polymer adds an extra ".tf-hparams-parallel-coords-plot" class to
         // each rule selector in the <style> section written above. When

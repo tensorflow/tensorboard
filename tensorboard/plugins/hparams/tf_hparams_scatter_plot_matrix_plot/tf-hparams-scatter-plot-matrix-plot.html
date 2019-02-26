@@ -75,9 +75,7 @@ the vulcanization build step. Figure out why.
         options: Object,
         // The last session group that was clicked on or null if no
         // session group was clicked on yet.
-        /**
-         * @type {?Object}
-         */
+        /** @type {?Object} **/
         selectedSessionGroup: {
           type: Object,
           value: null,
@@ -87,9 +85,7 @@ the vulcanization build step. Figure out why.
         // The session group represented by the marker "closest" to the mouse
         // pointer. If the closest session group distance is larger than a
         // threshold, this property will be null.
-        /**
-         * @type {?Object}
-         */
+        /** @type {?Object} **/
         closestSessionGroup: {
           type: Object,
           value: null,
@@ -110,25 +106,64 @@ the vulcanization build step. Figure out why.
         },
 
         width: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
         },
 
         height: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
+        },
+
+        // The index of the cell containing a brush selection as an array
+        // of the form [col, metric] or null if no cell has an active brush
+        // selection.
+        /** @type {?Object} **/
+        _brushedCellIndex: {
+          type: Object,
+          value: null,
+        },
+
+        // The the active brush selection in the form
+        // [[x0,y0],[x1,y1]] where the coordinates are relative to the cell
+        // indexed by _brushedCellIndex. Set to null, if there is no active
+        // brush.
+        /** @type {?Object} **/
+        _brushSelection: {
+          type: Object,
+          value: null,
         },
       },
 
       observers: [
-        '_redraw(sessionGroups.*)',
-        '_redraw(schema.*)',
+        '_sessionGroupsChanged(sessionGroups.*)',
+        '_schemaChanged(schema.*)',
         '_redraw(options.*)',
       ],
 
       ready() {
         this._container = this.$["container"];
         this._svg = d3.select(this.$["svg"]);
+        this._redraw();
+      },
+
+      _sessionGroupsChanged() {
+        if (this.selectedSessionGroup !== null) {
+          // Try to keep the selected session group: if the new sessionGroups
+          // array has a sessionGroup with the same name as the one that was
+          // selected before, select it.
+          this._setSelectedSessionGroup(
+              tf.hparams.utils.sessionGroupWithName(
+                  this.sessionGroups,
+                  this.selectedSessionGroup.name)
+                || null);
+        }
+        this._redraw();
+      },
+
+      _schemaChanged() {
+        this._brushedCellIndex = null;
+        this._brushSelection = null;
         this._redraw();
       },
 
@@ -152,10 +187,8 @@ the vulcanization build step. Figure out why.
               .attr("width", this.width)
               .attr("height", this.height)
 
-          // Delete all elements in the svg subtree and remove any
-          // selected group
+          // Delete all elements in the svg subtree
           this._svg.selectAll("g").remove()
-          this._setSelectedSessionGroup(null);
 
           // Draw.
           this._draw();
@@ -413,8 +446,8 @@ the vulcanization build step. Figure out why.
         // A function mapping a sessionGroup to its marker's color.
         const markerColorFn =
               _this.options.colorByColumnIndex === undefined
-              /* Use default class color if no color-by column is selected. */
-              ? () => null
+              /* Use default color if no color-by column is selected. */
+              ? () => "red"
               : ({sessionGroup}) => (
                 colorScale(
                     this._colValue(sessionGroup,
@@ -502,25 +535,10 @@ the vulcanization build step. Figure out why.
         // the markers associated with session groups whose markers
         // in the brushed cell lie within the brush selection. By "visibile"
         // here, we man colored according to color-by column. Markers that
-        // are not "visibile" will actually be shown and will be grayed out.
+        // are not "visibile" will be shown as grayed out.
         // ---------------------------------------------------------------------
-        // The <g> element of the last cell that had the brush selection or
-        // null if no cell was brushed yet.
-        let lastBrushedCell = null;
-        // The last brush selection. This is usually the same object as
-        // d3.brushSelection(lastBrushedCell) but may be different inside a
-        // brush event listener. We use this to detect when the selection has
-        // not changed and we don't need to update the visible markers.
-        // If null means the brush selection is not active.
-        let lastBrushSelection = null;
-        // The set of markers (in all cells) that are visible. We keep this
-        // set around so that when the brush selection changes we can change
-        // the "fill" attribute of only the markers we need to. This reduces
-        // the browser's rendering time and makes brushing smoother.
-        let visibleMarkers = new Set(markers.nodes());
-
         // For each cell, we index the markers in a quad-tree to quickly
-        // find the intersection of the markers with the selection.
+        // find the intersection of the markers with the (brush) selection.
         // The following function creates this quad-tree for the cell indexed by
         // (col, metric). Each quad tree datum is the corresponding marker's
         // element.
@@ -536,50 +554,31 @@ the vulcanization build step. Figure out why.
             col=>metrics.map(
                 metric=>createCellQuadTree(col, metric)));
 
-        const brush = d3.brush()
-              .extent([[-frameMargin + 1, -frameMargin + 1],
-                       [cellWidth - 1 + frameMargin - 1,
-                        cellHeight - 1 + frameMargin - 1]])
-              .on("start", function ([col, metric]) {
-                // Clear the old selection.
-                if (lastBrushedCell !== this) {
-                  if (lastBrushedCell !== null) {
-                    // This will recursively call the 'start', 'brush', and
-                    // 'end' event listeners for the cell with the old selection
-                    // and will update the markers. The outer 'if' above
-                    // prevents infinite recursion.
-                    brush.move(d3.select(lastBrushedCell), null);
-                  }
-                  lastBrushedCell = this;
-                } else {
-                  updateMarkersForBrushSelection(col, metric,
-                                                 d3.brushSelection(this));
-                }
-              })
-              .on("brush", function([col, metric]) {
-                updateMarkersForBrushSelection(col, metric,
-                                               d3.brushSelection(this));
-              })
-              .on("end", function([col, metric]) {
-                updateMarkersForBrushSelection(col, metric,
-                                               d3.brushSelection(this));
-              });
-        cells.append("g").call(brush);
+        // A d3-selection of the cell in 'cells' that has the active
+        // brush selection, or null if the brush is not active.
+        let brushedCellG = null;
+        if (isBrushActive()) {
+          brushedCellG = cells.filter(
+              cellIndex=>_.isEqual(cellIndex, _this._brushedCellIndex));
+          console.assert(brushedCellG.size() == 1,
+                         brushedCellG);
+        }
 
-        // Updates marker visibility so that only markers whose
-        // associated session group markers in the cell indexed by 'col, metric'
-        // lie inside 'selection' are shown. The parameter
-        // 'selection' specifies a rectangle in the cell and should be an array
-        // of the form [[x0, y0], [x1, y1]], where (x0,y0) and (x1,y1) are
-        // cell-relative coordinates of the top-left and bottom-right corner of
-        // the rectangle.
-        function updateMarkersForBrushSelection(col, metric, selection) {
-          if (lastBrushSelection === selection) {
-            // Nothing to do if selection hasn't changed.
-            return;
+        // The set of markers (in all cells) that are visible. We keep this
+        // set around so that when the brush selection changes we can change
+        // the "fill" attribute of only the markers we need to. This reduces
+        // the browser's rendering time and makes brushing smoother.
+        let visibleMarkers = new Set(markers.nodes());
+        updateVisibleMarkers();
+
+        function updateVisibleMarkers() {
+          // We regard an empty (or inactive) brush selection as selecting
+          // all markers.
+          let newVisibleMarkers = new Set(markers.nodes());
+          if (!isBrushSelectionEmpty()) {
+            newVisibleMarkers = findMarkersInSelection(
+                _this._brushedCellIndex, _this._brushSelection);
           }
-          const newVisibleMarkers =
-                findMarkersInSelection(col, metric, selection);
           // Highlight the new visible markers.
           d3.selectAll(Array.from(
               utils.filterSet(newVisibleMarkers,
@@ -592,18 +591,15 @@ the vulcanization build step. Figure out why.
                               elem=>(!newVisibleMarkers.has(elem)))))
               .attr("fill", "#ddd");
           visibleMarkers = newVisibleMarkers;
-          lastBrushSelection = selection;
         }
 
         // Returns a Set of all marker elements that are in the
         // rectangle 'selection' given in coordinates relative to the
-        // cell indexed by [col, metric].
-        function findMarkersInSelection(col, metric, selection) {
-          if (isBrushSelectionEmpty(selection)) {
-            // If the selection is not active, we regard everything
-            // as selected.
-            return new Set(markers.nodes());
-          }
+        // cell indexed by cellIndex .
+        function findMarkersInSelection(cellIndex, selection) {
+          console.assert(cellIndex !== null);
+          console.assert(selection !== null);
+          const [col, metric] = cellIndex;
           const result = new Set();
           utils.quadTreeVisitPointsInRect(
               quadTrees[col][metric],
@@ -618,11 +614,71 @@ the vulcanization build step. Figure out why.
           return result;
         }
 
-        function isBrushSelectionEmpty(selection) {
-          return selection === null ||
-              selection[0][0] === selection[1][0] ||
-              selection[0][1] === selection[1][1];
+        const brush = d3.brush()
+              .extent([[-frameMargin + 1, -frameMargin + 1],
+                       [cellWidth - 1 + frameMargin - 1,
+                        cellHeight - 1 + frameMargin - 1]])
+              .on("start", function ([col, metric]) {
+                if (isBrushActive() && brushedCellG.node() != this) {
+                  // The brush is active in a different cell.
+                  // Clear the selection first.
+                  // This will recursively call the 'start', 'brush', and
+                  // 'end' event listeners for the cell with the selection
+                  // and will update the markers. The 'if' above
+                  // prevents infinite recursion.
+                  brush.move(brushedCellG, null);
+                }
+                brushChanged(this);
+              })
+              .on("brush", function([col, metric]) {
+                brushChanged(this);
+              })
+              .on("end", function([col, metric]) {
+                brushChanged(this);
+              });
+
+        // Updates the internal state in response to a brush event in
+        // the cell whose <g> element (in 'cells') is given by cellGNode
+        function brushChanged(cellGNode) {
+          const brushSelection = d3.brushSelection(cellGNode);
+          if ((!isBrushActive() && brushSelection === null) ||
+              (isBrushActive() &&
+               cellGNode === brushedCellG.node() &&
+               _.isEqual(brushSelection, _this._brushSelection))) {
+            // Nothing to do if selection hasn't changed.
+            return;
+          }
+          _this._brushSelection = brushSelection;
+          if (brushSelection !== null) {
+            brushedCellG = d3.select(cellGNode);
+            _this._brushedCellIndex = brushedCellG.datum();
+          } else {
+            brushedCellG = null;
+            _this._brushedCellIndex = null;
+          }
+          updateVisibleMarkers();
         }
+
+        function isBrushActive() {
+          return (_this._brushedCellIndex !== null &&
+                  _this._brushSelection !== null);
+        }
+
+        function isBrushSelectionEmpty() {
+          return !isBrushActive() ||
+              _this._brushSelection[0][0] === _this._brushSelection[1][0] ||
+              _this._brushSelection[0][1] === _this._brushSelection[1][1];
+        }
+
+        // Render the brush elements on each cell.
+        cells.call(brush);
+
+        if (isBrushActive()) {
+          // Set the internal brush selection to what it was before
+          // the 'redraw()'.
+          brush.move(brushedCellG, _this._brushSelection);
+        }
+
 
         // ---------------------------------------------------------------------
         // Add event listeners for highlighting the session group whose markers
@@ -641,6 +697,12 @@ the vulcanization build step. Figure out why.
         // markers of the currently selected session group or null if no
         // session group is selected.
         let selectedMarkers = null;
+        if (this.selectedSessionGroup !== null) {
+          selectedMarkers =
+              d3.selectAll(
+                  sessionGroupMarkersMap.get(this.selectedSessionGroup))
+                .classed("selected-marker", true);
+        }
         cells
             .on("click",
                 function () {
