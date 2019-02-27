@@ -197,6 +197,16 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     event = self.histogram_event('a', [], step=333)
     self.assertEqual(333, event.step)
 
+  def test_default_step(self):
+    try:
+      tf2.summary.experimental.set_step(333)
+      # TODO(nickfelt): change test logic so we can just omit `step` entirely.
+      event = self.histogram_event('a', [], step=None)
+      self.assertEqual(333, event.step)
+    finally:
+      # Reset to default state for other tests.
+      tf2.summary.experimental.set_step(None)
+
 
 class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
   def write_histogram_event(self, *args, **kwargs):

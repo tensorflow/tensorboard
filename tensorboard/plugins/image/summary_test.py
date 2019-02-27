@@ -213,6 +213,17 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     event = self.image_event('a', data, step=333)
     self.assertEqual(333, event.step)
 
+  def test_default_step(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    try:
+      tf2.summary.experimental.set_step(333)
+      # TODO(nickfelt): change test logic so we can just omit `step` entirely.
+      event = self.image_event('a', data, step=None)
+      self.assertEqual(333, event.step)
+    finally:
+      # Reset to default state for other tests.
+      tf2.summary.experimental.set_step(None)
+
   def test_floating_point_data(self):
     data = np.array([-0.01, 0.0, 0.9, 1.0, 1.1]).reshape((1, -1, 1, 1))
     pb = self.image('mona_lisa', data)
