@@ -169,6 +169,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
     # Delete the event file to reset to an empty directory for later calls.
+    # TODO(nickfelt): use a unique subdirectory per writer instead.
     os.remove(event_files[0])
     return events[1]
 
