@@ -1,3 +1,40 @@
+# Release 1.13.0
+
+The 1.13 minor series tracks TensorFlow 1.13.
+
+Compatibility note: As of 1.13, TensorBoard has begun transitioning its own use
+of some TensorFlow APIs to align with their naming in TF 2.0, and as a result
+TensorBoard 1.13+ strictly requires TensorFlow 1.13+.
+
+## Features
+- What-If tool notebook mode and general improvements
+  - Now usable directly inside Jupyter and Colab notebooks (#1662, #1745, #1788)
+  - Added comparison of multiple models (#1589, #1672)
+  - Added CSV loading model (#1597)
+  - Added global partial dependence plots (#1604)
+  - Added custom prediction function support (#1842)
+- (Alpha) TensorBoard can be embedded inside Juptyer and Colab notebooks via a
+  `%tensorboard` magic, after loading the `tb.notebook` extension (#1813, #1822)
+- Profile dashboard overview page now shows step time breakdown (PR #1683)
+- Line chart "log" scale is now a true log scale (#1507)
+- When no --port flag is specified, TensorBoard will now search for open ports
+  near the default port (6006) if that port is already in use (#1851)
+
+## Performance improvements
+- Faster event file loading by caching runtime check (PR #1686) - thanks @abiro
+
+## Bug fixes
+- #786 (partial) - Avoid trying to smooth plots of constant y-value (PR #1698)
+- #1515 - Fix image right-click accessiblity in non-Chromium browsers (PR #1561)
+- #1541 - Fix --event_file flag when using --inspect
+- #1566 - Fix error on trying to import "google.protobuf.pyext" (PR #1887)
+- #1567 - Fix display bug on line chart after toggling series selection
+- #1598 - Fix clipping in graph dashboard PNG download (PR #1600)
+- #1601 - Fix chart SVG download option in Firefox
+- #1623 - Fix --path_prefix interpretation
+- #1838 - Fix run selector synchronization across already-loaded dashboards
+
+
 # Release 1.12.2
 
 ## Bug fixes
@@ -6,8 +43,6 @@
 
 
 # Release 1.12.1
-
-The 1.12.1 minor series tracks TensorFlow 1.12.
 
 ## Bug fixes
 - #1549 - Run names wrap at all character (PR #1602) - thanks @dgrahn

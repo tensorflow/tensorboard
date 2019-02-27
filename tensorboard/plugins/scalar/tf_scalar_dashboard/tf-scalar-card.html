@@ -25,6 +25,7 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
+<link rel="import" href="../tf-dashboard-common/tf-downloader.html">
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
@@ -97,24 +98,11 @@ limitations under the License.
     <span style="flex-grow: 1"></span>
     <template is="dom-if" if="[[showDownloadLinks]]">
       <div class="download-links">
-        <paper-dropdown-menu
-          no-label-float="true"
-          label="run to download"
-          selected-item-label="{{_runToDownload}}"
-        >
-          <paper-menu class="dropdown-content" slot="dropdown-content">
-            <template is="dom-repeat" items="[[dataToLoad]]">
-              <paper-item no-label-float=true>[[item.run]]</paper-item>
-            </template>
-          </paper-menu>
-        </paper-dropdown-menu>
-        <a
-          download="run_[[_runToDownload]]-tag-[[tag]].csv"
-          href="[[_csvUrl(tag, _runToDownload)]]"
-        >CSV</a> <a
-          download="run_[[_runToDownload]]-tag-[[tag]].json"
-          href="[[_jsonUrl(tag, _runToDownload)]]"
-        >JSON</a>
+        <tf-downloader
+          runs="[[_runsFromData(dataToLoad)]]"
+          tag="[[tag]]"
+          url-fn="[[_downloadUrlFn]]"
+        ></tf-downloader>
       </div>
     </template>
   </div>
@@ -258,6 +246,14 @@ limitations under the License.
           },
         },
 
+        // To be provided as the `url-fn` property to `tf-downloader`.
+        _downloadUrlFn: {
+          type: Function,
+          value: function() {
+            return (tag, run) => this.getDataLoadUrl({tag, run});
+          },
+        },
+
         // A function called to fetch the scalars data from the backend.
         // Should receive a {tag, run, experiment} object and return
         // a promise resolving with the fetched scalars. The default
@@ -323,13 +319,8 @@ limitations under the License.
         // is okay.
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
-      _csvUrl(tag, run) {
-        return tf_backend.addParams(
-            this.getDataLoadUrl({tag, run}),
-            {format: 'csv'});
-      },
-      _jsonUrl(tag, run) {
-        return this.getDataLoadUrl({tag, run});
+      _runsFromData(data) {
+        return data.map((datum) => datum.run);
       },
       _getDataSeries() {
         return this.dataToLoad.map(d => this._getSeriesNameFromDatum(d));

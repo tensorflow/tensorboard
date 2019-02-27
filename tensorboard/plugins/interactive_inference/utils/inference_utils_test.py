@@ -456,6 +456,64 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertAlmostEqual(
         .2, converted.result.classifications[2].classes[1].score)
 
+  def test_vizparams_pattern_parser(self):
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern=None)
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='1-3')
+    self.assertEqual([1, 2, 3], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='3-1')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='1-1')
+    self.assertEqual([1], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='3, 1')
+    self.assertEqual([1, 3], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='0-')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='0-error')
+    self.assertEqual([], viz_params.feature_indices)
+    viz_params = inference_utils.VizParams(
+        x_min=1,
+        x_max=10,
+        examples=[],
+        num_mutants=0,
+        feature_index_pattern='0-3-5')
+    self.assertEqual([], viz_params.feature_indices)
+
 
 if __name__ == '__main__':
   tf.test.main()

@@ -176,6 +176,7 @@ py_library(
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
@@ -206,7 +207,6 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_assets",
         "@com_google_fonts_roboto",
     ],
 )
@@ -240,6 +240,14 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_absl_app_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
     visibility = ["//visibility:public"],
 )
 

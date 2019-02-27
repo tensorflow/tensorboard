@@ -33,11 +33,6 @@ import os
 #   https://github.com/tensorflow/tensorboard/issues/1225
 # This must be set before the first import of tensorflow.
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
-
-# Use fast C++ implementation of Python protocol buffers. See:
-# https://github.com/protocolbuffers/protobuf/blob/v3.6.0/python/google/protobuf/pyext/README
-os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
-os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION'] = '2'
 # pylint: enable=g-import-not-at-top
 
 import sys

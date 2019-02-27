@@ -33,26 +33,19 @@ limitations under the License.
         </template>
       </paper-menu>
     </paper-dropdown-menu>
-    <div class="center">
-      <span>
-        <a
-          download="[[_csvName(tag, _run)]]"
-          href="[[_csvUrl(tag, _run, urlFn)]]"
-          >CSV</a>
-        <a
-          download="[[_jsonName(tag, _run)]]"
-          href="[[_jsonUrl(tag, _run, urlFn)]]"
-          >JSON</a>
-      </span>
-    </div>
+    <a
+      download="[[_csvName(tag, _run)]]"
+      href="[[_csvUrl(tag, _run, urlFn)]]"
+    >CSV</a><!--
+    --><a
+      download="[[_jsonName(tag, _run)]]"
+      href="[[_jsonUrl(tag, _run, urlFn)]]"
+    >JSON</a>
     <style>
       :host {
         display: flex;
+        align-items: center;
         height: 32px;
-      }
-      .center {
-        display: flex;
-        align-self: center;
       }
       paper-dropdown-menu {
         width: 100px;
@@ -65,8 +58,7 @@ limitations under the License.
       }
       a {
         font-size: 10px;
-        border-radius: 3px;
-        border: 1px solid #EEE;
+        margin: 0 0.2em;
       }
       paper-input {
         font-size: 22px;
@@ -78,8 +70,13 @@ limitations under the License.
       is: "tf-downloader",
       properties: {
         _run: String,
-        runs: Array,
+        runs: Array,  // Array<string>
         tag: String,
+        // Clients pass `urlFn: (tag: string, run: string) => string`,
+        // which should generate a URL to download data for a given
+        // run/tag combination. The data at the URL should be in JSON
+        // form, and the URL should be such that adding a query
+        // parameter `format=csv` instead yields CSV data.
         urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
@@ -89,10 +86,10 @@ limitations under the License.
         return urlFn(tag, run);
       },
       _csvName(tag, run) {
-        return `run_${run},tag_${tag}.csv`;
+        return `run-${run}-tag-${tag}.csv`;
       },
       _jsonName(tag, run) {
-        return `run_${run},tag_${tag}.json`;
+        return `run-${run}-tag-${tag}.json`;
       },
     });
   </script>

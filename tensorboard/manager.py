@@ -47,7 +47,8 @@ _FieldType = collections.namedtuple(
 _type_timestamp = _FieldType(
     serialized_type=int,  # seconds since epoch
     runtime_type=datetime.datetime,  # microseconds component ignored
-    serialize=lambda dt: int(dt.strftime("%s")),
+    serialize=lambda dt: int(
+        (dt - datetime.datetime.fromtimestamp(0)).total_seconds()),
     deserialize=lambda n: datetime.datetime.fromtimestamp(n),
 )
 _type_int = _FieldType(
@@ -358,7 +359,7 @@ StartFailed = collections.namedtuple(
 StartTimedOut = collections.namedtuple("StartTimedOut", ("pid",))
 
 
-def start(arguments, timeout=datetime.timedelta(seconds=10)):
+def start(arguments, timeout=datetime.timedelta(seconds=60)):
   """Start a new TensorBoard instance, or reuse a compatible one.
 
   If the cache key determined by the provided arguments and the current
@@ -378,7 +379,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=10)):
       this time period, `start` will assume that the subprocess is stuck
       in a bad state, and will give up on waiting for it and return a
       `StartTimedOut` result. Note that in such a case the subprocess
-      will not be killed. Default value is 10 seconds.
+      will not be killed. Default value is 60 seconds.
 
   Returns:
     A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`

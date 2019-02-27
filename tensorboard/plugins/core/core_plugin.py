@@ -37,6 +37,11 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
+# If no port is specified, try to bind to this port. See help for --port
+# for more details.
+DEFAULT_PORT = 6006
+
+
 class CorePlugin(base_plugin.TBPlugin):
   """Core plugin for TensorBoard.
 
@@ -162,9 +167,9 @@ class CorePlugin(base_plugin.TBPlugin):
       def get_first_event_timestamp(run_name):
         try:
           return self._multiplexer.FirstEventTimestamp(run_name)
-        except ValueError:
+        except ValueError as e:
           logger.warn(
-              'Unable to get first event timestamp for run %s', run_name)
+              'Unable to get first event timestamp for run %s: %s', run_name, e)
           # Put runs without a timestamp at the end.
           return float('inf')
       run_names.sort(key=get_first_event_timestamp)
@@ -294,12 +299,14 @@ commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
     parser.add_argument(
         '--port',
         metavar='PORT',
-        type=int,
-        default=6006,
+        type=lambda s: (None if s == "default" else int(s)),
+        default="default",
         help='''\
 Port to serve TensorBoard on. Pass 0 to request an unused port selected
-by the operating system. (default: %(default)s)\
-''')
+by the operating system, or pass "default" to try to bind to the default
+port (%s) but search for a nearby free port if the default port is
+unavailable. (default: "default").\
+''' % DEFAULT_PORT)
 
     parser.add_argument(
         '--purge_orphaned_data',
