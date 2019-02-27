@@ -185,18 +185,22 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
       self.skipTest('TF v2 summary API not available')
 
   def image(self, *args, **kwargs):
+    return self.image_event(*args, **kwargs).summary
+
+  def image_event(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
     writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.image(*args, **kwargs)
     writer.close()
-    return self.read_single_event_from_eventfile().summary
-
-  def read_single_event_from_eventfile(self):
     event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
-    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
+    self.assertEqual(len(event_files), 1)
+    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
+    # Delete the event file to reset to an empty directory for later calls.
+    # TODO(nickfelt): use a unique subdirectory per writer instead.
+    os.remove(event_files[0])
     return events[1]
 
   def test_scoped_tag(self):
@@ -206,8 +210,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
   def test_step(self):
     data = np.array(1, np.uint8, ndmin=4)
-    self.image('a', data, step=333)
-    event = self.read_single_event_from_eventfile()
+    event = self.image_event('a', data, step=333)
     self.assertEqual(333, event.step)
 
   def test_floating_point_data(self):

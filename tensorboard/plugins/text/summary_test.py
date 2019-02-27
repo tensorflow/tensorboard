@@ -159,32 +159,38 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
       self.skipTest('TF v2 summary API not available')
 
   def text(self, *args, **kwargs):
+    return self.text_event(*args, **kwargs).summary
+
+  def text_event(self, *args, **kwargs):
+    self.write_text_event(*args, **kwargs)
+    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
+    self.assertEqual(len(event_files), 1)
+    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+    # Expect a boilerplate event for the file_version, then the summary one.
+    self.assertEqual(len(events), 2)
+    # Delete the event file to reset to an empty directory for later calls.
+    # TODO(nickfelt): use a unique subdirectory per writer instead.
+    os.remove(event_files[0])
+    return events[1]
+
+  def write_text_event(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
     writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.text(*args, **kwargs)
     writer.close()
-    return self.read_single_event_from_eventfile().summary
-
-  def read_single_event_from_eventfile(self):
-    event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
-    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
-    # Expect a boilerplate event for the file_version, then the summary one.
-    self.assertEqual(len(events), 2)
-    return events[1]
 
   def test_scoped_tag(self):
     with tf.name_scope('scope'):
       self.assertEqual('scope/a', self.text('a', 'foo').value[0].tag)
 
   def test_step(self):
-    self.text('a', 'foo', step=333)
-    event = self.read_single_event_from_eventfile()
+    event = self.text_event('a', 'foo', step=333)
     self.assertEqual(333, event.step)
 
 
 class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
-  def text(self, *args, **kwargs):
+  def write_text_event(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
     # Hack to extract current scope since there's no direct API for it.
     with tf.name_scope('_') as temp_scope:
@@ -198,7 +204,6 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
     with writer.as_default():
       graph_fn()
     writer.close()
-    return self.read_single_event_from_eventfile().summary
 
 
 if __name__ == '__main__':
