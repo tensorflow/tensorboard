@@ -25,11 +25,16 @@ from __future__ import print_function
 from absl import logging
 import contextlib
 import functools
+import inspect
 import os
 import sqlite3
 import threading
+import unittest
+from unittest import loader as _unittest_loader
+
 
 import tensorflow as tf
+from tensorflow.python import tf2
 
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
@@ -183,7 +188,7 @@ class FakeSleep(object):
     self._clock.advance(seconds)
 
 
-class FileWriter(tf.summary.FileWriter):
+class FileWriter(tf.compat.v1.summary.FileWriter):
   """FileWriter for test.
 
   TensorFlow FileWriter uses TensorFlow's Protobuf Python binding which is
@@ -194,7 +199,7 @@ class FileWriter(tf.summary.FileWriter):
 
   def add_event(self, event):
     if isinstance(event, event_pb2.Event):
-      tf_event = tf.Event.FromString(event.SerializeToString())
+      tf_event = tf.compat.v1.Event.FromString(event.SerializeToString())
     else:
       logger.warn('Added TensorFlow event proto. '
                       'Please prefer TensorBoard copy of the proto')
@@ -203,7 +208,7 @@ class FileWriter(tf.summary.FileWriter):
 
   def add_summary(self, summary, global_step=None):
     if isinstance(summary, summary_pb2.Summary):
-      tf_summary = tf.Summary.FromString(summary.SerializeToString())
+      tf_summary = tf.compat.v1.Summary.FromString(summary.SerializeToString())
     else:
       logger.warn('Added TensorFlow summary proto. '
                       'Please prefer TensorBoard copy of the proto')
@@ -273,3 +278,93 @@ def ensure_tb_summary_proto(summary):
     return summary
 
   return summary_pb2.Summary.FromString(summary.SerializeToString())
+
+
+def run_v1_only(reason, func=None):
+  """Execute the decorated test only if running in v1 mode.
+
+  This function is intended to be applied to tests that exercise v1 only
+  functionality. If the test is run in v2 mode it will simply be skipped.
+
+  Args:
+    reason: string giving a reason for limiting the test to v1 only. No
+      component should be TensorFlow only, moreover v1 only.
+    func: function to be annotated. If `func` is None, this method returns a
+      decorator the can be applied to a function. If `func` is not None this
+      returns the decorator applied to `func`.
+
+  Returns:
+    Returns a decorator that will conditionally skip the decorated test method.
+  """
+
+  def decorator(f):
+    if inspect.isclass(f):
+      setup = f.__dict__.get("setUp")
+      if setup is not None:
+        setattr(f, "setUp", decorator(setup))
+
+      for name in _unittest_loader.getTestCaseNames(
+          f, unittest.TestLoader.testMethodPrefix):
+        value = getattr(f, name)
+        if (callable(value) and
+            name.startswith(unittest.TestLoader.testMethodPrefix)):
+          setattr(f, name, decorator(value))
+
+      return f
+
+    def decorated(self, *args, **kwargs):
+      if tf2.enabled():
+        self.skipTest(reason)
+
+      return f(self, *args, **kwargs)
+
+    return decorated
+
+  if func is not None:
+    return decorator(func)
+
+  return decorator
+
+
+def run_v2_only(func=None):
+  """Execute the decorated test only if running in TensorFlow v2 mode.
+
+  This function is intended to be applied to tests that exercise v2 only
+  functionality. If the test is run in v1 mode it will simply be skipped.
+
+  Args:
+    func: function to be annotated. If `func` is None, this method returns a
+      decorator the can be applied to a function. If `func` is not None this
+      returns the decorator applied to `func`.
+
+  Returns:
+    Returns a decorator that will conditionally skip the decorated test method.
+  """
+
+  def decorator(f):
+    if inspect.isclass(f):
+      setup = f.__dict__.get("setUp")
+      if setup is not None:
+        setattr(f, "setUp", decorator(setup))
+
+      for name in _unittest_loader.getTestCaseNames(
+          f, unittest.TestLoader.testMethodPrefix):
+        value = getattr(f, name)
+        if (callable(value) and
+            name.startswith(unittest.TestLoader.testMethodPrefix)):
+          setattr(f, name, decorator(value))
+
+      return f
+
+    def decorated(self, *args, **kwargs):
+      if not tf2.enabled():
+        self.skipTest("Skipping test for TF v2.")
+
+      return f(self, *args, **kwargs)
+
+    return decorated
+
+  if func is not None:
+    return decorator(func)
+
+  return decorator

@@ -37,7 +37,6 @@ from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -122,6 +121,7 @@ class EventAccumulatorTest(tf.test.TestCase):
         self.assertEqual(actual[key], expected_value)
 
 
+@test_util.run_v1_only('Uses v1 SummaryWriter and v1 audio summary')
 class MockingEventAccumulatorTest(EventAccumulatorTest):
 
   def setUp(self):
@@ -546,6 +546,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         expected_count=size_small)
 
 
+@test_util.run_v1_only('Uses contrib and v1 SummaryWriter')
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
   def testTensorsRealistically(self):

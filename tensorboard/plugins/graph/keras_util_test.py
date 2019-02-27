@@ -24,14 +24,22 @@ import tensorflow as tf
 
 from tensorflow.python.platform import test
 from tensorboard.plugins.graph import keras_util
+from tensorboard.util import test_util
 
 
-class GraphUtilTest(tf.test.TestCase):
+class BaseGraphUtilTest(object):
   def assertGraphDefToModel(self, expected_proto, model):
     model_config = json.loads(model.to_json())
 
     self.assertProtoEquals(
         expected_proto, keras_util.keras_model_to_graph_def(model_config))
+  
+  def lstm_node_name(self):
+    raise NotImplementedError
+
+  def lstm_keras_class_name(self):
+    raise NotImplementedError
+    
 
   def test_keras_model_to_graph_def_sequential_model(self):
     expected_proto = """
@@ -274,7 +282,7 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     node {
-      name: "model/lstm"
+      name: "model/%s"
       input: "model/lstm_input"
       attr {
         key: "dtype"
@@ -285,11 +293,11 @@ class GraphUtilTest(tf.test.TestCase):
       attr {
         key: "keras_class"
         value {
-          s: "LSTM"
+          s: "%s"
         }
       }
     }
-    """
+    """ % (self.lstm_node_name(), self.lstm_keras_class_name())
     inputs = tf.keras.layers.Input(shape=(None, 5), name='lstm_input')
     encoder = tf.keras.layers.LSTM(256)
 
@@ -430,7 +438,7 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     node {
-      name: "model/lstm"
+      name: "model/%s"
       input: "model/embedding"
       attr {
         key: "dtype"
@@ -441,7 +449,7 @@ class GraphUtilTest(tf.test.TestCase):
       attr {
         key: "keras_class"
         value {
-          s: "LSTM"
+          s: "%s"
         }
       }
     }
@@ -462,7 +470,7 @@ class GraphUtilTest(tf.test.TestCase):
     }
     node {
       name: "model/concatenate"
-      input: "model/lstm"
+      input: "model/%s"
       input: "model/aux_input"
       attr {
         key: "dtype"
@@ -511,7 +519,7 @@ class GraphUtilTest(tf.test.TestCase):
     }
     node {
       name: "model/aux_output"
-      input: "model/lstm"
+      input: "model/%s"
       attr {
         key: "dtype"
         value {
@@ -525,7 +533,7 @@ class GraphUtilTest(tf.test.TestCase):
         }
       }
     }
-    """
+    """ % (self.lstm_node_name(), self.lstm_keras_class_name(), self.lstm_node_name(), self.lstm_node_name())
     main_input = tf.keras.layers.Input(shape=(100,), dtype='int32', name='main_input')
     x = tf.keras.layers.Embedding(
         output_dim=512, input_dim=10000, input_length=100)(main_input)
@@ -843,6 +851,26 @@ class GraphUtilTest(tf.test.TestCase):
     ])
 
     self.assertGraphDefToModel(expected_proto, model)
+
+
+@test_util.run_v1_only('LSTM has different name')
+class GraphUtilV1Test(BaseGraphUtilTest, tf.test.TestCase):
+
+  def lstm_node_name(self):
+    return 'lstm'
+
+  def lstm_keras_class_name(self):
+    return 'LSTM'
+
+
+@test_util.run_v2_only
+class GraphUtilV2Test(BaseGraphUtilTest, tf.test.TestCase):
+
+  def lstm_node_name(self):
+    return 'unified_lstm'
+
+  def lstm_keras_class_name(self):
+    return 'UnifiedLSTM'
 
 
 if __name__ == '__main__':

@@ -25,8 +25,8 @@ from tensorflow.python.debug.lib import grpc_debug_test_server
 from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.util import tb_logging
+from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -68,6 +68,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
                          debug_urls=self.debug_server_url)
     return z, run_options
 
+  @test_util.run_v1_only('Ops differ. Similar to [1].')
   def testExtractGatedGrpcTensorsFoundGatedGrpcOps(self):
     with tf.compat.v1.Session() as sess:
       z, run_options = self._createTestGraphAndRunOptions(sess, gated_grpc=True)
@@ -133,6 +134,22 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertEqual([], gated_debug_ops)
 
 
+# [1]: Below graph creates different ops
+#   a = tf.Variable([1.0], name='foo/a')
+#   b = tf.Variable([2.0], name='bar/b')
+#   _ = tf.add(a, b, name='baz/c')
+#
+# In v1:
+#   bar/b, bar/b/Assign, bar/b/initial_value, bar/b/read, baz/c,
+#   foo/a, foo/a/Assign, foo/a/initial_value, foo/a/read
+# In v2:
+#   bar/b, bar/b/Assign, bar/b/Initializer/initial_value,
+#   bar/b/IsInitialized/VarIsInitializedOp, bar/b/Read/ReadVariableOp,
+#   baz/c, baz/c/ReadVariableOp,  baz/c/ReadVariableOp_1,
+#   foo/a, foo/a/Assign, foo/a/Initializer/initial_value,
+#   foo/a/IsInitialized/VarIsInitializedOp, foo/a/Read/ReadVariableOp
+
+@test_util.run_v1_only('Graph creates different op structure in v2. See [1].')
 class BaseExpandedNodeNameTest(tf.test.TestCase):
 
   def testMaybeBaseExpandedNodeName(self):

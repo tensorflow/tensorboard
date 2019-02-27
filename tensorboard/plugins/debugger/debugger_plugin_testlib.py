@@ -178,7 +178,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     Returns:
       A `tf.Event` with a health pill summary.
     """
-    event = tf.Event(step=step, wall_time=wall_time)
+    event = tf.compat.v1.Event(step=step, wall_time=wall_time)
     tensor = tf.compat.v1.make_tensor_proto(
         list_of_values, dtype=tf.float64, shape=[len(list_of_values)])
     value = event.summary.value.add(
