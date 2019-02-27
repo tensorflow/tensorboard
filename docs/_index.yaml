@@ -13,7 +13,7 @@ landing_page:
         <ul style="padding-left: 20px; margin: 20px 0;">
           <li>Tracking and visualizing metrics such as loss and accuracy</li>
           <li>Visualizing the model graph (ops and layers)</li>
-          <li>Viewing histograms and distributions of Tensors (e.g. weights 
+          <li>Viewing histograms and distributions of Tensors (e.g., weights 
           and biases) to track how they change over time</li>
           <li>Projecting embeddings to a lower dimensional space</li>
           <li>Displaying images, text, and audio data</li>
