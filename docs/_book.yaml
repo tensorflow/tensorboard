@@ -27,8 +27,8 @@ upper_tabs:
     #   - include: /tensorboard/api_docs/python/_toc.yaml
     - name: TF2.0 Alpha
       contents:
-      - title: Quick start
-        path: /tensorboard/r2/quickstart
+      - title: Get started
+        path: /tensorboard/r2/get_started
       - title: "Scalars: Logging basic metrics"
         path: /tensorboard/r2/scalars_and_keras
       - title: What-If tool
