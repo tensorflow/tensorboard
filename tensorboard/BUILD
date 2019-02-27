@@ -26,6 +26,7 @@ py_binary(
         ":default",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
     ],
 )
 
