@@ -1450,7 +1450,7 @@ limitations under the License.
                               plots created for them by specifying the indices to shown partial dependence plots for,
                               if the datapoint contains multiple feature values for a feature.
                             </div>
-                            <div>When the global toggle is turned on, the plots show the the average effect of repeatedly
+                            <div>When the global toggle is turned on, the plots show the average effect of repeatedly
                               changing a single feature across all datapoints. When it is turned off, the plots show the
                               effect of a repeatedly changing a single feature on the selected datapoint.
                             </div>
@@ -1495,7 +1495,7 @@ limitations under the License.
                                               on-input="pdInputChanged"/>
                                     </div>
                                   </div>
-                                  <div class="feature-index-container" hidden$="[[shouldHideFeatureIndiciesSelector(item.name, selected)]]"
+                                  <div class="feature-index-container" hidden$="[[shouldHideFeatureIndicesSelector(item.name, selected)]]"
                                        title="An optional printer-page-style pattern like '0,2,4-6' to select the indices of the feature values to generate plots for. Useful for features with many repeated fields.">
                                     <div class="info-text">
                                       Set feature indices <i>(optional)</i>
@@ -5138,7 +5138,7 @@ limitations under the License.
         this.deletePdPlotSpinner(featureName);
       },
 
-      shouldHideFeatureIndiciesSelector: function(featureName, selected) {
+      shouldHideFeatureIndicesSelector: function(featureName, selected) {
         if (!selected || selected.length == 0 || !this.visdata ||
             this.visdata.length <= selected[0]) {
           return true;
@@ -5150,7 +5150,7 @@ limitations under the License.
       /** Check if pd-input-container has any elements in it and hide it if it
         does not*/
       shouldHidePdInputContainer: function(samples, featureName, selected) {
-        if (!this.shouldHideFeatureIndiciesSelector(featureName, selected)
+        if (!this.shouldHideFeatureIndicesSelector(featureName, selected)
             || !samples){
           return false;
         } else {

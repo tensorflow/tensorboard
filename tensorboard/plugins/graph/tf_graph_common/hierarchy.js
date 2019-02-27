@@ -28,7 +28,7 @@ var tf;
                 /**
                  * Constructs a hierarchy.
                  * @param graphOptions Options passed to dagre for creating the graph. Note
-                 *   that the `compound` argument will be overriden to true.
+                 *   that the `compound` argument will be overridden to true.
                  */
                 function HierarchyImpl(graphOptions) {
                     this.hasShapeInfo = false;
