@@ -21,7 +21,7 @@ landing_page:
           <li>And much more</li>
         </ul>
 
-      image_path: /images/tensorboard.gif
+      image_path: /tensorboard/images/tensorboard.gif
 
   - classname: devsite-landing-row-cards
     items:
