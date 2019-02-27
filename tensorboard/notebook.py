@@ -218,7 +218,7 @@ def display(port=None, height=None):
       launched TensorBoard.
     height: The height of the frame into which to render the TensorBoard
       UI, as an `int` number of pixels, or `None` to use a default value
-      (currently 600).
+      (currently 800).
   """
   _display(port=port, height=height, print_message=True, display_handle=None)
 
@@ -235,7 +235,7 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
       render TensorBoard.
   """
   if height is None:
-    height = 600
+    height = 800
 
   if port is None:
     infos = manager.get_all()
