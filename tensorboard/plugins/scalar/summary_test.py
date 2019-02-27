@@ -175,8 +175,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     try:
       tf2.summary.experimental.set_step(333)
       # TODO(nickfelt): change test logic so we can just omit `step` entirely.
-      self.scalar('a', 1.0, step=None)
-      event = self.read_single_event_from_eventfile()
+      event = self.scalar_event('a', 1.0, step=None)
       self.assertEqual(333, event.step)
     finally:
       # Reset to default state for other tests.
