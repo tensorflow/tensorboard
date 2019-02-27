@@ -1,159 +1,101 @@
-# Precision—Recall Curve Plugin HTTP API
+# TensorFlow Lite Plugin HTTP API
 
-The plugin name is `pr_curves`, so all its routes are under
-`/data/plugin/pr_curves`.
+The plugin name is `lite`, so all its routes are under
+`/data/plugin/lite`.
 
-## `/data/plugin/pr_curves/available_time_entries`
+## `/data/plugin/lite/tflite_supported_ops`
 
-Retrieves a JSON object mapping run name to a list of time entries (one for each
-step). Each time entry has 2 properties:
-
-* **step**: The step of the event.
-* **wall_time**: The time in seconds since the epoch at which the summary was
-  written.
-
+Retrieves a JSON string array of tflite supported ops.
 Here is an example.
 
 ```json
-{
-  "foo": [
-    {
-      "step": 0,
-      "wall_time": 1503076940.949388,
-    },
-    {
-      "step": 1,
-      "wall_time": 1503076940.953447,
-    },
-    {
-      "step": 2,
-      "wall_time": 1503076940.95812,
-    }
-  ],
-  "bar": [
-    {
-      "step": 0,
-      "wall_time": 1503076940.964225,
-    },
-    {
-      "step": 1,
-      "wall_time": 1503076940.969845,
-    },
-    {
-      "step": 2,
-      "wall_time": 1503076940.974917,
-    }
-  ],
-}
+[
+  "UnidirectionalSequenceLstm",
+  "ZerosLike",
+  "TopK",
+  "Tanh",
+  "Switch",
+  "Sum",
+  "Square",
+  "Sqrt",
+  "SpaceToDepth",
+  "UnidirectionalSequenceRnn",
+  "SpaceToBatchND",
+  "Slice",
+  "Sin",
+  ...
+  "StopGradient",
+  "All",
+  "AddN",
+  "Add",
+  "DynamicPartition",
+  "Abs"
+]
 ```
 
-## `/data/plugin/pr_curves/pr_curves`
+## `/data/plugin/lite/checkpoints`
 
-Retrieves a JSON object mapping run name to a list of PR curve data entries (one
-entry per step). This route requires a `tag` GET parameter as well as at least
-one `run` GET parameter to specify both the tag and list of runs to retrieve
-data for. 
-
-Each PR data entry contains the following properties.
-
-* **wall_time**: The wall time (number) in seconds since the epoch at which data
-  for the PR curve was collected.
-* **step**: The step (number).
-* **precision**: A list of precision values (numbers). The length of this list
-  is the number of thresholds used to generate PR curves.
-* **recall**: A list of recall values that each pair-wise correspond to the list
-  of precision values (numbers).
-
-Here is an example. We assume 5 thresholds for PR curves. We also assume GET
-parameters of `?tag=green/pr_curves&run=bar&run=foo`.
-
-```json
-{
-  "bar": [
-    {
-      "wall_time": 1503076940.949388,
-      "step": 0,
-      "precision": [0.4242, 0.5, 0.6, 0.8, 1.0],
-      "recall": [1.0, 0.6, 0.42, 0.1337, 0.0]
-    },
-    {
-      "wall_time": 1503076940.953447,
-      "step": 1,
-      "precision": [0.43, 0.542, 0.642, 0.842, 1.0],
-      "recall": [1.0, 0.642, 0.4242, 0.142, 0.0]
-    },
-    {
-      "wall_time": 1503076940.95812,
-      "step": 2,
-      "precision": [0.2, 0.4, 0.6, 0.8, 1.0],
-      "recall": [1.0, 0.8, 0.6, 0.42, 0.0]
-    }
-  ],
-  "foo": [
-    {
-      "wall_time": 1503076940.964225,
-      "step": 0,
-      "precision": [0.32, 0.52, 0.62, 0.82, 1.0],
-      "recall": [1.0, 0.82, 0.52, 0.32, 0.0]
-    },
-    {
-      "wall_time": 1503076940.969845,
-      "step": 1,
-      "precision": [0.23, 0.35, 0.42, 0.5, 1.0],
-      "recall": [1.0, 0.86, 0.64, 0.43, 0.0]
-    },
-    {
-      "wall_time": 1503076940.974917,
-      "step": 2,
-      "precision": [0.1, 0.2, 0.3, 0.4, 1.0],
-      "recall": [1.0, 0.9, 0.8, 0.7, 0.0]
-    }
-  ],
-}
-```
-
-Used by the PR Curves dashboard to render plots.
-
-## `/data/plugin/pr_curves/tags`
-
-Retrieves a JSON object whose keys are the names of all the runs (regardless of
-whether they have available PR curve data). The values of that object are also
-objects whose keys are tag strings (associated with the run) and whose values
-are objects with 2 keys: `displayName` and `description` (associated with the
-run-tag combination).
-
-The `displayName` is shown atop individual plots in TensorBoard. The description
-might offer insight for instance into how data was generated.
-
-Importantly, the `description` contains sanitized HTML to be injected into the
-DOM, while the `displayName` is simply an arbitrary string.
-
+Retrieves a JSON string array of current model checkpoints.
 Here is an example.
 
 ```json
-{
-  "foo": {
-    "green/pr_curves": {
-      "displayName": "classifying green",
-      "description": "Human eyes are very sensitive to green."
-    },
-    "red/pr_curves":  {
-      "displayName": "classifying red",
-      "description": "Human eyes are also pretty sensitive to red."
-    },
-  },
-  "bar": {
-    "green/pr_curves": {
-      "displayName": "classifying green",
-      "description": "Human eyes are very sensitive to green."
-    },
-    "blue/pr_curves":  {
-      "displayName": "classifying blue",
-      "description": "Human eyes are not as sensitive to blue."
-    },
-  },
-}
+[
+  "model.ckpt-1",
+  "model.ckpt-400",
+  "model.ckpt-800",
+  "model.ckpt-401"
+]
 ```
 
-Used by TensorBoard for categorizing PR Curve plots into runs and tags as well
-as to show metadata associated with each plot.
+Used by the Lite Controls to render checkpoint select.
+
+## `/data/plugin/lite/run_toco`
+
+Posts parameters to backend to build a tflite model, and return the result of
+building details.
+
+The request body contains three properties:
+  * input_nodes: string array, input nodes name
+  * output_nodes: string array, output nodes name
+  * batch_size: integer, size of batch
+  * checkpoint: string, the selected checkpoint name
+
+The response is a json object of toco execution result, it contains two major
+properties: `result` and `tabs`, `result` is a string that indicates whether
+the execution is successful or not. `tabs` is a list of data to show in the
+result dialog.
+
+Here is an example.
+
+request:
+
+```json
+{
+    "input_nodes":[“input”, “...”],
+    "output_nodes":[”MobilenetV1/Predictions/Reshape_1“, “...”],
+    "batch_size":1,
+    "checkpoint": "checkpoint_name"
+}
+
+```
+
+response:
+
+```json
+{
+  "result": "success",
+  "tabs": [{
+    "name": "summary",
+    "content": [{
+      "type": "text",
+      "body": "Success..."
+    }]
+  }, {
+    "name": "command",
+    "content": [{
+      "type": "code",
+      "body": "freeze_graph..."
+    }]
+  }]
+}
+```

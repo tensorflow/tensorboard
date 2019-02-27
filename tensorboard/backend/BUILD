@@ -70,7 +70,6 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/pr_curve:metadata",
-        "//tensorboard/plugins/lite:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",

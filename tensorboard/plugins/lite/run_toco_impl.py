@@ -96,8 +96,6 @@ if tflite_support:
                     "--input_arrays={}".format(",".join(input_nodes)),
                     "--output_arrays={}".format(",".join(output_nodes)),
                     "--input_shapes={}".format(":".join(input_shapes))]
-    print(freeze_args)
-    print(convert_args)
     return freeze_args, convert_args
 
 
@@ -150,6 +148,17 @@ if tflite_support:
     script += '\n'
 
     return script
+
+
+def get_exception_info(e):
+  if not isinstance(e, Suggestion):
+    e = Suggestion(e)
+
+  return {'type': e.type,
+          'error': e.error,
+          'suggestion': e.suggestion,
+          'stack_trace': e.stack_trace}
+
 
   if __name__ == '__main__':
     graph_def_file = "model_dir/graph.pbtxt"

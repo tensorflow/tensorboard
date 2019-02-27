@@ -29,16 +29,14 @@ from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.lite import metadata
-from tensorboard.plugins.lite import plugin_data_pb2
 from tensorboard.plugins.lite import run_toco_impl
-from tensorflow.errors import Suggestion
 
+_PLUGIN_PREFIX_ROUTE = 'lite'
 
 class LitePlugin(base_plugin.TBPlugin):
   """A plugin that serves PR curves for individual classes."""
 
-  plugin_name = metadata.PLUGIN_NAME
+  plugin_name = _PLUGIN_PREFIX_ROUTE
 
   def __init__(self, context):
     """Instantiates a PrCurvesPlugin.
@@ -79,6 +77,7 @@ class LitePlugin(base_plugin.TBPlugin):
     try:
       result = {}
       tflite_file = path.join(self._logdir, "tflite_output", "model.tflite")
+      script = None
 
       options = {
           "input_nodes": ["dnn/input_from_feature_columns/input_layer/concat"],
@@ -90,38 +89,93 @@ class LitePlugin(base_plugin.TBPlugin):
       options = json.loads(request.form['data'])
       options['checkpoint'] = path.join(self._logdir, options['checkpoint'])
 
+      # freeze_and_convert is equivalent to get_freeze_and_convert_script and
+      # execute the script. get_freeze_and_convert_script also does initial
+      # error checking. So if get_freeze_and_convert_script throw exception,
+      # it is not needed to execute freeze_and_convert.
+
+      script = run_toco_impl.get_freeze_and_convert_script(graph_def_file,
+                                                           tflite_file, options)
+
       run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
-      result['success'] = ('Convert successfully. TFLite model path is '
-                           '{tflite_file}'.format(tflite_file=tflite_file))
+
+      result['result'] = 'success'
+      result['tabs'] = [
+        {
+          'name': 'summary',
+          'content': [
+            {
+              'type': 'text',
+              'body': 'Succuss: The model has been converted to tflite file.'
+            },
+            {
+              'type': 'code',
+              'body': tflite_file
+            }]
+        },
+        {
+          'name': 'command',
+          'content': [
+            {
+              'type': 'code',
+              'body': script
+            }
+          ]
+        }
+      ]
 
     except Exception as e:
-      if not isinstance(e, Suggestion):
-        traceback.print_stack()
-        e = Suggestion(e)
+      error_info = run_toco_impl.get_exception_info(e)
 
-    try:
-      script = run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
-      result['success'] = {
-        'type': 'Success',
-        'content': {
-          'message': 'Convert successfully. TF Lite model path is: <br/><span id="generated_path">{tflite_file}</a>'.format(tflite_file=tflite_file),
-          'shell_script': script
+      result['result'] = 'failed'
+      result['tabs'] = [
+        {
+          'name': 'error',
+          'content': [
+            {
+              'type': 'code',
+              'title': 'error',
+              'body': '%s: %s' % (error_info['type'], error_info['error'])
+            },
+          ]
+        },
+        {
+          'name': 'stack trace',
+          'content': [
+            {
+              'type': 'code',
+              'body': error_info['stack_trace']
+            }
+          ]
         }
-      }
-    except Suggestion as e:
-      if 'errors' not in result:
-        result['errors'] = []
-      message = {'type': e.type,  'content': {'message': e.error}}
+      ]
 
-      if e.suggestion is not None:
-        message['content']['suggestion'] = e.suggestion
+      if error_info['suggestion'] is not None:
+        result['tabs'][0]['content'].append({
+            'type': 'text',
+            'title': 'Suggestion',
+            'body': '%s' % error_info['suggestion']
+          })
 
-      if e.stack_trace is not None:
-        message['content']['stack_trace'] = e.stack_trace
+      if script is not None:
+        result['tabs'].append({
+          "name": "command",
+          "content": [
+            {
+              "type": "code",
+              "body": script
+            }
+          ]
+        })
 
-      result['errors'].append(message)
+      issue_url = 'https://github.com/tensorflow/tensorflow/issues/new?template=40-tflite-op-request.md'
+      if issue_url in error_info['error']:
+        result['addons'] = [{
+          'type': 'link',
+          'title': 'Create a github issue',
+          'body': issue_url
+        }]
 
-    print("result: " + json.dumps(result))
 
     return http_util.Respond(request, json.dumps(result), 'application/json')
 
