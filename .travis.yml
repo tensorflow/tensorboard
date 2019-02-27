@@ -20,7 +20,7 @@ env:
   #
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
-  - TF_VERSION_ID=tf-nightly BAZEL=0.21.0 BAZEL_SHA256SUM=7a2f347d779c4c772cdb318f0435f8d489a238be42e7a9bf1e2bad94b1c3094f
+  - TF_VERSION_ID=tf-nightly BAZEL=0.22.0 BAZEL_SHA256SUM=8474ed28ed4998e2f5671ddf3a9a80ae9e484a5de3b8b70c8b654c017c65d363
 
 cache:
   directories:
