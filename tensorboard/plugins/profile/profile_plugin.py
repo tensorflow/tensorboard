@@ -38,7 +38,6 @@ logger = tb_logging.get_logger()
 PLUGIN_NAME = 'profile'
 
 # HTTP routes
-LOGDIR_ROUTE = '/logdir'
 DATA_ROUTE = '/data'
 TOOLS_ROUTE = '/tools'
 HOSTS_ROUTE = '/hosts'
@@ -106,11 +105,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
         self.logdir, ProfilePlugin.plugin_name)
     self.stub = None
     self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
-
-  @wrappers.Request.application
-  def logdir_route(self, request):
-    return http_util.Respond(request, {'logdir': self.plugin_logdir},
-                             'application/json')
 
   def _run_dir(self, run):
     run_dir = os.path.join(self.plugin_logdir, run)
@@ -329,7 +323,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        LOGDIR_ROUTE: self.logdir_route,
         TOOLS_ROUTE: self.tools_route,
         HOSTS_ROUTE: self.hosts_route,
         DATA_ROUTE: self.data_route,
