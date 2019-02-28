@@ -285,9 +285,9 @@ limitations under the License.
         const totalHeight = COL_HEIGHT + margin.top + margin.bottom;
         this._svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
         this._svg.attr("preserveAspectRatio", "xMidYMid");
-        // Set a minimum width so scale factor want be less than 1.
-        // But if size of '#container' is larger than we'll scale up
-        // our svg.
+        // Set a minimum width so scale factor want be less than 1
+        // (but if size of '#container' is larger then we'll scale up
+        // our svg).
         this._svg.style("min-width", totalWidth + "px");
         this._svg.style("min-height", totalHeight + "px");
         // 'width' and 'height' store the width of the svg without our margins.
