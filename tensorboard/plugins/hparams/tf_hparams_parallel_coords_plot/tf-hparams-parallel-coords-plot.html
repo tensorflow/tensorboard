@@ -58,7 +58,6 @@ limitations under the License.
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
 <link rel="import" href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html">
 <link rel="import" href="../tf-hparams-parallel-coords-plot/utils.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <dom-module id="tf-hparams-parallel-coords-plot">
   <template>
@@ -103,6 +102,16 @@ limitations under the License.
       .foreground .selected-path {
         stroke-width: 3 !important;
         stroke: #0f0    !important;
+      }
+
+      #container {
+        width: 100%;
+        height: 100%;
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
       }
 
       .axis text {
@@ -168,12 +177,6 @@ limitations under the License.
         // but refer to the same objects stored in the 'sessionGroups' property.
         _validSessionGroups: Array,
 
-        // The <div> element with "container" id.
-        _container: {
-          type: Object,
-          value: null
-        },
-
         // A D3 selection containing just the root <svg> element.
         _svg: {
           type: Object,
@@ -205,26 +208,11 @@ limitations under the License.
         '_schemaChanged(schema.*)',
         '_redraw(options.*)',
       ],
-      
-      behaviors: [
-        Polymer.IronResizableBehavior,
-      ],
-
-      listeners: {
-        'iron-resize': 'resized',
-      },
-
-      resized() {
-        console.log("resized!");
-      },
 
       ready() {
-        this._container = this.$.container;
         this._svg = d3.select(this.$.svg);
         this._redraw();
       },
-
-      
 
       _sessionGroupsChanged() {
         if (this.selectedSessionGroup !== null) {
@@ -253,17 +241,9 @@ limitations under the License.
       _redraw() {
         this.debounce("_redraw", ()=>{
           this._computeValidSessionGroups();
-
-          this.width =  this.root.offsetWidth ? this.root.offsetWidth : 1000;
-          this.height = this.width / 2.5;
-
-          this._container.style.width = this.width + "px";
-          this._container.style.height = this.height + "px";
-
           // Delete all elements in the svg subtree and reset the
           // closest session group.
           this._svg.selectAll("g").remove()
-
           // Draw.
           this._draw();
         }, 100);
@@ -295,13 +275,25 @@ limitations under the License.
           return;
         }
 
-        // Add a single root group element.
-        const margin = {top: 30, right: 10, bottom: 10, left: 10},
-              width = this.width - margin.left - margin.right,
-              height = this.height - margin.top - margin.bottom;
+        // Compute the size of our svg based on the number of columns and add
+        // some margins.
+        const margin = {top: 30, right: 10, bottom: 10, left: 10};
+        const COL_WIDTH = 100;
+        const COL_HEIGHT = 200;
+        const totalWidth =
+              this._numCols() * COL_WIDTH + margin.left + margin.right;
+        const totalHeight = COL_HEIGHT + margin.top + margin.bottom;
+        this._svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+        this._svg.attr("preserveAspectRatio", "xMidYMid");
+        // Set a minimum width so scale factor want be less than 1.
+        // But if size of '#container' is larger than we'll scale up
+        // our svg.
+        this._svg.style("min-width", totalWidth + "px");
+        this._svg.style("min-height", totalHeight + "px");
+        // 'width' and 'height' store the width of the svg without our margins.
+        width = totalWidth - margin.left - margin.right,
+        height = totalHeight - margin.top - margin.bottom;
         const svgG = this._svg
-              .attr("width", this.width)
-              .attr("height", this.height)
             .append("g")
               .attr("transform",
                     tf.hparams.utils.translateStr(margin.left, margin.top));
@@ -484,7 +476,6 @@ limitations under the License.
                 _this._setClosestSessionGroup(null);
               }
             });
-
         // ---- Column axes ----------------------------------------------------
         // Add a <g> element for each dimension.
         const axes = svgG.selectAll(".axis-parent")

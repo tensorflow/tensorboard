@@ -19,7 +19,6 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values",
         "//tensorboard/plugins/hparams/tf_hparams_utils",
-        "@org_polymer_iron_resizable_behavior",
     ],
 )
 
