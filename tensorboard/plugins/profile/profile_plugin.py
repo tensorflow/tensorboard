@@ -177,9 +177,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
       cpath = folders.pop()
       for fname in tf.gfile.ListDirectory(cpath):
         fpath = os.path.join(cpath, fname)
+        if not tf.gfile.IsDirectory(fpath):
+          continue
         if matcher.match(fname):
           profile_logdirs.append(fpath)
-        elif tf.gfile.IsDirectory(fpath):
+        else:
           folders.append(fpath)
 
     self.start_grpc_stub_if_necessary()
