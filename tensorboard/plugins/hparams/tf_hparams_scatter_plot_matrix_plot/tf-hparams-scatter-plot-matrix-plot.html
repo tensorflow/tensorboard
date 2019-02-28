@@ -172,14 +172,15 @@ the vulcanization build step. Figure out why.
         this.debounce("_redraw", ()=>{
           const utils = tf.hparams.utils;
 
-          const plotMinWidth = 1200;
-          const plotMinHeight = 0.4*plotMinWidth;
-          const cellMinWidth = 150;
-          const cellMinHeight = 0.75*cellMinWidth;
-          this.width = Math.max(cellMinWidth * utils.numColumns(this.schema),
-                                plotMinWidth);
-          this.height = Math.max(cellMinHeight * utils.numMetrics(this.schema),
-                                 plotMinHeight);
+          const PLOT_MIN_WIDTH = 1200;
+          const PLOT_MIN_HEIGHT = 0.4*PLOT_MIN_WIDTH;
+          const CELL_MIN_WIDTH = 150;
+          const CELL_MIN_HEIGHT = 0.75*CELL_MIN_WIDTH;
+          this.width = Math.max(CELL_MIN_WIDTH * utils.numColumns(this.schema),
+                                PLOT_MIN_WIDTH);
+          this.height = Math.max(
+              CELL_MIN_HEIGHT * utils.numMetrics(this.schema),
+              PLOT_MIN_HEIGHT);
 
           this._container.style.width = this.width + "px";
           this._container.style.height = this.height + "px";
