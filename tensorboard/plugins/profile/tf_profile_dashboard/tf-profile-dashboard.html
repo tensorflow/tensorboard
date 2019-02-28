@@ -377,10 +377,6 @@ profile run can have multiple tools that present the performance profile as diff
     detached: function() {
       this.set('_isAttached', false);
     },
-    /** True if the progress is not complete yet (< 100 %). */
-    _isNotComplete: function(progress) {
-      return !this._dataNotFound && progress.value < 100;
-    },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
         // Either this dashboard is already initialized ... or we are not yet
