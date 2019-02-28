@@ -69,7 +69,7 @@ def reexport_tf_summary():
   # If we aren't sure we're on V2, don't use tf.summary since it could be V1.
   # Note there may be false positives since the __version__ attribute may not be
   # defined at this point in the import process.
-  if not getattr(tf, '__version__', '').startswith('2.'):
+  if not getattr(tf, '__version__', '').startswith('2.'):  # noqa: F821
     packages.remove('tensorflow')
 
   def dynamic_wildcard_import(module):
