@@ -23,9 +23,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
 
 from tensorboard.plugins.pr_curve import metadata
+
 
 # A value that we use as the minimum value during division of counts to prevent
 # division by 0. 1.0 does not work: Certain weights could cause counts below 1.
@@ -81,6 +81,9 @@ def op(
     false positives, true negatives, false negatives, precision, recall.
 
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if num_thresholds is None:
     num_thresholds = _DEFAULT_NUM_THRESHOLDS
 
@@ -135,10 +138,10 @@ def op(
 
     # Bucket predictions.
     tp_buckets = tf.reduce_sum(
-        tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
+        input_tensor=tf.one_hot(bucket_indices, depth=num_thresholds) * true_labels,
         axis=0)
     fp_buckets = tf.reduce_sum(
-        tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
+        input_tensor=tf.one_hot(bucket_indices, depth=num_thresholds) * false_labels,
         axis=0)
 
     # Set up the cumulative sums to compute the actual metrics.
@@ -194,6 +197,9 @@ def pb(name,
     description: Optional long-form description for this summary, as a `str`.
         Markdown is supported. Defaults to empty.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if num_thresholds is None:
     num_thresholds = _DEFAULT_NUM_THRESHOLDS
 
@@ -282,6 +288,9 @@ def streaming_op(name,
       positives, true negatives, false negatives, precision, recall.
     update_op: An operation that updates the summary with the latest data.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if num_thresholds is None:
     num_thresholds = _DEFAULT_NUM_THRESHOLDS
 
@@ -392,6 +401,9 @@ def raw_data_op(
     A summary operation for use in a TensorFlow graph. See docs for the `op`
     method for details on the float32 tensor produced by this summary.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   with tf.name_scope(name, values=[
       true_positive_counts,
       false_positive_counts,
@@ -451,12 +463,17 @@ def raw_data_pb(
     A summary operation for use in a TensorFlow graph. See docs for the `op`
     method for details on the float32 tensor produced by this summary.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name if display_name is not None else name,
       description=description or '',
       num_thresholds=num_thresholds)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   data = np.stack(
       (true_positive_counts,
@@ -467,7 +484,7 @@ def raw_data_pb(
        recall))
   tensor = tf.make_tensor_proto(np.float32(data), dtype=tf.float32)
   summary.value.add(tag='%s/pr_curves' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary
 
@@ -493,6 +510,9 @@ def _create_tensor_summary(
   Returns:
     A tensor summary that collects data for PR curves.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   # Store the number of thresholds within the summary metadata because
   # that value is constant for all pr curve summaries with the same tag.
   summary_metadata = metadata.create_summary_metadata(

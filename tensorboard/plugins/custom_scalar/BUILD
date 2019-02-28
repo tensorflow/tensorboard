@@ -18,12 +18,13 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -34,6 +35,9 @@ py_library(
     srcs = ["metadata.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+    ],
 )
 
 py_library(
@@ -53,12 +57,14 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
         ":metadata",
         ":protos_all_py_pb2",
-        "//tensorboard/backend:application",
+        ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -69,14 +75,15 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":custom_scalars_plugin",
-        ":summary",
         ":protos_all_py_pb2",
+        ":summary",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/scalar:summary",
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
     ],
 )
 
@@ -93,7 +100,7 @@ py_binary(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:summary",
+        "//tensorboard/summary:summary_v1",
         "@org_pythonhosted_six",
     ],
 )

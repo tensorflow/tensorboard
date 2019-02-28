@@ -28,13 +28,14 @@ import csv
 import six
 from six import StringIO
 from werkzeug import wrappers
-
 import numpy as np
-import tensorflow as tf
+
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+from tensorboard.util import tensor_util
 
 
 class OutputFormat(object):
@@ -123,7 +124,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
     return result
 
-  def scalars_impl(self, tag, run, output_format):
+  def scalars_impl(self, tag, run, experiment, output_format):
     """Result of the form `(body, mime_type)`."""
     if self._db_connection_provider:
       db = self._db_connection_provider()
@@ -141,20 +142,23 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         JOIN Runs
           ON Tags.run_id = Runs.run_id
         WHERE
-          Runs.run_name = ?
-          AND Tags.tag_name = ?
-          AND Tags.plugin_name = ?
+          /* For backwards compatibility, ignore the experiment id
+             for matching purposes if it is empty. */
+          (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
+          AND Runs.run_name = :run
+          AND Tags.tag_name = :tag
+          AND Tags.plugin_name = :plugin
           AND Tensors.shape = ''
           AND Tensors.step > -1
         ORDER BY Tensors.step
-      ''', (run, tag, metadata.PLUGIN_NAME))
+      ''', dict(exp=experiment, run=run, tag=tag, plugin=metadata.PLUGIN_NAME))
       values = [(wall_time, step, self._get_value(data, dtype_enum))
                 for (step, wall_time, data, dtype_enum) in cursor]
     else:
       tensor_events = self._multiplexer.Tensors(run, tag)
       values = [(tensor_event.wall_time,
                  tensor_event.step,
-                 tf.make_ndarray(tensor_event.tensor_proto).item())
+                 tensor_util.make_ndarray(tensor_event.tensor_proto).item())
                 for tensor_event in tensor_events]
 
     if output_format == OutputFormat.CSV:
@@ -191,6 +195,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
+    experiment = request.args.get('experiment')
     output_format = request.args.get('format')
-    (body, mime_type) = self.scalars_impl(tag, run, output_format)
+    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
     return http_util.Respond(request, body, mime_type)

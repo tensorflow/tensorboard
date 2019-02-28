@@ -11,6 +11,7 @@ tf_web_library(
         "backend.ts",
         "baseStore.ts",
         "canceller.ts",
+        "environmentStore.ts",
         "experimentsStore.ts",
         "requestManager.ts",
         "router.ts",

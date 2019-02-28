@@ -60,16 +60,6 @@ Polymer({
      * Whether smoothing is enabled or not. If true, smoothed lines will be
      * plotted in the chart while the unsmoothed lines will be ghosted in
      * the background.
-     *
-     * The smoothing algorithm is a simple moving average, which, given a
-     * point p and a window w, replaces p with a simple average of the
-     * points in the [p - floor(w/2), p + floor(w/2)] range.  If there
-     * aren't enough points to cover the entire window to the left, the
-     * window is reduced to fit exactly the amount of elements available.
-     * This means that the smoothed line will be less in and gradually
-     * become more smooth until the desired window is reached. However when
-     * there aren't enough points on the right, the line stops being
-     * rendered at all.
      */
     smoothingEnabled: {
       type: Boolean,
@@ -78,18 +68,12 @@ Polymer({
     },
 
     /**
-     * Weight (between 0.0 and 1.0) of the smoothing. This weight controls
-     * the window size, and a weight of 1.0 means using 50% of the entire
-     * dataset as the window, while a weight of 0.0 means using a window of
-     * 0 (and thus replacing each point with themselves).
+     * Weight (between 0.0 and 1.0) of the smoothing. A value of 0.0
+     * means very little smoothing, possibly no smoothing at all. A
+     * value of 1.0 means a whole lot of smoothing, possibly so much as
+     * to make the whole plot appear as a constant function.
      *
-     * The growth between 0.0 and 1.0 is not linear though. Because
-     * changing the window from 0% to 30% of the dataset smooths the line a
-     * lot more than changing the window from 70% to 100%, an exponential
-     * function is used instead: http://i.imgur.com/bDrhEZU.png. This
-     * function increases the size of the window slowly at the beginning
-     * and gradually speeds up the growth, but 0.0 still means a window of
-     * 0 and 1.0 still means a window of the dataset's length.
+     * Has no effect when `smoothingEnabled` is `false`.
      */
     smoothingWeight: {type: Number, value: 0.6},
 
@@ -128,6 +112,14 @@ Polymer({
      * @type {function(number): string}
      */
     xAxisFormatter: Object,
+
+    /**
+     * A formatter for values along the Y-axis. Optional. Defaults to a
+     * reasonable formatter.
+     *
+     * @type {function(number): string}
+     */
+    yAxisFormatter: Object,
 
     /**
      * A method that implements the Plottable.IAccessor<number> interface. Used
@@ -259,6 +251,15 @@ Polymer({
      */
     tooltipPosition: {type: String, value: 'bottom'},
 
+    /**
+     * A list of series for which to not show tooltips. Optional,
+     * defaults to the empty list.
+     */
+    seriesWithoutTooltips: {
+      type: Array,
+      value: () => ([])
+    },
+
     _attached: Boolean,
     _chart: Object,
     _visibleSeriesCache: {
@@ -276,7 +277,7 @@ Polymer({
     _makeChartAsyncCallbackId: {type: Number, value: null},
   },
   observers: [
-    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, _attached)',
+    '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, seriesWithoutTooltips, _attached)',
     '_reloadFromCache(_chart)',
     '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
     '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
@@ -361,6 +362,7 @@ Polymer({
       yScaleType,
       tooltipColumns,
       colorScale,
+      seriesWithoutTooltips,
       _attached) {
     // Find the actual xComponentsCreationMethod.
     if (!xType && !xComponentsCreationMethod) {
@@ -398,7 +400,9 @@ Polymer({
           this.defaultXRange,
           this.defaultYRange,
           this.symbolFunction,
-          this.xAxisFormatter);
+          this.xAxisFormatter,
+          this.yAxisFormatter,
+          this.seriesWithoutTooltips);
       var div = d3.select(this.$.chartdiv);
       chart.renderTo(div);
       if (this._chart) this._chart.destroy();
@@ -492,6 +496,7 @@ class LineChart {
   private smoothingEnabled: boolean;
   private tooltipSortingMethod: string;
   private tooltipPosition: string;
+  private seriesWithoutTooltips?: string[];
   private _ignoreYOutliers: boolean;
 
   // An optional list of 2 numbers.
@@ -512,7 +517,9 @@ class LineChart {
       defaultXRange?: number[],
       defaultYRange?: number[],
       symbolFunction?: vz_chart_helpers.SymbolFn,
-      xAxisFormatter?: (number) => string) {
+      xAxisFormatter?: (number) => string,
+      yAxisFormatter?: (number) => string,
+      seriesWithoutTooltips?: string[]) {
     this.seriesNames = [];
     this.name2datasets = {};
     this.colorScale = colorScale;
@@ -536,13 +543,15 @@ class LineChart {
     this._defaultXRange = defaultXRange;
     this._defaultYRange = defaultYRange;
     this.tooltipColumns = tooltipColumns;
+    this.seriesWithoutTooltips = seriesWithoutTooltips;
 
     this.buildChart(
         xComponentsCreationMethod,
         yValueAccessor,
         yScaleType,
         fillArea,
-        xAxisFormatter);
+        xAxisFormatter,
+        yAxisFormatter);
   }
 
   private buildChart(
@@ -550,8 +559,11 @@ class LineChart {
       yValueAccessor: Plottable.IAccessor<number>,
       yScaleType: string,
       fillArea: FillArea,
-      xAxisFormatter: (number) => string) {
-    this.destroy();
+      xAxisFormatter: (number) => string,
+      yAxisFormatter: (number) => string) {
+    if (this.outer) {
+      this.outer.destroy();
+    }
     const xComponents = xComponentsCreationMethod();
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
@@ -562,9 +574,10 @@ class LineChart {
     }
     this.yScale = LineChart.getYScaleFromType(yScaleType);
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = vz_chart_helpers.multiscaleFormatter(
-        vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
-    this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
+    this.yAxis.margin(0).tickLabelPadding(5);
+    this.yAxis.formatter(yAxisFormatter ? yAxisFormatter
+      : vz_chart_helpers.multiscaleFormatter(
+          vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION));
     this.yAxis.usesTextWidthApproximation(true);
     this.fillArea = fillArea;
 
@@ -840,10 +853,14 @@ class LineChart {
                     .map((dataset) => this.findClosestPoint(target, dataset))
                     .filter(Boolean);
       let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
-      // We draw tooltips for points that are NaN, or are currently visible
+      // We draw tooltips for points that are not explicity ignored,
+      // and are NaN or are currently visible.
       let ptsForTooltips = pts.filter(
-          (p) => intersectsBBox(p.x, p.y, bbox) ||
-              isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+          (p) => (intersectsBBox(p.x, p.y, bbox) ||
+                  isNaN(this.yValueAccessor(p.datum, 0, p.dataset))) &&
+                  (!this.seriesWithoutTooltips ||
+                   this.seriesWithoutTooltips.indexOf(
+                     p.dataset.metadata().name) == -1));
       // Only draw little indicator circles for the non-NaN points
       let ptsToCircle = ptsForTooltips.filter(
           (p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
@@ -1016,9 +1033,13 @@ class LineChart {
     // frequency components of the time-series.
     let last = data.length > 0 ? 0 : NaN;
     let numAccum = 0;
+
+    const yValues = data.map((d, i) => this.yValueAccessor(d, i, dataset));
+    // See #786.
+    const isConstant = yValues.every((v) => v == yValues[0]);
     data.forEach((d, i) => {
-      let nextVal = this.yValueAccessor(d, i, dataset);
-      if (!_.isFinite(nextVal)) {
+      const nextVal = yValues[i];
+      if (isConstant || !Number.isFinite(nextVal)) {
         d.smoothed = nextVal;
       } else {
         last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;

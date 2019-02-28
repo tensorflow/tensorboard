@@ -75,7 +75,7 @@ class Reservoir(object):
       ValueError: If size is negative or not an integer.
     """
     if size < 0 or size != round(size):
-      raise ValueError('size must be nonegative integer, was %s' % size)
+      raise ValueError('size must be nonnegative integer, was %s' % size)
     self._buckets = collections.defaultdict(
         lambda: _ReservoirBucket(size, random.Random(seed), always_keep_last))
     # _mutex guards the keys - creating new keys, retrieving by key, etc
@@ -180,7 +180,7 @@ class _ReservoirBucket(object):
       ValueError: if the size is not a nonnegative integer.
     """
     if _max_size < 0 or _max_size != round(_max_size):
-      raise ValueError('_max_size must be nonegative int, was %s' % _max_size)
+      raise ValueError('_max_size must be nonnegative int, was %s' % _max_size)
     self.items = []
     # This mutex protects the internal items, ensuring that calls to Items and
     # AddItem are thread-safe

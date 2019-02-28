@@ -16,7 +16,8 @@ namespace tf_data_selector {
 
 export enum Type {
   WITHOUT_EXPERIMENT,
-  WITH_EXPERIMENT,
+  SINGLE,
+  COMPARISON,
 }
 
 export type Selection = {

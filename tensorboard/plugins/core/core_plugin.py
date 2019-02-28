@@ -27,12 +27,19 @@ import os
 import zipfile
 
 import six
-import tensorflow as tf
 from werkzeug import utils
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
+
+
+# If no port is specified, try to bind to this port. See help for --port
+# for more details.
+DEFAULT_PORT = 6006
 
 
 class CorePlugin(base_plugin.TBPlugin):
@@ -113,6 +120,7 @@ class CorePlugin(base_plugin.TBPlugin):
         request,
         {
             'data_location': self._logdir or self._db_uri,
+            'mode': 'db' if self._db_uri else 'logdir',
             'window_title': self._window_title,
         },
         'application/json')
@@ -159,9 +167,9 @@ class CorePlugin(base_plugin.TBPlugin):
       def get_first_event_timestamp(run_name):
         try:
           return self._multiplexer.FirstEventTimestamp(run_name)
-        except ValueError:
-          tf.logging.warning(
-              'Unable to get first event timestamp for run %s', run_name)
+        except ValueError as e:
+          logger.warn(
+              'Unable to get first event timestamp for run %s: %s', run_name, e)
           # Put runs without a timestamp at the end.
           return float('inf')
       run_names.sort(key=get_first_event_timestamp)
@@ -173,6 +181,10 @@ class CorePlugin(base_plugin.TBPlugin):
     started time (aka first event time) with empty times sorted last, and then
     ties are broken by sorting on the experiment name.
     """
+    results = self.list_experiments_impl()
+    return http_util.Respond(request, results, 'application/json')
+
+  def list_experiments_impl(self):
     results = []
     if self._db_connection_provider:
       db = self._db_connection_provider()
@@ -192,7 +204,7 @@ class CorePlugin(base_plugin.TBPlugin):
         "startTime": row[2],
       } for row in cursor]
 
-    return http_util.Respond(request, results, 'application/json')
+    return results
 
   @wrappers.Request.application
   def _serve_experiment_runs(self, request):
@@ -287,17 +299,21 @@ commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
     parser.add_argument(
         '--port',
         metavar='PORT',
-        type=int,
-        default=6006,
+        type=lambda s: (None if s == "default" else int(s)),
+        default="default",
         help='''\
-Port to serve TensorBoard on (default: %(default)s)\
-''')
+Port to serve TensorBoard on. Pass 0 to request an unused port selected
+by the operating system, or pass "default" to try to bind to the default
+port (%s) but search for a nearby free port if the default port is
+unavailable. (default: "default").\
+''' % DEFAULT_PORT)
 
     parser.add_argument(
         '--purge_orphaned_data',
         metavar='BOOL',
-        type=bool,
-        nargs=1,
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
         default=True,
         help='''\
 Whether to purge data that may have been orphaned due to TensorBoard
@@ -313,7 +329,7 @@ disappearance. (default: %(default)s)\
         help='''\
 How often the backend should load more data, in seconds. Set to 0 to
 load just once at startup and a negative number to never reload at all.
-(default: %(default)s)\
+Not relevant for DB read-only mode. (default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -321,7 +337,28 @@ load just once at startup and a negative number to never reload at all.
         metavar='URI',
         type=str,
         default='',
-        help='[experimental] sets SQL database URI')
+        help='''\
+[experimental] sets SQL database URI and enables DB backend mode, which is
+read-only unless --db_import is also passed.\
+''')
+
+    parser.add_argument(
+        '--db_import',
+        action='store_true',
+        help='''\
+[experimental] enables DB read-and-import mode, which in combination with
+--logdir imports event files into a DB backend on the fly. The backing DB is
+temporary unless --db is also passed to specify a DB path to use.\
+''')
+
+    parser.add_argument(
+        '--db_import_use_op',
+        action='store_true',
+        help='''\
+[experimental] in combination with --db_import, if passed, use TensorFlow's
+import_event() op for importing event data, otherwise use TensorBoard's own
+sqlite ingestion logic.\
+''')
 
     parser.add_argument(
         '--inspect',
@@ -332,10 +369,12 @@ Prints digests of event files to command line.
 This is useful when no data is shown on TensorBoard, or the data shown
 looks weird.
 
+Must specify one of `logdir` or `event_file` flag.
+
 Example usage:
   `tensorboard --inspect --logdir mylogdir --tag loss`
 
-See tensorflow/python/summary/event_file_inspector.py for more info.\
+See tensorboard/backend/event_processing/event_file_inspector.py for more info.\
 ''')
 
     parser.add_argument(
@@ -384,7 +423,22 @@ routing of an elb when the website base_url is not available e.g.
         default=1,
         help='''\
 The max number of threads that TensorBoard can use to reload runs. Not
-relevant for db mode. Each thread reloads one run at a time.\
+relevant for db read-only mode. Each thread reloads one run at a time.
+(default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_task',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['auto', 'thread', 'process', 'blocking'],
+        help='''\
+[experimental] The mechanism to use for the background data reload task.
+The default "auto" option will conditionally use threads for legacy reloading
+and a child process for DB import reloading. The "process" option is only
+useful with DB import mode. The "blocking" option will block startup until
+reload finishes, and requires --load_interval=0. (default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -404,16 +458,21 @@ flag.\
 
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
-    if not flags.db and not flags.logdir:
-      raise ValueError('A logdir or db must be specified. '
+    FlagsError = base_plugin.FlagsError
+    if flags.inspect:
+      if flags.logdir and flags.event_file:
+        raise FlagsError(
+            'Must specify either --logdir or --event_file, but not both.')
+      if not (flags.logdir or flags.event_file):
+        raise FlagsError('Must specify either --logdir or --event_file.')
+    elif not flags.db and not flags.logdir:
+      raise FlagsError('A logdir or db must be specified. '
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
-    flags.logdir = os.path.expanduser(flags.logdir)
+
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]
-    if flags.db:
-      flags.reload_interval = -1  # Never load event logs in DB mode.
 
   def load(self, context):
     """Creates CorePlugin instance."""

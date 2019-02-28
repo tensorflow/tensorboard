@@ -24,6 +24,8 @@ from __future__ import print_function
 import argparse
 import sys
 
+from absl import app
+
 import tensorflow as tf
 import tensorflow.examples.tutorials.mnist as mnist
 import tensorboard.plugins.beholder as beholder_lib
@@ -36,19 +38,19 @@ def train():
   mnist_data = mnist.input_data.read_data_sets(
       FLAGS.data_dir, one_hot=True, fake_data=FLAGS.fake_data)
 
-  sess = tf.InteractiveSession()
+  sess = tf.compat.v1.InteractiveSession()
 
   with tf.name_scope('input'):
-    x = tf.placeholder(tf.float32, [None, 784], name='x-input')
-    y_ = tf.placeholder(tf.float32, [None, 10], name='y-input')
+    x = tf.compat.v1.placeholder(tf.float32, [None, 784], name='x-input')
+    y_ = tf.compat.v1.placeholder(tf.float32, [None, 10], name='y-input')
 
   with tf.name_scope('input_reshape'):
     image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
-    tf.summary.image('input', image_shaped_input, 10)
+    tf.compat.v1.summary.image('input', image_shaped_input, 10)
 
   def weight_variable(shape):
     """Create a weight variable with appropriate initialization."""
-    initial = tf.truncated_normal(shape, stddev=0.01)
+    initial = tf.random.truncated_normal(shape, stddev=0.01)
     return tf.Variable(initial)
 
   def bias_variable(shape):
@@ -59,14 +61,14 @@ def train():
   def variable_summaries(var):
     """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
     with tf.name_scope('summaries'):
-      mean = tf.reduce_mean(var)
-      tf.summary.scalar('mean', mean)
+      mean = tf.reduce_mean(input_tensor=var)
+      tf.compat.v1.summary.scalar('mean', mean)
       with tf.name_scope('stddev'):
-        stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-      tf.summary.scalar('stddev', stddev)
-      tf.summary.scalar('max', tf.reduce_max(var))
-      tf.summary.scalar('min', tf.reduce_min(var))
-      tf.summary.histogram('histogram', var)
+        stddev = tf.sqrt(tf.reduce_mean(input_tensor=tf.square(var - mean)))
+      tf.compat.v1.summary.scalar('stddev', stddev)
+      tf.compat.v1.summary.scalar('max', tf.reduce_max(input_tensor=var))
+      tf.compat.v1.summary.scalar('min', tf.reduce_min(input_tensor=var))
+      tf.compat.v1.summary.histogram('histogram', var)
 
   def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
     """Reusable code for making a simple neural net layer.
@@ -86,13 +88,13 @@ def train():
         variable_summaries(biases)
       with tf.name_scope('Wx_plus_b'):
         preactivate = tf.matmul(input_tensor, weights) + biases
-        tf.summary.histogram('pre_activations', preactivate)
+        tf.compat.v1.summary.histogram('pre_activations', preactivate)
       activations = act(preactivate, name='activation')
-      tf.summary.histogram('activations', activations)
+      tf.compat.v1.summary.histogram('activations', activations)
       return activations
 
   #conv1
-  kernel = tf.Variable(tf.truncated_normal([5, 5, 1, 10],
+  kernel = tf.Variable(tf.random.truncated_normal([5, 5, 1, 10],
                                            dtype=tf.float32,
                                            stddev=1e-1),
                        name='conv-weights')
@@ -104,7 +106,7 @@ def train():
   conv1 = tf.nn.relu(out, name='relu')
 
   #conv2
-  kernel2_init = tf.truncated_normal(
+  kernel2_init = tf.random.truncated_normal(
       [3, 3, 10, 20], dtype=tf.float32, stddev=1e-1)
   kernel2 = tf.Variable(kernel2_init, name='conv-weights2')
   conv2 = tf.nn.conv2d(conv1, kernel2, [1, 1, 1, 1], padding='VALID')
@@ -119,34 +121,34 @@ def train():
       flattened, flattened.get_shape().as_list()[1], 10, 'layer1')
 
   with tf.name_scope('dropout'):
-    keep_prob = tf.placeholder(tf.float32)
-    tf.summary.scalar('dropout_keep_probability', keep_prob)
-    dropped = tf.nn.dropout(hidden1, keep_prob)
+    keep_prob = tf.compat.v1.placeholder(tf.float32)
+    tf.compat.v1.summary.scalar('dropout_keep_probability', keep_prob)
+    dropped = tf.nn.dropout(hidden1, 1 - keep_prob)
 
   y = nn_layer(dropped, 10, 10, 'layer2', act=tf.identity)
 
   with tf.name_scope('cross_entropy'):
     diff = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y)
     with tf.name_scope('total'):
-      cross_entropy = tf.reduce_mean(diff)
-  tf.summary.scalar('cross_entropy', cross_entropy)
+      cross_entropy = tf.reduce_mean(input_tensor=diff)
+  tf.compat.v1.summary.scalar('cross_entropy', cross_entropy)
 
   with tf.name_scope('train'):
-    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
     gradients, train_step = beholder_lib.Beholder.gradient_helper(
         optimizer, cross_entropy)
 
   with tf.name_scope('accuracy'):
     with tf.name_scope('correct_prediction'):
-      correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+      correct_prediction = tf.equal(tf.argmax(input=y, axis=1), tf.argmax(input=y_, axis=1))
     with tf.name_scope('accuracy'):
-      accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  tf.summary.scalar('accuracy', accuracy)
+      accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))
+  tf.compat.v1.summary.scalar('accuracy', accuracy)
 
-  merged = tf.summary.merge_all()
+  merged = tf.compat.v1.summary.merge_all()
   train_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/train', sess.graph)
   test_writer = tf.summary.FileWriter(LOG_DIRECTORY + '/test')
-  tf.global_variables_initializer().run()
+  tf.compat.v1.global_variables_initializer().run()
 
   beholder = beholder_lib.Beholder(logdir=LOG_DIRECTORY)
 
@@ -186,8 +188,8 @@ def train():
   test_writer.close()
 
 def main(_):
-  if not tf.gfile.Exists(LOG_DIRECTORY):
-    tf.gfile.MakeDirs(LOG_DIRECTORY)
+  if not tf.io.gfile.exists(LOG_DIRECTORY):
+    tf.io.gfile.makedirs(LOG_DIRECTORY)
   train()
 
 if __name__ == '__main__':
@@ -212,4 +214,4 @@ if __name__ == '__main__':
       default='/tmp/tensorflow/mnist/logs/mnist_with_summaries',
       help='Summaries log directory')
   FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  app.run(main=main, argv=[sys.argv[0]] + unparsed)

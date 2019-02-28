@@ -21,10 +21,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard import summary as summary_lib
+from tensorboard.summary import v1 as summary_lib
 from tensorboard.plugins.custom_scalar import layout_pb2
 
 
@@ -33,7 +34,7 @@ LOGDIR = '/tmp/custom_scalar_demo'
 
 def run():
   """Run custom scalar demo and generate event files."""
-  step = tf.placeholder(tf.float32, shape=[])
+  step = tf.compat.v1.placeholder(tf.float32, shape=[])
 
   with tf.name_scope('loss'):
     # Specify 2 different loss values, each tagged differently.
@@ -41,21 +42,21 @@ def run():
     summary_lib.scalar('bar', tf.pow(0.85, step + 2))
 
     # Log metric baz as well as upper and lower bounds for a margin chart.
-    middle_baz_value = step + 4 * tf.random_uniform([]) - 2
+    middle_baz_value = step + 4 * tf.random.uniform([]) - 2
     summary_lib.scalar('baz', middle_baz_value)
     summary_lib.scalar('baz_lower',
-                       middle_baz_value - 6.42 - tf.random_uniform([]))
+                       middle_baz_value - 6.42 - tf.random.uniform([]))
     summary_lib.scalar('baz_upper',
-                       middle_baz_value + 6.42 + tf.random_uniform([]))
+                       middle_baz_value + 6.42 + tf.random.uniform([]))
 
   with tf.name_scope('trigFunctions'):
     summary_lib.scalar('cosine', tf.cos(step))
     summary_lib.scalar('sine', tf.sin(step))
     summary_lib.scalar('tangent', tf.tan(step))
 
-  merged_summary = tf.summary.merge_all()
+  merged_summary = tf.compat.v1.summary.merge_all()
 
-  with tf.Session() as sess, tf.summary.FileWriter(LOGDIR) as writer:
+  with tf.compat.v1.Session() as sess, tf.summary.FileWriter(LOGDIR) as writer:
     # We only need to specify the layout once (instead of per step).
     layout_summary = summary_lib.custom_scalar_pb(
         layout_pb2.Layout(category=[
@@ -109,4 +110,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  app.run(main)

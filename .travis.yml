@@ -15,7 +15,12 @@ branches:
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - BAZEL=0.13.0 TF=NIGHTLY
+  # Keep this Bazel version in sync with the `versions.check` directive
+  # near the top of our WORKSPACE file.
+  #
+  # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
+  # bazel-0.20.0-linux-x86_64.sha256
+  - TF_VERSION_ID=tf-nightly BAZEL=0.22.0 BAZEL_SHA256SUM=8474ed28ed4998e2f5671ddf3a9a80ae9e484a5de3b8b70c8b654c017c65d363
 
 cache:
   directories:
@@ -27,9 +32,33 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - wget -t 3 -O bazel https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64
-  - chmod +x bazel
-  - sudo mv bazel /usr/local/bin
+  # Travis pre-installs an old version of numpy. We uninstall it to
+  # reduce the potential for strange behavior when upgrading in-place
+  # for TensorFlow's numpy dependency.
+  - pip uninstall -y numpy
+  - pip freeze  # print installed distributions, for debugging purposes
+  - |
+    # Download Bazel
+    bazel_binary="$(mktemp)" &&
+    bazel_checksum_file="$(mktemp)" &&
+    printf >"${bazel_checksum_file}" \
+        '%s  %s\n' "${BAZEL_SHA256SUM}" "${bazel_binary}" &&
+    for url in \
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
+        "https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
+    ; do
+      if \
+          wget -t 3 -O "${bazel_binary}" "${url}" &&
+          shasum -a 256 --check "${bazel_checksum_file}"; then
+        break
+      else
+        rm -f "${bazel_binary}"
+      fi
+    done &&
+    rm "${bazel_checksum_file}" &&
+    [ -f "${bazel_binary}" ]
+  - chmod +x "${bazel_binary}"
+  - sudo mv "${bazel_binary}" /usr/local/bin/bazel
 
   # Storing build artifacts in this directory helps Travis cache them. This
   # will sometimes cut latency in half, when we're lucky.
@@ -43,9 +72,6 @@ before_install:
   - echo "build --local_resources=400,2,1.0" >>~/.bazelrc
   - echo "build --worker_max_instances=2" >>~/.bazelrc
 
-  # This is the magic incantation for making protobuf build 2x faster.
-  - echo "build --distinct_host_configuration=false" >>~/.bazelrc
-
   # Make Bazel as strict as possible, so TensorBoard will build correctly
   # for users, regardless of their Bazel configuration.
   - echo "build --worker_verbose" >>~/.bazelrc
@@ -58,22 +84,27 @@ before_install:
   - echo "build --verbose_failures" >>~/.bazelrc
   - echo "test --test_output=errors" >>~/.bazelrc
 
+  # We need to pass the PATH from our virtualenv down into our tests,
+  # which is non-hermetic and so disabled by default in Bazel 0.21.0+.
+  - echo "test --action_env=PATH" >>~/.bazelrc
+
 install:
+  - pip install flake8==3.5.0
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
-  - |
-    # Install TensorFlow
-    case "${TF}" in
-      RELEASE)
-        pip install -I tensorflow
-        ;;
-      NIGHTLY)
-        pip install -I tf-nightly
-        ;;
-      *)
-        pip install -I tensorflow=="${TF}"
-        ;;
-    esac
+  - pip install mock==2.0.0
+  - pip install -I "${TF_VERSION_ID}"
+
+before_script:
+  # fail the build if there are Python syntax errors or undefined names
+  - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
+  # a comment of '# noqa' or better yet '# noqa: <error code>' added to the code to silence flake8
+  - flake8 . --count --exit-zero --ignore=E111,E114 --max-complexity=10 --max-line-length=127 --statistics
+  # Make sure we aren't accidentally including work-in-progress code.
+  - tensorboard/tools/do_not_submit_test.sh
+  # Make sure all necessary files have the license information.
+  - tensorboard/tools/license_test.sh
 
 # Commands in this section should only fail if it's our fault. Travis will
 # categorize them as 'failed', rather than 'error' for other sections.
@@ -82,6 +113,7 @@ script:
   - bazel fetch //tensorboard/...
   - bazel build //tensorboard/...
   - bazel test //tensorboard/...
+  - bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
 
 after_script:
   # Bazel launches daemons unless --batch is used.

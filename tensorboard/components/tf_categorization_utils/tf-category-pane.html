@@ -20,31 +20,44 @@ limitations under the License.
 
 <dom-module id="tf-category-pane">
   <template>
-    <template is="dom-if" if="[[_rendered]]">
+    <template is="dom-if" if="[[_rendered]]" id="ifRendered">
       <button class="heading"
               on-tap="_togglePane"
               open-button$="[[opened]]">
         <span class="name">
-          <template is="dom-if" if="[[_isSearchResults]]"><!--
-            --><span class="light">Tags matching /</span><!--
-            --><span class="category-name">[[category.name]]</span><!--
-            --><span class="light">/</span><!--
-            --><template is="dom-if" if="[[_isUniversalSearchQuery]]"><!--
-              --><span> (all tags)</span><!--
-            --></template><!--
-            --><template is="dom-if" if="[[_isInvalidSearchResults]]"><!--
-              --><span> <strong>(malformed regular expression)</strong></span><!--
-            --></template><!--
-          --></template><!--
-          --><template is="dom-if" if="[[!_isSearchResults]]"><!--
-            --><span class="category-name">[[category.name]]</span><!--
-          --></template>
+          <template is="dom-if" if="[[_isSearchResults]]">
+            <template is="dom-if" if="[[_isCompositeSearch(category)]]">
+              <span>Tags matching multiple experiments</span>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span>&nbsp;<strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+            <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
+              <span class="light">Tags matching /</span>
+              <span class="category-name">[[category.name]]</span>
+              <span class="light">/</span>
+              <template is="dom-if" if="[[_isUniversalSearchQuery]]">
+                <span> (all tags)</span>
+              </template>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span> <strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+          </template>
+          <template is="dom-if" if="[[!_isSearchResults]]">
+            <span class="category-name">[[category.name]]</span>
+          </template>
         </span>
         <span class="count"><span>[[_count]]</span></span>
       </button>
-      <iron-collapse opened="[[opened]]">
+      <!-- TODO(stephanwlee): investigate further. For some reason,
+        transitionend that the iron-collapse relies on sometimes does not
+        trigger when rendering a chart with a spinner. A toy example cannot
+        reproduce this bug. -->
+      <iron-collapse opened="[[opened]]" no-animation>
         <div class="content">
-          <template is="dom-if" if="[[opened]]" restamp="[[restamp]]">
+          <template is="dom-if" if="[[opened]]" restamp="[[restamp]]"
+                    id="ifOpened">
             <slot></slot>
           </template>
         </div>
@@ -89,11 +102,12 @@ limitations under the License.
       }
 
       [open-button] {
-        border-bottom-left-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
       }
 
       .name {
+        display: inline-flex;
         float: left;
       }
 
@@ -143,7 +157,7 @@ limitations under the License.
 
         _count: {
           type: Number,
-          computed: '_computeCount(category.items)',
+          computed: '_computeCount(category.items.*)',
         },
         _rendered: {
           type: Boolean,
@@ -163,6 +177,23 @@ limitations under the License.
         },
       },
 
+      listeners: {
+        // Q: Why listen to dom-change when you know which property change
+        // triggered dom-if to change?
+        // A: https://github.com/Polymer/polymer/blob/1.x/src/lib/template/dom-if.html#L131
+        // `render` in dom-if is debounced and visibility of content does not
+        // change until it has been invoked.
+        'dom-change': '_notifyVisibilityChange',
+      },
+
+      _notifyVisibilityChange(event) {
+        if (event.target.id == 'ifRendered' ||
+            event.target.id == 'ifOpened') {
+          this.fire(
+              'content-visibility-changed', this._rendered && this.opened);
+        }
+      },
+
       _computeCount() {
         return this.category.items.length;
       },
@@ -175,24 +206,30 @@ limitations under the License.
         // Show a category unless it's a search results category where
         // there wasn't actually a search query.
         return !(
-          category.metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          category.metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && category.name === "");
       },
 
       _computeIsSearchResults(type) {
-        return type === tf_categorization_utils.CategoryType['SEARCH_RESULTS'];
+        return type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
       },
 
       _computeIsInvalidSearchResults(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && !metadata.validRegex);
       },
 
       _computeIsUniversalSearchQuery(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType['SEARCH_RESULTS']
+          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
           && metadata.universalRegex);
+      },
+
+      _isCompositeSearch() {
+        const {type, compositeSearch} = this.category.metadata;
+        return compositeSearch &&
+            type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
       },
     });
   </script>

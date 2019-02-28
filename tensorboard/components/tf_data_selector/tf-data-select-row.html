@@ -22,8 +22,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-filterable-checkbox-dropdown.html">
+<link rel="import" href="./storage-utils.html">
 
 <!--
 tf-data-select-row creates a row of a data filteration widgets. It allows user
@@ -46,6 +46,7 @@ Event out:
         id="checkbox"
         checked="{{enabled}}"
         title="[[experiment.name]]"
+        on-change="_fireCheckboxToggled"
       >
         [[experiment.name]]
       </paper-checkbox>
@@ -53,8 +54,8 @@ Event out:
 
     <tf-filterable-checkbox-dropdown
       label="Run"
-      use-checkbox-colors="[[_getIsRunCheckboxesColored(noExperiment)]]"
-      coloring="[[_getColoring(noExperiment)]]"
+      use-checkbox-colors="[[shouldColorRuns]]"
+      coloring="[[_getColoring(shouldColorRuns)]]"
       items="[[_getRunOptions(_runs.*)]]"
       selected-items="{{_selectedRuns}}"
       selection-state="{{_getRunsSelectionState(_runSelectionStateString, _runs.*)}}"
@@ -86,8 +87,19 @@ Event out:
       }
 
       #checkbox {
-        flex: 1 0;
-        max-width: 200px;
+        --paper-checkbox-label: {
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          display: -webkit-box;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-break: break-word;
+        };
+
+        align-items: center;
+        display: flex;
+        flex: 1;
+        min-width: 150px;
       }
 
       paper-input {
@@ -105,7 +117,8 @@ Event out:
         --paper-input-container-label: {
           font-size: 14px;
         };
-        width: 200px;
+
+        flex: 0 0 auto;
         margin: 0 5px;
       }
 
@@ -117,12 +130,14 @@ Event out:
       }
 
       tf-filterable-checkbox-dropdown {
-        --tf-filterable-checkbox-dropdown-input-container: {
+        --tf-filterable-checkbox-dropdown-trigger: {
           padding: 5px;
         };
 
-        padding: 0 5px;
+        flex: 0 0 auto;
+        font-size: 0;
         margin: 0 5px;
+        padding: 0 5px;
       }
 
       paper-icon-button {
@@ -138,7 +153,6 @@ Event out:
       }
     </style>
   </template>
-  <script src="storage-utils.js"></script>
   <script src="tf-data-select-row.js"></script>
 
 </dom-module>

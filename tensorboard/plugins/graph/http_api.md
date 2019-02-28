@@ -3,18 +3,40 @@
 The graph plugin name is `graphs`, so all its routes are under
 `/data/plugin/graphs`.
 
-## `/data/plugin/graphs/runs`
+## `/data/plugin/graphs/info`
 
-Returns a list of runs that have associated graphs.
+Returns meta information about data availabilities for a given run and a tag.
+Below fields describe the data availabilities:
+- "run_graph": v1 only. Whether a GraphDef of op nodes is present for an entire run.
+      Historically, in v1, an op graph was written out for an entire run as a field on
+      Event proto. In v2, graphs are written out as a Summary with respective tags.
+- "op_graph": v2 only. Whether a GraphDef of op nodes is present with a tag.
+- "profile": Whether a profile information is present with a RunMetadata and a tag.
+- "conceptual_graph": Whether a GraphDef describing conceptual graph is present.
+      The graph plugin currently only supports a Keras model written out as a
+      JSON.
 
-For example:
+Please refer to below example for the full structure.
 
-    ["train"]
+    {
+      "train": {
+        "run: "train",
+        "tags": {
+          "tag_1": {
+            "tag": "tag_1",
+            "op_graph": true,
+            "profile": false,
+            "conceptual_graph": false
+          }
+        },
+        "run_graph": true
+      }
+    }
 
 ## `/data/plugin/graphs/graph?run=foo&limit_attr_size=1024&large_attrs_key=key`
 
-Returns the graph definition for the given run in pbtxt format. The
-graph is composed of a list of nodes, where each node is a specific
+Returns the graph definition for the given run and/or tag in pbtxt format.
+The graph is composed of a list of nodes, where each node is a specific
 TensorFlow operation which takes as inputs other nodes (operations).
 
 The query parameters `limit_attr_size` and `large_attrs_key` are
@@ -90,24 +112,6 @@ Prior to filtering, the original node "B" had the following content:
       }
     }
 
-## `/data/graphs/run_metadata_tags`
-
-Retrieves an index of run metadata tags. The result is a dictionary that
-maps each run name (a string) to a list of tag names (as strings).
-
-Here is an example response:
-
-    {
-      "train": [
-        "step_0000",
-        "step_0100",
-        "step_0200",
-      ],
-      "eval": [],
-    }
-
-Note that runs without any run metadata tags are included as keys with
-value the empty array.
 
 ## `/data/run_metadata?run=foo&tag=bar`
 

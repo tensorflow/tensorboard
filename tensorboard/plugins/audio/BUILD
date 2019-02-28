@@ -15,11 +15,12 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -38,6 +39,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -52,9 +54,23 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard:util",
+        "//tensorboard/util:encoder",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/compat",
     ],
 )
 
@@ -68,6 +84,8 @@ py_test(
         ":summary",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -91,7 +109,8 @@ py_library(
     ],
     deps = [
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
     ],
 )
 

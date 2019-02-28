@@ -3,24 +3,27 @@ package(
     default_visibility = ["//tensorboard:internal"],
 )
 
-# load("//tensorboard/defs:mocha_test.bzl", "mocha_test")
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
-# TODO(@dandelionmane): Enable this once `mocha_test` is implemented.
-#mocha_test(
-#    name = "test",
-#    srcs = [
-#        "tests.html",
-#        "paginatedViewTests.html",
-#        "paginatedViewTests.ts",
-#    ],
-#    test_file = "tests.html",
-#    path = "/tf-paginated-view/test",
-#    deps = [
-#        "//tensorboard/components/tf_paginated_view",
-#        "//tensorboard/components/tf_imports:lodash",
-#        "//tensorboard/components/tf_imports:polymer",
-#        "//tensorboard/components/tf_imports:webcomponentsjs",
-#    ],
-#)
+tf_web_test(
+    name = "test",
+    web_library = ":test_web_library",
+    src = "/tf-paginated-view/test/tests.html",
+)
+
+tf_web_library(
+    name = "test_web_library",
+    srcs = [
+        "tests.html",
+        "paginatedViewTests.ts",
+    ],
+    path = "/tf-paginated-view/test",
+    deps = [
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_imports:web_component_tester",
+        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components/tf_paginated_view",
+    ],
+)

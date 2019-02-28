@@ -34,7 +34,7 @@ import sqlite3
 import threading
 import types  # pylint: disable=unused-import
 
-from tensorboard import util
+from tensorboard.util import util
 
 TESTING_MODE = False
 
@@ -607,12 +607,12 @@ class Cursor(object):
       return self._delegate.fetchmany()
 
   def fetchall(self):
-    """Returns next row in result set.
+    """Returns all remaining rows in the result set.
 
-    :rtype: tuple[object]
+    :rtype: list[tuple[object]]
     """
     self._check_that_read_query_was_issued()
-    return self._delegate.fetchone()
+    return self._delegate.fetchall()
 
   @property
   def description(self):

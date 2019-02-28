@@ -19,7 +19,7 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "collect_js",
      "unfurl")
 
-CLUTZ_ATTRIBUTES = {
+DEPRECATED_CLUTZ_ATTRIBUTES = {
     "_clutz": attr.label(
         default=Label("@io_angular_clutz//:clutz"),
         executable=True,
@@ -32,7 +32,7 @@ CLUTZ_ATTRIBUTES = {
         allow_files=True),
 }
 
-def extract_dts_from_closure_libraries(ctx):
+def deprecated_extract_dts_from_closure_libraries(ctx):
   """Extracts type definitions from closure dependencies.
 
   This just generates one big .d.ts file for all transitive Closure sources,
@@ -50,7 +50,10 @@ def extract_dts_from_closure_libraries(ctx):
   if not js.srcs:
     return None
   js_typings = ctx.new_file(ctx.bin_dir, "%s-js-typings.d.ts" % ctx.label.name)
-  srcs = depset(JS_FILE_TYPE.filter(ctx.files._clutz_externs)) + js.srcs
+  srcs = (
+      depset(FileType(JS_FILE_TYPE).filter(ctx.files._clutz_externs)) +
+      js.srcs
+  )
   args = ["-o", js_typings.path]
   for src in srcs:
     args.append(src.path)
@@ -68,13 +71,13 @@ def extract_dts_from_closure_libraries(ctx):
   return js_typings
 
 ################################################################################
-# The following definitions are for API compatibility with internal clutz.bzl
+# The following definitions are for API compatibility with internal deprecated_clutz.bzl
 
-CLUTZ_OUTPUTS = {}
+DEPRECATED_CLUTZ_OUTPUTS = {}
 
 def _clutz_aspect_impl(target, ctx):
   return struct()
 
-clutz_aspect = aspect(
+deprecated_clutz_aspect = aspect(
     implementation=_clutz_aspect_impl,
     attr_aspects=["exports"])

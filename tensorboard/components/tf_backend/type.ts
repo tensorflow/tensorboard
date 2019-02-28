@@ -14,17 +14,21 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
-export type Experiment = {id: number, name: string, startTime: number};
+export type ExperimentId = number;
+export type RunId = number | null;
+export type TagId = number;
+
+export type Experiment = {id: ExperimentId, name: string, startTime: number};
 
 export type Run = {
-  id: number | null,
+  id: RunId,
   name: string,
   startTime: number,
   tags: Tag[],
 };
 
 export type Tag = {
-  id: number,
+  id: TagId,
   name: string,
   displayName: string,
   pluginName: string,

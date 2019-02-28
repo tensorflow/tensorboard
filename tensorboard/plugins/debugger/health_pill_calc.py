@@ -20,7 +20,7 @@ positive, negative and zero elements, min, max, mean and variances, etc.
 
 N.B.: tfdbg's DebugNumericSummary op calculates health pills as well. This
 module computes the same health pill values, but in Python. See the following
-code for a detailed description of of elements of a health pill:
+code for a detailed description of elements of a health pill:
 https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/ops/debug_ops.cc#L157
 """
 

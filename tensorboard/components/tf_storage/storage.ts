@@ -54,6 +54,7 @@ export const {
   set: setString,
   getInitializer: getStringInitializer,
   getObserver: getStringObserver,
+  disposeBinding: disposeStringBinding,
 } = makeBindings(x => x, x => x);
 
 export const {
@@ -61,6 +62,7 @@ export const {
   set: setBoolean,
   getInitializer: getBooleanInitializer,
   getObserver: getBooleanObserver,
+  disposeBinding: disposeBooleanBinding,
 } = makeBindings(
   s => (s === 'true' ? true: s === 'false' ? false : undefined),
   b => b.toString());
@@ -70,6 +72,7 @@ export const {
   set: setNumber,
   getInitializer: getNumberInitializer,
   getObserver: getNumberObserver,
+  disposeBinding: disposeNumberBinding,
 } = makeBindings(
   s => +s,
   n => n.toString());
@@ -79,6 +82,7 @@ export const {
   set: setObject,
   getInitializer: getObjectInitializer,
   getObserver: getObjectObserver,
+  disposeBinding: disposeObjectBinding,
 } = makeBindings(
   s => JSON.parse(atob(s)),
   o => btoa(JSON.stringify(o)));
@@ -103,7 +107,11 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     set: (key: string, value: T, option?: SetterOptions<T>) => void,
     getInitializer: (key: string, options: AutoStorageOptions<T>) => Function,
     getObserver: (key: string, options: AutoStorageOptions<T>) => Function,
+    disposeBinding: () => void,
 } {
+  const hashListeners = [];
+  const storageListeners = [];
+
   function get(key: string, options: StorageOptions<T> = {}): T {
     const {
       defaultValue,
@@ -124,6 +132,9 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     const stringValue = toString(value);
     if (useLocalStorage) {
       window.localStorage.setItem(key, stringValue);
+      // Because of listeners.ts:[1], we need to manually notify all UI elements
+      // listening to storage within the tab of a change.
+      fireStorageChanged();
     } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
@@ -163,19 +174,28 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
         }
       };
 
-      const eventName = fullOptions.useLocalStorage ? 'storage' : 'hashchange';
+      const addListener = fullOptions.useLocalStorage ?
+          addStorageListener :
+          addHashListener;
 
       // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
       //                    window.hashchange.
-      // TODO(stephanwlee): Remove the event listen on component teardown.
-      window.addEventListener(eventName, () => {
-        setComponentValue();
-      });
+      const listenKey = addListener(() => setComponentValue());
+      if (fullOptions.useLocalStorage) {
+        storageListeners.push(listenKey);
+      } else {
+        hashListeners.push(listenKey);
+      }
 
       // Set the value on the property.
       setComponentValue();
       return this[fullOptions.polymerProperty];
     };
+  }
+
+  function disposeBinding() {
+    hashListeners.forEach(key => removeHashListenerByKey(key));
+    storageListeners.forEach(key => removeStorageListenerByKey(key));
   }
 
   function getObserver(key: string, options: StorageOptions<T>): Function {
@@ -192,7 +212,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     };
   }
 
-  return {get, set, getInitializer, getObserver};
+  return {get, set, getInitializer, getObserver, disposeBinding};
 }
 
 /**

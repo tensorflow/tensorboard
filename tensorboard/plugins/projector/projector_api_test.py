@@ -26,6 +26,9 @@ import tensorflow as tf
 from google.protobuf import text_format
 
 from tensorboard.plugins import projector
+from tensorboard.util import test_util
+
+tf.compat.v1.disable_v2_behavior()
 
 
 class ProjectorApiTest(tf.test.TestCase):
@@ -41,11 +44,11 @@ class ProjectorApiTest(tf.test.TestCase):
     # Call the API method to save the configuration to a temporary dir.
     temp_dir = self.get_temp_dir()
     self.addCleanup(shutil.rmtree, temp_dir)
-    writer = tf.summary.FileWriter(temp_dir)
-    projector.visualize_embeddings(writer, config)
+    with test_util.FileWriterCache.get(temp_dir) as writer:
+      projector.visualize_embeddings(writer, config)
 
     # Read the configurations from disk and make sure it matches the original.
-    with tf.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
+    with tf.io.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
       config2 = projector.ProjectorConfig()
       text_format.Parse(f.read(), config2)
       self.assertEqual(config, config2)

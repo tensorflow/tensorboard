@@ -26,40 +26,45 @@ from __future__ import division
 from __future__ import print_function
 
 # pylint: disable=g-import-not-at-top
+import os
+
 # Disable the TF GCS filesystem cache which interacts pathologically with the
 # pattern of reads used by TensorBoard for logdirs. See for details:
 #   https://github.com/tensorflow/tensorboard/issues/1225
 # This must be set before the first import of tensorflow.
-import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
-import logging
 import sys
+
+# Import TensorFlow here to fail immediately if it's not present, even though we
+# don't actually use it yet, which results in a clearer error.
+import tensorflow as tf  # pylint: disable=unused-import
 
 from tensorboard import default
 from tensorboard import program
-
-logger = logging.getLogger(__name__)
+from tensorboard.plugins import base_plugin
 
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
-  server = program.TensorBoard(default.PLUGIN_LOADERS,
-                               default.get_assets_zip_provider())
-  server.configure(sys.argv[1:])
+  tensorboard = program.TensorBoard(default.get_plugins(),
+                                    program.get_default_assets_zip_provider())
   try:
     from absl import app
-    app.run(server.main, sys.argv[:1] + server.unparsed_argv)
+    # Import this to check that app.run() will accept the flags_parser argument.
+    from absl.flags import argparse_flags
+    app.run(tensorboard.main, flags_parser=tensorboard.configure)
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
     pass
-  if server.unparsed_argv:
-    sys.stderr.write('Unknown flags: %s\nPass --help for help.\n' %
-                     (server.unparsed_argv,))
+  except base_plugin.FlagsError as e:
+    print("Error: %s" % e, file=sys.stderr)
     sys.exit(1)
-  sys.exit(server.main())
+
+  tensorboard.configure(sys.argv)
+  sys.exit(tensorboard.main())
 
 
 if __name__ == '__main__':

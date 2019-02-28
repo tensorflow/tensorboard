@@ -133,7 +133,7 @@ class TBContext(object):
           plugin may be absent from this mapping until it is registered. Plugin
           logic should handle cases in which a plugin is absent from this
           mapping, lest a KeyError is raised.
-      window_title: A string specifying the the window title.
+      window_title: A string specifying the window title.
     """
     self.assets_zip_provider = assets_zip_provider
     self.db_connection_provider = db_connection_provider
@@ -180,29 +180,12 @@ class TBLoader(object):
 
     Args:
       flags: The parsed argparse.Namespace object.
-    """
-    pass
-
-  def load(self, context):
-    """Loads TBPlugin subclass.
-
-    Expensive operations may be performed by this method. It's
-    recommended plugins prefer doing expensive initialization lazily
-    instead, when its first HTTP request is received.
-
-    Args:
-      flags: The parsed command-line arguments object.
-
-    Returns:
-      A TBPlugin subclass, or None to ignore this plugin.
 
     Raises:
-      ValueError: On user error in CLI flags.
-
-    :type context: TBContext
-    :rtype: TBPlugin
+      base_plugin.FlagsError: If a flag is invalid or a required
+          flag is not passed.
     """
-    raise NotImplementedError()
+    pass
 
 
 class BasicLoader(TBLoader):
@@ -217,3 +200,8 @@ class BasicLoader(TBLoader):
 
   def load(self, context):
     return self._plugin_class(context)
+
+
+class FlagsError(ValueError):
+  """Raised when a command line flag is not specified or is invalid."""
+  pass

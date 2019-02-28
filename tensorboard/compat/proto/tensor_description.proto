@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package tensorboard;
+option cc_enable_arenas = true;
+option java_outer_classname = "TensorDescriptionProtos";
+option java_multiple_files = true;
+option java_package = "org.tensorflow.framework";
+option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framework";
+import "tensorboard/compat/proto/types.proto";
+import "tensorboard/compat/proto/tensor_shape.proto";
+import "tensorboard/compat/proto/allocation_description.proto";
+
+message TensorDescription {
+  // Data type of tensor elements
+  DataType dtype = 1;
+
+  // Shape of the tensor.
+  TensorShapeProto shape = 2;
+
+  // Information about the size and allocator used for the data
+  AllocationDescription allocation_description = 4;
+};

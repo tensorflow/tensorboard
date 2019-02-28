@@ -21,6 +21,11 @@ Polymer({
 
     placeholder: {type: String},
 
+    labelFloat: {
+      type: Boolean,
+      value: false,
+    },
+
     // ====== Pass through properties ======
 
     useCheckboxColors: {
@@ -29,6 +34,15 @@ Polymer({
     },
 
     coloring: Object,
+
+    // TODO(stephanwlee): Devise a better way for components to react to color
+    // scale change. Recoloring on open may not be good enough.
+    // The property simply clones the `coloring` to force redraw when dropdown
+    // is opened.
+    _coloring: {
+      type: Object,
+      computed: '_computeColoring(_opened, coloring)',
+    },
 
     items: {
       type: Array,
@@ -47,6 +61,13 @@ Polymer({
       notify: true,
       value: () => [],
     },
+
+    // ====== Others ======
+
+    _opened: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   // ====================== COMPUTED ======================
@@ -62,6 +83,10 @@ Polymer({
       return Array.from(uniqueNames).join(', ');
     }
     return `${this.selectedItems.length} Selected`;
+  },
+
+  _computeColoring() {
+    return Object.assign({},  this.coloring);
   },
 
 });

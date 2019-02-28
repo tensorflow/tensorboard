@@ -15,19 +15,21 @@
 """Scalar summaries and TensorFlow operations to create them.
 
 A scalar summary stores a single floating-point value, as a rank-0 tensor.
-
-NOTE: This module is in beta, and its API is subject to change, but the
-data that it stores to disk will be supported forever.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
+from tensorboard.plugins.scalar import summary_v2
+
+
+# Export V2 versions.
+scalar = summary_v2.scalar
+scalar_pb = summary_v2.scalar_pb
 
 
 def op(name,
@@ -35,7 +37,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create a scalar summary op.
+  """Create a legacy scalar summary op.
 
   Arguments:
     name: A unique name for the generated summary node.
@@ -52,6 +54,9 @@ def op(name,
   Returns:
     A TensorFlow summary op.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -65,7 +70,7 @@ def op(name,
 
 
 def pb(name, data, display_name=None, description=None):
-  """Create a scalar summary protobuf.
+  """Create a legacy scalar summary protobuf.
 
   Arguments:
     name: A unique name for the generated summary, including any desired
@@ -80,6 +85,9 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   data = np.array(data)
   if data.shape != ():
     raise ValueError('Expected scalar shape for data, saw shape: %s.'
@@ -92,8 +100,10 @@ def pb(name, data, display_name=None, description=None):
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   summary.value.add(tag='%s/scalar_summary' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary

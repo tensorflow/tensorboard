@@ -20,10 +20,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
+
 
 def op(scalars_layout, collections=None):
   """Creates a summary that contains a layout.
@@ -41,13 +40,18 @@ def op(scalars_layout, collections=None):
   Returns:
     A tensor summary op that writes the layout to disk.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   assert isinstance(scalars_layout, layout_pb2.Layout)
+  summary_metadata = metadata.create_summary_metadata()
   return tf.summary.tensor_summary(name=metadata.CONFIG_SUMMARY_TAG,
                                    tensor=tf.constant(
                                        scalars_layout.SerializeToString(),
                                        dtype=tf.string),
                                    collections=collections,
-                                   summary_metadata=_create_summary_metadata())
+                                   summary_metadata=summary_metadata)
+
 
 def pb(scalars_layout):
   """Creates a summary that contains a layout.
@@ -62,16 +66,16 @@ def pb(scalars_layout):
   Returns:
     A summary proto containing the layout.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   assert isinstance(scalars_layout, layout_pb2.Layout)
   tensor = tf.make_tensor_proto(
       scalars_layout.SerializeToString(), dtype=tf.string)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      metadata.create_summary_metadata().SerializeToString())
   summary = tf.Summary()
   summary.value.add(tag=metadata.CONFIG_SUMMARY_TAG,
-                    metadata=_create_summary_metadata(),
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary
-
-def _create_summary_metadata():
-  return tf.SummaryMetadata(
-      plugin_data=tf.SummaryMetadata.PluginData(
-          plugin_name=metadata.PLUGIN_NAME))

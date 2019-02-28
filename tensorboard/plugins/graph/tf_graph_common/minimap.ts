@@ -155,7 +155,24 @@ export class Minimap {
     let $download = d3.select('#graphdownload');
     this.download = <HTMLLinkElement>$download.node();
     $download.on('click', d => {
-      this.download.href = this.downloadCanvas.toDataURL('image/png');
+      // Revoke the old URL, if any. Then, generate a new URL.
+      URL.revokeObjectURL(this.download.href);
+      // We can't use the `HTMLCanvasElement.toBlob` API because it does
+      // not have a synchronous variant, and we need to update this href
+      // synchronously. Instead, we create a blob manually from the data
+      // URL.
+      const dataUrl = this.downloadCanvas.toDataURL("image/png");
+      const prefix = dataUrl.slice(0, dataUrl.indexOf(","));
+      if (!prefix.endsWith(";base64")) {
+        console.warn(`non-base64 data URL (${prefix}); cannot use blob download`);
+        this.download.href = dataUrl;
+        return;
+      }
+      const data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+      const bytes =
+        new Uint8Array(data.length).map((_, i) => data.charCodeAt(i));
+      const blob = new Blob([bytes], {type: "image/png"});
+      this.download.href = URL.createObjectURL(blob);
     });
 
     let $svg = d3.select(this.svg);
@@ -192,6 +209,14 @@ export class Minimap {
     let zoomTransform = $zoomG.attr('transform');
     $zoomG.attr('transform', null);
 
+    // https://github.com/tensorflow/tensorboard/issues/1598
+    // Account for SVG content shift. SVGGraphicsElement.getBBox().width returns
+    // width in pixel value of very tight bounding box of non-empty content.
+    // Since we want to measure the sceneSize from the origin to the right most
+    // edge of the right most node, we need to account for distance from the
+    // origin to the left edge of the bounding box.
+    sceneSize.height += sceneSize.y;
+    sceneSize.width += sceneSize.x;
     // Since we add padding, account for that here.
     sceneSize.height += this.labelPadding * 2;
     sceneSize.width += this.labelPadding * 2;

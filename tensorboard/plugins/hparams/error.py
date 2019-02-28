@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Defines an error (exception) class for the HParams plugin."""
+
 
 class HParamsError(Exception):
   """Represents an error that is meaningful to the end-user. Such an error

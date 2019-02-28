@@ -27,17 +27,36 @@ from tensorboard.backend.event_processing import io_wrapper
 
 
 class IoWrapperTest(tf.test.TestCase):
-  def testIsGcsPathIsTrue(self):
-    self.assertTrue(io_wrapper.IsGCSPath('gs://bucket/foo'))
+  def setUp(self):
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
 
-  def testIsGcsPathIsFalse(self):
-    self.assertFalse(io_wrapper.IsGCSPath('/tmp/foo'))
+  def tearDown(self):
+    self.stubs.CleanUp()
 
-  def testIsCnsPathTrue(self):
-    self.assertTrue(io_wrapper.IsCnsPath('/cns/foo/bar'))
+  def testIsCloudPathGcsIsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('gs://bucket/foo'))
 
-  def testIsCnsPathFalse(self):
-    self.assertFalse(io_wrapper.IsCnsPath('/tmp/foo'))
+  def testIsCloudPathS3IsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('s3://bucket/foo'))
+
+  def testIsCloudPathCnsIsTrue(self):
+    self.assertTrue(io_wrapper.IsCloudPath('/cns/foo/bar'))
+
+  def testIsCloudPathFileIsFalse(self):
+    self.assertFalse(io_wrapper.IsCloudPath('file:///tmp/foo'))
+
+  def testIsCloudPathLocalIsFalse(self):
+    self.assertFalse(io_wrapper.IsCloudPath('/tmp/foo'))
+
+  def testPathSeparator(self):
+    # In nix systems, path separator would be the same as that of CNS/GCS
+    # making it hard to tell if something went wrong.
+    self.stubs.Set(os, 'sep', '#')
+
+    self.assertEqual(io_wrapper.PathSeparator('/tmp/foo'), '#')
+    self.assertEqual(io_wrapper.PathSeparator('tmp/foo'), '#')
+    self.assertEqual(io_wrapper.PathSeparator('/cns/tmp/foo'), '/')
+    self.assertEqual(io_wrapper.PathSeparator('gs://foo'), '/')
 
   def testIsIsTensorFlowEventsFileTrue(self):
     self.assertTrue(

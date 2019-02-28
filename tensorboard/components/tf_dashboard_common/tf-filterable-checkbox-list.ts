@@ -87,6 +87,14 @@ Polymer({
     'dom-change': '_synchronizeColors',
   },
 
+  observers: [
+    '_synchronizeColors(useCheckboxColors)',
+    '_synchronizeColors(coloring)',
+  ],
+
+  detached() {
+    this.cancelDebouncer('_setRegex');
+  },
 
   // ====================== COMPUTED ======================
 
@@ -137,11 +145,13 @@ Polymer({
   },
 
   _synchronizeColors(e) {
-    if (!this.useCheckboxColors) return;
     const checkboxes = this.querySelectorAll('paper-checkbox');
 
     checkboxes.forEach(cb => {
-      const color = this.coloring.getColor(cb.name);
+      // Setting the null value will clear previously set color.
+      const color = this.useCheckboxColors ?
+          this.coloring.getColor(cb.name) :
+          null;
       cb.customStyle['--paper-checkbox-checked-color'] = color;
       cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
       cb.customStyle['--paper-checkbox-unchecked-color'] = color;

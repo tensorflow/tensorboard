@@ -54,7 +54,7 @@ class DirectoryWatcherTest(tf.test.TestCase):
     os.mkdir(self._directory)
     self._watcher = directory_watcher.DirectoryWatcher(self._directory,
                                                        _ByteLoader)
-    self.stubs = tf.test.StubOutForTesting()
+    self.stubs = tf.compat.v1.test.StubOutForTesting()
 
   def tearDown(self):
     self.stubs.CleanUp()
@@ -201,9 +201,9 @@ class DirectoryWatcherTest(tf.test.TestCase):
     for stub_name in stub_names:
       self.stubs.Set(io_wrapper, stub_name,
                      FakeFactory(getattr(io_wrapper, stub_name)))
-    for stub_name in ['IsDirectory', 'Exists', 'Stat']:
-      self.stubs.Set(tf.gfile, stub_name,
-                     FakeFactory(getattr(tf.gfile, stub_name)))
+    for stub_name in ['exists', 'stat']:
+      self.stubs.Set(tf.io.gfile, stub_name,
+                     FakeFactory(getattr(tf.io.gfile, stub_name)))
 
     with self.assertRaises((IOError, OSError)):
       self._LoadAllEvents()

@@ -482,10 +482,13 @@ limitations under the License.
       debugWatchChangeMethod(debugWatch, isChecked);
     },
 
-    // Shared method for handling externally forced expansion of a node, with
-    // optional enabling of the breakpoint by checking the checkbox and optional
-    // highlighting of the node.
-    _handleForceNode(forceNodeName, toCheck, toHighlight) {
+    /**
+     * Shared method for handling externally forced expansion of a node, with
+     * optional enabling of the breakpoint by checking the checkbox.
+     * @param {?string} forceNodeName
+     * @param {boolean} toCheck
+     */
+    _handleForceNode(forceNodeName, toCheck) {
       this.set('_filterInput', '');
       // Use set timeout to give the tree list a chance to update.
       setTimeout(() => {

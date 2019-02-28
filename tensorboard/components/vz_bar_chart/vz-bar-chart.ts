@@ -47,6 +47,27 @@ Polymer({
     data: Object,
 
     /**
+     * How to feed optional overlaid lines into the bar chart.
+     *
+     * Each key within the `lines` object corresponds to a data series,
+     * each of which is associated with its own line color.
+     *
+     * Each entry within a list corresponds to an X-axis label (the string
+     * 'x' property) and line's y value (The numeric 'y' property).
+     *
+     * Example:
+     * lines = {'series0':[{ x: 'a', y: 1 }, { x: 'b', y: 3 }],
+     *          'series1':[{ x: 'a', y: 4 }, { x: 'b', y: 3 }]}
+     *
+     * This will generate a Plottable line chart with two series over the
+     * ClusteredBar chart created for the `data` object.
+     */
+    lines: {
+      type: Object,
+      value: () => ({})
+    },
+
+    /**
      * Scale that maps series names to colors. The default colors are from
      * d3.schemeCategory10. Use this property to replace the default coloration.
      *
@@ -56,6 +77,23 @@ Polymer({
      * @type {Plottable.Scales.Color}
      */
     colorScale: {
+      type: Object,
+      value: function() {
+        return new Plottable.Scales.Color().range(d3.schemeCategory10);
+      }
+    },
+
+    /**
+     * Scale that maps series names to colors for the optional overlaid line
+     * chart. The default colors are from d3.schemeCategory10. Use this
+     * property to replace the default coloration.
+     *
+     * Note that if a `linesColorScale` gets passed in, it gets mutated within
+     * this component to have its domain set to the sorted keys of the `lines`
+     * object. e.g. .domain(['series0', 'series1'])
+     * @type {Plottable.Scales.Color}
+     */
+    linesColorScale: {
       type: Object,
       value: function() {
         return new Plottable.Scales.Color().range(d3.schemeCategory10);
@@ -98,7 +136,7 @@ Polymer({
     _chart: Object,
   },
   observers: [
-    '_makeChart(data, colorScale, tooltipColumns, _attached)',
+    '_makeChart(data, lines, colorScale, linesColorScale, tooltipColumns, _attached)',
   ],
   /**
    * Re-renders the chart. Useful if e.g. the container size changed.
@@ -124,14 +162,16 @@ Polymer({
    * Creates a chart, and asynchronously renders it. Fires a chart-rendered
    * event after the chart is rendered.
    */
-  _makeChart: function(data, colorScale, tooltipColumns, _attached) {
+  _makeChart: function(data, lines, colorScale, linesColorScale,
+      tooltipColumns, _attached) {
     if (this._chart) this._chart.destroy();
     var tooltip = d3.select(this.$.tooltip);
     // We directly reference properties of `this` because this call is
     // asynchronous, and values may have changed in between the call being
     // initiated and actually being run.
     var chart =
-        new BarChart(this.data, this.colorScale, tooltip, this.tooltipColumns);
+        new BarChart(this.data, this.lines, this.colorScale,
+          this.linesColorScale, tooltip, this.tooltipColumns);
     var div = d3.select(this.$.chartdiv);
     chart.renderTo(div);
     this._chart = chart;
@@ -140,7 +180,9 @@ Polymer({
 
 class BarChart {
   private data: {[key: string]: (Bar[])};
+  private lines: {[key: string]: (Bar[])};
   private colorScale: Plottable.Scales.Color;
+  private linesColorScale: Plottable.Scales.Color;
   private tooltip: d3.Selection<any, any, any, any>;
   private outer: Plottable.Components.Table;
   private plot: Plottable.Plots.ClusteredBar<string, number>;
@@ -148,7 +190,9 @@ class BarChart {
 
   constructor(
       data: {[key: string]: (Bar[])},
+      lines: {[key: string]: (Bar[])},
       colorScale: Plottable.Scales.Color,
+      linesColorScale: Plottable.Scales.Color,
       tooltip: d3.Selection<any, any, any, any>,
       tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
     // Assign each class a color.
@@ -156,20 +200,24 @@ class BarChart {
 
     // Assign arguments passed in constructor for future use.
     this.data = data;
+    this.lines = lines;
     this.colorScale = colorScale;
+    this.linesColorScale = linesColorScale;
     this.tooltip = tooltip;
 
     this.plot = null;
     this.outer = null;
 
     // Do things to actually build the chart.
-    this.buildChart(data, colorScale);
+    this.buildChart(data, lines, colorScale, linesColorScale);
     this.setupTooltips(tooltipColumns);
   }
 
   private buildChart(
       data: {[key: string]: (Bar[])},
-      colorScale: Plottable.Scales.Color) {
+      lines: {[key: string]: (Bar[])},
+      colorScale: Plottable.Scales.Color,
+      linesColorScale: Plottable.Scales.Color) {
     if (this.outer) {
       this.outer.destroy();
     }
@@ -195,10 +243,33 @@ class BarChart {
     plot.attr('fill', function(d, i, dataset) {
       return colorScale.scale(dataset.metadata());
     });
-
     this.plot = plot;
-    this.outer = new Plottable.Components.Table(
-        [[yAxis, plot], [null, xAxis]]);
+
+    // If lines have been provided to overlay on the bar chart, then
+    // create a line plot and put it in a group with the bar chart.
+    const lineNames = _.keys(lines);
+    if (lineNames.length > 0) {
+      const linePlot = new Plottable.Plots.Line();
+      linePlot.x(function(d) {
+        return d.x;
+      }, xScale);
+      linePlot.y(function(d) {
+        return d.y;
+      }, yScale);
+      lineNames.forEach(
+        lineName => linePlot.addDataset(
+            new Plottable.Dataset(lines[lineName]).metadata(lineName)));
+      linePlot.attr(
+        'stroke',
+        (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) =>
+          this.linesColorScale.scale(dataset.metadata()));
+      const group = new Plottable.Components.Group([plot, linePlot]);
+      this.outer = new Plottable.Components.Table(
+        [[yAxis, group], [null, xAxis]]);
+    } else {
+      this.outer = new Plottable.Components.Table(
+          [[yAxis, plot], [null, xAxis]]);
+    }
   }
 
   private setupTooltips(tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
@@ -249,7 +320,7 @@ class BarChart {
 
     // Remove the keys that map to an empty array, and unpack the array.
     // This generates {series0: { x: 'c', y: 3 }}
-    bars = _.pick(bars, val => val.length > 0);
+    bars = (_ as any).pickBy(bars, val => val.length > 0);
     const singleBars = _.mapValues(bars, val => val[0]);
 
     // Rearrange the object for convenience.

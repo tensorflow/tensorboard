@@ -129,6 +129,8 @@ tf_web_library(
 tf_web_library(
     name = "web_component_tester",
     testonly = 1,
+    srcs = ["web-component-tester.d.ts"],
+    path = "/web_component_tester",
     visibility = ["//visibility:public"],
     exports = [
         ":chai_typings",
@@ -160,6 +162,26 @@ tf_web_library(
     srcs = ["@org_definitelytyped//:sinon.d.ts"],
     path = "/sinonjs",
     visibility = ["//visibility:private"],
+)
+
+tf_web_library(
+    name = "vaadin_grid",
+    srcs = [
+        "vaadin-grid.html",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+    deps = ["@vaadin_vaadin_grid"],
+)
+
+tf_web_library(
+    name = "vaadin_split_layout",
+    srcs = [
+        "vaadin-split-layout.html",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+    deps = ["@vaadin_vaadin_split_layout"],
 )
 
 # Generate single TypeScript typings file for d3.js with no ES6 imports.

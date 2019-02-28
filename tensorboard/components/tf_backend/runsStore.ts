@@ -17,7 +17,7 @@ namespace tf_backend {
 export class RunsStore extends BaseStore {
   private _runs: string[] = [];
 
-  refresh() {
+  load() {
     const url = getRouter().runs();
     return this.requestManager.request(url).then(newRuns => {
       if (!_.isEqual(this._runs, newRuns)) {

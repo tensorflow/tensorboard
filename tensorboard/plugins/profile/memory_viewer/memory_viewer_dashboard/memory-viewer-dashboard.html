@@ -25,19 +25,17 @@ You may obtain a copy of the License at
 <dom-module id="memory-viewer-dashboard">
   <template>
     <style>
+:host {
+  overflow-x: auto;
+  width: 100%;
+}
 #description {
   margin-bottom: 2em;
   width: 600px;
 }
 mv-line-chart {
-  width: 1200px;
+  width: 100%;
   height: 100%;
-}
-buffer-details {
-  position: fixed;
-  margin-top: 7.5em;
-  left: 16px;
-  width: 330px;
 }
     </style>
     <div class="memory-viewer-dashboard" style="overflow:auto">
@@ -53,8 +51,7 @@ buffer-details {
            may help reduce the memory footprint.
         </p>
       </div>
-      <buffer-details hidden="[[!active_]]" node="[[active_]]"></buffer-details>
-      <mv-line-chart data="{{usage}}" active={{active_}}></mv-line-chart>
+      <mv-line-chart data="{{usage}}" active={{active}}></mv-line-chart>
     </div>
   </template>
   <script src="memory-viewer-dashboard.js"></script>

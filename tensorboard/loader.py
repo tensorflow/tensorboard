@@ -35,10 +35,16 @@ import time
 import types  # pylint: disable=unused-import
 
 import six
-import tensorflow as tf
 
 from tensorboard import db
-from tensorboard import util
+from tensorboard.compat.proto import event_pb2
+from tensorboard.util import tb_logging
+from tensorboard.util import platform_util
+from tensorboard.util import util
+import tensorflow as tf
+
+
+logger = tb_logging.get_logger()
 
 
 class Record(collections.namedtuple('Record', ('record', 'offset'))):
@@ -73,7 +79,7 @@ class RecordReader(object):
     self.path = tf.compat.as_text(path)
     self._offset = start_offset
     self._size = -1
-    self._reader = None  # type: tf.pywrap_tensorflow.PyRecordReader
+    self._reader = None  # type: tf.compat.v1.pywrap_tensorflow.PyRecordReader
     self._is_closed = False
     self._lock = threading.Lock()
 
@@ -91,7 +97,7 @@ class RecordReader(object):
 
     :rtype: int
     """
-    size = tf.gfile.Stat(self.path).length
+    size = tf.io.gfile.stat(self.path).length
     minimum = max(self._offset, self._size)
     if size < minimum:
       raise IOError('File shrunk: %d < %d: %s' % (size, minimum, self.path))
@@ -144,8 +150,8 @@ class RecordReader(object):
 
   def _open(self):
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      return tf.pywrap_tensorflow.PyRecordReader_New(
-          tf.resource_loader.readahead_file_path(tf.compat.as_bytes(self.path)),
+      return tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
+          platform_util.readahead_file_path(tf.compat.as_bytes(self.path)),
           self._offset, tf.compat.as_bytes(''), status)
 
   def __str__(self):
@@ -359,7 +365,7 @@ class BufferedRecordReader(object):
       self._size = self._reader.get_size()
       self._last_stat = now
     except Exception as e:  # pylint: disable=broad-except
-      tf.logging.debug('Stat failed: %s', e)
+      logger.debug('Stat failed: %s', e)
       self._read_exception = sys.exc_info()
 
   def _run(self):
@@ -370,15 +376,15 @@ class BufferedRecordReader(object):
         if self._is_closed:
           try:
             self._reader.close()
-            tf.logging.debug('Closed')
+            logger.debug('Closed')
           except Exception as e:  # pylint: disable=broad-except
             self._close_exception = sys.exc_info()
-            tf.logging.debug('Close failed: %s', e)
+            logger.debug('Close failed: %s', e)
           self._reader = None
           self._wake_up_consumers.notify_all()
           return
         if self._buffered >= self._read_ahead:
-          tf.logging.debug('Waking up to stat')
+          logger.debug('Waking up to stat')
           self._stat()
           continue
         # Calculate a good amount of data to read outside the lock.
@@ -393,7 +399,7 @@ class BufferedRecordReader(object):
       self._rebuffer(want)
 
   def _rebuffer(self, want):
-    tf.logging.debug('Waking up to read %s bytes', _localize_int(want))
+    logger.debug('Waking up to read %s bytes', _localize_int(want))
     records = []
     read_exception = self._read_exception
     if read_exception is None:
@@ -406,7 +412,7 @@ class BufferedRecordReader(object):
           records.append(record)
           want -= len(record.record)
       except Exception as e:  # pylint: disable=broad-except
-        tf.logging.debug('Read failed: %s', e)
+        logger.debug('Read failed: %s', e)
         read_exception = sys.exc_info()
     with self._lock:
       self._read_exception = read_exception
@@ -532,7 +538,7 @@ class Progress(object):
   """
 
   BAR_INTERVAL_SECONDS = 0.25
-  BAR_LOGGER = logging.getLogger('tensorflow' + util.LogHandler.EPHEMERAL)
+  BAR_LOGGER = logging.getLogger('tensorboard.ephemeral')
   BAR_WIDTH = 45
   BLOCK_DARK = u'\u2593'
   BLOCK_LIGHT = u'\u2591'
@@ -543,7 +549,7 @@ class Progress(object):
 
   def __init__(self, clock=time.time,
                sleep=time.sleep,
-               log_callback=tf.logging.info,
+               log_callback=logging.info,
                bar_callback=BAR_LOGGER.info,
                rate_counter_factory=RateCounter):
     """Creates new instance.
@@ -622,7 +628,6 @@ class Progress(object):
     """
     self._show_log(can_stall=False)
     self._show_bar(can_stall=False)
-    # Instructs util.LogHandler to clear the ephemeral logging state.
     self._bar_callback('')
 
   def sleep(self, seconds):
@@ -691,7 +696,7 @@ class EventLogReader(object):
   """Helper class for reading from event log files.
 
   This class is a wrapper around BufferedRecordReader that operates on
-  record files containing tf.Event protocol buffers.
+  record files containing Event protocol buffers.
 
   Fields:
     rowid: An integer primary key in EventLogs table, or 0 if unknown.
@@ -734,16 +739,16 @@ class EventLogReader(object):
     """Reads an event proto from the file.
 
     Returns:
-      A tf.Event or None if no more records exist in the file. Please
+      A Event or None if no more records exist in the file. Please
       note that the file remains open for subsequent reads in case more
       are appended later.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     record = self._reader.get_next_record()
     if record is None:
       return None
-    event = tf.Event()
+    event = event_pb2.Event()
     event.ParseFromString(record.record)
     self._offset = record.offset
     return event
@@ -844,9 +849,9 @@ class RunReader(object):
     self._index = 0
     self._entombed_progress = 0
     self._saved_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
+        collections.deque()  # type: collections.deque[Event]
     self._prepended_events = \
-        collections.deque()  # type: collections.deque[tf.Event]
+        collections.deque()  # type: collections.deque[Event]
 
   def add_event_log(self, db_conn, log):
     """Adds event log to run loader.
@@ -883,7 +888,7 @@ class RunReader(object):
             ('INSERT INTO EventLogs (rowid, run_id, path, offset)'
              ' VALUES (?, ?, ?, 0)'),
             (log.rowid, self.run_id, log.path))
-    tf.logging.debug('Adding %s', log)
+    logger.debug('Adding %s', log)
     self._logs.append(log)
     # Skip over event logs we've already read.
     if log.get_offset() > 0 and not self._prepended_events:
@@ -892,9 +897,9 @@ class RunReader(object):
     return True
 
   def get_next_event(self):
-    """Returns next tf.Event from event logs or None if stalled.
+    """Returns next Event from event logs or None if stalled.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     event = None
     if self._prepended_events:
@@ -918,7 +923,7 @@ class RunReader(object):
 
     Note: This method sets the mark to the current position.
 
-    :rtype: tf.Event
+    :rtype: Event
     """
     self.mark()
     result = self.get_next_event()
@@ -1060,7 +1065,7 @@ def get_event_logs(directory):
   :rtype: list[EventLogReader]
   """
   logs = []
-  for dirname, _, filenames in tf.gfile.Walk(directory):
+  for dirname, _, filenames in tf.io.gfile.walk(directory):
     for filename in filenames:
       if is_event_log_file(filename):
         logs.append(EventLogReader(os.path.join(dirname, filename)))

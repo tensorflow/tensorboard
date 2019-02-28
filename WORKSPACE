@@ -1,44 +1,75 @@
 workspace(name = "org_tensorflow_tensorboard")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Needed as a transitive dependency of rules_webtesting below.
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "2b9af2de004d67725c9985540811835389b229c27874f2e15f5e319622a53a3b",
+    strip_prefix = "bazel-skylib-e9fc4750d427196754bebb0e2e1e38d68893490a",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/archive/e9fc4750d427196754bebb0e2e1e38d68893490a.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/archive/e9fc4750d427196754bebb0e2e1e38d68893490a.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//lib:versions.bzl", "versions")
+# Keep this version in sync with the BAZEL environment variable defined
+# in our .travis.yml config.
+versions.check(minimum_bazel_version = "0.22.0")
+
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "b29a8bc2cb10513c864cb1084d6f38613ef14a143797cea0af0f91cd385f5e8c",
-    strip_prefix = "rules_closure-0.8.0",
+    sha256 = "0e6de40666f2ebb2b30dc0339745a274d9999334a249b05a3b1f46462e489adf",
+    # The changes that we need for Bazel 0.23 compatibility are not in
+    # any release, so we pin to HEAD as of 2019-02-22.
+    strip_prefix = "rules_closure-87d24b1df8b62405de8dd059cb604fd9d4b1e395",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",  # 2018-08-03
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",  # 2019-02-22
     ],
 )
 
 # Needed as a transitive dependency of rules_webtesting below.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "8c333df68fb0096221e2127eda2807384e00cc211ee7e7ea4ed08d212e6a69c1",
-    strip_prefix = "rules_go-0.5.4",
+    sha256 = "b7a62250a3a73277ade0ce306d22f122365b513f5402222403e507f2f997d421",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/archive/0.5.4.tar.gz",
-        "https://github.com/bazelbuild/rules_go/archive/0.5.4.tar.gz",
+        # tag 0.16.3 resolves to commit 01e5a9f8483167962eddd167f7689408bdeb4e76 (2018-11-28 16:28:45 -0500)
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.16.3/rules_go-0.16.3.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/0.16.3/rules_go-0.16.3.tar.gz",
     ],
 )
 
 # Needed as a transitive dependency of rules_webtesting below.
 http_archive(
-    name = "bazel_skylib",
-    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
-    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
+    name = "bazel_gazelle",
+    sha256 = "6e875ab4b6bf64a38c352887760f21203ab054676d9c1b274963907e0768740d",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz",  # 2018-01-12
+        # tag 0.15.0 resolves to commit c728ce9f663e2bff26361ba5978ec5c9e6816a3c (2018-10-13 00:06:11 +0200)
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/0.15.0/bazel-gazelle-0.15.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/0.15.0/bazel-gazelle-0.15.0.tar.gz",
     ],
 )
 
 http_archive(
     name = "io_bazel_rules_webtesting",
-    sha256 = "a1264301424f2d920fca04f2d3c5ef5ca1be4f2bbf8c84ef38006e54aaf22753",
-    strip_prefix = "rules_webtesting-9f597bb7d1b40a63dc443d9ef7e931cfad4fb098",
+    sha256 = "89f041028627d801ba3b4ea1ef2211994392d46e25c1fc3501b95d51698e4a1e",
+    strip_prefix = "rules_webtesting-0.2.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_webtesting/archive/9f597bb7d1b40a63dc443d9ef7e931cfad4fb098.tar.gz",  # 2017-01-29
-        "https://github.com/bazelbuild/rules_webtesting/archive/9f597bb7d1b40a63dc443d9ef7e931cfad4fb098.tar.gz",
+        # tag 0.2.2 resolves to commit 596d07c1f38486486969302158b9019418a5409e (2018-12-04 09:20:24 -0800)
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_webtesting/archive/0.2.2.tar.gz",
+        "https://github.com/bazelbuild/rules_webtesting/archive/0.2.2.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "org_tensorflow",
+    sha256 = "a0d7eea4c4e4b526cdba624f706bfbcc87a7923bb09904dfab22589a6bd142f2",
+    strip_prefix = "tensorflow-6ef428bd6e83b0930266bf922eaa2f4a60e8328a",
+    urls = [
+        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/6ef428bd6e83b0930266bf922eaa2f4a60e8328a.tar.gz",  # 2018-12-06
+        "https://github.com/tensorflow/tensorflow/archive/6ef428bd6e83b0930266bf922eaa2f4a60e8328a.tar.gz",
     ],
 )
 
@@ -49,29 +80,23 @@ closure_repositories(
     omit_com_google_protobuf_js = True,
 )
 
-http_archive(
-    name = "org_tensorflow",
-    sha256 = "88324ad9379eae4fdb2aefb8e0d6c7cd0dc748b44daa5cc96ffd9415705c00c3",
-    strip_prefix = "tensorflow-9752b117ff63f204c4975cad52b5aab5c1f5e9a9",
-    urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",  # 2018-04-16
-        "https://github.com/tensorflow/tensorflow/archive/9752b117ff63f204c4975cad52b5aab5c1f5e9a9.tar.gz",
-    ],
-)
-
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
 
 tf_workspace()
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+# Needed as a transitive dependency of some rules_webtesting targets.
+load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
+go_rules_dependencies()
+go_register_toolchains()
 
-go_repositories()
+# Needed as a transitive dependency of some rules_webtesting targets.
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+gazelle_dependencies()
 
-load("@io_bazel_rules_webtesting//web:repositories.bzl", "browser_repositories", "web_test_repositories")
+load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
 
 web_test_repositories(
     omit_com_google_code_findbugs_jsr305 = True,
-    omit_com_google_code_gson = True,
     omit_com_google_errorprone_error_prone_annotations = True,
     omit_com_google_guava = True,
     omit_junit = True,

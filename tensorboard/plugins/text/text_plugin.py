@@ -29,13 +29,17 @@ import numpy as np
 # pylint: enable=g-bad-import-order
 
 import six
-import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
+from tensorboard.util import tb_logging
+from tensorboard.util import tensor_util
+
+logger = tb_logging.get_logger()
 
 # HTTP routes
 TAGS_ROUTE = '/tags'
@@ -182,7 +186,7 @@ def text_array_to_html(text_arr):
 
 def process_string_tensor_event(event):
   """Convert a TensorEvent into a JSON-compatible response."""
-  string_arr = tf.make_ndarray(event.tensor_proto)
+  string_arr = tensor_util.make_ndarray(event.tensor_proto)
   html = text_array_to_html(string_arr)
   return {
       'wall_time': event.wall_time,
@@ -262,12 +266,12 @@ class TextPlugin(base_plugin.TBPlugin):
   def _async_index_impl(self):
     """Computes index_impl() asynchronously on a separate thread."""
     start = time.time()
-    tf.logging.info('TextPlugin computing index_impl() in a new thread')
+    logger.info('TextPlugin computing index_impl() in a new thread')
     self._index_cached = self.index_impl()
     self._index_impl_thread = None
     self._index_impl_lock.release()
     elapsed = time.time() - start
-    tf.logging.info(
+    logger.info(
         'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
 
   def index_impl(self):

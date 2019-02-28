@@ -19,6 +19,8 @@ enum Type {
   TAG,
 }
 
+const MAX_RUNS_TO_ENABLE_BY_DEFAULT = 20;
+
 Polymer({
   is: 'tf-data-select-row',
   properties: {
@@ -50,6 +52,16 @@ Polymer({
       value: false,
     },
 
+    shouldColorRuns: {
+      type: Boolean,
+      value: false,
+    },
+
+    _coloring: {
+      type: Object,
+      computed: '_getColoring(shouldColorRuns)',
+    },
+
     _runs: {
       type: Array,
       value: (): Array<tf_backend.Run> => [],
@@ -69,6 +81,11 @@ Polymer({
       value: '',
       observer: '_persistRegex',
     },
+
+    _storageBinding: {
+      type: Object,
+      value: () => null,
+    },
   },
 
   listeners: {
@@ -76,6 +93,9 @@ Polymer({
   },
 
   observers: [
+    '_immutablePropInvarianceViolated(persistenceId.*)',
+    '_immutablePropInvarianceViolated(experiment.*)',
+    '_synchronizeColors(checkboxColor)',
     '_persistSelectedRuns(_selectedRuns)',
     '_fireChange(_selectedRuns, _tagRegex)',
   ],
@@ -91,22 +111,59 @@ Polymer({
     }
   },
 
-  ready(): void {
-    if (this.persistenceId == null) return;
+  attached(): void {
+    if (this.persistenceId == null) {
+      throw new RangeError('Required `persistenceId` missing');
+    }
 
-    const runInitializer = tf_storage.getStringInitializer(
+    this._initFromStorage();
+    this._initRunsAndTags()
+        .then(() => {
+          if (this._runSelectionStateString) return;
+          const val = this._runs.length <= MAX_RUNS_TO_ENABLE_BY_DEFAULT ?
+              STORAGE_ALL_VALUE : STORAGE_NONE_VALUE;
+          this._storageBinding.set(this._getPersistenceKey(Type.RUN), val,
+              {defaultValue: ''});
+          this._runSelectionStateString = val;
+        });
+  },
+
+  detached(): void {
+    this._isDataReady = false;
+    if (this._storageBinding) this._storageBinding.disposeBinding();
+  },
+
+  _initFromStorage() {
+    if (this._storageBinding) this._storageBinding.disposeBinding();
+    this._storageBinding = tf_storage.makeBindings(x => x, x => x);
+    const runInitializer = this._storageBinding.getInitializer(
         this._getPersistenceKey(Type.RUN),
-        {defaultValue: '', polymerProperty: '_runSelectionStateString'});
+        {
+          defaultValue: '',
+          polymerProperty: '_runSelectionStateString',
+        });
     runInitializer.call(this);
-
-    const tagInitializer = tf_storage.getStringInitializer(
+    const tagInitializer = this._storageBinding.getInitializer(
         this._getPersistenceKey(Type.TAG),
         {defaultValue: '', polymerProperty: '_tagRegex'});
     tagInitializer.call(this);
   },
 
-  attached(): void {
-    this._fetchRunsAndTags().then(() => this._isDataReady = true);
+  _initRunsAndTags(): Promise<void> {
+    this._isDataReady = false;
+    return this._fetchRunsAndTags()
+        .then(() => {
+          this._isDataReady = true;
+        });
+  },
+
+  _immutablePropInvarianceViolated(change) {
+    // We allow property to change many times before the component is attached
+    // to DOM.
+    if (this.isAttached) {
+      throw new Error(`Invariance Violation: ` +
+          `Expected property '${change.path}' not to change.`);
+    }
   },
 
   _synchronizeColors() {
@@ -122,10 +179,6 @@ Polymer({
     window.requestAnimationFrame(() => this.updateStyles());
   },
 
-  detached(): void {
-    this._isDataReady = false;
-  },
-
   _fetchRunsAndTags(): Promise<void> {
     const requestManager = new tf_backend.RequestManager();
     if (this.noExperiment) {
@@ -137,12 +190,14 @@ Polymer({
           startedTime: null,
         })));
       });
-    } else if (this.experiment.id) {
-      const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
-      return requestManager.request(url).then(runs => {
-        this.set('_runs', runs);
-      });
     }
+
+    console.assert(this.experiment.id != null, 'Expected an experiment Id');
+
+    const url = tf_backend.getRouter().runsForExperiment(this.experiment.id);
+    return requestManager.request(url).then(runs => {
+      this.set('_runs', runs);
+    });
   },
 
   _getRunOptions(_): Array<tf_dashboard_common.FilterableCheckboxListItem> {
@@ -155,21 +210,18 @@ Polymer({
     }));
   },
 
-  _getIsRunCheckboxesColored(_): boolean {
-    return this.noExperiment;
-  },
-
   _persistSelectedRuns(): void {
     if (!this._isDataReady) return;
     const value = this._serializeValue(
-        this._runs, this._selectedRuns.map(({id}) => id));
-    tf_storage.setString(this._getPersistenceKey(Type.RUN), value,
+        this._runs,
+        this._selectedRuns.map(({id}) => id));
+    this._storageBinding.set(this._getPersistenceKey(Type.RUN), value,
         {defaultValue: ''});
   },
 
   _getRunsSelectionState(): Object {
     const allIds = this._runs.map(r => this._getSyntheticRunId(r));
-    const ids = this._deserializeValue(this._runSelectionStateString, allIds);
+    const ids = this._deserializeValue(allIds, this._runSelectionStateString);
     const prevSelection = new Set(ids);
     const newSelection = {};
     allIds.forEach(id => newSelection[id] = prevSelection.has(id));
@@ -179,7 +231,7 @@ Polymer({
   _persistRegex(): void {
     if (!this._isDataReady) return;
     const value = this._tagRegex;
-    tf_storage.setString(this._getPersistenceKey(Type.TAG), value,
+    this._storageBinding.set(this._getPersistenceKey(Type.TAG), value,
         {defaultValue: ''});
   },
 
@@ -200,42 +252,51 @@ Polymer({
   },
 
   _removeRow(): void {
-    // Clear persistance when being removed.
-    tf_storage.setString(
+    // Clear persistence when being removed.
+    this._storageBinding.set(
         this._getPersistenceKey(Type.RUN), '', {defaultValue: ''});
-    tf_storage.setString(
+    this._storageBinding.set(
         this._getPersistenceKey(Type.TAG), '', {defaultValue: ''});
     this.fire('remove');
   },
 
   _serializeValue(
       source: Array<number|string>, selectedIds: Array<number|string>) {
-    if (selectedIds.length == source.length) return '$all';
-    if (selectedIds.length == 0) return '$none';
+    if (selectedIds.length == source.length) return STORAGE_ALL_VALUE;
+    if (selectedIds.length == 0) return STORAGE_NONE_VALUE;
 
     return this.noExperiment ?
-        selectedIds.join(',') :
+        JSON.stringify(selectedIds) :
         tf_data_selector.encodeIdArray((selectedIds as Array<number>));
   },
 
-  _deserializeValue(str: string, allValues: Array<number|string>) {
-    if (str == '$all') return allValues;
-    if (str == '$none') return [];
-    return this.noExperiment ?
-        str.split(',') :
-        tf_data_selector.decodeIdArray(str);
+  _deserializeValue(allValues: Array<number|string>, str: string) {
+    if (str == STORAGE_ALL_VALUE) return allValues;
+    if (str == STORAGE_NONE_VALUE) return [];
+    if (!this.noExperiment) return tf_data_selector.decodeIdArray(str);
+    let parsed = [];
+    try {
+      parsed = JSON.parse(str);
+    } catch (e) {
+      /* noop */
+    }
+    return Array.isArray(parsed) ? parsed : [];
   },
 
   _getColoring() {
     return {
-      getColor: this.noExperiment ?
-          (item) => tf_color_scale.runsColorScale(item.id) :
+      getColor: this.shouldColorRuns ?
+          (item) => tf_color_scale.runsColorScale(item.title) :
           () => '',
     };
   },
-    
+
   _getSyntheticRunId(run) {
     return this.noExperiment ? run.name : run.id;
+  },
+
+  _fireCheckboxToggled() {
+    this.fire('checkbox-toggle');
   },
 });
 

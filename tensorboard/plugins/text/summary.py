@@ -12,17 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Text summaries and TensorFlow operations to create them.
-A text summary stores a single string value.
-"""
+"""Text summaries and TensorFlow operations to create them."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 from tensorboard.plugins.text import metadata
+from tensorboard.plugins.text import summary_v2
+
+
+# Export V2 versions.
+text = summary_v2.text
+text_pb = summary_v2.text_pb
 
 
 def op(name,
@@ -30,7 +32,7 @@ def op(name,
        display_name=None,
        description=None,
        collections=None):
-  """Create a text summary op.
+  """Create a legacy text summary op.
 
   Text data summarized via this plugin will be visible in the Text Dashboard
   in TensorBoard. The standard TensorBoard Text Dashboard will render markdown
@@ -59,6 +61,9 @@ def op(name,
   Raises:
     ValueError: If tensor has the wrong type.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   if display_name is None:
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
@@ -72,7 +77,7 @@ def op(name,
 
 
 def pb(name, data, display_name=None, description=None):
-  """Create a text summary protobuf.
+  """Create a legacy text summary protobuf.
 
   Arguments:
     name: A name for the generated node. Will also serve as a series name in
@@ -90,6 +95,9 @@ def pb(name, data, display_name=None, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
+  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
+  import tensorflow.compat.v1 as tf
+
   try:
     tensor = tf.make_tensor_proto(data, dtype=tf.string)
   except TypeError as e:
@@ -99,8 +107,10 @@ def pb(name, data, display_name=None, description=None):
     display_name = name
   summary_metadata = metadata.create_summary_metadata(
       display_name=display_name, description=description)
+  tf_summary_metadata = tf.SummaryMetadata.FromString(
+      summary_metadata.SerializeToString())
   summary = tf.Summary()
   summary.value.add(tag='%s/text_summary' % name,
-                    metadata=summary_metadata,
+                    metadata=tf_summary_metadata,
                     tensor=tensor)
   return summary

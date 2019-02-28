@@ -1,3 +1,112 @@
+# Release 1.13.0
+
+The 1.13 minor series tracks TensorFlow 1.13.
+
+Compatibility note: As of 1.13, TensorBoard has begun transitioning its own use
+of some TensorFlow APIs to align with their naming in TF 2.0, and as a result
+TensorBoard 1.13+ strictly requires TensorFlow 1.13+.
+
+## Features
+- What-If tool notebook mode and general improvements
+  - Now usable directly inside Jupyter and Colab notebooks (#1662, #1745, #1788)
+  - Added comparison of multiple models (#1589, #1672)
+  - Added CSV loading model (#1597)
+  - Added global partial dependence plots (#1604)
+  - Added custom prediction function support (#1842)
+- (Alpha) TensorBoard can be embedded inside Juptyer and Colab notebooks via a
+  `%tensorboard` magic, after loading the `tb.notebook` extension (#1813, #1822)
+- Profile dashboard overview page now shows step time breakdown (PR #1683)
+- Line chart "log" scale is now a true log scale (#1507)
+- When no --port flag is specified, TensorBoard will now search for open ports
+  near the default port (6006) if that port is already in use (#1851)
+
+## Performance improvements
+- Faster event file loading by caching runtime check (PR #1686) - thanks @abiro
+
+## Bug fixes
+- #786 (partial) - Avoid trying to smooth plots of constant y-value (PR #1698)
+- #1515 - Fix image right-click accessiblity in non-Chromium browsers (PR #1561)
+- #1541 - Fix --event_file flag when using --inspect
+- #1566 - Fix error on trying to import "google.protobuf.pyext" (PR #1887)
+- #1567 - Fix display bug on line chart after toggling series selection
+- #1598 - Fix clipping in graph dashboard PNG download (PR #1600)
+- #1601 - Fix chart SVG download option in Firefox
+- #1623 - Fix --path_prefix interpretation
+- #1838 - Fix run selector synchronization across already-loaded dashboards
+
+
+# Release 1.12.2
+
+## Bug fixes
+- #1620 - Fix path_prefix flag regression (PR #1623)
+- #1704 - Fix debugger sidebar resizer
+
+
+# Release 1.12.1
+
+## Bug fixes
+- #1549 - Run names wrap at all character (PR #1602) - thanks @dgrahn
+- #1610 - Fix Download as PNG for large graph
+- #1684 - Fix bug rendering debugger plugin (PR #1550) - thanks @longouyang
+
+
+# Release 1.12.0
+
+The 1.12 minor series tracks TensorFlow 1.12.
+
+## Features
+- New download-as-SVG option for scalar dashboard charts (#1446)
+- Image dashboard should now detect and render SVG images (#1440)
+- What-If Tool example viewer/loader improvements:
+  - Support for sampling examples to load (#1504)
+  - Support for viewing SequenceExamples (#1513)
+  - Improvements to saliency viewing/sorting (#1472)
+- Profile tool shows per-program breakdown, idle time, and ops left out (#1470)
+
+## Bug fixes
+- #1463 - What-If tool now handles classes with blank labels (PR #1471)
+- #1468 - Reduce clipping in graph plugin sidebar
+- #1475 - Restore tag filter persistence to URL param and across dashboards
+- #1477 - Fix bug rendering TPU profile dashboard overview page
+- #1480 - Fix projector hanging due to infinite loop (PR #1481)
+- #1491 - Restore spinner on line charts when loading data
+- #1499 - Fix stale/incorrect line charts when filtering by tag (PR #1500)
+- #1505 - Fix 404 console errors in Firefox - thanks @wdirons
+- #1506 - Fix --purge_orphaned_data to allow passing false (PR #1511)
+- #1508 - Make custom scalars chart ignore outliers functionality work
+- #1524 - Preserve line chart zoom level when data refreshes
+
+
+# Release 1.11.0
+
+The 1.11 minor series tracks TensorFlow 1.11.
+
+## Highlights
+- New What-If Tool dashboard, which provides a simple, intuitive, and powerful
+  visual interface to play with a trained ML model on a set of data with
+  absolutely no code required. See for details:
+  https://github.com/tensorflow/tensorboard/tree/1.11/tensorboard/plugins/interactive_inference
+
+## Features
+- Graph dashboard now supports coloring nodes by XLA cluster (PR #1336)
+- Last updated time appears in tooltip for refresh button (PR #1362)
+- Line charts support pan w/ shift key, zoom w/ scroll wheel (PR #1429, #1456)
+
+## Performance improvements
+- Better UI animation/scrolling performance (#1311, #1357)
+- Reduced Plottable MouseInteraction overhead on hover (#1333/#1329)
+- Optimized line chart tooltip redraw behavior (#1355)
+
+## Bug fixes
+- #982  - Fix spurious 404s for /[[_dataImageSrc]] or /[[_imageURL]] (PR #1315)
+- #1320 - Fix port binding to disallow confusing IPv4/IPv6 port reuse (PR #1449)
+- #1397 - Fix multi-part logdirs to correct expand ~ for user homedir
+- #1396 - Fix "step" chart axis to show only integer ticks
+- #1389 - Fix scalar card titles to omit common prefix (PR #1399)
+- #1403 - Fix scalar chart shrinking problem on fast page changes
+- #1406 - Fix scalar chart tooltip display to better avoid clipping
+
+
 # Release 1.10.0
 
 The 1.10 minor series tracks TensorFlow 1.10.
