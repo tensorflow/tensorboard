@@ -291,8 +291,8 @@ limitations under the License.
         this._svg.style("min-width", totalWidth + "px");
         this._svg.style("min-height", totalHeight + "px");
         // 'width' and 'height' store the width of the svg without our margins.
-        width = totalWidth - margin.left - margin.right,
-        height = totalHeight - margin.top - margin.bottom;
+        const width = totalWidth - margin.left - margin.right;
+        const height = totalHeight - margin.top - margin.bottom;
         const svgG = this._svg
             .append("g")
               .attr("transform",
