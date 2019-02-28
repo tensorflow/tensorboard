@@ -11,23 +11,27 @@ upper_tabs:
   lower_tabs:
     # Subsite tabs
     other:
-    - name: Tutorials
-      contents:
-      - title: Tutorial example
-        path: /tensorboard/tutorials/tutorial
     - name: Guide
       contents:
       - title: Overview
-        path: /tensorboard/overview
+        path: /tensorboard/r1/overview
       - title: Summaries
-        path: /tensorboard/summaries
+        path: /tensorboard/r1/summaries
       - title: Graphs
-        path: /tensorboard/graphs
+        path: /tensorboard/r1/graphs
       - title: Histograms
-        path: /tensorboard/histograms
-    - name: API
-      skip_translation: true
+        path: /tensorboard/r1/histograms
+    # - name: API
+    #   skip_translation: true
+    #   contents:
+    #   - include: /tensorboard/api_docs/python/_toc.yaml
+    - name: TF2.0 Alpha
       contents:
-      - include: /tensorboard/api_docs/python/_toc.yaml
+      - title: Get started
+        path: /tensorboard/r2/get_started
+      - title: "Scalars: Logging basic metrics"
+        path: /tensorboard/r2/scalars_and_keras
+      - title: What-If tool
+        path: /tensorboard/r2/what_if_tool
 
 - include: /_upper_tabs_right.yaml

@@ -149,7 +149,7 @@ class TensorBoard(object):
     """Configures TensorBoard behavior via flags.
 
     This method will populate the "flags" property with an argparse.Namespace
-    representing flag values parsed from the provided argv list, overriden by
+    representing flag values parsed from the provided argv list, overridden by
     explicit flags from remaining keyword arguments.
 
     Args:

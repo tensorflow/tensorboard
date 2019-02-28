@@ -22,12 +22,12 @@ limitations under the License.
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../tf-hparams-query-pane.html">
+    <link rel="import" href="../../tf-hparams-backend/tf-hparams-backend.html">
   </head>
   <body>
     <test-fixture id="tf-hparams-query-pane">
       <template>
-        <tf-hparams-query-pane api-url="/tb_hparams_api_url"
-                               experiment-name="my_experiment">
+        <tf-hparams-query-pane experiment-name="my_experiment">
         </tf-hparams-query-pane>
       </template>
     </test-fixture>
@@ -136,38 +136,25 @@ limitations under the License.
         window.alert = function() {};
 
         setup(function() {
-          fakeBackendServer = sinon.fakeServer.create();
-          fakeBackendServer.respondWith(
-              "POST", /experiment$/, [
-                200 /* status */,
-                {"Content-Type": "application/json"} /* headers */,
-                JSON.stringify(experimentResponse) /* body */
-              ]);
-          fakeBackendServer.respondWith(
-              "POST", /session_groups$/, [
-                200 /* status */,
-                {"Content-Type": "application/json"} /* headers */,
-                JSON.stringify(sessionGroupsResponse) /* body */
-              ]);
-          originalDebounce = Polymer.Base.debounce;
-          fakeBackendServer.respondImmediately = true;
+          fakeBackend = sinon.createStubInstance(tf.hparams.Backend);
+          fakeBackend.getExperiment.returns(
+              Promise.resolve(experimentResponse));
+          fakeBackend.listSessionGroups.returns(
+              Promise.resolve(sessionGroupsResponse));
           // Grab a fresh copy before each test.
           element = fixture('tf-hparams-query-pane');
-        });
-
-        teardown(function() {
-          fakeBackendServer.restore();
+          element.set("backend", fakeBackend);
         });
 
         test('element initialized correctly.', function() {
-          return element._lastListSessionGroupsResponseProcessed.then(()=>{
+          return element._getExperimentResolved.then(() => {
             assert.deepEqual(
                 element._hparams,
                 [{info: experimentResponse.hparamInfos[0],
                   filter: {domainDiscrete: [{value:270, checked: true},
                                             {value:320, checked: true},
                                             {value:370, checked: true}]
-                            },
+                          },
                   displayed: true},
                  {info: experimentResponse.hparamInfos[1],
                   filter: {interval: {min: {value: "", invalid: false},
@@ -204,90 +191,99 @@ limitations under the License.
         });
 
         test('element updates "sessionGroups" in correct order', function() {
-          // Stop immediate-responding so we can have a server respond
-          // out-of-order.
-          fakeBackendServer.respondImmediately = false;
-          const oldRequests = fakeBackendServer.requests.length;
-          element._queryServer();
-          element._queryServer();
-          // Make sure we have two new requests.
-          assert.equal(fakeBackendServer.requests.length, oldRequests + 2);
+          let resolveFirstQuery = null;
+          let resolveSecondQuery = null;
+          // We set calls #1 and #2 here to return pending promises so
+          // we can control their execution order by the fake backend.
+          // Note that the first call (#0) is already done when the element
+          // initializes.
+          fakeBackend.listSessionGroups.onCall(1).returns(
+              new Promise(resolve => resolveFirstQuery = resolve));
+          fakeBackend.listSessionGroups.onCall(2).returns(
+              new Promise(resolve => resolveSecondQuery = resolve));
+          return element._getExperimentResolved.then(() => {
+            const prevCallCount = fakeBackend.listSessionGroups.callCount;
+            const firstQueryDone = element._queryServerNoDebounce();
+            const secondQueryDone = element._queryServerNoDebounce();
 
-          // Respond first to the second request.
-          fakeBackendServer.requests[oldRequests+1].respond(
-              200 /* status */,
-              {"Content-Type": "application/json"} /* headers */,
-              JSON.stringify({sessionGroups:[]}) /* body */);
-          // And then to the first request.
-          fakeBackendServer.requests[oldRequests].respond(
-              200 /* status */,
-              {"Content-Type": "application/json"} /* headers */,
-              JSON.stringify(sessionGroupsResponse) /* body */);
+            assert.equal(prevCallCount + 2,
+                         fakeBackend.listSessionGroups.callCount);
 
-          return element._lastListSessionGroupsResponseProcessed.then(()=>{
-            assert.deepEqual(
-                element._hparams,
-                [{info: experimentResponse.hparamInfos[0],
-                  filter: {domainDiscrete: [{value:270, checked: true},
-                                            {value:320, checked: true},
-                                            {value:370, checked: true}]
-                            },
-                  displayed: true},
-                 {info: experimentResponse.hparamInfos[1],
-                  filter: {interval: {min: {value: "", invalid: false},
-                                      max: {value: "", invalid: false}}},
-                  displayed: true}
-                ]);
-            assert.deepEqual(element.sessionGroups, []);
-          })
+            // Respond first to the second request.
+            resolveSecondQuery({ sessionGroups:[] });
+            // And then to the first request.
+            resolveFirstQuery(sessionGroupsResponse);
+            // Wait until the element processes both queries and then test.
+            return Promise.all([firstQueryDone, secondQueryDone]).then(
+                () => {
+                  assert.deepEqual(
+                      element._hparams,
+                      [{info: experimentResponse.hparamInfos[0],
+                        filter: {domainDiscrete: [{value:270, checked: true},
+                                                  {value:320, checked: true},
+                                                  {value:370, checked: true}]
+                                },
+                        displayed: true},
+                       {info: experimentResponse.hparamInfos[1],
+                        filter: {interval: {min: {value: "", invalid: false},
+                                            max: {value: "", invalid: false}}},
+                        displayed: true}
+                      ]);
+                  assert.deepEqual(element.sessionGroups, []);
+                });
+          });
         });
 
         test('element updates "sessionGroups" after a successful request' +
              ' following a failed request', function() {
-               // Stop immediate-responding so we can have the server respond
-               // with errors.
-               fakeBackendServer.respondImmediately = false;
-               const oldRequests = fakeBackendServer.requests.length;
-               element._queryServer();
-               element._queryServer();
-               // Make sure we have two new requests.
-               assert.equal(fakeBackendServer.requests.length,
-                            oldRequests + 2);
+          let rejectFirstQuery = null;
+          let resolveSecondQuery = null;
+          // We set calls #1 and #2 here to return pending promises so
+          // we can control their execution order by the fake backend.
+          // Note that the first call (#0) is already done when the element
+          // initializes.
+          fakeBackend.listSessionGroups.onCall(1).returns(
+              new Promise((resolve, reject) => rejectFirstQuery = reject));
+          fakeBackend.listSessionGroups.onCall(2).returns(
+              new Promise(resolve => resolveSecondQuery = resolve));
+          return element._getExperimentResolved.then(() => {
+            const prevCallCount = fakeBackend.listSessionGroups.callCount;
+            const firstQueryDone = element._queryServerNoDebounce().then(
+                ()=>{assert.fail("Expected first query to fail!")},
+                ()=>{/* Ok. First query failed.  */});
+            const secondQueryDone = element._queryServerNoDebounce();
 
-               // Respond with an error to the first request.
-               fakeBackendServer.requests[oldRequests].respond(
-                   500 /* status */,
-                   {} /* headers */,
-                   "" /* body */);
-               // And then with an OK status to the second request.
-               fakeBackendServer.requests[oldRequests+1].respond(
-                   200 /* status */,
-                   {"Content-Type": "application/json"} /* headers */,
-                   JSON.stringify(sessionGroupsResponse));
+            assert.equal(prevCallCount + 2,
+                         fakeBackend.listSessionGroups.callCount);
 
-               return element._lastListSessionGroupsResponseProcessed.then(()=>{
-                 assert.deepEqual(
-                     element._hparams,
-                     [{info: experimentResponse.hparamInfos[0],
-                       filter: {domainDiscrete:
-                                  [{value:270, checked: true},
-                                   {value:320, checked: true},
-                                   {value:370, checked: true}]},
-                       displayed: true,
-                      },
-                      {info: experimentResponse.hparamInfos[1],
-                       filter: {interval: {min: {value: "", invalid: false},
-                                           max: {value: "", invalid: false}}},
-                       displayed: true
-                      }
-                     ]);
-                 assert.deepEqual(element.sessionGroups,
-                                  sessionGroupsResponse.sessionGroups);
-               })
-             });
+            // Respond with an error to the first request.
+            rejectFirstQuery();
+            // And then with an OK status to the second request.
+            resolveSecondQuery(sessionGroupsResponse);
+            // Wait until the element processes both queries and then test.
+            return Promise.all([firstQueryDone, secondQueryDone]).then(
+                () => {
+                  assert.deepEqual(
+                      element._hparams,
+                      [{info: experimentResponse.hparamInfos[0],
+                        filter: {domainDiscrete: [{value:270, checked: true},
+                                                  {value:320, checked: true},
+                                                  {value:370, checked: true}]
+                                },
+                        displayed: true},
+                       {info: experimentResponse.hparamInfos[1],
+                        filter: {interval: {min: {value: "", invalid: false},
+                                            max: {value: "", invalid: false}}},
+                        displayed: true}
+                      ]);
+                  assert.deepEqual(element.sessionGroups,
+                                   sessionGroupsResponse.sessionGroups);
+                });
+          });
+        });
 
         test('element sends correct ListSessionGroupsRequest', function() {
-          return element._lastListSessionGroupsResponseProcessed.then(() => {
+          return element._getExperimentResolved.then(() => {
             element._hparams[0].filter =
                 {domainDiscrete: [{value:270, checked: true},
                                   {value:320, checked: false},

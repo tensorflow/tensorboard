@@ -34,7 +34,7 @@ from tensorboard.plugins.audio import metadata
 def audio(name,
           data,
           sample_rate,
-          step,
+          step=None,
           max_outputs=3,
           encoding=None,
           description=None):
@@ -50,7 +50,9 @@ def audio(name,
       be statically unknown (i.e., `None`).
     sample_rate: An `int` or rank-0 `int32` `Tensor` that represents the
       sample rate, in Hz. Must be positive.
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
       many audio clips will be emitted at each step. When more than
       `max_outputs` many clips are provided, the first `max_outputs`
@@ -64,6 +66,10 @@ def audio(name,
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
   # TODO(nickfelt): get encode_wav() exported in the public API.
   from tensorflow.python.ops import gen_audio_ops

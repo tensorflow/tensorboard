@@ -6,7 +6,7 @@ The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an e
 understanding of a black-box classification or regression ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
-Additionally, examples can be edited manually or programatically and re-run
+Additionally, examples can be edited manually or programmatically and re-run
 through the model in order to see the results of the changes.
 It contains tooling for investigating model performance and fairness over
 subsets of a dataset.
@@ -294,4 +294,3 @@ containing:
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).
-

@@ -8,22 +8,36 @@ landing_page:
     items:
     - classname: devsite-landing-row-50
       description: >
-        The computations you'll use TensorFlow for—like training a massive deep
-        neural network—can be complex and confusing. To make it easier to
-        understand, debug, and optimize TensorFlow programs, we've included a
-        suite of visualization tools called TensorBoard.
+        TensorBoard provides the visualization and tooling needed for 
+        machine learning experimentation. It enables:
+        <ul style="padding-left: 20px; margin: 20px 0;">
+          <li>Tracking and visualizing metrics such as loss and accuracy</li>
+          <li>Visualizing the model graph (ops and layers)</li>
+          <li>Viewing histograms and distributions of Tensors (e.g., weights 
+          and biases) to track how they change over time</li>
+          <li>Projecting embeddings to a lower dimensional space</li>
+          <li>Displaying images, text, and audio data</li>
+          <li>Profiling TensorFlow programs</li>
+          <li>And much more</li>
+        </ul>
 
-      image_path: /images/graph_vis_animation.gif
+      image_path: /tensorboard/images/tensorboard.gif
 
   - classname: devsite-landing-row-cards
     items:
+    - heading: "The What-If Tool: Code-Free Probing of Machine Learning Models"
+      image_path: /resources/images/tf-logo-card-16x9.png
+      path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
+      buttons:
+      - label: "Read on Google AI blog"
+        path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
     - heading: "Interactive supervision with TensorBoard"
       image_path: /resources/images/tf-logo-card-16x9.png
       path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
       buttons:
       - label: "Read on TensorFlow blog"
         path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
-    - heading: "Hands-on TensorFlow"
+    - heading: "Hands-on TensorBoard"
       youtube_id: eBbEDRsCmv4
       buttons:
       - label: Watch the video
