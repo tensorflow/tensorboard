@@ -1,4 +1,4 @@
-<!--
+r<!--
 @license
 Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
@@ -105,8 +105,8 @@ limitations under the License.
       }
 
       #container {
-        width: 100%;
         height: 100%;
+        width: 100%;
       }
 
       svg {
@@ -275,8 +275,14 @@ limitations under the License.
           return;
         }
 
-        // Compute the size of our svg based on the number of columns and add
-        // some margins.
+        // We use the following algorithm for laying out our SVG:
+        // We compute a minimum size for the SVG based on the number columns
+        // and some margins. We set the svg "width" and "height" styles
+        // to "100%" so that it takes up the full area of its parent, but use
+        // "min-width" and "min-height", so that if the parent is too small
+        // the svg won't shrink down (it will overflow with scroll bars).
+        // If the parent is larger than the minimum size, we use the its viewBox
+        // attr to scale the contents to fit the larger size.
         const margin = {top: 30, right: 10, bottom: 10, left: 10};
         const COL_WIDTH = 100;
         const COL_HEIGHT = 200;
