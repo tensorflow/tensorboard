@@ -164,9 +164,6 @@ class ProfilePlugin(base_plugin.TBPlugin):
         {"model1,run1": ["trace_viewer"], "model1,run2": ["trace_viewer"]}
         for the example.
     """
-
-    if any(self.run_to_tools.values()):
-      return self.run_to_tools
     run_to_tools = {}
     profile_logdirs = []
     if not tf.gfile.IsDirectory(self.logdir):
