@@ -49,7 +49,7 @@ def ListPlugins(logdir):
   """
   plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
   try:
-    entries = tf.io.gfile.listdir(plugin_dir)
+    entries = tf.io.gfile.listdir(plugins_dir)
   except tf.errors.NotFoundError:
     return []
   # Strip trailing slashes, which listdir() includes for some filesystems
