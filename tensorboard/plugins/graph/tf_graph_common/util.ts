@@ -26,10 +26,17 @@ module tf.graph.util {
 
   export function time<T>(msg: string, task: () => T) {
     let start = Date.now();
+
+    function toc() {
+      console.log(msg, ':', Date.now() - start, 'ms');
+    }
+
     let result = task();
-    /* tslint:disable */
-    console.log(msg, ':', Date.now() - start, 'ms');
-    /* tslint:enable */
+    if (result instanceof Promise) {
+      result.then(toc, toc);
+    } else {
+      toc();
+    }
     return result;
   }
 
@@ -106,14 +113,25 @@ module tf.graph.util {
     // UI to update.
     try {
       let result = tf.graph.util.time(msg, task);
-      // Update the progress value.
-      tracker.updateProgress(incProgressValue);
+
+      if (result instanceof Promise) {
+        result.then((val) => {
+          tracker.updateProgress(incProgressValue);
+          return val;
+        }, (e) => {
+          tracker.reportError('Failed ' + msg, e);
+        });
+      } else {
+        // Update the progress value.
+        tracker.updateProgress(incProgressValue);
+      }
       // Return the result to be used by other tasks.
       return result;
     } catch (e) {
       // Errors that happen inside asynchronous tasks are
       // reported to the tracker using a user-friendly message.
       tracker.reportError('Failed ' + msg, e);
+      throw e;
     }
   }
 

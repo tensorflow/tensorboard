@@ -38,15 +38,14 @@ function parseValue(value: string): string|number|boolean {
  * Fetches a text file and returns a promise of the result.
  */
 export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
-  return new Promise<ArrayBuffer>(function(resolve, reject) {
-    const request = new XMLHttpRequest();
-    request.open('GET', filepath);
-    request.responseType = 'arraybuffer';
-
-    request.onerror = () => reject(request.status);
-    request.onload = () => resolve(request.response);
-
-    request.send(null);
+  return new Promise((resolve, reject) => {
+    fetch(filepath).then(res => {
+      // Fetch does not reject for 400+.
+      if (res.ok) {
+        res.arrayBuffer().then(resolve, reject);
+      }
+      res.text().then(reject, reject);
+    });
   });
 }
 
