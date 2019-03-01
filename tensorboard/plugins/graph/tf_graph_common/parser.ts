@@ -39,7 +39,7 @@ function parseValue(value: string): string|number|boolean {
  */
 export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
-    fetch(filepath).then(res => {
+    fetch(filepath).then((res) => {
       // Fetch does not reject for 400+.
       if (res.ok) {
         res.arrayBuffer().then(resolve, reject);
