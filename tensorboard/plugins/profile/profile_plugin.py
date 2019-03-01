@@ -281,7 +281,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
         else:
           frontend_run = '/'.join([tb_run_name, profile_run])
         profile_run_dir = os.path.join(tb_plugin_dir, profile_run)
-        yield frontend_run, self._get_active_tools(profile_run_dir)
+        if tf.io.gfile.isdir(profile_run_dir):
+          yield frontend_run, self._get_active_tools(profile_run_dir)
 
   def _get_active_tools(self, profile_run_dir):
     tools = []
