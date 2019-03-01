@@ -43,8 +43,9 @@ export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
       // Fetch does not reject for 400+.
       if (res.ok) {
         res.arrayBuffer().then(resolve, reject);
+      } else {
+        res.text().then(reject, reject);
       }
-      res.text().then(reject, reject);
     });
   });
 }
@@ -79,7 +80,7 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
 export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
     tracker: ProgressTracker) {
   return tf.graph.util
-      .runTask(
+      .runAsyncPromiseTask(
           'Reading graph pbtxt', 40,
           () => {
             if (pbTxtFile) {
@@ -95,7 +96,7 @@ export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
           },
           tracker)
       .then((arrayBuffer: ArrayBuffer) => {
-        return tf.graph.util.runTask('Parsing graph.pbtxt', 60, () => {
+        return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, () => {
           return parseGraphPbTxt(arrayBuffer);
         }, tracker);
       });
