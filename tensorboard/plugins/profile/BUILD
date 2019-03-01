@@ -30,6 +30,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -41,6 +42,7 @@ py_test(
         ":profile_plugin",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/plugins:base_plugin",
     ],
