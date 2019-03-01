@@ -9,9 +9,9 @@ about: Use this template for build/installation issues
 **Please provide the following information**
 
 **System information**
-- OS Platform and Distribution (e.g., Linux Ubuntu 16.04) :
-- TensorBoard version :
-- TensorFlow version(if different from TensorBoard) :
+- OS Platform and Distribution (e.g., Linux Ubuntu 16.04):
+- TensorBoard version:
+- TensorFlow version (if different from TensorBoard):
 - Python version:
 - Installed using virtualenv? pip? conda?:
 - Bazel version (if compiling from source):
