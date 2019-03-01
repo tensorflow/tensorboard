@@ -16,7 +16,6 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_icon",
-        "@org_polymer_paper_button",
     ],
 )
 
@@ -28,7 +27,6 @@ tensorboard_webcomponent_library(
     deps = [
         "//third_party/javascript/polymer/v1/iron-collapse:lib",
         "//third_party/javascript/polymer/v1/iron-icon:lib",
-        "//third_party/javascript/polymer/v1/paper-button:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
