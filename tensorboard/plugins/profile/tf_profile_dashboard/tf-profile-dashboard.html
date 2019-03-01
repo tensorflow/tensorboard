@@ -43,37 +43,69 @@ profile run can have multiple tools that present the performance profile as diff
 
 <dom-module id="tf-profile-dashboard">
 <template>
-<template is="dom-if" if="[[_isNotComplete(progress)]]">
+<template is="dom-if" if="[[_isState(_topLevelState, 'IN_COLAB')]]">
+  <div style="max-width: 540px; margin: 80px auto 0 auto;">
+    <h3>Profiling isn’t supported in Colab yet.</h3>
+    <p>
+      Please see
+      <a
+        href="https://github.com/tensorflow/tensorboard/issues/1913"
+        rel="noopener"
+        target="_blank"
+      >GitHub issue #1913</a>
+      for more information.
+    </p>
+  </div>
+</template>
+<template is="dom-if" if="[[_isState(_topLevelState, 'LOADING')]]">
   <div id="progress-bar">
     <div id="progress-msg">[[progress.msg]]</div>
     <paper-progress value="[[progress.value]]"></paper-progress>
   </div>
 </template>
-<template is="dom-if" if="[[_dataNotFound]]">
+<template is="dom-if" if="[[_isState(_topLevelState, 'DATA_NOT_FOUND')]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
     <p>To collect a profile, you need to run your model on Google Cloud TPUs and
     capture the trace information while your model is running. You may want to
     check out the
-    <a href="https://github.com/tensorflow/tensorboard/blob/1.6/tensorboard/plugins/profile/README.md">README</a>
+    <a
+      href="https://github.com/tensorflow/tensorboard/blob/1.6/tensorboard/plugins/profile/README.md"
+      rel="noopener"
+      target="_blank"
+    >README</a>
     and perhaps the
     <a
-     href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+      href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+      rel="noopener"
+      target="_blank"
     >tutorial</a> on how to use the
-    <a href="https://pypi.python.org/pypi/cloud-tpu-profiler">cloud-tpu-profiler</a>.
+    <a
+      href="https://pypi.python.org/pypi/cloud-tpu-profiler"
+      rel="noopener"
+      target="_blank"
+    >cloud-tpu-profiler</a>.
     </p>
     <p>
     If you’re new to TPUs, and want to find out how
     to run models, check out the
-    <a href="https://cloud.google.com/tpu/docs/quickstart">Quickstart Using a TPU</a>.
+    <a
+      href="https://cloud.google.com/tpu/docs/quickstart"
+      rel="noopener"
+      target="_blank"
+    >Quickstart Using a TPU</a>.
     </p>
     <p>
     If you think profiling is done properly, please see the page of
-    <a href="https://cloud.google.com/tpu/docs/troubleshooting">Google Cloud TPU Troubleshooting and FAQ</a>
+    <a
+      href="https://cloud.google.com/tpu/docs/troubleshooting"
+      rel="noopener"
+      target="_blank"
+    >Google Cloud TPU Troubleshooting and FAQ</a>
     and consider filing an issue on GitHub.</p>
   </div>
 </template>
-<template is="dom-if" if="[[!_dataNotFound]]">
+<template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
   <tf-dashboard-layout>
   <div class="sidebar">
     <div class="allcontrols">
@@ -209,6 +241,35 @@ profile run can have multiple tools that present the performance profile as diff
 <script>
   "use strict";
 
+  /**
+   * The main state of the profile dashboard (as distinct from any
+   * subtool states).
+   *
+   * @enum {string}
+   */
+  const TopLevelState = {
+    /**
+     * Indicates that we are in a Colab notebook environment. The
+     * profile dashboard does not work well in Colab; the trace viewer
+     * does not work at all. If in Colab, we'll show only an explanatory
+     * message.
+     */
+    "IN_COLAB": "IN_COLAB",
+    /**
+     * Indicates that there are no runs with profile data.
+     */
+    "DATA_NOT_FOUND": "DATA_NOT_FOUND",
+    /**
+     * Indicates that we're loading data. This may be the case on the
+     * initial load or when the user switches tools.
+     */
+    "LOADING": "LOADING",
+    /**
+     * Indicates that a tool is active (data has finished loading).
+     */
+    "ACTIVE": "ACTIVE",
+  };
+
   Polymer({
     is: "tf-profile-dashboard",
     properties: {
@@ -234,6 +295,17 @@ profile run can have multiple tools that present the performance profile as diff
       _activeHostsList: {
         type: Array,
         observer: '_activeHostsChanged'
+      },
+      _inColab: {
+        type: Boolean,
+        value: () => !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
+        readOnly: true,
+      },
+      /** @type {TopLevelState} */
+      _topLevelState: {
+        type: String,
+        computed: '_computeTopLevelState(_inColab, _dataNotFound, progress)',
+        readOnly: true,
       },
       /**
        * @type {{value: number, msg: string}}
@@ -326,10 +398,6 @@ profile run can have multiple tools that present the performance profile as diff
     },
     detached: function() {
       this.set('_isAttached', false);
-    },
-    /** True if the progress is not complete yet (< 100 %). */
-    _isNotComplete: function(progress) {
-      return !this._dataNotFound && progress.value < 100;
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
@@ -533,6 +601,24 @@ profile run can have multiple tools that present the performance profile as diff
       if (host == "") return "default";
       // Otherwise, remove the seperator, e.g. "host1_" => "host1".
       return host.slice(0, -1);
+    },
+    _computeTopLevelState: function(inColab, dataNotFound, progress) {
+      if (inColab)
+        return "IN_COLAB";
+      if (dataNotFound)
+        return "DATA_NOT_FOUND";
+      if (!progress || progress.value < 100)
+        return "LOADING";
+      return "ACTIVE";
+    },
+    /**
+     * Check whether the two given states are equal.
+     *
+     * @param {TopLevelState} topLevelState
+     * @param {TopLevelState} candidateState
+     */
+    _isState: function(actualState, candidateState) {
+      return actualState === candidateState;
     },
   });
 
