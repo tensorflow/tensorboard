@@ -392,19 +392,25 @@ class InferenceUtilsTest(tf.test.TestCase):
     inference_result_proto = regression_pb2.RegressionResponse()
     regression = inference_result_proto.result.regressions.add()
     regression.value = 0.45
+    regression = inference_result_proto.result.regressions.add()
+    regression.value = 0.55
 
     original_feature = inference_utils.OriginalFeatureList(
         'feature_name', [2.], 'float_list')
     mutant_feature = inference_utils.MutantFeatureValue(
         original_feature, index=0, mutant_value=20)
+    mutant_feature_2 = inference_utils.MutantFeatureValue(
+        original_feature, index=0, mutant_value=10)
 
     jsonable = inference_utils.make_json_formatted_for_single_chart(
-        [mutant_feature], inference_result_proto, 0)
+        [mutant_feature, mutant_feature_2], inference_result_proto, 0)
 
     self.assertEqual(['value'], list(jsonable.keys()))
-    self.assertEqual(1, len(jsonable['value']))
-    self.assertEqual(20, jsonable['value'][0]['step'])
-    self.assertAlmostEqual(0.45, jsonable['value'][0]['scalar'])
+    self.assertEqual(2, len(jsonable['value']))
+    self.assertEqual(10, jsonable['value'][0]['step'])
+    self.assertAlmostEqual(0.55, jsonable['value'][0]['scalar'])
+    self.assertEqual(20, jsonable['value'][1]['step'])
+    self.assertAlmostEqual(0.45, jsonable['value'][1]['scalar'])
 
   def test_convert_predict_response_regression(self):
     """Test converting a PredictResponse to a RegressionResponse."""
