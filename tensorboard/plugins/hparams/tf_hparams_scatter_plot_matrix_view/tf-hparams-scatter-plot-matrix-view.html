@@ -42,45 +42,42 @@ limitations under the License.
 <dom-module id="tf-hparams-scatter-plot-matrix-view">
   <template>
     <div class="pane">
+      <!-- Controls behavior of the scatter plot matrix
+           outputs the configured options to the _options property. -->
+      <tf-hparams-scale-and-color-controls
+        id="controls"
+        schema="[[schema]]"
+        session-groups="[[sessionGroups]]"
+        options="{{_options}}">
+      </tf-hparams-scale-and-color-controls>
       <vaadin-split-layout vertical>
-        <!-- Controls behavior of the scatter plot matrix
-             outputs the configured options to the _options property. -->
-        <tf-hparams-scale-and-color-controls
+        <!-- The actual scatter plot matrix -->
+        <tf-hparams-scatter-plot-matrix-plot
           class="section"
-          id="controls"
+          id="plot"
           schema="[[schema]]"
           session-groups="[[sessionGroups]]"
-          options="{{_options}}">
-        </tf-hparams-scale-and-color-controls>
+          selected-session-group="{{_selectedGroup}}"
+          closest-session-group="{{_closestGroup}}"
+          options="[[_options]]">
+        </tf-hparams-scatter-plot-matrix-plot>
         <vaadin-split-layout vertical>
-          <!-- The actual scatter plot matrix -->
-          <tf-hparams-scatter-plot-matrix-plot
+          <tf-hparams-session-group-values
             class="section"
-            id="plot"
+            id="values"
             schema="[[schema]]"
-            session-groups="[[sessionGroups]]"
-            selected-session-group="{{_selectedGroup}}"
-            closest-session-group="{{_closestGroup}}"
-            options="[[_options]]">
-          </tf-hparams-scatter-plot-matrix-plot>
-          <vaadin-split-layout vertical>
-            <tf-hparams-session-group-values
-              class="section"
-              id="values"
-              schema="[[schema]]"
-              session-group="[[_closestOrSelected(
-                                 _closestGroup, _selectedGroup)]]">
-            </tf-hparams-session-group-values>
-            <!-- Shows session group details for the clicked marker. -->
-            <tf-hparams-session-group-details
-              class="section"
-              id="details"
-              backend="[[backend]]"
-              experiment-name="[[experimentName]]"
-              session-group="[[_selectedGroup]]"
-              schema="[[schema]]">
-            </tf-hparams-session-group-details>
-          </vaadin-split-layout>
+            session-group="[[_closestOrSelected(
+                           _closestGroup, _selectedGroup)]]">
+          </tf-hparams-session-group-values>
+          <!-- Shows session group details for the clicked marker. -->
+          <tf-hparams-session-group-details
+            class="section"
+            id="details"
+            backend="[[backend]]"
+            experiment-name="[[experimentName]]"
+            session-group="[[_selectedGroup]]"
+            schema="[[schema]]">
+          </tf-hparams-session-group-details>
         </vaadin-split-layout>
       </vaadin-split-layout>
     </div>
@@ -100,7 +97,6 @@ limitations under the License.
       flex-shrink: 0;
       flex-basis: auto;
       height: auto;
-      overflow-y:auto;
       max-height: fit-content;
     }
     #plot {

@@ -35,7 +35,7 @@ limitations under the License.
 <dom-module id="tf-collapsible">
   <template>
     <button on-tap="toggleExpandedState">
-      <div class="title-div">
+      <div class="title-box">
         <div class="title">
           [[title]]
         </div>
@@ -56,13 +56,13 @@ limitations under the License.
         width: 100%;
       }
 
-      .title-div {
+      .title-box {
         align-items: center;
-        background-color: var(--tf-collapsible-title-background-color, #f7ecd9);
+        background-color: var(--tf-collapsible-title-background-color);
         display: flex;
         flex-direction: row;
-        justify-content: var(--tf-collapsible-title-justify-content,
-                             space-between);
+        justify-content: space-between;
+        @apply --tf-collapsible-title-box-style
       }
 
       .title {
@@ -70,12 +70,13 @@ limitations under the License.
         margin-top: 10px;
         margin-bottom: 10px;
         font-size: 20px;
+        @apply --tf-collapsible-title-style;
       }
 
       .content-div {
         border: 1px solid black;
-        background-color: var(--tf-collapsible-content-background-color,
-                              #f7ecd9);
+        background-color: var(--tf-collapsible-content-background-color);
+        @apply --tf-collapsible-content-style;
       }
     </style>
   </template>

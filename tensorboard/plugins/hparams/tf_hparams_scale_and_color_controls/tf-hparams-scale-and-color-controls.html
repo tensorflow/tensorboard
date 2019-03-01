@@ -28,71 +28,88 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
 
 <dom-module id="tf-hparams-scale-and-color-controls">
   <template>
-    <div class="control-panel">
-      <!-- 'Color by' drop down menu -->
-      <paper-dropdown-menu
-        label="Color by"
-        id="colorByDropDownMenu"
-        horizontal-align="left">
-        <paper-listbox class="dropdown-content"
-                       slot="dropdown-content"
-                       selected="{{options.colorByColumnIndex}}"
-                       id="colorByListBox">
-          <template is="dom-repeat"
-                    items="[[options.columns]]"
-                    as="column"
-                    id="colorByColumnTemplate">
+    <tf-collapsible title="Configuration">
+      <div class="control-panel">
+        <!-- 'Color by' drop down menu -->
+        <paper-dropdown-menu
+          label="Color by"
+          id="colorByDropDownMenu"
+          horizontal-align="left">
+          <paper-listbox class="dropdown-content"
+                         slot="dropdown-content"
+                         selected="{{options.colorByColumnIndex}}"
+                         id="colorByListBox">
+            <template is="dom-repeat"
+                      items="[[options.columns]]"
+                      as="column"
+                      id="colorByColumnTemplate">
               <paper-item disabled="[[!_isNumericColumn(column.index)]]">
                 [[column.name]]
               </paper-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu>
-
-      <!-- Columns scales -->
-      <div class="columns-container">
-        <!-- Scale options for each numeric feature -->
-        <template is="dom-repeat"
-                  items="[[options.columns]]"
-                  as="column">
-          <template is="dom-if"
-                    if="[[_isNumericColumn(column.index)]]">
-            <div class="column">
-              <div class="column-title">
-                [[column.name]]
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <!-- Columns scales -->
+        <div class="columns-container">
+          <!-- Scale options for each numeric feature -->
+          <template is="dom-repeat"
+                    items="[[options.columns]]"
+                    as="column">
+            <template is="dom-if"
+                      if="[[_isNumericColumn(column.index)]]">
+              <div class="column">
+                <div class="column-title">
+                  [[column.name]]
+                </div>
+                <div>
+                  <paper-radio-group
+                    class="scale-radio-group"
+                    selected="{{column.scale}}"
+                    on-selected-changed="_notifyOptionsChanged">
+                    <paper-radio-button name="LINEAR">
+                      Linear
+                    </paper-radio-button>
+                    <!-- The id here is used to access this button in unit
+                         tests.-->
+                    <paper-radio-button
+                      id="logScaleButton_[[column.name]]"
+                      name="LOG"
+                      disabled="[[!_allowLogScale(column, sessionGroups.*)]]">
+                      Logarithmic
+                    </paper-radio-button>
+                    <paper-radio-button name="QUANTILE">
+                      Quantile
+                    </paper-radio-button>
+                  </paper-radio-group>
+                </div>
               </div>
-              <div>
-                <paper-radio-group class="scale-radio-group"
-                                   selected="{{column.scale}}"
-                                   on-selected-changed="_notifyOptionsChanged">
-                  <paper-radio-button name="LINEAR">
-                    Linear
-                  </paper-radio-button>
-                  <!-- The id here is used to access this button in unit
-                       tests.-->
-                  <paper-radio-button id="logScaleButton_[[column.name]]"
-                    name="LOG"
-                    disabled="[[!_allowLogScale(column, sessionGroups.*)]]">
-                    Logarithmic
-                  </paper-radio-button>
-                  <paper-radio-button name="QUANTILE">
-                    Quantile
-                  </paper-radio-button>
-                </paper-radio-group>
-              </div>
-            </div>
+            </template>
           </template>
-        </template>
+        </div>
       </div>
-    </div>
+    </tf-collapsible>
   </template>
-
+  
   <style>
     :host {
       display: block;
     }
-    .control-panel {
-      overflow: auto;
+    tf-collapsible {
+      --tf-collapsible-title-box-style: {
+        align-items: center;
+        background-color: #ccc;
+        border-bottom: 4px solid lightslategray;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: row;
+        justify-content: normal;
+      };
+      --tf-collapsible-content-style: {
+        border-top: none;
+        box-shadow: 5px 5px 10px black;
+        margin: 0px;
+        padding: 0px;
+      };
     }
     .column {
       flex-grow:1;

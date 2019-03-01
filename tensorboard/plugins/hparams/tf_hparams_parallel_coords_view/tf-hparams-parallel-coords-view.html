@@ -42,15 +42,12 @@ limitations under the License.
       -->
     <div class="pane">
       <!-- The scale and color controls. -->
-      <tf-collapsible title="Configuration">
-        <tf-hparams-scale-and-color-controls
-          id="controls"
-          class="section"
-          schema="[[schema]]"
-          session-groups="[[sessionGroups]]"
-          options="{{_options}}">
-        </tf-hparams-scale-and-color-controls>
-      </tf-collapsible>
+      <tf-hparams-scale-and-color-controls
+        id="controls"
+        schema="[[schema]]"
+        session-groups="[[sessionGroups]]"
+        options="{{_options}}">
+      </tf-hparams-scale-and-color-controls>
       <vaadin-split-layout vertical>
         <!-- The actual parallel coordinates plot -->
         <tf-hparams-parallel-coords-plot
@@ -92,17 +89,12 @@ limitations under the License.
     .section {
       margin: 10px;
     }
-    tf-collapsible {
-      --tf-collapsible-title-justify-content: normal;
-    }
     #controls {
       flex-grow: 0;
       flex-shrink: 0;
       flex-basis: auto;
       height: auto;
-      overflow-y:auto;
       max-height: fit-content;
-      background-color:
     }
     #plot {
       flex-grow: 1;
