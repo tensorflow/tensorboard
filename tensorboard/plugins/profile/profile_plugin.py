@@ -21,10 +21,11 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-from werkzeug import wrappers
+import threading
 
 import six
 import tensorflow as tf
+from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
@@ -107,6 +108,39 @@ class ProfilePlugin(base_plugin.TBPlugin):
         self.logdir, PLUGIN_NAME)
     self.stub = None
     self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
+
+    # Whether the plugin is active. This is an expensive computation, so we
+    # compute this asynchronously and cache positive results indefinitely.
+    self._is_active = False
+    # Lock to ensure at most one thread computes _is_active at a time.
+    self._is_active_lock = threading.Lock()
+
+  def is_active(self):
+    """Whether this plugin is active and has any profile data to show.
+
+    Detecting profile data is expensive, so this process runs asynchronously
+    and the value reported by this method is the cached value and may be stale.
+
+    Returns:
+      Whether any run has profile data.
+    """
+    # If we are already active, we remain active and don't recompute this.
+    # Otherwise, try to acquire the lock without blocking; if we get it and
+    # we're still not active, launch a thread to check if we're active and
+    # release the lock once the computation is finished. Either way, this
+    # thread returns the current cached value to avoid blocking.
+    if not self._is_active and self._is_active_lock.acquire(False):
+      if self._is_active:
+        self._is_active_lock.release()
+      else:
+        def compute_is_active():
+          self._is_active = any(self.generate_run_to_tools())
+          self._is_active_lock.release()
+        new_thread = threading.Thread(
+            target=compute_is_active,
+            name='ProfilePluginIsActiveThread')
+        new_thread.start()
+    return self._is_active
 
   def start_grpc_stub_if_necessary(self):
     # We will enable streaming trace viewer on two conditions:
@@ -403,7 +437,3 @@ class ProfilePlugin(base_plugin.TBPlugin):
         HOSTS_ROUTE: self.hosts_route,
         DATA_ROUTE: self.data_route,
     }
-
-  def is_active(self):
-    """The plugin is active iff any run has at least one active tool/tag."""
-    return any(self.generate_run_to_tools())
