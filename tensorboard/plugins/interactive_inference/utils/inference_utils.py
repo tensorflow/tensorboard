@@ -596,6 +596,7 @@ def make_json_formatted_for_single_chart(mutant_features,
         x_label: value,
         y_label: sum(y_list) / float(len(y_list))
       })
+    list_of_points.sort(key=lambda p: p[x_label])
     return {key: list_of_points}
 
   else:
