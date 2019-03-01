@@ -135,6 +135,8 @@ smoke() {
   pip install -qU pip
   pip install -qU "${smoke_tf}"
   pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
+  pip freeze  # Log the results of pip installation
+
   # Test TensorBoard application
   [ -x ./bin/tensorboard ]  # Ensure pip package included binary
   mkfifo pipe
@@ -145,15 +147,39 @@ smoke() {
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
   grep 'smokedir' logdir.json
   kill $!
+
   # Test TensorBoard APIs
+  export TF_CPP_MIN_LOG_LEVEL=1  # Suppress spammy TF startup logging.
   python -c "
 import tensorboard as tb
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
 from tensorboard.plugins.beholder import Beholder, BeholderHook
 tb.notebook.start  # don't invoke; just check existence
-import tensorboard.summary._tf.summary as tf_summary
 "
+
+  # Exhaustively test various sequences of importing tf.summary.
+  test_tf_summary() {
+    # First argument is subpath to test, e.g. '' or '.compat.v2'.
+    import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
+    import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
+    import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
+    printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
+    printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
+    printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
+    printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
+    printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
+    printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
+  }
+  test_tf_summary '.compat.v2'
+  is_tf_2() {
+    python -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
+      >/dev/null 2>&1
+  }
+  if is_tf_2 ; then
+    test_tf_summary ''
+  fi
+
   deactivate
   cd ..
   rm -rf "${smoke_venv}"

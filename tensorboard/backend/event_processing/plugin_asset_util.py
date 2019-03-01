@@ -48,10 +48,14 @@ def ListPlugins(logdir):
     a list of plugin names, as strings
   """
   plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
-  if not tf.io.gfile.isdir(plugins_dir):
+  try:
+    entries = tf.io.gfile.listdir(plugins_dir)
+  except tf.errors.NotFoundError:
     return []
-  entries = tf.io.gfile.listdir(plugins_dir)
-  return [x for x in entries if _IsDirectory(plugins_dir, x)]
+  # Strip trailing slashes, which listdir() includes for some filesystems
+  # for subdirectories, after using them to bypass IsDirectory().
+  return [x.rstrip('/') for x in entries
+          if x.endswith('/') or _IsDirectory(plugins_dir, x)]
 
 
 def ListAssets(logdir, plugin_name):
@@ -67,10 +71,11 @@ def ListAssets(logdir, plugin_name):
     didn't register) an empty list is returned.
   """
   plugin_dir = PluginDirectory(logdir, plugin_name)
-  if not tf.io.gfile.isdir(plugin_dir):
+  try:
+    # Strip trailing slashes, which listdir() includes for some filesystems.
+    return [x.rstrip('/') for x in tf.io.gfile.listdir(plugin_dir)]
+  except tf.errors.NotFoundError:
     return []
-  entries = tf.io.gfile.listdir(plugin_dir)
-  return [x for x in entries if not _IsDirectory(plugin_dir, x)]
 
 
 def RetrieveAsset(logdir, plugin_name, asset_name):

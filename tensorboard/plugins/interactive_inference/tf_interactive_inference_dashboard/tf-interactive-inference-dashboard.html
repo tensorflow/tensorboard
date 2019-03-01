@@ -1151,6 +1151,31 @@ limitations under the License.
         padding: 4px;
         margin-top: 4px;
       }
+      .pd-holder {
+        position: relative;
+        width: 300px;
+      }
+      .pd-y-label {
+        color: #5f6368;
+        font-size: 12px;
+        left: -20px;
+        padding: 0px;
+        position: absolute;
+        top: 80px;
+        transform: rotate(270deg);
+      }
+      .pd-x-label {
+        bottom: 0;
+        color: #5f6368;
+        font-size: 12px;
+        overflow: hidden;
+        padding: 0 0 0 40px;
+        position: absolute;
+        text-align: center;
+        text-overflow: ellipsis;
+        width: 100%;
+        white-space: nowrap;
+      }
       paper-toggle-button {
         font-size: 14px;
         --paper-toggle-button-checked-button-color: white;
@@ -4867,6 +4892,8 @@ limitations under the License.
             });
         }
 
+        const holder = document.createElement('div');
+        holder.classList.add('pd-holder');
         const chart = document.createElement('vz-bar-chart');
         chart.colorScale = new Plottable.Scales.Color().range(
           this.pdPlotColors);
@@ -4875,8 +4902,15 @@ limitations under the License.
         chart.data = mapped;
         chart.lines = lines;
         chart.tooltipColumns = toolTipColumns;
+        holder.appendChild(chart);
 
-        return chart;
+        const yLabel = document.createElement('div');
+        yLabel.classList.add('pd-y-label');
+        yLabel.innerText = this.isRegression_(this.modelType) ?
+            'Inference value' : 'Inference score';
+        holder.appendChild(yLabel);
+
+        return holder;
       },
 
       splitChartKey: function (labelKey, numberOfModels){
@@ -4908,6 +4942,8 @@ limitations under the License.
         //     {"1" (label): [{"step": 19.0, "scalar": 0.09157766401767},
         //        {"step": 23.444444444444443, "scalar": 0.10299546271562}]}}
 
+        const holder = document.createElement('div');
+        holder.classList.add('pd-holder');
         const chart = document.createElement('vz-line-chart');
         const colorScale = [];
         const thresholdSeries = [];
@@ -5007,7 +5043,19 @@ limitations under the License.
         chart.seriesWithoutTooltips = thresholdSeries;
         chart.colorScale.domain(allSeries);
         chart.setVisibleSeries(allSeries);
-        return chart;
+        holder.appendChild(chart);
+
+        const yLabel = document.createElement('div');
+        yLabel.classList.add('pd-y-label');
+        yLabel.innerText = this.isRegression_(this.modelType) ?
+            'Inference value' : 'Inference score';
+        holder.appendChild(yLabel);
+        const xLabel = document.createElement('div');
+        xLabel.classList.add('pd-x-label');
+        xLabel.innerText = featureName;
+        holder.appendChild(xLabel);
+
+        return holder;
       },
 
       /**
@@ -5225,11 +5273,7 @@ limitations under the License.
        */
        clearPdElementCharts_: function(element) {
         // Delete all the charts.
-        let charts = element.querySelectorAll('vz-line-chart');
-        charts.forEach(function(chart){
-          deleteElement(chart);
-        });
-        charts = element.querySelectorAll('vz-bar-chart');
+        const charts = element.querySelectorAll('.pd-holder');
         charts.forEach(function(chart){
           deleteElement(chart);
         });
