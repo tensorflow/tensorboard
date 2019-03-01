@@ -30,6 +30,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
