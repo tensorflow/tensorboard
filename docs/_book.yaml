@@ -33,6 +33,8 @@ upper_tabs:
         path: /tensorboard/r2/scalars_and_keras
       - title: "Viewing Image Data"
         path: /tensorboard/r2/image_summaries
+      - title: "Hyperparameter tuning with HParams"
+        path: /tensorboard/r2/hyperparameter_tuning_with_hparams"
       - title: What-If tool
         path: /tensorboard/r2/what_if_tool
 
