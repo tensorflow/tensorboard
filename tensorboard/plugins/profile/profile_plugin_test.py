@@ -161,7 +161,7 @@ class ProfilePluginTest(tf.test.TestCase):
     runs = dict(self.plugin.generate_run_to_tools())
     # Expect runs for the logdir root, 'a', and 'b/c' but not for 'b'
     # because it doesn't contain a tfevents file.
-    expected = RUN_TO_TOOLS.keys()
+    expected = list(RUN_TO_TOOLS.keys())
     expected.extend('a/' + run for run in RUN_TO_TOOLS.keys())
     expected.extend('b/c/' + run for run in RUN_TO_TOOLS.keys())
     self.assertItemsEqual(runs.keys(), expected)
