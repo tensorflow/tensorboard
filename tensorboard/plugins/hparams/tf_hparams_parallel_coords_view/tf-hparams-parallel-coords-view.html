@@ -33,6 +33,7 @@ limitations under the License.
 <link rel="import" href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html">
 <link rel="import" href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html">
 <link rel="import" href="../tf-imports/vaadin-split-layout.html">
+<link rel="import" href="../tf-collapsible/tf-collapsible.html">
 
 <dom-module id="tf-hparams-parallel-coords-view">
   <template>
@@ -40,8 +41,8 @@ limitations under the License.
          outputs set options to the _options property.
       -->
     <div class="pane">
-      <vaadin-split-layout vertical>
-        <!-- The scale and color controls. -->
+      <!-- The scale and color controls. -->
+      <tf-collapsible title="Configuration">
         <tf-hparams-scale-and-color-controls
           id="controls"
           class="section"
@@ -49,34 +50,34 @@ limitations under the License.
           session-groups="[[sessionGroups]]"
           options="{{_options}}">
         </tf-hparams-scale-and-color-controls>
+      </tf-collapsible>
+      <vaadin-split-layout vertical>
+        <!-- The actual parallel coordinates plot -->
+        <tf-hparams-parallel-coords-plot
+          id="plot"
+          class="section"
+          schema="[[schema]]"
+          session-groups="[[sessionGroups]]"
+          selected-session-group="{{_selectedGroup}}"
+          closest-session-group="{{_closestGroup}}"
+          options="[[_options]]">
+        </tf-hparams-parallel-coords-plot>
         <vaadin-split-layout vertical>
-          <!-- The actual parallel coordinates plot -->
-          <tf-hparams-parallel-coords-plot
-            id="plot"
+          <tf-hparams-session-group-values
+            id="values"
             class="section"
             schema="[[schema]]"
-            session-groups="[[sessionGroups]]"
-            selected-session-group="{{_selectedGroup}}"
-            closest-session-group="{{_closestGroup}}"
-            options="[[_options]]">
-          </tf-hparams-parallel-coords-plot>
-          <vaadin-split-layout vertical>
-            <tf-hparams-session-group-values
-              id="values"
-              class="section"
-              schema="[[schema]]"
-              session-group="[[_closestOrSelected(
-                             _closestGroup, _selectedGroup)]]">
-            </tf-hparams-session-group-values>
-            <tf-hparams-session-group-details
-              id="details"
-              class="section"
-              backend="[[backend]]"
-              experiment-name="[[experimentName]]"
-              session-group="[[_selectedGroup]]"
-              schema="[[schema]]">
-            </tf-hparams-session-group-details>
-          </vaadin-split-layout>
+            session-group="[[_closestOrSelected(
+                           _closestGroup, _selectedGroup)]]">
+          </tf-hparams-session-group-values>
+          <tf-hparams-session-group-details
+            id="details"
+            class="section"
+            backend="[[backend]]"
+            experiment-name="[[experimentName]]"
+            session-group="[[_selectedGroup]]"
+            schema="[[schema]]">
+          </tf-hparams-session-group-details>
         </vaadin-split-layout>
       </vaadin-split-layout>
     </div>
@@ -91,6 +92,9 @@ limitations under the License.
     .section {
       margin: 10px;
     }
+    tf-collapsible {
+      --tf-collapsible-title-justify-content: normal;
+    }
     #controls {
       flex-grow: 0;
       flex-shrink: 0;
@@ -98,6 +102,7 @@ limitations under the License.
       height: auto;
       overflow-y:auto;
       max-height: fit-content;
+      background-color:
     }
     #plot {
       flex-grow: 1;
@@ -112,7 +117,6 @@ limitations under the License.
       flex-basis: auto;
       height: 95px;
       overflow-y:auto;
-      max-height: fit-content;
     }
     #details {
       flex-grow: 0;
@@ -120,7 +124,6 @@ limitations under the License.
       flex-basis: auto;
       height: auto;
       overflow-y: auto;
-      max-height: fit-content;
     }
     vaadin-split-layout {
       height: 100%;

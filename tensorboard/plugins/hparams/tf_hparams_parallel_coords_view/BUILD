@@ -13,6 +13,7 @@ tf_web_library(
     ],
     path = "/tf-hparams-parallel-coords-view",
     deps = [
+        "//tensorboard/components/tf_collapsible",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:vaadin_split_layout",
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_plot",
@@ -27,6 +28,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_parallel_coords_view"],
     destdir = "tf-hparams-parallel-coords-view",
     deps = [
+        "//tensorboard/components/tf_collapsible:legacy",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_plot:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_scale_and_color_controls:legacy",
