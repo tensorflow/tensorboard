@@ -26,6 +26,9 @@ var tf;
              * that gives enough time for the progress bar to update its UI.
              */
             var ASYNC_TASK_DELAY = 20;
+            /**
+             * Measure and log a synchronous task.
+             */
             function time(msg, task) {
                 var start = Date.now();
                 var result = task();
@@ -91,7 +94,8 @@ var tf;
             }
             util.getSubtaskTracker = getSubtaskTracker;
             /**
-             * Runs an expensive task and return the result.
+             * Runs a synchronous expensive task and return the result.
+             * Please use runAsyncPromiseTask in case a task returns a Promise.
              */
             function runTask(msg, incProgressValue, task, tracker) {
                 // Update the progress message to say the current running task.

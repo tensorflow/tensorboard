@@ -144,26 +144,25 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   def graph_impl(self, run, tag, is_conceptual, limit_attr_size=None, large_attrs_key=None):
     """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
-    try:
-      if is_conceptual:
-        tensor_events = self._multiplexer.Tensors(run, tag)
-        # Take the first event if there are multiple events written from different
-        # steps.
-        keras_model_config = json.loads(tensor_events[0].tensor_proto.string_val[0])
-        graph = keras_util.keras_model_to_graph_def(keras_model_config)
-      elif tag:
-        tensor_events = self._multiplexer.Tensors(run, tag)
-        # Take the first event if there are multiple events written from different
-        # steps.
-        run_metadata = config_pb2.RunMetadata.FromString(
-            tensor_events[0].tensor_proto.string_val[0])
-        graph = graph_pb2.GraphDef()
-        for func_graph in run_metadata.function_graphs:
-          graph_util.combine_graph_defs(graph, func_graph.pre_optimization_graph)
-      else:
-        graph = self._multiplexer.Graph(run)
-    except ValueError:
-      return None
+    if is_conceptual:
+      tensor_events = self._multiplexer.Tensors(run, tag)
+      # Take the first event if there are multiple events written from different
+      # steps.
+      keras_model_config = json.loads(tensor_events[0].tensor_proto.string_val[0])
+      graph = keras_util.keras_model_to_graph_def(keras_model_config)
+    elif tag:
+      tensor_events = self._multiplexer.Tensors(run, tag)
+      # Take the first event if there are multiple events written from different
+      # steps.
+      run_metadata = config_pb2.RunMetadata.FromString(
+          tensor_events[0].tensor_proto.string_val[0])
+      graph = graph_pb2.GraphDef()
+
+      for func_graph in run_metadata.function_graphs:
+        graph_util.combine_graph_defs(graph, func_graph.pre_optimization_graph)
+    else:
+      graph = self._multiplexer.Graph(run)
+
     # This next line might raise a ValueError if the limit parameters
     # are invalid (size is negative, size present but key absent, etc.).
     process_graph.prepare_graph_for_ui(graph, limit_attr_size, large_attrs_key)

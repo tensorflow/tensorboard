@@ -42,12 +42,15 @@ var tf;
              */
             function fetchPbTxt(filepath) {
                 return new Promise(function (resolve, reject) {
-                    var request = new XMLHttpRequest();
-                    request.open('GET', filepath);
-                    request.responseType = 'arraybuffer';
-                    request.onerror = function () { return reject(request.status); };
-                    request.onload = function () { return resolve(request.response); };
-                    request.send(null);
+                    fetch(filepath).then(function (res) {
+                        // Fetch does not reject for 400+.
+                        if (res.ok) {
+                            res.arrayBuffer().then(resolve, reject);
+                        }
+                        else {
+                            res.text().then(reject, reject);
+                        }
+                    });
                 });
             }
             parser.fetchPbTxt = fetchPbTxt;
@@ -76,7 +79,7 @@ var tf;
              */
             function fetchAndParseGraphData(path, pbTxtFile, tracker) {
                 return tf.graph.util
-                    .runTask('Reading graph pbtxt', 40, function () {
+                    .runAsyncPromiseTask('Reading graph pbtxt', 40, function () {
                     if (pbTxtFile) {
                         return new Promise(function (resolve, reject) {
                             var fileReader = new FileReader();
@@ -90,7 +93,7 @@ var tf;
                     }
                 }, tracker)
                     .then(function (arrayBuffer) {
-                    return tf.graph.util.runTask('Parsing graph.pbtxt', 60, function () {
+                    return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, function () {
                         return parseGraphPbTxt(arrayBuffer);
                     }, tracker);
                 });
