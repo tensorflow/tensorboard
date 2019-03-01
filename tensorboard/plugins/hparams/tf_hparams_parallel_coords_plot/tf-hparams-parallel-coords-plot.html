@@ -104,14 +104,14 @@ limitations under the License.
         stroke: #0f0    !important;
       }
 
-      #sessionGroupValues {
-        background: black;
-        border-radius: 5px;
-        border: 2px solid black;
-        padding: 8px;
-        box-shadow: 2px 2px #777;
-        max-width: 100%;
-        max-height: 100%;
+      #container {
+        height: 100%;
+        width: 100%;
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
       }
 
       .axis text {
@@ -177,12 +177,6 @@ limitations under the License.
         // but refer to the same objects stored in the 'sessionGroups' property.
         _validSessionGroups: Array,
 
-        // The <div> element with "container" id.
-        _container: {
-          type: Object,
-          value: null
-        },
-
         // A D3 selection containing just the root <svg> element.
         _svg: {
           type: Object,
@@ -216,9 +210,7 @@ limitations under the License.
       ],
 
       ready() {
-        this._container = this.$.container;
         this._svg = d3.select(this.$.svg);
-        this._sessionGroupValues = d3.select(this.$.sessionGroupValues);
         this._redraw();
       },
 
@@ -249,17 +241,9 @@ limitations under the License.
       _redraw() {
         this.debounce("_redraw", ()=>{
           this._computeValidSessionGroups();
-
-          this.width =  this.root.offsetWidth ? this.root.offsetWidth : 1000;
-          this.height = this.width / 2.5;
-
-          this._container.style.width = this.width + "px";
-          this._container.style.height = this.height + "px";
-
           // Delete all elements in the svg subtree and reset the
           // closest session group.
           this._svg.selectAll("g").remove()
-
           // Draw.
           this._draw();
         }, 100);
@@ -291,13 +275,32 @@ limitations under the License.
           return;
         }
 
-        // Add a single root group element.
-        const margin = {top: 30, right: 10, bottom: 10, left: 10},
-              width = this.width - margin.left - margin.right,
-              height = this.height - margin.top - margin.bottom;
+        // We use the following algorithm for laying out our SVG:
+        // We compute a minimum size for the SVG based on the number columns
+        // and some margins. We set the svg "width" and "height" styles
+        // to "100%" so that it takes up the full area of its parent, but use
+        // "min-width" and "min-height", so that if the parent is too small
+        // the svg won't shrink down (it will overflow with scroll bars).
+        // If the parent is larger than the minimum size, we use the its
+        // preserveAspectRatio attr to scale the contents to fit the larger
+        // size.
+        const margin = {top: 30, right: 10, bottom: 10, left: 10};
+        const COL_WIDTH = 100;
+        const COL_HEIGHT = 200;
+        const totalWidth =
+              this._numCols() * COL_WIDTH + margin.left + margin.right;
+        const totalHeight = COL_HEIGHT + margin.top + margin.bottom;
+        this._svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+        this._svg.attr("preserveAspectRatio", "xMidYMid");
+        // Set a minimum width so scale factor want be less than 1
+        // (but if size of '#container' is larger then we'll scale up
+        // our svg).
+        this._svg.style("min-width", totalWidth + "px");
+        this._svg.style("min-height", totalHeight + "px");
+        // 'width' and 'height' store the width of the svg without our margins.
+        const width = totalWidth - margin.left - margin.right;
+        const height = totalHeight - margin.top - margin.bottom;
         const svgG = this._svg
-              .attr("width", this.width)
-              .attr("height", this.height)
             .append("g")
               .attr("transform",
                     tf.hparams.utils.translateStr(margin.left, margin.top));
@@ -480,7 +483,6 @@ limitations under the License.
                 _this._setClosestSessionGroup(null);
               }
             });
-
         // ---- Column axes ----------------------------------------------------
         // Add a <g> element for each dimension.
         const axes = svgG.selectAll(".axis-parent")
