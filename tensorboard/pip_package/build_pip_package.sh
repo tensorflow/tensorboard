@@ -164,12 +164,12 @@ tb.notebook.start  # don't invoke; just check existence
     import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
     import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
     import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
-    printf "${import_attr}\n${import_as}\n${import_from}" | python -
-    printf "${import_attr}\n${import_from}\n${import_as}" | python -
-    printf "${import_as}\n${import_attr}\n${import_from}" | python -
-    printf "${import_as}\n${import_from}\n${import_attr}" | python -
-    printf "${import_from}\n${import_attr}\n${import_as}" | python -
-    printf "${import_from}\n${import_as}\n${import_attr}" | python -
+    printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
+    printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
+    printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
+    printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
+    printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
+    printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
   }
   test_tf_summary '.compat.v2'
   is_tf_2() {
