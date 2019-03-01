@@ -24,6 +24,9 @@ module tf.graph.util {
    */
   const ASYNC_TASK_DELAY = 20;
 
+  /**
+   * Measure and log a synchronous task.
+   */
   export function time<T>(msg: string, task: () => T) {
     let start = Date.now();
     let result = task();
@@ -95,7 +98,8 @@ module tf.graph.util {
   }
 
   /**
-   * Runs an expensive task and return the result.
+   * Runs a synchronous expensive task and return the result.
+   * Please use runAsyncPromiseTask in case a task returns a Promise.
    */
   export function runTask<T>(
       msg: string, incProgressValue: number, task: () => T,

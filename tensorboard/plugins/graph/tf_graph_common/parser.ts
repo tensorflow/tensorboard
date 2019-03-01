@@ -38,15 +38,15 @@ function parseValue(value: string): string|number|boolean {
  * Fetches a text file and returns a promise of the result.
  */
 export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
-  return new Promise<ArrayBuffer>(function(resolve, reject) {
-    const request = new XMLHttpRequest();
-    request.open('GET', filepath);
-    request.responseType = 'arraybuffer';
-
-    request.onerror = () => reject(request.status);
-    request.onload = () => resolve(request.response);
-
-    request.send(null);
+  return new Promise((resolve, reject) => {
+    fetch(filepath).then((res) => {
+      // Fetch does not reject for 400+.
+      if (res.ok) {
+        res.arrayBuffer().then(resolve, reject);
+      } else {
+        res.text().then(reject, reject);
+      }
+    });
   });
 }
 
@@ -80,7 +80,7 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
 export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
     tracker: ProgressTracker) {
   return tf.graph.util
-      .runTask(
+      .runAsyncPromiseTask(
           'Reading graph pbtxt', 40,
           () => {
             if (pbTxtFile) {
@@ -96,7 +96,7 @@ export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
           },
           tracker)
       .then((arrayBuffer: ArrayBuffer) => {
-        return tf.graph.util.runTask('Parsing graph.pbtxt', 60, () => {
+        return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, () => {
           return parseGraphPbTxt(arrayBuffer);
         }, tracker);
       });
