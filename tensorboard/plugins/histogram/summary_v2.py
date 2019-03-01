@@ -88,7 +88,7 @@ def _buckets(data, bucket_count=None):
   """
   if bucket_count is None:
     bucket_count = DEFAULT_BUCKET_COUNT
-  with tf.name_scope('buckets', values=[data, bucket_count]):
+  with tf.name_scope('buckets'):
     tf.debugging.assert_scalar(bucket_count)
     tf.debugging.assert_type(bucket_count, tf.int32)
     data = tf.reshape(data, shape=[-1])  # flatten
