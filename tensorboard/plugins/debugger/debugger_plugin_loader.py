@@ -78,7 +78,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     """
     # Check that not both grpc port flags are specified.
     if flags.debugger_data_server_grpc_port > 0 and flags.debugger_port > 0:
-      raise ValueError(
+      raise base_plugin.FlagsError(
           '--debugger_data_server_grpc_port and --debugger_port are mutually '
           'exclusive. Do not use both of them at the same time.')
 

@@ -312,6 +312,45 @@ def tensorboard_js_workspace():
           "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
       ],
   )
+  web_library_external(
+      name = "vaadin_vaadin_split_layout",
+      licenses = ["notice"],  # Apache License 2.0
+      sha256 = "44fb83628edb77cb8392c165d4d99734750a6fbb00e5391f033962e56f14eba3",
+      urls = [
+          "https://mirror.bazel.build/github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
+          "https://github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
+      ],
+      srcs = ["vaadin-split-layout.html"],
+      deps = [
+          "@org_polymer",
+          "@org_polymer_iron_resizable_behavior",
+      ],
+      strip_prefix = "vaadin-split-layout-1.1.0",
+      path = "/vaadin-split-layout",
+  )
+  
+  web_library_external(
+      name = "vaadin_vaadin_grid",
+      licenses = ["notice"],  # Apache License 2.0
+      sha256 = "834679bedc1b6bafecac7e7f0e3458d99ace6cddbf154c56631ef6428b787fd1",
+      urls = [
+          "https://mirror.bazel.build/github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
+          "https://github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
+      ],
+      glob = ["*.html"],
+      exclude = [
+          "index.html",
+      ],
+      deps = [
+          "@org_polymer_iron_resizable_behavior",
+          "@org_polymer_iron_scroll_target_behavior",
+          "@org_polymer_iron_a11y_keys_behavior",
+          "@org_polymer_iron_a11y_announcer",
+          "@org_polymer",
+      ],
+      strip_prefix = "vaadin-grid-3.0.2",
+      path = "/vaadin-grid",
+  )
 
   ##############################################################################
   # TensorBoard Testing Dependencies

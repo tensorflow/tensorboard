@@ -26,6 +26,7 @@ py_binary(
         ":default",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins:base_plugin",
     ],
 )
 
@@ -64,8 +65,67 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
+        ":notebook",
         ":program",
         "//tensorboard/summary",
+    ],
+)
+
+py_library(
+    name = "manager",
+    srcs = ["manager.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":version",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_test",
+    size = "small",
+    srcs = ["manager_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        ":version",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "manager_e2e_test",
+    size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
+    timeout = "moderate",
+    # On Python 2, this test fails about 0.5% of the time when run with
+    # high parallelism; TensorBoard subprocess time out instead of
+    # launching successfully.
+    flaky = True,
+    srcs = ["manager_e2e_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":manager",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+    data = [
+        ":tensorboard",
+    ],
+)
+
+py_library(
+    name = "notebook",
+    srcs = ["notebook.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":manager",
     ],
 )
 
@@ -75,11 +135,13 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":manager",
         ":version",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -114,6 +176,7 @@ py_library(
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
+        "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
@@ -144,7 +207,6 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_assets",
         "@com_google_fonts_roboto",
     ],
 )
@@ -178,6 +240,14 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_absl_app_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
     visibility = ["//visibility:public"],
 )
 
@@ -358,4 +428,15 @@ py_library(
     name = "lazy",
     srcs = ["lazy.py"],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "lazy_test",
+    srcs = ["lazy_test.py"],
+    srcs_version = "PY2AND3",
+    size = "small",
+    deps = [
+        ":lazy",
+        "@org_pythonhosted_six",
+    ],
 )

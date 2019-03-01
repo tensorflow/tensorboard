@@ -1,4 +1,4 @@
-# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/)
+# TensorBoard [![Travis build status](https://www.travis-ci.com/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.com/tensorflow/tensorboard/)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
@@ -339,7 +339,9 @@ custom plot will appear in the TensorBoard image tab.
 TensorBoard uses [reservoir
 sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to downsample your
 data so that it can be loaded into RAM. You can modify the number of elements it
-will keep per tag in
+will keep per tag by using the `--samples_per_plugin` command line argument (ex:
+`--samples_per_plugin=scalars=500,images=20`). Alternatively, you can change the
+source code in
 [tensorboard/backend/application.py](tensorboard/backend/application.py).
 See this [StackOverflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
 for some more information.

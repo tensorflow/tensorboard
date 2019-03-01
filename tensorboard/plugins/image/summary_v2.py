@@ -28,7 +28,7 @@ from tensorboard.plugins.image import metadata
 
 def image(name,
           data,
-          step,
+          step=None,
           max_outputs=3,
           description=None):
   """Write an image summary.
@@ -42,7 +42,9 @@ def image(name,
       should be 1, 2, 3, or 4 (grayscale, grayscale with alpha, RGB, RGBA).
       Any of the dimensions may be statically unknown (i.e., `None`).
       Floating point data will be clipped to the range [0,1).
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
       many images will be emitted at each step. When more than
       `max_outputs` many images are provided, the first `max_outputs` many
@@ -53,6 +55,10 @@ def image(name,
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)

@@ -127,7 +127,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   if flags.db_import:
     # DB import mode.
     if db_module != sqlite3:
-      raise ValueError('--db_import is only compatible with sqlite DBs')
+      raise base_plugin.FlagsError('--db_import is only compatible with sqlite DBs')
     logger.info('Importing logdir into DB at %s', db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=db_connection_provider,

@@ -32,20 +32,28 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 import argparse
+import atexit
 from collections import defaultdict
+import datetime
 import errno
 import os
+import signal
 import socket
 import sys
 import threading
 import inspect
 
+import six
+from six.moves import urllib
+from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 
+from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
 from tensorboard.util import util
 
@@ -99,6 +107,7 @@ class TensorBoard(object):
     assets_zip_provider: Set by constructor.
     server_class: Set by constructor.
     flags: An argparse.Namespace set by the configure() method.
+    cache_key: As `manager.cache_key`; set by the configure() method.
   """
 
   def __init__(self,
@@ -140,7 +149,7 @@ class TensorBoard(object):
     """Configures TensorBoard behavior via flags.
 
     This method will populate the "flags" property with an argparse.Namespace
-    representing flag values parsed from the provided argv list, overriden by
+    representing flag values parsed from the provided argv list, overridden by
     explicit flags from remaining keyword arguments.
 
     Args:
@@ -166,6 +175,11 @@ class TensorBoard(object):
       loader.define_flags(parser)
     arg0 = argv[0] if argv else ''
     flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+    self.cache_key = manager.cache_key(
+        working_directory=os.getcwd(),
+        arguments=argv[1:],
+        configure_kwargs=kwargs,
+    )
     if absl_flags and arg0:
       # Only expose main module Abseil flags as TensorBoard native flags.
       # This is the same logic Abseil's ArgumentParser uses for determining
@@ -200,6 +214,7 @@ class TensorBoard(object):
 
     :rtype: int
     """
+    self._install_signal_handler(signal.SIGTERM, "SIGTERM")
     if self.flags.inspect:
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(self.flags.event_file)
@@ -210,6 +225,7 @@ class TensorBoard(object):
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
                        (version.VERSION, server.get_url()))
       sys.stderr.flush()
+      self._register_info(server)
       server.serve_forever()
       return 0
     except TensorBoardServerException as e:
@@ -236,6 +252,51 @@ class TensorBoard(object):
     thread.daemon = True
     thread.start()
     return server.get_url()
+
+  def _register_info(self, server):
+    """Write a TensorBoardInfo file and arrange for its cleanup.
+
+    Args:
+      server: The result of `self._make_server()`.
+    """
+    server_url = urllib.parse.urlparse(server.get_url())
+    info = manager.TensorBoardInfo(
+        version=version.VERSION,
+        start_time=datetime.datetime.now(),
+        port=server_url.port,
+        pid=os.getpid(),
+        path_prefix=self.flags.path_prefix,
+        logdir=self.flags.logdir,
+        db=self.flags.db,
+        cache_key=self.cache_key,
+    )
+    atexit.register(manager.remove_info_file)
+    manager.write_info_file(info)
+
+  def _install_signal_handler(self, signal_number, signal_name):
+    """Set a signal handler to gracefully exit on the given signal.
+
+    When this process receives the given signal, it will run `atexit`
+    handlers and then exit with `0`.
+
+    Args:
+      signal_number: The numeric code for the signal to handle, like
+        `signal.SIGTERM`.
+      signal_name: The human-readable signal name.
+    """
+    old_signal_handler = None  # set below
+    def handler(handled_signal_number, frame):
+      # In case we catch this signal again while running atexit
+      # handlers, take the hint and actually die.
+      signal.signal(signal_number, signal.SIG_DFL)
+      sys.stderr.write("TensorBoard caught %s; exiting...\n" % signal_name)
+      # The main thread is the only non-daemon thread, so it suffices to
+      # exit hence.
+      if old_signal_handler not in (signal.SIG_IGN, signal.SIG_DFL):
+        old_signal_handler(handled_signal_number, frame)
+      sys.exit(0)
+    old_signal_handler = signal.signal(signal_number, handler)
+
 
   def _make_server(self):
     """Constructs the TensorBoard WSGI app and instantiates the server."""
@@ -288,36 +349,71 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   def __init__(self, wsgi_app, flags):
     self._flags = flags
     host = flags.host
-    self._auto_wildcard = False
-    if not host:
-      # Without an explicit host, we default to serving on all interfaces,
-      # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
-      host = self._get_wildcard_address(flags.port)
-      self._auto_wildcard = True
-    try:
-      super(WerkzeugServer, self).__init__(host, flags.port, wsgi_app)
-    except socket.error as e:
-      if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
-        raise TensorBoardServerException(
-            'TensorBoard must be run as superuser to bind to port %d' %
-            flags.port)
-      elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
-        if flags.port == 0:
+
+    # base_port: what's the first port to which we should try to bind?
+    # should_scan: if that fails, shall we try additional ports?
+    # max_attempts: how many ports shall we try?
+    should_scan = flags.port is None
+    base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
+    max_attempts = 10 if should_scan else 1
+
+    if base_port > 0xFFFF:
+      raise TensorBoardServerException(
+          'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
+      )
+    max_attempts = 10 if should_scan else 1
+    base_port = min(base_port + max_attempts, 0x10000) - max_attempts
+
+    # Without an explicit host, we default to serving on all interfaces,
+    # and will attempt to serve both IPv4 and IPv6 traffic through one
+    # socket.
+    self._auto_wildcard = not host
+
+    for (attempt_index, port) in (
+        enumerate(xrange(base_port, base_port + max_attempts))):
+      if self._auto_wildcard:
+        host = self._get_wildcard_address(port)
+      try:
+        # Yes, this invokes the super initializer potentially many
+        # times. This seems to work fine, and looking at the superclass
+        # chain (type(self).__mro__) it doesn't seem that anything
+        # _should_ go wrong (nor does any superclass provide a facility
+        # to do this natively).
+        #
+        # TODO(@wchargin): Refactor so that this is no longer necessary,
+        # probably by switching composing around a Werkzeug server
+        # rather than inheriting from it.
+        super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+        break
+      except socket.error as e:
+        if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
           raise TensorBoardServerException(
-              'TensorBoard unable to find any open port')
-        else:
+              'TensorBoard must be run as superuser to bind to port %d' %
+              port)
+        elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
+          if attempt_index < max_attempts - 1:
+            continue
+          if port == 0:
+            raise TensorBoardServerException(
+                'TensorBoard unable to find any open port')
+          elif should_scan:
+            raise TensorBoardServerException(
+                'TensorBoard could not bind to any port around %s '
+                '(tried %d times)'
+                % (base_port, max_attempts))
+          else:
+            raise TensorBoardServerException(
+                'TensorBoard could not bind to port %d, it was already in use' %
+                port)
+        elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
           raise TensorBoardServerException(
-              'TensorBoard could not bind to port %d, it was already in use' %
-              flags.port)
-      elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
-        raise TensorBoardServerException(
-            'TensorBoard could not bind to unavailable address %s' % host)
-      elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
-        raise TensorBoardServerException(
-            'Tensorboard could not bind to unsupported address family %s' %
-            host)
-      # Raise the raw exception if it wasn't identifiable as a user error.
-      raise
+              'TensorBoard could not bind to unavailable address %s' % host)
+        elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
+          raise TensorBoardServerException(
+              'Tensorboard could not bind to unsupported address family %s' %
+              host)
+        # Raise the raw exception if it wasn't identifiable as a user error.
+        raise
 
   def _get_wildcard_address(self, port):
     """Returns a wildcard address for the port in question.

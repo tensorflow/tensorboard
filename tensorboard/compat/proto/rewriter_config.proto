@@ -1,18 +1,3 @@
-/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-
 syntax = "proto3";
 
 package tensorboard;
@@ -20,9 +5,10 @@ option cc_enable_arenas = true;
 option java_outer_classname = "RewriterConfigProtos";
 option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
-option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf";
+// add go_package externally with copybara
 
 import "tensorboard/compat/proto/attr_value.proto";
+import "tensorboard/compat/proto/verifier_config.proto";
 
 message AutoParallelOptions {
   bool enable = 1;
@@ -53,7 +39,7 @@ message RewriterConfig {
   }
 
   // Enum controlling the number of times to run optimizers. The default is to
-  // run them once.
+  // run them twice.
   enum NumIterationsType {
     DEFAULT_NUM_ITERS = 0;
     ONE = 1;
@@ -90,8 +76,11 @@ message RewriterConfig {
   // Try to allocate some independent Op outputs contiguously in order to
   // merge or eliminate downstream Ops (off by default).
   Toggle scoped_allocator_optimization = 15;
-  // Force small ops onto the CPU (default is OFF).
+  // Force small ops onto the CPU (default is ON).
   Toggle pin_to_host_optimization = 18;
+  // Enable the swap of kernel implementations based on the device placement
+  // (default is OFF).
+  Toggle implementation_selector = 22;
   // Disable the entire meta optimizer (off by default).
   bool disable_meta_optimizer = 19;
 
@@ -152,6 +141,11 @@ message RewriterConfig {
   // meta-optimizer or when manually specified through the optimizers field.
   AutoParallelOptions auto_parallel = 5;
 
+  // If true, any optimization pass failing will cause the MetaOptimizer to
+  // stop with an error. By default - or when set to false, failing passes are
+  // skipped silently.
+  bool fail_on_optimizer_errors = 21;
+
   ScopedAllocatorOptions scoped_allocator_opts = 16;
 
   // If non-empty, will use this as an alternative way to specify a list of
@@ -176,4 +170,11 @@ message RewriterConfig {
 
   // list of CustomGraphOptimizers to apply.
   repeated CustomGraphOptimizer custom_optimizers = 200;
+
+  // VerifierConfig specifying the verifiers to be run after every optimizer.
+  VerifierConfig inter_optimizer_verifier_config = 300;
+
+  // VerifierConfig specifying the verifiers to be run at the end, after all
+  // optimizers have run.
+  VerifierConfig post_optimization_verifier_config = 301;
 }
