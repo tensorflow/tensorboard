@@ -425,17 +425,13 @@ profile run can have multiple tools that present the performance profile as diff
             'Processing datasets', 70, () => {
               return new Promise(function(resolve, reject) {
                 parent._processRunToTool(runToTool);
-                return Promise.resolve(null);
+                resolve(null);
               });
             }, tracker);
       })
       .then(() => {
         return tf.profile.util.runTask(
-            'Done', 10, () => {
-              return new Promise(function(resolve, reject) {
-                return Promise.resolve(null);
-              });
-            }, tracker);
+            'Done', 10, () => null, tracker);
       });
     },
     _processRunToTool: function(runToTool) {
