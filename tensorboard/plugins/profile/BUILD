@@ -77,6 +77,7 @@ py_binary(
         "profile_demo_data.py",
     ],
     data = [
+        "profile_demo.end_2_end.json",
         "profile_demo.google_chart_demo.json",
         "profile_demo.memory_viewer.json",
         "profile_demo.op_profile.json",

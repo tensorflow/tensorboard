@@ -91,6 +91,9 @@ def dump_data(logdir):
       shutil.copyfile(
           'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
           os.path.join(run_dir, 'google_chart_demo.json'))
+      shutil.copyfile(
+          'tensorboard/plugins/profile/profile_demo.end_2_end.json',
+          os.path.join(run_dir, 'end_2_end.json'))
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
