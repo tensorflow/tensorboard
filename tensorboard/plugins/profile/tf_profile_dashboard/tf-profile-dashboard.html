@@ -30,6 +30,7 @@ limitations under the License.
 <link rel="import" href="../tf-profile-common/tf-profile-common.html">
 <link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
 <link rel="import" href="../google-chart/google-chart-demo.html">
+<link rel="import" href="../end-2-end/end-2-end.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -109,6 +110,23 @@ profile run can have multiple tools that present the performance profile as diff
   <tf-dashboard-layout>
   <div class="sidebar">
     <div class="allcontrols">
+      <div class="sidebar-section" hidden="[[!_hasDownloadLinks]]">
+        <div class="line-item">
+           <paper-checkbox
+             id="show-download-links"
+             checked="{{_showDownloadLinks}}"
+           >Show data download links</paper-checkbox>
+        </div>
+        <div>
+          <template is="dom-if" if="[[_showDownloadLinks]]">
+            <tf-downloader
+              runs="[[_runsForDownloader()]]"
+              tag="end_2_end"
+              url-fn="[[_downloadUrlFn]]"
+             ></tf-downloader>
+          </template>
+        </div>
+      </div>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
@@ -187,6 +205,9 @@ profile run can have multiple tools that present the performance profile as diff
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp="true">
       <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_2_end')]]" restamp="true">
+      <end-2-end _data="[[_end2endData]]"></end-2-end>
     </template>
   </div>
   </tf-dashboard-layout>
@@ -282,6 +303,11 @@ profile run can have multiple tools that present the performance profile as diff
       // initialized once.
       _initialized: Boolean,
       _dataNotFound: Boolean,
+      _hasDownloadLinks: {
+        type: Boolean,
+        value: false,
+        notify: true,
+      },
       _datasets: {
         type: Array,
         notify: true,
@@ -357,6 +383,9 @@ profile run can have multiple tools that present the performance profile as diff
       _googleChartDemoData: {
         type: Object,
       },
+      _end2endData: {
+        type: Object,
+      },
       _selectedDatasetName: {
         type: String,
         notify: true,
@@ -383,6 +412,28 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
         value: () => {},
       },
+      getDataLoadUrl: {
+        type: Function,
+        value: function() {
+            return ({tag, run, host}) => {
+            return tf_backend.getRouter().pluginRoute(
+                'profile',
+                '/data',
+                new URLSearchParams({
+                    tag: tag,
+                    run: run,
+                    experiment: '',
+                }));
+          }
+        },
+      },
+      // To be provided as the `url-fn` property to `tf-downloader`.
+      _downloadUrlFn: {
+        type: Function,
+        value: function() {
+            return (tag, run) => this.getDataLoadUrl({tag, run});
+        },
+      },
     },
     reload: function() {
     },
@@ -398,6 +449,9 @@ profile run can have multiple tools that present the performance profile as diff
     },
     detached: function() {
       this.set('_isAttached', false);
+    },
+    _runsForDownloader: function() {
+      return ['latest'];
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
@@ -534,13 +588,18 @@ profile run can have multiple tools that present the performance profile as diff
           this._overviewPageData = data;
           this._toolInScope = "overview_page";
           break;
-      case "memory_viewer":
+       case "memory_viewer":
           this._memoryViewerData = data;
           this._toolInScope = "memory_viewer";
           break;
-      case "google_chart_demo":
+       case "google_chart_demo":
           this._googleChartDemoData = data;
           this._toolInScope = "google_chart_demo";
+          break;
+       case "end_2_end":
+          this._end2endData = data;
+          this._toolInScope = "end_2_end";
+          this._hasDownloadLinks = true;
           break;
       }
     },

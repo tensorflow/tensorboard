@@ -15,6 +15,7 @@ tf_web_library(
         "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph_controls",
+        "//tensorboard/plugins/profile/end_2_end",
         "//tensorboard/plugins/profile/google_chart:google_chart_demo",
         "//tensorboard/plugins/profile/input_pipeline_analyzer",
         "//tensorboard/plugins/profile/memory_viewer/memory_viewer_dashboard",
