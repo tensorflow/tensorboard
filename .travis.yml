@@ -93,6 +93,7 @@ install:
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
   - pip install mock==2.0.0
+  - pip install yamllint==1.5.0
   - pip install -I "${TF_VERSION_ID}"
 
 before_script:
@@ -101,6 +102,8 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   # a comment of '# noqa' or better yet '# noqa: <error code>' added to the code to silence flake8
   - flake8 . --count --exit-zero --ignore=E111,E114 --max-complexity=10 --max-line-length=127 --statistics
+  # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
+  - yamllint -c docs/.yamllint docs docs/.yamllint
   # Make sure we aren't accidentally including work-in-progress code.
   - tensorboard/tools/do_not_submit_test.sh
   # Make sure all necessary files have the license information.

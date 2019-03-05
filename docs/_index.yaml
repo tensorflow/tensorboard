@@ -4,25 +4,30 @@ description: <!--no description-->
 landing_page:
   custom_css_path: /site-assets/css/style.css
   rows:
-  - heading: TensorFlow's visualization toolkit
+  - heading: "TensorBoard: TensorFlow's visualization toolkit"
     items:
     - classname: devsite-landing-row-50
       description: >
-        TensorBoard provides the visualization and tooling needed for 
-        machine learning experimentation. It enables:
+        TensorBoard provides the visualization and tooling needed for
+        machine learning experimentation:
         <ul style="padding-left: 20px; margin: 20px 0;">
           <li>Tracking and visualizing metrics such as loss and accuracy</li>
           <li>Visualizing the model graph (ops and layers)</li>
-          <li>Viewing histograms and distributions of Tensors (e.g., weights 
-          and biases) to track how they change over time</li>
+          <li>Viewing histograms of weights, biases, or other tensors as they
+              change over time</li>
           <li>Projecting embeddings to a lower dimensional space</li>
           <li>Displaying images, text, and audio data</li>
           <li>Profiling TensorFlow programs</li>
           <li>And much more</li>
         </ul>
-
       image_path: /tensorboard/images/tensorboard.gif
-
+      buttons:
+      - label: Learn More
+        path: /tensorboard/r1/overview
+        classname: button
+      - label: Explore the TF 2.0 Alpha
+        path: /tensorboard/r2/get_started
+        classname: button
   - classname: devsite-landing-row-cards
     items:
     - heading: "The What-If Tool: Code-Free Probing of Machine Learning Models"
