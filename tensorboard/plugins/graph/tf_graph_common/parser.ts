@@ -109,42 +109,60 @@ export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
  * @param callback The callback called on each line
  * @param chunkSize The size of each read chunk. (optional)
  * @param delim The delimiter used to split a line. (optional)
- * @returns A promise for when it is finished.
+ * @returns Promise that resolves with true when it is finished.
  */
 export function streamParse(
     arrayBuffer: ArrayBuffer, callback: (string) => void,
     chunkSize: number = 1000000, delim: string = '\n'): Promise<boolean> {
   return new Promise<boolean>(function(resolve, reject) {
     let offset = 0;
-    let bufferSize = arrayBuffer.byteLength - 1;
     let data = '';
 
-    function readHandler(str) {
+    function readHandler(str: string) {
       offset += chunkSize;
       let parts = str.split(delim);
       let first = data + parts[0];
       if (parts.length === 1) {
         data = first;
-        readChunk(offset, chunkSize);
+        readChunkIfContent(offset, chunkSize);
         return;
       }
       data = parts[parts.length - 1];
-      callback(first);
-      for (let i = 1; i < parts.length - 1; i++) {
-        callback(parts[i]);
+      try {
+        callback(first);
+        for (let i = 1; i < parts.length - 1; i++) {
+          callback(parts[i]);
+        }
+      } catch (e) {
+        reject(e);
+        return;
       }
-      if (offset >= bufferSize) {
+      readChunkIfContent(offset, chunkSize);
+    }
+
+    /**
+     * Reads a chunk of data from the ArrayBuffer starting from offset.
+     *
+     * It terminates (resolves the promise) if there is no more content to be
+     * read.
+     * @param offset Starting index of content to read from the Buffer.
+     * @param size The size of each read chunk. (optional)
+     */
+    function readChunkIfContent(offset: number, size: number) {
+      const arrayBufferChunk = arrayBuffer.slice(offset, offset + size);
+      if (arrayBufferChunk.byteLength == 0) {
+        // Flush any remaining data.
         if (data) {
-          callback(data);
+          try {
+            callback(data);
+          } catch (e) {
+            reject(e);
+            return;
+          }
         }
         resolve(true);
         return;
       }
-      readChunk(offset, chunkSize);
-    }
-
-    function readChunk(offset: number, size: number) {
-      const arrayBufferChunk = arrayBuffer.slice(offset, offset + size);
 
       const blob = new Blob([arrayBufferChunk]);
       const file = new FileReader();
@@ -152,7 +170,7 @@ export function streamParse(
       file.readAsText(blob);
     }
 
-    readChunk(offset, chunkSize);
+    readChunkIfContent(offset, chunkSize);
   });
 }
 
