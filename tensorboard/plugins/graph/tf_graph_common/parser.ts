@@ -145,7 +145,7 @@ export function streamParse(
       };
       file.readAsText(nextChunk);
     }
-    
+
     readChunk('', '', 0);
   });
 }
