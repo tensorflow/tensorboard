@@ -8,7 +8,7 @@ landing_page:
     items:
     - classname: devsite-landing-row-50
       description: >
-        TensorBoard provides the visualization and tooling needed for 
+        TensorBoard provides the visualization and tooling needed for
         machine learning experimentation:
         <ul style="padding-left: 20px; margin: 20px 0;">
           <li>Tracking and visualizing metrics such as loss and accuracy</li>
