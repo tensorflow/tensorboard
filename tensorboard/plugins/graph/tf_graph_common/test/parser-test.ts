@@ -52,6 +52,7 @@ describe('parser', () => {
     // TODO: fail hard on malformed pbtxt.
     // Expected it to fail but our parser currently handles it in
     // unpredictable way...
+    // These specs are describing behavior as implemented.
     describe('malformed cases', () => {
 
       // Then it becomes unpredictable.
@@ -65,13 +66,13 @@ describe('parser', () => {
           const nodes = graph.node;
           assert.isArray(nodes);
           assert.lengthOf(nodes, 1);
-    
+
           assert.equal('Q', nodes[0].name);
           assert.equal('Input', nodes[0].op);
         });
       });
 
-      it('fails to parse a normal node when an empty node appears', () => {
+      it('fails to parse a node when an empty node appears before', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {}
         node {
           name: "Q"
@@ -81,20 +82,20 @@ describe('parser', () => {
             .then(
               () => assert.fail('Should NOT resolve'),
               () => {
-                // happy!
+                // Expected to fail and reject the promise.
               });
       });
 
-      it('"parses" pbtxt without newlines.', () => {
+      it('parses pbtxt without newlines as errorneously empty', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(
             `node { name: "Q" op: "Input" } node { name: "A" op: "Input" }`);
         return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
           assert.notProperty(graph, 'node');
         });
       });
-    
-    
-      it('parses malformed pbtxt unpredictably', () => {
+
+
+      it('parses malformed pbtxt upto the correct declaration', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
           name: "Q"
           op: "Input"
@@ -105,13 +106,13 @@ describe('parser', () => {
           const nodes = graph.node;
           assert.isArray(nodes);
           assert.lengthOf(nodes, 1);
-    
+
           assert.equal('Q', nodes[0].name);
           assert.equal('Input', nodes[0].op);
         });
       });
-    
-      it('parses malformed pbtxt unpredictably v2', () => {
+
+      it('cannot parse when pbtxt is malformed', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
           name: "Q"
           op: "Input
@@ -126,7 +127,7 @@ describe('parser', () => {
             .then(
               () => assert.fail('Should NOT resolve'),
               () => {
-                // happy!
+                // Expected to fail and reject the promise.
               });
       });
     });
