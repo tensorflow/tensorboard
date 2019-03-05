@@ -106,46 +106,41 @@ var tf;
              * @param callback The callback called on each line
              * @param chunkSize The size of each read chunk. (optional)
              * @param delim The delimiter used to split a line. (optional)
-             * @returns A promise for when it is finished.
+             * @returns Promise that resolves with true when it is finished.
              */
             function streamParse(arrayBuffer, callback, chunkSize, delim) {
                 if (chunkSize === void 0) { chunkSize = 1000000; }
                 if (delim === void 0) { delim = '\n'; }
                 return new Promise(function (resolve, reject) {
-                    var offset = 0;
-                    var bufferSize = arrayBuffer.byteLength - 1;
-                    var data = '';
-                    function readHandler(str) {
-                        offset += chunkSize;
-                        var parts = str.split(delim);
-                        var first = data + parts[0];
-                        if (parts.length === 1) {
-                            data = first;
-                            readChunk(offset, chunkSize);
-                            return;
-                        }
-                        data = parts[parts.length - 1];
-                        callback(first);
-                        for (var i = 1; i < parts.length - 1; i++) {
-                            callback(parts[i]);
-                        }
-                        if (offset >= bufferSize) {
-                            if (data) {
-                                callback(data);
+                    function readChunk(oldData, newData, offset) {
+                        var doneReading = offset >= arrayBuffer.byteLength;
+                        var parts = newData.split(delim);
+                        parts[0] = oldData + parts[0];
+                        // The last part may be part of a longer string that got cut off
+                        // due to the chunking.
+                        var remainder = doneReading ? '' : parts.pop();
+                        for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                            var part = parts_1[_i];
+                            try {
+                                callback(part);
                             }
+                            catch (e) {
+                                reject(e);
+                                return;
+                            }
+                        }
+                        if (doneReading) {
                             resolve(true);
                             return;
                         }
-                        readChunk(offset, chunkSize);
-                    }
-                    function readChunk(offset, size) {
-                        var arrayBufferChunk = arrayBuffer.slice(offset, offset + size);
-                        var blob = new Blob([arrayBufferChunk]);
+                        var nextChunk = new Blob([arrayBuffer.slice(offset, offset + chunkSize)]);
                         var file = new FileReader();
-                        file.onload = function (e) { return readHandler(e.target.result); };
-                        file.readAsText(blob);
+                        file.onload = function (e) {
+                            readChunk(remainder, e.target.result, offset + chunkSize);
+                        };
+                        file.readAsText(nextChunk);
                     }
-                    readChunk(offset, chunkSize);
+                    readChunk('', '', 0);
                 });
             }
             parser.streamParse = streamParse;
