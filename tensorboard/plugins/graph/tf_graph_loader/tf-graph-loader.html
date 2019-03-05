@@ -200,8 +200,10 @@ Polymer({
     return tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
     .then(function(graph) {
       if (!graph.node) {
-        throw new Error('The graph is empty. Make sure that the graph is ' +
-            'passed to the tf.summary.FileWriter after the graph is defined.');
+        throw new Error('The graph is empty. Tihs can happen when ' +
+            'TensorFlow could not trace any graph. Please refer to ' +
+            'https://github.com/tensorflow/tensorboard/issues/1961 for more ' +
+            'information.');
       }
 
       // Build the flat graph (consists only of Op nodes).
@@ -231,6 +233,9 @@ Polymer({
       };
       var graphTracker = tf.graph.util.getSubtaskTracker(tracker, 20, 'Graph');
       return tf.graph.build(graph, buildParams, graphTracker);
+    }, () => {
+      throw new Error(`This can happen when network connection is bad, GraphDef is malformed, or multiple GraphDefs failed to reconcile.
+Please refer to https://github.com/tensorflow/tensorboard/issues/1929 for GraphDefs combination problems.`)
     })
     .then(function(graph) {
       // Populate compatibile field of OpNode based on whitelist
@@ -249,11 +254,8 @@ Polymer({
     .catch(function(e) {
       // Generic error catch, for errors that happened outside
       // asynchronous tasks.
-      const msg = `Graph visualization failed.
-This can happen when network connection is bad, GraphDef is malformed, or multiple GraphDefs failed to reconcile.
-Please refer to https://github.com/tensorflow/tensorboard/issues/1929 for GraphDefs combination problems.
+      const msg = `Graph visualization failed.\n\n${e}`;
 
-Error:${e}`;
       tracker.reportError(msg, e);
       // Don't swallow the error.
       throw e;
