@@ -16,82 +16,120 @@ limitations under the License.
 describe('parser', () => {
   const {assert} = chai;
 
-  it('parses a simple pbtxt', () => {
-    const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
-       name: "Q"
-       op: "Input"
-     }
-     node {
-       name: "W"
-       op: "Input"
-     }
-     node {
-       name: "X"
-       op: "MatMul"
-       input: "Q"
-       input: "W"
-     }`);
-    return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
-      let nodes = graph.node;
-      assert.isTrue(nodes != null && nodes.length === 3);
+  describe('parsing GraphDef pbtxt', () => {
+    it('parses a simple pbtxt', () => {
+      const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+        name: "Q"
+        op: "Input"
+      }
+      node {
+        name: "W"
+        op: "Input"
+      }
+      node {
+        name: "X"
+        op: "MatMul"
+        input: "Q"
+        input: "W"
+      }`);
+      return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+        let nodes = graph.node;
+        assert.isTrue(nodes != null && nodes.length === 3);
 
-      assert.equal('Q', nodes[0].name);
-      assert.equal('Input', nodes[0].op);
+        assert.equal('Q', nodes[0].name);
+        assert.equal('Input', nodes[0].op);
 
-      assert.equal('W', nodes[1].name);
-      assert.equal('Input', nodes[1].op);
+        assert.equal('W', nodes[1].name);
+        assert.equal('Input', nodes[1].op);
 
-      assert.equal('X', nodes[2].name);
-      assert.equal('MatMul', nodes[2].op);
-      assert.equal('Q', nodes[2].input[0]);
-      assert.equal('W', nodes[2].input[1]);
+        assert.equal('X', nodes[2].name);
+        assert.equal('MatMul', nodes[2].op);
+        assert.equal('Q', nodes[2].input[0]);
+        assert.equal('W', nodes[2].input[1]);
+      });
     });
-  });
 
-  it('parses an empty pbtxt', () => {
-    const pbtxt = tf.graph.test.util.stringToArrayBuffer(``);
-    return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
-      assert.notProperty(graph, 'node');
+    // TODO: fail hard on malformed pbtxt.
+    // Expected it to fail but our parser currently handles it in
+    // unpredictable way...
+    describe('malformed cases', () => {
+
+      // Then it becomes unpredictable.
+      it('parses upto an empty node', () => {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input"
+        }
+        node {}`);
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+          const nodes = graph.node;
+          assert.isArray(nodes);
+          assert.lengthOf(nodes, 1);
+    
+          assert.equal('Q', nodes[0].name);
+          assert.equal('Input', nodes[0].op);
+        });
+      });
+
+      it('fails to parse a normal node when an empty node appears', () => {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {}
+        node {
+          name: "Q"
+          op: "Input"
+        }`);
+        return tf.graph.parser.parseGraphPbTxt(pbtxt)
+            .then(
+              () => assert.fail('Should NOT resolve'),
+              () => {
+                // happy!
+              });
+      });
+
+      it('"parses" pbtxt without newlines.', () => {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(
+            `node { name: "Q" op: "Input" } node { name: "A" op: "Input" }`);
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
+          assert.notProperty(graph, 'node');
+        });
+      });
+    
+    
+      it('parses malformed pbtxt unpredictably', () => {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input"
+        }
+        node { name: "W" op: "Input" }
+        node { name: "X" op: "MatMul" input: "Q" input: "W" }`);
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+          const nodes = graph.node;
+          assert.isArray(nodes);
+          assert.lengthOf(nodes, 1);
+    
+          assert.equal('Q', nodes[0].name);
+          assert.equal('Input', nodes[0].op);
+        });
+      });
+    
+      it('parses malformed pbtxt unpredictably v2', () => {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input
+        }
+        node { name: "W" op: "Input"
+        node { name: "X" op: "MatMul" input: "Q" input: "W" }
+        node {
+          name: A"
+          op: "Input"
+        }`);
+        return tf.graph.parser.parseGraphPbTxt(pbtxt)
+            .then(
+              () => assert.fail('Should NOT resolve'),
+              () => {
+                // happy!
+              });
+      });
     });
-  });
-
-  // TODO: fail hard on malformed pbtxt.
-  // Expected it to fail but our parser currently handles it in
-  // unpredictable way...
-  it('parses malformed pbtxt unpredictably', () => {
-    const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
-      name: "Q"
-      op: "Input"
-    }
-    node { name: "W" op: "Input" }
-    node { name: "X" op: "MatMul" input: "Q" input: "W" }`);
-    return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
-      const nodes = graph.node;
-      assert.isArray(nodes);
-      assert.lengthOf(nodes, 1);
-
-      assert.equal('Q', nodes[0].name);
-      assert.equal('Input', nodes[0].op);
-    });
-  });
-
-  it('parses malformed pbtxt unpredictably v2', () => {
-    const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
-      name: "Q"
-      op: "Input
-    }
-    node { name: "W" op: "Input"
-    node { name: "X" op: "MatMul" input: "Q" input: "W" }
-    node {
-      name: A"
-      op: "Input"
-    }`);
-    return tf.graph.parser.parseGraphPbTxt(pbtxt)
-        .then(
-          () => assert.fail('Should NOT resolve'),
-          () => {
-            // happy!
-          });
   });
 
   it('parses stats pbtxt', () => {

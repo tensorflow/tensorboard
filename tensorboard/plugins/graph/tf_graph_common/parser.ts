@@ -115,62 +115,38 @@ export function streamParse(
     arrayBuffer: ArrayBuffer, callback: (string) => void,
     chunkSize: number = 1000000, delim: string = '\n'): Promise<boolean> {
   return new Promise<boolean>(function(resolve, reject) {
-    let offset = 0;
-    let data = '';
+    function readChunk(oldData: string, newData: string, offset: number) {
+      const doneReading = offset >= arrayBuffer.byteLength;
+      const parts = newData.split(delim);
+      parts[0] = oldData + parts[0];
 
-    function readHandler(str: string) {
-      offset += chunkSize;
-      let parts = str.split(delim);
-      let first = data + parts[0];
-      if (parts.length === 1) {
-        data = first;
-        readChunkIfContent(offset, chunkSize);
-        return;
-      }
-      data = parts[parts.length - 1];
-      try {
-        callback(first);
-        for (let i = 1; i < parts.length - 1; i++) {
-          callback(parts[i]);
-        }
-      } catch (e) {
-        reject(e);
-        return;
-      }
-      readChunkIfContent(offset, chunkSize);
-    }
+      // The last part may be part of a longer string that got cut off
+      // due to the chunking.
+      const remainder = doneReading ? '' : parts.pop();
 
-    /**
-     * Reads a chunk of data from the ArrayBuffer starting from offset.
-     *
-     * It terminates (resolves the promise) if there is no more content to be
-     * read.
-     * @param offset Starting index of content to read from the Buffer.
-     * @param size The size of each read chunk. (optional)
-     */
-    function readChunkIfContent(offset: number, size: number) {
-      const arrayBufferChunk = arrayBuffer.slice(offset, offset + size);
-      if (arrayBufferChunk.byteLength == 0) {
-        // Flush any remaining data.
-        if (data) {
-          try {
-            callback(data);
-          } catch (e) {
-            reject(e);
-            return;
-          }
+      for (let part of parts) {
+        try {
+          callback(part);
+        } catch (e) {
+          reject(e);
+          return;
         }
+      }
+
+      if (doneReading) {
         resolve(true);
         return;
       }
 
-      const blob = new Blob([arrayBufferChunk]);
+      const nextChunk = new Blob([arrayBuffer.slice(offset, offset + chunkSize)]);
       const file = new FileReader();
-      file.onload = (e: any) => readHandler(e.target.result);
-      file.readAsText(blob);
+      file.onload = function(e: any) {
+        readChunk(remainder, e.target.result, offset + chunkSize);
+      };
+      file.readAsText(nextChunk);
     }
-
-    readChunkIfContent(offset, chunkSize);
+    
+    readChunk('', '', 0);
   });
 }
 

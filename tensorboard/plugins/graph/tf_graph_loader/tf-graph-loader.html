@@ -200,7 +200,7 @@ Polymer({
     return tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
     .then(function(graph) {
       if (!graph.node) {
-        throw new Error('The graph is empty. Tihs can happen when ' +
+        throw new Error('The graph is empty. This can happen when ' +
             'TensorFlow could not trace any graph. Please refer to ' +
             'https://github.com/tensorflow/tensorboard/issues/1961 for more ' +
             'information.');
@@ -234,8 +234,10 @@ Polymer({
       var graphTracker = tf.graph.util.getSubtaskTracker(tracker, 20, 'Graph');
       return tf.graph.build(graph, buildParams, graphTracker);
     }, () => {
-      throw new Error(`This can happen when network connection is bad, GraphDef is malformed, or multiple GraphDefs failed to reconcile.
-Please refer to https://github.com/tensorflow/tensorboard/issues/1929 for GraphDefs combination problems.`)
+      throw new Error('Malformed GraphDef. This can sometimes be caused by a ' + 
+          'bad network connection or difficulty reconciling multiple GraphDefs;' +
+          ' for the latter case, please refer to ' +
+          'https://github.com/tensorflow/tensorboard/issues/1929.');
     })
     .then(function(graph) {
       // Populate compatibile field of OpNode based on whitelist
