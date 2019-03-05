@@ -9,19 +9,19 @@ about: Use this template for raising a feature request
 **Please provide the following information**
 
 **System information**
-- Tensorboard version (you are using) :
-- Are you willing to contribute it (Yes/No) :
+- Tensorboard version (you are using):
+- Are you willing to contribute it (Yes/No):
 
 
 
-**Describe the feature and the current behavior/state.**
+**Describe the feature and the current behavior/state:**
 
-**Will this change the existing plugins? If so, please provide plugin name and details**.
+**Will this change the existing plugins? If so, please provide plugin name and details:**
 
 **Is this about adding a new plugin?**
 
 **Who will benefit with this feature?**
 
-**Is there any existing workaround for this ?**
+**Is there any existing workaround for this?**
 
-**Any Other info.**
+**Any Other info:**
