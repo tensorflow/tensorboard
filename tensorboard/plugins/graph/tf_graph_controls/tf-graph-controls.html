@@ -846,7 +846,7 @@ Polymer({
       notify: true,
     },
     /**
-     * @type {!Selection}
+     * @type {?Selection}
      */
     selection: {
       type: Object,
@@ -854,9 +854,13 @@ Polymer({
       readOnly: true,
       computed: '_computeSelection(datasets, _selectedRunIndex, _selectedTagIndex, _selectedGraphType)',
     },
+    /**
+     * @type {?File}
+     */
     selectedFile: {
       type: Object,
-      notify: true
+      notify: true,
+      value: null,
     },
     _selectedRunIndex: {
       type: Number,

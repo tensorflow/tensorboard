@@ -38,48 +38,24 @@ by default. The user can select a different run from a dropdown menu.
 <dom-module id="tf-graph-dashboard">
 <template>
 <paper-dialog id="error-dialog" with-backdrop></paper-dialog>
-<template is="dom-if" if="[[_datasetsEmpty(_datasets)]]">
-  <div style="max-width: 540px; margin: 80px auto 0 auto;">
-    <h3>No graph definition files were found.</h3>
-    <p>
-    To store a graph, create a
-    <code>tf.summary.FileWriter</code>
-    and pass the graph either via the constructor, or by calling its
-    <code>add_graph()</code> method.
-    You may want to check out the
-    <a
-      href="https://www.tensorflow.org/get_started/graph_viz"
-    >graph visualizer tutorial</a>.
-    <p>
-    If you’re new to using TensorBoard, and want to find out how
-    to add data and set up your event files, check out the
-    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-    and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
-    <p>
-    If you think TensorBoard is configured properly, please see
-    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-    and consider filing an issue on GitHub.
-  </div>
-</template>
-<template is="dom-if" if="[[!_datasetsEmpty(_datasets)]]">
 <tf-dashboard-layout>
   <tf-graph-controls
-        id="controls"
-        class="sidebar"
-        devices-for-stats="{{_devicesForStats}}"
-        color-by-params="[[_colorByParams]]"
-        stats="[[_stats]]"
-        color-by="{{_colorBy}}"
-        datasets="[[_datasets]]"
-        render-hierarchy="[[_renderHierarchy]]"
-        selection="{{_selection}}"
-        selected-file="{{_selectedFile}}"
-        selected-node="{{_selectedNode}}"
-        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
-        health-pills-toggled-on="{{healthPillsToggledOn}}"
+      class="sidebar"
+      devices-for-stats="{{_devicesForStats}}"
+      color-by-params="[[_colorByParams]]"
+      stats="[[_stats]]"
+      color-by="{{_colorBy}}"
+      datasets="[[_datasets]]"
+      render-hierarchy="[[_renderHierarchy]]"
+      selection="{{_selection}}"
+      selected-file="{{_selectedFile}}"
+      selected-node="{{_selectedNode}}"
+      health-pills-feature-enabled="[[_debuggerDataEnabled]]"
+      health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
   <div class="center">
-    <tf-graph-loader id="loader"
+    <template is="dom-if" if="[[_canLoadGraph(_datasets, _selectedFile)]]">
+      <tf-graph-loader
           datasets="[[_datasets]]"
           selection="[[_selection]]"
           selected-file="[[_selectedFile]]"
@@ -89,30 +65,53 @@ by default. The user can select a different run from a dropdown menu.
           progress="{{_progress}}"
           out-hierarchy-params="{{_hierarchyParams}}"
           compatibility-provider="[[_compatibilityProvider]]"
-    ></tf-graph-loader>
-    <tf-graph-board id="graphboard"
-        devices-for-stats="[[_devicesForStats]]"
-        color-by="[[_colorBy]]"
-        color-by-params="{{_colorByParams}}"
-        graph-hierarchy="[[_graphHierarchy]]"
-        graph="[[_graph]]"
-        hierarchy-params="[[_hierarchyParams]]"
-        progress="[[_progress]]"
-        debugger-data-enabled="[[_debuggerDataEnabled]]"
-        are-health-pills-loading="[[_areHealthPillsLoading]]"
-        debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
-        node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
-        all-steps-mode-enabled="{{allStepsModeEnabled}}"
-        specific-health-pill-step="{{specificHealthPillStep}}"
-        health-pill-step-index="[[_healthPillStepIndex]]"
-        render-hierarchy="{{_renderHierarchy}}"
-        selected-node="{{_selectedNode}}"
-        stats="[[_stats]]"
-        compat-node-title="TPU Compatibility"
-    ></tf-graph-board>
+      ></tf-graph-loader>
+      <tf-graph-board
+          devices-for-stats="[[_devicesForStats]]"
+          color-by="[[_colorBy]]"
+          color-by-params="{{_colorByParams}}"
+          graph-hierarchy="[[_graphHierarchy]]"
+          graph="[[_graph]]"
+          hierarchy-params="[[_hierarchyParams]]"
+          progress="[[_progress]]"
+          debugger-data-enabled="[[_debuggerDataEnabled]]"
+          are-health-pills-loading="[[_areHealthPillsLoading]]"
+          debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
+          node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
+          all-steps-mode-enabled="{{allStepsModeEnabled}}"
+          specific-health-pill-step="{{specificHealthPillStep}}"
+          health-pill-step-index="[[_healthPillStepIndex]]"
+          render-hierarchy="{{_renderHierarchy}}"
+          selected-node="{{_selectedNode}}"
+          stats="[[_stats]]"
+          compat-node-title="TPU Compatibility"
+      ></tf-graph-board>
+    </template>
+    <template is="dom-if" if="[[!_canLoadGraph(_datasets, _selectedFile)]]">
+      <div class="no-graph">
+        <h3>No graph definition files were found.</h3>
+        <p>
+        To store a graph, please use the
+        <a href="https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/callbacks/TensorBoard" target="_blank" rel="noopener">Keras callback</a> or the trace API. To learn more,
+        please refer to the <a href="https://www.tensorflow.org/tensorboard/r2/graphs" target="_blank" rel="noopener">graph visualizer tutorial</a>.
+        </p>
+        <p>
+        Alternatively, you can use the "Upload" button on the left panel to view a GraphDef in .pbtxt format.
+        </p>
+        <p>
+        If you’re new to using TensorBoard, and want to find out how
+        to add data and set up your event files, check out the
+        <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md" target="_blank" rel="noopener">README</a>
+        and perhaps the <a href="https://www.tensorflow.org/tensorboard/r2/get_started" target="_blank" rel="noopener">TensorBoard tutorial</a>.
+        <p>
+        If you think TensorBoard is configured properly, please see
+        <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong" target="_blank" rel="noopener">
+          the section of the README devoted to missing data problems
+        </a> and consider filing an issue on GitHub.
+      </div>
+    </template>
   </div>
 </tf-dashboard-layout>
-</template>
 <style>
 
 :host /deep/ {
@@ -131,6 +130,12 @@ by default. The user can select a different run from a dropdown menu.
 
 paper-dialog {
   padding: 20px;
+}
+
+.no-graph {
+  margin: 80px auto 0 auto;
+  max-width: 540px;
+  padding: 0 20px;
 }
 
 </style>
@@ -235,10 +240,14 @@ Polymer({
           }),
       observer: '_runObserver',
     },
-    _selection: {
-      type: Object,
-    },
-    _compatibilityProvider: Object
+    _selection: Object,
+    _graph: Object,
+    _graphHierarchy: Object,
+    /**
+     * @type {?File}
+     */
+    _selectedFile: Object,
+    _compatibilityProvider: Object,
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
@@ -329,7 +338,7 @@ Polymer({
     return this._debuggerDataEnabled &&
         this.healthPillsToggledOn &&
         this._renderHierarchy &&
-        !this._datasetsEmpty(this._datasets);
+        !this._canLoadGraph(this._datasets, this._selectedFile);
   },
   _maybeInitializeDashboard: function(isAttached) {
     if (this._initialized || !isAttached) {
@@ -473,8 +482,15 @@ Polymer({
       this.set('_healthPillStepRequestTimerId', null);
     }.bind(this));
   },
-  _datasetsEmpty: function(datasets) {
-    return !datasets || !datasets.length;
+  /**
+   * Returns true if dataset is present or user has manually selected a
+   * pbtxt file.
+   *
+   * @param {!Array<!RunItem>} datasets
+   * @param {?File} selectedFile
+   */
+  _canLoadGraph: function(datasets, selectedFile) {
+    return (datasets && datasets.length) || Boolean(selectedFile);
   },
   _renderHierarchyChanged: function(renderHierarchy) {
     // Reload any data on the graph when the render hierarchy (which determines which nodes are
