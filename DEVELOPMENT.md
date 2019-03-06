@@ -1,6 +1,6 @@
 # How to Develop TensorBoard
 
-TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, you can simply run
+TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, you can simply run the following commands at the root of the Tensorboard Git repository:
 
 ```sh
 $ virtualenv tf
@@ -14,9 +14,7 @@ TensorBoard builds are done with [Bazel](https://bazel.build), so you may need t
 You can build and run TensorBoard via Bazel (from within the TensorFlow nightly virtualenv) as follows:
 
 ```sh
-(tf)$ cd tensorboard/
 (tf)$ bazel build tensorboard
-(tf)$ cd && cd tf/
 (tf)$ ./bazel-bin/tensorboard/tensorboard --logdir path/to/logs
 # Or combine the above steps as:
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
