@@ -1,3 +1,12 @@
+# Release 1.13.1
+
+## Bug fixes
+- #1895 - Fix `strftime`-related launch error on Windows (PR #1900)
+- #1794 - Fix What-If Tool loading examples without inference (PR #1898)
+- #1914 - Disable the profile dashboard inside Colab, where it doesn’t work
+- #1945 - Fix profile dashboard loading behavior
+
+
 # Release 1.13.0
 
 The 1.13 minor series tracks TensorFlow 1.13.
