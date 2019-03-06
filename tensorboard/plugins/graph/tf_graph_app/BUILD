@@ -13,6 +13,7 @@ tf_web_library(
     ],
     path = "/tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_backend",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
@@ -27,6 +28,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_app"],
     destdir = "tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//tensorboard/plugins/graph/tf_graph_loader:legacy",
@@ -35,4 +37,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/webcomponentsjs:lib",
     ],
 )
-

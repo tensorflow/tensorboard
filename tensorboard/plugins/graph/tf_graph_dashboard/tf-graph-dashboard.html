@@ -80,6 +80,7 @@ by default. The user can select a different run from a dropdown menu.
   ></tf-graph-controls>
   <div class="center">
     <tf-graph-loader id="loader"
+          router="[[_router]]"
           datasets="[[_datasets]]"
           selection="[[_selection]]"
           selected-file="[[_selectedFile]]"
@@ -223,6 +224,10 @@ Polymer({
       type: Number,
       value: 500,
       readOnly: true,
+    },
+    _router: {
+      type: Object,
+      value: () => tf_backend.getRouter(),
     },
     runs: Array,
     run: {

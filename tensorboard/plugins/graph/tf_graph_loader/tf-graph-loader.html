@@ -57,6 +57,12 @@ Polymer({
       type: Object,
       value: () => new tf.graph.op.TpuCompatibilityProvider(),
     },
+
+    /**
+     * @type {!tf_backend.Router}
+     */
+    router: Object,
+
     /**
      * If this optional object is provided, graph logic will override
      * the HierarchyParams it uses to build the graph with properties within
@@ -95,7 +101,7 @@ Polymer({
     },
   },
   observers: [
-    '_selectionChanged(selection, overridingHierarchyParams, compatibilityProvider)',
+    '_selectionChanged(selection, overridingHierarchyParams, compatibilityProvider, router)',
     '_selectedFileChanged(selectedFile, overridingHierarchyParams, compatibilityProvider)',
   ],
   _selectionChanged() {
@@ -113,13 +119,14 @@ Polymer({
       case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
         // Clear stats about the previous graph.
         this._setOutStats(null);
-        const args = {
+        const params = new URLSearchParams({
           run,
           conceptual: selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH,
-        };
-        if (tag) args.tag = tag;
-        const graphPath = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('graphs', '/graph'), args);
+        });
+        if (tag) {
+          params.set('tag', tag);
+        }
+        const graphPath = this.router.pluginRoute('graphs', '/graph', params);
         return this._fetchAndConstructHierarchicalGraph(
             graphPath, null, overridingHierarchyParams).then(() => {
               this._graphRunTag = {run, tag};
@@ -145,9 +152,8 @@ Polymer({
               tag: requiredOpGraphTag,
               type: tf.graph.SelectionType.OP_GRAPH,
             }) : Promise.resolve();
-        const metadataPath = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
-            {tag, run});
+        const metadataPath = this.router.pluginRoute(
+            'graphs', '/run_metadata', new URLSearchParams({tag, run}));
         return maybeFetchGraphPromise
             .then(() => this._readAndParseMetadata(metadataPath));
       }
