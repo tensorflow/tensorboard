@@ -314,9 +314,10 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-        // https://github.com/tensorflow/tensorboard/pull/1446#issuecomment-436915402
-        // Firefox truncates href to some length for some reason. Using base64
-        // is okay.
+        // The SVG code string may include hash characters, such as an
+        // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
+        // data so that such a hash is not interpreted as a fragment
+        // specifier, truncating the SVG. (See issue #1874.)
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
       _runsFromData(data) {
