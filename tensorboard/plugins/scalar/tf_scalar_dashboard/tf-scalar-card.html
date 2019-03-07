@@ -316,13 +316,6 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-<<<<<<< HEAD
-        // The SVG code string may include hash characters, such as an
-        // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
-        // data so that such a hash is not interpreted as a fragment
-        // specifier, truncating the SVG. (See issue #1874.)
-        this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
-=======
         const bytes = new Uint8Array(svgStr.length).map((_, i) => svgStr.charCodeAt(i));
         const blob = new Blob([bytes], {type: 'image/svg+xml'});
         this.$$('#svgLink').setAttribute('href', URL.createObjectURL(blob));
@@ -330,7 +323,6 @@ limitations under the License.
       _removeDownloadLink() {
         URL.revokeObjectURL(this.$$('#svgLink').href);
         this.$$('#svgLink').removeAttribute('href');
->>>>>>> scalar: use ObjectURL for SVG link for durability
       },
       _runsFromData(data) {
         return data.map((datum) => datum.run);
