@@ -316,7 +316,7 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-        const bytes = new Uint8Array(svgStr.length).map((_, i) => svgStr.charCodeAt(i));
+        const bytes = new TextEncoder().encode(svgStr);
         const blob = new Blob([bytes], {type: 'image/svg+xml'});
         this.$$('#svgLink').setAttribute('href', URL.createObjectURL(blob));
       },
