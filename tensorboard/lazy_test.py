@@ -87,6 +87,26 @@ class LazyTest(unittest.TestCase):
     with six.assertRaisesRegex(self, ValueError, expected_message):
       bad.day
 
+  def test_loads_only_once_even_when_result_equal_to_everything(self):
+    # This would fail if the implementation of `_memoize` used `==`
+    # rather than `is` to check for the sentinel value.
+    class EqualToEverything(object):
+      init_count = 0
+
+      def __init__(self):
+        EqualToEverything.init_count += 1
+
+      def __eq__(self, other):
+        return True
+
+    @lazy.lazy_load("foo")
+    def foo():
+      return EqualToEverything()
+
+    dir(foo)
+    dir(foo)
+    self.assertEqual(EqualToEverything.init_count, 1)
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -85,9 +85,9 @@ def _memoize(f):
   lock = threading.RLock()
   @functools.wraps(f)
   def wrapper(arg):
-    if cache.get(arg, nothing) == nothing:
+    if cache.get(arg, nothing) is nothing:
       with lock:
-        if cache.get(arg, nothing) == nothing:
+        if cache.get(arg, nothing) is nothing:
           cache[arg] = f(arg)
     return cache[arg]
   return wrapper
