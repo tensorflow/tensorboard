@@ -58,6 +58,30 @@ export class RequestNetworkError extends Error {
   }
 }
 
+/**
+ * Holds options that can be used to configure the HTTP request.
+ */
+export class RequestOptions {
+  /** The HTTP method-type to use. Currently only 'GET' and 'POST' are
+   * supported.
+   */
+  public methodType: string;
+  
+  /** The content-type request header to use. */
+  public contentType?: string;
+
+  /** The request body to use. This is the object that is passed to the 
+   * XMLHttpRequest.send() method. If not given the 'send' method is called
+   * without an argument. 
+   */
+  public body?: any;
+
+  /** If specified, this will be the value set in the 
+   * XMLHttpRequest.withCredentials property.
+   */
+  public withCredentials?: boolean;
+}
+  
 export class RequestManager {
   private _queue: ResolveReject[];
   private _maxRetries: number;
@@ -78,34 +102,45 @@ export class RequestManager {
    */
   public request(url: string, postData?: {[key: string]: string}):
       Promise<any> {
-    const promise =
-        new Promise((resolve, reject) => {
-          const resolver = {resolve: resolve, reject: reject};
-          this._queue.push(resolver);
+    const requestOptions = new RequestOptions();
+    if (postData) {
+      requestOptions.methodType = 'POST';
+      requestOptions.body = this.formDataFromDictionary(postData);
+    } else {
+      requestOptions.methodType = 'GET';
+    }
+    return this.requestWithOptions(url, requestOptions);
+  }
+
+  private requestWithOptions(url: string, requestOptions: RequestOptions):
+      Promise<any> {
+    const promise = new Promise((resolve, reject) => {
+        const resolver = {resolve: resolve, reject: reject};
+        this._queue.push(resolver);
+        this.launchRequests();
+      })
+      .then(() => {
+        return this.promiseWithRetries(url, this._maxRetries, requestOptions);
+      })
+      .then(
+        (response) => {
+          // Success - Let's free space for another active
+          // request, and launch it
+          this._nActiveRequests--;
           this.launchRequests();
-        })
-            .then(() => {
-              return this.promiseWithRetries(url, this._maxRetries, postData);
-            })
-            .then(
-                (response) => {
-                  // Success - Let's free space for another active
-                  // request, and launch it
-                  this._nActiveRequests--;
-                  this.launchRequests();
-                  return response;
-                },
-                (rejection) => {
-                  if (rejection.name === 'RequestNetworkError') {
-                    // If we failed due to network error, we should
-                    // decrement
-                    // _nActiveRequests because this request was
-                    // active
-                    this._nActiveRequests--;
-                    this.launchRequests();
-                  }
-                  return Promise.reject(rejection);
-                });
+          return response;
+        },
+        (rejection) => {
+          if (rejection.name === 'RequestNetworkError') {
+            // If we failed due to network error, we should
+            // decrement
+            // _nActiveRequests because this request was
+            // active
+            this._nActiveRequests--;
+            this.launchRequests();
+          }
+          return Promise.reject(rejection);
+        });
     return promise;
   }
 
@@ -145,37 +180,28 @@ export class RequestManager {
    * pain to users, they can see it and file issues.
    */
   private promiseWithRetries(
-      url: string, maxRetries: number, postData?: {[key: string]: string}) {
+      url: string, maxRetries: number, requestOptions: RequestOptions) {
     var success = (x) => x;
     var failure = (x) => {
       if (maxRetries > 0) {
-        return this.promiseWithRetries(url, maxRetries - 1, postData);
+        return this.promiseWithRetries(url, maxRetries - 1, requestOptions);
       } else {
         return Promise.reject(x);
       }
     };
-    return this._promiseFromUrl(url, postData).then(success, failure);
+    return this._promiseFromUrl(url, requestOptions).then(success, failure);
   }
 
   /* Actually get promise from url using XMLHttpRequest */
-  protected _promiseFromUrl(url: string, postData?: {[key: string]: string}) {
+  protected _promiseFromUrl(url: string, requestOptions: RequestOptions) {
     return new Promise((resolve, reject) => {
       let req = new XMLHttpRequest();
-      req.open(postData ? 'POST' : 'GET', url);
-      // In case this is a cross-site request, send our credentials
-      // to support any defined CORS policy. 
-      req.withCredentials = true;
-      let formData;
-      if (postData) {
-        // We are to make a POST request.
-        formData = new FormData();
-        for (let postKey in postData) {
-          if (postKey) {
-            // The linter requires 'for in' loops to be filtered by an if
-            // condition.
-            formData.append(postKey, postData[postKey]);
-          }
-        }
+      req.open(requestOptions.methodType, url);
+      if (requestOptions.withCredentials) {
+        req.withCredentials = requestOptions.withCredentials;
+      }
+      if (requestOptions.contentType) {
+        req.setRequestHeader('Content-Type', requestOptions.contentType);
       }
       req.onload = function() {
         if (req.status === 200) {
@@ -187,8 +213,25 @@ export class RequestManager {
       req.onerror = function() {
         reject(new RequestNetworkError(req, url));
       };
-      req.send(formData);
+      if (requestOptions.body) {
+        req.send(requestOptions.body);
+      }
+      else {
+        req.send();
+      }
     });
+  }
+
+  private formDataFromDictionary(postData: {[key: string]: string}) {
+    const formData = new FormData();
+    for (let postKey in postData) {
+      if (postKey) {
+        // The linter requires 'for in' loops to be filtered by an if
+        // condition.
+        formData.append(postKey, postData[postKey]);
+      }
+    }
+    return formData;
   }
 }
 
