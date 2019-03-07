@@ -107,6 +107,8 @@ tf-graph-controls {
           out-stats="{{stats}}"
           progress="{{_progress}}"
           selected-file="[[selectedFile]]"
+          selection="[[_selection]]"
+          datasets="[[_datasets]]"
       ></tf-graph-loader>
     </div>
     <div class="main">
@@ -178,8 +180,7 @@ Polymer({
             if (this.pbtxtFileLocation) {
               return this.pbtxtFileLocation;
             }
-            return tf_backend.getRouter().pluginRoute(
-                pluginName, route, params);
+            throw new NotImplementedError();
           },
           environment: () => {
             throw new NotImplementedError();
@@ -193,12 +194,22 @@ Polymer({
           runs: () => {
             throw new NotImplementedError();
           },
-          runsForExp: () => {
+          runsForExperiment: () => {
             throw new NotImplementedError();
           },
         };
       },
     },
+    _datasets: {
+      // Please refer to tf-graph-dashboard for the Type definition.
+      // The type inforamtion is not exported.
+      type: Object,
+      computed: '_computeDatasets(pbtxtFileLocation)',
+    },
+    _selection: {
+      type: Object,
+      computed: '_computeSelection(pbtxtFileLocation)',
+    }
   },
   _updateToolbar: function() {
     this.$$('.container').classList.toggle('no-toolbar', !this.toolbar);
@@ -209,31 +220,33 @@ Polymer({
   _updateHeight: function() {
     this.$$('.container').style.height = this.height + 'px';
   },
-  _updateGraph: function() {
-    if (this.pbtxtFileLocation) {
-      // Fetch a pbtxt file. The fetching will be part of the loading sequence.
-      this.$.loader.datasets = [{
-        // Just name the dataset based on the file location.
-        name: this.pbtxtFileLocation,
-        tags: [{
-          tag: null,
-          displayName: this.pbtxtFileLocation,
-          conceptualGraph: false,
-          opGraph: true,
-          profile: false,
-        }],
-      }];
-      this.$.loader.selection = {
+  _computeDatasets(pbtxtFileLocation) {
+    return pbtxtFileLocation ? [{
+      // Just name the dataset based on the file location.
+      name: this.pbtxtFileLocation,
+      tags: [{
+        tag: null,
+        displayName: this.pbtxtFileLocation,
+        conceptualGraph: false,
+        opGraph: true,
+        profile: false,
+      }],
+    }] : [];
+  },
+  _computeSelection(pbtxtFileLocation) {
+    return pbtxtFileLocation ? {
         run: this.pbtxtFileLocation,
         tag: null,
         type: tf.graph.SelectionType.OP_GRAPH,
-      };
-    } else if (this.pbtxt) {
+      } : null;
+  },
+  _updateGraph: function() {
+    if (!this.pbtxtFileLocation && this.pbtxt) {
       // Render the provided pbtxt.
       var blob = new Blob([this.pbtxt]);
 
       // TODO(@chihuahua): Find out why we call a private method here and do away with the call.
-      this.$.loader._parseAndConstructHierarchicalGraph(null, blob);
+      this.$.loader._fetchAndConstructHierarchicalGraph(null, blob);
     }
   },
 });
