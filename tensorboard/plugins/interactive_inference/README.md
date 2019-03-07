@@ -22,7 +22,10 @@ notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
 
-Fine, here are some demos:
+Check out the large set of web and colab demos in the
+[demo section of the What-If Tool website](https://pair-code.github.io/what-if-tool/index.html#demos).
+
+To build the web demos yourself:
 * [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/uci.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
@@ -68,6 +71,10 @@ converts the data to tf.Example protos, trains a classifier, and then uses the
 What-If Tool to show the classifier performance on the data.
 
 ## What do I need to use it in TensorBoard?
+
+A walkthrough of using the tool in TensorBoard, including a pretrained model and
+test dataset, can be found on the
+[What-If Tool page on the TensorBoard website](https://www.tensorflow.org/tensorboard/r2/what_if_tool).
 
 To use the tool in TensorBoard, only the following information needs to be provided:
 
