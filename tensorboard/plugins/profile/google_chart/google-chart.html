@@ -80,6 +80,12 @@ on the `html` tag of your document.
 </dom-module>
 
 <script>
+  /**
+   * Whether google chart is already loaded.
+   *
+   * @type boolean
+   */
+  var google_chart_loaded = false;
 (function() {
   "use strict";
 
@@ -488,6 +494,10 @@ on the `html` tag of your document.
     },
 
     attached: function() {
+      if (google_chart_loaded) {
+        return;
+      }
+      google_chart_loaded = true;
       var url = "https://www.gstatic.com/charts/loader.js";
       var script = document.createElement('script');
       script.src = url;
