@@ -4,7 +4,7 @@ about: Use this template for reporting a bug or a performance issue.
 
 ---
 
-</em>tag:bug_template</em>
+<em>tag:bug_template</em>
 
 **Please provide the following information**
 
