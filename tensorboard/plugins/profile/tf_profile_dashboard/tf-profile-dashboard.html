@@ -111,21 +111,12 @@ profile run can have multiple tools that present the performance profile as diff
   <div class="sidebar">
     <div class="allcontrols">
       <div class="sidebar-section" hidden="[[!_hasDownloadLinks]]">
-        <div class="line-item">
-           <paper-checkbox
-             id="show-download-links"
-             checked="{{_showDownloadLinks}}"
-           >Show data download links</paper-checkbox>
-        </div>
-        <div>
-          <template is="dom-if" if="[[_showDownloadLinks]]">
-            <tf-downloader
+	Download data
+	<tf-downloader
               runs="[[_runsForDownloader()]]"
               tag="end_to_end"
               url-fn="[[_downloadUrlFn]]"
-             ></tf-downloader>
-          </template>
-        </div>
+        </tf-downloader>
       </div>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
