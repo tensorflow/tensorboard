@@ -378,6 +378,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     tool = request.args.get('tag')
     host = request.args.get('host')
+    if host is None:
+      host = ''
     run_dir = self._run_dir(run)
     # Profile plugin "run" is the last component of run dir.
     profile_run = os.path.basename(run_dir)

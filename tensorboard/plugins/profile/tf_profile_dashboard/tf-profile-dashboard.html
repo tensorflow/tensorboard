@@ -433,7 +433,7 @@ profile run can have multiple tools that present the performance profile as diff
       this.set('_isAttached', false);
     },
     _runsForDownloader: function() {
-      return ['latest'];
+      return [this._selectedDatasetName];
     },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
