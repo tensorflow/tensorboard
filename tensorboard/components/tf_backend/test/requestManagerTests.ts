@@ -155,7 +155,6 @@ describe('backend', () => {
     });
 
     it('requestManager only sends maxRequests requests at a time', (done) => {
-      chai.assert.equal(1,2);
       const rm = new MockedRequestManager(3);
       const r0 = rm.request('1');
       const r1 = rm.request('2');
