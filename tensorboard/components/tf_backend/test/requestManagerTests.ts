@@ -316,8 +316,8 @@ describe('backend', () => {
       it('builds correct XMLHttpRequest when request(url) is called',
          function() {
            const rm = new RequestManager();
-           return (rm.request("my_url") as any)
-             .finally(()=>{
+           return rm.request("my_url")
+             .then(()=>{
                chai.assert.lengthOf(server.requests, 1);
                chai.assert.equal(server.requests[0].url, "my_url");
                chai.assert.equal(server.requests[0].requestBody, null);
@@ -330,9 +330,9 @@ describe('backend', () => {
       it('builds correct XMLHttpRequest when request(url, postData) is called',
          function() {
            const rm = new RequestManager();
-           return (rm.request("my_url",
-                              {"key1": "value1", "key2": "value2"}) as any)
-             .finally(() => {
+           return rm.request("my_url",
+                              {"key1": "value1", "key2": "value2"})
+             .then(() => {
                chai.assert.lengthOf(server.requests, 1);
                chai.assert.equal(server.requests[0].url, "my_url");
                chai.assert.equal(server.requests[0].method,
@@ -351,8 +351,8 @@ describe('backend', () => {
            requestOptions.methodType = HttpMethodType.POST;
            requestOptions.contentType = "text/plain;charset=utf-8";
            requestOptions.body = "the body";
-           return (rm.requestWithOptions("my_url", requestOptions) as any)
-             .finally(()=>{
+           return rm.requestWithOptions("my_url", requestOptions)
+             .then(()=>{
                chai.assert.lengthOf(server.requests, 1);
                chai.assert.equal(server.requests[0].url, "my_url");
                chai.assert.equal(server.requests[0].method,
