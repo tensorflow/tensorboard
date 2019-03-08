@@ -299,7 +299,9 @@ def _run_conditionally(guard, name, reason_required=True):
 
     Args:
       reason: String giving a reason for limiting the test.
-      func: A function or class to be annotated.
+      func: A function or class to be annotated. If `func` is None, this
+          returns a decorator the can be applied to a function. If `func`
+          is not None this returns the decorator applied to `func`.
 
     Returns:
       Returns a decorator that will conditionally skip the decorated test method.
