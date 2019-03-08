@@ -32,7 +32,6 @@ import threading
 import unittest
 
 import tensorflow as tf
-from tensorflow.python import tf2
 
 from tensorboard import db
 from tensorboard.compat.proto import event_pb2
@@ -304,9 +303,11 @@ def _run_conditionally(guard, name, default_reason=None):
 
   return _impl
 
+_is_tf2 =  tf.__version__.startswith('2.')
 run_v1_only = _run_conditionally(
-    lambda: not tf2.enabled(), name='run_v1_only')
+    lambda: not _is_tf2,
+    name='run_v1_only')
 run_v2_only = _run_conditionally(
-    lambda: tf2.enabled(),
+    lambda: _is_tf2,
     name='run_v2_only',
     default_reason='Test only appropriate for TensorFlow v2')
