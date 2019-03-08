@@ -179,7 +179,7 @@ def _AssignEventsToSessions(session_times, events):
       logger.warn('Not all the times in session "%s" are set'%sess.name)
 
         
-class End2EndBreakDown(object):
+class EndToEndBreakDown(object):
   def __init__(self, events):
     session_times = {}
     session_times['train'] = SessionTimeBreakDown('train')

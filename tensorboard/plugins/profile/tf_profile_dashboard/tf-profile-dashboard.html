@@ -30,7 +30,7 @@ limitations under the License.
 <link rel="import" href="../tf-profile-common/tf-profile-common.html">
 <link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
 <link rel="import" href="../google-chart/google-chart-demo.html">
-<link rel="import" href="../end-2-end/end-2-end.html">
+<link rel="import" href="../tf-end-to-end/tf-end-to-end.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
@@ -121,7 +121,7 @@ profile run can have multiple tools that present the performance profile as diff
           <template is="dom-if" if="[[_showDownloadLinks]]">
             <tf-downloader
               runs="[[_runsForDownloader()]]"
-              tag="end_2_end"
+              tag="end_to_end"
               url-fn="[[_downloadUrlFn]]"
              ></tf-downloader>
           </template>
@@ -206,8 +206,8 @@ profile run can have multiple tools that present the performance profile as diff
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp="true">
       <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_2_end')]]" restamp="true">
-      <end-2-end _data="[[_end2endData]]"></end-2-end>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_to_end')]]" restamp="true">
+      <tf-end-to-end _data="[[_endToendData]]"></tf-end-to-end>
     </template>
   </div>
   </tf-dashboard-layout>
@@ -383,7 +383,7 @@ profile run can have multiple tools that present the performance profile as diff
       _googleChartDemoData: {
         type: Object,
       },
-      _end2endData: {
+      _endToendData: {
         type: Object,
       },
       _selectedDatasetName: {
@@ -596,9 +596,9 @@ profile run can have multiple tools that present the performance profile as diff
           this._googleChartDemoData = data;
           this._toolInScope = "google_chart_demo";
           break;
-       case "end_2_end":
-          this._end2endData = data;
-          this._toolInScope = "end_2_end";
+       case "end_to_end":
+          this._endToendData = data;
+          this._toolInScope = "end_to_end";
           this._hasDownloadLinks = true;
           break;
       }

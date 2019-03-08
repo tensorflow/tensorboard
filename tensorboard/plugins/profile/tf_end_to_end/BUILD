@@ -5,9 +5,9 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "end_2_end",
-    srcs = ["end-2-end.html"],
-    path = "/end-2-end",
+    name = "tf_end_to_end",
+    srcs = ["tf-end-to-end.html"],
+    path = "/tf-end-to-end",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/profile/google_chart",

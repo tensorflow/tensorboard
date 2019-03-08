@@ -24,7 +24,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         ":trace_events_json",
-        ":end_2_end_util",
+        ":end_to_end_util",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
@@ -78,11 +78,10 @@ py_binary(
         "profile_demo_data.py",
     ],
     data = [
-        "profile_demo.end_2_end.json",
         "profile_demo.google_chart_demo.json",
         "profile_demo.memory_viewer.json",
         "profile_demo.op_profile.json",
-        "end_2_end.tfevents",
+        "end_to_end.tfevents",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -94,8 +93,8 @@ py_binary(
 )
 
 py_library(
-    name = "end_2_end_util",
-    srcs = ["end_2_end_util.py"],
+    name = "end_to_end_util",
+    srcs = ["end_to_end_util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
