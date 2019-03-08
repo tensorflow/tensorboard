@@ -324,8 +324,6 @@ describe('backend', () => {
                chai.assert.equal(server.requests[0].method, HttpMethodType.GET);
                chai.assert.notProperty(server.requests[0].requestHeaders,
                                        "Content-Type");
-             }).finally(()=>{
-               server.restore();
              });
          });
 

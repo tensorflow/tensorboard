@@ -246,7 +246,7 @@ function buildXMLHttpRequest(methodType: HttpMethodType, url: string,
   return req;
 }
 
-export function requestOptionsFromPostData(postData?: {[key: string]: string}):
+function requestOptionsFromPostData(postData?: {[key: string]: string}):
     RequestOptions {
   const result = new RequestOptions();
   if (!postData) {
@@ -258,7 +258,7 @@ export function requestOptionsFromPostData(postData?: {[key: string]: string}):
   return result;
 }
   
-export function formDataFromDictionary(postData: {[key: string]: string}) {
+function formDataFromDictionary(postData: {[key: string]: string}) {
   const formData = new FormData();
   for (let postKey in postData) {
     if (postKey) {
