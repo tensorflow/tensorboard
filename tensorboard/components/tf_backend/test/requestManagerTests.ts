@@ -155,6 +155,7 @@ describe('backend', () => {
     });
 
     it('requestManager only sends maxRequests requests at a time', (done) => {
+      chai.assert.equal(1,2);
       const rm = new MockedRequestManager(3);
       const r0 = rm.request('1');
       const r1 = rm.request('2');
@@ -209,7 +210,7 @@ describe('backend', () => {
       // and then launch remaining requests in queue (i.e. this one)
       r1.then((success) => done(), (failure) => done(new Error(failure)));
     });
-
+    
     it('queue is LIFO', (done) => {
       /* This test is a bit tricky.
        * We want to verify that the RequestManager queue has LIFO semantics.
@@ -288,6 +289,83 @@ describe('backend', () => {
         rm.resolveFakeRequest();
         // resolving the first request triggers finishTheTest
       });
+    });
+
+    it('throws InvalidRequestOptionsError on bad RequestOptions', function() {
+      const rm = new RequestManager();
+        const badOptions = new RequestOptions();
+      badOptions.methodType = HttpMethodType.GET;
+      badOptions.body = "a body";
+      chai.assert.throws(
+        ()=>rm.requestWithOptions("http://www.google.com", badOptions),
+        InvalidRequestOptionsError);
+    });
+
+    describe('tests using sinon.fakeServer', function() {
+      let server;
+      
+      beforeEach(function() {
+        server = sinon.fakeServer.create();
+        server.respondImmediately = true;
+        server.respondWith("{}");
+      });
+
+      afterEach(function() {
+        server.restore();
+      });
+      
+      it('builds correct XMLHttpRequest when request(url) is called',
+         function() {
+           const rm = new RequestManager();
+           return (rm.request("my_url") as any)
+             .finally(()=>{
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].requestBody, null);
+               chai.assert.equal(server.requests[0].method, HttpMethodType.GET);
+               chai.assert.notProperty(server.requests[0].requestHeaders,
+                                       "Content-Type");
+             }).finally(()=>{
+               server.restore();
+             });
+         });
+
+      it('builds correct XMLHttpRequest when request(url, postData) is called',
+         function() {
+           const rm = new RequestManager();
+           return (rm.request("my_url",
+                              {"key1": "value1", "key2": "value2"}) as any)
+             .finally(() => {
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].method,
+                                 HttpMethodType.POST);
+               chai.assert.instanceOf(server.requests[0].requestBody, FormData);
+               chai.assert.sameDeepMembers(
+                 Array.from((server.requests[0].requestBody as any).entries()),
+                 [["key1", "value1"], ["key2", "value2"]]);
+             });
+         });
+
+      it('builds correct XMLHttpRequest when requestWithOptions is called',
+         function() {
+           const rm = new RequestManager();
+           const requestOptions = new RequestOptions();
+           requestOptions.methodType = HttpMethodType.POST;
+           requestOptions.contentType = "text/plain;charset=utf-8";
+           requestOptions.body = "the body";
+           return (rm.requestWithOptions("my_url", requestOptions) as any)
+             .finally(()=>{
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].method,
+                                 HttpMethodType.POST);
+               chai.assert.equal(server.requests[0].requestBody, "the body");
+               chai.assert.equal(
+                 server.requests[0].requestHeaders["Content-Type"],
+                 "text/plain;charset=utf-8");
+             });
+         });
     });
   });
 });
