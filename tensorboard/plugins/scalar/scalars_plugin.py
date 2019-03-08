@@ -38,6 +38,10 @@ from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
 
 
+def _IsProfileRun(runname):
+  return runname == 'profile_logger.summary'
+
+
 class OutputFormat(object):
   """An enum used to list the valid output formats for API calls."""
   JSON = 'json'
@@ -102,6 +106,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       result = collections.defaultdict(dict)
       for row in cursor:
         tag_name, display_name, run_name = row
+        if _IsProfileRun(run_name):
+          continue
         result[run_name][tag_name] = {
             'displayName': display_name,
             # TODO(chihuahua): Populate the description. Currently, the tags
@@ -115,6 +121,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
+      if _IsProfileRun(run):
+        continue
       for (tag, content) in six.iteritems(tag_to_content):
         content = metadata.parse_plugin_metadata(content)
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)

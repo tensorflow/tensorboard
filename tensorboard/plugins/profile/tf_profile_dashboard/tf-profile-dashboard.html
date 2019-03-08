@@ -110,14 +110,16 @@ profile run can have multiple tools that present the performance profile as diff
   <tf-dashboard-layout>
   <div class="sidebar">
     <div class="allcontrols">
-      <div class="sidebar-section" hidden="[[!_hasDownloadLinks]]">
-	Download data
-	<tf-downloader
-              runs="[[_runsForDownloader()]]"
-              tag="end_to_end"
-              url-fn="[[_downloadUrlFn]]"
-        </tf-downloader>
-      </div>
+      <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_to_end')]]" restamp="true">
+	<div class="sidebar-section">
+	  Download data
+	  <tf-downloader
+            runs="[[_runsForDownloader()]]"
+            tag="end_to_end"
+            url-fn="[[_downloadUrlFn]]"
+            </tf-downloader>
+        </div>
+      </template>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
@@ -294,11 +296,6 @@ profile run can have multiple tools that present the performance profile as diff
       // initialized once.
       _initialized: Boolean,
       _dataNotFound: Boolean,
-      _hasDownloadLinks: {
-        type: Boolean,
-        value: false,
-        notify: true,
-      },
       _datasets: {
         type: Array,
         notify: true,
@@ -590,7 +587,6 @@ profile run can have multiple tools that present the performance profile as diff
        case "end_to_end":
           this._endToendData = data;
           this._toolInScope = "end_to_end";
-          this._hasDownloadLinks = true;
           break;
       }
     },
