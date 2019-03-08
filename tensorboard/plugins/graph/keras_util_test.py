@@ -27,19 +27,13 @@ from tensorboard.plugins.graph import keras_util
 from tensorboard.util import test_util
 
 
-class BaseGraphUtilTest(object):
+class KerasUtilTest(tf.test.TestCase):
+
   def assertGraphDefToModel(self, expected_proto, model):
     model_config = json.loads(model.to_json())
 
     self.assertProtoEquals(
         expected_proto, keras_util.keras_model_to_graph_def(model_config))
-
-  def lstm_node_name(self):
-    raise NotImplementedError()
-
-  def lstm_keras_class_name(self):
-    raise NotImplementedError()
-
 
   def test_keras_model_to_graph_def_sequential_model(self):
     expected_proto = """
@@ -282,7 +276,7 @@ class BaseGraphUtilTest(object):
       }
     }
     node {
-      name: "model/%s"
+      name: "model/simple_rnn"
       input: "model/lstm_input"
       attr {
         key: "dtype"
@@ -293,13 +287,13 @@ class BaseGraphUtilTest(object):
       attr {
         key: "keras_class"
         value {
-          s: "%s"
+          s: "SimpleRNN"
         }
       }
     }
-    """ % (self.lstm_node_name(), self.lstm_keras_class_name())
+    """
     inputs = tf.keras.layers.Input(shape=(None, 5), name='lstm_input')
-    encoder = tf.keras.layers.LSTM(256)
+    encoder = tf.keras.layers.SimpleRNN(256)
 
     model = tf.keras.models.Model(inputs=inputs, outputs=encoder(inputs))
     self.assertGraphDefToModel(expected_proto, model)
@@ -438,7 +432,7 @@ class BaseGraphUtilTest(object):
       }
     }
     node {
-      name: "model/%s"
+      name: "model/simple_rnn"
       input: "model/embedding"
       attr {
         key: "dtype"
@@ -449,7 +443,7 @@ class BaseGraphUtilTest(object):
       attr {
         key: "keras_class"
         value {
-          s: "%s"
+          s: "SimpleRNN"
         }
       }
     }
@@ -470,7 +464,7 @@ class BaseGraphUtilTest(object):
     }
     node {
       name: "model/concatenate"
-      input: "model/%s"
+      input: "model/simple_rnn"
       input: "model/aux_input"
       attr {
         key: "dtype"
@@ -519,7 +513,7 @@ class BaseGraphUtilTest(object):
     }
     node {
       name: "model/aux_output"
-      input: "model/%s"
+      input: "model/simple_rnn"
       attr {
         key: "dtype"
         value {
@@ -533,17 +527,17 @@ class BaseGraphUtilTest(object):
         }
       }
     }
-    """ % (self.lstm_node_name(), self.lstm_keras_class_name(), self.lstm_node_name(), self.lstm_node_name())
+    """
     main_input = tf.keras.layers.Input(shape=(100,), dtype='int32', name='main_input')
     x = tf.keras.layers.Embedding(
         output_dim=512, input_dim=10000, input_length=100)(main_input)
-    lstm_out = tf.keras.layers.LSTM(32)(x)
+    rnn_out = tf.keras.layers.SimpleRNN(32)(x)
 
     auxiliary_output = tf.keras.layers.Dense(
-        1, activation='sigmoid', name='aux_output')(lstm_out)
+        1, activation='sigmoid', name='aux_output')(rnn_out)
     auxiliary_input = tf.keras.layers.Input(shape=(5,), name='aux_input')
 
-    x = tf.keras.layers.concatenate([lstm_out, auxiliary_input])
+    x = tf.keras.layers.concatenate([rnn_out, auxiliary_input])
     x = tf.keras.layers.Dense(64, activation='relu')(x)
 
     main_output = tf.keras.layers.Dense(1, activation='sigmoid', name='main_output')(x)
@@ -851,26 +845,6 @@ class BaseGraphUtilTest(object):
     ])
 
     self.assertGraphDefToModel(expected_proto, model)
-
-
-@test_util.run_v1_only('LSTM has different name')
-class GraphUtilV1Test(BaseGraphUtilTest, tf.test.TestCase):
-
-  def lstm_node_name(self):
-    return 'lstm'
-
-  def lstm_keras_class_name(self):
-    return 'LSTM'
-
-
-@test_util.run_v2_only
-class GraphUtilV2Test(BaseGraphUtilTest, tf.test.TestCase):
-
-  def lstm_node_name(self):
-    return 'unified_lstm'
-
-  def lstm_keras_class_name(self):
-    return 'UnifiedLSTM'
 
 
 if __name__ == '__main__':

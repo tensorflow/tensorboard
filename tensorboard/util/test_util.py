@@ -27,6 +27,7 @@ import contextlib
 import functools
 import inspect
 import os
+import six
 import sqlite3
 import threading
 import unittest
@@ -280,51 +281,73 @@ def ensure_tb_summary_proto(summary):
   return summary_pb2.Summary.FromString(summary.SerializeToString())
 
 
-def _run_conditionally(guard, requires_reason=True):
-
-  def _run_conditionally_impl(reason, func = None):
-    """Execute the decorated test only if running in v1 mode.
-
-    This function is intended to be applied to tests that exercise v1 only
-    functionality. If the test is run in v2 mode it will simply be skipped.
+def _run_conditionally(guard, name, reason_required=True):
+  """Creates a decorator that skips a test when guard returns False.
 
     Args:
-      func: function or class to be annotated.
-      reason: string giving a reason for limiting the test to v1 only. No
-        component should be TensorFlow only, moreover v1 only.
+      guard: A lambda that returns True if a test should be executed.
+      name: A human readable name for the decorator for an error message.
+      reason_required: True if a reason for skipping a test is required.
+          Default is True.
+
+    Returns:
+      Returns a decorator.
+    """
+
+  def _run_conditionally_impl(reason=None, func=None):
+    """Executes the decorated test only if the guard returns True.
+
+    Args:
+      reason: String giving a reason for limiting the test.
+      func: A function or class to be annotated.
 
     Returns:
       Returns a decorator that will conditionally skip the decorated test method.
-
     """
-    print('swl', reason, func)
-    if reason is None and requires_reason:
-      raise ValueError('%s requires reason.' % func.__name__)
+    # Depending on how a class or a function is decorated, reason can be
+    # non-string.
+    # Case 1:
+    #   @my_decorator
+    #   def foo():
+    #   In this case, `reason` is the `foo` and `func` is None.
+    # Case 2:
+    #   @my_decorator('bar')
+    #   def foo():
+    #   In this case, `reason` is 'bar' and `func` is None.
+    # Case 3:
+    #   def foo():
+    #   foo = my_decorator('bar', foo)
+    #   In this case, `reason` is 'bar' and `func` is `foo`.
+    if not isinstance(reason, six.string_types) and reason_required:
+      raise ValueError('%s requires a reason for skipping.' % name)
 
-    if inspect.isclass(func):
-      class_ = func
-      setup = class_.__dict__.get("setUp")
-      if setup is not None:
-        setattr(class_, "setUp", _run_conditionally_impl(setup))
+    def decorator(target):
+      if inspect.isclass(target):
+        _class = target
 
-      for name in _unittest_loader.getTestCaseNames(
-          func, unittest.TestLoader.testMethodPrefix):
-        value = getattr(func, name)
-        setattr(func, name, _run_conditionally_impl(value))
+        for name in _unittest_loader.getTestCaseNames(
+            _class, unittest.TestLoader.testMethodPrefix):
+          value = getattr(_class, name)
+          setattr(_class, name, decorator(value))
 
-      return class_
+        return _class
 
-    # @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-      if not guard():
-        self.skipTest(reason)
+      @functools.wraps(target)
+      def decorated(self, *args, **kwargs):
+        if not guard():
+          self.skipTest(reason)
+        return target(*args, **kwargs)
 
-      return func(*args, **kwargs)
+      return decorated
 
-    return wrapper
+    if func is not None:
+      return decorator(func)
+    return decorator
 
   return _run_conditionally_impl
 
 
-run_v1_only = _run_conditionally(lambda: not tf2.enabled(), True)
-run_v2_only = _run_conditionally(lambda: tf2.enabled(), False)
+run_v1_only = _run_conditionally(
+    lambda: not tf2.enabled(), name='run_v1_only', reason_required=True)
+run_v2_only = _run_conditionally(
+    lambda: tf2.enabled(), name='run_v2_only', reason_required=False)
