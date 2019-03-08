@@ -91,21 +91,18 @@ class LazyTest(unittest.TestCase):
     # This would fail if the implementation of `_memoize` used `==`
     # rather than `is` to check for the sentinel value.
     class EqualToEverything(object):
-      init_count = 0
-
-      def __init__(self):
-        EqualToEverything.init_count += 1
-
       def __eq__(self, other):
         return True
 
+    count_box = [0]
     @lazy.lazy_load("foo")
     def foo():
+      count_box[0] += 1
       return EqualToEverything()
 
     dir(foo)
     dir(foo)
-    self.assertEqual(EqualToEverything.init_count, 1)
+    self.assertEqual(count_box[0], 1)
 
 
 if __name__ == '__main__':
