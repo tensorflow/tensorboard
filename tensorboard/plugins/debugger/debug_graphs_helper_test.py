@@ -12,7 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests the debug_graphs_helper module."""
+"""Tests the debug_graphs_helper module.
+
+[1]: Below graph creates different ops
+  a = tf.Variable([1.0], name='a')
+  b = tf.Variable([2.0], name='b')
+  _ = tf.add(a, b, name='c')
+
+In v1:
+  a, a/Assign, a/initial_value, a/read,
+  b, b/Assign, b/initial_value, b/read,
+  c
+In v2:
+  a, a/Assign, a/Initializer/initial_value,
+  a/IsInitialized/VarIsInitializedOp, a/Read/ReadVariableOp
+  b, b/Assign, b/Initializer/initial_value,
+  b/IsInitialized/VarIsInitializedOp, b/Read/ReadVariableOp,
+  c, c/ReadVariableOp,  c/ReadVariableOp_1,
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -134,22 +151,9 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertEqual([], gated_debug_ops)
 
 
-# [1]: Below graph creates different ops
-#   a = tf.Variable([1.0], name='foo/a')
-#   b = tf.Variable([2.0], name='bar/b')
-#   _ = tf.add(a, b, name='baz/c')
-#
-# In v1:
-#   bar/b, bar/b/Assign, bar/b/initial_value, bar/b/read, baz/c,
-#   foo/a, foo/a/Assign, foo/a/initial_value, foo/a/read
-# In v2:
-#   bar/b, bar/b/Assign, bar/b/Initializer/initial_value,
-#   bar/b/IsInitialized/VarIsInitializedOp, bar/b/Read/ReadVariableOp,
-#   baz/c, baz/c/ReadVariableOp,  baz/c/ReadVariableOp_1,
-#   foo/a, foo/a/Assign, foo/a/Initializer/initial_value,
-#   foo/a/IsInitialized/VarIsInitializedOp, foo/a/Read/ReadVariableOp
-
-@test_util.run_v1_only('Graph creates different op structure in v2. See [1].')
+@test_util.run_v1_only((
+    'Graph creates different op structure in v2. See '
+    'debug_graphs_helper_test.py[1].'))
 class BaseExpandedNodeNameTest(tf.test.TestCase):
 
   def testMaybeBaseExpandedNodeName(self):

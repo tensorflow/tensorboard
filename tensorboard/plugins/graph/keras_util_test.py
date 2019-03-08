@@ -33,13 +33,13 @@ class BaseGraphUtilTest(object):
 
     self.assertProtoEquals(
         expected_proto, keras_util.keras_model_to_graph_def(model_config))
-  
+
   def lstm_node_name(self):
-    raise NotImplementedError
+    raise NotImplementedError()
 
   def lstm_keras_class_name(self):
-    raise NotImplementedError
-    
+    raise NotImplementedError()
+
 
   def test_keras_model_to_graph_def_sequential_model(self):
     expected_proto = """

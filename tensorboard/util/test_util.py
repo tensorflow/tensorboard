@@ -280,91 +280,51 @@ def ensure_tb_summary_proto(summary):
   return summary_pb2.Summary.FromString(summary.SerializeToString())
 
 
-def run_v1_only(reason, func=None):
-  """Execute the decorated test only if running in v1 mode.
+def _run_conditionally(guard, requires_reason=True):
 
-  This function is intended to be applied to tests that exercise v1 only
-  functionality. If the test is run in v2 mode it will simply be skipped.
+  def _run_conditionally_impl(reason, func = None):
+    """Execute the decorated test only if running in v1 mode.
 
-  Args:
-    reason: string giving a reason for limiting the test to v1 only. No
-      component should be TensorFlow only, moreover v1 only.
-    func: function to be annotated. If `func` is None, this method returns a
-      decorator the can be applied to a function. If `func` is not None this
-      returns the decorator applied to `func`.
+    This function is intended to be applied to tests that exercise v1 only
+    functionality. If the test is run in v2 mode it will simply be skipped.
 
-  Returns:
-    Returns a decorator that will conditionally skip the decorated test method.
-  """
+    Args:
+      func: function or class to be annotated.
+      reason: string giving a reason for limiting the test to v1 only. No
+        component should be TensorFlow only, moreover v1 only.
 
-  def decorator(f):
-    if inspect.isclass(f):
-      setup = f.__dict__.get("setUp")
+    Returns:
+      Returns a decorator that will conditionally skip the decorated test method.
+
+    """
+    print('swl', reason, func)
+    if reason is None and requires_reason:
+      raise ValueError('%s requires reason.' % func.__name__)
+
+    if inspect.isclass(func):
+      class_ = func
+      setup = class_.__dict__.get("setUp")
       if setup is not None:
-        setattr(f, "setUp", decorator(setup))
+        setattr(class_, "setUp", _run_conditionally_impl(setup))
 
       for name in _unittest_loader.getTestCaseNames(
-          f, unittest.TestLoader.testMethodPrefix):
-        value = getattr(f, name)
-        if (callable(value) and
-            name.startswith(unittest.TestLoader.testMethodPrefix)):
-          setattr(f, name, decorator(value))
+          func, unittest.TestLoader.testMethodPrefix):
+        value = getattr(func, name)
+        setattr(func, name, _run_conditionally_impl(value))
 
-      return f
+      return class_
 
-    def decorated(self, *args, **kwargs):
-      if tf2.enabled():
+    # @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+      if not guard():
         self.skipTest(reason)
 
-      return f(self, *args, **kwargs)
+      return func(*args, **kwargs)
 
-    return decorated
+    return wrapper
 
-  if func is not None:
-    return decorator(func)
-
-  return decorator
+  return _run_conditionally_impl
 
 
-def run_v2_only(func=None):
-  """Execute the decorated test only if running in TensorFlow v2 mode.
-
-  This function is intended to be applied to tests that exercise v2 only
-  functionality. If the test is run in v1 mode it will simply be skipped.
-
-  Args:
-    func: function to be annotated. If `func` is None, this method returns a
-      decorator the can be applied to a function. If `func` is not None this
-      returns the decorator applied to `func`.
-
-  Returns:
-    Returns a decorator that will conditionally skip the decorated test method.
-  """
-
-  def decorator(f):
-    if inspect.isclass(f):
-      setup = f.__dict__.get("setUp")
-      if setup is not None:
-        setattr(f, "setUp", decorator(setup))
-
-      for name in _unittest_loader.getTestCaseNames(
-          f, unittest.TestLoader.testMethodPrefix):
-        value = getattr(f, name)
-        if (callable(value) and
-            name.startswith(unittest.TestLoader.testMethodPrefix)):
-          setattr(f, name, decorator(value))
-
-      return f
-
-    def decorated(self, *args, **kwargs):
-      if not tf2.enabled():
-        self.skipTest("Skipping test for TF v2.")
-
-      return f(self, *args, **kwargs)
-
-    return decorated
-
-  if func is not None:
-    return decorator(func)
-
-  return decorator
+run_v1_only = _run_conditionally(lambda: not tf2.enabled(), True)
+run_v2_only = _run_conditionally(lambda: tf2.enabled(), False)
