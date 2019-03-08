@@ -34,12 +34,10 @@ limitations under the License.
         width: 1200px;
       }
     </style>
-    <div id="the-body">
-      <google-chart type="bar"
-        options='{"isStacked":"percent", "title": "Runtime breakdown (in ms)", "legend": {"position":"top", "maxLines":"5"}}'
-        data="[[_data]]">
-      </google-chart>
-    </div>
+    <google-chart type="bar"
+      options='{"isStacked":"percent", "title": "Runtime breakdown (in ms)", "legend": {"position":"top", "maxLines":"5"}}'
+      data="[[_data]]">
+    </google-chart>
   </template>
 
   <script>
