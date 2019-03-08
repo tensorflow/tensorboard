@@ -110,16 +110,6 @@ profile run can have multiple tools that present the performance profile as diff
   <tf-dashboard-layout>
   <div class="sidebar">
     <div class="allcontrols">
-      <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_to_end')]]" restamp="true">
-	<div class="sidebar-section">
-	  Download data
-	  <tf-downloader
-            runs="[[_runsForDownloader()]]"
-            tag="end_to_end"
-            url-fn="[[_downloadUrlFn]]"
-            </tf-downloader>
-        </div>
-      </template>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
@@ -167,6 +157,18 @@ profile run can have multiple tools that present the performance profile as diff
           ></buffer-details>
         </template>
       </div>
+      <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_to_end')]]" restamp="true">
+	<div class="sidebar-section">
+	  <p>
+	    Download data
+	    <tf-downloader
+              runs="[[_runsForDownloader()]]"
+              tag="end_to_end"
+              url-fn="[[_downloadUrlFn]]"
+            </tf-downloader>
+          </p>
+        </div>
+      </template>
     </div>
   </div>
   <div class="center">
@@ -400,11 +402,11 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
         value: () => {},
       },
-      getDataLoadUrl: {
+      // To be provided as the `url-fn` property to `tf-downloader`.
+      _downloadUrlFn: {
         type: Function,
         value: function() {
-            return ({tag, run, host}) => {
-            return tf_backend.getRouter().pluginRoute(
+            return (tag, run) => tf_backend.getRouter().pluginRoute(
                 'profile',
                 '/data',
                 new URLSearchParams({
@@ -412,14 +414,6 @@ profile run can have multiple tools that present the performance profile as diff
                     run: run,
                     experiment: '',
                 }));
-          }
-        },
-      },
-      // To be provided as the `url-fn` property to `tf-downloader`.
-      _downloadUrlFn: {
-        type: Function,
-        value: function() {
-            return (tag, run) => this.getDataLoadUrl({tag, run});
         },
       },
     },
