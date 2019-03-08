@@ -317,7 +317,7 @@ writer.add_summary(layout_summary)
         this._requestManager.request(url).then(handlePluginsListingResponse);
       },
       _reloadCharts() {
-        this.querySelectorAll('tf-custom-scalar-card').forEach(chart => {
+        this.querySelectorAll('tf-custom-scalar-margin-chart-card, tf-custom-scalar-multi-line-chart-card').forEach(chart => {
           chart.reload();
         });
       },
