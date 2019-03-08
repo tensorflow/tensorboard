@@ -59,6 +59,7 @@ profile run can have multiple tools that present the performance profile as diff
     </p>
   </div>
 </template>
+<paper-toast id="toast" text="" always-on-top></paper-toast>
 <paper-dialog id="captureProfileDialog" modal>
   <paper-input label="Profiler Service URL or TPU name"
                always-float-label
@@ -73,13 +74,13 @@ profile run can have multiple tools that present the performance profile as diff
   </paper-radio-group>
   <paper-input label="Profiling Duration (milliseconds)"
                always-float-label
-               type=number
+               type="number"
                min=1
                value="{{_profileDuration}}"></paper-input>
   <div class="buttons">
     <paper-button dialog-confirm raised
-                  on-tap="captureProfile"
-                  disabled$="[[shouldDisableCaptureProfileButton(profilerServiceAddress, _profileDuration)]]">Capture</paper-button>
+                  on-tap="_captureProfile"
+                  disabled$="[[_shouldDisableCaptureProfileButton(profilerServiceAddress, _profileDuration)]]">Capture</paper-button>
     <paper-button dialog-confirm>Close</paper-button>
   </div>
 </paper-dialog>
@@ -137,7 +138,7 @@ profile run can have multiple tools that present the performance profile as diff
     <div class="allcontrols">
       <div class="sidebar-section">
         <paper-button raised
-                      on-tap="openCaptureProfileDialog">Capture Profile</paper-button>
+                      on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
       </div>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
@@ -220,7 +221,6 @@ profile run can have multiple tools that present the performance profile as diff
     </template>
   </div>
   </tf-dashboard-layout>
-<paper-toast id="toast" text="" always-on-top></paper-toast>
 </template>
 <style include="dashboard-style"></style>
 
@@ -439,13 +439,13 @@ profile run can have multiple tools that present the performance profile as diff
     detached: function() {
       this.set('_isAttached', false);
     },
-    openCaptureProfileDialog: function() {
+    _openCaptureProfileDialog: function() {
       this.$.captureProfileDialog.open();
     },
-    shouldDisableCaptureProfileButton: function(profilerServiceAddress, profileDuration) {
+    _shouldDisableCaptureProfileButton: function(profilerServiceAddress, profileDuration) {
       return !profilerServiceAddress || profileDuration <= 0;
     },
-    captureProfile: function() {
+    _captureProfile: function() {
       const captureProfileUrl = tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
           {
