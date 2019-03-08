@@ -8,12 +8,8 @@ about: Use this template for raising a feature request
 
 **Please provide the following information**
 
-**System information**
-- Tensorboard version (you are using):
-- Are you willing to contribute it (Yes/No):
-
-
-
+**TensorBoard version (you are using):**
+**Are you willing to contribute it (Yes/No):**
 **Describe the feature and the current behavior/state:**
 
 **Will this change the existing plugins? If so, please provide plugin name and details:**
