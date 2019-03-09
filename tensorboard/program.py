@@ -360,8 +360,7 @@ class WerkzeugServer(TensorBoardServer):
     max_attempts = 10 if should_scan else 1
     base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
-    for (attempt_index, port) in (
-        enumerate(xrange(base_port, base_port + max_attempts))):
+    for port in xrange(base_port, base_port + max_attempts):
       try:
         self._server = _TensorBoardWsgiServer(
             wsgi_app=wsgi_app,
@@ -370,16 +369,15 @@ class WerkzeugServer(TensorBoardServer):
             path_prefix=flags.path_prefix,
         )
         break
-      except _TensorBoardFailedToBindError as e:
-        if attempt_index < max_attempts - 1:
-          continue
-        elif should_scan:
-          raise TensorBoardServerException(
-              'TensorBoard could not bind to any port around %s '
-              '(tried %d times)'
-              % (base_port, max_attempts))
-        else:
-          raise TensorBoardServerException(e.msg)
+      except _TensorBoardFailedToBindError:
+        if not should_scan:
+          raise
+    else:
+      # All attempts failed.
+      raise TensorBoardServerException(
+          'TensorBoard could not bind to any port around %s '
+          '(tried %d times)'
+          % (base_port, max_attempts))
 
   def serve_forever(self):
     return self._server.serve_forever()
