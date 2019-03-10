@@ -44,10 +44,17 @@ def lazy_load(name):
     # make future lookups efficient (only failed lookups call __getattr__).
     @_memoize
     def load_once(self):
-      module = load_fn()
+      if load_once.loading:
+        raise ImportError("Circular import when resolving LazyModule %r" % name)
+      load_once.loading = True
+      try:
+        module = load_fn()
+      finally:
+        load_once.loading = False
       self.__dict__.update(module.__dict__)
       load_once.loaded = True
       return module
+    load_once.loading = False
     load_once.loaded = False
 
     # Define a module that proxies getattr() and dir() to the result of calling
@@ -62,8 +69,8 @@ def lazy_load(name):
 
       def __repr__(self):
         if load_once.loaded:
-          return repr(load_once(self))
-        return '<module \'%s\' (LazyModule)>' % self.__name__
+          return '<%r via LazyModule (loaded)>' % load_once(self)
+        return '<module %r via LazyModule (not yet loaded)>' % self.__name__
 
     return LazyModule(name)
   return wrapper
@@ -78,9 +85,9 @@ def _memoize(f):
   lock = threading.RLock()
   @functools.wraps(f)
   def wrapper(arg):
-    if cache.get(arg, nothing) == nothing:
+    if cache.get(arg, nothing) is nothing:
       with lock:
-        if cache.get(arg, nothing) == nothing:
+        if cache.get(arg, nothing) is nothing:
           cache[arg] = f(arg)
     return cache[arg]
   return wrapper

@@ -16,36 +16,26 @@
 
 set -e
 
-# To find other protos you need run something like
-#
-#     find ../tensorflow/ -type f  -name 'event.proto'
-#
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <tensorflow-root-dir>" >&2
+  exit 1
+fi
 
-# Copy all protos temporarily
-cp ../tensorflow/tensorflow/core/framework/*.proto tensorboard/compat/proto/
-cp ../tensorflow/tensorflow/core/protobuf/*.proto tensorboard/compat/proto/
-cp ../tensorflow/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
-cp ../tensorflow/tensorflow/core/util/*.proto tensorboard/compat/proto/
-cp ../tensorflow/tensorflow/python/framework/*.proto tensorboard/compat/proto/
+rsync --existing "$1"/tensorflow/core/framework/*.proto tensorboard/compat/proto/
+rsync --existing "$1"/tensorflow/core/protobuf/*.proto tensorboard/compat/proto/
+rsync --existing "$1"/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
+rsync --existing "$1"/tensorflow/core/util/*.proto tensorboard/compat/proto/
+rsync --existing "$1"/tensorflow/python/framework/*.proto tensorboard/compat/proto/
 
-# run under tensorboard/tensorboard/compat/proto
-cp ../../plugins/text/plugin_data.proto plugin_text.proto
-cp ../../plugins/pr_curve/plugin_data.proto plugin_pr_curve.proto
-cp ../../plugins/custom_scalar/layout.proto .
+# Rewrite file paths and package names.
+find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
+  -e 's|tensorflow/core/framework|tensorboard/compat/proto|g;' \
+  -e 's|tensorflow/core/protobuf|tensorboard/compat/proto|g;' \
+  -e 's|tensorflow/core/profiler|tensorboard/compat/proto|g;' \
+  -e 's|tensorflow/core/util|tensorboard/compat/proto|g;' \
+  -e 's|tensorflow/python/framework|tensorboard/compat/proto|g;' \
+  -e 's|package tensorflow.tfprof;|package tensorboard;|g;' \
+  -e 's|package tensorflow;|package tensorboard;|g;' \
+  {} +
 
-# Only keep those that update
-# TODO: Might want to do this more selectively
-git clean -fdx
-
-# Replace paths internally
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/framework|tensorboard/compat/proto|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/protobuf|tensorboard/compat/proto|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/profiler|tensorboard/compat/proto|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/core/util|tensorboard/compat/proto|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|tensorflow/python/framework|tensorboard/compat/proto|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|package tensorflow.tfprof;|package tensorboard;|g' {} +
-find tensorboard/compat/proto/ -type f  -name '*.proto' -exec sed -i '' 's|package tensorflow;|package tensorboard;|g' {} +
-
-echo ""
 echo "Protos in tensorboard/compat/proto/ updated! You can now add and commit them."
-echo "Make sure License information is present."

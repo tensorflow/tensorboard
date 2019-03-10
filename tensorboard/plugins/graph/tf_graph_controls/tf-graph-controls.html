@@ -284,7 +284,7 @@ table.tf-graph-controls td.input-element-table-data {
 
 /** Override inline styles that suppress pointer events for disabled buttons. Otherwise, the */
 /*  tooltips do not appear. */
-#color-by-radio-group paper-radio-button {
+paper-radio-group paper-radio-button {
   pointer-events: auto !important;
 }
 
@@ -350,7 +350,7 @@ paper-dropdown-menu {
   <div class="control-holder runs">
     <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
     <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
-      <paper-menu id="select" class="dropdown-content" selected="{{selectedDataset}}" slot="dropdown-content">
+      <paper-menu class="dropdown-content" selected="{{_selectedRunIndex}}" slot="dropdown-content">
         <template is="dom-repeat" items="[[datasets]]">
           <paper-item>[[item.name]]</paper-item>
         </template>
@@ -359,13 +359,12 @@ paper-dropdown-menu {
   </div>
   <template is="dom-if" if="[[showSessionRunsDropdown]]">
     <div class="control-holder">
-      <div class="title">Session runs <span class="counter">([[_numSessionRuns(metadataTags)]])</span></div>
+      <div class="title">Tag <span class="counter">([[_numTags(datasets, _selectedRunIndex)]])</span></div>
       <paper-dropdown-menu no-label-float no-animations horizontal-align="left" noink class="run-dropdown">
-        <paper-menu id="select" class="dropdown-content" selected="{{selectedMetadataTag}}" slot="dropdown-content">
-          <template is="dom-repeat" items="[[metadataTags]]">
-            <paper-item>[[item.tag]]</paper-item>
+        <paper-menu class="dropdown-content" selected="{{_selectedTagIndex}}" slot="dropdown-content">
+          <template is="dom-repeat" items="[[_getTags(datasets, _selectedRunIndex)]]">
+            <paper-item>[[item.displayName]]</paper-item>
           </template>
-          <paper-item>None</paper-item>
         </paper-menu>
       </paper-dropdown-menu>
     </div>
@@ -389,6 +388,20 @@ paper-dropdown-menu {
     </div>
   </template>
   <div class="control-holder">
+    <paper-radio-group selected="{{_selectedGraphType}}">
+      <!-- Note that the name has to match that of tf.graph.SelectionType. -->
+      <paper-radio-button name="op_graph"
+          disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+      >Graph</paper-radio-button>
+      <paper-radio-button name="conceptual_graph"
+          disabled="[[_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+      >Conceptual Graph</paper-radio-button>
+      <paper-radio-button name="profile"
+          disabled="[[_getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
+      >Profile</paper-radio-button>
+    </paper-radio-group>
+  </div>
+  <div class="control-holder">
     <div>
       <paper-toggle-button id="trace-inputs" class="title">
         Trace inputs
@@ -403,7 +416,7 @@ paper-dropdown-menu {
   </template>
   <div class="control-holder">
     <div class="title">Color</div>
-    <paper-radio-group id="color-by-radio-group" selected="{{colorBy}}">
+    <paper-radio-group selected="{{colorBy}}">
       <paper-radio-button name="structure">Structure</paper-radio-button>
 
       <paper-radio-button name="device">Device</paper-radio-button>
@@ -786,6 +799,16 @@ var DEVICE_STATS_DEFAULT_OFF = [
 //  }
 ];
 
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   run: string,
+ *   tag: ?string,
+ *   type: tf.graph.SelectionType,
+ * }}
+ */
+const Selection = {};
+
 Polymer({
   is: 'tf-graph-controls',
   properties: {
@@ -799,45 +822,58 @@ Polymer({
       value: null,
       type: Object,
       notify: true,
+      // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
       readonly: true,
     },
     colorBy: {
       type: String,
       value: 'structure',
       notify: true,
-      readonly: true
     },
     colorByParams: {
       type: Object,
       notify: true,
+      // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
       readonly: true,
     },
     datasets: {
       type: Array,
-      observer: '_datasetsChanged'
+      observer: '_datasetsChanged',
+      value: () => [],
     },
     renderHierarchy: {
       type: Object,
       notify: true,
     },
-    metadataTags: {
-      type: Array,
-      computed: '_getMetadataTags(selectedDataset, datasets)'
-    },
-    selectedDataset: {
-      type: Number,
+    /**
+     * @type {!Selection}
+     */
+    selection: {
+      type: Object,
       notify: true,
-      value: 0,
-      observer: '_selectedDatasetChanged'
+      readOnly: true,
+      computed: '_computeSelection(datasets, _selectedRunIndex, _selectedTagIndex, _selectedGraphType)',
     },
     selectedFile: {
       type: Object,
       notify: true
     },
-    selectedMetadataTag: {
+    _selectedRunIndex: {
       type: Number,
-      notify: true,
-      value: -1
+      value: 0,
+      observer: '_selectedRunIndexChanged',
+    },
+    _selectedTagIndex: {
+      type: Number,
+      value: 0,
+      observer: '_selectedTagIndexChanged',
+    },
+    /**
+     * @type {tf.graph.SelectionType}
+     */
+    _selectedGraphType: {
+      type: String,
+      value: tf.graph.SelectionType.OP_GRAPH,
     },
     selectedNode: {
       type: String,
@@ -957,11 +993,14 @@ Polymer({
     }
     this.set('devicesForStats', devicesForStats);
   },
-  _numSessionRuns: function(metadataTags) {
-    return metadataTags != null ? metadataTags.length : 0;
+  _numTags: function(datasets, _selectedRunIndex) {
+    return this._getTags(datasets, _selectedRunIndex).length;
   },
-  _getBackgroundColor: function(color) {
-    return 'background-color:' + color;
+  _getTags: function(datasets, _selectedRunIndex) {
+    if (!datasets || !datasets[_selectedRunIndex]) {
+      return [];
+    }
+    return datasets[_selectedRunIndex].tags;
   },
   fit: function() {
     document.querySelector('#scene').fit();
@@ -1025,46 +1064,78 @@ Polymer({
     this.$.graphdownload.click();
   },
   _updateFileInput: function(e) {
-    var file = e.target.files[0];
-    if (!file) {
-      return;
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Strip off everything before the last "/" and strip off the file
+    // extension in order to get the name of the PNG for the graph.
+    let filePath = file.name;
+    const dotIndex = filePath.lastIndexOf('.');
+    if (dotIndex >= 0) {
+      filePath = filePath.substring(0, dotIndex);
     }
-    this._setDownloadFilename(file.name);
+    const lastSlashIndex = filePath.lastIndexOf('/');
+    if (lastSlashIndex >= 0) {
+      filePath = filePath.substring(lastSlashIndex + 1);
+    }
+    this._setDownloadFilename(filePath);
     this.set('selectedFile', e);
   },
   _datasetsChanged: function(newDatasets, oldDatasets) {
-    if (oldDatasets != null || this.selected == null) {
+    if (oldDatasets != null) {
       // Select the first dataset by default.
-      this.set('selectedDataset', 0);
-      this._setDownloadFilename(this.datasets[this.selectedDataset].path);
+      this._selectedRunIndex = 0;
     }
   },
-  _getMetadataTags: function(selectedDataset, datasets) {
-    return this.datasets[selectedDataset].runMetadata;
-  },
-  _selectedDatasetChanged: function(newDataset, oldDataset) {
-    if (this.datasets) {
-      this.set('selectedMetadataTag', -1);
-      this.set('colorBy', 'structure');
-      this.$['trace-inputs'].active = false; // Set trace input to off-state.
-      this._setDownloadFilename(this.datasets[newDataset].path);
+  _computeSelection: function(datasets, _selectedRunIndex, _selectedTagIndex, _selectedGraphType) {
+    if (!datasets[_selectedRunIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex]) {
+      return null;
     }
+
+    return {
+      run: datasets[_selectedRunIndex].name,
+      tag: datasets[_selectedRunIndex].tags[_selectedTagIndex].tag,
+      type: _selectedGraphType,
+    }
+  },
+  _selectedRunIndexChanged: function(runIndex) {
+    if (!this.datasets) return;
+    // Reset the states when user pick a different run.
+    this.colorBy = 'structure';
+    this._selectedTagIndex = 0;
+    this._selectedGraphType = this._getDefaultSelectionType();
+    this.$['trace-inputs'].active = false; // Set trace input to off-state.
+    this._setDownloadFilename(this.datasets[runIndex] ? this.datasets[runIndex].name : '');
+  },
+  _selectedTagIndexChanged() {
+     this._selectedGraphType = this._getDefaultSelectionType();
+  },
+  _getDefaultSelectionType() {
+    const {
+      datasets,
+      _selectedRunIndex: run,
+      _selectedTagIndex: tag,
+    } = this;
+    if (!datasets ||
+        !datasets[run] ||
+        !datasets[run].tags[tag] ||
+        datasets[run].tags[tag].opGraph) {
+      return tf.graph.SelectionType.OP_GRAPH;
+    }
+    if (datasets[run].tags[tag].profile) {
+      return tf.graph.SelectionType.PROFILE;
+    }
+    if (datasets[run].tags[tag].conceptualGraph) {
+      return tf.graph.SelectionType.CONCEPTUAL_GRAPH;
+    }
+    return tf.graph.SelectionType.OP_GRAPH;
   },
   _getFile: function() {
     this.$$("#file").click();
   },
-  _setDownloadFilename: function(graphPath) {
-    // Strip off everything before the last "/" and strip off the file
-    // extension in order to get the name of the PNG for the graph.
-    var dotIndex = graphPath.lastIndexOf('.');
-    if (dotIndex) {
-      graphPath = graphPath.substring(0, dotIndex);
-    }
-    var slashIndex = graphPath.lastIndexOf('/');
-    if (slashIndex) {
-      graphPath = graphPath.substring(slashIndex + 1);
-    }
-    this.$.graphdownload.setAttribute('download', graphPath + '.png');
+  _setDownloadFilename: function(name) {
+    this.$.graphdownload.setAttribute('download', name + '.png');
   },
   _statsNotNull: function(stats) {
     return stats !== null;
@@ -1082,6 +1153,21 @@ Polymer({
     // expand in the downwards direction. This collapsible expands upwards
     // though, so we reverse the icons.
     return legendOpened ? "expand-more" : "expand-less";
+  },
+  _getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
+    return !datasets[_selectedRunIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex].opGraph;
+  },
+  _getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
+    return !datasets[_selectedRunIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex].profile;
+  },
+  _getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
+    return !datasets[_selectedRunIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
+        !datasets[_selectedRunIndex].tags[_selectedTagIndex].conceptualGraph;
   },
 });
 })(); // Closing private scope.

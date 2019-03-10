@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
 
 <!--
@@ -25,11 +26,21 @@ An element which provides a filter parsing for pbtxt to graph output.
 </dom-module>
 
 <script>
+
+/**
+ * @typedef {{
+ *   run: string,
+ *   tag: ?string,
+ * }}
+ */
+const GraphRunTag = {};
+
 Polymer({
 
   is: 'tf-graph-loader',
 
   properties: {
+    datasets: Array,
     /**
      * @type {{value: number, msg: string}}
      *
@@ -40,10 +51,12 @@ Polymer({
       type: Object,
       notify: true,
     },
-    datasets: Array,
-    selectedDataset: Number,
+    selection: Object,
     selectedFile: Object,
-    compatibilityProvider: Object,
+    compatibilityProvider: {
+      type: Object,
+      value: () => new tf.graph.op.TpuCompatibilityProvider(),
+    },
     /**
      * If this optional object is provided, graph logic will override
      * the HierarchyParams it uses to build the graph with properties within
@@ -65,6 +78,10 @@ Polymer({
       readOnly: true, //readonly so outsider can't change this via binding
       notify: true
     },
+    /**
+     * @type {?GraphRunTag}
+     */
+    _graphRunTag: Object,
     outHierarchyParams: {
       type: Object,
       readOnly: true,
@@ -78,18 +95,67 @@ Polymer({
     },
   },
   observers: [
-    '_selectedDatasetChanged(selectedDataset, datasets, overridingHierarchyParams)',
-    '_selectedFileChanged(selectedFile, overridingHierarchyParams)',
-    '_readAndParseMetadata(selectedMetadataTag, overridingHierarchyParams)',
+    '_selectionChanged(selection, overridingHierarchyParams, compatibilityProvider)',
+    '_selectedFileChanged(selectedFile, overridingHierarchyParams, compatibilityProvider)',
   ],
-  _readAndParseMetadata: function(metadataIndex) {
-    if (metadataIndex == -1 || this.datasets[this.selectedDataset] == null ||
-        this.datasets[this.selectedDataset].runMetadata == null ||
-        this.datasets[this.selectedDataset].runMetadata[metadataIndex] == null) {
-      this._setOutStats(null);
-      return;
+  _selectionChanged() {
+    // selection can change a lot within a microtask.
+    // Don't fetch too much too fast and introduce race condition.
+    this.debounce('selectionchange', () => {
+      this._load(this.selection);
+    });
+  },
+  _load: function({run, tag, type: selectionType}) {
+    const {overridingHierarchyParams} = this;
+
+    switch (selectionType) {
+      case tf.graph.SelectionType.OP_GRAPH:
+      case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
+        // Clear stats about the previous graph.
+        this._setOutStats(null);
+        const args = {
+          run,
+          conceptual: selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH,
+        };
+        if (tag) args.tag = tag;
+        const graphPath = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('graphs', '/graph'), args);
+        return this._fetchAndConstructHierarchicalGraph(
+            graphPath, null, overridingHierarchyParams).then(() => {
+              this._graphRunTag = {run, tag};
+            });
+      }
+      case tf.graph.SelectionType.PROFILE: {
+        const {tags} = this.datasets.find(({name}) => name === run);
+        const tagMeta = tags.find(t => t.tag === tag);
+        // In case current tag misses opGraph but has profile information,
+        // we fallback to the v1 behavior of fetching the run graph.
+        const requiredOpGraphTag = tagMeta.opGraph ? tag : null;
+
+        console.assert(
+            tags.find(t => t.tag === requiredOpGraphTag),
+            `Required tag (${requiredOpGraphTag}) is missing.`);
+
+        const shouldFetchGraph = !this._graphRunTag ||
+            this._graphRunTag.run !== run ||
+            this._graphRunTag.tag !== requiredOpGraphTag;
+        const maybeFetchGraphPromise = shouldFetchGraph ?
+            this._load({
+              run,
+              tag: requiredOpGraphTag,
+              type: tf.graph.SelectionType.OP_GRAPH,
+            }) : Promise.resolve();
+        const metadataPath = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
+            {tag, run});
+        return maybeFetchGraphPromise
+            .then(() => this._readAndParseMetadata(metadataPath));
+      }
+      default:
+        return Promise.reject(new Error(`Unknown selection type: ${selectionType}`));
     }
-    var path = this.datasets[this.selectedDataset].runMetadata[metadataIndex].path;
+  },
+  _readAndParseMetadata: function(path) {
     // Reset the progress bar to 0.
     this.set('progress', {
       value: 0,
@@ -105,8 +171,9 @@ Polymer({
    * @param {?string} path
    * @param {string=} pbTxtFile
    * @param {Object=} overridingHierarchyParams
+   * @return {!Promise<void, Error>}
    */
-  _parseAndConstructHierarchicalGraph: function(
+  _fetchAndConstructHierarchicalGraph: function(
       path, pbTxtFile, overridingHierarchyParams) {
     // Reset the progress bar to 0.
     this.set('progress', {
@@ -130,11 +197,13 @@ Polymer({
     });
     this._setOutHierarchyParams(hierarchyParams);
     var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
-    tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
+    return tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
     .then(function(graph) {
       if (!graph.node) {
-        throw 'The graph is empty. Make sure that the graph is passed to the ' +
-            'tf.summary.FileWriter after the graph is defined.';
+        throw new Error('The graph is empty. This can happen when ' +
+            'TensorFlow could not trace any graph. Please refer to ' +
+            'https://github.com/tensorflow/tensorboard/issues/1961 for more ' +
+            'information.');
       }
 
       // Build the flat graph (consists only of Op nodes).
@@ -164,6 +233,11 @@ Polymer({
       };
       var graphTracker = tf.graph.util.getSubtaskTracker(tracker, 20, 'Graph');
       return tf.graph.build(graph, buildParams, graphTracker);
+    }, () => {
+      throw new Error('Malformed GraphDef. This can sometimes be caused by a ' + 
+          'bad network connection or difficulty reconciling multiple GraphDefs;' +
+          ' for the latter case, please refer to ' +
+          'https://github.com/tensorflow/tensorboard/issues/1929.');
     })
     .then(function(graph) {
       // Populate compatibile field of OpNode based on whitelist
@@ -182,13 +256,12 @@ Polymer({
     .catch(function(e) {
       // Generic error catch, for errors that happened outside
       // asynchronous tasks.
-      tracker.reportError("Graph visualization failed: " + e, e);
+      const msg = `Graph visualization failed.\n\n${e}`;
+
+      tracker.reportError(msg, e);
+      // Don't swallow the error.
+      throw e;
     });
-  },
-  _selectedDatasetChanged: function(
-      datasetIndex, datasets, overridingHierarchyParams) {
-    this._parseAndConstructHierarchicalGraph(
-        datasets[datasetIndex].path, undefined, overridingHierarchyParams);
   },
   _selectedFileChanged: function(e, overridingHierarchyParams) {
     if (!e) {
@@ -203,7 +276,7 @@ Polymer({
     // selects the same file, we'll re-read it.
     e.target.value = '';
 
-    this._parseAndConstructHierarchicalGraph(
+    this._fetchAndConstructHierarchicalGraph(
         null, file, overridingHierarchyParams);
   }
 });

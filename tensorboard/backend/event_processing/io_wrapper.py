@@ -32,16 +32,15 @@ logger = tb_logging.get_logger()
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile('([*?[])')
 
 
-# TODO(chihuahua): Rename this method to use camel-case for GCS (Gcs).
-def IsGCSPath(path):
-  return path.startswith("gs://")
-
-
-def IsCnsPath(path):
-  return path.startswith("/cns/")
+def IsCloudPath(path):
+  return (
+    path.startswith("gs://") or
+    path.startswith("s3://") or
+    path.startswith("/cns/")
+  )
 
 def PathSeparator(path):
-  return '/' if IsGCSPath(path) or IsCnsPath(path) else os.sep
+  return '/' if IsCloudPath(path) else os.sep
 
 def IsTensorFlowEventsFile(path):
   """Check the path name to see if it is probably a TF Events file.
@@ -184,7 +183,7 @@ def GetLogdirSubdirectories(path):
     raise ValueError('GetLogdirSubdirectories: path exists and is not a '
                      'directory, %s' % path)
 
-  if IsGCSPath(path) or IsCnsPath(path):
+  if IsCloudPath(path):
     # Glob-ing for files can be significantly faster than recursively
     # walking through directories for some file systems.
     logger.info(

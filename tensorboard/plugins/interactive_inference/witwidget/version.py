@@ -14,4 +14,4 @@
 
 """Contains the version string."""
 
-VERSION = '0.1.6a1'
+VERSION = '1.0.0'

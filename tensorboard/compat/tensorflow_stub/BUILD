@@ -13,12 +13,39 @@ py_library(
         "*.py",
         "compat/__init__.py",
         "compat/v1/__init__.py",
+        "io/__init__.py",
+        "io/gfile.py",
     ]),
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "gfile_test",
+    size = "small",
+    srcs = ["io/gfile_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tensorflow_stub",
+    ],
+)
+
+py_test(
+    name = "gfile_s3_test",
+    size = "small",
+    srcs = ["io/gfile_s3_test.py"],
+    srcs_version = "PY2AND3",
+    tags = [
+        "manual",
+        "notap",
+    ],
+    deps = [
+        ":tensorflow_stub",
     ],
 )

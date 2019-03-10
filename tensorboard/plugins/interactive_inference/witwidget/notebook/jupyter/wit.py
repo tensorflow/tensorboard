@@ -52,6 +52,12 @@ class WitWidget(widgets.DOMWidget):
   sprite = Unicode('').tag(sync=True)
 
   def __init__(self, config_builder, height=1000):
+    """Constructor for Jupyter notebook WitWidget.
+
+    Args:
+      config_builder: WitConfigBuilder object containing settings for WIT.
+      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+    """
     super(WitWidget, self).__init__(layout=Layout(height='%ipx' % height))
     tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
@@ -66,6 +72,17 @@ class WitWidget(widgets.DOMWidget):
       del copied_config['estimator_and_spec']
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
+
+    self.custom_predict_fn = (
+      config.get('custom_predict_fn')
+      if 'custom_predict_fn' in config else None)
+    self.compare_custom_predict_fn = (
+      config.get('compare_custom_predict_fn')
+      if 'compare_custom_predict_fn' in config else None)
+    if 'custom_predict_fn' in copied_config:
+      del copied_config['custom_predict_fn']
+    if 'compare_custom_predict_fn' in copied_config:
+      del copied_config['compare_custom_predict_fn']
 
     self._set_examples(config['examples'])
     del copied_config['examples']
@@ -103,11 +120,13 @@ class WitWidget(widgets.DOMWidget):
       self.config.get('predict_input_tensor'),
       self.config.get('predict_output_tensor'),
       self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'))
+      self.estimator_and_spec.get('feature_spec'),
+      self.custom_predict_fn)
     infer_objs.append(inference_utils.run_inference_for_inference_results(
       examples_to_infer, serving_bundle))
     if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator')):
+        self.compare_estimator_and_spec.get('estimator') or
+        self.compare_custom_predict_fn):
       serving_bundle = inference_utils.ServingBundle(
         self.config.get('inference_address_2'),
         self.config.get('model_name_2'),
@@ -118,7 +137,8 @@ class WitWidget(widgets.DOMWidget):
         self.config.get('predict_input_tensor'),
         self.config.get('predict_output_tensor'),
         self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec'))
+        self.compare_estimator_and_spec.get('feature_spec'),
+        self.compare_custom_predict_fn)
       infer_objs.append(inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
     self.updated_example_indices = set()
@@ -154,9 +174,11 @@ class WitWidget(widgets.DOMWidget):
       self.config.get('predict_input_tensor'),
       self.config.get('predict_output_tensor'),
       self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec')))
+      self.estimator_and_spec.get('feature_spec'),
+      self.custom_predict_fn))
     if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator')):
+        self.compare_estimator_and_spec.get('estimator') or
+        self.compare_custom_predict_fn):
       serving_bundles.append(inference_utils.ServingBundle(
         self.config.get('inference_address_2'),
         self.config.get('model_name_2'),
@@ -167,7 +189,8 @@ class WitWidget(widgets.DOMWidget):
         self.config.get('predict_input_tensor'),
         self.config.get('predict_output_tensor'),
         self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec')))
+        self.compare_estimator_and_spec.get('feature_spec'),
+        self.compare_custom_predict_fn))
     viz_params = inference_utils.VizParams(
       info['x_min'], info['x_max'],
       scan_examples, 10,

@@ -40,14 +40,16 @@ from tensorboard.util import tensor_util
 DEFAULT_BUCKET_COUNT = 30
 
 
-def histogram(name, data, step, buckets=None, description=None):
+def histogram(name, data, step=None, buckets=None, description=None):
   """Write a histogram summary.
 
   Arguments:
     name: A name for this summary. The summary tag used for TensorBoard will
       be this name prefixed by any active name scopes.
     data: A `Tensor` of any shape. Must be castable to `float64`.
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     buckets: Optional positive `int`. The output will have this
       many buckets, except in two edge cases. If there is no data, then
       there are no buckets. If there is data but all points have the
@@ -59,6 +61,10 @@ def histogram(name, data, step, buckets=None, description=None):
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
@@ -82,7 +88,7 @@ def _buckets(data, bucket_count=None):
   """
   if bucket_count is None:
     bucket_count = DEFAULT_BUCKET_COUNT
-  with tf.name_scope('buckets', values=[data, bucket_count]):
+  with tf.name_scope('buckets'):
     tf.debugging.assert_scalar(bucket_count)
     tf.debugging.assert_type(bucket_count, tf.int32)
     data = tf.reshape(data, shape=[-1])  # flatten

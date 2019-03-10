@@ -179,7 +179,7 @@ class DirectoryWatcher(object):
       path: The full path of the file to watch.
     """
     old_path = self._path
-    if old_path and not io_wrapper.IsGCSPath(old_path):
+    if old_path and not io_wrapper.IsCloudPath(old_path):
       try:
         # We're done with the path, so store its size.
         size = tf.io.gfile.stat(old_path).length
@@ -211,7 +211,7 @@ class DirectoryWatcher(object):
 
     # Don't bother checking if the paths are GCS (which we can't check) or if
     # we've already detected an OOO write.
-    if not io_wrapper.IsGCSPath(paths[0]) and not self._ooo_writes_detected:
+    if not io_wrapper.IsCloudPath(paths[0]) and not self._ooo_writes_detected:
       # Check the previous _OOO_WRITE_CHECK_COUNT paths for out of order writes.
       current_path_index = bisect.bisect_left(paths, self._path)
       ooo_check_start = max(0, current_path_index - self._OOO_WRITE_CHECK_COUNT)
