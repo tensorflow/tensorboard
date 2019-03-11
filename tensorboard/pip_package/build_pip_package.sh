@@ -27,7 +27,7 @@ tf_version="tf-nightly"
 if [ -n "${TF_VERSION}" ]; then
   tf_version="tensorflow==${TF_VERSION}"
 fi
-smoke="1"
+smoke="all"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     "--tf-version")
@@ -112,7 +112,7 @@ unset PYTHON_HOME
 # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
 pip install -qU wheel 'setuptools>=36.2.0'
 
-# python setup.py bdist_wheel --python-tag py2 >/dev/null
+python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
 smoke() {
