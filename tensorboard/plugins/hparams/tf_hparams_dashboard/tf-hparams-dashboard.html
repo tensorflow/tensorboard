@@ -41,7 +41,11 @@ limitations under the License.
                 /* apiUrl= */ tf_backend.getRouter().pluginRoute(
                     /* pluginName= */ 'hparams',
                     /* route= */ ''),
-                new tf_backend.RequestManager())
+                new tf_backend.RequestManager(),
+                /* Use GETs if we're running in colab (due to b/126387106).
+                   Otherwise use POSTs. */
+                /* useHttpGet= */ !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
+            )
           }
         }
       },
