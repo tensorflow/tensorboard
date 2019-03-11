@@ -744,7 +744,7 @@ var tf;
                 // Create the graph data structure from the graphlib library.
                 return tf.graph.util.runAsyncTask('Building the data structure', 70, function () {
                     var normalizedNameDict = mapStrictHierarchy(nodeNames, embeddingNodeNames);
-                    var graph = new SlimGraph;
+                    var graph = new SlimGraph();
                     // Add the nodes to the graph.
                     _.each(opNodes, function (opNode) {
                         var normalizedName = normalizedNameDict[opNode.name] || opNode.name;

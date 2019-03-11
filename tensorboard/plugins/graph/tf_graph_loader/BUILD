@@ -7,7 +7,10 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
     name = "tf_graph_loader",
-    srcs = ["tf-graph-loader.html"],
+    srcs = [
+        "tf-graph-loader.html",
+        "tf-graph-loader.js",
+    ],
     path = "/tf-graph-loader",
     deps = [
         "//tensorboard/components/tf_backend",
