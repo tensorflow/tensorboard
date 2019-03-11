@@ -36,7 +36,8 @@ Polymer({
     },
     selection: Object,
     /**
-     * TODO(stephanwlee): This should be changed to take in FileList instead.
+     * TODO(stephanwlee): This should be changed to take in FileList or
+     * the prop should be changed to `fileInput`.
      * @type {?Event}
      */
     selectedFile: Object,
@@ -174,7 +175,7 @@ Polymer({
       // then group them into a series node.
       seriesNodeMinSize: 5,
       // A map of series node names to series grouping settings, to indicate
-      // if a series is to be rendered as grouped or ungrouqped.
+      // if a series is to be rendered as grouped or ungrouped.
       // Starts out empty which allows the renderer to decide which series
       // are initially rendered grouped and which aren't.
       seriesMap: {},
