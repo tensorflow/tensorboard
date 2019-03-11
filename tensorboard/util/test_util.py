@@ -280,6 +280,9 @@ def ensure_tb_summary_proto(summary):
 def _run_conditionally(guard, name, default_reason=None):
   """Create a decorator factory that skips a test when guard returns False.
 
+    The factory raises ValueError when default_reason is None and reason is not
+    passed to the factory.
+
     Args:
       guard: A lambda that returns True if a test should be executed.
       name: A human readable name for the decorator for an error message.
