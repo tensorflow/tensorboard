@@ -24,15 +24,6 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
-    /*==============================================================================
-    
-      Please do not use RequestManager for new code.
-    
-      We've generally found code that uses XMLHttpRequest without promises is
-      easier to understand and maintain. This API also makes it difficult to use
-      the HTTP protocol in an idiomatic RESTful manner.
-    
-    ==============================================================================*/
     /**
      * Manages many fetch requests. Launches up to nSimultaneousRequests
      * simultaneously, and maintains a LIFO queue of requests to process when
@@ -52,6 +43,19 @@ var tf_backend;
         return RequestCancellationError;
     }(Error));
     tf_backend.RequestCancellationError = RequestCancellationError;
+    var InvalidRequestOptionsError = /** @class */ (function (_super) {
+        __extends(InvalidRequestOptionsError, _super);
+        function InvalidRequestOptionsError(msg) {
+            var _this = _super.call(this, msg) || this;
+            _this.name = 'InvalidRequestOptionsError';
+            // The following is needed due to a limitation of TypeScript when
+            // extending 'Error'. See: https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+            Object.setPrototypeOf(_this, InvalidRequestOptionsError.prototype);
+            return _this;
+        }
+        return InvalidRequestOptionsError;
+    }(Error));
+    tf_backend.InvalidRequestOptionsError = InvalidRequestOptionsError;
     var RequestNetworkError = /** @class */ (function (_super) {
         __extends(RequestNetworkError, _super);
         function RequestNetworkError(req, url) {
@@ -65,6 +69,34 @@ var tf_backend;
         return RequestNetworkError;
     }(Error));
     tf_backend.RequestNetworkError = RequestNetworkError;
+    /** The HTTP method-type to use. Currently only 'GET' and 'POST' are
+     * supported.
+     */
+    var HttpMethodType;
+    (function (HttpMethodType) {
+        HttpMethodType["GET"] = "GET";
+        HttpMethodType["POST"] = "POST";
+    })(HttpMethodType = tf_backend.HttpMethodType || (tf_backend.HttpMethodType = {}));
+    /**
+     * Holds options that can be used to configure the HTTP request.
+     */
+    var RequestOptions = /** @class */ (function () {
+        function RequestOptions() {
+        }
+        // Validates this object. Throws InvalidRequestOptionsError on error.
+        RequestOptions.prototype.validate = function () {
+            if (this.methodType === HttpMethodType.GET) {
+                // We don't allow a body for a GET.
+                if (this.body) {
+                    throw new InvalidRequestOptionsError('body must be missing for a GET request.');
+                }
+            }
+            // We allow body-less or contentType-less POSTs even if they don't
+            // make much sense.
+        };
+        return RequestOptions;
+    }());
+    tf_backend.RequestOptions = RequestOptions;
     var RequestManager = /** @class */ (function () {
         function RequestManager(nSimultaneousRequests, maxRetries) {
             if (nSimultaneousRequests === void 0) { nSimultaneousRequests = 10; }
@@ -80,14 +112,19 @@ var tf_backend;
          * object mapping POST keys to string values.
          */
         RequestManager.prototype.request = function (url, postData) {
+            var requestOptions = requestOptionsFromPostData(postData);
+            return this.requestWithOptions(url, requestOptions);
+        };
+        RequestManager.prototype.requestWithOptions = function (url, requestOptions) {
             var _this = this;
+            requestOptions.validate();
             var promise = new Promise(function (resolve, reject) {
                 var resolver = { resolve: resolve, reject: reject };
                 _this._queue.push(resolver);
                 _this.launchRequests();
             })
                 .then(function () {
-                return _this.promiseWithRetries(url, _this._maxRetries, postData);
+                return _this.promiseWithRetries(url, _this._maxRetries, requestOptions);
             })
                 .then(function (response) {
                 // Success - Let's free space for another active
@@ -138,39 +175,23 @@ var tf_backend;
          * is a feature, if the request failures and retries are causing any
          * pain to users, they can see it and file issues.
          */
-        RequestManager.prototype.promiseWithRetries = function (url, maxRetries, postData) {
+        RequestManager.prototype.promiseWithRetries = function (url, maxRetries, requestOptions) {
             var _this = this;
             var success = function (x) { return x; };
             var failure = function (x) {
                 if (maxRetries > 0) {
-                    return _this.promiseWithRetries(url, maxRetries - 1, postData);
+                    return _this.promiseWithRetries(url, maxRetries - 1, requestOptions);
                 }
                 else {
                     return Promise.reject(x);
                 }
             };
-            return this._promiseFromUrl(url, postData).then(success, failure);
+            return this._promiseFromUrl(url, requestOptions).then(success, failure);
         };
         /* Actually get promise from url using XMLHttpRequest */
-        RequestManager.prototype._promiseFromUrl = function (url, postData) {
+        RequestManager.prototype._promiseFromUrl = function (url, requestOptions) {
             return new Promise(function (resolve, reject) {
-                var req = new XMLHttpRequest();
-                req.open(postData ? 'POST' : 'GET', url);
-                // In case this is a cross-site request, send our credentials
-                // to support any defined CORS policy. 
-                req.withCredentials = true;
-                var formData;
-                if (postData) {
-                    // We are to make a POST request.
-                    formData = new FormData();
-                    for (var postKey in postData) {
-                        if (postKey) {
-                            // The linter requires 'for in' loops to be filtered by an if
-                            // condition.
-                            formData.append(postKey, postData[postKey]);
-                        }
-                    }
-                }
+                var req = buildXMLHttpRequest(requestOptions.methodType, url, requestOptions.withCredentials, requestOptions.contentType);
                 req.onload = function () {
                     if (req.status === 200) {
                         resolve(JSON.parse(req.responseText));
@@ -182,10 +203,47 @@ var tf_backend;
                 req.onerror = function () {
                     reject(new RequestNetworkError(req, url));
                 };
-                req.send(formData);
+                if (requestOptions.body) {
+                    req.send(requestOptions.body);
+                }
+                else {
+                    req.send();
+                }
             });
         };
         return RequestManager;
     }());
     tf_backend.RequestManager = RequestManager;
+    function buildXMLHttpRequest(methodType, url, withCredentials, contentType) {
+        var req = new XMLHttpRequest();
+        req.open(methodType, url);
+        if (withCredentials) {
+            req.withCredentials = withCredentials;
+        }
+        if (contentType) {
+            req.setRequestHeader('Content-Type', contentType);
+        }
+        return req;
+    }
+    function requestOptionsFromPostData(postData) {
+        var result = new RequestOptions();
+        if (!postData) {
+            result.methodType = HttpMethodType.GET;
+            return result;
+        }
+        result.methodType = HttpMethodType.POST;
+        result.body = formDataFromDictionary(postData);
+        return result;
+    }
+    function formDataFromDictionary(postData) {
+        var formData = new FormData();
+        for (var postKey in postData) {
+            if (postKey) {
+                // The linter requires 'for in' loops to be filtered by an if
+                // condition.
+                formData.append(postKey, postData[postKey]);
+            }
+        }
+        return formData;
+    }
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

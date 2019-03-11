@@ -260,6 +260,61 @@ var tf_backend;
                     // resolving the first request triggers finishTheTest
                 });
             });
+            it('throws an error when a GET request has a body', function () {
+                var rm = new tf_backend.RequestManager();
+                var badOptions = new tf_backend.RequestOptions();
+                badOptions.methodType = tf_backend.HttpMethodType.GET;
+                badOptions.body = "a body";
+                chai.assert.throws(function () { return rm.requestWithOptions("http://www.google.com", badOptions); }, tf_backend.InvalidRequestOptionsError);
+            });
+            describe('tests using sinon.fakeServer', function () {
+                var server;
+                beforeEach(function () {
+                    server = sinon.fakeServer.create();
+                    server.respondImmediately = true;
+                    server.respondWith("{}");
+                });
+                afterEach(function () {
+                    server.restore();
+                });
+                it('builds correct XMLHttpRequest when request(url) is called', function () {
+                    var rm = new tf_backend.RequestManager();
+                    return rm.request("my_url")
+                        .then(function () {
+                        chai.assert.lengthOf(server.requests, 1);
+                        chai.assert.equal(server.requests[0].url, "my_url");
+                        chai.assert.equal(server.requests[0].requestBody, null);
+                        chai.assert.equal(server.requests[0].method, tf_backend.HttpMethodType.GET);
+                        chai.assert.notProperty(server.requests[0].requestHeaders, "Content-Type");
+                    });
+                });
+                it('builds correct XMLHttpRequest when request(url, postData) is called', function () {
+                    var rm = new tf_backend.RequestManager();
+                    return rm.request("my_url", { "key1": "value1", "key2": "value2" })
+                        .then(function () {
+                        chai.assert.lengthOf(server.requests, 1);
+                        chai.assert.equal(server.requests[0].url, "my_url");
+                        chai.assert.equal(server.requests[0].method, tf_backend.HttpMethodType.POST);
+                        chai.assert.instanceOf(server.requests[0].requestBody, FormData);
+                        chai.assert.sameDeepMembers(Array.from(server.requests[0].requestBody.entries()), [["key1", "value1"], ["key2", "value2"]]);
+                    });
+                });
+                it('builds correct XMLHttpRequest when requestWithOptions is called', function () {
+                    var rm = new tf_backend.RequestManager();
+                    var requestOptions = new tf_backend.RequestOptions();
+                    requestOptions.methodType = tf_backend.HttpMethodType.POST;
+                    requestOptions.contentType = "text/plain;charset=utf-8";
+                    requestOptions.body = "the body";
+                    return rm.requestWithOptions("my_url", requestOptions)
+                        .then(function () {
+                        chai.assert.lengthOf(server.requests, 1);
+                        chai.assert.equal(server.requests[0].url, "my_url");
+                        chai.assert.equal(server.requests[0].method, tf_backend.HttpMethodType.POST);
+                        chai.assert.equal(server.requests[0].requestBody, "the body");
+                        chai.assert.equal(server.requests[0].requestHeaders["Content-Type"], "text/plain;charset=utf-8");
+                    });
+                });
+            });
         });
     });
 })(tf_backend || (tf_backend = {})); // namespace tf_backend
