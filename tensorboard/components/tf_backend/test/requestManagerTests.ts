@@ -209,7 +209,7 @@ describe('backend', () => {
       // and then launch remaining requests in queue (i.e. this one)
       r1.then((success) => done(), (failure) => done(new Error(failure)));
     });
-    
+
     it('queue is LIFO', (done) => {
       /* This test is a bit tricky.
        * We want to verify that the RequestManager queue has LIFO semantics.
@@ -290,9 +290,9 @@ describe('backend', () => {
       });
     });
 
-    it('throws InvalidRequestOptionsError on bad RequestOptions', function() {
+    it('throws an error when a GET request has a body', function() {
       const rm = new RequestManager();
-        const badOptions = new RequestOptions();
+      const badOptions = new RequestOptions();
       badOptions.methodType = HttpMethodType.GET;
       badOptions.body = "a body";
       chai.assert.throws(
@@ -339,7 +339,7 @@ describe('backend', () => {
                                  HttpMethodType.POST);
                chai.assert.instanceOf(server.requests[0].requestBody, FormData);
                chai.assert.sameDeepMembers(
-                 Array.from((server.requests[0].requestBody as any).entries()),
+                 Array.from(server.requests[0].requestBody.entries()),
                  [["key1", "value1"], ["key2", "value2"]]);
              });
          });

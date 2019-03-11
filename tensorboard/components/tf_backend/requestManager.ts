@@ -233,8 +233,8 @@ export class RequestManager {
 }
   
 function buildXMLHttpRequest(methodType: HttpMethodType, url: string,
-                             withCredentials? : boolean,
-                             contentType? : string): XMLHttpRequest {
+                             withCredentials?: boolean,
+                             contentType?: string): XMLHttpRequest {
   const req = new XMLHttpRequest();
   req.open(methodType, url);
   if (withCredentials) {
