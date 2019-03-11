@@ -303,6 +303,7 @@ def _run_conditionally(guard, name, default_reason=None):
 
   return _impl
 
+# TODO(#1996): Better detect TF2.0.
 _is_tf2 =  tf.__version__.startswith('2.')
 run_v1_only = _run_conditionally(
     lambda: not _is_tf2,
