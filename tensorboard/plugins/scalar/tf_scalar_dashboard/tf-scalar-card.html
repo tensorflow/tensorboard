@@ -80,9 +80,7 @@ limitations under the License.
       title="Fit domain to data"
     ></paper-icon-button>
     <template is="dom-if" if="[[showDownloadLinks]]">
-      <paper-menu-button
-          on-paper-dropdown-open="_updateDownloadLink"
-          on-paper-dropdown-close="_removeDownloadLink">
+      <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
         <paper-icon-button
           class="dropdown-trigger"
           slot="dropdown-trigger"
@@ -316,13 +314,11 @@ limitations under the License.
       },
       _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
-        const bytes = new TextEncoder().encode(svgStr);
-        const blob = new Blob([bytes], {type: 'image/svg+xml'});
-        this.$$('#svgLink').setAttribute('href', URL.createObjectURL(blob));
-      },
-      _removeDownloadLink() {
-        URL.revokeObjectURL(this.$$('#svgLink').href);
-        this.$$('#svgLink').removeAttribute('href');
+        // The SVG code string may include hash characters, such as an
+        // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
+        // data so that such a hash is not interpreted as a fragment
+        // specifier, truncating the SVG. (See issue #1874.)
+        this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
       _runsFromData(data) {
         return data.map((datum) => datum.run);
