@@ -57,6 +57,20 @@ TOOLS = {
     'end_to_end': 'end_to_end.json',
 }
 
+# Profile logger summary.
+_PROFILE_LOGGER_SUMMARY = "profile_logger.summary"
+
+
+def IsProfileRun(runname):
+  """Returns True if runname is a profile logging run."""
+  return runname == _PROFILE_LOGGER_SUMMARY
+
+
+def ProfileRunname():
+  """Returns the runname for a profile logging run."""
+  return _PROFILE_LOGGER_SUMMARY
+
+
 # Tools that consume raw data.
 _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
