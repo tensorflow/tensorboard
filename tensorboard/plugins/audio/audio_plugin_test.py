@@ -38,9 +38,8 @@ from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.audio import summary
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 
-
+@test_util.run_v1_only('Uses tf.contrib in setUp via audio.summary')
 class AudioPluginTest(tf.test.TestCase):
 
   def setUp(self):

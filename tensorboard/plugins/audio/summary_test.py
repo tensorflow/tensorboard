@@ -33,6 +33,7 @@ from tensorboard.compat import tf2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 try:
@@ -146,11 +147,10 @@ class SummaryBaseTest(object):
       self.audio('k488', data, 44100, encoding='pptx')
 
 
+@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1PbTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
     return summary.pb(*args, **kwargs)
@@ -166,11 +166,10 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     self.skipTest('summary V1 pb does not actually enforce this')
 
 
+@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1OpTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
     return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())

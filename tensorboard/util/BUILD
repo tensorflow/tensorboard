@@ -23,6 +23,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":encoder",
+        ":test_util",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",

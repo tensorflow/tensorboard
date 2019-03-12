@@ -21,6 +21,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from tensorflow_estimator import estimator
 
 from tensorboard.plugins.beholder import im_util
 from tensorboard.plugins.beholder.file_system_tools import read_pickle,\
@@ -196,7 +197,7 @@ class Beholder(object):
     return grads, optimizer.apply_gradients(grads_and_vars)
 
 
-class BeholderHook(tf.estimator.SessionRunHook):
+class BeholderHook(estimator.SessionRunHook):
   """SessionRunHook implementation that runs Beholder every step.
 
   Convenient when using tf.train.MonitoredSession:

@@ -25,9 +25,11 @@ from __future__ import print_function
 from absl import logging
 import contextlib
 import functools
+import inspect
 import os
 import sqlite3
 import threading
+import unittest
 
 import tensorflow as tf
 
@@ -183,7 +185,7 @@ class FakeSleep(object):
     self._clock.advance(seconds)
 
 
-class FileWriter(tf.summary.FileWriter):
+class FileWriter(tf.compat.v1.summary.FileWriter):
   """FileWriter for test.
 
   TensorFlow FileWriter uses TensorFlow's Protobuf Python binding which is
@@ -194,7 +196,7 @@ class FileWriter(tf.summary.FileWriter):
 
   def add_event(self, event):
     if isinstance(event, event_pb2.Event):
-      tf_event = tf.Event.FromString(event.SerializeToString())
+      tf_event = tf.compat.v1.Event.FromString(event.SerializeToString())
     else:
       logger.warn('Added TensorFlow event proto. '
                       'Please prefer TensorBoard copy of the proto')
@@ -203,7 +205,7 @@ class FileWriter(tf.summary.FileWriter):
 
   def add_summary(self, summary, global_step=None):
     if isinstance(summary, summary_pb2.Summary):
-      tf_summary = tf.Summary.FromString(summary.SerializeToString())
+      tf_summary = tf.compat.v1.Summary.FromString(summary.SerializeToString())
     else:
       logger.warn('Added TensorFlow summary proto. '
                       'Please prefer TensorBoard copy of the proto')
@@ -273,3 +275,43 @@ def ensure_tb_summary_proto(summary):
     return summary
 
   return summary_pb2.Summary.FromString(summary.SerializeToString())
+
+
+def _run_conditionally(guard, name, default_reason=None):
+  """Create a decorator factory that skips a test when guard returns False.
+
+    The factory raises ValueError when default_reason is None and reason is not
+    passed to the factory.
+
+    Args:
+      guard: A lambda that returns True if a test should be executed.
+      name: A human readable name for the decorator for an error message.
+      default_reason: A string describing why a test should be skipped. If it
+          is None, the decorator will make sure the reason is supplied by the
+          consumer of the decorator. Default is None.
+
+    Raises:
+      ValueError when both reason and default_reason are None.
+
+    Returns:
+      A function that returns a decorator.
+    """
+
+  def _impl(reason=None):
+    if reason is None:
+      if default_reason is None:
+        raise ValueError('%s requires a reason for skipping.' % name)
+      reason = default_reason
+    return unittest.skipUnless(guard(), reason)
+
+  return _impl
+
+# TODO(#1996): Better detect TF2.0.
+_is_tf2 =  tf.__version__.startswith('2.')
+run_v1_only = _run_conditionally(
+    lambda: not _is_tf2,
+    name='run_v1_only')
+run_v2_only = _run_conditionally(
+    lambda: _is_tf2,
+    name='run_v2_only',
+    default_reason='Test only appropriate for TensorFlow v2')

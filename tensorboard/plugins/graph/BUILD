@@ -84,6 +84,7 @@ py_test(
         ":keras_util",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:test_util",
         "@com_google_protobuf//:protobuf_python",
     ],
 )
