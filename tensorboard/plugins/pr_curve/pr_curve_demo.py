@@ -183,7 +183,7 @@ def start_runs(
   merged_summary_op = tf.compat.v1.summary.merge_all()
   events_directory = os.path.join(logdir, run_name)
   sess = tf.compat.v1.Session()
-  writer = tf.summary.FileWriter(events_directory, sess.graph)
+  writer = tf.compat.v1.summary.FileWriter(events_directory, sess.graph)
 
   for step in xrange(steps):
     feed_dict = {
