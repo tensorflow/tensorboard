@@ -55,7 +55,7 @@ var tf;
       listMetricEvals(listMetricEvalsRequest) {
         return this._sendRequest('metric_evals', listMetricEvalsRequest);
       }
-
+      
       // ---- Private methods below -------------------------------------------
       _sendRequest(methodName, request_proto) {
         if (this._useHttpGet) {
@@ -63,6 +63,7 @@ var tf;
               JSON.stringify(request_proto));
           const url = this._apiUrl + '/' + methodName +
                 '?request=' + encodedRequest;
+          console.log('rquest url', url);
           return this._requestManager.request(url);
         }
         /* Use POST */
