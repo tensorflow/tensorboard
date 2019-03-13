@@ -21,7 +21,7 @@ import sys
 import unittest
 
 
-class StopshipTest(unittest.TestCase):
+class ReloadTensorBoardTest(unittest.TestCase):
 
   def test_functional_after_reload(self):
     self.assertNotIn("tensorboard", sys.modules)
