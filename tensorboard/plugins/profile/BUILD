@@ -99,6 +99,5 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "@org_pythonhosted_six",
-        "//tensorboard/util:tb_logging",
     ],
 )

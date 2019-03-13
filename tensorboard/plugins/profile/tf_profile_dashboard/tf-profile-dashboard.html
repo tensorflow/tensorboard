@@ -158,10 +158,10 @@ profile run can have multiple tools that present the performance profile as diff
         </template>
       </div>
       <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'end_to_end')]]" restamp="true">
-	<div class="sidebar-section">
-	  <p>
-	    Download data
-	    <tf-downloader
+        <div class="sidebar-section">
+          <p>
+            Download data
+            <tf-downloader
               runs="[[_runsForDownloader()]]"
               tag="end_to_end"
               url-fn="[[_downloadUrlFn]]"

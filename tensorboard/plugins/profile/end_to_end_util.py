@@ -21,9 +21,20 @@ from __future__ import division
 from __future__ import print_function
 
 import six
-from tensorboard.util import tb_logging
 
-logger = tb_logging.get_logger()
+# Profile logger summary.
+_PROFILE_LOGGER_SUMMARY = "profile_logger.summary"
+
+
+def IsProfileRun(runname):
+  """Returns True if runname is a profile logging run."""
+  return runname == _PROFILE_LOGGER_SUMMARY
+
+
+def ProfileRunname():
+  """Returns the runname for a profile logging run."""
+  return _PROFILE_LOGGER_SUMMARY
+
 
 class SessionTimeBreakDown(object):
   def __init__(self, session_name):
@@ -151,11 +162,11 @@ def _FillSessionBeginAndEndTimes(session_times, events):
 
   for _, sess in six.iteritems(session_times):
     if not sess.BeginAndEndTimesSet():
-      logger.warn(
+      print(
         'Either or both the begin and end time of session "%s" is not set'%sess.name
       )
     if sess.session_begin_time > sess.session_end_time:
-      logger.warn(
+      print(
         'Session begin time (%d) is bigger than session end time (%d) for session "%s"'%(
           sess.session_begin_time, sess.session_end_time, sess.name)
       )
@@ -172,13 +183,13 @@ def _AssignEventsToSessions(session_times, events):
         assigned = True
         break
     if not assigned:
-      logger.warn('Event "%s" is not assigned to any session'%e.attribute)
-        
+      print('Event "%s" is not assigned to any session'%e.attribute)
+
   for _, sess in six.iteritems(session_times):
     if not sess.AllTimesSet():
-      logger.warn('Not all the times in session "%s" are set'%sess.name)
+      print('Not all the times in session "%s" are set'%sess.name)
 
-        
+
 class EndToEndBreakDown(object):
   def __init__(self, events):
     session_times = {}
@@ -188,7 +199,7 @@ class EndToEndBreakDown(object):
 
     _FillSessionBeginAndEndTimes(session_times, events)
     _AssignEventsToSessions(session_times, events)
-    
+
     # All times are in milliseconds.
     self._gap_train_begin_init_system_begin = 0
     self._init_system_duration = 0
@@ -303,7 +314,7 @@ class EndToEndBreakDown(object):
             self._eval_duration,
             self._gap_predict_begin_last_session_end,
             self._predict_duration]
-  
+
   def Json(self):
     first_row = ['Category']
     first_row.extend(self.ColumnNames())
