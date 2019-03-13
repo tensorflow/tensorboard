@@ -74,10 +74,10 @@ def notebook():
 @lazy.lazy_load('tensorboard.program')
 def program():
   import importlib  # pylint: disable=g-import-not-at-top
-  return importlib.import_module("tensorboard.program")
+  return importlib.import_module('tensorboard.program')
 
 
 @lazy.lazy_load('tensorboard.summary')
 def summary():
   import importlib  # pylint: disable=g-import-not-at-top
-  return importlib.import_module("tensorboard.summary")
+  return importlib.import_module('tensorboard.summary')
