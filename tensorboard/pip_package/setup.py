@@ -50,9 +50,7 @@ setup(
     version=tensorboard.version.VERSION.replace('-', ''),
     description='TensorBoard lets you watch Tensors Flow',
     long_description=get_readme(),
-    url='https://github.com/tensorflow/tensorboard',
-    author='Google Inc.',
-    author_email='opensource@google.com',
+    url='https://github.com/gerard0315/tensorboard',
     # Contained modules and scripts.
     packages=find_packages(),
     entry_points={

@@ -84,13 +84,56 @@ export interface DataProvider {
       void;
 }
 
+function addParameter(url: string, param: string, value) {
+  // Using a positive lookahead (?=\=) to find the
+  // given parameter, preceded by a ? or &, and followed
+  // by a = with a value after than (using a non-greedy selector)
+  // and then followed by a & or the end of the string
+  var val = new RegExp('(\\?|\\&)' + param + '=.*?(?=(&|$))'),
+      parts = url.toString().split('#'),
+      url = parts[0],
+      hash = parts[1],
+      qstring = /\?.+$/,
+      newURL = url;
+
+  // Check if the parameter exists
+  if (val.test(url))
+  {
+      // if it does, replace it, using the captured group
+      // to determine & or ? at the beginning
+      newURL = url.replace(val, '$1' + param + '=' + value);
+  }
+  else if (qstring.test(url))
+  {
+      // otherwise, if there is a query string at all
+      // add the param to the end of it
+      newURL = url + '&' + param + '=' + value;
+  }
+  else
+  {
+      // if there's no query string, add one
+      newURL = url + '?' + param + '=' + value;
+  }
+
+  if (hash)
+  {
+      newURL += '#' + hash;
+  }
+
+  return newURL;
+}
+
 export function retrieveTensorAsBytes(
     dp: DataProvider, embedding: EmbeddingInfo, run: string, tensorName: string,
     tensorsPath: string, callback: (ds: DataSet) => void) {
   // Get the tensor.
   logging.setModalMessage('Fetching tensor values...', TENSORS_MSG_ID);
   let xhr = new XMLHttpRequest();
-  xhr.open('GET', tensorsPath);
+  const urlParams = new URLSearchParams(window.location.search);
+  const klabToken = urlParams.get('token');
+  const url = tensorsPath;
+  var queryUrl = addParameter(url, 'token', klabToken);
+  xhr.open('GET', queryUrl);
   xhr.responseType = 'arraybuffer';
   xhr.onprogress = (ev) => {
     if (ev.lengthComputable) {
@@ -384,7 +427,13 @@ export function retrieveSpriteAndMetadataInfo(metadataPath: string,
       logging.setModalMessage('Fetching metadata...', METADATA_MSG_ID);
 
       const request = new XMLHttpRequest();
-      request.open('GET', metadataPath);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const klabToken = urlParams.get('token');
+      const url = metadataPath;
+      var queryUrl = addParameter(url, 'token', klabToken);
+
+      request.open('GET', queryUrl);
       request.responseType = 'arraybuffer';
 
       request.onreadystatechange = () => {

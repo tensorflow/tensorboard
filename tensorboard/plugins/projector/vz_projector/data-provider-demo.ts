@@ -99,6 +99,9 @@ export class DemoDataProvider implements DataProvider {
     if (embedding.sprite && embedding.sprite.imagePath) {
       spriteImagePath = embedding.sprite.imagePath;
     }
+    const urlParams = new URLSearchParams(window.location.search);
+    const klabToken = urlParams.get('token');
+    spriteImagePath += '&token=' + klabToken
     retrieveSpriteAndMetadataInfo(
         embedding.metadataPath, spriteImagePath, embedding.sprite, callback);
   }

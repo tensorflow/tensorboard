@@ -17,6 +17,46 @@ namespace vz_projector {
 // Limit for the number of data points we receive from the server.
 export const LIMIT_NUM_POINTS = 100000;
 
+
+function addParameter(url: string, param: string, value) {
+  // Using a positive lookahead (?=\=) to find the
+  // given parameter, preceded by a ? or &, and followed
+  // by a = with a value after than (using a non-greedy selector)
+  // and then followed by a & or the end of the string
+  var val = new RegExp('(\\?|\\&)' + param + '=.*?(?=(&|$))'),
+      parts = url.toString().split('#'),
+      url = parts[0],
+      hash = parts[1],
+      qstring = /\?.+$/,
+      newURL = url;
+
+  // Check if the parameter exists
+  if (val.test(url))
+  {
+      // if it does, replace it, using the captured group
+      // to determine & or ? at the beginning
+      newURL = url.replace(val, '$1' + param + '=' + value);
+  }
+  else if (qstring.test(url))
+  {
+      // otherwise, if there is a query string at all
+      // add the param to the end of it
+      newURL = url + '&' + param + '=' + value;
+  }
+  else
+  {
+      // if there's no query string, add one
+      newURL = url + '?' + param + '=' + value;
+  }
+
+  if (hash)
+  {
+      newURL += '#' + hash;
+  }
+
+  return newURL;
+}
+
 /**
  * Data provider that loads data provided by a python server (usually backed
  * by a checkpoint file).
@@ -48,7 +88,11 @@ export class ServerDataProvider implements DataProvider {
     const msgId = logging.setModalMessage('Fetching runs...');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${this.routePrefix}/runs`);
+    const urlParams = new URLSearchParams(window.location.search);
+    const klabToken = urlParams.get('token');
+    const url = `${this.routePrefix}/runs`;
+    var queryUrl = addParameter(url, 'token', klabToken);
+    xhr.open('GET', queryUrl);
     xhr.onerror = (err) => {
       logging.setErrorMessage(xhr.responseText, 'fetching runs');
     };
@@ -70,7 +114,13 @@ export class ServerDataProvider implements DataProvider {
     const msgId = logging.setModalMessage('Fetching projector config...');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${this.routePrefix}/info?run=${run}`);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const klabToken = urlParams.get('token');
+    const url = `${this.routePrefix}/info?run=${run}`;
+    var queryUrl = addParameter(url, 'token', klabToken);
+    
+    xhr.open('GET', queryUrl);
     xhr.onerror = (err) => {
       logging.setErrorMessage(xhr.responseText, 'fetching projector config');
     };
@@ -98,15 +148,19 @@ export class ServerDataProvider implements DataProvider {
       callback: (r: SpriteAndMetadataInfo) => void) {
     this.getEmbeddingInfo(run, tensorName, embedding => {
       let metadataPath = null;
+      const urlParams = new URLSearchParams(window.location.search);
+      const klabToken = urlParams.get('token');
       if (embedding.metadataPath) {
         metadataPath =
             `${this.routePrefix}/metadata?` +
             `run=${run}&name=${tensorName}&num_rows=${LIMIT_NUM_POINTS}`;
+        metadataPath += '&token=' + klabToken
       }
       let spriteImagePath = null;
       if (embedding.sprite && embedding.sprite.imagePath) {
         spriteImagePath =
             `${this.routePrefix}/sprite_image?run=${run}&name=${tensorName}`;
+        spriteImagePath += '&token=' + klabToken
       }
       retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath,
           embedding.sprite, callback);
@@ -118,8 +172,14 @@ export class ServerDataProvider implements DataProvider {
     const msgId = logging.setModalMessage('Fetching bookmarks...');
 
     const xhr = new XMLHttpRequest();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const klabToken = urlParams.get('token');
+    const url = `${this.routePrefix}/bookmarks?run=${run}&name=${tensorName}`;
+    var queryUrl = addParameter(url, 'token', klabToken);
+
     xhr.open(
-        'GET', `${this.routePrefix}/bookmarks?run=${run}&name=${tensorName}`);
+        'GET', queryUrl);
     xhr.onerror = (err) => {
       logging.setErrorMessage(xhr.responseText, 'fetching bookmarks');
     };

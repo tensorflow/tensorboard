@@ -126,12 +126,47 @@ dashboard would integrate trace viewer app using iframe.
       this._loadTrace();
     },
 
+    _addParameter : function(url, param, value) {
+      var val = new RegExp('(\\?|\\&)' + param + '=.*?(?=(&|$))'),
+      parts = url.toString().split('#'),
+      url = parts[0],
+      hash = parts[1],
+      qstring = /\?.+$/,
+      newURL = url;
+      // Check if the parameter exists
+      if (val.test(url))
+      {
+          // if it does, replace it, using the captured group
+          // to determine & or ? at the beginning
+          newURL = url.replace(val, '$1' + param + '=' + value);
+      }
+      else if (qstring.test(url))
+      {
+          // otherwise, if there is a query string at all
+          // add the param to the end of it
+          newURL = url + '&' + param + '=' + value;
+      }
+      else
+      {
+          // if there's no query string, add one
+          newURL = url + '?' + param + '=' + value;
+      }
+      if (hash)
+      {
+          newURL += '#' + hash;
+      }
+      return newURL;
+    },
+
     _loadTrace : function(requestedRange, replaceModel) {
       this._throbber.className = "active";
       if (!this._isStreaming) {
         // Send HTTP request to get the trace data.
         var req = new XMLHttpRequest();
-        req.open('GET', this.traceDataUrl, true);
+        const urlParams = new URLSearchParams(window.location.search);
+        const klabToken = urlParams.get('token');
+        var queryUrl = this._addParameter(this.traceDataUrl, 'token', klabToken);
+        req.open('GET', queryUrl, true);
 
 	req.onreadystatechange = event => {
           if (req.readyState !== 4) {

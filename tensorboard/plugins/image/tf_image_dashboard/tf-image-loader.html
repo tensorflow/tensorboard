@@ -347,6 +347,9 @@ future for loading older images.
         // backend doesn't care about the value.
         url = tf_backend.addParams(url, {ts: imageMetadata.wall_time});
         url += '&' + imageMetadata.query;
+        const urlParams = new URLSearchParams(window.location.search);
+        const klabToken = urlParams.get('token');
+        url += '&token=' + klabToken 
 
         return {
           width: imageMetadata.width,
