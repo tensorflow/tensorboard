@@ -62,36 +62,38 @@ TODO(erez): Add aggregation of repeated trials.
                                          tracking-id="[[trackingId]]"
                                          name="tf_hparams">
     </tf-hparams-google-analytics-tracker>
+
+    <style>
+      vaadin-split-layout {
+        width: 100%;
+      }
+
+      .sidebar {
+        width: 20%;
+        height: 100%;
+        overflow: auto;
+        flex-grow: 0;
+        flex-shrink: 0;
+        min-width: 10%;
+      }
+
+      .center {
+        height: 100%;
+        overflow-y: auto;
+        flex-grow: 1;
+        flex-shrink: 1;
+        width: 80%;
+      }
+
+      :host {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
   </template>
-  <style>
-    vaadin-split-layout {
-      width: 100%;
-    }
 
-    .sidebar {
-      width: 20%;
-      height: 100%;
-      overflow: auto;
-      flex-grow: 0;
-      flex-shrink: 0;
-      min-width: 10%;
-    }
-
-    .center {
-      height: 100%;
-      overflow-y: auto;
-      flex-grow: 1;
-      flex-shrink: 1;
-      width: 80%;
-    }
-
-    :host {
-      display: flex;
-      flex-direction: row;
-      height: 100%;
-      width: 100%;
-    }
-  </style>
   <script>
     'use strict';
     Polymer({
