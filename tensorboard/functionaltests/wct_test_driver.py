@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""WebDriver for running TypeScript and Polymer unit tests."""
+"""WebDriver for running TypeScript and Polymer unit tests.
+
+Figures out the result by scanning the browser log.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -46,6 +49,30 @@ def create_test_class(binary_path, web_path):
     A new subclass of `unittest.TestCase`. Bind this to a variable in
     the test file's main module.
   """
+
+  class BrowserLogIndicatesResult(object):
+    def __init__(self):
+      self.passed = False
+    def __call__(self, driver):
+      # Scan through the log entries and search for a text indicating whether
+      # the test passed or failed.
+      messages = [entry['message'] for entry in driver.get_log('browser')]
+      if self._log_contains(messages, 'failing test'):
+        self.passed = False
+        return True
+      if self._log_contains(messages, 'test suite passed'):
+        self.passed = True
+        return True
+      # Here, we still don't know.
+      return False
+
+    def _log_contains(self, messages, text):
+      for message in messages:
+        if text in message:
+          # Print log message as an aid for debugging.
+          print("Found: %s in log entry message: %s" % (text, message))
+          return True
+      return False
 
   class WebComponentTesterTest(unittest.TestCase):
     """Tests that a family of unit tests completes successfully."""
@@ -90,13 +117,14 @@ def create_test_class(binary_path, web_path):
       cls.process.wait()
 
     def test(self):
-      driver = webtest.new_webdriver_session()
+      driver = webtest.new_webdriver_session(
+          capabilities={'loggingPrefs':{'browser':'ALL'}}
+      )
       url = "http://localhost:%s%s" % (self.port, web_path)
       driver.get(url)
-      wait.WebDriverWait(driver, 10).until(
-          expected_conditions.title_contains("test"))
-      title = driver.title
-      if "failing test" in title or "passing test" not in title:
-        self.fail(title)
+      browser_log_indicates_result = BrowserLogIndicatesResult()
+      wait.WebDriverWait(driver, 10).until(browser_log_indicates_result)
+      if not browser_log_indicates_result.passed:
+        self.fail()
 
   return WebComponentTesterTest
