@@ -85,39 +85,39 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         </template>
       </div>
     </div>
-  </template>
 
-  <style>
-    :host {
-      display: block;
-    }
-    .control-panel {
-      overflow: auto;
-    }
-    .column {
-      flex-grow:1;
-      flex-shrink:1;
-      margin-right: 5px;
-      border: solid 1px darkgray;
-      padding: 3px;
-    }
-    .column-title {
-      /* Fit every title in one line so the radio boxes align vertically. */
-      white-space: nowrap;
-      text-decoration: underline;
-    }
-    .columns-container {
-      display: flex;
-      flex-direction: row;
-    }
-    .scale-radio-group paper-radio-button {
-      padding: 2px;
-      display: block;
-    }
-    paper-listbox {
-      max-height: 15em;
-    }
-  </style>
+    <style>
+      :host {
+        display: block;
+      }
+      .control-panel {
+        overflow: auto;
+      }
+      .column {
+        flex-grow:1;
+        flex-shrink:1;
+        margin-right: 5px;
+        border: solid 1px darkgray;
+        padding: 3px;
+      }
+      .column-title {
+        /* Fit every title in one line so the radio boxes align vertically. */
+        white-space: nowrap;
+        text-decoration: underline;
+      }
+      .columns-container {
+        display: flex;
+        flex-direction: row;
+      }
+      .scale-radio-group paper-radio-button {
+        padding: 2px;
+        display: block;
+      }
+      paper-listbox {
+        max-height: 15em;
+      }
+    </style>
+  </template>
 
   <script>
     Polymer({

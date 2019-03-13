@@ -95,28 +95,30 @@ session group.
         </tf-hparams-session-group-details>
       </template>
     </vaadin-grid>
+
+    <style>
+      :host {
+        display: block;
+      }
+      .table-cell {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      .table-header {
+        /* line-break overflowing column headers */
+        white-space: normal;
+      }
+      .session-group-table {
+        height: 100%;
+      }
+      .session-group-details {
+        height: 360px;
+        overflow-y: auto;
+      }
+    </style>
   </template>
-  <style>
-    :host {
-      display: block;
-    }
-    .table-cell {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-    .table-header {
-      /* line-break overflowing column headers */
-      white-space: normal;
-    }
-    .session-group-table {
-      height: 100%;
-    }
-    .session-group-details {
-      height: 360px;
-      overflow-y: auto;
-    }
-  </style>
+
   <script>
     'use strict';
     Polymer({
