@@ -82,7 +82,6 @@ py_test(
     ],
 )
 
-
 py_library(
     name = "manager",
     srcs = ["manager.py"],
