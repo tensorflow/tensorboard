@@ -25,7 +25,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import os
 import shutil
 
@@ -35,10 +34,10 @@ import tensorflow as tf
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.compat.proto import event_pb2
+from tensorboard.plugins.profile import end_to_end_helper
 from tensorboard.plugins.profile import profile_demo_data
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2
-from tensorboard.plugins.profile import end_to_end_util
 
 tf.compat.v1.enable_eager_execution()
 
@@ -64,25 +63,6 @@ def write_empty_event_file(logdir):
   w = tf.compat.v2.summary.create_file_writer(
       logdir, filename_suffix=EVENT_FILE_SUFFIX)
   w.close()
-
-
-class LogEvent:
-  def __init__(self, tf_event):
-    #timestamp is in ms.
-    self.timestamp = tf_event.wall_time * 1000.0
-    self.attribute = tf_event.summary.value[0].tag
-
-
-def _create_end_to_end_json(run_dir, event_filepath):
-  log_events = []
-  for e in tf.train.summary_iterator(event_filepath):
-    if e.HasField('file_version'):
-      continue
-    log_events.append(LogEvent(e))
-  end_to_end = end_to_end_util.EndToEndBreakDown(log_events)
-  json_path = os.path.join(run_dir, 'end_to_end.json')
-  with open(json_path, 'w') as f:
-    f.write('%s\n'%json.dumps(end_to_end.Json()))
 
 
 def dump_data(logdir):
@@ -112,8 +92,9 @@ def dump_data(logdir):
       shutil.copyfile(
           'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
           os.path.join(run_dir, 'google_chart_demo.json'))
-      _create_end_to_end_json(run_dir,
-                             'tensorboard/plugins/profile/end_to_end.tfevents')
+      end_to_end_helper.create_end_to_end_json(
+        run_dir,
+        'tensorboard/plugins/profile/end_to_end.tfevents')
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')

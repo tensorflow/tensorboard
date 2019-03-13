@@ -87,8 +87,19 @@ py_binary(
     deps = [
         ":profile_plugin",
         ":protos_all_py_pb2",
+	":end_to_end_helper",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:plugin_asset_util",
+    ],
+)
+
+py_library(
+    name = "end_to_end_helper",
+    srcs = ["end_to_end_helper.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":end_to_end_util",
     ],
 )
 
@@ -99,5 +110,16 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "@org_pythonhosted_six",
+    ],
+)
+
+py_binary(
+    name = "tfevents_to_endtoend",
+    srcs = [
+        "tfevents_to_endtoend.py",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+	":end_to_end_helper",
     ],
 )
