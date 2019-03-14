@@ -28,7 +28,7 @@ from __future__ import print_function
 import os
 
 from google.protobuf import text_format as _text_format
-import tensorflow as tf
+from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.projector import projector_plugin as _projector_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import EmbeddingInfo
 from tensorboard.plugins.projector.projector_config_pb2 import SpriteMetadata
