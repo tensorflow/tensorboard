@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,9 +40,31 @@ Sequential:
 Please refer to https://github.com/tensorflow/tfjs-layers/blob/master/src/keras_format/model_serialization.ts
 for more complete definition.
 """
+import collections
+import six
+
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
 
+
+# Please refer to below link for more information.
+# https://github.com/tensorflow/tensorflow/blob/1020739e1724346ef0088186f0253defaad3edb6/tensorflow/python/keras/engine/network.py#L1079-L1090
+InboundNodes = collections.namedtuple(
+    'InboundNodes', ['inbound_layer', 'node_index', 'tensor_id', 'kwargs'])
+
+# Please refer to below link for more information.
+# https://github.com/tensorflow/tensorflow/blob/1020739e1724346ef0088186f0253defaad3edb6/tensorflow/python/keras/utils/tf_utils.py#L238
+NodeData = collections.namedtuple(
+    'NodeData', ['layer_name', 'node_id', 'tensor_id'])
+
+ModelMetadata = collections.namedtuple(
+    'ModelMeta',
+    (
+        'input_to_in_layer', # dict, a special mapping for a layer name to its
+                             # input.
+        'model_name_to_outputs', # dict, a map of model name to output layers
+                                 # of the model.
+    ))
 
 def _walk_layers(keras_layer):
   """Walks the nested keras layer configuration in preorder.
@@ -52,7 +73,8 @@ def _walk_layers(keras_layer):
 
   Yields:
     A tuple of (name_scope, layer_config).
-    name_scope: a string representing a scope name, similar to that of tf.name_scope.
+    name_scope: a string representing a scope name, similar to that of
+        tf.name_scope.
     layer_config: a dict representing a Keras layer configuration.
   """
   yield ('', keras_layer)
@@ -92,89 +114,168 @@ def _is_model(layer):
   return layer.get('config').get('layers') is not None
 
 
-def _norm_to_list_of_layers(maybe_layers):
-  """Normalizes to a list of layers.
+def _get_inbound_nodes(inbound_nodes):
+  """Return normalized list of InboundNodes from `inbound_nodes` of Keras model.
+
+  Keras model serialization records input to a layer in a property,
+  `inbound_nodes`, and it can be of below forms:
+  - [['name_1', 1, 0], ['name_2', 1, 1]]: two invocations witn single input.
+  - [
+      [['name_1', 0, 0], ['name_2', 1, 0]],
+      [['name_3', 0, 0], ['name_4', 1, 0]]]: two invocations with multiple
+    inputs. Multiple inputs are only applicable to limited keras layers like
+    keras.layers.add, keras.layers.concat, and etc...
+
+  Note that there cannot be fixture of types as a layer that takes multiple
+  inputs have precondition on size of the input.
 
   Args:
-    maybe_layers: A list of data[1] or a list of list of data.
+    inbound_nodes: Value of `inbound_nodes` of a Keras model serialization.
+
+  Raises:
+    ValueError: when the `inbound_nodes` violate our assumption that a layer
+        not being able to take multiple forms of input.
 
   Returns:
-    List of list of data.
+    List of invocations that has a list of inputs.
+  """
+  inbound_nodes = inbound_nodes if inbound_nodes else []
 
-  [1]: A Functional model has fields 'inbound_nodes' and 'output_layers' which can
-  look like below:
+  is_single_input_mode = isinstance(
+      inbound_nodes[0][0], six.string_types) if inbound_nodes else False
+  invocations = []
+  for inbound_node in inbound_nodes:
+    if (is_single_input_mode and not
+        isinstance(inbound_node[0], six.string_types)):
+      raise ValueError('Expected all inbound nodes to have the same type')
+
+    if is_single_input_mode:
+      invocations.append([inbound_node])
+    else:
+      invocations.append(inbound_node)
+
+  normalized_inbound_nodes = []
+  for invocation in invocations:
+    inbound_invocation = []
+    for input_layer in invocation:
+      inbound_invocation.append(
+          InboundNodes(
+              inbound_layer=input_layer[0],
+              node_index=input_layer[1],
+              tensor_id=input_layer[2],
+              kwargs=input_layer[3]))
+    normalized_inbound_nodes.append(inbound_invocation)
+  return normalized_inbound_nodes
+
+
+def _get_node_data(node_data):
+  """Return normalized list of NodeData.
+
+  A model configuration has fields 'input_layers' and 'output_layers' which can
+  be of below forms:
   - ['in_layer_name', 0, 0]
   - [['in_layer_is_model', 1, 0], ['in_layer_is_model', 1, 1]]
-  The data inside the list seems to describe [name, size, index].
-  """
-  return (maybe_layers if isinstance(maybe_layers[0], (list,))
-          else [maybe_layers])
-
-
-def _update_dicts(name_scope,
-                  model_layer,
-                  input_to_in_layer,
-                  model_name_to_output,
-                  prev_node_name):
-  """Updates input_to_in_layer, model_name_to_output, and prev_node_name
-  based on the model_layer.
 
   Args:
-    name_scope: a string representing a scope name, similar to that of tf.name_scope.
-    model_layer: a dict representing a Keras model configuration.
-    input_to_in_layer: a dict mapping Keras.layers.Input to inbound layer.
-    model_name_to_output: a dict mapping Keras Model name to output layer of the model.
-    prev_node_name: a string representing a previous, in sequential model layout,
-                    node name.
+    node_data: Value from 'input_layers' or 'output_layers' from Keras model
+        configuraiton.
 
   Returns:
-    A tuple of (input_to_in_layer, model_name_to_output, prev_node_name).
-    input_to_in_layer: a dict mapping Keras.layers.Input to inbound layer.
-    model_name_to_output: a dict mapping Keras Model name to output layer of the model.
-    prev_node_name: a string representing a previous, in sequential model layout,
-                    node name.
+    A list of NodeData.
   """
-  layer_config = model_layer.get('config')
-  if not layer_config.get('layers'):
-    raise ValueError('layer is not a model.')
+  normalized_list = ([node_data] if isinstance(node_data[0], six.string_types)
+                     else node_data)
 
-  node_name = _scoped_name(name_scope, layer_config.get('name'))
+  node_data = []
+  for node in normalized_list:
+    node_data.append(NodeData(layer_name=node[0],
+                              node_id=node[1],
+                              tensor_id=node[2]))
+  return node_data
+
+
+def _normalize_sequential_models(keras_model):
+  """Populate missing fields in Keras Sequential model.
+
+  Keras Functional model explicitly encodes input and output layers of a model
+  and it populates `inbound_nodes` to every layers in it. On contrary, a
+  Sequential model has implicit input and output layers (the first and the last
+  layer, respectively) and order of layers implicitly encodes `inbound_nodes`
+  information.
+
+  For ease of GraphDef construction, we normalize Sequential models to be
+  complete by populating the implicit fields.
+
+  WARNING: this method has side-effects and modifies the input, `keras_model`.
+
+  Args:
+    keras_model:  A dict from Keras model.to_json().
+  """
+  assert _is_model(keras_model), 'Expected a layer to be a model.'
+
+  layer_config = keras_model.get('config')
   input_layers = layer_config.get('input_layers')
   output_layers = layer_config.get('output_layers')
-  inbound_nodes = model_layer.get('inbound_nodes')
-
   is_functional_model = bool(input_layers and output_layers)
-  # In case of [1] and the parent model is functional, current layer
-  # will have the 'inbound_nodes' property.
-  is_parent_functional_model = bool(inbound_nodes)
+  model_layers = layer_config.get('layers')
 
-  if is_parent_functional_model and is_functional_model:
-    for (input_layer, inbound_node) in zip(input_layers, inbound_nodes):
-      input_layer_name = _scoped_name(node_name, input_layer)
-      inbound_node_name = _scoped_name(name_scope, inbound_node[0])
-      input_to_in_layer[input_layer_name] = inbound_node_name
-  elif is_parent_functional_model and not is_functional_model:
-    # Sequential model can take only one input. Make sure inbound to the
-    # model is linked to the first layer in the Sequential model.
-    prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0][0])
-  elif not is_parent_functional_model and prev_node_name and is_functional_model:
-    assert len(input_layers) == 1, (
-        'Cannot have multi-input Functional model when parent model '
-        'is not Functional. Number of input layers: %d' % len(input_layer))
-    input_layer = input_layers[0]
-    input_layer_name = _scoped_name(node_name, input_layer)
-    input_to_in_layer[input_layer_name] = prev_node_name
+  if not is_functional_model:
+    first_layer = model_layers[0]
+    last_layer = model_layers[-1]
+    layer_config['input_layers'] = [
+        first_layer.get('config').get('name'), 0, 0]
+    layer_config['output_layers'] = [
+        last_layer.get('config').get('name'), 0, 0]
 
-  if is_functional_model and output_layers:
-    layers = _norm_to_list_of_layers(output_layers)
-    layer_names = [_scoped_name(node_name, layer[0]) for layer in layers]
-    model_name_to_output[node_name] = layer_names
-  else:
-    last_layer = layer_config.get('layers')[-1]
-    last_layer_name = last_layer.get('config').get('name')
-    output_node = _scoped_name(node_name, last_layer_name)
-    model_name_to_output[node_name] = [output_node]
-  return (input_to_in_layer, model_name_to_output, prev_node_name)
+    prev_node_name = None
+    for layer in model_layers:
+      if prev_node_name:
+        layer['inbound_nodes'] = [[prev_node_name, 0, 0, {}]]
+
+      node_name = layer.get('config').get('name')
+      prev_node_name = node_name
+
+  for layer in model_layers:
+    if _is_model(layer):
+      _normalize_sequential_models(layer)
+
+
+def _build_metadata(keras_model):
+  """Build metadata about a Keras model useful for creating a GraphDef.
+
+  Args:
+    keras_layer: A dict from Keras model.to_json().
+
+  Returns:
+    A ModelMetadata
+  """
+  input_to_in_layer = {}
+  model_name_to_outputs = {}
+
+  for (name_scope, layer) in _walk_layers(keras_model):
+    is_model = _is_model(layer)
+    layer_config = layer.get('config')
+    node_name = _scoped_name(name_scope, layer_config.get('name'))
+    inbound_nodes = _get_inbound_nodes(layer.get('inbound_nodes'))
+
+    if is_model:
+      input_layers = layer_config.get('input_layers')
+      output_layers = _get_node_data(layer_config.get('output_layers'))
+
+      if input_layers and inbound_nodes:
+        assert len(inbound_nodes) == 1, (
+            'Keras converter does not support multi-inputs to a input layer')
+        for (input_layer, inbound_node) in zip(input_layers, inbound_nodes[0]):
+          input_layer_name = _scoped_name(node_name, input_layer)
+          inbound_node_name = _scoped_name(
+              name_scope, inbound_node.inbound_layer)
+          input_to_in_layer[input_layer_name] = inbound_node_name
+
+      layer_names = [_scoped_name(node_name, layer.layer_name) for layer
+                     in output_layers]
+      model_name_to_outputs[node_name] = layer_names
+
+  return ModelMetadata(input_to_in_layer, model_name_to_outputs)
 
 
 def keras_model_to_graph_def(keras_layer):
@@ -188,18 +289,13 @@ def keras_model_to_graph_def(keras_layer):
   Returns:
     A GraphDef representation of the layers in the model.
   """
-  input_to_layer = {}
-  model_name_to_output = {}
-  g = GraphDef()
+  _normalize_sequential_models(keras_layer)
+  metadata = _build_metadata(keras_layer)
 
-  # Sequential model layers do not have a field "inbound_nodes" but
-  # instead are defined implicitly via order of layers.
-  prev_node_name = None
+  g = GraphDef()
 
   for (name_scope, layer) in _walk_layers(keras_layer):
     if _is_model(layer):
-      (input_to_layer, model_name_to_output, prev_node_name) = _update_dicts(
-          name_scope, layer, input_to_layer, model_name_to_output, prev_node_name)
       continue
 
     layer_config = layer.get('config')
@@ -216,24 +312,19 @@ def keras_model_to_graph_def(keras_layer):
       tf_dtype = dtypes.as_dtype(layer_config.get('dtype'))
       node_def.attr['dtype'].type = tf_dtype.as_datatype_enum
 
-    if layer.get('inbound_nodes') is not None:
-      for maybe_inbound_node in layer.get('inbound_nodes'):
-        inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)
-        for [name, size, index, _] in inbound_nodes:
-          inbound_name = _scoped_name(name_scope, name)
-          # An input to a layer can be output from a model. In that case, the name
-          # of inbound_nodes to a layer is a name of a model. Remap the name of the
-          # model to output layer of the model. Also, since there can be multiple
-          # outputs in a model, make sure we pick the right output_layer from the model.
-          inbound_node_names = model_name_to_output.get(
-              inbound_name, [inbound_name])
-          node_def.input.append(inbound_node_names[index])
-    elif prev_node_name is not None:
-      node_def.input.append(prev_node_name)
+    for inbound_inputs in _get_inbound_nodes(layer.get('inbound_nodes')):
+      for inbound_node in inbound_inputs:
+        inbound_name = _scoped_name(name_scope, inbound_node.inbound_layer)
+        # An input to a layer can be output from a model. In that case, the name
+        # of inbound_nodes to a layer is a name of a model. Remap the name of
+        # the model to output layer of the model. Also, since there can be
+        # multiple outputs in a model, make sure we pick the right output_layer
+        # from the model.
+        inbound_node_names = metadata.model_name_to_outputs.get(
+            inbound_name, [inbound_name])
+        node_def.input.append(inbound_node_names[inbound_node.tensor_id])
 
-    if node_name in input_to_layer:
-      node_def.input.append(input_to_layer.get(node_name))
-
-    prev_node_name = node_def.name
+    if node_name in metadata.input_to_in_layer:
+      node_def.input.append(metadata.input_to_in_layer.get(node_name))
 
   return g
