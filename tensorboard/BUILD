@@ -149,9 +149,9 @@ py_library(
     deps = [
         ":manager",
         ":version",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
-        "//tensorboard/util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -369,7 +369,6 @@ py_binary(
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util",
         "//tensorboard/util:encoder",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",

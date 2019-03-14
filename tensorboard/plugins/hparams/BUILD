@@ -33,7 +33,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
-        "//tensorboard/util",
+        "//tensorboard/util:tb_logging",
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",

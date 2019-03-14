@@ -37,7 +37,6 @@ from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-o
 
 from werkzeug import wrappers
 
-from tensorboard import db
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
@@ -463,7 +462,7 @@ def create_sqlite_connection_provider(db_uri):
   path = os.path.expanduser(uri.path)
   params = _get_connect_params(uri.query)
   # TODO(@jart): Add thread-local pooling.
-  return lambda: db.Connection(sqlite3.connect(path, **params))
+  return lambda: sqlite3.connect(path, **params)
 
 
 def _get_connect_params(query):
