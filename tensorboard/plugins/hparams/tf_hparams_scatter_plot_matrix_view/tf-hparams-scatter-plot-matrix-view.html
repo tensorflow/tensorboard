@@ -84,53 +84,52 @@ limitations under the License.
         </vaadin-split-layout>
       </vaadin-split-layout>
     </div>
+    <style>
+      .pane {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .section {
+        margin: 10px;
+      }
+      #controls {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        height: auto;
+        overflow-y:auto;
+        max-height: fit-content;
+      }
+      #plot {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: auto;
+        height: auto;
+        overflow-y:auto;
+        max-height: fit-content;
+      }
+      #values {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        height: 95px;
+        overflow-y:auto;
+        max-height: fit-content;
+      }
+      #details {
+        flex-grow: 0;
+        flex-shrink: 1;
+        flex-basis: auto;
+        height: auto;
+        overflow-y: auto;
+        max-height: fit-content;
+      }
+      vaadin-split-layout {
+        height: 100%;
+      }
+    </style>
   </template>
-
-  <style>
-    .pane {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-    .section {
-      margin: 10px;
-    }
-    #controls {
-      flex-grow: 0;
-      flex-shrink: 0;
-      flex-basis: auto;
-      height: auto;
-      overflow-y:auto;
-      max-height: fit-content;
-    }
-    #plot {
-      flex-grow: 1;
-      flex-shrink: 1;
-      flex-basis: auto;
-      height: auto;
-      overflow-y:auto;
-      max-height: fit-content;
-    }
-    #values {
-      flex-grow: 0;
-      flex-shrink: 0;
-      flex-basis: auto;
-      height: 95px;
-      overflow-y:auto;
-      max-height: fit-content;
-    }
-    #details {
-      flex-grow: 0;
-      flex-shrink: 1;
-      flex-basis: auto;
-      height: auto;
-      overflow-y: auto;
-      max-height: fit-content;
-    }
-    vaadin-split-layout {
-      height: 100%;
-    }
-  </style>
 
   <script>
     'use strict';
