@@ -336,31 +336,6 @@ py_test(
     ],
 )
 
-py_library(
-    name = "db",
-    srcs = ["db.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard/util",
-    ],
-)
-
-py_test(
-    name = "db_test",
-    size = "medium",
-    timeout = "short",
-    srcs = ["db_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":db",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
-    ],
-)
-
 py_binary(
     name = "encode_png_benchmark",
     srcs = ["encode_png_benchmark.py"],
@@ -395,37 +370,6 @@ py_test(
     deps = [
         ":plugin_util",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
-    name = "loader",
-    srcs = ["loader.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util",
-        "//tensorboard/util:platform_util",
-        "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "loader_test",
-    size = "small",
-    srcs = ["loader_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":loader",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util",
-        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
