@@ -88,7 +88,7 @@ py_test(
 )
 
 py_test(
-    name = "custom_scalars_plugin_test_notf",
+    name = "custom_scalars_plugin_notf_test",
     size = "small",
     srcs = ["custom_scalars_plugin_test.py"],
     main = "custom_scalars_plugin_test.py",
@@ -98,6 +98,7 @@ py_test(
         ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_numpy_installed",
+        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/compat:no_tensorflow",

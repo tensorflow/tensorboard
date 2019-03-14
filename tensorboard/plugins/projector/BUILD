@@ -69,7 +69,7 @@ py_test(
 )
 
 py_test(
-    name = "projector_plugin_test_notf",
+    name = "projector_plugin_notf_test",
     size = "small",
     srcs = ["projector_plugin_test.py"],
     main = "projector_plugin_test.py",
@@ -77,6 +77,7 @@ py_test(
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
+        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
