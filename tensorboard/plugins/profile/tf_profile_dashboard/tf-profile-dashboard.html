@@ -66,8 +66,7 @@ profile run can have multiple tools that present the performance profile as diff
                placeholder="localhost:6009"
                value="{{_profilerServiceAddress}}"></paper-input>
   <label id="profiler-address-type-label">Address Type:</label>
-  <paper-radio-group selected="ip-address"
-                     selected="{{_profilerServiceAddressType}}"
+  <paper-radio-group selected="{{_profilerServiceAddressType}}"
                      aria-labelledby="profiler-address-type-label">
     <paper-radio-button name="ip-address">IP Address</paper-radio-button>
     <paper-radio-button name="tpu-name">TPU Name</paper-radio-button>
