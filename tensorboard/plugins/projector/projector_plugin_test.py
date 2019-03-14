@@ -25,6 +25,7 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
+import unittest
 
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
