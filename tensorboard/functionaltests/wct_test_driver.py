@@ -34,7 +34,8 @@ from testing.web import webtest
 # We extract only the port because the hostname can reroute through corp
 # DNS and force auth, which fails in tests.
 _URL_RE = re.compile(br'http://[^:]*:([0-9]+)/')
-
+_SUITE_PASSED_RE = re.compile(r'.*test suite passed"$')
+_SUITE_FAILED_RE = re.compile(r'.*failing test.*')
 
 def create_test_class(binary_path, web_path):
   """Create a unittest.TestCase class to run WebComponentTester tests.
@@ -53,24 +54,27 @@ def create_test_class(binary_path, web_path):
   class BrowserLogIndicatesResult(object):
     def __init__(self):
       self.passed = False
+      self.log = []
+
     def __call__(self, driver):
-      # Scan through the log entries and search for a text indicating whether
-      # the test passed or failed.
-      messages = [entry['message'] for entry in driver.get_log('browser')]
-      if self._log_contains(messages, 'failing test'):
+      # Scan through the log entries and search for a line indicating whether
+      # the test passed or failed. The method 'driver.get_log' also seems to
+      # clear the log so we aggregate it in self.log for printing later on.
+      new_log = driver.get_log("browser")
+      new_messages = [entry["message"] for entry in new_log]
+      self.log = self.log + new_log
+      if self._log_matches(new_messages, _SUITE_FAILED_RE):
         self.passed = False
         return True
-      if self._log_contains(messages, 'test suite passed'):
+      if self._log_matches(new_messages, _SUITE_PASSED_RE):
         self.passed = True
         return True
       # Here, we still don't know.
       return False
 
-    def _log_contains(self, messages, text):
+    def _log_matches(self, messages, regexp):
       for message in messages:
-        if text in message:
-          # Print log message as an aid for debugging.
-          print("Found: %s in log entry message: %s" % (text, message))
+        if regexp.match(message):
           return True
       return False
 
@@ -118,13 +122,25 @@ def create_test_class(binary_path, web_path):
 
     def test(self):
       driver = webtest.new_webdriver_session(
-          capabilities={'loggingPrefs':{'browser':'ALL'}}
+          capabilities={"loggingPrefs": {"browser": "ALL"}}
       )
       url = "http://localhost:%s%s" % (self.port, web_path)
       driver.get(url)
       browser_log_indicates_result = BrowserLogIndicatesResult()
-      wait.WebDriverWait(driver, 10).until(browser_log_indicates_result)
-      if not browser_log_indicates_result.passed:
-        self.fail()
+      try:
+        wait.WebDriverWait(driver, 10).until(browser_log_indicates_result)
+        if not browser_log_indicates_result.passed:
+          self.fail()
+      finally:
+        # Print log as an aid for debugging.
+        log = browser_log_indicates_result.log + driver.get_log("browser")
+        self._printLog(log)
+
+    def _printLog(self, entries):
+      print ("Browser log follows:")
+      print ("--------------------")
+      print(" | ".join(entries[0].keys()))
+      for entry in entries:
+        print(" | ".join(str(v) for v in entry.values()))
 
   return WebComponentTesterTest
