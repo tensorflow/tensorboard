@@ -134,11 +134,11 @@ def create_test_class(binary_path, web_path):
       finally:
         # Print log as an aid for debugging.
         log = browser_log_indicates_result.log + driver.get_log("browser")
-        self._printLog(log)
+        self._print_log(log)
 
-    def _printLog(self, entries):
-      print ("Browser log follows:")
-      print ("--------------------")
+    def _print_log(self, entries):
+      print("Browser log follows:")
+      print("--------------------")
       print(" | ".join(entries[0].keys()))
       for entry in entries:
         print(" | ".join(str(v) for v in entry.values()))
