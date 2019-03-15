@@ -165,7 +165,7 @@ dashboard would integrate trace viewer app using iframe.
         var req = new XMLHttpRequest();
         const urlParams = new URLSearchParams(window.location.search);
         const klabToken = urlParams.get('token');
-        var queryUrl = addParameter(this.traceDataUrl, 'token', klabToken);
+        var queryUrl = this._addParameter(this.traceDataUrl, 'token', klabToken);
         req.open('GET', queryUrl, true);
 
 	req.onreadystatechange = event => {

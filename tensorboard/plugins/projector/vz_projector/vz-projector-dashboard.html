@@ -123,7 +123,7 @@ Polymer({
     const urlParams = new URLSearchParams(window.location.search);
     const klabToken = urlParams.get('token');
     const url = this._routePrefix + '/runs';
-    var queryUrl = addParameter(url, 'token', klabToken);
+    var queryUrl = this.addParameter(url, 'token', klabToken);
     xhr.open('GET', queryUrl);
     xhr.onload = () => {
       // Set this to true so we only initialize once.

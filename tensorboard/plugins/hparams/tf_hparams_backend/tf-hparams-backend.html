@@ -105,7 +105,7 @@ var tf;
           console.log('rquest url', url);
           const urlParams = new URLSearchParams(window.location.search);
           const klabToken = urlParams.get('token');
-          var queryUrl = addParameter(url, 'token', klabToken);
+          var queryUrl = this.addParameter(url, 'token', klabToken);
           return this._requestManager.request(queryUrl);
         }
         /* Use POST */
