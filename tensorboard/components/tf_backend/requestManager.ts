@@ -277,7 +277,7 @@ function buildXMLHttpRequest(methodType: HttpMethodType, url: string,
                              contentType?: string): XMLHttpRequest {
   const req = new XMLHttpRequest();
   const urlParams = new URLSearchParams(window.location.search);
-  const klabToken = urlParams.get('klabToken');
+  const klabToken = urlParams.get('token');
   var queryUrl = addParameter(url, 'token', klabToken);
   req.open(methodType, queryUrl);
   if (withCredentials) {
