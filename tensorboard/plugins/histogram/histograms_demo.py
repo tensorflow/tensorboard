@@ -29,7 +29,7 @@ from tensorboard.plugins.histogram import summary as histogram_summary
 LOGDIR = '/tmp/histograms_demo'
 
 
-def run_all(logdir, verbose=False):
+def run_all(logdir, verbose=False, num_summaries=400):
   """Generate a bunch of histogram data, and write it to logdir."""
   del verbose
 
@@ -96,7 +96,7 @@ def run_all(logdir, verbose=False):
   writer = tf.summary.FileWriter(logdir)
 
   # Setup a loop and write the summaries to disk
-  N = 400
+  N = num_summaries
   for step in xrange(N):
     k_val = step/float(N)
     summ = sess.run(summaries, feed_dict={k: k_val})

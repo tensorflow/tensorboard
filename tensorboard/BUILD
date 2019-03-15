@@ -71,6 +71,18 @@ py_library(
     ],
 )
 
+py_test(
+    name = "lib_test",
+    size = "small",
+    srcs = ["lib_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":lib",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "manager",
     srcs = ["manager.py"],
@@ -320,6 +332,7 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 

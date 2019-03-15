@@ -40,7 +40,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 
 
@@ -159,6 +158,7 @@ class CorePluginTest(tf.test.TestCase):
     parsed_object = self._get_json(self.logdir_based_server, '/data/logdir')
     self.assertEqual(parsed_object, {'logdir': self.logdir})
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRuns(self):
     """Test the format of the /data/runs endpoint."""
     self._add_run('run1')
@@ -167,6 +167,7 @@ class CorePluginTest(tf.test.TestCase):
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperiments(self):
     """Test the format of the /data/experiments endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -180,6 +181,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperimentRuns(self):
     """Test the format of the /data/experiment_runs endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -208,7 +210,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
-
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
     fake_wall_times = {

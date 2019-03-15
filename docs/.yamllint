@@ -1,0 +1,10 @@
+# See https://yamllint.readthedocs.io/en/stable/rules.html
+extends: default
+rules:
+  document-start:
+    present: false
+  indentation:
+    indent-sequences: false
+  line-length:
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true

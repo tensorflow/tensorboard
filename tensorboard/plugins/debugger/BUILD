@@ -35,6 +35,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:test_util",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -259,6 +260,7 @@ py_test(
         ":debugger_server_lib",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -275,6 +277,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_python_pypi_portpicker",
         "@org_pythonhosted_six",
