@@ -56,6 +56,7 @@ py_test(
     ],
 )
 
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
 py_test(
     name = "pr_curves_plugin_notf_test",
     size = "medium",  # tf integration test
@@ -67,7 +68,6 @@ py_test(
         ":pr_curve_demo_lib",
         ":pr_curves_plugin",
         "//tensorboard:expect_numpy_installed",
-        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/compat:no_tensorflow",

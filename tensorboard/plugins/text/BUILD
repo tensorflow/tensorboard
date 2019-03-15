@@ -49,6 +49,7 @@ py_test(
     ],
 )
 
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
 py_test(
     name = "text_plugin_notf_test",
     size = "small",
@@ -57,7 +58,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
-        # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:application",
