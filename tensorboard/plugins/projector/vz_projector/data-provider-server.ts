@@ -148,15 +148,19 @@ export class ServerDataProvider implements DataProvider {
       callback: (r: SpriteAndMetadataInfo) => void) {
     this.getEmbeddingInfo(run, tensorName, embedding => {
       let metadataPath = null;
+      const urlParams = new URLSearchParams(window.location.search);
+      const klabToken = urlParams.get('token');
       if (embedding.metadataPath) {
         metadataPath =
             `${this.routePrefix}/metadata?` +
             `run=${run}&name=${tensorName}&num_rows=${LIMIT_NUM_POINTS}`;
+        metadataPath += '&token=' + klabToken
       }
       let spriteImagePath = null;
       if (embedding.sprite && embedding.sprite.imagePath) {
         spriteImagePath =
             `${this.routePrefix}/sprite_image?run=${run}&name=${tensorName}`;
+        spriteImagePath += '&token=' + klabToken
       }
       retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath,
           embedding.sprite, callback);
