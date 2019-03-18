@@ -508,6 +508,7 @@ limitations under the License.
                 d3.select(this).call(axis);
               })
             .append("text")
+              .attr("class", "axis-title")
               .style("cursor", "move")
               .style("text-anchor", "middle")
               .attr("y", -9)
@@ -518,6 +519,10 @@ limitations under the License.
                     draggedColPos = x(colIndex);
                     draggedColIndex = colIndex;
                     backgroundPaths.attr("visibility", "hidden");
+                    // We set an attribute on the axis that signals
+                    // that it is being dragged. This allows
+                    // integration tests to know when dragging is done.
+                    this.setAttribute("is-dragging", "");
                   })
                   .on("drag", function(colIndex) {
                     draggedColPos = d3.event.x;
@@ -557,7 +562,10 @@ limitations under the License.
                     // after the transition ends.
                         .attr("d", pathDataFn);
                     window.setTimeout(
-                        ()=>foregroundPaths.each(setPathControlPointsFn),
+                        ()=>{
+                          foregroundPaths.each(setPathControlPointsFn),
+                          this.removeAttribute("is-dragging")
+                        },
                         500);
                     backgroundPaths
                         .attr("d", pathDataFn)
