@@ -172,13 +172,16 @@ limitations under the License.
         var devices = _.each(stats.dev_stats, function(d) {
           // Only considered included devices.
           var include = _.some(DEVICE_NAMES_INCLUDE, function(rule) {
+            // @ts-ignore: Will convert to TypeScript in a subsequent commit.
             return rule.regex.test(d.device);
           });
           // Exclude device names that are ignored by default.
           var exclude = _.some(DEVICE_STATS_DEFAULT_OFF, function(rule) {
+            // @ts-ignore: Will convert to TypeScript in a subsequent commit.
             return rule.regex.test(d.device);
           });
           if (include && !exclude) {
+            // @ts-ignore: Will convert to TypeScript in a subsequent commit.
             devicesForStats[d.device] = true;
           }
         });
@@ -186,6 +189,7 @@ limitations under the License.
       },
       _getCurrentDevices: function(devicesForStats) {
         var all_devices = _.map(this.stats && this.stats.dev_stats, function(d) {
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           return d.device;
         });
         var devices = _.filter(all_devices, function(d) {
@@ -238,6 +242,7 @@ limitations under the License.
         return datasets[_selectedRunIndex].tags;
       },
       fit: function() {
+        // @ts-ignore: Will convert to TypeScript in a subsequent commit.
         document.querySelector('#scene').fit();
       },
       _isGradientColoring: function(stats, colorBy) {
@@ -250,12 +255,14 @@ limitations under the License.
       _getCurrentDeviceParams: function(colorByParams) {
         var deviceParams = _.filter(colorByParams.device, function(param) {
           return _.some(DEVICE_NAMES_INCLUDE, function(rule) {
+            // @ts-ignore: Will convert to TypeScript in a subsequent commit.
             return rule.regex.test(param.device);
           });
         });
         // Remove common prefix and merge back corresponding color. If
         // there is only one device then remove everything up to "/device:".
         var suffixes = tf.graph.util.removeCommonPrefix(
+                // @ts-ignore: Will convert to TypeScript in a subsequent commit.
                 _.map(deviceParams, function(d) { return d.device; }));
         if (suffixes.length == 1) {
           var found = suffixes[0].match(/device:([^:]+:[0-9]+)$/);
@@ -264,6 +271,7 @@ limitations under the License.
           }
         }
         return _.map(deviceParams, function(d, i) {
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           return { device : suffixes[i], color : d.color };
         });
       },
@@ -278,13 +286,17 @@ limitations under the License.
         var minValue = params.minValue;
         var maxValue = params.maxValue;
         if (colorBy === 'memory') {
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           minValue = tf.graph.util.convertUnitsToHumanReadable(
               minValue, tf.graph.util.MEMORY_UNITS);
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           maxValue = tf.graph.util.convertUnitsToHumanReadable(
               maxValue, tf.graph.util.MEMORY_UNITS);
         } else if (colorBy === 'compute_time') {
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           minValue = tf.graph.util.convertUnitsToHumanReadable(
               minValue, tf.graph.util.TIME_UNITS);
+          // @ts-ignore: Will convert to TypeScript in a subsequent commit.
           maxValue = tf.graph.util.convertUnitsToHumanReadable(
               maxValue, tf.graph.util.TIME_UNITS);
         }
