@@ -563,8 +563,8 @@ limitations under the License.
                         .attr("d", pathDataFn);
                     window.setTimeout(
                         ()=>{
-                          foregroundPaths.each(setPathControlPointsFn),
-                          this.removeAttribute("is-dragging")
+                          foregroundPaths.each(setPathControlPointsFn);
+                          this.removeAttribute("is-dragging");
                         },
                         500);
                     backgroundPaths
