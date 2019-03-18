@@ -31,7 +31,14 @@ py_test(
     name = "graphs_plugin_test",
     size = "small",
     srcs = ["graphs_plugin_test.py"],
-    main = "graphs_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [":graphs_plugin_test_lib"],
+)
+
+py_library(
+    name = "graphs_plugin_test_lib",
+    testonly = True,
+    srcs = ["graphs_plugin_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":graphs_plugin",
@@ -55,7 +62,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":graphs_plugin",
-        ":graphs_plugin_test",
+        ":graphs_plugin_test_lib",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
