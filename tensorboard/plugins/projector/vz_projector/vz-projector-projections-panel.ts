@@ -543,7 +543,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       return;
     }
     const accessors =
-        getProjectionComponents('umap', [0, 1, this.tSNEis3d ? 2 : null]);
+        getProjectionComponents('umap', [0, 1, this.umapIs3d ? 2 : null]);
     const dimensionality = this.umapIs3d ? 3 : 2;
     const projection =
         new Projection('umap', accessors, dimensionality, dataSet);

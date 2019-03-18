@@ -686,6 +686,12 @@ export function stateGetAccessorDimensions(state: State): Array<number|string> {
         dimensions.push(2);
       }
       break;
+    case 'umap':
+      dimensions = [0, 1];
+      if (state.umapIs3d) {
+        dimensions.push(2);
+      }
+      break;      
     case 'custom':
       dimensions = ['x', 'y'];
       break;
