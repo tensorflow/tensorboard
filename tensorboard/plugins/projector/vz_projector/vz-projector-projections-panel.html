@@ -203,18 +203,18 @@ limitations under the License.
             The default value is 15.
           </paper-tooltip>
         </label>
-        <paper-slider id="umap-neighbors-slider" pin min="5" max="50" value="15"></paper-slider>
-        <span></span>
+        <paper-slider id="umap-neighbors-slider" value="{{umapNeighbors}}" pin min="5" max="50"></paper-slider>
+        <span>[[umapNeighbors]]</span>
       </div>
       <p>
-        <button class="run-umap ink-button" title="Re-run UMAP">Run</button>
+        <button id="run-umap" class="ink-button" title="Run UMAP" on-tap="runUmap">Run</button>
       </p>
       <p id="umap-sampling" class="notice">
-        For faster results, the data will be sampled down to [[getUMAPSampleSizeText()]] points.
+        For faster results, the data will be sampled down to [[getUmapSampleSizeText()]] points.
       </p>
       <p>
         <iron-icon icon="book" class="book-icon"></iron-icon>
-        <a target="_blank" href="https://umap-learn.readthedocs.io/en/latest/how_umap_works.html">
+        <a target="_blank" rel="noopener" href="https://umap-learn.readthedocs.io/en/latest/how_umap_works.html">
           Learn more about UMAP.
         </a>
       </p>

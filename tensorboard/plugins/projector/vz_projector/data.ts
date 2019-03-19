@@ -355,21 +355,9 @@ export class DataSet {
       requestAnimationFrame(step);
     };
 
-    // Nearest neighbors calculations.
-    let knnComputation: Promise<knn.NearestEntry[][]>;
+    const sampledData = sampledIndices.map(i => this.points[i]);
+    const knnComputation = this.computeKnn(sampledData, k)
 
-    if (this.nearest != null && k === this.nearestK) {
-      // We found the nearest neighbors before and will reuse them.
-      knnComputation = Promise.resolve(this.nearest);
-    } else {
-      let sampledData = sampledIndices.map(i => this.points[i]);
-      this.nearestK = k;
-      knnComputation = KNN_GPU_ENABLED ?
-          knn.findKNNGPUCosine(sampledData, k, (d => d.vector)) :
-          knn.findKNN(
-              sampledData, k, (d => d.vector),
-              (a, b, limit) => vector.cosDistNorm(a, b));
-    }
     knnComputation.then(nearest => {
       this.nearest = nearest;
       util.runAsyncTask('Initializing T-SNE...', () => {
@@ -379,31 +367,52 @@ export class DataSet {
   }
 
   /** Runs UMAP on the data. */
-  projectUmap(nComponents: number, nNeighbors: number, stepCallback: (iter: number) => void) {
+  async projectUmap(nComponents: number, nNeighbors: number, stepCallback: (iter: number) => void) {
     this.hasUmapRun = true;
     this.umap = new UMAP({nComponents, nNeighbors});
 
     let nEpochs = 1;
     let currentEpoch = 0;
     const epochStepSize = 10;
-    let sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
+    const sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
+  
+    const sampledData = sampledIndices.map(i => this.points[i]);
+    // TODO: Switch to a Float32-based UMAP internal
+    const X = sampledData.map(x => Array.from(x.vector));
 
-    const optimizeUmap = () => new Promise((resolve) => {
+    this.nearest = await this.computeKnn(sampledData, nNeighbors);
+    
+    nEpochs = await util.runAsyncTask('Initializing UMAP...', () => {
+      const knnIndices = this.nearest.map(row => row.map(entry => entry.index));
+      const knnDistances = this.nearest.map(row => row.map(entry => entry.dist));
+
+      // Initialize UMAP and return the number of epochs.
+      return this.umap.initializeFit(X, knnIndices, knnDistances);
+    }, UMAP_MSG_ID);
+    
+    // Now, iterate through all epoch batches of the UMAP optimization, updating
+    // the modal window with the progress rather than animating each step since
+    // the UMAP animation is not nearly as informative as t-SNE.
+    return new Promise((resolve, reject) => {
       const step = () => {
+        // Compute a batch of epochs since we don't want to update the UI
+        // on every epoch.
         const epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
         for (let i = 0; i < epochsBatch; i++) {
           currentEpoch = this.umap.step();
         }
-        let progressMsg = `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`
+        const progressMsg = `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`;
         
+        // Wrap the logic in a util.runAsyncTask in order to correctly update
+        // the modal with the progress of the optimization.
         util.runAsyncTask(progressMsg, () => {
         }, UMAP_MSG_ID, 0).then(() => {
           if (currentEpoch < nEpochs) {
-            step();
+            requestAnimationFrame(step);
           } else {
             const result = this.umap.getEmbedding();
             sampledIndices.forEach((index, i) => {
-              let dataPoint = this.points[index];
+               const dataPoint = this.points[index];
     
               dataPoint.projections['umap-0'] = result[i][0];
               dataPoint.projections['umap-1'] = result[i][1];
@@ -418,43 +427,30 @@ export class DataSet {
             stepCallback(currentEpoch);
             resolve();
           }
-        }, _error => {
+        }, error => {
           logging.setModalMessage(null, UMAP_MSG_ID);
+          reject(error);
         });
       }
 
       requestAnimationFrame(step);
     });
-  
-    const sampledData = sampledIndices.map(i => this.points[i]);
-    // TODO: Switch to a Float32-based UMAP internal
-    const X = sampledData.map(x => Array.from(x.vector));
-
-    // Nearest neighbors calculations.
-    let knnComputation: Promise<knn.NearestEntry[][]>;
-
-    if (this.nearest != null && nNeighbors === this.nearestK) {
-      // We found the nearest neighbors before and will reuse them.
-      knnComputation = Promise.resolve(this.nearest);
-    } else {
-      let sampledData = sampledIndices.map(i => this.points[i]);
-      this.nearestK = nNeighbors;
-      knnComputation = KNN_GPU_ENABLED ?
-          knn.findKNNGPUCosine(sampledData, nNeighbors, (d => d.vector)) :
-          knn.findKNN(
-              sampledData, nNeighbors, (d => d.vector),
-              (a, b, limit) => vector.cosDistNorm(a, b));
-    }
-    knnComputation.then(nearest => {
-      this.nearest = nearest;
-      util.runAsyncTask('Initializing UMAP...', () => {
-        const knnIndices = nearest.map(row => row.map(entry => entry.index));
-        const knnDistances = nearest.map(row => row.map(entry => entry.dist));
-
-        nEpochs = this.umap.initializeFit(X, knnIndices, knnDistances);
-      }, UMAP_MSG_ID).then(() => optimizeUmap());
-    });
   }  
+
+  /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
+  private computeKnn(data: DataPoint[], nNeighbors: number): Promise<knn.NearestEntry[][]> {
+    if (this.nearest != null && nNeighbors <= this.nearestK) {
+      // We found the nearest neighbors before and will reuse them.
+      return Promise.resolve(this.nearest);
+    } else {
+      this.nearestK = nNeighbors;
+      return KNN_GPU_ENABLED ?
+          knn.findKNNGPUCosine(data, nNeighbors, (d => d.vector)) :
+          knn.findKNN(
+              data, nNeighbors, (d => d.vector),
+              (a, b) => vector.cosDistNorm(a, b));
+    }
+  }
 
   /* Perturb TSNE and update dataset point coordinates. */
   perturbTsne() {
@@ -622,6 +618,7 @@ export class State {
 
   /** UMAP parameters */
   umapIs3d: boolean = true;
+  umapNeighbors: number = 15;
 
   /** PCA projection component dimensions */
   pcaComponentDimensions: number[] = [];

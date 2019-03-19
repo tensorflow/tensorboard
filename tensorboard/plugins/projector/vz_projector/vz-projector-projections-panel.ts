@@ -24,9 +24,11 @@ export let ProjectionsPanelPolymer = PolymerElement({
         {type: Boolean, value: true, observer: '_pcaDimensionToggleObserver'},
     tSNEis3d:
         {type: Boolean, value: true, observer: '_tsneDimensionToggleObserver'},
-    umapIs3d:
-        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},        
     superviseFactor: {type: Number, value: 0},
+    // UMAP parameters
+    umapIs3d:
+        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},     
+    umapNeighbors: { type: Number, value: 15 },
     // PCA projection.
     pcaComponents: Array,
     pcaX: {type: Number, value: 0, observer: 'showPCAIfEnabled'},
@@ -102,9 +104,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
   private superviseFactorInput: HTMLInputElement;
-  private umapNeighborsInput: HTMLInputElement;
   private zDropdown: HTMLElement;
-  private iterationLabelTSNE: HTMLElement;
+  private iterationLabelTsne: HTMLElement;
 
   private runUmapButton: HTMLButtonElement;
 
@@ -114,6 +115,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private customProjectionYDownInput: ProjectorInput;
 
   initialize(projector: Projector) {
+    console.log(this);
+
     this.polymerChangesTriggerReprojection = true;
     this.projector = projector;
 
@@ -141,10 +144,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
     this.superviseFactorInput =
         this.querySelector('#supervise-factor-slider') as HTMLInputElement;
-    this.iterationLabelTSNE = this.querySelector('.run-tsne-iter') as HTMLElement;
-    this.umapNeighborsInput =
-        this.querySelector('#umap-neighbors-slider') as HTMLInputElement;
-    this.runUmapButton = this.querySelector('.run-umap') as HTMLButtonElement;
+    this.iterationLabelTsne = this.querySelector('.run-tsne-iter') as HTMLElement;
+    this.runUmapButton = this.querySelector('#run-umap') as HTMLButtonElement;
   }
 
   disablePolymerChangesTriggerReprojection() {
@@ -177,14 +178,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     if (this.dataSet) {
       this.dataSet.setSuperviseFactor(this.superviseFactor);
     }
-  }
-
-  private updateUmapNeighborsFromUIChange() {
-    if (this.umapNeighborsInput) {
-      this.umapNeighbors = + this.umapNeighborsInput.value;
-    }
-    (this.querySelector('.umap-neighbors span') as HTMLSpanElement).innerText =
-        '' + this.umapNeighbors;
   }
 
   private setupUIControls() {
@@ -233,10 +226,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       clearInterval(this.perturbInterval);
     });
 
-    this.runUmapButton.addEventListener('click', () => {
-        this.runUmap();
-    });
-
     this.perplexitySlider.value = this.perplexity.toString();
     this.perplexitySlider.addEventListener(
         'change', () => this.updateTSNEPerplexityFromSliderChange());
@@ -249,10 +238,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.superviseFactorInput.addEventListener(
         'change', () => this.updateTSNESuperviseFactorFromUIChange());
     this.updateTSNESuperviseFactorFromUIChange();
-
-    this.umapNeighborsInput.addEventListener(
-      'change', () => this.updateUmapNeighborsFromUIChange());
-    this.updateUmapNeighborsFromUIChange();
 
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
@@ -286,6 +271,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
     // UMAP
     this.umapIs3d = bookmark.umapIs3d;
+    this.umapNeighbors = bookmark.umapNeighbors;
 
     // custom
     this.customSelectedSearchByMetadataOption =
@@ -311,8 +297,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.setZDropdownEnabled(this.pcaIs3d);
     this.updateTSNEPerplexityFromSliderChange();
     this.updateTSNELearningRateFromUIChange();
-    if (this.iterationLabelTSNE) {
-      this.iterationLabelTSNE.innerText = bookmark.tSNEIteration.toString();
+    if (this.iterationLabelTsne) {
+      this.iterationLabelTsne.innerText = bookmark.tSNEIteration.toString();
     }
     if (bookmark.selectedProjection != null) {
       this.showTab(bookmark.selectedProjection);
@@ -518,7 +504,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
           if (iteration != null) {
             this.runTsneButton.disabled = false;
             this.pauseTsneButton.disabled = false;
-            this.iterationLabelTSNE.innerText = '' + iteration;
+            this.iterationLabelTsne.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
 
             if (!projectionChangeNotified && this.dataSet.projections['tsne']) {
@@ -561,7 +547,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.runUmapButton.disabled = true;
 
     const nComponents = this.umapIs3d ? 3 : 2;
-    const nNeighbors = this.umapNeighbors
+    const nNeighbors = this.umapNeighbors;
 
     this.dataSet.projectUmap(nComponents, nNeighbors,
         (iteration: number) => {
@@ -733,7 +719,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     return TSNE_SAMPLE_SIZE.toLocaleString();
   }
 
-  getUMAPSampleSizeText() {
+  getUmapSampleSizeText() {
     return UMAP_SAMPLE_SIZE.toLocaleString();
   }
 }

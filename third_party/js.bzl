@@ -207,7 +207,7 @@ def tensorboard_js_workspace():
   )
 
   filegroup_external(
-      name = "io_github_PAIR-code_umap-js",
+      name = "ai_google_pair_umap_js",
       # no @license header
       licenses = ["notice"],  # Apache License 2.0
       sha256_urls = {
