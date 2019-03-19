@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard import lazy
+from tensorboard import version
 
 
 # Please be careful when changing the structure of this file.
@@ -81,3 +82,6 @@ def program():
 def summary():
   import importlib  # pylint: disable=g-import-not-at-top
   return importlib.import_module('tensorboard.summary')
+
+
+__version__ = version.VERSION
