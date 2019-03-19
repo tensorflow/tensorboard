@@ -24,8 +24,6 @@ py_library(
     deps = [
         ":interactive_inference_plugin",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 

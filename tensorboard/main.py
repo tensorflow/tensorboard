@@ -42,15 +42,22 @@ from tensorboard import default
 from tensorboard import program
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
 
 
-logger = logging.getLogger(__name__)
+logger = tb_logging.get_logger()
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
 
   if getattr(tf, '__version__', 'stub') == 'stub':
+    # Unless the user has explicitly requested running without TensorFlow by setting the
+    # TENSORBOARD_NO_TF environment variable, we check for TensorFlow here so that if it's
+    # missing we generate a clear and immediate error rather than partial functionality.
+    # TODO(#2027): Remove environment check once we have placeholder UI
+    if os.getenv('TENSORBOARD_NO_TF') is None:
+      import tensorflow  # pylint: disable=unused-import
     logger.warn("TensorFlow installation not found - running with reduced feature set.")
 
   tensorboard = program.TensorBoard(default.get_plugins(),

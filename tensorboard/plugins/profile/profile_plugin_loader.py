@@ -22,7 +22,7 @@ from tensorboard.plugins import base_plugin
 
 
 class ProfilePluginLoader(base_plugin.TBLoader):
-  """HParamsPlugin factory.
+  """ProfilePlugin factory.
 
   This class checks for `tensorflow` install and dependency.
   """
@@ -51,8 +51,8 @@ through tpu profiler analysis grpc. The grpc channel is not secured.\
     try:
       # pylint: disable=g-import-not-at-top,unused-import
       import tensorflow
-      # pylint: disable=g-import-not-at-top
-      from tensorboard.plugins.profile.profile_plugin import ProfilePlugin
     except ImportError:
       return
+    # pylint: disable=g-import-not-at-top
+    from tensorboard.plugins.profile.profile_plugin import ProfilePlugin
     return ProfilePlugin(context)

@@ -30,6 +30,7 @@ from werkzeug import wrappers
 from tensorflow.python.eager import profiler_client
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
+from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
 from tensorboard.util import tb_logging
@@ -420,7 +421,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     try:
       duration = int(request.args.get('duration'))
     except TypeError:
-      return http_util.Respond(request, 'Invalid duration', 
+      return http_util.Respond(request, 'Invalid duration',
                                'text/plain', code=400)
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
     if is_tpu_name:
@@ -436,7 +437,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
           request, {'result': 'Capture profile successfully. Please refresh'},
           'application/json')
     except tf.errors.UnavailableError:
-      return http_util.Respond(request, 'Empty trace result', 
+      return http_util.Respond(request, 'Empty trace result',
                                'text/plain', code=404)
 
   def get_plugin_apps(self):
