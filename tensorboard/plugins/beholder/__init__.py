@@ -12,5 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tensorboard.plugins.beholder.beholder import Beholder
-from tensorboard.plugins.beholder.beholder import BeholderHook
+try:
+  from tensorboard.plugins.beholder.beholder import Beholder
+  from tensorboard.plugins.beholder.beholder import BeholderHook
+except ImportError:
+  pass

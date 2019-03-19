@@ -30,7 +30,6 @@ from werkzeug import wrappers
 from tensorflow.python.eager import profiler_client
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
-from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import trace_events_json
 from tensorboard.plugins.profile import trace_events_pb2
 from tensorboard.util import tb_logging
@@ -70,25 +69,6 @@ def process_raw_trace(raw_trace):
   trace = trace_events_pb2.Trace()
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
-
-
-class ProfilePluginLoader(base_plugin.TBLoader):
-  """Loader for Profile Plugin."""
-
-  def define_flags(self, parser):
-    group = parser.add_argument_group('profile plugin')
-    group.add_argument(
-        '--master_tpu_unsecure_channel',
-        metavar='ADDR',
-        type=str,
-        default='',
-        help='''\
-IP address of "master tpu", used for getting streaming trace data
-through tpu profiler analysis grpc. The grpc channel is not secured.\
-''')
-
-  def load(self, context):
-    return ProfilePlugin(context)
 
 
 class ProfilePlugin(base_plugin.TBPlugin):

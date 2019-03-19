@@ -34,6 +34,18 @@ py_library(
     ],
 )
 
+py_library(
+    name = "profile_plugin_loader",
+    srcs = ["profile_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":profile_plugin",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_test(
     name = "profile_plugin_test",
     srcs = ["profile_plugin_test.py"],
