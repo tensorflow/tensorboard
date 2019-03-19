@@ -47,6 +47,27 @@ py_test(
     ],
 )
 
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+py_test(
+    name = "scalars_plugin_notf_test",
+    size = "small",
+    srcs = ["scalars_plugin_test.py"],
+    main = "scalars_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":scalars_plugin",
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_binary(
     name = "scalars_demo",
     srcs = ["scalars_demo.py"],
