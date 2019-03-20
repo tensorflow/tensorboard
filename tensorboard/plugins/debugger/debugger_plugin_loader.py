@@ -96,6 +96,11 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       return None
     flags = context.flags
     try:
+      # pylint: disable=g-import-not-at-top,unused-import
+      import tensorflow
+    except ImportError:
+      return None
+    try:
       # pylint: disable=line-too-long,g-import-not-at-top
       from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
       from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib

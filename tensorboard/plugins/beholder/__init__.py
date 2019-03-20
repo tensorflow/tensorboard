@@ -12,5 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tensorboard.plugins.beholder.beholder import Beholder
-from tensorboard.plugins.beholder.beholder import BeholderHook
+# Only import Beholder API when tensorflow is available.
+try:
+  # pylint: disable=g-import-not-at-top,unused-import
+  import tensorflow
+except ImportError:
+  pass
+else:
+  from tensorboard.plugins.beholder.beholder import Beholder
+  from tensorboard.plugins.beholder.beholder import BeholderHook

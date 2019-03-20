@@ -72,25 +72,6 @@ def process_raw_trace(raw_trace):
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
 
-class ProfilePluginLoader(base_plugin.TBLoader):
-  """Loader for Profile Plugin."""
-
-  def define_flags(self, parser):
-    group = parser.add_argument_group('profile plugin')
-    group.add_argument(
-        '--master_tpu_unsecure_channel',
-        metavar='ADDR',
-        type=str,
-        default='',
-        help='''\
-IP address of "master tpu", used for getting streaming trace data
-through tpu profiler analysis grpc. The grpc channel is not secured.\
-''')
-
-  def load(self, context):
-    return ProfilePlugin(context)
-
-
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
 
@@ -440,7 +421,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     try:
       duration = int(request.args.get('duration'))
     except TypeError:
-      return http_util.Respond(request, 'Invalid duration', 
+      return http_util.Respond(request, 'Invalid duration',
                                'text/plain', code=400)
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
     if is_tpu_name:
@@ -456,7 +437,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
           request, {'result': 'Capture profile successfully. Please refresh'},
           'application/json')
     except tf.errors.UnavailableError:
-      return http_util.Respond(request, 'Empty trace result', 
+      return http_util.Respond(request, 'Empty trace result',
                                'text/plain', code=404)
 
   def get_plugin_apps(self):
