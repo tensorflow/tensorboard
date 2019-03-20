@@ -160,14 +160,14 @@ Properties out:
       });
       this.set('runs', tf_backend.runsStore.getRuns());
 
-      this._envStoreListener = tf_backend.runsStore.addListener(() => {
+      this._envStoreListener = tf_backend.environmentStore.addListener(() => {
         this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
       });
       this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
     },
     detached() {
       tf_backend.runsStore.removeListenerByKey(this._runStoreListener);
-      tf_backend.runsStore.removeListenerByKey(this._envStoreListener);
+      tf_backend.environmentStore.removeListenerByKey(this._envStoreListener);
     },
     _toggleAll: function() {
       this.$.multiCheckbox.toggleAll();
