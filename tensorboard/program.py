@@ -422,7 +422,7 @@ def with_port_scanning(cls):
 
 
 @with_port_scanning
-class WerkzeugServer(serving.ThreadedWSGIServer):
+class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   """Implementation of TensorBoardServer using the Werkzeug dev server."""
 
   # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
