@@ -40,6 +40,16 @@ py_library(
     ],
 )
 
+py_library(
+    name = "hparams_plugin_loader",
+    srcs = ["hparams_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
 py_test(
     name = "list_session_groups_test",
     size = "small",
