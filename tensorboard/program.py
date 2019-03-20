@@ -43,6 +43,7 @@ import sys
 import threading
 import inspect
 
+import absl.logging
 import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -55,7 +56,6 @@ from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
-from tensorboard.util import util
 
 try:
   from absl import flags as absl_flags
@@ -75,7 +75,7 @@ def setup_environment():
   this function is a good idea, but it can't appropriately be called
   from library routines.
   """
-  util.setup_logging()
+  absl.logging.set_verbosity(absl.logging.WARNING)
 
   # The default is HTTP/1.0 for some strange reason. If we don't use
   # HTTP/1.1 then a new TCP socket and Python thread is created for
