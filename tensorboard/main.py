@@ -35,7 +35,6 @@ import os
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 # pylint: enable=g-import-not-at-top
 
-import logging
 import sys
 
 from tensorboard import default
