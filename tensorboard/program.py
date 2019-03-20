@@ -36,6 +36,7 @@ import atexit
 from collections import defaultdict
 import datetime
 import errno
+import functools
 import os
 import signal
 import socket
@@ -341,62 +342,96 @@ class TensorBoardServerException(Exception):
     self.msg = msg
 
 
-class WerkzeugServer(TensorBoardServer):
-  """Implementation of TensorBoardServer using the Werkzeug dev server."""
-  def __init__(self, wsgi_app, flags):
-    host = flags.host
+class TensorBoardFailedToBindError(TensorBoardServerException):
+  """Error raised when failing to bind to a port.
 
-    # base_port: what's the first port to which we should try to bind?
-    # should_scan: if that fails, shall we try additional ports?
-    # max_attempts: how many ports shall we try?
-    should_scan = flags.port is None
-    base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
-    max_attempts = 10 if should_scan else 1
-
-    if base_port > 0xFFFF:
-      raise TensorBoardServerException(
-          'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
-      )
-    max_attempts = 10 if should_scan else 1
-    base_port = min(base_port + max_attempts, 0x10000) - max_attempts
-
-    for port in xrange(base_port, base_port + max_attempts):
-      try:
-        self._server = _TensorBoardWsgiServer(
-            wsgi_app=wsgi_app,
-            host=host,
-            port=port,
-            path_prefix=flags.path_prefix,
-        )
-        break
-      except _TensorBoardFailedToBindError:
-        if not should_scan:
-          raise
-    else:
-      # All attempts failed.
-      raise TensorBoardServerException(
-          'TensorBoard could not bind to any port around %s '
-          '(tried %d times)'
-          % (base_port, max_attempts))
-
-  def serve_forever(self):
-    return self._server.serve_forever()
-
-  def get_url(self):
-    return self._server.get_url()
-
-
-class _TensorBoardFailedToBindError(TensorBoardServerException):
+  This should be raised when it is expected that binding to another
+  similar port would succeed---for instance, if the underlying error is
+  that the address is in use, not that the address family is
+  unsupported. This is used as a signal to indicate that automatic port
+  searching should continue rather than aborting.
+  """
   pass
 
 
-class _TensorBoardWsgiServer(serving.ThreadedWSGIServer):
+def with_port_scanning(cls):
+  """Create a server class that performs port scanning.
+
+  This function returns a class that uses `cls` as an underlying server
+  implementation. It passes through `flags` unchanged except in the case
+  that `flags.port is None`, in which case it repeatedly instantiates
+  the underlying server with new port suggestions.
+
+  This function can be used as a class decorator (subject to the
+  standard provisos about class decorators and `super` in Python 2).
+
+  Args:
+    cls: A valid implementation of `TensorBoardServer`. This class's
+      initializer should raise a `TensorBoardFailedToBindError` upon
+      failing to bind to a port when it is expected that binding to
+      another nearby port might succeed.
+
+      The initializer for `cls` will only ever be invoked with `flags`
+      such that `flags.port is not None`.
+
+  Returns:
+    A new valid implementation of `TensorBoardServer` backed by `cls`.
+  """
+
+  @functools.wraps(cls, updated=())
+  class PortScanningServer(TensorBoardServer):
+    def __init__(self, wsgi_app, flags):
+      # base_port: what's the first port to which we should try to bind?
+      # should_scan: if that fails, shall we try additional ports?
+      # max_attempts: how many ports shall we try?
+      should_scan = flags.port is None
+      base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
+      max_attempts = 10 if should_scan else 1
+
+      if base_port > 0xFFFF:
+        raise TensorBoardServerException(
+            'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
+        )
+      max_attempts = 10 if should_scan else 1
+      base_port = min(base_port + max_attempts, 0x10000) - max_attempts
+
+      self._server = None
+      for port in xrange(base_port, base_port + max_attempts):
+        subflags = argparse.Namespace(**vars(flags))
+        subflags.port = port
+        try:
+          self._server = cls(wsgi_app=wsgi_app, flags=subflags)
+          break
+        except TensorBoardFailedToBindError:
+          if not should_scan:
+            raise
+      else:
+        # All attempts failed to bind.
+        raise TensorBoardServerException(
+            'TensorBoard could not bind to any port around %s '
+            '(tried %d times)'
+            % (base_port, max_attempts))
+
+    def serve_forever(self):
+      return self._server.serve_forever()
+
+    def get_url(self):
+      return self._server.get_url()
+
+  return PortScanningServer
+
+
+@with_port_scanning
+class WerkzeugServer(serving.ThreadedWSGIServer):
+  """Implementation of TensorBoardServer using the Werkzeug dev server."""
+
   # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
   daemon_threads = True
 
-  def __init__(self, wsgi_app, host, port, path_prefix):
-    self._host = host
-    self._path_prefix = path_prefix
+  def __init__(self, wsgi_app, flags):
+    self._flags = flags
+    host = flags.host
+    port = flags.port
 
     # Without an explicit host, we default to serving on all interfaces,
     # and will attempt to serve both IPv4 and IPv6 traffic through one
@@ -406,7 +441,7 @@ class _TensorBoardWsgiServer(serving.ThreadedWSGIServer):
       host = self._get_wildcard_address(port)
 
     try:
-      super(_TensorBoardWsgiServer, self).__init__(host, port, wsgi_app)
+      serving.ThreadedWSGIServer.__init__(self, host, port, wsgi_app)
     except socket.error as e:
       if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
         raise TensorBoardServerException(
@@ -414,10 +449,10 @@ class _TensorBoardWsgiServer(serving.ThreadedWSGIServer):
             port)
       elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
         if port == 0:
-          raise _TensorBoardFailedToBindError(
+          raise TensorBoardFailedToBindError(
               'TensorBoard unable to find any open port')
         else:
-          raise _TensorBoardFailedToBindError(
+          raise TensorBoardFailedToBindError(
               'TensorBoard could not bind to port %d, it was already in use' %
               port)
       elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
@@ -481,7 +516,7 @@ class _TensorBoardWsgiServer(serving.ThreadedWSGIServer):
         # since that's expected if IPv4 isn't supported at all (IPv6-only).
         if hasattr(errno, 'EAFNOSUPPORT') and e.errno != errno.EAFNOSUPPORT:
           logger.warn('Failed to dual-bind to IPv4 wildcard: %s', str(e))
-    super(_TensorBoardWsgiServer, self).server_bind()
+    serving.ThreadedWSGIServer.server_bind(self)
 
   def handle_error(self, request, client_address):
     """Override to get rid of noisy EPIPE errors."""
@@ -500,8 +535,8 @@ class _TensorBoardWsgiServer(serving.ThreadedWSGIServer):
     if self._auto_wildcard:
       display_host = socket.gethostname()
     else:
-      host = self._host
+      host = self._flags.host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
     return 'http://%s:%d%s' % (display_host, self.server_port,
-                               self._path_prefix)
+                               self._flags.path_prefix)
