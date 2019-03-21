@@ -128,9 +128,9 @@ def example_protos_from_path(path,
 
   filenames = filepath_to_filepath_list(path)
   compression_types = [
-      tf.io.TFRecordCompressionType.NONE,
-      tf.io.TFRecordCompressionType.GZIP,
-      tf.io.TFRecordCompressionType.ZLIB,
+      '',  # no compression (distinct from `None`!)
+      'GZIP',
+      'ZLIB',
   ]
   current_compression_idx = 0
   current_file_index = 0
