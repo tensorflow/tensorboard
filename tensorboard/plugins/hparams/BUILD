@@ -109,6 +109,7 @@ py_binary(
     name = "hparams_util",
     srcs = ["hparams_util.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":protos_all_py_pb2",
         ":summary",
