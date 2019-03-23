@@ -47,8 +47,7 @@ _FieldType = collections.namedtuple(
 _type_timestamp = _FieldType(
     serialized_type=int,  # seconds since epoch
     runtime_type=datetime.datetime,  # microseconds component ignored
-    serialize=lambda dt: int(
-        (dt - datetime.datetime.fromtimestamp(0)).total_seconds()),
+    serialize=lambda dt: int(dt.strftime("%S")),
     deserialize=lambda n: datetime.datetime.fromtimestamp(n),
 )
 _type_int = _FieldType(
