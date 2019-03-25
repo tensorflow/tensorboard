@@ -35,6 +35,10 @@ from tensorboard.util import tb_logging
 
 
 # Type descriptors for `TensorBoardInfo` fields.
+#
+# We represent timestamps as int-seconds-since-epoch rather than
+# datetime objects to work around a bug in Python on Windows. See:
+# https://github.com/tensorflow/tensorboard/issues/2017.
 _FieldType = collections.namedtuple(
     "_FieldType",
     (
@@ -43,13 +47,6 @@ _FieldType = collections.namedtuple(
         "serialize",
         "deserialize",
     ),
-)
-_type_timestamp = _FieldType(
-    serialized_type=int,  # seconds since epoch
-    runtime_type=datetime.datetime,  # microseconds component ignored
-    serialize=lambda dt: int(
-        (dt - datetime.datetime.fromtimestamp(0)).total_seconds()),
-    deserialize=lambda n: datetime.datetime.fromtimestamp(n),
 )
 _type_int = _FieldType(
     serialized_type=int,
@@ -67,7 +64,7 @@ _type_str = _FieldType(
 # Information about a running TensorBoard instance.
 _TENSORBOARD_INFO_FIELDS = collections.OrderedDict((
     ("version", _type_str),
-    ("start_time", _type_timestamp),
+    ("start_time", _type_int),  # seconds since epoch
     ("pid", _type_int),
     ("port", _type_int),
     ("path_prefix", _type_str),  # may be empty
@@ -397,7 +394,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
 
   (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
   (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
-  start_time = datetime.datetime.now()
+  start_time_seconds = time.time()
   try:
     p = subprocess.Popen(
         ["tensorboard"] + arguments,
@@ -409,8 +406,8 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
     os.close(stderr_fd)
 
   poll_interval_seconds = 0.5
-  end_time = start_time + timeout
-  while datetime.datetime.now() < end_time:
+  end_time_seconds = start_time_seconds + timeout.total_seconds()
+  while time.time() < end_time_seconds:
     time.sleep(poll_interval_seconds)
     subprocess_result = p.poll()
     if subprocess_result is not None:
@@ -420,7 +417,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
           stderr=_maybe_read_file(stderr_path),
       )
     for info in get_all():
-      if info.pid == p.pid and info.start_time >= start_time:
+      if info.pid == p.pid and info.start_time >= start_time_seconds:
         return StartLaunched(info=info)
   else:
     return StartTimedOut(pid=p.pid)
