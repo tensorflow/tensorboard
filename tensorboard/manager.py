@@ -394,7 +394,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
 
   (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
   (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
-  start_time = time.time()
+  start_time_seconds = time.time()
   try:
     p = subprocess.Popen(
         ["tensorboard"] + arguments,
@@ -406,8 +406,8 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
     os.close(stderr_fd)
 
   poll_interval_seconds = 0.5
-  end_time = start_time + timeout.total_seconds()
-  while time.time() < end_time:
+  end_time_seconds = start_time_seconds + timeout.total_seconds()
+  while time.time() < end_time_seconds:
     time.sleep(poll_interval_seconds)
     subprocess_result = p.poll()
     if subprocess_result is not None:
@@ -417,7 +417,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
           stderr=_maybe_read_file(stderr_path),
       )
     for info in get_all():
-      if info.pid == p.pid and info.start_time >= start_time:
+      if info.pid == p.pid and info.start_time >= start_time_seconds:
         return StartLaunched(info=info)
   else:
     return StartTimedOut(pid=p.pid)
