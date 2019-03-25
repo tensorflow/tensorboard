@@ -20,6 +20,12 @@ You can build and run TensorBoard via Bazel (from within the TensorFlow nightly 
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
 
+To build the pip package, you will need to evoke the following command:
+
+```sh
+(tf)$ bazel run //tensorboard/pip_package:build_pip_package
+```
+
 To generate fake log data for a plugin, run its demo script. For instance, this command generates fake scalar data in `/tmp/scalars_demo`:
 
 ```sh
