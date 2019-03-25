@@ -126,7 +126,6 @@ export class DataSet {
    */
   projections: {[projection: string]: boolean} = {};
   nearest: knn.NearestEntry[][];
-  nearestK: number;
   spriteAndMetadataInfo: SpriteAndMetadataInfo;
   fracVariancesExplained: number[];
 
@@ -371,7 +370,6 @@ export class DataSet {
     this.hasUmapRun = true;
     this.umap = new UMAP({nComponents, nNeighbors});
 
-    let nEpochs = 1;
     let currentEpoch = 0;
     const epochStepSize = 10;
     const sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
@@ -382,7 +380,7 @@ export class DataSet {
 
     this.nearest = await this.computeKnn(sampledData, nNeighbors);
     
-    nEpochs = await util.runAsyncTask('Initializing UMAP...', () => {
+    const nEpochs = await util.runAsyncTask('Initializing UMAP...', () => {
       const knnIndices = this.nearest.map(row => row.map(entry => entry.index));
       const knnDistances = this.nearest.map(row => row.map(entry => entry.dist));
 
@@ -406,7 +404,6 @@ export class DataSet {
         // Wrap the logic in a util.runAsyncTask in order to correctly update
         // the modal with the progress of the optimization.
         util.runAsyncTask(progressMsg, () => {
-        }, UMAP_MSG_ID, 0).then(() => {
           if (currentEpoch < nEpochs) {
             requestAnimationFrame(step);
           } else {
@@ -427,7 +424,7 @@ export class DataSet {
             stepCallback(currentEpoch);
             resolve();
           }
-        }, error => {
+        }, UMAP_MSG_ID, 0).catch(error => {
           logging.setModalMessage(null, UMAP_MSG_ID);
           reject(error);
         });
@@ -438,17 +435,18 @@ export class DataSet {
   }  
 
   /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
-  private computeKnn(data: DataPoint[], nNeighbors: number): Promise<knn.NearestEntry[][]> {
-    if (this.nearest != null && nNeighbors <= this.nearestK) {
+  private async computeKnn(data: DataPoint[], nNeighbors: number): Promise<knn.NearestEntry[][]> {
+    if (util.exists(this.nearest) && nNeighbors <= this.nearest.length) {
       // We found the nearest neighbors before and will reuse them.
       return Promise.resolve(this.nearest);
     } else {
-      this.nearestK = nNeighbors;
-      return KNN_GPU_ENABLED ?
+      const result = await (KNN_GPU_ENABLED ?
           knn.findKNNGPUCosine(data, nNeighbors, (d => d.vector)) :
           knn.findKNN(
               data, nNeighbors, (d => d.vector),
-              (a, b) => vector.cosDistNorm(a, b));
+              (a, b) => vector.cosDistNorm(a, b)));
+      this.nearest = result;
+      return Promise.resolve(result);
     }
   }
 

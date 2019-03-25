@@ -115,8 +115,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private customProjectionYDownInput: ProjectorInput;
 
   initialize(projector: Projector) {
-    console.log(this);
-
     this.polymerChangesTriggerReprojection = true;
     this.projector = projector;
 
@@ -535,7 +533,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         new Projection('umap', accessors, dimensionality, dataSet);
     this.projector.setProjection(projection);
 
-    if (!this.dataSet.hasTSNERun) {
+    if (!this.dataSet.hasUmapRun) {
       this.runUmap();
     } else {
       this.projector.notifyProjectionPositionsUpdated();
