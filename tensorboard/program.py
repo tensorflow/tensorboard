@@ -34,13 +34,13 @@ from abc import abstractmethod
 import argparse
 import atexit
 from collections import defaultdict
-import datetime
 import errno
 import os
 import signal
 import socket
 import sys
 import threading
+import time
 import inspect
 
 import absl.logging
@@ -262,7 +262,7 @@ class TensorBoard(object):
     server_url = urllib.parse.urlparse(server.get_url())
     info = manager.TensorBoardInfo(
         version=version.VERSION,
-        start_time=datetime.datetime.now(),
+        start_time=int(time.time()),
         port=server_url.port,
         pid=os.getpid(),
         path_prefix=self.flags.path_prefix,

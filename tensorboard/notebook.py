@@ -23,6 +23,7 @@ from __future__ import print_function
 import datetime
 import shlex
 import sys
+import time
 
 from tensorboard import manager
 
@@ -204,9 +205,8 @@ def _time_delta_from_info(info):
     A human-readable string describing the time since the server
     described by `info` started: e.g., "2 days, 0:48:58".
   """
-  now = datetime.datetime.now()
-  then = info.start_time
-  return str(now.replace(microsecond=0) - then.replace(microsecond=0))
+  delta_seconds = int(time.time()) - info.start_time
+  return str(datetime.timedelta(seconds=delta_seconds))
 
 
 def display(port=None, height=None):
