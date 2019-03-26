@@ -14,11 +14,11 @@
 # ==============================================================================
 """Utilities for handling Keras model in graph plugin.
 
-Two canonical types of Keras model are Functional and Sequential.
+Two canonical types of Keras model are Functional and Sequential models.
 A model can be serialized as JSON and deserialized to reconstruct a model.
 This utility helps with dealing with the serialized Keras model.
 
-They have distinct structures to the configurations in shapes below:
+They have distinct structures to the configurations in rough shapes below:
 Functional:
   config
     name: Name of the model. If not specified, it is 'model' with
@@ -27,7 +27,7 @@ Functional:
     output_layers: Layer names that are outputs of the model.
     layers: list of layer configurations.
       layer: [*]
-        inbound_nodes: inputs to this layer.
+        inbound_nodes: inputs to a layer.
 
 Sequential:
   config
@@ -47,16 +47,23 @@ from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
 
 
-# Please refer to below link for more information.
-# https://github.com/tensorflow/tensorflow/blob/1020739e1724346ef0088186f0253defaad3edb6/tensorflow/python/keras/engine/network.py#L1079-L1090
-InboundNodes = collections.namedtuple(
-    'InboundNodes', ['inbound_layer', 'node_index', 'tensor_id', 'kwargs'])
+# A `TensorKeyWithArgs` represents an entry in the `inbound_nodes` field of a
+# Keras functional layer's `config` data. See module docstring for more
+# information. Alternatively, see below link for TensorFlow.js type definition.
+# https://github.com/tensorflow/tfjs-layers/blob/4106f4290ef18e7bde7baaa9995b82b6024ea2ef/src/keras_format/topology_config.ts#L53
+TensorKeyWithArgs = collections.namedtuple(
+    'TensorKeyWithArgs',
+    ['inbound_layer', 'node_index', 'tensor_index', 'node_args'])
 
-# Please refer to below link for more information.
-# https://github.com/tensorflow/tensorflow/blob/1020739e1724346ef0088186f0253defaad3edb6/tensorflow/python/keras/utils/tf_utils.py#L238
-NodeData = collections.namedtuple(
-    'NodeData', ['layer_name', 'node_id', 'tensor_id'])
+# A `TensorKey` represents an entry in either `input_layers` or `output_layers`
+# fields of a Keras functional model's `config` data. See module docstring for
+# more nformation. Alternatively, see below link for TensorFlow.js type
+# definition.
+# https://github.com/tensorflow/tfjs-layers/blob/4106f4290ef18e7bde7baaa9995b82b6024ea2ef/src/keras_format/model_serialization.ts#L19-L20
+TensorKey = collections.namedtuple(
+    'TensorKey', ['layer_name', 'node_index', 'tensor_index'])
 
+# A container for metadata collected from traversing a model and its submodels.
 ModelMetadata = collections.namedtuple(
     'ModelMeta',
     (
@@ -114,11 +121,11 @@ def _is_model(layer):
   return layer.get('config').get('layers') is not None
 
 
-def _get_inbound_nodes(inbound_nodes):
-  """Return normalized list of InboundNodes from `inbound_nodes` of Keras model.
+def _get_inbound_nodes(tensor_key_with_args_array):
+  """Return normalized list of TensorKeyWithArgs.
 
   Keras model serialization records input to a layer in a property,
-  `inbound_nodes`, and it can be of below forms:
+  `tensor_key_with_args_array`, and it can be of below forms:
   - [['name_1', 1, 0], ['name_2', 1, 1]]: two invocations witn single input.
   - [
       [['name_1', 0, 0], ['name_2', 1, 0]],
@@ -130,46 +137,49 @@ def _get_inbound_nodes(inbound_nodes):
   inputs have precondition on size of the input.
 
   Args:
-    inbound_nodes: Value of `inbound_nodes` of a Keras model serialization.
+    tensor_key_with_args_array: Value of `tensor_key_with_args_array` of a Keras
+    model serialization.
 
   Raises:
-    ValueError: when the `inbound_nodes` violate our assumption that a layer
-        not being able to take multiple forms of input.
+    ValueError: when the `tensor_key_with_args_array` violate our assumption
+        that a layer not being able to take multiple forms of input.
 
   Returns:
     List of invocations that has a list of inputs.
   """
-  inbound_nodes = inbound_nodes if inbound_nodes else []
+  normalized_key_array_list = tensor_key_with_args_array \
+      if tensor_key_with_args_array else []
 
   is_single_input_mode = isinstance(
-      inbound_nodes[0][0], six.string_types) if inbound_nodes else False
+      normalized_key_array_list[0][0], six.string_types) \
+          if normalized_key_array_list else False
   invocations = []
-  for inbound_node in inbound_nodes:
+  for key_array in normalized_key_array_list:
     if (is_single_input_mode and not
-        isinstance(inbound_node[0], six.string_types)):
+        isinstance(key_array[0], six.string_types)):
       raise ValueError('Expected all inbound nodes to have the same type')
 
     if is_single_input_mode:
-      invocations.append([inbound_node])
+      invocations.append([key_array])
     else:
-      invocations.append(inbound_node)
+      invocations.append(key_array)
 
-  normalized_inbound_nodes = []
+  normalized_key_array_list = []
   for invocation in invocations:
     inbound_invocation = []
     for input_layer in invocation:
       inbound_invocation.append(
-          InboundNodes(
+          TensorKeyWithArgs(
               inbound_layer=input_layer[0],
               node_index=input_layer[1],
-              tensor_id=input_layer[2],
-              kwargs=input_layer[3]))
-    normalized_inbound_nodes.append(inbound_invocation)
-  return normalized_inbound_nodes
+              tensor_index=input_layer[2],
+              node_args=input_layer[3]))
+    normalized_key_array_list.append(inbound_invocation)
+  return normalized_key_array_list
 
 
-def _get_node_data(node_data):
-  """Return normalized list of NodeData.
+def _get_tensor_key(tensor_key_array):
+  """Return normalized list of TensorKeyArray and returns list of TensorKeys.
 
   A model configuration has fields 'input_layers' and 'output_layers' which can
   be of below forms:
@@ -177,21 +187,21 @@ def _get_node_data(node_data):
   - [['in_layer_is_model', 1, 0], ['in_layer_is_model', 1, 1]]
 
   Args:
-    node_data: Value from 'input_layers' or 'output_layers' from Keras model
-        configuraiton.
+    tensor_key_array: Value from 'input_layers' or 'output_layers' from Keras
+        model configuraiton.
 
   Returns:
-    A list of NodeData.
+    A list of TensorKey.
   """
-  normalized_list = ([node_data] if isinstance(node_data[0], six.string_types)
-                     else node_data)
+  normalized_key_array_list = ([tensor_key_array] if isinstance(
+      tensor_key_array[0], six.string_types) else tensor_key_array)
 
-  node_data = []
-  for node in normalized_list:
-    node_data.append(NodeData(layer_name=node[0],
-                              node_id=node[1],
-                              tensor_id=node[2]))
-  return node_data
+  tensor_keys = []
+  for node in normalized_key_array_list:
+    tensor_keys.append(TensorKey(layer_name=node[0],
+                              node_index=node[1],
+                              tensor_index=node[2]))
+  return tensor_keys
 
 
 def _normalize_sequential_models(keras_model):
@@ -260,7 +270,7 @@ def _build_metadata(keras_model):
 
     if is_model:
       input_layers = layer_config.get('input_layers')
-      output_layers = _get_node_data(layer_config.get('output_layers'))
+      output_layers = _get_tensor_key(layer_config.get('output_layers'))
 
       if input_layers and inbound_nodes:
         assert len(inbound_nodes) == 1, (
@@ -322,7 +332,7 @@ def keras_model_to_graph_def(keras_layer):
         # from the model.
         inbound_node_names = metadata.model_name_to_outputs.get(
             inbound_name, [inbound_name])
-        node_def.input.append(inbound_node_names[inbound_node.tensor_id])
+        node_def.input.append(inbound_node_names[inbound_node.tensor_index])
 
     if node_name in metadata.input_to_in_layer:
       node_def.input.append(metadata.input_to_in_layer.get(node_name))
