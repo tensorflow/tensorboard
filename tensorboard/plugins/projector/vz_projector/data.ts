@@ -366,7 +366,10 @@ export class DataSet {
   }
 
   /** Runs UMAP on the data. */
-  async projectUmap(nComponents: number, nNeighbors: number, stepCallback: (iter: number) => void) {
+  async projectUmap(
+    nComponents: number, 
+    nNeighbors: number, 
+    stepCallback: (iter: number) => void) {
     this.hasUmapRun = true;
     this.umap = new UMAP({nComponents, nNeighbors});
 
@@ -382,7 +385,9 @@ export class DataSet {
     
     const nEpochs = await util.runAsyncTask('Initializing UMAP...', () => {
       const knnIndices = this.nearest.map(row => row.map(entry => entry.index));
-      const knnDistances = this.nearest.map(row => row.map(entry => entry.dist));
+      const knnDistances = this.nearest.map(row => 
+        row.map(entry => entry.dist)
+      );
 
       // Initialize UMAP and return the number of epochs.
       return this.umap.initializeFit(X, knnIndices, knnDistances);
@@ -399,7 +404,8 @@ export class DataSet {
         for (let i = 0; i < epochsBatch; i++) {
           currentEpoch = this.umap.step();
         }
-        const progressMsg = `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`;
+        const progressMsg = 
+        `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`;
         
         // Wrap the logic in a util.runAsyncTask in order to correctly update
         // the modal with the progress of the optimization.
@@ -409,7 +415,7 @@ export class DataSet {
           } else {
             const result = this.umap.getEmbedding();
             sampledIndices.forEach((index, i) => {
-               const dataPoint = this.points[index];
+              const dataPoint = this.points[index];
     
               dataPoint.projections['umap-0'] = result[i][0];
               dataPoint.projections['umap-1'] = result[i][1];
@@ -435,8 +441,10 @@ export class DataSet {
   }  
 
   /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
-  private async computeKnn(data: DataPoint[], nNeighbors: number): Promise<knn.NearestEntry[][]> {
-    if (util.exists(this.nearest) && nNeighbors <= this.nearest.length) {
+  private async computeKnn(
+    data: DataPoint[], 
+    nNeighbors: number): Promise<knn.NearestEntry[][]> {
+    if (this.nearest != null && nNeighbors <= this.nearest.length) {
       // We found the nearest neighbors before and will reuse them.
       return Promise.resolve(this.nearest);
     } else {

@@ -557,8 +557,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
               this.projector.onProjectionChanged();
               projectionChangeNotified = true;
             }
-          }
-          else {
+          } else {
             this.runUmapButton.innerText = 'Re-run';
             this.runUmapButton.disabled = false;
             this.projector.onProjectionChanged();

@@ -250,9 +250,4 @@ export function hasWebGLSupport(): boolean {
   }
 }
 
-/** Checks to see if input is undefined or null. */
-export function exists(x: any): boolean {
-  return x !== undefined && x !== null;
-}
-
 }  // namespace vz_projector.util
