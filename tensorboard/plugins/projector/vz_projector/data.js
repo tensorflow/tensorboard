@@ -1,3 +1,38 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +53,14 @@ var vz_projector;
     /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
     var KNN_GPU_ENABLED = vz_projector.util.hasWebGLSupport() && !IS_FIREFOX;
     vz_projector.TSNE_SAMPLE_SIZE = 10000;
+    vz_projector.UMAP_SAMPLE_SIZE = 5000;
     vz_projector.PCA_SAMPLE_SIZE = 50000;
     /** Number of dimensions to sample when doing approximate PCA. */
     vz_projector.PCA_SAMPLE_DIM = 200;
     /** Number of pca components to compute. */
     var NUM_PCA_COMPONENTS = 10;
+    /** Id of message box used for umap optimization progress bar. */
+    var UMAP_MSG_ID = 'umap-optimization';
     /**
      * Reserved metadata attributes used for sequence information
      * NOTE: Use "__seq_next__" as "__next__" is deprecated.
@@ -64,6 +102,7 @@ var vz_projector;
             this.superviseInput = '';
             this.dim = [0, 0];
             this.hasTSNERun = false;
+            this.hasUmapRun = false;
             this.points = points;
             this.shuffledDataIndices = vz_projector.util.shuffle(vz_projector.util.range(this.points.length));
             this.sequences = this.computeSequences(points);
@@ -261,24 +300,108 @@ var vz_projector;
                 }
                 requestAnimationFrame(step);
             };
-            // Nearest neighbors calculations.
-            var knnComputation;
-            if (this.nearest != null && k === this.nearestK) {
-                // We found the nearest neighbors before and will reuse them.
-                knnComputation = Promise.resolve(this.nearest);
-            }
-            else {
-                var sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
-                this.nearestK = k;
-                knnComputation = KNN_GPU_ENABLED ?
-                    vz_projector.knn.findKNNGPUCosine(sampledData, k, (function (d) { return d.vector; })) :
-                    vz_projector.knn.findKNN(sampledData, k, (function (d) { return d.vector; }), function (a, b, limit) { return vz_projector.vector.cosDistNorm(a, b); });
-            }
+            var sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
+            var knnComputation = this.computeKnn(sampledData, k);
             knnComputation.then(function (nearest) {
                 _this.nearest = nearest;
                 vz_projector.util.runAsyncTask('Initializing T-SNE...', function () {
                     _this.tsne.initDataDist(_this.nearest);
                 }).then(step);
+            });
+        };
+        /** Runs UMAP on the data. */
+        DataSet.prototype.projectUmap = function (nComponents, nNeighbors, stepCallback) {
+            return __awaiter(this, void 0, void 0, function () {
+                var currentEpoch, epochStepSize, sampledIndices, sampledData, X, _a, nEpochs;
+                var _this = this;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            this.hasUmapRun = true;
+                            this.umap = new UMAP({ nComponents: nComponents, nNeighbors: nNeighbors });
+                            currentEpoch = 0;
+                            epochStepSize = 10;
+                            sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.UMAP_SAMPLE_SIZE);
+                            sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
+                            X = sampledData.map(function (x) { return Array.from(x.vector); });
+                            _a = this;
+                            return [4 /*yield*/, this.computeKnn(sampledData, nNeighbors)];
+                        case 1:
+                            _a.nearest = _b.sent();
+                            return [4 /*yield*/, vz_projector.util.runAsyncTask('Initializing UMAP...', function () {
+                                    var knnIndices = _this.nearest.map(function (row) { return row.map(function (entry) { return entry.index; }); });
+                                    var knnDistances = _this.nearest.map(function (row) {
+                                        return row.map(function (entry) { return entry.dist; });
+                                    });
+                                    // Initialize UMAP and return the number of epochs.
+                                    return _this.umap.initializeFit(X, knnIndices, knnDistances);
+                                }, UMAP_MSG_ID)];
+                        case 2:
+                            nEpochs = _b.sent();
+                            // Now, iterate through all epoch batches of the UMAP optimization, updating
+                            // the modal window with the progress rather than animating each step since
+                            // the UMAP animation is not nearly as informative as t-SNE.
+                            return [2 /*return*/, new Promise(function (resolve, reject) {
+                                    var step = function () {
+                                        // Compute a batch of epochs since we don't want to update the UI
+                                        // on every epoch.
+                                        var epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
+                                        for (var i = 0; i < epochsBatch; i++) {
+                                            currentEpoch = _this.umap.step();
+                                        }
+                                        var progressMsg = "Optimizing UMAP (epoch " + currentEpoch + " of " + nEpochs + ")";
+                                        // Wrap the logic in a util.runAsyncTask in order to correctly update
+                                        // the modal with the progress of the optimization.
+                                        vz_projector.util.runAsyncTask(progressMsg, function () {
+                                            if (currentEpoch < nEpochs) {
+                                                requestAnimationFrame(step);
+                                            }
+                                            else {
+                                                var result_2 = _this.umap.getEmbedding();
+                                                sampledIndices.forEach(function (index, i) {
+                                                    var dataPoint = _this.points[index];
+                                                    dataPoint.projections['umap-0'] = result_2[i][0];
+                                                    dataPoint.projections['umap-1'] = result_2[i][1];
+                                                    if (nComponents === 3) {
+                                                        dataPoint.projections['umap-2'] = result_2[i][2];
+                                                    }
+                                                });
+                                                _this.projections['umap'] = true;
+                                                vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
+                                                _this.hasUmapRun = true;
+                                                stepCallback(currentEpoch);
+                                                resolve();
+                                            }
+                                        }, UMAP_MSG_ID, 0).catch(function (error) {
+                                            vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
+                                            reject(error);
+                                        });
+                                    };
+                                    requestAnimationFrame(step);
+                                })];
+                    }
+                });
+            });
+        };
+        /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
+        DataSet.prototype.computeKnn = function (data, nNeighbors) {
+            return __awaiter(this, void 0, void 0, function () {
+                var result;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!(this.nearest != null && nNeighbors <= this.nearest.length)) return [3 /*break*/, 1];
+                            // We found the nearest neighbors before and will reuse them.
+                            return [2 /*return*/, Promise.resolve(this.nearest)];
+                        case 1: return [4 /*yield*/, (KNN_GPU_ENABLED ?
+                                vz_projector.knn.findKNNGPUCosine(data, nNeighbors, (function (d) { return d.vector; })) :
+                                vz_projector.knn.findKNN(data, nNeighbors, (function (d) { return d.vector; }), function (a, b) { return vz_projector.vector.cosDistNorm(a, b); }))];
+                        case 2:
+                            result = _a.sent();
+                            this.nearest = result;
+                            return [2 /*return*/, Promise.resolve(result)];
+                    }
+                });
             });
         };
         /* Perturb TSNE and update dataset point coordinates. */
@@ -287,14 +410,14 @@ var vz_projector;
             if (this.hasTSNERun && this.tsne) {
                 this.tsne.perturb();
                 var tsneDim_1 = this.tsne.getDim();
-                var result_2 = this.tsne.getSolution();
+                var result_3 = this.tsne.getSolution();
                 var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
                 sampledIndices.forEach(function (index, i) {
                     var dataPoint = _this.points[index];
-                    dataPoint.projections['tsne-0'] = result_2[i * tsneDim_1 + 0];
-                    dataPoint.projections['tsne-1'] = result_2[i * tsneDim_1 + 1];
+                    dataPoint.projections['tsne-0'] = result_3[i * tsneDim_1 + 0];
+                    dataPoint.projections['tsne-1'] = result_3[i * tsneDim_1 + 1];
                     if (tsneDim_1 === 3) {
-                        dataPoint.projections['tsne-2'] = result_2[i * tsneDim_1 + 2];
+                        dataPoint.projections['tsne-2'] = result_3[i * tsneDim_1 + 2];
                     }
                 });
             }
@@ -414,6 +537,9 @@ var vz_projector;
             this.tSNEPerplexity = 0;
             this.tSNELearningRate = 0;
             this.tSNEis3d = true;
+            /** UMAP parameters */
+            this.umapIs3d = true;
+            this.umapNeighbors = 15;
             /** PCA projection component dimensions */
             this.pcaComponentDimensions = [];
             /** The computed projections of the tensors. */
@@ -448,6 +574,12 @@ var vz_projector;
             case 'tsne':
                 dimensions = [0, 1];
                 if (state.tSNEis3d) {
+                    dimensions.push(2);
+                }
+                break;
+            case 'umap':
+                dimensions = [0, 1];
+                if (state.umapIs3d) {
                     dimensions.push(2);
                 }
                 break;
