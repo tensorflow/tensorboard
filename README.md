@@ -22,7 +22,7 @@ through setting up and using TensorBoard. There's an associated
 
 [tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/dandelionmane/tf-dev-summit-tensorboard-tutorial
 
-# Usage
+<center>#Usage</center>
 
 Before running TensorBoard, make sure you have generated summary data in a log
 directory by creating a summary writer:
