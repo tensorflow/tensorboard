@@ -20,3 +20,23 @@ py_library(
         "@org_pythonhosted_six",
     ],
 )
+
+
+py_test(
+    name = "event_file_writer_test",
+    size = "small",
+    srcs = ["event_file_writer_test.py"],
+    main = "event_file_writer_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":event_file_writer",
+        # "//tensorboard:expect_tensorflow_installed",
+        # "//tensorboard/backend:application",
+        # "//tensorboard/backend/event_processing:event_accumulator",
+        # "//tensorboard/backend/event_processing:event_multiplexer",
+        # "//tensorboard/plugins:base_plugin",
+        # "//tensorboard/util:test_util",
+        # "@org_pocoo_werkzeug",
+        # "@org_pythonhosted_six",
+    ],  # TODO: I am not sure what to put here
+)
