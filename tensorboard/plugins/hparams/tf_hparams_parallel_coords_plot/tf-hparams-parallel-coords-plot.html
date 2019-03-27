@@ -169,6 +169,14 @@ limitations under the License.
             value: 0,
         },
 
+        // Counts the number of times the element has been redrawn since it
+        // was created. This is incremented at the end of a redraw and allows
+        // integration tests to wait for the element to finish redrawing.
+        redrawCount: {
+          type: Number,
+          value: 0,
+        },
+
         // Private properties
         // An array containing just the "valid" session groups from
         // 'sessionGroups'. A session group is valid if every one of its metrics
@@ -686,6 +694,8 @@ limitations under the License.
         // apply.
         this._svg.selectAll("*")
             .classed("tf-hparams-parallel-coords-plot", true);
+
+        this.redrawCount++;
       },
 
       _colExtent(colIndex) {
