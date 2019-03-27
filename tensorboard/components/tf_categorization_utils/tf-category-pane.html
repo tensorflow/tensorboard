@@ -187,11 +187,8 @@ limitations under the License.
       },
 
       _notifyVisibilityChange(event) {
-        if (event.target.id == 'ifRendered' ||
-            event.target.id == 'ifOpened') {
-          this.fire(
-              'content-visibility-changed', this._rendered && this.opened);
-        }
+        this.fire(
+            'content-visibility-changed', this._rendered && this.opened);
       },
 
       _computeCount() {
