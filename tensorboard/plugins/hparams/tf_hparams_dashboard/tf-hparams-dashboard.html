@@ -16,13 +16,16 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-hparams-main/tf-hparams-main.html">
 <link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html">
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 
 <dom-module id="tf-hparams-dashboard">
   <template>
     <!-- Tensorboard does not specify an experimentName. Currently it only
          supports one experiment per invocation. -->
+    <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <tf-hparams-main
       id="hparams-main"
       backend="[[_backend]]"
@@ -47,12 +50,40 @@ limitations under the License.
                 /* useHttpGet= */ !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
             )
           }
-        }
+        },
+        _canceller: {
+          type: Object,
+          value: () => new tf_backend.Canceller(),
+        },
+        _isAttached: Boolean
+      },
+
+      // This is called by the tensorboard web framework on attaching plugin.
+      attached: function() {
+        // Check if the plugin was created
+        this._backend._requestManager
+            .request(tf_backend.getRouter().pluginsListing())
+            .then(this._canceller.cancellable(result => {
+              if (result.cancelled) {
+                return;
+              }
+              if (!('hparams' in result.value)) {
+                // The plugin was not created
+                this.$.initialDialog.openNoTensorFlowDialog();
+                this.set('_isAttached', false);
+              } else {
+                // The plugin was created
+                this.$.initialDialog.closeDialog();
+                this.set('_isAttached', true);
+              }
+            }));
       },
 
       // This is called by the tensorboard web framework to refresh the plugin.
       reload() {
-        this.$["hparams-main"].reload();
+        if (this._isAttached) {
+            this.$["hparams-main"].reload();
+        }
       }
     });
     // Register the plugin main element with Tensorboard.
