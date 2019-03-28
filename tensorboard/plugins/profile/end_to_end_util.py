@@ -22,18 +22,10 @@ from __future__ import print_function
 
 import six
 
-# Profile logger summary.
-_PROFILE_LOGGER_SUMMARY = "profile_logger.summary"
+def _Attribute(event_name):
+  """Returns the attribute name from the event name."""
 
-
-def IsProfileRun(runname):
-  """Returns True if runname is a profile logging run."""
-  return runname == _PROFILE_LOGGER_SUMMARY
-
-
-def ProfileRunname():
-  """Returns the runname for a profile logging run."""
-  return _PROFILE_LOGGER_SUMMARY
+  return 'profile/' + event_name
 
 
 class SessionTimeBreakDown(object):
@@ -69,22 +61,22 @@ class SessionTimeBreakDown(object):
       return False
     if event.timestamp > self._session_end_time:
       return False
-    if event.attribute == 'init_system_begin':
+    if event.attribute == _Attribute('init_system_begin'):
       self._init_system_begin_time = event.timestamp
       return True
-    if event.attribute == 'init_system_end':
+    if event.attribute == _Attribute('init_system_end'):
       self._init_system_end_time = event.timestamp
       return True
-    if event.attribute == 'model_fn_begin':
+    if event.attribute == _Attribute('model_fn_begin'):
       self._model_fn_begin_time = event.timestamp
       return True
-    if event.attribute == 'model_fn_end':
+    if event.attribute == _Attribute('model_fn_end'):
       self._model_fn_end_time = event.timestamp
       return True
-    if event.attribute == 'setup_infeed_begin':
+    if event.attribute == _Attribute('setup_infeed_begin'):
       self._setup_infeed_begin_time = event.timestamp
       return True
-    if event.attribute == 'setup_infeed_end':
+    if event.attribute == _Attribute('setup_infeed_end'):
       self._setup_infeed_end_time = event.timestamp
       return True
     return False
@@ -147,17 +139,17 @@ class SessionTimeBreakDown(object):
 
 def _FillSessionBeginAndEndTimes(session_times, events):
   for e in events:
-    if e.attribute == 'train_begin':
+    if e.attribute == _Attribute('train_begin'):
       session_times['train'].session_begin_time = e.timestamp
-    if e.attribute == 'train_end':
+    if e.attribute == _Attribute('train_end'):
       session_times['train'].session_end_time = e.timestamp
-    if e.attribute == 'eval_begin':
+    if e.attribute == _Attribute('eval_begin'):
       session_times['eval'].session_begin_time = e.timestamp
-    if e.attribute == 'eval_end':
+    if e.attribute == _Attribute('eval_end'):
       session_times['eval'].session_end_time = e.timestamp
-    if e.attribute == 'predict_begin':
+    if e.attribute == _Attribute('predict_begin'):
       session_times['predict'].session_begin_time = e.timestamp
-    if e.attribute == 'predict_end':
+    if e.attribute == _Attribute('predict_end'):
       session_times['predict'].session_end_time = e.timestamp
 
   for _, sess in six.iteritems(session_times):
@@ -173,9 +165,12 @@ def _FillSessionBeginAndEndTimes(session_times, events):
 
 def _AssignEventsToSessions(session_times, events):
   for e in events:
-    if e.attribute in set(['train_begin', 'train_end',
-                           'eval_begin', 'eval_end',
-                           'predict_begin', 'predict_end']):
+    if e.attribute in set([_Attribute('train_begin'),
+                           _Attribute('train_end'),
+                           _Attribute('eval_begin'),
+                           _Attribute('eval_end'),
+                           _Attribute('predict_begin'),
+                           _Attribute('predict_end')]):
       continue
     assigned = False
     for _, sess in six.iteritems(session_times):
