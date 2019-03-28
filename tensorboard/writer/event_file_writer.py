@@ -25,8 +25,8 @@ import time
 
 import six
 
-from ..proto import event_pb2
-from .record_writer import RecordWriter, directory_check
+from tensorboard.compat.proto import event_pb2
+from tensorboard.writer.record_writer import RecordWriter, directory_check
 
 
 class EventsWriter(object):
