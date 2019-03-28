@@ -92,9 +92,7 @@ def dump_data(logdir):
       shutil.copyfile(
           'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
           os.path.join(run_dir, 'google_chart_demo.json'))
-      end_to_end_helper.create_end_to_end_json(
-        run_dir,
-        'tensorboard/plugins/profile/end_to_end.tfevents')
+      end_to_end_helper.create_demo(run_dir)
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
