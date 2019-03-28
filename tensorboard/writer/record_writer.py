@@ -31,34 +31,13 @@ _VALID_OP_NAME_START = re.compile('^[A-Za-z0-9.]')
 _VALID_OP_NAME_PART = re.compile('[A-Za-z0-9_.\\-/]+')
 
 
-def directory_check(path):
-    '''Initialize the directory for log files.'''
-    try:
-        prefix = path.split(':')[0]
-        factory = REGISTERED_FACTORIES[prefix]
-        return factory.directory_check(path)
-    except KeyError:
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-
-def open_file(path):
-    '''Open a writer for outputting event files.'''
-    try:
-        prefix = path.split(':')[0]
-        factory = REGISTERED_FACTORIES[prefix]
-        return factory.open(path)
-    except KeyError:
-        return open(path, 'wb')
-
-
 class RecordWriter(object):
     def __init__(self, path):
         self._name_to_tf_name = {}
         self._tf_names = set()
         self.path = path
         self._writer = None
-        self._writer = open_file(path)
+        self._writer = open(path)
 
     def write(self, event_str):
         w = self._writer.write
