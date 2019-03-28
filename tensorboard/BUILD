@@ -43,6 +43,7 @@ py_library(
         ":notebook",
         ":program",
         "//tensorboard/summary",
+        "//tensorboard/writer",
     ],
 )
 
