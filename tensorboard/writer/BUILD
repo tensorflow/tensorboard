@@ -9,9 +9,12 @@ exports_files(["LICENSE"])
 
 py_library(
     name = "writer",
-    srcs = glob([
-        "*.py",
-    ]),
+    srcs = [
+        "__init__.py",
+        "crc32c.py",
+        "event_file_writer.py",
+        "record_writer.py",
+    ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
@@ -29,7 +32,7 @@ py_test(
     main = "event_file_writer_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":event_file_writer",
+        ":writer",
         # "//tensorboard:expect_tensorflow_installed",
         # "//tensorboard/backend:application",
         # "//tensorboard/backend/event_processing:event_accumulator",
