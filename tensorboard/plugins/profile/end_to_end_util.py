@@ -29,6 +29,8 @@ def _Attribute(event_name):
 
 
 class SessionTimeBreakDown(object):
+  """Breakdown of the execution time within a session."""
+
   def __init__(self, session_name):
     self._session_name = session_name
     # All times are in milliseconds.
@@ -186,6 +188,8 @@ def _AssignEventsToSessions(session_times, events):
 
 
 class EndToEndBreakDown(object):
+  """End-to-end breakdown of the run time of a TF job."""
+
   def __init__(self, events):
     session_times = {}
     session_times['train'] = SessionTimeBreakDown('train')

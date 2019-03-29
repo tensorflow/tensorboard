@@ -43,7 +43,7 @@ def _sleep_ms(duration_ms):
   time.sleep(duration_ms / 1000.0)
 
 def _create_event_file(run_dir):
-  """Creates an event file in the run_dir/profile
+  """Creates an event file in the run_dir/profile.
 
   Args:
     run_dir: the directory which will hold the event file.
@@ -103,7 +103,7 @@ def create_end_to_end_json(event_filepath, run_dir):
     run_dir: the directory in which the JSON file is created.
 
   Returns:
-    Notheing.
+    Nothing.
   """
 
   log_events = []
