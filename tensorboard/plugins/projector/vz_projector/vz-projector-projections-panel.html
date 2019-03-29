@@ -161,6 +161,11 @@ limitations under the License.
   <div class="ink-panel-header">
     <div class="ink-tab-group">
 
+      <div data-tab="umap" id="umap-tab" class="ink-tab projection-tab">UMAP</div>
+      <paper-tooltip for="umap-tab" position="bottom" animation-delay="0" fit-to-visible-bounds>
+        uniform manifold approximation and projection
+      </paper-tooltip>      
+
       <div data-tab="tsne" id="tsne-tab" class="ink-tab projection-tab">t-SNE</div>
       <paper-tooltip for="tsne-tab" position="bottom" animation-delay="0" fit-to-visible-bounds>
         t-distributed stochastic neighbor embedding
@@ -179,6 +184,41 @@ limitations under the License.
     </div>
   </div>
   <div class="container">
+     <!-- UMAP Controls -->
+     <div data-panel="umap" class="ink-panel-content">
+      <div class="slider">
+        <label>Dimension</label>
+        <div class="two-way-toggle">
+          <span>2D</span>
+          <paper-toggle-button id="umap-toggle" checked="{{umapIs3d}}">3D</paper-toggle-button>
+        </div>
+      </div>
+      <div class="slider umap-neighbors">
+        <label>
+          Neighbors
+          <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+          <paper-tooltip position="right" animation-delay="0" fit-to-visible-bounds>
+            The number of nearest neighbors used to compute the fuzzy simplicial
+            set, which is used to approximate the overall shape of the manifold.
+            The default value is 15.
+          </paper-tooltip>
+        </label>
+        <paper-slider id="umap-neighbors-slider" value="{{umapNeighbors}}" pin min="5" max="50"></paper-slider>
+        <span>[[umapNeighbors]]</span>
+      </div>
+      <p>
+        <button id="run-umap" class="ink-button" title="Run UMAP" on-tap="runUmap">Run</button>
+      </p>
+      <p id="umap-sampling" class="notice">
+        For faster results, the data will be sampled down to [[getUmapSampleSizeText()]] points.
+      </p>
+      <p>
+        <iron-icon icon="book" class="book-icon"></iron-icon>
+        <a target="_blank" rel="noopener" href="https://umap-learn.readthedocs.io/en/latest/how_umap_works.html">
+          Learn more about UMAP.
+        </a>
+      </p>
+    </div>
     <!-- TSNE Controls -->
     <div data-panel="tsne" class="ink-panel-content">
       <div class="slider">
@@ -237,7 +277,7 @@ limitations under the License.
       </p>
       <p>Iteration: <span class="run-tsne-iter">0</span></p>
       <p id="tsne-sampling" class="notice">
-        For fast results, the data will be sampled down to [[getTsneSampleSizeText()]] points.
+        For faster results, the data will be sampled down to [[getTsneSampleSizeText()]] points.
       </p>
       <p>
         <iron-icon icon="book" class="book-icon"></iron-icon>

@@ -34,15 +34,16 @@ from abc import abstractmethod
 import argparse
 import atexit
 from collections import defaultdict
-import datetime
 import errno
 import os
 import signal
 import socket
 import sys
 import threading
+import time
 import inspect
 
+import absl.logging
 import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -55,7 +56,6 @@ from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
-from tensorboard.util import util
 
 try:
   from absl import flags as absl_flags
@@ -75,7 +75,7 @@ def setup_environment():
   this function is a good idea, but it can't appropriately be called
   from library routines.
   """
-  util.setup_logging()
+  absl.logging.set_verbosity(absl.logging.WARNING)
 
   # The default is HTTP/1.0 for some strange reason. If we don't use
   # HTTP/1.1 then a new TCP socket and Python thread is created for
@@ -120,8 +120,9 @@ class TensorBoard(object):
       plugins: A list of TensorBoard plugins to load, as TBLoader instances or
         TBPlugin classes. If not specified, defaults to first-party plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
-      server_class: An optional subclass of TensorBoardServer to use for serving
-        the TensorBoard WSGI app.
+      server_class: An optional factory for a `TensorBoardServer` to use
+        for serving the TensorBoard WSGI app. If provided, its callable
+        signature should match that of `TensorBoardServer.__init__`.
 
     :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
     :type assets_zip_provider: () -> file
@@ -133,7 +134,7 @@ class TensorBoard(object):
     if assets_zip_provider is None:
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
-      server_class = WerkzeugServer
+      server_class = create_port_scanning_werkzeug_server
     def make_loader(plugin):
       if isinstance(plugin, base_plugin.TBLoader):
         return plugin
@@ -262,7 +263,7 @@ class TensorBoard(object):
     server_url = urllib.parse.urlparse(server.get_url())
     info = manager.TensorBoardInfo(
         version=version.VERSION,
-        start_time=datetime.datetime.now(),
+        start_time=int(time.time()),
         port=server_url.port,
         pid=os.getpid(),
         path_prefix=self.flags.path_prefix,
@@ -341,15 +342,40 @@ class TensorBoardServerException(Exception):
     self.msg = msg
 
 
-class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
-  """Implementation of TensorBoardServer using the Werkzeug dev server."""
-  # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
-  daemon_threads = True
+class TensorBoardPortInUseError(TensorBoardServerException):
+  """Error raised when attempting to bind to a port that is in use.
 
-  def __init__(self, wsgi_app, flags):
-    self._flags = flags
-    host = flags.host
+  This should be raised when it is expected that binding to another
+  similar port would succeed. It is used as a signal to indicate that
+  automatic port searching should continue rather than abort.
+  """
+  pass
 
+
+def with_port_scanning(cls):
+  """Create a server factory that performs port scanning.
+
+  This function returns a callable whose signature matches the
+  specification of `TensorBoardServer.__init__`, using `cls` as an
+  underlying implementation. It passes through `flags` unchanged except
+  in the case that `flags.port is None`, in which case it repeatedly
+  instantiates the underlying server with new port suggestions.
+
+  Args:
+    cls: A valid implementation of `TensorBoardServer`. This class's
+      initializer should raise a `TensorBoardPortInUseError` upon
+      failing to bind to a port when it is expected that binding to
+      another nearby port might succeed.
+
+      The initializer for `cls` will only ever be invoked with `flags`
+      such that `flags.port is not None`.
+
+  Returns:
+    A function that implements the `__init__` contract of
+    `TensorBoardServer`.
+  """
+
+  def init(wsgi_app, flags):
     # base_port: what's the first port to which we should try to bind?
     # should_scan: if that fails, shall we try additional ports?
     # max_attempts: how many ports shall we try?
@@ -364,56 +390,65 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     max_attempts = 10 if should_scan else 1
     base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
+    for port in xrange(base_port, base_port + max_attempts):
+      subflags = argparse.Namespace(**vars(flags))
+      subflags.port = port
+      try:
+        return cls(wsgi_app=wsgi_app, flags=subflags)
+      except TensorBoardPortInUseError:
+        if not should_scan:
+          raise
+    # All attempts failed to bind.
+    raise TensorBoardServerException(
+        'TensorBoard could not bind to any port around %s '
+        '(tried %d times)'
+        % (base_port, max_attempts))
+
+  return init
+
+
+class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
+  """Implementation of TensorBoardServer using the Werkzeug dev server."""
+
+  # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
+  daemon_threads = True
+
+  def __init__(self, wsgi_app, flags):
+    self._flags = flags
+    host = flags.host
+    port = flags.port
+
     # Without an explicit host, we default to serving on all interfaces,
     # and will attempt to serve both IPv4 and IPv6 traffic through one
     # socket.
     self._auto_wildcard = not host
+    if self._auto_wildcard:
+      host = self._get_wildcard_address(port)
 
-    for (attempt_index, port) in (
-        enumerate(xrange(base_port, base_port + max_attempts))):
-      if self._auto_wildcard:
-        host = self._get_wildcard_address(port)
-      try:
-        # Yes, this invokes the super initializer potentially many
-        # times. This seems to work fine, and looking at the superclass
-        # chain (type(self).__mro__) it doesn't seem that anything
-        # _should_ go wrong (nor does any superclass provide a facility
-        # to do this natively).
-        #
-        # TODO(@wchargin): Refactor so that this is no longer necessary,
-        # probably by switching composing around a Werkzeug server
-        # rather than inheriting from it.
-        super(WerkzeugServer, self).__init__(host, port, wsgi_app)
-        break
-      except socket.error as e:
-        if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
+    try:
+      super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+    except socket.error as e:
+      if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
+        raise TensorBoardServerException(
+            'TensorBoard must be run as superuser to bind to port %d' %
+            port)
+      elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
+        if port == 0:
           raise TensorBoardServerException(
-              'TensorBoard must be run as superuser to bind to port %d' %
+              'TensorBoard unable to find any open port')
+        else:
+          raise TensorBoardPortInUseError(
+              'TensorBoard could not bind to port %d, it was already in use' %
               port)
-        elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
-          if attempt_index < max_attempts - 1:
-            continue
-          if port == 0:
-            raise TensorBoardServerException(
-                'TensorBoard unable to find any open port')
-          elif should_scan:
-            raise TensorBoardServerException(
-                'TensorBoard could not bind to any port around %s '
-                '(tried %d times)'
-                % (base_port, max_attempts))
-          else:
-            raise TensorBoardServerException(
-                'TensorBoard could not bind to port %d, it was already in use' %
-                port)
-        elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
-          raise TensorBoardServerException(
-              'TensorBoard could not bind to unavailable address %s' % host)
-        elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
-          raise TensorBoardServerException(
-              'Tensorboard could not bind to unsupported address family %s' %
-              host)
-        # Raise the raw exception if it wasn't identifiable as a user error.
-        raise
+      elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
+        raise TensorBoardServerException(
+            'TensorBoard could not bind to unavailable address %s' % host)
+      elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
+        raise TensorBoardServerException(
+            'Tensorboard could not bind to unsupported address family %s' %
+            host)
+      # Raise the raw exception if it wasn't identifiable as a user error.
+      raise
 
   def _get_wildcard_address(self, port):
     """Returns a wildcard address for the port in question.
@@ -490,3 +525,6 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
     return 'http://%s:%d%s' % (display_host, self.server_port,
                                self._flags.path_prefix)
+
+
+create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)

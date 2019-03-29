@@ -39,9 +39,18 @@ view.
     <paper-header-panel>
       <paper-toolbar slot="header" class="tab-bar">
         <paper-tabs selected="{{_selectedTab}}" slot="top">
-          <paper-tab>TABLE VIEW</paper-tab>
-          <paper-tab>PARALLEL COORDINATES VIEW</paper-tab>
-          <paper-tab>SCATTER PLOT MATRIX VIEW</paper-tab>
+          <!-- view-id can be used by integration tests to locate a tab.
+               It should be the name of the root element implementing the view
+               without the 'tf-hparams-' prefix. -->
+          <paper-tab view-id="table-view">
+            TABLE VIEW
+          </paper-tab>
+          <paper-tab view-id="parallel-coords-view">
+            PARALLEL COORDINATES VIEW
+          </paper-tab>
+          <paper-tab view-id="scatter-plot-matrix-view">
+            SCATTER PLOT MATRIX VIEW
+          </paper-tab>
           <div class="help-and-feedback">
             <template is="dom-if"
                       if="[[bugReportUrl]]">
@@ -94,54 +103,56 @@ view.
         </div>
       </iron-pages>
     </paper-header-panel>
-  </template>
-  <style>
-    .tab-view {
-      height: 100%;
-    }
-    .tab-bar {
-      overflow-y: auto;
-      color: white;
-      background-color: var(--tb-toolbar-background-color,
-                            var(--tb-orange-strong));
-    }
-    .tab {
-      height: 100%;
-    }
-    paper-tabs {
-      flex-grow: 1;
-      width: 100%;
-      height: 100%;
-      --paper-tabs-selection-bar-color: white;
-      --paper-tabs-content: {
-        -webkit-font-smoothing: antialiased;
+
+    <style>
+      .tab-view {
+        height: 100%;
       }
-    }
-    tf-hparams-table-view {
-      width: 100%;
-      height: 100%;
-    }
-    .help-and-feedback {
-      display: inline-flex;   /* Ensure that icons stay aligned */
-      justify-content: flex-end;
-      align-items: center;
-      text-align: right;
-      color: white;
-    }
-    #bug-report {
-      border: solid black;
-      background: red;
-      white-space: normal;
-      word-break: break-words;
-      font-size: 12px;
-      max-width: 150px;
-      text-align: left;
-    }
-    .help-and-feedback a {
-      color: white;
-      text-decoration: none;
-    }
-  </style>
+      .tab-bar {
+        overflow-y: auto;
+        color: white;
+        background-color: var(--tb-toolbar-background-color,
+        var(--tb-orange-strong));
+      }
+      .tab {
+        height: 100%;
+      }
+      paper-tabs {
+        flex-grow: 1;
+        width: 100%;
+        height: 100%;
+        --paper-tabs-selection-bar-color: white;
+        --paper-tabs-content: {
+          -webkit-font-smoothing: antialiased;
+        }
+      }
+      tf-hparams-table-view {
+        width: 100%;
+        height: 100%;
+      }
+      .help-and-feedback {
+        display: inline-flex;   /* Ensure that icons stay aligned */
+        justify-content: flex-end;
+        align-items: center;
+        text-align: right;
+        color: white;
+      }
+      #bug-report {
+        border: solid black;
+        background: red;
+        white-space: normal;
+        word-break: break-words;
+        font-size: 12px;
+        max-width: 150px;
+        text-align: left;
+      }
+      .help-and-feedback a {
+        color: white;
+        text-decoration: none;
+      }
+    </style>
+  </template>
+
   <script>
     'use strict';
     Polymer({

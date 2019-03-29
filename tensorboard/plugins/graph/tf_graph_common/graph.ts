@@ -1022,7 +1022,7 @@ function addEdgeToGraph(
 
 export function build(
     graphDef: tf.graph.proto.GraphDef, params: BuildParams,
-    tracker: ProgressTracker): Promise<SlimGraph|void> {
+    tracker: ProgressTracker): Promise<SlimGraph> {
   /**
    * A dictionary that maps each in-embedding node name to the node
    * object.
@@ -1197,7 +1197,7 @@ export function build(
             'Building the data structure', 70, () => {
               let normalizedNameDict =
                   mapStrictHierarchy(nodeNames, embeddingNodeNames);
-              let graph = new SlimGraph;
+              let graph = new SlimGraph();
 
               // Add the nodes to the graph.
               _.each(opNodes, opNode => {

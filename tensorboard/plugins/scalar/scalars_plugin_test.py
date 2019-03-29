@@ -36,9 +36,8 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 
-
+@test_util.run_v1_only('Requires contrib for db writer or uses op.Placeholder')
 class ScalarsPluginTest(tf.test.TestCase):
 
   _STEPS = 99

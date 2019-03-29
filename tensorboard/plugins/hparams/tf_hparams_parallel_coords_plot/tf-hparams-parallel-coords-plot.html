@@ -169,6 +169,14 @@ limitations under the License.
             value: 0,
         },
 
+        // Counts the number of times the element has been redrawn since it
+        // was created. This is incremented at the end of a redraw and allows
+        // integration tests to wait for the element to finish redrawing.
+        redrawCount: {
+          type: Number,
+          value: 0,
+        },
+
         // Private properties
         // An array containing just the "valid" session groups from
         // 'sessionGroups'. A session group is valid if every one of its metrics
@@ -508,6 +516,7 @@ limitations under the License.
                 d3.select(this).call(axis);
               })
             .append("text")
+              .attr("class", "axis-title")
               .style("cursor", "move")
               .style("text-anchor", "middle")
               .attr("y", -9)
@@ -518,6 +527,10 @@ limitations under the License.
                     draggedColPos = x(colIndex);
                     draggedColIndex = colIndex;
                     backgroundPaths.attr("visibility", "hidden");
+                    // We set an attribute on the axis that signals
+                    // that it is being dragged. This allows
+                    // integration tests to know when dragging is done.
+                    this.setAttribute("is-dragging", "");
                   })
                   .on("drag", function(colIndex) {
                     draggedColPos = d3.event.x;
@@ -557,7 +570,10 @@ limitations under the License.
                     // after the transition ends.
                         .attr("d", pathDataFn);
                     window.setTimeout(
-                        ()=>foregroundPaths.each(setPathControlPointsFn),
+                        ()=>{
+                          foregroundPaths.each(setPathControlPointsFn);
+                          this.removeAttribute("is-dragging");
+                        },
                         500);
                     backgroundPaths
                         .attr("d", pathDataFn)
@@ -575,8 +591,21 @@ limitations under the License.
           brush[i] = d3.brushY()
               .extent([[-8, 0], [8, height+1]])
                // brushChangedFn is defined below.
-              .on("brush", ()=>brushChangedFn(i, d3.event.selection))
-              .on("end", ()=>brushChangedFn(i, d3.event.selection))
+              .on("brush", function() {
+                brushChangedFn(i, d3.event.selection);
+                // We set the 'is-brushing' attribute on the containing
+                // 'axis-parent'-classed <g> element to notify integration test
+                // that the axis is busy brushing.
+                // Here 'this' points to a child of the 'axis-parent'-classed
+                // element. See below where we use this 'brush'.
+                this.parentElement.setAttribute("is-brushing", "");
+              })
+              .on("end", function() {
+                brushChangedFn(i, d3.event.selection);
+                // Here 'this' points to a child of the 'axis-parent'-classed
+                // element. See below where we use this 'brush'.
+                this.parentElement.removeAttribute("is-brushing");
+              })
         }
 
         // For each axis having an active brush selection, we store a
@@ -665,6 +694,8 @@ limitations under the License.
         // apply.
         this._svg.selectAll("*")
             .classed("tf-hparams-parallel-coords-plot", true);
+
+        this.redrawCount++;
       },
 
       _colExtent(colIndex) {

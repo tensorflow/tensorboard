@@ -152,6 +152,7 @@ smoke() {
   export TF_CPP_MIN_LOG_LEVEL=1  # Suppress spammy TF startup logging.
   python -c "
 import tensorboard as tb
+assert tb.__version__ == tb.version.VERSION
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
 from tensorboard.plugins.beholder import Beholder, BeholderHook

@@ -46,6 +46,16 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "umap-js",
+    srcs = [
+        "umap-js.html",
+        "@ai_google_pair_umap_js//:umap-js.min.js",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+)
+
+tf_web_library(
     name = "numericjs",
     srcs = [
         "numericjs.html",

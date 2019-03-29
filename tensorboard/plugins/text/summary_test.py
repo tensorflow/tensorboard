@@ -28,6 +28,7 @@ import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary
 from tensorboard.util import tensor_util
@@ -135,7 +136,7 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def text(self, *args, **kwargs):
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     self.assertEqual('a/text_summary', self.text('a', 'foo').value[0].tag)

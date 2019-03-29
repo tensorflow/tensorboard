@@ -47,6 +47,18 @@ py_library(
     ],
 )
 
+py_library(
+    name = "beholder_plugin_loader",
+    srcs = ["beholder_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":beholder_plugin",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_binary(
     name = "beholder_demo",
     srcs = ["beholder_demo.py"],

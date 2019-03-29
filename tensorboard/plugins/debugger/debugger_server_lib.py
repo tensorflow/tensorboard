@@ -242,7 +242,7 @@ class DebuggerDataServer(grpc_debug_server.EventListenerBaseServicer):
     # TensorBoard.
     try:
       self._events_writer_manager.write_event(
-          tf.Event(
+          tf.compat.v1.Event(
               wall_time=0, step=0, file_version=constants.EVENTS_VERSION))
     except IOError as e:
       logger.error(

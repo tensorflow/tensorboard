@@ -24,9 +24,11 @@ import tensorflow as tf
 
 from tensorflow.python.platform import test
 from tensorboard.plugins.graph import keras_util
+from tensorboard.util import test_util
 
 
-class GraphUtilTest(tf.test.TestCase):
+class KerasUtilTest(tf.test.TestCase):
+
   def assertGraphDefToModel(self, expected_proto, model):
     model_config = json.loads(model.to_json())
 
@@ -274,7 +276,7 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     node {
-      name: "model/lstm"
+      name: "model/simple_rnn"
       input: "model/lstm_input"
       attr {
         key: "dtype"
@@ -285,13 +287,13 @@ class GraphUtilTest(tf.test.TestCase):
       attr {
         key: "keras_class"
         value {
-          s: "LSTM"
+          s: "SimpleRNN"
         }
       }
     }
     """
     inputs = tf.keras.layers.Input(shape=(None, 5), name='lstm_input')
-    encoder = tf.keras.layers.LSTM(256)
+    encoder = tf.keras.layers.SimpleRNN(256)
 
     model = tf.keras.models.Model(inputs=inputs, outputs=encoder(inputs))
     self.assertGraphDefToModel(expected_proto, model)
@@ -430,7 +432,7 @@ class GraphUtilTest(tf.test.TestCase):
       }
     }
     node {
-      name: "model/lstm"
+      name: "model/simple_rnn"
       input: "model/embedding"
       attr {
         key: "dtype"
@@ -441,7 +443,7 @@ class GraphUtilTest(tf.test.TestCase):
       attr {
         key: "keras_class"
         value {
-          s: "LSTM"
+          s: "SimpleRNN"
         }
       }
     }
@@ -462,7 +464,7 @@ class GraphUtilTest(tf.test.TestCase):
     }
     node {
       name: "model/concatenate"
-      input: "model/lstm"
+      input: "model/simple_rnn"
       input: "model/aux_input"
       attr {
         key: "dtype"
@@ -511,7 +513,7 @@ class GraphUtilTest(tf.test.TestCase):
     }
     node {
       name: "model/aux_output"
-      input: "model/lstm"
+      input: "model/simple_rnn"
       attr {
         key: "dtype"
         value {
@@ -529,13 +531,13 @@ class GraphUtilTest(tf.test.TestCase):
     main_input = tf.keras.layers.Input(shape=(100,), dtype='int32', name='main_input')
     x = tf.keras.layers.Embedding(
         output_dim=512, input_dim=10000, input_length=100)(main_input)
-    lstm_out = tf.keras.layers.LSTM(32)(x)
+    rnn_out = tf.keras.layers.SimpleRNN(32)(x)
 
     auxiliary_output = tf.keras.layers.Dense(
-        1, activation='sigmoid', name='aux_output')(lstm_out)
+        1, activation='sigmoid', name='aux_output')(rnn_out)
     auxiliary_input = tf.keras.layers.Input(shape=(5,), name='aux_input')
 
-    x = tf.keras.layers.concatenate([lstm_out, auxiliary_input])
+    x = tf.keras.layers.concatenate([rnn_out, auxiliary_input])
     x = tf.keras.layers.Dense(64, activation='relu')(x)
 
     main_output = tf.keras.layers.Dense(1, activation='sigmoid', name='main_output')(x)
