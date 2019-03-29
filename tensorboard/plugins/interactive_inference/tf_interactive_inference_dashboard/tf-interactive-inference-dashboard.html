@@ -896,10 +896,9 @@ limitations under the License.
       }
 
       .datapoint-info-holder {
-        padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 20px;
-        max-width: 460px;
+        margin: 24px auto;
+        max-width: 380px;
+        padding: 24px;
       }
 
       .onboarding-header {
@@ -1676,17 +1675,17 @@ limitations under the License.
                                   </div>
                                 </paper-dialog>
                               </paper-radio-button>
-                              <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opporitunity
+                              <paper-radio-button name="equalopp" class="optimization-radio" disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">Equal opportunity
                                 <paper-icon-button icon="info-outline" class="info-icon thresh-info-icon no-padding" on-tap="openDialog">
                                 </paper-icon-button>
                                 <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="bottom">
-                                  <div class="dialog-title">Equal opporitunity</div>
+                                  <div class="dialog-title">Equal opportunity</div>
                                   <div>
                                     Optimize a threshold per slice based on the specified cost ratio, ensuring the different slices achieve
-                                    equal opporitunity.
+                                    equal opportunity.
                                   </div>
                                   <div>
-                                    Equal opporitunity means that among those predicted as positive classifications, there is a similar percentage of
+                                    Equal opportunity means that among those predicted as positive classifications, there is a similar percentage of
                                     correct predictions in each slice.
                                   </div>
                                 </paper-dialog>
@@ -3525,7 +3524,7 @@ limitations under the License.
 
 
       equalOppoClicked_: function() {
-        // Find the optimal thresholds while maintaining equal opporitunity.
+        // Find the optimal thresholds while maintaining equal opportunity.
         const measure =
           stats => stats['TP'] / (stats['TP'] + stats['FN']);
         this.getBestThresholdsByFairnessMeasure_(measure);
@@ -5486,7 +5485,7 @@ limitations under the License.
         } else if (optimization == 'demoparity') {
           return 'Demographic parity thresholds';
         } else if (optimization == 'equalopp') {
-          return 'Equal opporitunity thresholds';
+          return 'Equal opportunity thresholds';
         } else if (optimization == 'equalacc') {
           return 'Equal accuracy thresholds';
         } else {

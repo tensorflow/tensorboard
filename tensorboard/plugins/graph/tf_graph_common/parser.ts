@@ -38,15 +38,15 @@ function parseValue(value: string): string|number|boolean {
  * Fetches a text file and returns a promise of the result.
  */
 export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
-  return new Promise<ArrayBuffer>(function(resolve, reject) {
-    const request = new XMLHttpRequest();
-    request.open('GET', filepath);
-    request.responseType = 'arraybuffer';
-
-    request.onerror = () => reject(request.status);
-    request.onload = () => resolve(request.response);
-
-    request.send(null);
+  return new Promise((resolve, reject) => {
+    fetch(filepath).then((res) => {
+      // Fetch does not reject for 400+.
+      if (res.ok) {
+        res.arrayBuffer().then(resolve, reject);
+      } else {
+        res.text().then(reject, reject);
+      }
+    });
   });
 }
 
@@ -80,7 +80,7 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
 export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
     tracker: ProgressTracker) {
   return tf.graph.util
-      .runTask(
+      .runAsyncPromiseTask(
           'Reading graph pbtxt', 40,
           () => {
             if (pbTxtFile) {
@@ -96,7 +96,7 @@ export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
           },
           tracker)
       .then((arrayBuffer: ArrayBuffer) => {
-        return tf.graph.util.runTask('Parsing graph.pbtxt', 60, () => {
+        return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, () => {
           return parseGraphPbTxt(arrayBuffer);
         }, tracker);
       });
@@ -109,50 +109,44 @@ export function fetchAndParseGraphData(path: string, pbTxtFile: Blob,
  * @param callback The callback called on each line
  * @param chunkSize The size of each read chunk. (optional)
  * @param delim The delimiter used to split a line. (optional)
- * @returns A promise for when it is finished.
+ * @returns Promise that resolves with true when it is finished.
  */
 export function streamParse(
     arrayBuffer: ArrayBuffer, callback: (string) => void,
     chunkSize: number = 1000000, delim: string = '\n'): Promise<boolean> {
   return new Promise<boolean>(function(resolve, reject) {
-    let offset = 0;
-    let bufferSize = arrayBuffer.byteLength - 1;
-    let data = '';
+    function readChunk(oldData: string, newData: string, offset: number) {
+      const doneReading = offset >= arrayBuffer.byteLength;
+      const parts = newData.split(delim);
+      parts[0] = oldData + parts[0];
 
-    function readHandler(str) {
-      offset += chunkSize;
-      let parts = str.split(delim);
-      let first = data + parts[0];
-      if (parts.length === 1) {
-        data = first;
-        readChunk(offset, chunkSize);
-        return;
-      }
-      data = parts[parts.length - 1];
-      callback(first);
-      for (let i = 1; i < parts.length - 1; i++) {
-        callback(parts[i]);
-      }
-      if (offset >= bufferSize) {
-        if (data) {
-          callback(data);
+      // The last part may be part of a longer string that got cut off
+      // due to the chunking.
+      const remainder = doneReading ? '' : parts.pop();
+
+      for (let part of parts) {
+        try {
+          callback(part);
+        } catch (e) {
+          reject(e);
+          return;
         }
+      }
+
+      if (doneReading) {
         resolve(true);
         return;
       }
-      readChunk(offset, chunkSize);
-    }
 
-    function readChunk(offset: number, size: number) {
-      const arrayBufferChunk = arrayBuffer.slice(offset, offset + size);
-
-      const blob = new Blob([arrayBufferChunk]);
+      const nextChunk = new Blob([arrayBuffer.slice(offset, offset + chunkSize)]);
       const file = new FileReader();
-      file.onload = (e: any) => readHandler(e.target.result);
-      file.readAsText(blob);
+      file.onload = function(e: any) {
+        readChunk(remainder, e.target.result, offset + chunkSize);
+      };
+      file.readAsText(nextChunk);
     }
 
-    readChunk(offset, chunkSize);
+    readChunk('', '', 0);
   });
 }
 

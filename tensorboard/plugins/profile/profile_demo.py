@@ -81,14 +81,16 @@ def dump_data(logdir):
         proto = trace_events_pb2.Trace()
         text_format.Merge(profile_demo_data.TRACES[run], proto)
         f.write(proto.SerializeToString())
-    shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
-                    os.path.join(run_dir, 'op_profile.json'))
-    shutil.copyfile(
-        'tensorboard/plugins/profile/profile_demo.memory_viewer.json',
-        os.path.join(run_dir, 'memory_viewer.json'))
-    shutil.copyfile(
-        'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
-        os.path.join(run_dir, 'google_chart_demo.json'))
+
+    if run not in profile_demo_data.TRACE_ONLY:
+      shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
+                      os.path.join(run_dir, 'op_profile.json'))
+      shutil.copyfile(
+          'tensorboard/plugins/profile/profile_demo.memory_viewer.json',
+          os.path.join(run_dir, 'memory_viewer.json'))
+      shutil.copyfile(
+          'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
+          os.path.join(run_dir, 'google_chart_demo.json'))
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')

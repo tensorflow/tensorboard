@@ -87,6 +87,20 @@ describe('stateGetAccessorDimensions', () => {
     assert.deepEqual([0, 1, 2], stateGetAccessorDimensions(state));
   });
 
+  it('returns [0, 1] for 2d umap', () => {
+    const state = new State();
+    state.selectedProjection = 'umap';
+    state.umapIs3d = false;
+    assert.deepEqual([0, 1], stateGetAccessorDimensions(state));
+  });
+
+  it('returns [0, 1, 2] for 3d umap', () => {
+    const state = new State();
+    state.selectedProjection = 'umap';
+    state.umapIs3d = true;
+    assert.deepEqual([0, 1, 2], stateGetAccessorDimensions(state));
+  });
+
   it('returns pca component dimensions array for pca', () => {
     const state = new State();
     state.selectedProjection = 'pca';

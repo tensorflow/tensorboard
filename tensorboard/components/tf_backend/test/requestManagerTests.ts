@@ -289,6 +289,81 @@ describe('backend', () => {
         // resolving the first request triggers finishTheTest
       });
     });
+
+    it('throws an error when a GET request has a body', function() {
+      const rm = new RequestManager();
+      const badOptions = new RequestOptions();
+      badOptions.methodType = HttpMethodType.GET;
+      badOptions.body = "a body";
+      chai.assert.throws(
+        ()=>rm.requestWithOptions("http://www.google.com", badOptions),
+        InvalidRequestOptionsError);
+    });
+
+    describe('tests using sinon.fakeServer', function() {
+      let server;
+      
+      beforeEach(function() {
+        server = sinon.fakeServer.create();
+        server.respondImmediately = true;
+        server.respondWith("{}");
+      });
+
+      afterEach(function() {
+        server.restore();
+      });
+      
+      it('builds correct XMLHttpRequest when request(url) is called',
+         function() {
+           const rm = new RequestManager();
+           return rm.request("my_url")
+             .then(()=>{
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].requestBody, null);
+               chai.assert.equal(server.requests[0].method, HttpMethodType.GET);
+               chai.assert.notProperty(server.requests[0].requestHeaders,
+                                       "Content-Type");
+             });
+         });
+
+      it('builds correct XMLHttpRequest when request(url, postData) is called',
+         function() {
+           const rm = new RequestManager();
+           return rm.request("my_url",
+                              {"key1": "value1", "key2": "value2"})
+             .then(() => {
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].method,
+                                 HttpMethodType.POST);
+               chai.assert.instanceOf(server.requests[0].requestBody, FormData);
+               chai.assert.sameDeepMembers(
+                 Array.from(server.requests[0].requestBody.entries()),
+                 [["key1", "value1"], ["key2", "value2"]]);
+             });
+         });
+
+      it('builds correct XMLHttpRequest when requestWithOptions is called',
+         function() {
+           const rm = new RequestManager();
+           const requestOptions = new RequestOptions();
+           requestOptions.methodType = HttpMethodType.POST;
+           requestOptions.contentType = "text/plain;charset=utf-8";
+           requestOptions.body = "the body";
+           return rm.requestWithOptions("my_url", requestOptions)
+             .then(()=>{
+               chai.assert.lengthOf(server.requests, 1);
+               chai.assert.equal(server.requests[0].url, "my_url");
+               chai.assert.equal(server.requests[0].method,
+                                 HttpMethodType.POST);
+               chai.assert.equal(server.requests[0].requestBody, "the body");
+               chai.assert.equal(
+                 server.requests[0].requestHeaders["Content-Type"],
+                 "text/plain;charset=utf-8");
+             });
+         });
+    });
   });
 });
 

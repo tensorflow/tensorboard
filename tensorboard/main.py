@@ -37,18 +37,28 @@ os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 
 import sys
 
-# Import TensorFlow here to fail immediately if it's not present, even though we
-# don't actually use it yet, which results in a clearer error.
-import tensorflow as tf  # pylint: disable=unused-import
-
 from tensorboard import default
 from tensorboard import program
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
+
+  if getattr(tf, '__version__', 'stub') == 'stub':
+    # Unless the user has explicitly requested running without TensorFlow by setting the
+    # TENSORBOARD_NO_TF environment variable, we check for TensorFlow here so that if it's
+    # missing we generate a clear and immediate error rather than partial functionality.
+    # TODO(#2027): Remove environment check once we have placeholder UI
+    if os.getenv('TENSORBOARD_NO_TF') is None:
+      import tensorflow  # pylint: disable=unused-import
+    logger.warn("TensorFlow installation not found - running with reduced feature set.")
+
   tensorboard = program.TensorBoard(default.get_plugins(),
                                     program.get_default_assets_zip_provider())
   try:

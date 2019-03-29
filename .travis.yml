@@ -20,7 +20,12 @@ env:
   #
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
-  - TF_VERSION_ID=tf-nightly BAZEL=0.22.0 BAZEL_SHA256SUM=8474ed28ed4998e2f5671ddf3a9a80ae9e484a5de3b8b70c8b654c017c65d363
+  global:
+    - BAZEL=0.22.0
+    - BAZEL_SHA256SUM=8474ed28ed4998e2f5671ddf3a9a80ae9e484a5de3b8b70c8b654c017c65d363
+  matrix:
+    - TF_VERSION_ID=tf-nightly
+    - TF_VERSION_ID=tf-nightly-2.0-preview
 
 cache:
   directories:
@@ -60,6 +65,9 @@ before_install:
   - chmod +x "${bazel_binary}"
   - sudo mv "${bazel_binary}" /usr/local/bin/bazel
 
+  # Fix Boto and Travis issue https://github.com/travis-ci/travis-ci/issues/7940
+  - sudo rm -f /etc/boto.cfg
+
   # Storing build artifacts in this directory helps Travis cache them. This
   # will sometimes cut latency in half, when we're lucky.
   - echo "startup --output_base=${HOME}/.bazel-output-base" >>~/.bazelrc
@@ -89,10 +97,13 @@ before_install:
   - echo "test --action_env=PATH" >>~/.bazelrc
 
 install:
+  - pip install boto3==1.9.86
   - pip install flake8==3.5.0
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
   - pip install mock==2.0.0
+  - pip install moto==1.3.7
+  - pip install yamllint==1.5.0
   - pip install -I "${TF_VERSION_ID}"
 
 before_script:
@@ -101,10 +112,14 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   # a comment of '# noqa' or better yet '# noqa: <error code>' added to the code to silence flake8
   - flake8 . --count --exit-zero --ignore=E111,E114 --max-complexity=10 --max-line-length=127 --statistics
+  # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
+  - yamllint -c docs/.yamllint docs docs/.yamllint
   # Make sure we aren't accidentally including work-in-progress code.
   - tensorboard/tools/do_not_submit_test.sh
   # Make sure all necessary files have the license information.
   - tensorboard/tools/license_test.sh
+  # Make sure that IPython notebooks have valid Markdown.
+  - tensorboard/tools/docs_list_format_test.sh
 
 # Commands in this section should only fail if it's our fault. Travis will
 # categorize them as 'failed', rather than 'error' for other sections.
@@ -113,6 +128,8 @@ script:
   - bazel fetch //tensorboard/...
   - bazel build //tensorboard/...
   - bazel test //tensorboard/...
+  # Run manual S3 test
+  - bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
 
 after_script:

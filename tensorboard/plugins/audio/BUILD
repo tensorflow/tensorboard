@@ -45,6 +45,28 @@ py_test(
     ],
 )
 
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+py_test(
+    name = "audio_plugin_notf_test",
+    size = "small",
+    srcs = ["audio_plugin_test.py"],
+    main = "audio_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":audio_plugin",
+        ":summary",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
@@ -86,6 +108,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 

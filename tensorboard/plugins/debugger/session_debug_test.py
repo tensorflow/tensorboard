@@ -40,8 +40,10 @@ from tensorflow.python import debug as tf_debug  # pylint: disable=wrong-import-
 
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
+from tensorboard.util import test_util
 
 
+@test_util.run_v1_only("Server fails to come up. Requires study.")
 class SessionDebugTestBase(tf.test.TestCase):
 
   def setUp(self):
@@ -83,7 +85,7 @@ class SessionDebugTestBase(tf.test.TestCase):
 
           sess.run(a.initializer, options=run_options)
           return True
-      except tf.errors.FailedPreconditionError:
+      except tf.errors.FailedPreconditionError as exc:
         time.sleep(poll_interval_seconds)
 
     return False

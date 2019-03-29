@@ -336,7 +336,7 @@ sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to downsample your
 data so that it can be loaded into RAM. You can modify the number of elements it
 will keep per tag in
 [tensorboard/backend/application.py](tensorboard/backend/application.py).
-See this [StackOverflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
+See this [Stack Overflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
 for some more information.
 
 ### I get a network security popup every time I run TensorBoard on a mac!
@@ -352,8 +352,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md).
 ### I have a different issue that wasn't addressed here!
 
 First, try searching our [GitHub
-issues](https://github.com/tensorflow/tensorboard/issues) and [Stack
-Overflow][stack-overflow]. It may be
+issues](https://github.com/tensorflow/tensorboard/issues) and [Stack Overflow][stack-overflow]. It may be
 that someone else has already had the same issue or question.
 
 General usage questions (or problems that may be specific to your local setup)

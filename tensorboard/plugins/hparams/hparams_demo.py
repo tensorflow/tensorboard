@@ -84,7 +84,7 @@ def init_temperature_list():
 
 def fingerprint(string):
   m = hashlib.md5()
-  m.update(string)
+  m.update(string.encode('utf-8'))
   return m.hexdigest()
 
 
@@ -233,9 +233,9 @@ def run_all(logdir, verbose=False):
   for initial_temperature in TEMPERATURE_LIST:
     for ambient_temperature in TEMPERATURE_LIST:
       for material in HEAT_COEFFICIENTS:
-        hparams = {'initial_temperature': initial_temperature,
-                   'ambient_temperature': ambient_temperature,
-                   'material': material}
+        hparams = {u'initial_temperature': initial_temperature,
+                   u'ambient_temperature': ambient_temperature,
+                   u'material': material}
         hparam_str = str(hparams)
         group_name = fingerprint(hparam_str)
         for repeat_idx in xrange(2):

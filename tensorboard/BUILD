@@ -27,32 +27,7 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-    ],
-)
-
-# The TensorBoard binary that serves the webapp without TensorFlow.
-py_binary(
-    name = "tensorboard-notf",
-    srcs = ["main_notf.py"],
-    data = ["webfiles.zip"],
-    main = "main_notf.py",
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":program",
-        "//tensorboard/compat:no_tensorflow",
-        "//tensorboard/plugins:base_plugin",
-        "//tensorboard/plugins/audio:audio_plugin",
-        "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
-        "//tensorboard/plugins/distribution:distributions_plugin",
-        "//tensorboard/plugins/graph:graphs_plugin",
-        "//tensorboard/plugins/histogram:histograms_plugin",
-        "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/projector:projector_plugin",
-        "//tensorboard/plugins/scalar:scalars_plugin",
-        "//tensorboard/plugins/text:text_plugin",
+        "//tensorboard/util:tb_logging",
     ],
 )
 
@@ -68,6 +43,18 @@ py_library(
         ":notebook",
         ":program",
         "//tensorboard/summary",
+    ],
+)
+
+py_test(
+    name = "lib_test",
+    size = "small",
+    srcs = ["lib_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":lib",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -137,9 +124,9 @@ py_library(
     deps = [
         ":manager",
         ":version",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
-        "//tensorboard/util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -169,18 +156,18 @@ py_library(
     deps = [
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
-        "//tensorboard/plugins/beholder:beholder_plugin",
+        "//tensorboard/plugins/beholder:beholder_plugin_loader",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
         "//tensorboard/plugins/debugger:debugger_plugin_loader",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
-        "//tensorboard/plugins/hparams:hparams_plugin",
+        "//tensorboard/plugins/hparams:hparams_plugin_loader",
         "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin",
+        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/profile:profile_plugin",
+        "//tensorboard/plugins/profile:profile_plugin_loader",
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
@@ -320,31 +307,7 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
-    ],
-)
-
-py_library(
-    name = "db",
-    srcs = ["db.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard/util",
-    ],
-)
-
-py_test(
-    name = "db_test",
-    size = "medium",
-    timeout = "short",
-    srcs = ["db_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":db",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -356,7 +319,6 @@ py_binary(
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util",
         "//tensorboard/util:encoder",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
@@ -383,37 +345,6 @@ py_test(
     deps = [
         ":plugin_util",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
-    name = "loader",
-    srcs = ["loader.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util",
-        "//tensorboard/util:platform_util",
-        "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "loader_test",
-    size = "small",
-    srcs = ["loader_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":loader",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util",
-        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )

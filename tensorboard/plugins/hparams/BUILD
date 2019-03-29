@@ -33,10 +33,20 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
-        "//tensorboard/util",
+        "//tensorboard/util:tb_logging",
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
+    name = "hparams_plugin_loader",
+    srcs = ["hparams_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard/plugins:base_plugin",
     ],
 )
 
@@ -99,6 +109,7 @@ py_binary(
     name = "hparams_util",
     srcs = ["hparams_util.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":protos_all_py_pb2",
         ":summary",

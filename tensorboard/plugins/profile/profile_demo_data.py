@@ -20,6 +20,8 @@ from __future__ import print_function
 
 RUNS = ['foo', 'bar']
 
+TRACE_ONLY = ['foo']
+
 
 TRACES = {}
 

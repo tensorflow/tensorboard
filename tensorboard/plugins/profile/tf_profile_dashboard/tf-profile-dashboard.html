@@ -20,6 +20,8 @@ limitations under the License.
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -57,6 +59,30 @@ profile run can have multiple tools that present the performance profile as diff
     </p>
   </div>
 </template>
+<paper-toast id="toast" text="" always-on-top></paper-toast>
+<paper-dialog id="captureProfileDialog" modal>
+  <paper-input label="Profiler Service URL or TPU name"
+               always-float-label
+               placeholder="localhost:6009"
+               value="{{_profilerServiceAddress}}"></paper-input>
+  <label id="profiler-address-type-label">Address Type:</label>
+  <paper-radio-group selected="{{_profilerServiceAddressType}}"
+                     aria-labelledby="profiler-address-type-label">
+    <paper-radio-button name="ip-address">IP Address</paper-radio-button>
+    <paper-radio-button name="tpu-name">TPU Name</paper-radio-button>
+  </paper-radio-group>
+  <paper-input label="Profiling Duration (milliseconds)"
+               always-float-label
+               type="number"
+               min=1
+               value="{{_profileDuration}}"></paper-input>
+  <div class="buttons">
+    <paper-button dialog-confirm raised
+                  on-tap="_captureProfile"
+                  disabled$="[[_shouldDisableCaptureProfileButton(profilerServiceAddress, _profileDuration)]]">Capture</paper-button>
+    <paper-button dialog-confirm>Close</paper-button>
+  </div>
+</paper-dialog>
 <template is="dom-if" if="[[_isState(_topLevelState, 'LOADING')]]">
   <div id="progress-bar">
     <div id="progress-msg">[[progress.msg]]</div>
@@ -109,6 +135,10 @@ profile run can have multiple tools that present the performance profile as diff
   <tf-dashboard-layout>
   <div class="sidebar">
     <div class="allcontrols">
+      <div class="sidebar-section">
+        <paper-button raised
+                      on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
+      </div>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
         <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
@@ -337,6 +367,15 @@ profile run can have multiple tools that present the performance profile as diff
         type: String,
         value: "/trace_viewer_index.html",
       },
+      _profilerServiceAddress: String,
+      _profilerServiceAddressType: {
+        type: String,
+        value: "ip-address",
+      },
+      _profileDuration: {
+        type: Number,
+        value: 1000,
+      },
       // The URL for the trace data being display.
       _traceDataUrl: {
         type: String,
@@ -399,6 +438,30 @@ profile run can have multiple tools that present the performance profile as diff
     detached: function() {
       this.set('_isAttached', false);
     },
+    _openCaptureProfileDialog: function() {
+      this.$.captureProfileDialog.open();
+    },
+    _shouldDisableCaptureProfileButton: function(profilerServiceAddress, profileDuration) {
+      return !profilerServiceAddress || profileDuration <= 0;
+    },
+    _captureProfile: function() {
+      const captureProfileUrl = tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
+          {
+            service_addr: this._profilerServiceAddress,
+            is_tpu_name: this._profilerServiceAddressType == 'tpu-name',
+            duration: this._profileDuration,
+          });
+      this._requestManager.request(captureProfileUrl).then((json) => {
+        this._showToast(json.result);
+      }).catch((error) => {
+        this._showToast("Failed to capture profile: " + error);
+      });
+    },
+    _showToast(text) {
+      this.$.toast.text = text;
+      this.$.toast.open();
+    },
     _maybeInitializeDashboard: function(isAttached) {
       if (this._initialized || !isAttached) {
         // Either this dashboard is already initialized ... or we are not yet
@@ -425,17 +488,13 @@ profile run can have multiple tools that present the performance profile as diff
             'Processing datasets', 70, () => {
               return new Promise(function(resolve, reject) {
                 parent._processRunToTool(runToTool);
-                return Promise.resolve(null);
+                resolve(null);
               });
             }, tracker);
       })
       .then(() => {
         return tf.profile.util.runTask(
-            'Done', 10, () => {
-              return new Promise(function(resolve, reject) {
-                return Promise.resolve(null);
-              });
-            }, tracker);
+            'Done', 10, () => null, tracker);
       });
     },
     _processRunToTool: function(runToTool) {

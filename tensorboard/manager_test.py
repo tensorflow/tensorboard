@@ -50,7 +50,7 @@ def _make_info(i=0):
   """
   return manager.TensorBoardInfo(
       version=version.VERSION,
-      start_time=datetime.datetime.fromtimestamp(1548973541 + i),
+      start_time=1548973541 + i,
       port=6060 + i,
       pid=76540 + i,
       path_prefix="/foo",
@@ -71,11 +71,12 @@ class TensorBoardInfoTest(tf.test.TestCase):
     self.assertEqual(also_info, info)
 
   def test_serialization_rejects_bad_types(self):
-    info = _make_info()._replace(start_time=1549061116)  # not a datetime
+    bad_time = datetime.datetime.fromtimestamp(1549061116)  # not an int
+    info = _make_info()._replace(start_time=bad_time)
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*datetime.*, but found: 1549061116"):
+        "expected 'start_time' of type.*int.*, but found: datetime\."):
       manager._info_to_string(info)
 
   def test_serialization_rejects_wrong_version(self):
@@ -291,11 +292,12 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
   def test_write_info_file_rejects_bad_types(self):
     # The particulars of validation are tested more thoroughly in
     # `TensorBoardInfoTest` above.
-    info = _make_info()._replace(start_time=1549061116)
+    bad_time = datetime.datetime.fromtimestamp(1549061116)
+    info = _make_info()._replace(start_time=bad_time)
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*datetime.*, but found: 1549061116"):
+        "expected 'start_time' of type.*int.*, but found: datetime\."):
       manager.write_info_file(info)
     self.assertEqual(self._list_info_dir(), [])
 
