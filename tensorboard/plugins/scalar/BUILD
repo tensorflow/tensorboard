@@ -21,7 +21,6 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/plugins/profile:end_to_end_util",
         "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
