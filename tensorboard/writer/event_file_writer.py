@@ -26,7 +26,7 @@ import time
 import six
 
 from tensorboard.compat.proto import event_pb2
-from tensorboard.writer.record_writer import RecordWriter, directory_check
+from tensorboard.writer.record_writer import RecordWriter
 
 
 class EventsWriter(object):
@@ -35,26 +35,26 @@ class EventsWriter(object):
     def __init__(self, file_prefix, filename_suffix=''):
         '''
         Events files have a name of the form
-        '/some/file/path/events.out.tfevents.[timestamp].[hostname]'
+        '/some/file/path/[file_prefix].out.tfevents.[timestamp].[hostname]'
+
+        Args:
+          file_prefix: The string that will be prepended to
+            the filename of the event file.
+          filename_suffix: The string that will be appended to
+            the filename of the event file.
         '''
         self._file_name = file_prefix + ".out.tfevents." + str(time.time())[:10] + "." +\
             socket.gethostname() + filename_suffix
-
         self._num_outstanding_events = 0
-
         self._py_recordio_writer = RecordWriter(self._file_name)
-
         # Initialize an event instance.
         self._event = event_pb2.Event()
-
         self._event.wall_time = time.time()
-
         self._lock = threading.Lock()
-
         self.write_event(self._event)
 
     def write_event(self, event):
-        '''Append "event" to the file.'''
+        '''Append "protobuf event" to the file.'''
 
         # Check if event is of type event_pb2.Event proto.
         if not isinstance(event, event_pb2.Event):
@@ -84,26 +84,21 @@ class EventsWriter(object):
 
 class EventFileWriter(object):
     """Writes `Event` protocol buffers to an event file.
+
     The `EventFileWriter` class creates an event file in the specified directory,
     and asynchronously writes Event protocol buffers to the file. The Event file
     is encoded using the tfrecord format, which is similar to RecordIO.
-    @@__init__
-    @@add_event
-    @@flush
-    @@close
     """
 
     def __init__(self, logdir, max_queue=10, flush_secs=120, filename_suffix=''):
         """Creates a `EventFileWriter` and an event file to write to.
+
         On construction the summary writer creates a new event file in `logdir`.
         This event file will contain `Event` protocol buffers, which are written to
         disk via the add_event method.
         The other arguments to the constructor control the asynchronous writes to
         the event file:
-        *  `flush_secs`: How often, in seconds, to flush the added summaries
-           and events to disk.
-        *  `max_queue`: Maximum number of summaries or events pending to be
-           written to disk before one of the 'add' calls block.
+
         Args:
           logdir: A string. Directory where event file will be written.
           max_queue: Integer. Size of the queue for pending events and summaries.
@@ -111,7 +106,6 @@ class EventFileWriter(object):
             pending events and summaries to disk.
         """
         self._logdir = logdir
-        directory_check(self._logdir)
         self._event_queue = six.moves.queue.Queue(max_queue)
         self._ev_writer = EventsWriter(os.path.join(
             self._logdir, "events"), filename_suffix)
@@ -128,6 +122,7 @@ class EventFileWriter(object):
 
     def reopen(self):
         """Reopens the EventFileWriter.
+
         Can be called after `close()` to add more events in the same directory.
         The events will go into a new events file and a new write/flush worker
         is created. Does nothing if the EventFileWriter was not closed.
@@ -141,6 +136,7 @@ class EventFileWriter(object):
 
     def add_event(self, event):
         """Adds an event to the event file.
+
         Args:
           event: An `Event` protocol buffer.
         """
@@ -149,6 +145,7 @@ class EventFileWriter(object):
 
     def flush(self):
         """Flushes the event file to disk.
+
         Call this method to make sure that all pending events have been written to
         disk.
         """

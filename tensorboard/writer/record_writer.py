@@ -32,6 +32,9 @@ _VALID_OP_NAME_PART = re.compile('[A-Za-z0-9_.\\-/]+')
 
 
 class RecordWriter(object):
+    """write encoded protobuf along with its checksum.
+
+    """
     def __init__(self, path):
         self._name_to_tf_name = {}
         self._tf_names = set()
