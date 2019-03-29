@@ -134,18 +134,22 @@ buffer's lifetime.
 
 ## End-to-End Runtime Breakdown
 
-The End-to-End tool divides the entire runtime of a TensorFlow job into three sessions: *training*, *eval*, and *predict*. It further breaks the training session into multiple categories.
+The End-to-End tool divides the entire runtime of a TensorFlow job that runs on
+the TPU into three sessions: *training*, *eval*, and *predict*. It further
+breaks the training session into multiple categories.
 
 ![End-to-End](docs/end-to-end.png)
 
 ### Explanation of the Runtime Breakdown
 <dl>
   <dt>beginning to init-system's start</dt>
-  <dd>The time span from the beginning of the job to the time when the init-system in the training session starts.</dd>
+  <dd>The time span from the beginning of the job to the time when the
+       init-system in the training session starts.</dd>
   <dt>init-system</dt>
   <dd>The time taken by the init-system in the training session.</dd>
   <dt>init-system's end to model-fn's start</dt>
-  <dd>The time span from the end of init-system to the time when the model function in the training session starts.</dd>
+  <dd>The time span from the end of init-system to the time when the
+       model function in the training session starts.</dd>
   <dt>model-fn</dt>
   <dd>The time taken by the model function in the training session.</dd>
   <dt>setup-infeed</dt>
@@ -164,20 +168,22 @@ The End-to-End tool divides the entire runtime of a TensorFlow job into three se
 
 ### How To Use This Tool
 
-When a TensorFlow job that is implemented with the TPU-Estimator is executed, a subdirectory named ```profile_logger.summary``` will be created inside the model directory. Within that subdirectory, there will be a TF event file of the form ```events.out.tfevents.XXXXXXXXX```. An example of such event files is provided as ```tensorboard/plugins/profile/end_to_end.tfevents```.
+When a TensorFlow job that is implemented with the TPU-Estimator is executed,
+ a subdirectory named ```profile``` will be created inside the model directory.
+ Within that subdirectory, there will be a TF event file with name of the form
+events.out.tfevents.XXXXXXXXX.profile_logger.
 
-With this event file, use the script ```tensorboard/plugins/profile/tfevents_to_endtoend.py``` to generate a JSON file in the log directory where TensorBoard will inspect:
+With this event file, use the script
+tensorboard/plugins/profile/tfevents_to_endtoend.py to generate a JSON
+ file in the log directory where TensorBoard will inspect:
+
 ```
     bazel build -c opt tensorboard/plugins/profile:tfevents_to_endtoend
-    ./bazel-bin/tensorboard/plugins/profile/tfevents_to_endtoend --tfevents_file=./end_to_end.tfevents --target_dir=/tmp/profile_demo/plugins/profile/bar
+    ./bazel-bin/tensorboard/plugins/profile/tfevents_to_endtoend
+     --tfevents_file=./events.out.tfevents.12345.profiler_logger
+     --target_dir=/tmp/profile_demo/plugins/profile/bar
     ./bazel-bin/tensorboard/tensorboard --logdir=/tmp/profile_demo
 ```
-
-     
-
-
-
-
 
 
 
