@@ -84,10 +84,9 @@ model.fit(...)
       /** We rely on a separate `_hidden` property instead of directly making use
           of the `_open` attribute because this CSS specification may strangely
           affect other elements throughout TensorBoard. See #899. */
-      :host[_hidden] {
+      :host([_hidden]) {
         display: none;
       }
-
       :host, #dashboard-backdrop {
         position: absolute;
         top: 0;

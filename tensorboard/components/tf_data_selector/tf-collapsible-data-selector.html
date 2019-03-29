@@ -103,7 +103,7 @@ Properties out:
         width: 100%;
       }
 
-      :host:not([opened]) .selector {
+      :host(:not([opened])) .selector {
         border-color: var(--paper-grey-500);
         position: absolute;
         top: 0;
