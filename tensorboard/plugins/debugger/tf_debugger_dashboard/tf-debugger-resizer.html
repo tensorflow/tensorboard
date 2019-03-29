@@ -26,20 +26,20 @@ limitations under the License.
       </div>
     </div>
     <style>
-      :host[_resizer-identifier] {
+      :host([_resizer-identifier]) {
         position: absolute;
         background: #ccc;
         user-select: none;
       }
 
-      :host[is-horizontal] {
+      :host([is-horizontal]) {
         cursor: row-resize;
         height: 10px;
         left: 0;
         right: 0;
       }
 
-      :host[_is-vertical] {
+      :host([_is-vertical]) {
         cursor: col-resize;
         right: -15px;
         top: 0;
@@ -64,7 +64,7 @@ limitations under the License.
         display: inline-block;
       }
 
-      :host[is-horizontal] .bars-rotator {
+      :host([is-horizontal]) .bars-rotator {
         transform: rotate(90deg);
       }
 
