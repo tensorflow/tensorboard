@@ -52,6 +52,7 @@ py_test(
     srcs = ["lib_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
+    tags = ["support_notf"],
     deps = [
         ":lib",
         "@org_pythonhosted_six",
@@ -366,6 +367,7 @@ py_test(
     srcs = ["lazy_test.py"],
     srcs_version = "PY2AND3",
     size = "small",
+    tags = ["support_notf"],
     deps = [
         ":lazy",
         "@org_pythonhosted_six",

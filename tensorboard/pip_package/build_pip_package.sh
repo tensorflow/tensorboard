@@ -125,7 +125,11 @@ smoke() {
   smoke_tf="$2"
   set +x
   printf '\n\n%70s\n' | tr ' ' '='
-  echo "Smoke testing with ${smoke_python} and ${smoke_tf}..."
+  if [ -z "${smoke_tf}" ]; then
+    echo "Smoke testing with ${smoke_python} and no tensorflow..."
+  else
+    echo "Smoke testing with ${smoke_python} and ${smoke_tf}..."
+  fi
   printf '\n'
   set -x
   command -v "${smoke_python}" >/dev/null
@@ -133,7 +137,10 @@ smoke() {
   cd "${smoke_venv}"
   . bin/activate
   pip install -qU pip
-  pip install -qU "${smoke_tf}"
+
+  if [ ! -z "${smoke_tf}" ]; then
+    pip install -qU "${smoke_tf}"
+  fi
   pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
   pip freeze  # Log the results of pip installation
 
@@ -159,26 +166,32 @@ from tensorboard.plugins.beholder import Beholder, BeholderHook
 tb.notebook.start  # don't invoke; just check existence
 "
 
-  # Exhaustively test various sequences of importing tf.summary.
-  test_tf_summary() {
-    # First argument is subpath to test, e.g. '' or '.compat.v2'.
-    import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
-    import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
-    import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
-    printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
-    printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
-    printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
-    printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
-    printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
-    printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
+  # Check if we are testing with or without tf
+  is_tf() {
+    python -c "import tensorflow as tf" >/dev/null 2>&1
   }
-  test_tf_summary '.compat.v2'
-  is_tf_2() {
-    python -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
-      >/dev/null 2>&1
-  }
-  if is_tf_2 ; then
-    test_tf_summary ''
+  if is_tf ; then
+    # Exhaustively test various sequences of importing tf.summary.
+    test_tf_summary() {
+      # First argument is subpath to test, e.g. '' or '.compat.v2'.
+      import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
+      import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
+      import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
+      printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
+      printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
+      printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
+      printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
+      printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
+      printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
+    }
+    test_tf_summary '.compat.v2'
+    is_tf_2() {
+      python -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
+        >/dev/null 2>&1
+    }
+    if is_tf_2 ; then
+      test_tf_summary ''
+    fi
   fi
 
   deactivate

@@ -26,6 +26,7 @@ env:
   matrix:
     - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=tf-nightly-2.0-preview
+    - TF_VERSION_ID= # Do not install TensorFlow in this case
 
 cache:
   directories:
@@ -104,7 +105,11 @@ install:
   - pip install mock==2.0.0
   - pip install moto==1.3.7
   - pip install yamllint==1.5.0
-  - pip install -I "${TF_VERSION_ID}"
+  - |
+    # Install TensorFlow if requested
+    if [ ! -z "${TF_VERSION_ID}" ]; then
+      pip install -I "${TF_VERSION_ID}"
+    fi
 
 before_script:
   # fail the build if there are Python syntax errors or undefined names
@@ -127,7 +132,13 @@ script:
   # Note: bazel test implies fetch+build, but this gives us timing.
   - bazel fetch //tensorboard/...
   - bazel build //tensorboard/...
-  - bazel test //tensorboard/...
+  - |
+    # Limit tests without TensorFlow
+    if [ -z "${TF_VERSION_ID}" ]; then
+      bazel test //tensorboard/... --test_tag_filters=support_notf
+    else
+      bazel test //tensorboard/...
+    fi
   # Run manual S3 test
   - bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
