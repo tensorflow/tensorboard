@@ -40,7 +40,7 @@ class RecordWriter(object):
         self._tf_names = set()
         self.path = path
         self._writer = None
-        self._writer = open(path)
+        self._writer = open(path, 'wb')
 
     def write(self, event_str):
         w = self._writer.write
