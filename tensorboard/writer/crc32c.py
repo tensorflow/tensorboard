@@ -16,7 +16,7 @@
 import array
 
 
-CRC_TABLE = (
+_CRC_TABLE = (
     0x00000000, 0xf26b8303, 0xe13b70f7, 0x1350f3f4,
     0xc79a971f, 0x35f1141c, 0x26a1e7e8, 0xd4ca64eb,
     0x8ad958cf, 0x78b2dbcc, 0x6be22838, 0x9989ab3b,
@@ -84,7 +84,7 @@ CRC_TABLE = (
 )
 
 
-CRC_INIT = 0
+_CRC_INIT = 0
 
 _MASK = 0xFFFFFFFF
 
@@ -108,7 +108,7 @@ def crc_update(crc, data):
     crc ^= _MASK
     for b in buf:
         table_index = (crc ^ b) & 0xff
-        crc = (CRC_TABLE[table_index] ^ (crc >> 8)) & _MASK
+        crc = (_CRC_TABLE[table_index] ^ (crc >> 8)) & _MASK
     return crc ^ _MASK
 
 
@@ -135,4 +135,4 @@ def crc32c(data):
     Returns:
       32-bit CRC-32C checksum of data as long.
     """
-    return crc_finalize(crc_update(CRC_INIT, data))
+    return crc_finalize(crc_update(_CRC_INIT, data))
