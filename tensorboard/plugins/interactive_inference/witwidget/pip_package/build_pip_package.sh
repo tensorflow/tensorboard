@@ -91,7 +91,9 @@ unset PYTHON_HOME
 # # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
 pip install -qU wheel 'setuptools>=36.2.0'
 
-python setup.py bdist_wheel --python-tag py3 >/dev/null
-python setup.py bdist_wheel --python-tag py2 >/dev/null
+python setup.py bdist_wheel --python-tag py3 --project_name witwidget >/dev/null
+python setup.py bdist_wheel --python-tag py2 --project_name witwidget >/dev/null
+python setup.py bdist_wheel --python-tag py3 --project_name witwidget-gpu >/dev/null
+python setup.py bdist_wheel --python-tag py2 --project_name witwidget-gpu >/dev/null
 
 ls -hal "$PWD/dist"

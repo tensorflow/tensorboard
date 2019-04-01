@@ -18,15 +18,34 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 from setuptools import find_packages, setup
 
+project_name = 'witwidget'
+# Set when building the pip package
+if '--project_name' in sys.argv:
+  project_name_idx = sys.argv.index('--project_name')
+  project_name = sys.argv[project_name_idx + 1]
+  sys.argv.remove('--project_name')
+  sys.argv.pop(project_name_idx)
+
+_TF_REQ = [
+    'tensorflow>=1.12.0',
+    'tensorflow-serving-api>=1.12.0'
+]
+
+# GPU build (note: the only difference is we depend on tensorflow-gpu and
+# tensorflow-serving-api-gpu so pip doesn't overwrite them with the CPU builds)
+if 'witwidget-gpu' in project_name:
+  _TF_REQ = [
+      'tensorflow-gpu>=1.12.0',
+      'tensorflow-serving-api-gpu>=1.12.0'
+  ]
 
 REQUIRED_PACKAGES = [
     'ipywidgets>=7.0.0',
     'jupyter>=1.0,<2',
-    'tensorflow>=1.12.0',
-    'tensorflow-serving-api>=1.12.0'
-]
+] + _TF_REQ
 
 def get_readme():
   with open('README.rst') as f:
@@ -39,7 +58,7 @@ def get_version():
   return version_ns['VERSION'].replace('-', '')
 
 setup(
-  name='witwidget',
+  name=project_name,
   version=get_version(),
   description='What-If Tool jupyter widget',
   long_description=get_readme(),
