@@ -207,6 +207,7 @@ Polymer({
     this.$$('tf-graph-scene').panToNode(nodeName);
   },
   _buildNewRenderHierarchy(graphHierarchy) {
+    if (!graphHierarchy) return;
     this._buildRenderHierarchy(graphHierarchy);
   },
   _statsChanged: function(stats, devicesForStats) {

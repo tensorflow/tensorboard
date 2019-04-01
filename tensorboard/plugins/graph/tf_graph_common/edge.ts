@@ -78,7 +78,8 @@ export function getEdgeKey(edgeObj: EdgeData) {
  */
 export function buildGroup(sceneGroup,
     graph: graphlib.Graph<render.RenderNodeInfo, render.RenderMetaedgeInfo>,
-    sceneElement) {
+    sceneElement: HTMLElement) {
+  const sceneComponent = (sceneElement as any);
   let edges: EdgeData[] = [];
   edges = _.reduce(graph.edges(), (edges, edgeObj) => {
     let edgeLabel = graph.edge(edgeObj);
@@ -106,9 +107,9 @@ export function buildGroup(sceneGroup,
         let edgeGroup = d3.select(this);
         d.label.edgeGroup = edgeGroup;
         // index node group for quick highlighting
-        sceneElement._edgeGroupIndex[getEdgeKey(d)] = edgeGroup;
+        sceneComponent._edgeGroupIndex[getEdgeKey(d)] = edgeGroup;
 
-        if (sceneElement.handleEdgeSelected) {
+        if (sceneComponent.handleEdgeSelected) {
           // The user or some higher-level component has opted to make edges selectable.
           edgeGroup
               .on('click',
@@ -116,7 +117,7 @@ export function buildGroup(sceneGroup,
                     // Stop this event's propagation so that it isn't also considered
                     // a graph-select.
                     (<Event>d3.event).stopPropagation();
-                    sceneElement.fire('edge-select', {
+                    sceneComponent.fire('edge-select', {
                       edgeData: d,
                       edgeGroup: edgeGroup
                     });
@@ -125,17 +126,19 @@ export function buildGroup(sceneGroup,
 
         // Add line during enter because we're assuming that type of line
         // normally does not change.
-        appendEdge(edgeGroup, d, sceneElement);
+        appendEdge(edgeGroup, d, sceneComponent);
       })
       .merge(edgeGroups)
-      .each(position)
+      .each(function() {
+        position(sceneElement, this);
+      })
       .each(function(d) {
-    stylize(d3.select(this), d, sceneElement);
-  });
+        stylize(d3.select(this), d, sceneComponent);
+      });
 
   edgeGroups.exit()
     .each(d => {
-      delete sceneElement._edgeGroupIndex[getEdgeKey(d)];
+      delete sceneComponent._edgeGroupIndex[getEdgeKey(d)];
     })
     .remove();
   return edgeGroups;
@@ -291,7 +294,7 @@ export function appendEdge(edgeGroup, d: EdgeData,
   // Give the path a unique id, which will be used to link
   // the textPath (edge label) to this path.
   let pathId = 'path_' + getEdgeKey(d);
-  
+
   let strokeWidth;
   if (sceneElement.renderHierarchy.edgeWidthFunction) {
     // Compute edge thickness based on the user-specified method.
@@ -360,20 +363,26 @@ export let interpolate: d3.Line<{x: number, y: number}> = d3.line<{x: number, y:
 /**
  * Returns a tween interpolator for the endpoint of an edge path.
  */
-function getEdgePathInterpolator(d: EdgeData, i: number, a: string) {
+function getEdgePathInterpolator(component: HTMLElement, d: EdgeData,
+    i: number, a: SVGPathElement[]) {
   let renderMetaedgeInfo = <render.RenderMetaedgeInfo> d.label;
   let adjoiningMetaedge = renderMetaedgeInfo.adjoiningMetaedge;
   let points = renderMetaedgeInfo.points;
 
   // Adjust the path so that start/end markers point to the end
   // of the path.
+  const {shadowRoot} = component;
   if (d.label.startMarkerId) {
     points = adjustPathPointsForMarker(
-        points, d3.select('#' + d.label.startMarkerId), true);
+        points,
+        d3.select(shadowRoot.querySelector('#' + d.label.startMarkerId)),
+        true);
   }
   if (d.label.endMarkerId) {
     points = adjustPathPointsForMarker(
-        points, d3.select('#' + d.label.endMarkerId), false);
+        points,
+        d3.select(shadowRoot.querySelector('#' + d.label.endMarkerId)),
+        false);
   }
 
   if (!adjoiningMetaedge) {
@@ -408,11 +417,13 @@ function getEdgePathInterpolator(d: EdgeData, i: number, a: string) {
   };
 }
 
-function position(d) {
-  d3.select(this)
+function position(component: HTMLElement, edgeGroup) {
+  d3.select(edgeGroup)
       .select('path.' + Class.Edge.LINE)
       .transition()
-      .attrTween('d', getEdgePathInterpolator as any);
+      .attrTween('d', (d: EdgeData, i: number, a: SVGPathElement[]) => {
+        return getEdgePathInterpolator(component, d, i, a);
+      });
 };
 
 /**

@@ -74,10 +74,10 @@ export class Minimap {
     this.zoomG = zoomG;
     this.mainZoom = mainZoom;
     this.maxWandH = maxWandH;
-    let $minimap = d3.select(minimap);
+    let $shadowRoot = d3.select(minimap.shadowRoot);
     // The minimap will have 2 main components: the canvas showing the content
     // and an svg showing a rectangle of the currently zoomed/panned viewpoint.
-    let $minimapSvg = $minimap.select('svg');
+    let $minimapSvg = $shadowRoot.select('svg');
 
     // Make the viewpoint rectangle draggable.
     let $viewpoint = $minimapSvg.select('rect');
@@ -107,11 +107,11 @@ export class Minimap {
     this.viewpoint = <SVGRectElement>$viewpoint.node();
     this.minimapSvg = <SVGSVGElement>$minimapSvg.node();
     this.minimap = minimap;
-    this.canvas = <HTMLCanvasElement>$minimap.select('canvas.first').node();
+    this.canvas = <HTMLCanvasElement>$shadowRoot.select('canvas.first').node();
     this.canvasBuffer =
-        <HTMLCanvasElement>$minimap.select('canvas.second').node();
+        <HTMLCanvasElement>$shadowRoot.select('canvas.second').node();
     this.downloadCanvas =
-        <HTMLCanvasElement>$minimap.select('canvas.download').node();
+        <HTMLCanvasElement>$shadowRoot.select('canvas.download').node();
     d3.select(this.downloadCanvas).style('display', 'none');
     this.update();
   }
@@ -180,10 +180,18 @@ export class Minimap {
     // The svg needs to be self contained, i.e. all the style rules need to be
     // embedded so the canvas output matches the origin.
     let stylesText = '';
-    for (let k = 0; k < document.styleSheets.length; k++) {
+    const anySvg = (this.svg as any);
+    // MSEdge does not have `getRootNode`. In that case, manually traverse up
+    // looking for the shadow-root. This is more brittle than the getRootNode
+    // alternative.
+    const rootNode = anySvg.getRootNode ?
+        anySvg.getRootNode() :
+        this.svg.parentNode;
+    const styleSheets = rootNode.styleSheets;
+    for (let k = 0; k < styleSheets.length; k++) {
       try {
-        let cssRules = (<any>document.styleSheets[k]).cssRules ||
-          (<any>document.styleSheets[k]).rules;
+        let cssRules = (<any>styleSheets[k]).cssRules ||
+          (<any>styleSheets[k]).rules;
         if (cssRules == null) {
           continue;
         }
@@ -259,6 +267,8 @@ export class Minimap {
       requestAnimationFrame(() => this.zoom());
     }
 
+    // TODO(stephanwlee): Consider not mutating the original DOM then read it --
+    // this may cause reflow.
     // Serialize the main svg to a string which will be used as the rendering
     // content for the canvas.
     let svgXml = (new XMLSerializer()).serializeToString(this.svg);
