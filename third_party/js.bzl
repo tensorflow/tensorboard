@@ -211,13 +211,9 @@ def tensorboard_js_workspace():
       # no @license header
       licenses = ["notice"],  # Apache License 2.0
       sha256_urls = {
-          "f605f4ebf68715bd298d90152d7014ccf40126b4692cedb6cb96329eb6a11dd6": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.2/lib/umap-js.min.js",
-              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.min.js",
-          ],
-          "f8becda889561f0043bef763a06f258969e83de0e837231cb44a998ca247acf7": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts",
-              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts",
+          "85a2ff924f1bf4757976aca22fd0efb045d9b3854f5a4ae838c64e4d11e75005": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.4/lib/umap-js.min.js",
+              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.4/lib/umap-js.min.js",
           ],
       },
   )
