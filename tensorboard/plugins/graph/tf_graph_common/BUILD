@@ -27,6 +27,7 @@ tf_web_library(
         "scene.ts",
         "template.ts",
         "tf-graph-common.html",
+        "tf-graph-icon.html",
         "util.ts",
     ],
     path = "/tf-graph-common",
@@ -36,6 +37,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:graphlib",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_dashboard_common",
     ],
 )
 
@@ -44,6 +46,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_common"],
     destdir = "tf-graph-common",
     deps = [
+        "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/components/tf_imports_google:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
