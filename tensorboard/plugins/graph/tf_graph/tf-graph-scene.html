@@ -29,18 +29,20 @@ limitations under the License.
 <style>
 :host {
   display: flex;
-  width: 100%;
   font-size: 20px;
-}
-
-::content #svg {
-  overflow: hidden;
-  flex: 1;
   height: 100%;
   width: 100%;
 }
 
-::content #hidden {
+#svg {
+  flex: 1;
+  font-family: Roboto, sans-serif;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+#hidden {
   position: fixed;
   top: 0px;
   visibility: hidden;
@@ -48,137 +50,137 @@ limitations under the License.
 
 /* --- Node and annotation-node for Metanode --- */
 
-::content .meta > .nodeshape > rect,
-::content .meta > .annotation-node > rect {
+.meta > .nodeshape > rect,
+.meta > .annotation-node > rect {
   cursor: pointer;
   fill: hsl(0, 0%, 70%);
 }
-::content .node.meta.highlighted > .nodeshape > rect,
-::content .node.meta.highlighted > .annotation-node > rect {
+.node.meta.highlighted > .nodeshape > rect,
+.node.meta.highlighted > .annotation-node > rect {
   stroke-width: 2;
 }
-::content .annotation.meta.highlighted > .nodeshape > rect,
-::content .annotation.meta.highlighted > .annotation-node > rect {
+.annotation.meta.highlighted > .nodeshape > rect,
+.annotation.meta.highlighted > .annotation-node > rect {
   stroke-width: 1;
 }
-::content .meta.selected > .nodeshape > rect,
-::content .meta.selected > .annotation-node > rect {
+.meta.selected > .nodeshape > rect,
+.meta.selected > .annotation-node > rect {
   stroke: red;
   stroke-width: 2;
 }
-::content .node.meta.selected.expanded > .nodeshape > rect,
-::content .node.meta.selected.expanded > .annotation-node > rect {
+.node.meta.selected.expanded > .nodeshape > rect,
+.node.meta.selected.expanded > .annotation-node > rect {
   stroke: red;
   stroke-width: 3;
 }
-::content .annotation.meta.selected > .nodeshape > rect,
-::content .annotation.meta.selected > .annotation-node > rect {
+.annotation.meta.selected > .nodeshape > rect,
+.annotation.meta.selected > .annotation-node > rect {
   stroke: red;
   stroke-width: 2;
 }
-::content .node.meta.selected.expanded.highlighted > .nodeshape > rect,
-::content .node.meta.selected.expanded.highlighted > .annotation-node > rect {
+.node.meta.selected.expanded.highlighted > .nodeshape > rect,
+.node.meta.selected.expanded.highlighted > .annotation-node > rect {
   stroke: red;
   stroke-width: 4;
 }
 
-::content .faded,
-::content .faded rect,
-::content .faded ellipse,
-::content .faded path,
-::content .faded use,
-::content #rectHatch line,
-::content #ellipseHatch line {
+.faded,
+.faded rect,
+.faded ellipse,
+.faded path,
+.faded use,
+#rectHatch line,
+#ellipseHatch line {
   color: #e0d4b3 !important;
   fill: white;
   stroke: #e0d4b3 !important;
 }
 
-::content .faded path {
+.faded path {
   stroke-width: 1px !important;
 }
 
-::content .faded rect {
+.faded rect {
   fill: url(#rectHatch) !important;
 }
 
-::content .faded ellipse,
-::content .faded use {
+.faded ellipse,
+.faded use {
   fill: url(#ellipseHatch) !important;
 }
 
-::content .faded text {
+.faded text {
   opacity: 0;
 }
 
 /* Rules used for input-tracing. */
-::content .input-highlight > * > rect,
-::content .input-highlight > * > ellipse,
-::content .input-highlight > * > use
+.input-highlight > * > rect,
+.input-highlight > * > ellipse,
+.input-highlight > * > use
 {
   fill: white;
   stroke: #ff9800 !important;
 }
 
 /*  - Faded non-input styling */
-::content .non-input > * > rect,
-::content .non-input > * > ellipse,
-::content .non-input > * > use,
+.non-input > * > rect,
+.non-input > * > ellipse,
+.non-input > * > use,
 /* For Const nodes. */
-::content .non-input > * > .constant:not([class*="input-highlight"]) >
+.non-input > * > .constant:not([class*="input-highlight"]) >
   .annotation-node > ellipse,
 /* For styling of annotation nodes of non-input nodes. */
-::content .non-input > g > .annotation > .annotation-node > rect {
+.non-input > g > .annotation > .annotation-node > rect {
   stroke: #e0d4b3 !important;
   stroke-width: inherit;
   stroke-dasharray: inherit;
 }
 
 
-::content .non-input path {
+.non-input path {
   visibility: hidden;
 }
 
-::content .non-input > .nodeshape > rect,
-::content .non-input > .annotation-node > rect,
+.non-input > .nodeshape > rect,
+.non-input > .annotation-node > rect,
 /* For styling of annotation nodes of non-input nodes. */
-::content .non-input > g > .annotation > .annotation-node > rect
+.non-input > g > .annotation > .annotation-node > rect
 {
   fill: url(#rectHatch) !important;
 }
 
-::content .non-input ellipse,
-::content .non-input use {
+.non-input ellipse,
+.non-input use {
   fill: url(#ellipseHatch) !important;
 }
 
-::content .non-input > text {
+.non-input > text {
   opacity: 0;
 }
 
-::content .non-input .annotation > .annotation-edge {
+.non-input .annotation > .annotation-edge {
   marker-end: url(#annotation-arrowhead-faded);
 }
 
-::content .non-input .annotation > .annotation-edge.refline {
+.non-input .annotation > .annotation-edge.refline {
   marker-start: url(#ref-annotation-arrowhead-faded);
 }
 
 /* Input edges. */
-::content .input-edge-highlight > text {
+.input-edge-highlight > text {
   fill: black !important;
 }
-::content .input-highlight > .in-annotations > .annotation > .annotation-edge,
-::content .input-highlight-selected > .in-annotations > .annotation >
+.input-highlight > .in-annotations > .annotation > .annotation-edge,
+.input-highlight-selected > .in-annotations > .annotation >
 .annotation-edge {
   stroke: #999 !important;
 }
 
 /* Non-input edges. */
-::content .non-input-edge-highlight,
-::content .non-input > g > .annotation > path,
+.non-input-edge-highlight,
+.non-input > g > .annotation > path,
 /* Annotation styles (label and edges respectively). */
-::content .non-input > g >
+.non-input > g >
 .annotation:not(.input-highlight):not(.input-highlight-selected) >
 .annotation-label
 /*.annotation-edge*/
@@ -188,28 +190,28 @@ limitations under the License.
 
 /* --- Op Node --- */
 
-::content .op > .nodeshape > .nodecolortarget,
-::content .op > .annotation-node > .nodecolortarget {
+.op > .nodeshape > .nodecolortarget,
+.op > .annotation-node > .nodecolortarget {
   cursor: pointer;
   fill: #fff;
   stroke: #ccc;
 }
 
-::content .op.selected > .nodeshape > .nodecolortarget,
-::content .op.selected > .annotation-node > .nodecolortarget {
+.op.selected > .nodeshape > .nodecolortarget,
+.op.selected > .annotation-node > .nodecolortarget {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .op.highlighted > .nodeshape > .nodecolortarget,
-::content .op.highlighted > .annotation-node > .nodecolortarget {
+.op.highlighted > .nodeshape > .nodecolortarget,
+.op.highlighted > .annotation-node > .nodecolortarget {
   stroke-width: 2;
 }
 
 /* --- Series Node --- */
 
 /* By default, don't show the series background <rect>. */
-::content .series > .nodeshape > rect {
+.series > .nodeshape > rect {
   fill: hsl(0, 0%, 70%);
   fill-opacity: 0;
   stroke-dasharray: 5, 5;
@@ -218,12 +220,12 @@ limitations under the License.
 }
 
 /* Once expanded, show the series background <rect> and hide the <use>. */
-::content .series.expanded > .nodeshape > rect {
+.series.expanded > .nodeshape > rect {
   fill-opacity: 0.15;
   stroke: hsl(0, 0%, 70%);
   stroke-opacity: 1;
 }
-::content .series.expanded > .nodeshape > use {
+.series.expanded > .nodeshape > use {
   visibility: hidden;
 }
 
@@ -231,46 +233,46 @@ limitations under the License.
  * TODO: Simplify this by applying a stable class name to all <g>
  * elements that currently have either the nodeshape or annotation-node classes.
  */
-::content .series > .nodeshape > use ,
-::content .series > .annotation-node > use {
+.series > .nodeshape > use ,
+.series > .annotation-node > use {
   stroke: #ccc;
 }
-::content .series.highlighted > .nodeshape > use ,
-::content .series.highlighted > .annotation-node > use {
+.series.highlighted > .nodeshape > use ,
+.series.highlighted > .annotation-node > use {
   stroke-width: 2;
 }
-::content .series.selected > .nodeshape > use ,
-::content .series.selected > .annotation-node > use {
+.series.selected > .nodeshape > use ,
+.series.selected > .annotation-node > use {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .series.selected > .nodeshape > rect {
+.series.selected > .nodeshape > rect {
   stroke: red;
   stroke-width: 2;
 }
 
-::content .annotation.series.selected > .annotation-node > use {
+.annotation.series.selected > .annotation-node > use {
   stroke: red;
   stroke-width: 2;
 }
 
 /* --- Bridge Node --- */
-::content .bridge > .nodeshape > rect {
+.bridge > .nodeshape > rect {
   stroke: #f0f;
   opacity: 0.2;
   display: none;
 }
 
 /* --- Structural Elements --- */
-::content .edge > path.edgeline.structural {
+.edge > path.edgeline.structural {
   stroke: #f0f;
   opacity: 0.2;
   display: none;
 }
 
 /* Reference Edge */
-::content .edge > path.edgeline.referenceedge {
+.edge > path.edgeline.referenceedge {
   stroke: #FFB74D;
   opacity: 1;
 }
@@ -278,43 +280,43 @@ limitations under the License.
 /* --- Series Nodes --- */
 
 /* Hide the rect for a series' annotation. */
-::content .series > .annotation-node > rect {
+.series > .annotation-node > rect {
   display: none;
 }
 
 /* --- Node label --- */
 
 
-::content .node > text.nodelabel {
+.node > text.nodelabel {
   cursor: pointer;
   fill: #444;
 }
 
-::content .meta.expanded > text.nodelabel {
+.meta.expanded > text.nodelabel {
   font-size: 9px;
 }
 
-::content .series > text.nodelabel {
+.series > text.nodelabel {
   font-size: 8px;
 }
 
-::content .op > text.nodelabel {
+.op > text.nodelabel {
   font-size: 6px;
 }
 
-::content .bridge > text.nodelabel {
+.bridge > text.nodelabel {
   display: none;
 }
 
-::content .node.meta.expanded > text.nodelabel{
+.node.meta.expanded > text.nodelabel{
   cursor: normal;
 }
 
-::content .annotation.meta.highlighted > text.annotation-label {
+.annotation.meta.highlighted > text.annotation-label {
   fill: #50A3F7;
 }
 
-::content .annotation.meta.selected > text.annotation-label {
+.annotation.meta.selected > text.annotation-label {
   fill: #4285F4;
 }
 
@@ -322,145 +324,145 @@ limitations under the License.
 
 /* only applied for annotations that are not summary or constant.
 (.summary, .constant gets overridden below) */
-::content .annotation > .annotation-node > * {
+.annotation > .annotation-node > * {
   stroke-width: 0.5;
   stroke-dasharray: 1, 1;
 }
 
-::content .annotation.summary > .annotation-node > *,
-::content .annotation.constant > .annotation-node > * {
+.annotation.summary > .annotation-node > *,
+.annotation.constant > .annotation-node > * {
   stroke-width: 1;
   stroke-dasharray: none;
 }
 
-::content .annotation > .annotation-edge {
+.annotation > .annotation-edge {
   fill: none;
   stroke: #aaa;
   stroke-width: 0.5;
   marker-end: url(#annotation-arrowhead);
 }
 
-::content .faded .annotation > .annotation-edge {
+.faded .annotation > .annotation-edge {
   marker-end: url(#annotation-arrowhead-faded);
 }
 
-::content .annotation > .annotation-edge.refline {
+.annotation > .annotation-edge.refline {
   marker-start: url(#ref-annotation-arrowhead);
 }
 
-::content .faded .annotation > .annotation-edge.refline {
+.faded .annotation > .annotation-edge.refline {
   marker-start: url(#ref-annotation-arrowhead-faded);
 }
 
-::content .annotation > .annotation-control-edge {
+.annotation > .annotation-control-edge {
   stroke-dasharray: 1, 1;
 }
 
-::content #annotation-arrowhead {
+#annotation-arrowhead {
   fill: #aaa;
 }
 
-::content #annotation-arrowhead-faded {
+#annotation-arrowhead-faded {
   fill: #e0d4b3;
 }
 
-::content #ref-annotation-arrowhead {
+#ref-annotation-arrowhead {
   fill: #aaa;
 }
 
-::content #ref-annotation-arrowhead-faded {
+#ref-annotation-arrowhead-faded {
   fill: #e0d4b3;
 }
 
-::content .annotation > .annotation-label {
+.annotation > .annotation-label {
   font-size: 5px;
   cursor: pointer;
 }
-::content .annotation > .annotation-label.annotation-ellipsis {
+.annotation > .annotation-label.annotation-ellipsis {
   cursor: default;
 }
 
 /* Hide annotations on expanded meta nodes since they're redundant. */
-::content .expanded > .in-annotations,
-::content .expanded > .out-annotations {
+.expanded > .in-annotations,
+.expanded > .out-annotations {
   display: none;
 }
 
 /* --- Annotation: Constant --- */
 
-::content .constant > .annotation-node > ellipse {
+.constant > .annotation-node > ellipse {
   cursor: pointer;
   fill: white;
   stroke: #848484;
 }
 
-::content .constant.selected > .annotation-node > ellipse {
+.constant.selected > .annotation-node > ellipse {
   fill: white;
   stroke: red;
 }
 
-::content .constant.highlighted > .annotation-node > ellipse {
+.constant.highlighted > .annotation-node > ellipse {
   stroke-width: 1.5;
 }
 
 /* --- Annotation: Summary --- */
 
-::content .summary > .annotation-node > ellipse {
+.summary > .annotation-node > ellipse {
   cursor: pointer;
   fill: #DB4437;
   stroke: #DB4437;
 }
 
-::content .summary.selected > .annotation-node > ellipse {
+.summary.selected > .annotation-node > ellipse {
   fill: #A52714;
   stroke: #A52714;
 }
 
-::content .summary.highlighted > .annotation-node > ellipse {
+.summary.highlighted > .annotation-node > ellipse {
   stroke-width: 1.5;
 }
 
 /* --- Edge --- */
 
-::content .edge > path.edgeline {
+.edge > path.edgeline {
   fill: none;
   stroke: #bbb;
   stroke-linecap: round;
   stroke-width: 0.75;
 }
 
-::content .edge .selectableedge {
+.edge .selectableedge {
   cursor: pointer;
 }
 
-::content .selectededge > path.edgeline {
+.selectededge > path.edgeline {
   cursor: default;
   stroke: #f00;
 }
 
-::content .edge.selectededge text {
+.edge.selectededge text {
   fill: #000;
 }
 
 /* Labels showing tensor shapes on edges */
-::content .edge > text {
+.edge > text {
   font-size: 3.5px;
   fill: #666;
 }
 
-::content .dataflow-arrowhead {
+.dataflow-arrowhead {
   fill: #bbb;
 }
 
-::content .reference-arrowhead {
+.reference-arrowhead {
   fill: #FFB74D;
 }
 
-::content .selected-arrowhead {
+.selected-arrowhead {
   fill: #f00;
 }
 
-::content .edge .control-dep {
+.edge .control-dep {
   stroke-dasharray: 2, 2;
 }
 
@@ -469,42 +471,42 @@ limitations under the License.
 /* Hides expand/collapse buttons when a node isn't expanded or highlighted. Using
    incredibly small opacity so that the bounding box of the <g> parent still takes
    this container into account even when it isn't visible */
-::content .node:not(.highlighted):not(.expanded) > .nodeshape > .buttoncontainer {
+.node:not(.highlighted):not(.expanded) > .nodeshape > .buttoncontainer {
   opacity: 0.01;
 }
-::content .node.highlighted > .nodeshape > .buttoncontainer {
+.node.highlighted > .nodeshape > .buttoncontainer {
   cursor: pointer;
 }
-::content .buttoncircle {
+.buttoncircle {
   fill: #E7811D;
 }
-::content .buttoncircle:hover {
+.buttoncircle:hover {
   fill: #B96717;
 }
-::content .expandbutton,
-::content .collapsebutton {
+.expandbutton,
+.collapsebutton {
   stroke: white;
 }
 /* Do not let the path elements in the button take pointer focus */
-::content .node > .nodeshape > .buttoncontainer > .expandbutton,
-::content .node > .nodeshape > .buttoncontainer > .collapsebutton {
+.node > .nodeshape > .buttoncontainer > .expandbutton,
+.node > .nodeshape > .buttoncontainer > .collapsebutton {
   pointer-events: none;
 }
 /* Only show the expand button when a node is collapsed and only show the
    collapse button when a node is expanded. */
-::content .node.expanded > .nodeshape > .buttoncontainer > .expandbutton {
+.node.expanded > .nodeshape > .buttoncontainer > .expandbutton {
   display: none;
 }
-::content .node:not(.expanded) > .nodeshape > .buttoncontainer > .collapsebutton {
+.node:not(.expanded) > .nodeshape > .buttoncontainer > .collapsebutton {
   display: none;
 }
 
-::content .health-pill-stats {
+.health-pill-stats {
   font-size: 4px;
   text-anchor: middle;
 }
 
-::content .health-pill rect {
+.health-pill rect {
   filter: url(#health-pill-shadow);
   rx: 3;
   ry: 3;
@@ -922,12 +924,11 @@ Polymer({
     setTimeout(this.fit.bind(this), tf.graph.layout.PARAMS.animation.duration);
   },
   _updateLabels: function(showLabels) {
-    var mainGraphTitleElement = this.getElementsByClassName('title')[0];
+    var mainGraphTitleElement = this.$$('.title');
     var titleStyle = mainGraphTitleElement.style;
-    var auxTitleElement = this.getElementsByClassName('auxTitle')[0];
+    var auxTitleElement = this.$$('.auxTitle');
     var auxTitleStyle = auxTitleElement.style;
-    var functionLibraryTitleStyle =
-        this.getElementsByClassName('functionLibraryTitle')[0].style;
+    var functionLibraryTitleStyle = this.$$('.functionLibraryTitle').style;
     var core = d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
       tf.graph.scene.Class.Scene.CORE).node();
     // Only show labels if the graph is fully loaded.

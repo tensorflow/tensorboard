@@ -171,7 +171,14 @@ Polymer({
     /**
      * @type {!Array<!RunItem>}
      */
-    _datasets: Array,
+    _datasets: {
+      type: Array,
+      value: () => [],
+    },
+    _selectedDataset: {
+      type: Number,
+      value: 0,
+    },
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
       type: Object,
