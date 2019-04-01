@@ -27,6 +27,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
+<link rel="import" href="../tf-graph-common/tf-graph-icon.html">
 <link rel="import" href="../tf-graph-node-search/tf-graph-node-search.html">
 
 <dom-module id="tf-graph-controls">
@@ -111,26 +112,10 @@ paper-radio-button {
   display: block;
   padding: 5px;
 }
-svg.icon {
+svg.icon,
+tf-graph-icon {
   width: 60px;
   height: 18px;
-}
-.icon ellipse {
-  rx: 10px;
-  ry: 5px;
-  stroke: #CCC;
-  stroke-width: 1px;
-  fill: #FFFFFF;
-  cy: 10px;
-}
-.icon rect {
-  height: 14px;
-  width: 35px;
-  rx: 5px;
-  ry: 5px;
-  stroke: #CCC;
-  stroke-width: 2px;
-  fill: #D9D9D9;
 }
 .domainValues {
   margin-bottom: 10px;
@@ -179,34 +164,18 @@ svg.icon {
 }
 
 .color-legend-row {
+  align-items: center;
   clear: both;
+  display: flex;
   height: 20px;
   margin-top: 5px;
-  position: relative;
 }
 
-.color-legend-row svg {
-  position: absolute;
-  top: -1px;
-  width: 40px;
-}
-
-.color-legend-row span.color-legend-value {
-  margin-left: 60px;
-}
-
-#grey-rect {
-  fill: #eee;
-  stroke: #a6a6a6;
-}
-
-#faded-rect {
-  fill: url(#rectHatch);
-  stroke: var(--tb-graph-faded);
-}
-
-#unfilled-rect {
-  stroke: #a6a6a6;
+.color-legend-row .label,
+.color-legend-row svg,
+.color-legend-row tf-graph-icon {
+  flex: 0 0 40px;
+  margin-right: 20px;
 }
 
 .devices-checkbox input {
@@ -309,25 +278,7 @@ paper-dropdown-menu {
   flex-grow: 1;
 }
 </style>
-<svg width="0" height="0">
-  <defs>
-    <g id="legend-rect">
-      <rect x="1" y="1" stroke-width="2px" height="14" width="35" rx="5" ry="5"></rect>
-    </g>
-    <g id="grey-rect">
-       <use xmlns:xlink="http://www.w3.org/1999/xlink"
-            xlink:href="#legend-rect"/>
-     </g>
-     <g id="faded-rect">
-       <use xmlns:xlink="http://www.w3.org/1999/xlink"
-            xlink:href="#legend-rect"/>
-     </g>
-     <g id="unfilled-rect">
-       <use xmlns:xlink="http://www.w3.org/1999/xlink"
-            xlink:href="#legend-rect"/>
-     </g>
-  </defs>
-</svg>
+
 <div class="allcontrols">
   <div class="control-holder">
     <tf-graph-node-search
@@ -497,16 +448,18 @@ paper-dropdown-menu {
     <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
       <div class="color-text">
         <div class="color-legend-row">
-          <div style="position: absolute;">
+          <span class="label">
             colors
-          </div>
+          </span>
           <span class="color-legend-value">same substructure</span>
         </div>
         <div class="color-legend-row">
-          <svg>
-            <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="#grey-rect" x="0" y="0"/>
-          </svg>
+         <tf-graph-icon
+            type="META"
+            height="16"
+            fill-override="#eee"
+            stroke-override="#a6a6a6"
+          ></tf-graph-icon>
           <span class="color-legend-value">unique substructure</span>
         </div>
       </div>
@@ -515,18 +468,22 @@ paper-dropdown-menu {
       <div>
         <template is="dom-repeat" items="[[_currentDeviceParams]]">
           <div class="color-legend-row">
-            <svg>
-              <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                   xlink:href="#unfilled-rect" x="0" y="0" style="fill:[[item.color]]"/>
-            </svg>
+            <tf-graph-icon
+              type="META"
+              height="16"
+              fill-override="[[item.color]]"
+              stroke-override="#a6a6a6"
+            ></tf-graph-icon>
             <span class="color-legend-value">[[item.device]]</span>
           </div>
         </template>
         <div class="color-legend-row">
-          <svg>
-            <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="#grey-rect" x="0" y="0"/>
-          </svg>
+          <tf-graph-icon
+            type="META"
+            height="16"
+            fill-override="#eee"
+            stroke-override="#a6a6a6"
+          ></tf-graph-icon>
           <span class="color-legend-value">unknown device</span>
         </div>
       </div>
@@ -554,29 +511,28 @@ paper-dropdown-menu {
     <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
       <div class="color-text">
         <div class="color-legend-row">
-          <svg class="icon" preserveAspectRatio="xMinYMid meet"
-               viewBox="0 0 10 10">
-            <use xlink:href="#op-node-stamp" fill="#0f9d58" stroke="#ccc" x="9.5"
-                 y="6" />
-          </svg>
+          <tf-graph-icon
+            type="OP"
+            height="16"
+            fill-override="#0f9d58"
+            stroke-override="#ccc"
+          ></tf-graph-icon>
           <span class="color-legend-value">Valid Op</span>
         </div>
         <div class="color-legend-row">
-          <svg class="icon" preserveAspectRatio="xMinYMid meet"
-               viewBox="0 0 10 10">
-            <use xlink:href="#op-node-stamp" fill="#db4437" stroke="#ccc" x="9.5"
-                 y="6" />
-          </svg>
+          <tf-graph-icon
+            type="OP"
+            height="16"
+            fill-override="#db4437"
+            stroke-override="#ccc"
+          ></tf-graph-icon>
           <span class="color-legend-value">Invalid Op</span>
         </div>
       </div>
     </template>
     <template is="dom-if" if="[[_statsNotNull(stats)]]">
       <div class="color-legend-row">
-        <svg>
-          <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                xlink:href="#faded-rect" x="0" y="0"/>
-        </svg>
+        <tf-graph-icon type="META" height="16" faded></tf-graph-icon>
         <span class="color-legend-value">unused substructure</span>
       </div>
     </template>
@@ -600,10 +556,12 @@ paper-dropdown-menu {
         </tr>
         <tr>
           <td>
-            <svg class="icon">
-              <rect transform="translate(3, 1)" height="14" width="35"
-                  rx="5" ry="5"/>
-            </svg>
+            <tf-graph-icon
+              type="META"
+              height="16"
+              fill-override="#d9d9d9"
+              stroke-override="#ccc"
+            ></tf-graph-icon>
           </td>
           <td>
             Namespace<span class="gray">*</span>
@@ -617,11 +575,7 @@ paper-dropdown-menu {
         </tr>
         <tr>
           <td>
-            <svg class="icon" preserveAspectRatio="xMinYMid meet"
-                viewBox="0 0 10 10">
-              <use xlink:href="#op-node-stamp" fill="white" stroke="#ccc" x="9.5"
-                y="6" />
-            </svg>
+            <tf-graph-icon type="OP" height="16"></tf-graph-icon>
           </td>
           <td>
             OpNode
@@ -635,11 +589,7 @@ paper-dropdown-menu {
         </tr>
         <tr>
           <td>
-            <svg class="icon" height="15px" preserveAspectRatio="xMinYMid meet"
-                viewBox="0 0 12 12">
-              <use xlink:href="#op-series-horizontal-stamp" fill="white"
-                  stroke="#ccc" x="2" y="2"/>
-            </svg>
+            <tf-graph-icon type="SERIES" height="16"></tf-graph-icon>
           </td>
           <td>
             Unconnected series<span class="gray">*</span>
@@ -653,11 +603,7 @@ paper-dropdown-menu {
         </tr>
         <tr>
           <td>
-            <svg class="icon" height="15px"
-                preserveAspectRatio="xMinYMid meet" viewBox="0 0 15 15">
-              <use xlink:href="#op-series-vertical-stamp"
-                  fill="white" stroke="#ccc" x="2" y="2"/>
-            </svg>
+            <tf-graph-icon type="SERIES" height="16" vertical></tf-graph-icon>
           </td>
           <td>
             Connected series<span class="gray">*</span>
@@ -687,9 +633,7 @@ paper-dropdown-menu {
         </tr>
         <tr>
           <td>
-            <svg class="image-icon" viewBox="0 0 12 12" width="24" height="24">
-              <use x="0" y="0" class="image-icon" xlink:href="#summary-icon"/>
-            </svg>
+            <tf-graph-icon type="SUMMARY" height="20"></tf-graph-icon>
           </td>
           <td>
             Summary
