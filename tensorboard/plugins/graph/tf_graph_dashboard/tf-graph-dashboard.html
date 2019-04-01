@@ -65,6 +65,7 @@ by default. The user can select a different run from a dropdown menu.
 <tf-dashboard-layout>
   <tf-graph-controls
         id="controls"
+        slot="sidebar"
         class="sidebar"
         devices-for-stats="{{_devicesForStats}}"
         color-by-params="[[_colorByParams]]"
@@ -78,7 +79,7 @@ by default. The user can select a different run from a dropdown menu.
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
-  <div class="center">
+  <div slot="center" class="center">
     <tf-graph-dashboard-loader id="loader"
           datasets="[[_datasets]]"
           selection="[[_selection]]"

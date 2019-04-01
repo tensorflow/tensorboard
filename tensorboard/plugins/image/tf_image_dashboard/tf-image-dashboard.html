@@ -39,7 +39,7 @@ TensorFlow run.
 <dom-module id="tf-image-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
@@ -92,7 +92,7 @@ TensorFlow run.
           ></tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div slot="center" class="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No image data was found.</h3>

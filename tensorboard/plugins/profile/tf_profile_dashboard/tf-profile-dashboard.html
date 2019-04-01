@@ -116,7 +116,7 @@ profile run can have multiple tools that present the performance profile as diff
 </template>
 <template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
   <tf-dashboard-layout>
-  <div class="sidebar">
+  <div slot="sidebar">
     <div class="allcontrols">
       <div class="sidebar-section">
         <paper-button raised
@@ -176,7 +176,7 @@ profile run can have multiple tools that present the performance profile as diff
       </div>
     </div>
   </div>
-  <div class="center">
+  <div slot="center">
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'trace_viewer')]]" restamp="true">
       <iframe
         id="tv_iframe"

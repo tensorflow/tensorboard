@@ -37,8 +37,7 @@ limitations under the License.
 <dom-module id="tf-pr-curve-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
-        <div class="sidebar-section">
+      <div slot="sidebar">
           <tf-option-selector
             id="time-type-selector"
             name="Time Display Type"
@@ -64,7 +63,7 @@ limitations under the License.
         </div>
        </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No precision–recall curve data was found.</h3>

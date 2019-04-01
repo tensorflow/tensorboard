@@ -50,7 +50,7 @@ limitations under the License.
 <dom-module id="tf-scalar-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div slot="sidebar" class="sidebar">
+      <div slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
@@ -105,7 +105,7 @@ limitations under the License.
           </div>
         </template>
       </div>
-      <div slot="center" class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No scalar data was found.</h3>

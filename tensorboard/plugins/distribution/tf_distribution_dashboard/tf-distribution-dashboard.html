@@ -41,7 +41,7 @@ limitations under the License.
 <dom-module id="tf-distribution-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div slot="sidebar">
         <div class="sidebar-section">
           <tf-option-selector
             id="xTypeSelector"
@@ -59,7 +59,7 @@ limitations under the License.
         </div>
       </div>
 
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No distribution data was found.</h3>

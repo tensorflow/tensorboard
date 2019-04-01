@@ -35,13 +35,13 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 <dom-module id="tf-text-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div slot="sidebar">
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No text data was found.</h3>

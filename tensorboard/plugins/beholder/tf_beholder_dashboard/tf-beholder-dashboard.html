@@ -33,7 +33,7 @@ limitations under the License.
   <template>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div slot="sidebar" class="sidebar">
         <template is="dom-if" if="[[_controls_disabled]]">
           <div class="sidebar-section">
             <p class="controls-disabled-message">
@@ -174,7 +174,7 @@ limitations under the License.
         </div>
 
       </div>
-      <div class="center">
+      <div slot="center" class="center">
 
         <template is="dom-if" if="[[!_is_active]]">
           <div class="no-data-warning">

@@ -51,7 +51,7 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar" id="left-pane">
+      <div slot="sidebar" class="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Runtime Node List</div>
           <div class="toggle-source-code">
@@ -112,7 +112,7 @@ limitations under the License.
           ></tf-graph-loader>
         </div>
       </div>
-      <div class="center" id="center-content">
+      <div slot="center" class="center" id="center-content">
         <div id="top-right-quadrant">
           <paper-tabs selected="0" selected="{{_topRightSelected}}">
             <template is="dom-repeat" items="[[_topRightTabs]]">
