@@ -481,11 +481,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         new Projection('tsne', accessors, dimensionality, dataSet);
     this.projector.setProjection(projection);
 
-    if (!this.dataSet.hasTSNERun) {
-      this.runTSNE();
-    } else {
-      this.projector.notifyProjectionPositionsUpdated();
-    }
+    this.projector.notifyProjectionPositionsUpdated();
   }
 
   private runTSNE() {
@@ -533,11 +529,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         new Projection('umap', accessors, dimensionality, dataSet);
     this.projector.setProjection(projection);
 
-    if (!this.dataSet.hasUmapRun) {
-      this.runUmap();
-    } else {
-      this.projector.notifyProjectionPositionsUpdated();
-    }
+
+    this.projector.notifyProjectionPositionsUpdated();
   }
 
   private runUmap() {
