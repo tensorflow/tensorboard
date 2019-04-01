@@ -617,11 +617,6 @@ limitations under the License.
     <svg id="summary-icon" fill="#848484" height="12" viewBox="0 0 24 24" width="12">
       <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
     </svg>
-    <!--
-      Where the linearGradient for each node is stored. Used when coloring
-      by proportions of devices.
-    -->
-    <g id="linearGradients"></g>
 
     <!-- Hatch patterns for faded out nodes. -->
     <pattern id="rectHatch" patternTransform="rotate(45 0 0)" width="5" height="5" patternUnits="userSpaceOnUse">
@@ -814,6 +809,14 @@ Polymer({
       this._zoomed = true;
     }
   },
+
+  /**
+   * Returns the outer-most SVG that renders the graph.
+   */
+  getGraphSvgRoot() {
+    return this.$.svg;
+  },
+
   /**
    * Resets the state of the component. Called whenever the whole graph
    * (dataset) changes.
@@ -827,8 +830,7 @@ Polymer({
     // Remove all svg elements under the 'root' svg group.
     d3.select(this.$.svg).select('#root').selectAll('*').remove();
     // And the defs.
-    d3.select(this.$.svg).select('defs #linearGradients')
-        .selectAll('*').remove();
+    tf.graph.scene.node.removeGradientDefinitions(this.$.svg);
   },
   /** Main method for building the scene */
   _build: function(renderHierarchy) {

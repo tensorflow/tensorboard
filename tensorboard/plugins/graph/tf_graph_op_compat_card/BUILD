@@ -16,7 +16,6 @@ tf_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
-        "//tensorboard/plugins/graph/tf_graph_info:tf_graph_icon",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_list",
         "@org_polymer_paper_icon_button",

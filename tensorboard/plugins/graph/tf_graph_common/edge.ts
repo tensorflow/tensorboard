@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 module tf.graph.scene.edge {
+import TfGraphScene = tf.graph.scene.TfGraphScene;
 
 /** Delimiter between dimensions when showing sizes of tensors. */
 const TENSOR_SHAPE_DELIM = '×';
@@ -78,7 +79,7 @@ export function getEdgeKey(edgeObj: EdgeData) {
  */
 export function buildGroup(sceneGroup,
     graph: graphlib.Graph<render.RenderNodeInfo, render.RenderMetaedgeInfo>,
-    sceneElement: HTMLElement) {
+    sceneElement: TfGraphScene) {
   const sceneComponent = (sceneElement as any);
   let edges: EdgeData[] = [];
   edges = _.reduce(graph.edges(), (edges, edgeObj) => {
