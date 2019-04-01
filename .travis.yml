@@ -26,7 +26,7 @@ env:
   matrix:
     - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=tf-nightly-2.0-preview
-    - TF_VERSION_ID= # Do not install TensorFlow in this case
+    - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
   directories:
@@ -109,6 +109,10 @@ install:
     # Install TensorFlow if requested
     if [ ! -z "${TF_VERSION_ID}" ]; then
       pip install -I "${TF_VERSION_ID}"
+    else
+      # Requirements typically found through TensorFlow
+      pip install absl-py>=0.7.0
+      pip install numpy<2.0,>=1.14.5
     fi
 
 before_script:
