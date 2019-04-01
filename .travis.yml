@@ -111,8 +111,8 @@ install:
       pip install -I "${TF_VERSION_ID}"
     else
       # Requirements typically found through TensorFlow
-      pip install absl-py>=0.7.0
-      pip install numpy<2.0,>=1.14.5
+      pip install "absl-py>=0.7.0"
+      pip install "numpy<2.0,>=1.14.5"
     fi
 
 before_script:
