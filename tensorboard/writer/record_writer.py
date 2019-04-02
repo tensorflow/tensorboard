@@ -14,7 +14,7 @@
 # ==============================================================================
 
 import struct
-from .crc32c import crc32c
+from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import crc32c
 class RecordWriter(object):
     def __init__(self, logfile):
         self._writer = open(logfile, 'wb')

@@ -11,7 +11,6 @@ py_library(
     name = "writer",
     srcs = [
         "__init__.py",
-        "crc32c.py",
         "event_file_writer.py",
         "record_writer.py",
     ],
@@ -20,6 +19,7 @@ py_library(
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
         "@org_pythonhosted_six",
     ],
 )
