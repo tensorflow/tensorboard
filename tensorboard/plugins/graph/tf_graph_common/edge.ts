@@ -364,8 +364,8 @@ export let interpolate: d3.Line<{x: number, y: number}> = d3.line<{x: number, y:
 /**
  * Returns a tween interpolator for the endpoint of an edge path.
  */
-function getEdgePathInterpolator(component: HTMLElement, d: EdgeData,
-    i: number, a: SVGPathElement[]) {
+function getEdgePathInterpolator(component: HTMLElement,
+    renderPath: SVGPathElement, d: EdgeData,i: number, a: SVGPathElement[]) {
   let renderMetaedgeInfo = <render.RenderMetaedgeInfo> d.label;
   let adjoiningMetaedge = renderMetaedgeInfo.adjoiningMetaedge;
   let points = renderMetaedgeInfo.points;
@@ -389,8 +389,6 @@ function getEdgePathInterpolator(component: HTMLElement, d: EdgeData,
   if (!adjoiningMetaedge) {
     return d3.interpolate(a, interpolate(points));
   }
-
-  let renderPath = this;
 
   // Get the adjoining path that matches the adjoining metaedge.
   let adjoiningPath =
@@ -422,8 +420,9 @@ function position(component: HTMLElement, edgeGroup) {
   d3.select(edgeGroup)
       .select('path.' + Class.Edge.LINE)
       .transition()
-      .attrTween('d', (d: EdgeData, i: number, a: SVGPathElement[]) => {
-        return getEdgePathInterpolator(component, d, i, a);
+      .attrTween('d', function(d: EdgeData, i: number, a: SVGPathElement[]) {
+        return getEdgePathInterpolator(
+            component, <SVGPathElement>this, d, i, a);
       });
 };
 
