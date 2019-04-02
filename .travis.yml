@@ -137,12 +137,13 @@ script:
   - bazel fetch //tensorboard/...
   - bazel build //tensorboard/...
   - |
-    # Limit tests without TensorFlow
+    # When TensorFlow is not installed, run a restricted subset of tests.
     if [ -z "${TF_VERSION_ID}" ]; then
-      bazel test //tensorboard/... --test_tag_filters=support_notf
+      test_tag_filters=support_notf
     else
-      bazel test //tensorboard/...
+      test_tag_filters=
     fi
+  - bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
   # Run manual S3 test
   - bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
