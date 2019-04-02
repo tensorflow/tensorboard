@@ -138,7 +138,7 @@ smoke() {
   . bin/activate
   pip install -qU pip
 
-  if [ ! -z "${smoke_tf}" ]; then
+  if [ -n "${smoke_tf}" ]; then
     pip install -qU "${smoke_tf}"
   fi
   pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
@@ -167,10 +167,7 @@ tb.notebook.start  # don't invoke; just check existence
 "
 
   # Check if we are testing with or without tf
-  is_tf() {
-    python -c "import tensorflow as tf" >/dev/null 2>&1
-  }
-  if is_tf ; then
+  if [ -n "${smoke_tf}" ]; then
     # Exhaustively test various sequences of importing tf.summary.
     test_tf_summary() {
       # First argument is subpath to test, e.g. '' or '.compat.v2'.
