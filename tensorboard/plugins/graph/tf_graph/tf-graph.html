@@ -393,7 +393,7 @@ Polymer({
     // the visual effect of selecting that node, before the expansion is
     // done.
     this.async(function() {
-      this.querySelector('#scene').setNodeExpanded(renderNode);
+      this.$.scene.setNodeExpanded(renderNode);
     }, 75);
   },
   _nodeToggleExtract: function(event) {
@@ -461,7 +461,7 @@ Polymer({
 
         if (!selectedMarker) {
           // The marker for a selected edge of this size does not exist yet. Create it.
-          const originalMarker = this.$$('tf-graph-scene').querySelector('#' + markerId);
+          const originalMarker = this.$.scene.querySelector('#' + markerId);
           selectedMarker = originalMarker.cloneNode(true);
           selectedMarker.setAttribute('id', selectedMarkerId);
           selectedMarker.classList.add('selected-arrowhead');
