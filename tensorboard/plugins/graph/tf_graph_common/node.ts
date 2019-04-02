@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 module tf.graph.scene.node {
   import RenderNodeInfo = tf.graph.render.RenderNodeInfo;
+  import TfGraphScene = tf.graph.scene.TfGraphScene;
+
   /**
    * Select or Create a 'g.nodes' group to a given sceneGroup
    * and builds a number of 'g.node' groups inside the group.
@@ -154,7 +156,7 @@ module tf.graph.scene.node {
  *        not have a subscene.
  */
 function subsceneBuild(nodeGroup,
-    renderNodeInfo: render.RenderGroupNodeInfo, sceneElement) {
+    renderNodeInfo: render.RenderGroupNodeInfo, sceneElement: TfGraphScene) {
   if (renderNodeInfo.node.isGroupNode) {
     if (renderNodeInfo.expanded) {
       // Recursively build the subscene.
@@ -211,7 +213,7 @@ function addButton(selection, d: render.RenderNodeInfo, sceneElement) {
  * given interaction would cause conflicts with the expand/collapse button.
  */
 function addInteraction(selection, d: render.RenderNodeInfo,
-    sceneElement, disableInteraction?: boolean) {
+    sceneElement: TfGraphScene, disableInteraction?: boolean) {
   if (disableInteraction) {
     selection.attr('pointer-events', 'none');
     return;
@@ -613,37 +615,51 @@ export enum ColorBy {STRUCTURE, DEVICE, XLA_CLUSTER, COMPUTE_TIME, MEMORY,
                      OP_COMPATIBILITY};
 
 function getGradient(
-    id: string, colors: Array<{color: string, proportion: number}>) {
+    id: string, colors: Array<{color: string, proportion: number}>,
+    svgRoot?: SVGElement) {
   let escapedId = tf.graph.util.escapeQuerySelector(id);
-  let gradientDefs = d3.select('svg#svg defs #linearGradients');
-  let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
-  // If the linear gradient is not there yet, create it.
-  if (linearGradient.size() === 0) {
-    linearGradient = gradientDefs.append('linearGradient').attr('id', id);
-    // Re-create the stops of the linear gradient.
-    linearGradient.selectAll('*').remove();
-    let cumulativeProportion = 0;
-    // For each color, create a stop using the proportion of that device.
-    _.each(colors, d => {
-      let color = d.color;
-      linearGradient.append('stop')
-          .attr('offset', cumulativeProportion)
-          .attr('stop-color', color);
-      linearGradient.append('stop')
-          .attr('offset', cumulativeProportion + d.proportion)
-          .attr('stop-color', color);
-      cumulativeProportion += d.proportion;
-    });
+  if (svgRoot) {
+    let $svgRoot = d3.select(svgRoot);
+    let gradientDefs = $svgRoot.select('defs#_graph-gradients');
+    if (!gradientDefs.size()) {
+      gradientDefs = $svgRoot.append('defs').attr('id', '_graph-gradients');
+    }
+    let linearGradient = gradientDefs.select('linearGradient#' + escapedId);
+    // If the linear gradient is not there yet, create it.
+    if (linearGradient.size() === 0) {
+      linearGradient = gradientDefs.append('linearGradient').attr('id', id);
+      // Re-create the stops of the linear gradient.
+      linearGradient.selectAll('*').remove();
+      let cumulativeProportion = 0;
+      // For each color, create a stop using the proportion of that device.
+      _.each(colors, d => {
+        let color = d.color;
+        linearGradient.append('stop')
+            .attr('offset', cumulativeProportion)
+            .attr('stop-color', color);
+        linearGradient.append('stop')
+            .attr('offset', cumulativeProportion + d.proportion)
+            .attr('stop-color', color);
+        cumulativeProportion += d.proportion;
+      });
+    }
   }
   return `url(#${escapedId})`;
+}
+
+export function removeGradientDefinitions(svgRoot: SVGElement) {
+  d3.select(svgRoot).select('defs#_graph-gradients').remove();
 }
 
 /**
  * Returns the fill color for the node given its state and the 'color by'
  * option.
+ * Takes in optional svgRoot, when passed, that populates SVG definitions
+ * for the fill inside the svgRoot when necessary.
  */
-export function getFillForNode(templateIndex, colorBy,
-    renderInfo: render.RenderNodeInfo, isExpanded: boolean): string {
+export function getFillForNode(templateIndex,
+  colorBy, renderInfo: render.RenderNodeInfo, isExpanded: boolean,
+  svgRoot?: SVGElement): string {
   let colorParams = render.MetanodeColors;
   switch (colorBy) {
     case ColorBy.STRUCTURE:
@@ -679,7 +695,10 @@ export function getFillForNode(templateIndex, colorBy,
       return isExpanded ?
           colorParams.EXPANDED_COLOR :
           getGradient(
-              'device-' + renderInfo.node.name, renderInfo.deviceColors);
+            'device-' + renderInfo.node.name,
+            renderInfo.deviceColors,
+            svgRoot,
+          );
 
     case ColorBy.XLA_CLUSTER:
       if (renderInfo.xlaClusterColors == null) {
@@ -689,7 +708,10 @@ export function getFillForNode(templateIndex, colorBy,
       return isExpanded ?
           colorParams.EXPANDED_COLOR :
           getGradient(
-              'xla-' + renderInfo.node.name, renderInfo.xlaClusterColors);
+            'xla-' + renderInfo.node.name,
+            renderInfo.xlaClusterColors,
+            svgRoot,
+          );
 
     case ColorBy.COMPUTE_TIME:
       return isExpanded ?
@@ -705,9 +727,11 @@ export function getFillForNode(templateIndex, colorBy,
         return colorParams.UNKNOWN;
       }
       return isExpanded ? colorParams.EXPANDED_COLOR :
-                          getGradient(
-                              'op-compat-' + renderInfo.node.name,
-                              renderInfo.compatibilityColors);
+          getGradient(
+            'op-compat-' + renderInfo.node.name,
+            renderInfo.compatibilityColors,
+            svgRoot,
+          );
     default:
       throw new Error('Unknown case to color nodes by');
   }
@@ -718,7 +742,7 @@ export function getFillForNode(templateIndex, colorBy,
  * that can't be done in css).
  */
 export function stylize(nodeGroup, renderInfo: render.RenderNodeInfo,
-    sceneElement, nodeClass?) {
+    sceneElement: TfGraphScene, nodeClass?) {
   nodeClass = nodeClass || Class.Node.SHAPE;
   let isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
   let isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
@@ -736,9 +760,13 @@ export function stylize(nodeGroup, renderInfo: render.RenderNodeInfo,
   // Main node always exists here and it will be reached before subscene,
   // so d3 selection is fine here.
   let node = nodeGroup.select('.' + nodeClass + ' .' + Class.Node.COLOR_TARGET);
-  let fillColor = getFillForNode(sceneElement.templateIndex,
+  let fillColor = getFillForNode(
+    sceneElement.templateIndex,
     ColorBy[sceneElement.colorBy.toUpperCase()],
-    renderInfo, isExpanded);
+    renderInfo,
+    isExpanded,
+    sceneElement.getGraphSvgRoot(),
+  );
   node.style('fill', fillColor);
 
   // Choose outline to be darker version of node color if the node is a single

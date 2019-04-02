@@ -26,6 +26,7 @@ limitations under the License.
       }
     </style>
     <tf-graph-icon
+      id="icon"
       type="[[_getType(node, summary, const, type)]]"
       height="[[height]]"
       fill-override="[[_fillOverride]]"
@@ -124,6 +125,7 @@ limitations under the License.
           _fillOverride: {
             type: String,
             computed: '_computeFillOverride(node, renderInfo, colorBy, templateIndex, fill)',
+            observer: '_onFillOverrideChanged',
           },
         },
 
@@ -188,7 +190,20 @@ limitations under the License.
 
         _getFaded: function(itemRenderInfo) {
           return itemRenderInfo && itemRenderInfo.isFadedOut;
-        }
+        },
+
+        _onFillOverrideChanged(newFill, oldFill) {
+          const {node, renderInfo, colorBy, templateIndex} = this;
+          const ns = tf.graph.scene.node;
+          if (newFill !== oldFill) {
+            ns.removeGradientDefinitions(this.$.icon.getSvgDefineableElement());
+          }
+          if (node && renderInfo && colorBy && templateIndex) {
+            const nsColorBy = ns.ColorBy[colorBy.toUpperCase()];
+            ns.getFillForNode(templateIndex, nsColorBy,
+                renderInfo, false, this.$.icon.getSvgDefineableElement());
+          }
+        },
       });
     })();
   </script>

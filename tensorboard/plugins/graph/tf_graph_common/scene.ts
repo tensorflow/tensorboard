@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 module tf.graph.scene {
+  import TfGraphScene = tf.graph.scene.TfGraphScene;
+
   export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
   /** Enums element class of objects in the scene */
@@ -356,7 +358,7 @@ export function selectChild(
  */
 export function buildGroup(container,
     renderNode: render.RenderGroupNodeInfo,
-    sceneElement,
+    sceneElement: TfGraphScene,
     sceneClass: string): d3.Selection<any, any, any, any> {
   sceneClass = sceneClass || Class.Scene.GROUP;
   let isNewSceneGroup = selectChild(container, 'g', sceneClass).empty();

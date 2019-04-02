@@ -47,7 +47,7 @@ limitations under the License.
       }
     </style>
     <!-- SVG for defining types -->
-    <svg height="0" width="0">
+    <svg height="0" width="0" id="svgDefs">
       <defs>
         <!-- Hatch patterns for faded out nodes. -->
         <pattern id="rectHatch" patternTransform="rotate(45 0 0)" width="5" height="5" patternUnits="userSpaceOnUse">
@@ -201,6 +201,10 @@ limitations under the License.
             type: String,
             computed: '_computeStroke(type, strokeOverride)',
           },
+        },
+
+        getSvgDefineableElement() {
+          return this.$.svgDefs;
         },
 
         _computeFill(type, fillOverride) {
