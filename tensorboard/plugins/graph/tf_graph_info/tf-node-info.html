@@ -23,7 +23,7 @@ limitations under the License.
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
-<link rel="import" href="../tf-graph-common/tf-graph-icon.html">
+<link rel="import" href="../tf-graph-common/tf-node-icon.html">
 <link rel="import" href="tf-node-list-item.html">
 
 <dom-module id="tf-node-info">
@@ -164,11 +164,13 @@ limitations under the License.
           <div class="node-name" id="nodetitle"></div>
         </div>
         <div secondary>
-          <tf-graph-icon class="node-icon" node="[[_node]]"
-              render-info="[[_getRenderInfo(nodeName, renderHierarchy)]]"
-              color-by="[[colorBy]]"
-              template-index="[[_templateIndex]]"
-              ></tf-graph-icon>
+          <tf-node-icon
+            class="node-icon"
+            node="[[_node]]"
+            render-info="[[_getRenderInfo(nodeName, renderHierarchy)]]"
+            color-by="[[colorBy]]"
+            template-index="[[_templateIndex]]"
+          ></tf-node-icon>
           <template is="dom-if" if="{{_node.op}}">
             <div class="subtitle">
               Operation:

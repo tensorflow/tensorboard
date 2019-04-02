@@ -17,7 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-graph-common/tf-graph-icon.html">
+<link rel="import" href="../tf-graph-common/tf-node-icon.html">
 
 <dom-module id="tf-node-list-item">
   <template>
@@ -69,10 +69,10 @@ limitations under the License.
          on-mouseout="_nodeListener"
          on-click="_nodeListener">
       <div class$="{{_fadedClass(itemRenderInfo)}}">
-        <tf-graph-icon class="node-icon" height="12"
+        <tf-node-icon class="node-icon" height="12"
             color-by="[[colorBy]]" color-by-params="[[colorByParams]]"
             node="[[itemNode]]" render-info="[[itemRenderInfo]]"
-            template-index="[[templateIndex]]"></tf-graph-icon>
+            template-index="[[templateIndex]]"></tf-node-icon>
         <span title$="[[name]]">[[name]]</span>
         <span class="edge-label">[[edgeLabel]]</span>
       </div>
