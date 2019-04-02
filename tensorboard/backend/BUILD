@@ -25,9 +25,9 @@ py_test(
     size = "small",
     srcs = ["http_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":http_util",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -48,9 +48,9 @@ py_test(
     size = "small",
     srcs = ["json_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":json_util",
-        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -81,9 +81,9 @@ py_test(
     size = "small",
     srcs = ["application_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":application",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

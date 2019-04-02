@@ -77,11 +77,11 @@ py_test(
     srcs = ["manager_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
+    tags = ["support_notf"],
     deps = [
         ":manager",
         ":version",
         "//tensorboard/util:tb_logging",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -138,10 +138,10 @@ py_test(
     size = "small",
     srcs = ["program_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":default",
         ":program",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
@@ -343,9 +343,9 @@ py_test(
     size = "small",
     srcs = ["plugin_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":plugin_util",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )

@@ -21,26 +21,26 @@ from __future__ import print_function
 import argparse
 
 import six
-import tensorflow as tf
+import unittest
 
 from tensorboard import program
 from tensorboard.plugins.core import core_plugin
 
 
-class TensorBoardTest(tf.test.TestCase):
+class TensorBoardTest(unittest.TestCase):
   """Tests the TensorBoard program."""
 
   def testConfigure(self):
     # Many useful flags are defined under the core plugin.
     tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader()])
     tb.configure(logdir='foo')
-    self.assertStartsWith(tb.flags.logdir, 'foo')
+    self.assertTrue(tb.flags.logdir.startswith('foo'))
 
     with six.assertRaisesRegex(self, ValueError, 'Unknown TensorBoard flag'):
       tb.configure(foo='bar')
 
 
-class WerkzeugServerTest(tf.test.TestCase):
+class WerkzeugServerTest(unittest.TestCase):
   """Tests the default Werkzeug implementation of TensorBoardServer.
 
   Mostly useful for IPv4/IPv6 testing. This test should run with only IPv4, only
@@ -61,7 +61,7 @@ class WerkzeugServerTest(tf.test.TestCase):
     server = program.WerkzeugServer(
         self._StubApplication(),
         self.make_flags(host='', port=0, path_prefix=''))
-    self.assertStartsWith(server.get_url(), 'http://')
+    self.assertTrue(server.get_url().startswith('http://'))
 
   def testSpecifiedHost(self):
     one_passed = False
@@ -69,7 +69,7 @@ class WerkzeugServerTest(tf.test.TestCase):
       server = program.WerkzeugServer(
           self._StubApplication(),
           self.make_flags(host='127.0.0.1', port=0, path_prefix=''))
-      self.assertStartsWith(server.get_url(), 'http://127.0.0.1:')
+      self.assertTrue(server.get_url().startswith('http://127.0.0.1:'))
       one_passed = True
     except program.TensorBoardServerException:
       # IPv4 is not supported
@@ -78,7 +78,7 @@ class WerkzeugServerTest(tf.test.TestCase):
       server = program.WerkzeugServer(
           self._StubApplication(),
           self.make_flags(host='::1', port=0, path_prefix=''))
-      self.assertStartsWith(server.get_url(), 'http://[::1]:')
+      self.assertTrue(server.get_url().startswith('http://[::1]:'))
       one_passed = True
     except program.TensorBoardServerException:
       # IPv6 is not supported
@@ -87,4 +87,4 @@ class WerkzeugServerTest(tf.test.TestCase):
 
 
 if __name__ == '__main__':
-  tf.test.main()
+  unittest.main()

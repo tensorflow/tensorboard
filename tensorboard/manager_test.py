@@ -23,10 +23,11 @@ import errno
 import json
 import os
 import re
+import shutil
 import tempfile
 
 import six
-import tensorflow as tf
+import unittest
 
 try:
   # python version >= 3.3
@@ -60,7 +61,7 @@ def _make_info(i=0):
   )
 
 
-class TensorBoardInfoTest(tf.test.TestCase):
+class TensorBoardInfoTest(unittest.TestCase):
   """Unit tests for TensorBoardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
@@ -168,7 +169,7 @@ class TensorBoardInfoTest(tf.test.TestCase):
     self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
-class CacheKeyTest(tf.test.TestCase):
+class CacheKeyTest(unittest.TestCase):
   """Unit tests for `manager.cache_key`."""
 
   def test_result_is_str(self):
@@ -254,16 +255,21 @@ class CacheKeyTest(tf.test.TestCase):
     self.assertEqual(with_list, with_tuple)
 
 
-class TensorBoardInfoIoTest(tf.test.TestCase):
+class TensorBoardInfoIoTest(unittest.TestCase):
   """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
   def setUp(self):
     super(TensorBoardInfoIoTest, self).setUp()
-    patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
-    patcher.start()
-    self.addCleanup(patcher.stop)
+    self.temp_dir = tempfile.mkdtemp()
+    self.patcher = mock.patch.dict(os.environ, {"TMPDIR": self.temp_dir})
+    self.patcher.start()
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
+
+  def tearDown(self):
+    self.patcher.stop()
+    shutil.rmtree(self.temp_dir)
+    tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
 
   def _list_info_dir(self):
     return os.listdir(self.info_dir)
@@ -352,4 +358,4 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-  tf.test.main()
+  unittest.main()

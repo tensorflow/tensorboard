@@ -16,16 +16,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+import unittest
 
 from tensorboard.util import platform_util
 
 
-class PlatformUtilTest(tf.test.TestCase):
+class PlatformUtilTest(unittest.TestCase):
 
   def test_readahead_file_path(self):
     self.assertEqual('foo/bar', platform_util.readahead_file_path('foo/bar'))
 
 
 if __name__ == '__main__':
-  tf.test.main()
+  unittest.main()
