@@ -127,6 +127,7 @@ smoke() {
   printf '\n\n%70s\n' | tr ' ' '='
   if [ -z "${smoke_tf}" ]; then
     echo "Smoke testing with ${smoke_python} and no tensorflow..."
+    export TENSORBOARD_NO_TF=1
   else
     echo "Smoke testing with ${smoke_python} and ${smoke_tf}..."
   fi
