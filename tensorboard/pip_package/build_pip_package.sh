@@ -174,8 +174,7 @@ from tensorboard.plugins.beholder import Beholder, BeholderHook
   fi
 
   if [ -n "${smoke_tf}" ]; then
-    # Exhaustively test various sequences of importing tf.summary
-    # but only with TF
+    # Exhaustively test various sequences of importing tf.summary.
     test_tf_summary() {
       # First argument is subpath to test, e.g. '' or '.compat.v2'.
       import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
