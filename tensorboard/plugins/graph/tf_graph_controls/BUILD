@@ -7,7 +7,10 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
     name = "tf_graph_controls",
-    srcs = ["tf-graph-controls.html"],
+    srcs = [
+        "tf-graph-controls.html",
+        "tf-graph-controls.js",
+    ],
     path = "/tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
