@@ -31,6 +31,7 @@ py_test(
     size = "small",
     srcs = ["io/gfile_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":tensorflow_stub",
     ],
