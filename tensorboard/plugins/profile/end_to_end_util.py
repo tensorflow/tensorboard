@@ -278,18 +278,6 @@ class EndToEndBreakDown(object):
             self._predict_duration = (predict_sess.session_end_time
                                       - last_sess.session_end_time)
 
-  def String(self):
-    return ('gap_train_init=%s'%self._gap_train_begin_init_system_begin +
-            ', init_sys=%s'%self._init_system_duration +
-            ', gap_init_sys_model_fn=%s'%self._gap_init_system_end_model_fn_begin +
-            ', setup_infeed=%s'%self._setup_infeed_duration +
-            ', model_fn=%s'%self._model_fn_duration +
-            ', train=%s'%self._train_duration +
-            ', gap_eval_train=%s'%self._gap_eval_begin_last_session_end +
-            ', eval=%s'%self._eval_duration +
-            ', gap_predict_eval=%s'%self._gap_predict_begin_last_session_end +
-            ', predict=%s'%self._predict_duration)
-
   def ColumnNames(self):
     return ["beginning to init-system's start",
             "init-system",
@@ -322,6 +310,3 @@ class EndToEndBreakDown(object):
     second_row.extend(self.Values())
     second_row.append('')
     return [first_row, second_row]
-
-  def Csv(self):
-    return self.ColumnNames(), [self.Values()]
