@@ -163,9 +163,8 @@ var vz_projector;
          *     task is done.
          * @return The value returned by the task.
          */
-        function runAsyncTask(message, task, msgId, taskDelay) {
+        function runAsyncTask(message, task, msgId) {
             if (msgId === void 0) { msgId = null; }
-            if (taskDelay === void 0) { taskDelay = TASK_DELAY_MS; }
             var autoClear = (msgId == null);
             msgId = vz_projector.logging.setModalMessage(message, msgId);
             return new Promise(function (resolve, reject) {
@@ -182,7 +181,7 @@ var vz_projector;
                         reject(ex);
                     }
                     return true;
-                }, taskDelay);
+                }, TASK_DELAY_MS);
             });
         }
         util.runAsyncTask = runAsyncTask;
