@@ -163,13 +163,19 @@ import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
-from tensorboard.plugins.beholder import Beholder, BeholderHook
 tb.notebook.start  # don't invoke; just check existence
 "
-
-  # Check if we are testing with or without tf
   if [ -n "${smoke_tf}" ]; then
-    # Exhaustively test various sequences of importing tf.summary.
+    # Only test beholder with TF
+    python -c "
+import tensorboard as tb
+from tensorboard.plugins.beholder import Beholder, BeholderHook
+"
+  fi
+
+  if [ -n "${smoke_tf}" ]; then
+    # Exhaustively test various sequences of importing tf.summary
+    # but only with TF
     test_tf_summary() {
       # First argument is subpath to test, e.g. '' or '.compat.v2'.
       import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
