@@ -161,14 +161,14 @@ smoke() {
   python -c "
 import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
-tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.projector import visualize_embeddings
 tb.notebook.start  # don't invoke; just check existence
 "
   if [ -n "${smoke_tf}" ]; then
-    # Only test beholder with TF
+    # Only test summary scalar and beholder with TF
     python -c "
 import tensorboard as tb
+tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.beholder import Beholder, BeholderHook
 "
   fi
