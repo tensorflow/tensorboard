@@ -438,7 +438,7 @@ class TensorBoardPluginsTest(unittest.TestCase):
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include both plugins.
     mapping = self.context.plugin_name_to_instance
-    self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
+    six.assertCountEqual(self, ['foo', 'bar'], list(mapping.keys()))
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
