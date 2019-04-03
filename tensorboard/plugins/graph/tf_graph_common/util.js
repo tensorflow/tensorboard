@@ -210,14 +210,19 @@ var tf;
              * (e.g. 1.35 GB, 23 MB, 34 ms, 6.53 min etc).
              */
             function convertUnitsToHumanReadable(value, units, unitIndex) {
-                unitIndex = unitIndex == null ? 0 : unitIndex;
+                if (unitIndex === void 0) { unitIndex = 0; }
                 if (unitIndex + 1 < units.length &&
                     value >= units[unitIndex + 1].numUnits) {
                     return tf.graph.util.convertUnitsToHumanReadable(value / units[unitIndex + 1].numUnits, units, unitIndex + 1);
                 }
                 // toPrecision() has the tendency to return a number in scientific
-                // notation and (number - 0) brings it back to normal notation.
-                return (value.toPrecision(3) - 0) + ' ' + units[unitIndex].symbol;
+                // notation and casting back to a number brings it back to normal notation.
+                // e.g.,
+                //   > value = 213; value.toPrecision(1)
+                //   < "2e+2"
+                //   > Number(value.toPrecision(1))
+                //   < 200
+                return Number(value.toPrecision(3)) + ' ' + units[unitIndex].symbol;
             }
             util.convertUnitsToHumanReadable = convertUnitsToHumanReadable;
             function hasDisplayableNodeStats(stats) {

@@ -92,10 +92,9 @@ var tf;
                         _this._load(_this.selection);
                     });
                 },
-                // TODO(stephanwlee): Use `tf.graph.Selection` when tf-graph-control is TypeScript.
-                _load: function (_a) {
+                _load: function (selection) {
                     var _this = this;
-                    var run = _a.run, tag = _a.tag, selectionType = _a.type;
+                    var run = selection.run, tag = selection.tag, selectionType = selection.type;
                     var overridingHierarchyParams = this.overridingHierarchyParams;
                     switch (selectionType) {
                         case tf.graph.SelectionType.OP_GRAPH:

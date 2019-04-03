@@ -15,6 +15,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/plugins/graph/tf_graph_common",
+        "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/components/tf_imports:polymer",
     ],
 )
@@ -26,6 +27,7 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
+        "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
