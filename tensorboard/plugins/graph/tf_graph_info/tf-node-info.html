@@ -684,19 +684,15 @@ limitations under the License.
           }
         },
         _toggleInclude: function() {
-          var graphElem = document.querySelector("#graph");
-          graphElem.fire("node-toggle-extract", { name: this.nodeName });
-          var graphBoardElem = document.querySelector("#graphboard");
-          graphBoardElem.fire("node-toggle-extract");
+          this.fire('node-toggle-inclusion', {name: this.nodeName});
         },
         _nodeIncludeStateChanged: function(include, oldInclude) {
           this.set("_auxButtonText",
             tf.graph.getIncludeNodeButtonString(include));
         },
         _toggleGroup: function() {
-          var graphElem = document.querySelector("#graph");
           var seriesName = tf.graph.scene.node.getSeriesName(this._node);
-          graphElem.fire("node-toggle-seriesgroup", { name: seriesName });
+          this.fire('node-toggle-seriesgroup', {name: seriesName});
         },
         _isLibraryFunction(node) {
           // If the node name starts with this string, the node is either a
