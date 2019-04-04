@@ -788,56 +788,47 @@ export function getStrokeForFill(fill: string) {
  * Finds selected node and highlights all nodes which are providing direct
  * or indirect input to the node and all edges connecting these nodes
  * together and to the selected node.
- *
- * @param renderGraphInfo Information on the rendered state of the graph.
  */
-export function traceInputs(renderGraphInfo: tf.graph.render.RenderGraphInfo) {
+export function updateInputTrace(
+    svgRoot: SVGElement,
+    renderGraphInfo: tf.graph.render.RenderGraphInfo,
+    selectedNodeName: string,
+    traceInputs: Boolean) {
+
   // Reset all styling.
-  d3.selectAll('.input-highlight').classed('input-highlight', false);
-  d3.selectAll('.non-input').classed('non-input', false);
-  d3.selectAll('.input-parent').classed('input-parent', false);
-  d3.selectAll('.input-child').classed('input-child', false);
-  d3.selectAll('.input-edge-highlight').classed('input-edge-highlight', false);
-  d3.selectAll('.non-input-edge-highlight')
+  const svg = d3.select(svgRoot);
+  svg.selectAll('.input-highlight').classed('input-highlight', false);
+  svg.selectAll('.non-input').classed('non-input', false);
+  svg.selectAll('.input-parent').classed('input-parent', false);
+  svg.selectAll('.input-child').classed('input-child', false);
+  svg.selectAll('.input-edge-highlight').classed('input-edge-highlight', false);
+  svg.selectAll('.non-input-edge-highlight')
       .classed('non-input-edge-highlight', false);
-  d3.selectAll('.input-highlight-selected')
-      .classed('input-highlight-selected', false);
+  svg.selectAll('.input-highlight-selected')
+     .classed('input-highlight-selected', false);
 
   // Extract currently selected node. Return if input tracing disabled or no
   // node is selected.
-  const selectedNodeSelectorString = 'g.node.selected,g.op.selected';
-  const nodeSelection = d3.select(selectedNodeSelectorString);
-  let currentNode = undefined;
-  if (renderGraphInfo && renderGraphInfo.traceInputs &&
-      nodeSelection.nodes().length) {
-    currentNode = nodeSelection.nodes()[0];
-  } else {
+  if (!renderGraphInfo || !traceInputs || !selectedNodeName) {
     return;
   }
-  let nodeName = currentNode.getAttribute('data-name');
-  let opNodes = _getAllContainedOpNodes(nodeName, renderGraphInfo);
+  let opNodes = _getAllContainedOpNodes(selectedNodeName, renderGraphInfo);
   let allTracedNodes = {};
   _.each(opNodes, function(nodeInstance) {
     allTracedNodes =
-        traceAllInputsOfOpNode(renderGraphInfo, nodeInstance, allTracedNodes);
+        traceAllInputsOfOpNode(
+            svgRoot, renderGraphInfo, nodeInstance, allTracedNodes);
   });
 
-  d3.selectAll(selectedNodeSelectorString)
-      // Remove the input-highlight from the selected node.
-      .classed('input-highlight', false)
-      // Add input-highlight-selected class to selected node, which allows
-      // treating the selected not as a special case of an input node.
-      .classed('input-highlight-selected', true);
-
-  // Highlight all parent nodes of each OpNode as input parent to allow
+    // Highlight all parent nodes of each OpNode as input parent to allow
   // specific highlighting.
   let highlightedNodes = Object.keys(allTracedNodes);
   let visibleNodes =
       _findVisibleParentsFromOpNodes(renderGraphInfo, highlightedNodes);
-  _markParentsOfNodes(visibleNodes);
+  _markParentsOfNodes(svgRoot, visibleNodes);
 
   // Attach class to all non-input nodes and edges for styling.
-  d3.selectAll(
+  svg.selectAll(
         'g.node:not(.selected):not(.input-highlight)' +
         ':not(.input-parent):not(.input-children)')
       .classed('non-input', true)
@@ -846,9 +837,9 @@ export function traceInputs(renderGraphInfo: tf.graph.render.RenderGraphInfo) {
         // results in Annotation nodes which are attached to inputs to be
         // tagged as well.
         let nodeName = d.node.name;
-        d3.selectAll(`[data-name="${nodeName}"]`).classed('non-input', true);
+        svg.selectAll(`[data-name="${nodeName}"]`).classed('non-input', true);
       });
-  d3.selectAll('g.edge:not(.input-edge-highlight)')
+  svg.selectAll('g.edge:not(.input-edge-highlight)')
       .classed('non-input-edge-highlight', true);
 }
 
@@ -860,8 +851,9 @@ export function traceInputs(renderGraphInfo: tf.graph.render.RenderGraphInfo) {
  * @param renderGraphInfo The rendered graph information object.
  * @returns {Array} An array of OpNodeImpl instances.
  */
-export function _getAllContainedOpNodes(
-    nodeName: string, renderGraphInfo: tf.graph.render.RenderGraphInfo) {
+function _getAllContainedOpNodes(nodeName: string,
+    renderGraphInfo: tf.graph.render.RenderGraphInfo):
+    ReadonlyArray<OpNodeImpl> {
   let opNodes = [];
 
   // Get current node.
@@ -895,7 +887,8 @@ interface VisibleParent {
   opNodes: OpNode[];
 }
 
-export function traceAllInputsOfOpNode(
+function traceAllInputsOfOpNode(
+    svgRoot: SVGElement,
     renderGraphInfo: tf.graph.render.RenderGraphInfo, startNode: OpNode,
     allTracedNodes: Object) {
   // To prevent infinite loops due to cyclical relationships and improving
@@ -910,7 +903,8 @@ export function traceAllInputsOfOpNode(
   // Get visible parent.
   let currentVisibleParent = getVisibleParent(renderGraphInfo, startNode);
   // Mark as input node.
-  d3.select(`.node[data-name="${currentVisibleParent.name}"]`)
+  d3.select(svgRoot)
+      .select(`.node[data-name="${currentVisibleParent.name}"]`)
       .classed('input-highlight', true);
 
   // Find the visible parent of each input.
@@ -969,12 +963,13 @@ export function traceAllInputsOfOpNode(
     // parent.
     _.each(visibleParentInfo.opNodes, function(opNode: OpNode) {
       allTracedNodes =
-          traceAllInputsOfOpNode(renderGraphInfo, opNode, allTracedNodes);
+          traceAllInputsOfOpNode(
+              svgRoot, renderGraphInfo, opNode, allTracedNodes);
     });
 
     if (nodeInstance.name !== currentVisibleParent.name) {
       _createVisibleTrace(
-          nodeInstance, startNodeParents, indexedStartNodeParents);
+          svgRoot, nodeInstance, startNodeParents, indexedStartNodeParents);
     }
   });
 
@@ -1021,7 +1016,10 @@ export function traceAllInputsOfOpNode(
  * @private
  */
 function _createVisibleTrace(
-    nodeInstance: Node, startNodeParents, indexedStartNodeParents: Node[]) {
+    svgRoot: SVGElement,
+    nodeInstance: Node,
+    startNodeParents,
+    indexedStartNodeParents: Node[]) {
   let currentNode = nodeInstance;
   let previousNode = nodeInstance;
 
@@ -1046,7 +1044,9 @@ function _createVisibleTrace(
   let targetNodeTopParentName = previousNode.name;
 
   let endNodeName = previousNode.name;
-  d3.selectAll(`[data-edge="${endNodeName}--${startNodeName}"]`)
+  const svg = d3.select(svgRoot);
+
+  svg.selectAll(`[data-edge="${endNodeName}--${startNodeName}"]`)
       .classed('input-edge-highlight', true);
 
   // Trace up the parents of the input.
@@ -1055,7 +1055,7 @@ function _createVisibleTrace(
     let outer = value[1];
     let edgeSelector = `[data-edge="${inner.name}--${startNodeTopParentName}` +
         `~~${outer.name}~~OUT"]`;
-    d3.selectAll(edgeSelector).classed('input-edge-highlight', true);
+    svg.selectAll(edgeSelector).classed('input-edge-highlight', true);
   });
 
   // Trace up the parents of the start node.
@@ -1064,7 +1064,7 @@ function _createVisibleTrace(
     let outer = indexedStartNodeParents[index];
     let edgeSelector = `[data-edge="${targetNodeTopParentName}~~${outer.name}` +
         `~~IN--${inner.name}"]`;
-    d3.selectAll(edgeSelector).classed('input-edge-highlight', true);
+    svg.selectAll(edgeSelector).classed('input-edge-highlight', true);
   }
 }
 
@@ -1095,14 +1095,15 @@ function _findVisibleParentsFromOpNodes(renderGraphInfo, nodeNames: string[]) {
  * called.
  * @private
  */
-function _markParentsOfNodes(visibleNodes: {[nodeName: string]: Node}) {
+function _markParentsOfNodes(
+    svgRoot: SVGElement, visibleNodes: {[nodeName: string]: Node}) {
   _.forOwn(visibleNodes, function(nodeInstance: Node) {
     // Mark all parents of the node as input-parents.
     let currentNode = nodeInstance;
 
     while (currentNode.name !== tf.graph.ROOT_NAME) {
       const renderedElementSelection =
-          d3.select(`.node[data-name="${currentNode.name}"]`);
+          d3.select(svgRoot).select(`.node[data-name="${currentNode.name}"]`);
       // Only mark the element as a parent node to an input if it is not
       // marked as input node itself.
       if (renderedElementSelection.nodes().length &&

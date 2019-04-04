@@ -150,6 +150,7 @@ paper-progress {
               health-pill-step-index="[[healthPillStepIndex]]"
               handle-node-selected="[[handleNodeSelected]]"
               handle-edge-selected="[[handleEdgeSelected]]"
+              trace-inputs="[[traceInputs]]"
     ></tf-graph>
   </div>
   <div id="info">
@@ -193,6 +194,7 @@ Polymer({
      * @type {{value: number, msg: string}}
      */
     progress: Object,
+    traceInputs: Boolean,
     colorBy: String,
     colorByParams: {
       type: Object,
