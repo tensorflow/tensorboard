@@ -34,5 +34,6 @@ module tf.graph.scene {
     abstract isNodeSelected(nodeName: string): boolean;
     abstract getAnnotationGroupsIndex(name: string): Selection;
     abstract getGraphSvgRoot(): SVGElement;
+    abstract getContextMenu(): HTMLElement;
   }
 }
