@@ -173,6 +173,8 @@ paper-progress {
               specific-health-pill-step="{{specificHealthPillStep}}"
               health-pill-step-index="{{healthPillStepIndex}}"
               compat-node-title="[[compatNodeTitle]]"
+              on-node-toggle-inclusion="_onNodeInclusionToggled"
+              on-node-toggle-seriesgroup="_onNodeSeriesGroupToggled"
     ></tf-graph-info>
   </div>
 </div>
@@ -254,11 +256,8 @@ Polymer({
     // provided, edges are selectable, and this callback is run when an edge is selected.
     handleEdgeSelected: Object,
   },
-  listeners: {
-    'node-toggle-extract': '_nodeToggleExtract'
-  },
   observers: [
-    '_updateNodeInclude(selectedNode)'
+    '_updateNodeInclude(selectedNode, renderHierarchy)',
   ],
   fit: function() {
     this.$.graph.fit();
@@ -277,13 +276,17 @@ Polymer({
     }
     return result;
   },
-  _updateNodeInclude: function(nodeName) {
-    var node = this.graphHierarchy.node(nodeName);
-    this.set("_selectedNodeInclude",
-      node ? node.include : tf.graph.InclusionType.UNSPECIFIED);
+  _onNodeInclusionToggled(event) {
+    this.$.graph.nodeToggleExtract(event.detail.name);
   },
-  _nodeToggleExtract: function() {
-    this._updateNodeInclude(this.selectedNode);
-  }
+  _onNodeSeriesGroupToggled(event) {
+    this.$.graph.nodeToggleSeriesGroup(event.detail.name);
+  },
+  _updateNodeInclude() {
+    const node = !this.renderHierarchy ?
+        null : this.renderHierarchy.getNodeByName(this.selectedNode);
+    this._selectedNodeInclude = node ?
+        node.include : tf.graph.InclusionType.UNSPECIFIED;
+  },
 });
 </script>
