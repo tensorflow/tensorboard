@@ -14,7 +14,11 @@
 # ==============================================================================
 
 import struct
-from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import crc32c
+from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import (
+    crc32c,
+    masked_crc32c,
+    u32,
+    )
 class RecordWriter(object):
     def __init__(self, logfile):
         self._writer = open(logfile, 'wb')
@@ -41,12 +45,3 @@ class RecordWriter(object):
             self._writer.close()
         else:
             raise OSError('file writer is missing')
-
-
-def masked_crc32c(data):
-    x = u32(crc32c(data))
-    return u32(((x >> 15) | u32(x << 17)) + 0xa282ead8)
-
-
-def u32(x):
-    return x & 0xffffffff
