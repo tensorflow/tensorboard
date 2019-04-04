@@ -23,7 +23,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorboard.plugins.profile import end_to_end_util
-
+from tensorboard.plugins.profile.end_to_end_helper import LogEvent
 
 tf.compat.v1.enable_eager_execution()
 
@@ -33,17 +33,23 @@ def _create_events_within_session(init_system_begin, init_system_end,
                                   setup_infeed_begin, setup_infeed_end):
   log_events = []
   if init_system_begin is not None:
-    log_events.append(LogEvent(init_system_begin, 'init_system_begin'))
+    log_events.append(LogEvent(init_system_begin,
+                               'profile/init_system_begin'))
   if init_system_end is not None:
-    log_events.append(LogEvent(init_system_end, 'init_system_end'))
+    log_events.append(LogEvent(init_system_end,
+                               'profile/init_system_end'))
   if model_fn_begin is not None:
-    log_events.append(LogEvent(model_fn_begin, 'model_fn_begin'))
+    log_events.append(LogEvent(model_fn_begin,
+                               'profile/model_fn_begin'))
   if model_fn_end is not None:
-    log_events.append(LogEvent(model_fn_end, 'model_fn_end'))
+    log_events.append(LogEvent(model_fn_end,
+                               'profile/model_fn_end'))
   if setup_infeed_begin is not None:
-    log_events.append(LogEvent(setup_infeed_begin, 'setup_infeed_begin'))
+    log_events.append(LogEvent(setup_infeed_begin,
+                               'profile/setup_infeed_begin'))
   if setup_infeed_end is not None:
-    log_events.append(LogEvent(setup_infeed_end, 'setup_infeed_end'))
+    log_events.append(LogEvent(setup_infeed_end,
+                               'profile/setup_infeed_end'))
   return log_events
 
 def _create_test_events(train_begin,
@@ -72,9 +78,11 @@ def _create_test_events(train_begin,
                         predict_end):
   log_events = []
   if train_begin is not None:
-    log_events.append(LogEvent(train_begin, 'train_begin'))
+    log_events.append(LogEvent(train_begin,
+                               'profile/train_begin'))
   if train_end is not None:
-    log_events.append(LogEvent(train_end, 'train_end'))
+    log_events.append(LogEvent(train_end,
+                               'profile/train_end'))
   train_events = _create_events_within_session(train_init_system_begin,
                                                train_init_system_end,
                                                train_model_fn_begin,
@@ -83,9 +91,11 @@ def _create_test_events(train_begin,
                                                train_setup_infeed_end)
   log_events.extend(train_events)
   if eval_begin is not None:
-    log_events.append(LogEvent(eval_begin, 'eval_begin'))
+    log_events.append(LogEvent(eval_begin,
+                               'profile/eval_begin'))
   if eval_end is not None:
-    log_events.append(LogEvent(eval_end, 'eval_end'))
+    log_events.append(LogEvent(eval_end,
+                               'profile/eval_end'))
   eval_events = _create_events_within_session(eval_init_system_begin,
                                               eval_init_system_end,
                                               eval_model_fn_begin,
@@ -95,9 +105,11 @@ def _create_test_events(train_begin,
   log_events.extend(eval_events)
 
   if predict_begin is not None:
-    log_events.append(LogEvent(predict_begin, 'predict_begin'))
+    log_events.append(LogEvent(predict_begin,
+                               'profile/predict_begin'))
   if predict_end is not None:
-    log_events.append(LogEvent(predict_end, 'predict_end'))
+    log_events.append(LogEvent(predict_end,
+                               'profile/predict_end'))
   predict_events = _create_events_within_session(predict_init_system_begin,
                                                  predict_init_system_end,
                                                  predict_model_fn_begin,
@@ -106,14 +118,6 @@ def _create_test_events(train_begin,
                                                  predict_setup_infeed_end)
   log_events.extend(predict_events)
   return log_events
-
-
-class LogEvent:
-  """Log event format used in end-to-end profiling."""
-
-  def __init__(self, timestamp, event_name):
-    self.timestamp = timestamp
-    self.attribute = 'profile/' + event_name
 
 
 class EndToEndUtilTest(tf.test.TestCase):

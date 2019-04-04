@@ -128,6 +128,7 @@ py_test(
     srcs = ["end_to_end_util_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":end_to_end_helper",
         ":end_to_end_util",
     ],
 )

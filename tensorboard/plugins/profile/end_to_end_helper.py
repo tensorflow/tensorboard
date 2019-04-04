@@ -31,13 +31,21 @@ from tensorboard.plugins.profile import end_to_end_util
 from tensorflow.python.platform import gfile
 from tensorflow.python.tpu import profile_logger
 
-class LogEvent:
+class LogEvent(object):
   """Log event format used in end-to-end profiling."""
 
-  def __init__(self, tf_event):
+  def __init__(self, timestamp, attribute):
     # timestamp is in ms.
-    self.timestamp = tf_event.wall_time * 1000.0
-    self.attribute = tf_event.summary.value[0].tag
+    self.timestamp = timestamp
+    self.attribute = attribute
+
+  @classmethod
+  def from_tfevent(cls, tf_event):
+    """Created from a TF event."""
+
+    timestamp = tf_event.wall_time * 1000.0
+    attribute = tf_event.summary.value[0].tag
+    return cls(timestamp, attribute)
 
 def _sleep_ms(duration_ms):
   time.sleep(duration_ms / 1000.0)
@@ -110,7 +118,7 @@ def create_end_to_end_output(event_filepath, run_dir):
   for e in tf.train.summary_iterator(event_filepath):
     if e.HasField('file_version'):
       continue
-    log_events.append(LogEvent(e))
+    log_events.append(LogEvent.from_tfevent(e))
   end_to_end = end_to_end_util.EndToEndBreakDown(log_events)
   output_path = os.path.join(run_dir, 'end_to_end.json')
   with open(output_path, 'w') as f:
