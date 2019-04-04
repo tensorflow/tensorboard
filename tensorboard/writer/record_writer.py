@@ -14,11 +14,8 @@
 # ==============================================================================
 
 import struct
-from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import (
-    crc32c,
-    masked_crc32c,
-    u32,
-    )
+from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
+
 class RecordWriter(object):
     def __init__(self, logfile):
         self._writer = open(logfile, 'wb')
