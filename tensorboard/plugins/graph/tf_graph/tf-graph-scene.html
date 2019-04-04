@@ -526,6 +526,32 @@ limitations under the License.
   right: 20px;
   bottom: 20px;
 }
+
+.context-menu {
+  position: absolute;
+  display: none;
+  background-color: #e2e2e2;
+  border-radius: 2px;
+  font-size: 14px;
+  min-width: 150px;
+  border: 1px solid #d4d4d4;
+}
+
+.context-menu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+}
+
+.context-menu ul li {
+  padding: 4px 16px;
+}
+
+.context-menu ul li:hover {
+  background-color: #f3913e;
+  color: white;
+}
 </style>
 <div class="titleContainer">
   <div id="title" class="title">Main Graph</div>
@@ -644,6 +670,7 @@ limitations under the License.
   <g id="root"></g>
 </svg>
 <tf-graph-minimap id="minimap"></tf-graph-minimap>
+<div id="contextMenu" class="context-menu"></div>
 </template>
 <script>
 Polymer({
@@ -820,6 +847,13 @@ Polymer({
    */
   getGraphSvgRoot() {
     return this.$.svg;
+  },
+
+  /**
+   * @returns {!HTMLElement}
+   */
+  getContextMenu() {
+    return this.$.contextMenu;
   },
 
   /**
