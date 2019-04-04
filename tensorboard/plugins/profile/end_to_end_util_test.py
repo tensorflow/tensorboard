@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import tensorflow as tf
 
 from tensorboard.plugins.profile import end_to_end_util
@@ -28,94 +29,87 @@ from tensorboard.plugins.profile.end_to_end_helper import LogEvent
 tf.compat.v1.enable_eager_execution()
 
 
+# Timing results for a single session (e.g., train, eval, predict). Each
+# value is a float representing ms since epoch at which the corresponding
+# event occurred.
+SessionTiming = collections.namedtuple(
+    'SessionTiming',
+    [
+        'begin',
+        'init_system_begin',
+        'init_system_end',
+        'model_fn_begin',
+        'setup_infeed_begin',
+        'setup_infeed_end',
+        'model_fn_end',
+        'end',
+    ]
+)
+
 def _create_events_within_session(init_system_begin, init_system_end,
                                   model_fn_begin, model_fn_end,
                                   setup_infeed_begin, setup_infeed_end):
   log_events = []
-  if init_system_begin is not None:
-    log_events.append(LogEvent(init_system_begin,
-                               'profile/init_system_begin'))
-  if init_system_end is not None:
-    log_events.append(LogEvent(init_system_end,
-                               'profile/init_system_end'))
-  if model_fn_begin is not None:
-    log_events.append(LogEvent(model_fn_begin,
-                               'profile/model_fn_begin'))
-  if model_fn_end is not None:
-    log_events.append(LogEvent(model_fn_end,
-                               'profile/model_fn_end'))
-  if setup_infeed_begin is not None:
-    log_events.append(LogEvent(setup_infeed_begin,
-                               'profile/setup_infeed_begin'))
-  if setup_infeed_end is not None:
-    log_events.append(LogEvent(setup_infeed_end,
-                               'profile/setup_infeed_end'))
+  log_events.append(LogEvent(init_system_begin,
+                             'profile/init_system_begin'))
+  log_events.append(LogEvent(init_system_end,
+                             'profile/init_system_end'))
+  log_events.append(LogEvent(model_fn_begin,
+                             'profile/model_fn_begin'))
+  log_events.append(LogEvent(model_fn_end,
+                             'profile/model_fn_end'))
+  log_events.append(LogEvent(setup_infeed_begin,
+                             'profile/setup_infeed_begin'))
+  log_events.append(LogEvent(setup_infeed_end,
+                             'profile/setup_infeed_end'))
   return log_events
 
-def _create_test_events(train_begin,
-                        train_init_system_begin,
-                        train_init_system_end,
-                        train_model_fn_begin,
-                        train_model_fn_end,
-                        train_setup_infeed_begin,
-                        train_setup_infeed_end,
-                        train_end,
-                        eval_begin,
-                        eval_init_system_begin,
-                        eval_init_system_end,
-                        eval_model_fn_begin,
-                        eval_model_fn_end,
-                        eval_setup_infeed_begin,
-                        eval_setup_infeed_end,
-                        eval_end,
-                        predict_begin,
-                        predict_init_system_begin,
-                        predict_init_system_end,
-                        predict_model_fn_begin,
-                        predict_model_fn_end,
-                        predict_setup_infeed_begin,
-                        predict_setup_infeed_end,
-                        predict_end):
-  log_events = []
-  if train_begin is not None:
-    log_events.append(LogEvent(train_begin,
-                               'profile/train_begin'))
-  if train_end is not None:
-    log_events.append(LogEvent(train_end,
-                               'profile/train_end'))
-  train_events = _create_events_within_session(train_init_system_begin,
-                                               train_init_system_end,
-                                               train_model_fn_begin,
-                                               train_model_fn_end,
-                                               train_setup_infeed_begin,
-                                               train_setup_infeed_end)
-  log_events.extend(train_events)
-  if eval_begin is not None:
-    log_events.append(LogEvent(eval_begin,
-                               'profile/eval_begin'))
-  if eval_end is not None:
-    log_events.append(LogEvent(eval_end,
-                               'profile/eval_end'))
-  eval_events = _create_events_within_session(eval_init_system_begin,
-                                              eval_init_system_end,
-                                              eval_model_fn_begin,
-                                              eval_model_fn_end,
-                                              eval_setup_infeed_begin,
-                                              eval_setup_infeed_end)
-  log_events.extend(eval_events)
+def _create_test_events(train_timing, eval_timing, predict_timing):
 
-  if predict_begin is not None:
-    log_events.append(LogEvent(predict_begin,
-                               'profile/predict_begin'))
-  if predict_end is not None:
-    log_events.append(LogEvent(predict_end,
-                               'profile/predict_end'))
-  predict_events = _create_events_within_session(predict_init_system_begin,
-                                                 predict_init_system_end,
-                                                 predict_model_fn_begin,
-                                                 predict_model_fn_end,
-                                                 predict_setup_infeed_begin,
-                                                 predict_setup_infeed_end)
+  """Create end-to-end test data with the given timing information.
+
+     Args:
+       train_timing: A `SessionTiming` value for the training session.
+       eval_timing: A `SessionTiming` value for the evaluation session.
+       predict_timing: A `SessionTiming` value for the prediction session.
+
+    Returns:
+      A list of `LogEvent` objects.
+"""
+
+  log_events = []
+  log_events.append(LogEvent(train_timing.begin,
+                             'profile/train_begin'))
+  log_events.append(LogEvent(train_timing.end,
+                             'profile/train_end'))
+  train_events = _create_events_within_session(train_timing.init_system_begin,
+                                               train_timing.init_system_end,
+                                               train_timing.model_fn_begin,
+                                               train_timing.model_fn_end,
+                                               train_timing.setup_infeed_begin,
+                                               train_timing.setup_infeed_end)
+  log_events.extend(train_events)
+  log_events.append(LogEvent(eval_timing.begin,
+                             'profile/eval_begin'))
+  log_events.append(LogEvent(eval_timing.end,
+                             'profile/eval_end'))
+  eval_events = _create_events_within_session(eval_timing.init_system_begin,
+                                              eval_timing.init_system_end,
+                                              eval_timing.model_fn_begin,
+                                              eval_timing.model_fn_end,
+                                              eval_timing.setup_infeed_begin,
+                                              eval_timing.setup_infeed_end)
+  log_events.extend(eval_events)
+  log_events.append(LogEvent(predict_timing.begin,
+                             'profile/predict_begin'))
+  log_events.append(LogEvent(predict_timing.end,
+                             'profile/predict_end'))
+  predict_events = _create_events_within_session(predict_timing.init_system_begin,
+                                                 predict_timing.init_system_end,
+                                                 predict_timing.model_fn_begin,
+                                                 predict_timing.model_fn_end,
+                                                 predict_timing.setup_infeed_begin,
+                                                 predict_timing.setup_infeed_end)
   log_events.extend(predict_events)
   return log_events
 
@@ -140,30 +134,9 @@ class EndToEndUtilTest(tf.test.TestCase):
                9900, 500, 2500, 1000, 4000, '']]
 
     log_events = _create_test_events(
-        train_begin=100,
-        train_init_system_begin=300,
-        train_init_system_end=400,
-        train_model_fn_begin=600,
-        train_setup_infeed_begin=750,
-        train_setup_infeed_end=900,
-        train_model_fn_end=950,
-        train_end=10000,
-        eval_begin=10500,
-        eval_init_system_begin=10600,
-        eval_init_system_end=10650,
-        eval_model_fn_begin=11000,
-        eval_setup_infeed_begin=11700,
-        eval_setup_infeed_end=12000,
-        eval_model_fn_end=12500,
-        eval_end=13000,
-        predict_begin=14000,
-        predict_init_system_begin=14600,
-        predict_init_system_end=14650,
-        predict_model_fn_begin=15000,
-        predict_setup_infeed_begin=15700,
-        predict_setup_infeed_end=17000,
-        predict_model_fn_end=17200,
-        predict_end=18000)
+        SessionTiming(100, 300, 400, 600, 750, 900, 950, 10000),
+        SessionTiming(10500, 10600, 10650, 11000, 11700, 12000, 12500, 13000),
+        SessionTiming(14000, 14600, 14650, 15000, 15700, 17000, 17200, 18000))
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
     self.assertEqual(breakdown.Output(), _expected_answer())
 
@@ -183,31 +156,9 @@ class EndToEndUtilTest(tf.test.TestCase):
                9900, 0, 0, 11000, 4000, '']]
 
     log_events = _create_test_events(
-        train_begin=100,
-        train_init_system_begin=300,
-        train_init_system_end=400,
-        train_model_fn_begin=600,
-        train_setup_infeed_begin=750,
-        train_setup_infeed_end=900,
-        train_model_fn_end=950,
-        train_end=10000,
-        eval_begin=1000,
-        eval_init_system_begin=1200,
-        eval_init_system_end=1800,
-        eval_model_fn_begin=2000,
-        eval_setup_infeed_begin=2200,
-        eval_setup_infeed_end=2600,
-        eval_model_fn_end=2800,
-        eval_end=3000,
-        predict_begin=14000,
-        predict_init_system_begin=14600,
-        predict_init_system_end=14650,
-        predict_model_fn_begin=15000,
-        predict_setup_infeed_begin=15700,
-        predict_setup_infeed_end=17000,
-        predict_model_fn_end=17200,
-        predict_end=18000)
-
+        SessionTiming(100, 300, 400, 600, 750, 900, 950, 10000),
+        SessionTiming(1000, 1200, 1800, 2000, 2200, 2600, 2800, 3000),
+        SessionTiming(14000, 14600, 14650, 15000, 15700, 17000, 17200, 18000))
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
     self.assertEqual(breakdown.Output(), _expected_answer())
 
