@@ -96,6 +96,7 @@ tf-graph-controls {
           render-hierarchy="[[_renderHierarchy]]"
           selected-node="{{selectedNode}}"
           selected-file="{{selectedFile}}"
+          on-fit-tap="_fit"
       ></tf-graph-controls>
       <tf-graph-loader id="loader"
           out-graph-hierarchy="{{graphHierarchy}}"
@@ -187,6 +188,9 @@ Polymer({
       // TODO(@chihuahua): Find out why we call a private method here and do away with the call.
       this.$.loader._parseAndConstructHierarchicalGraph(null, blob);
     }
+  },
+  _fit: function() {
+    this.$$('#graphboard').fit();
   },
 });
 })();

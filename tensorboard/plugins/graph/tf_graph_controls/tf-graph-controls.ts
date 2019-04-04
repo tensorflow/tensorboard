@@ -339,14 +339,8 @@ Polymer({
     return datasets[_selectedRunIndex].tags;
   },
 
-  fit: function(): void {
-    // TODO(stephanwlee): document -> this. A WebComponent should not use
-    // document.querySelector. tf-graph renders tf-graph-scene#scene
-    // which means this component has an incomplete API and encapsulation is
-    // leaking in a bad way.
-    // Constructor is not exported and is not typed.
-    const tfGraphScene: any = document.querySelector('#scene');
-    tfGraphScene.fit();
+  _fit: function(): void {
+    this.fire('fit-tap');
   },
 
   _isGradientColoring: function(
