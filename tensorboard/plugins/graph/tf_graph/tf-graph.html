@@ -404,6 +404,9 @@ Polymer({
   _nodeToggleExtract: function(event) {
     // Toggle the include setting of the specified node appropriately.
     var nodeName = event.detail.name;
+    this.nodeToggleExtract(nodeName);
+  },
+  nodeToggleExtract: function(nodeName) {
     var renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
     if (renderNode.node.include == tf.graph.InclusionType.INCLUDE) {
       renderNode.node.include = tf.graph.InclusionType.EXCLUDE;
@@ -414,13 +417,16 @@ Polymer({
        this.renderHierarchy.isNodeAuxiliary(renderNode)
           ? tf.graph.InclusionType.INCLUDE : tf.graph.InclusionType.EXCLUDE;
     }
-
     // Rebuild the render hierarchy.
     this._buildRenderHierarchy(this.graphHierarchy);
   },
   _nodeToggleSeriesGroup: function(event) {
     // Toggle the group setting of the specified node appropriately.
     var nodeName = event.detail.name;
+    this.nodeToggleSeriesGroup(nodeName);
+  },
+  nodeToggleSeriesGroup: function(nodeName) {
+    // Toggle the group setting of the specified node appropriately.
     tf.graph.toggleNodeSeriesGroup(this.hierarchyParams.seriesMap, nodeName);
 
     // Rebuild the render hierarchy with the updated series grouping map.
