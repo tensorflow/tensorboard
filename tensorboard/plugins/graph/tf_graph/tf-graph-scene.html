@@ -652,6 +652,7 @@ Polymer({
     renderHierarchy: Object,
     name: String,
     colorBy: String,
+    traceInputs: Boolean,
 
     // For each render hierarchy, we only fit it to the viewport once (when the scene is attached to
     // the DOM). We do not fit the hierarchy again (unless the user clicks the reset button). For
@@ -787,6 +788,10 @@ Polymer({
     // first build the render hierarchy.
     '_animateAndFit(_isAttached, renderHierarchy)',
     '_updateHealthPills(nodeNamesToHealthPills, healthPillStepIndex)',
+    // When renderHierarchy changes, we need to first build the new SVG based
+    // on the new hierarchy (and it is asynchronous). We will let that observer
+    // update the input trace.
+    '_updateInputTrace(traceInputs, selectedNode)',
   ],
   getNode: function(nodeName) {
     return this.renderHierarchy.getRenderNodeByName(nodeName);
@@ -843,7 +848,7 @@ Polymer({
     tf.graph.util.time('tf-graph-scene (build scene):', function() {
       tf.graph.scene.buildGroup(d3.select(this.$.root), renderHierarchy.root, this);
       tf.graph.scene.addGraphClickListener(this.$.svg, this);
-      tf.graph.scene.node.traceInputs(renderHierarchy);
+      this._updateInputTrace();
     }.bind(this));
     // Update the minimap again when the graph is done animating.
     setTimeout(function() {
@@ -1087,8 +1092,6 @@ Polymer({
       this._updateNodeState(oldSelectedNode);
     }
 
-    tf.graph.scene.node.traceInputs(this.renderHierarchy);
-
     if (!selectedNode) {
       return;
     }
@@ -1150,6 +1153,14 @@ Polymer({
   },
   _fireEnableClick: function() {
     this.fire('enable-click');
+  },
+
+  _updateInputTrace() {
+    tf.graph.scene.node.updateInputTrace(
+        this.getGraphSvgRoot(),
+        this.renderHierarchy,
+        this.selectedNode,
+        this.traceInputs);
   },
 });
 </script>

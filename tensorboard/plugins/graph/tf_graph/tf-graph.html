@@ -69,6 +69,7 @@ paper-button {
           node-names-to-health-pills="[[nodeNamesToHealthPills]]"
           health-pill-step-index="{{healthPillStepIndex}}"
           handle-edge-selected="[[handleEdgeSelected]]"
+          trace-inputs="[[traceInputs]]"
     ></tf-graph-scene>
   </div>
 </div>
@@ -122,6 +123,7 @@ Polymer({
       readOnly: true,
       notify: true,
     },
+    traceInputs: Boolean,
     // An array of ContextMenuItem objects. Items that appear in the context
     // menu for a node.
     nodeContextMenuItems: Array,
