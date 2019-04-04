@@ -301,6 +301,9 @@ Polymer({
     'annotation-highlight': '_nodeHighlighted',
     'annotation-unhighlight': '_nodeUnhighlighted',
   },
+  fit: function() {
+    this.$.scene.fit();
+  },
   _graphChanged: function() {
     // When a new graph is loaded, fire this event so that there is no
     // info-card being displayed for the previously-loaded graph.

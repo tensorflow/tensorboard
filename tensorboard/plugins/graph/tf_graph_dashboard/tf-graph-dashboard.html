@@ -78,6 +78,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-node="{{_selectedNode}}"
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
+        on-fit-tap="_fit"
   ></tf-graph-controls>
   <div slot="center" class="center">
     <tf-graph-dashboard-loader id="loader"
@@ -289,6 +290,9 @@ Polymer({
     }
 
     this._maybeFetchHealthPills();
+  },
+  _fit: function() {
+    this.$$('#graphboard').fit();
   },
   _runObserver: tf_storage.getStringObserver(
       RUN_STORAGE_KEY, {

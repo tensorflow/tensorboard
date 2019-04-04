@@ -259,6 +259,9 @@ Polymer({
   observers: [
     '_updateNodeInclude(selectedNode)'
   ],
+  fit: function() {
+    this.$.graph.fit();
+  },
   /** True if the progress is not complete yet (< 100 %). */
   _isNotComplete: function(progress) {
     return progress.value < 100;
