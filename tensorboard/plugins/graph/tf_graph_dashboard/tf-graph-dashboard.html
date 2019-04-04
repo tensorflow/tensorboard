@@ -79,6 +79,7 @@ by default. The user can select a different run from a dropdown menu.
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
         on-fit-tap="_fit"
+        trace-inputs="{{_traceInputs}}"
   ></tf-graph-controls>
   <div class="center" slot="center">
     <tf-graph-dashboard-loader id="loader"
@@ -111,6 +112,7 @@ by default. The user can select a different run from a dropdown menu.
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
         compat-node-title="TPU Compatibility"
+        trace-inputs="[[_traceInputs]]"
     ></tf-graph-board>
   </div>
 </tf-dashboard-layout>
@@ -248,10 +250,7 @@ Polymer({
       type: Object,
     },
     _compatibilityProvider: Object,
-    _hierarchyParams: {
-      type: Object,
-      value: () => tf.graph.hierarchy.DefaultHierarchyParams,
-    },
+    _traceInputs: Boolean,
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
