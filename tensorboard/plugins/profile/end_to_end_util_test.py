@@ -161,7 +161,7 @@ class EndToEndUtilTest(tf.test.TestCase):
         predict_model_fn_end=17200,
         predict_end=18000)
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
-    self.assertEqual(breakdown.Json(), _expected_answer())
+    self.assertEqual(breakdown.Output(), _expected_answer())
 
   def test_EvalOverlappedWithTrain(self):
     # Test for the case where eval is done in parallel with train.
@@ -205,7 +205,7 @@ class EndToEndUtilTest(tf.test.TestCase):
         predict_end=18000)
 
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
-    self.assertEqual(breakdown.Json(), _expected_answer())
+    self.assertEqual(breakdown.Output(), _expected_answer())
 
 if __name__ == '__main__':
   tf.test.main()

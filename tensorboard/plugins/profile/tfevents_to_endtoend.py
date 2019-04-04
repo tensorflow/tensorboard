@@ -63,7 +63,7 @@ def main(unused_argv=None):
     print("target_dir (%s) is not writable!"%target_dir)
     return -1
   print("target_dir (%s) is writable."%target_dir)
-  end_to_end_helper.create_end_to_end_json(tfevents_file, target_dir)
+  end_to_end_helper.create_end_to_end_output(tfevents_file, target_dir)
 
 
 if __name__ == '__main__':

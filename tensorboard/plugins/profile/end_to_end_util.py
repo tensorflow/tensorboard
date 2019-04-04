@@ -278,35 +278,34 @@ class EndToEndBreakDown(object):
             self._predict_duration = (predict_sess.session_end_time
                                       - last_sess.session_end_time)
 
-  def ColumnNames(self):
-    return ["beginning to init-system's start",
-            "init-system",
-            "init-system's end to model-fn's start",
-            "model-fn",
-            "setup-infeed",
-            "training",
-            "training's end to eval's start",
-            "eval",
-            "eval's end to predict's start",
-            "predict"]
+  def Output(self):
+    """Generates output for plotting a stacked bar chart in Google Charts"""
 
-  def Values(self):
-    return [self._gap_train_begin_init_system_begin,
-            self._init_system_duration,
-            self._gap_init_system_end_model_fn_begin,
-            self._model_fn_duration,
-            self._setup_infeed_duration,
-            self._train_duration,
-            self._gap_eval_begin_last_session_end,
-            self._eval_duration,
-            self._gap_predict_begin_last_session_end,
-            self._predict_duration]
-
-  def Json(self):
-    first_row = ['Category']
-    first_row.extend(self.ColumnNames())
-    first_row.append({'role': 'annotation'})
-    second_row = ['']
-    second_row.extend(self.Values())
-    second_row.append('')
-    return [first_row, second_row]
+    return [
+        ["Category",
+         "beginning to init-system's start",
+         "init-system",
+         "init-system's end to model-fn's start",
+         "model-fn",
+         "setup-infeed",
+         "training",
+         "training's end to eval's start",
+         "eval",
+         "eval's end to predict's start",
+         "predict",
+         {"role": "annotation"},
+        ],
+        ["",
+         self._gap_train_begin_init_system_begin,
+         self._init_system_duration,
+         self._gap_init_system_end_model_fn_begin,
+         self._model_fn_duration,
+         self._setup_infeed_duration,
+         self._train_duration,
+         self._gap_eval_begin_last_session_end,
+         self._eval_duration,
+         self._gap_predict_begin_last_session_end,
+         self._predict_duration,
+         "",
+        ]
+    ]

@@ -95,12 +95,12 @@ def _create_event_file(run_dir):
   return log_dir, event_filepath
 
 
-def create_end_to_end_json(event_filepath, run_dir):
-  """Creates a JSON file from the given event file.
+def create_end_to_end_output(event_filepath, run_dir):
+  """Creates output data from the given event file.
 
   Args:
     event_filepath: path to the event file.
-    run_dir: the directory in which the JSON file is created.
+    run_dir: the directory in which the output file is created.
 
   Returns:
     Nothing.
@@ -112,10 +112,10 @@ def create_end_to_end_json(event_filepath, run_dir):
       continue
     log_events.append(LogEvent(e))
   end_to_end = end_to_end_util.EndToEndBreakDown(log_events)
-  json_path = os.path.join(run_dir, 'end_to_end.json')
-  with open(json_path, 'w') as f:
-    f.write('%s\n'%json.dumps(end_to_end.Json()))
-    print('Successfully wrote ', json_path)
+  output_path = os.path.join(run_dir, 'end_to_end.json')
+  with open(output_path, 'w') as f:
+    f.write('%s\n'%json.dumps(end_to_end.Output()))
+    print('Successfully wrote ', output_path)
 
 
 def create_demo(run_dir):
@@ -129,7 +129,7 @@ def create_demo(run_dir):
   """
 
   (log_dir, event_filepath) = _create_event_file(run_dir)
-  create_end_to_end_json(event_filepath, run_dir)
+  create_end_to_end_output(event_filepath, run_dir)
 
   shutil.rmtree(log_dir)
   print('Successfully removed ', log_dir)
