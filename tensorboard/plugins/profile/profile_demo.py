@@ -39,6 +39,7 @@ from tensorboard.plugins.profile import profile_demo_data
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2
 
+
 tf.compat.v1.enable_eager_execution()
 
 
