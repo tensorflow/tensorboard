@@ -150,23 +150,45 @@ var tf;
              * to be repeated. This list is used in parsing time to convert repeated
              * attributes into arrays even when the attribute only shows up once in the
              * object.
+             * Repeated fields have to be in sync with graph.proto and all of its
+             * dependencies.
+             * See https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/framework/graph.proto
              */
             var GRAPH_REPEATED_FIELDS = {
                 'library.function': true,
                 'library.function.node_def': true,
+                'library.function.node_def.input': true,
+                'library.function.node_def.attr': true,
+                'library.function.node_def.attr.value.list.b': true,
+                'library.function.node_def.attr.value.list.f': true,
+                'library.function.node_def.attr.value.list.func': true,
+                'library.function.node_def.attr.value.list.i': true,
+                'library.function.node_def.attr.value.list.s': true,
+                'library.function.node_def.attr.value.list.shape': true,
+                'library.function.node_def.attr.value.list.shape.dim': true,
+                'library.function.node_def.attr.value.list.tensor': true,
+                'library.function.node_def.attr.value.list.type': true,
+                'library.function.node_def.attr.value.shape.dim': true,
+                'library.function.node_def.attr.value.tensor.string_val': true,
+                'library.function.node_def.attr.value.tensor.tensor_shape.dim': true,
                 'library.function.signature.input_arg': true,
                 'library.function.signature.output_arg': true,
                 'library.versions': true,
                 'node': true,
                 'node.input': true,
                 'node.attr': true,
+                'node.attr.value.list.b': true,
+                'node.attr.value.list.f': true,
+                'node.attr.value.list.func': true,
+                'node.attr.value.list.i': true,
+                'node.attr.value.list.s': true,
+                'node.attr.value.list.shape': true,
+                'node.attr.value.list.shape.dim': true,
+                'node.attr.value.list.tensor': true,
                 'node.attr.value.list.type': true,
                 'node.attr.value.shape.dim': true,
                 'node.attr.value.tensor.string_val': true,
                 'node.attr.value.tensor.tensor_shape.dim': true,
-                'node.attr.value.list.shape': true,
-                'node.attr.value.list.shape.dim': true,
-                'node.attr.value.list.s': true
             };
             var METADATA_REPEATED_FIELDS = {
                 'step_stats.dev_stats': true,
