@@ -122,7 +122,7 @@ def create_end_to_end_output(event_filepath, run_dir):
   end_to_end = end_to_end_util.EndToEndBreakDown(log_events)
   output_path = os.path.join(run_dir, 'end_to_end.json')
   with open(output_path, 'w') as f:
-    f.write('%s\n'%json.dumps(end_to_end.Output()))
+    f.write('%s\n'%json.dumps(end_to_end.output()))
     print('Successfully wrote ', output_path)
 
 

@@ -117,7 +117,7 @@ def _create_test_events(train_timing, eval_timing, predict_timing):
 class EndToEndUtilTest(tf.test.TestCase):
   """Test class for end-to-end util."""
 
-  def test_Normal(self):
+  def test_normal(self):
     # Test the normal situation where train, eval, and predict are
     # executed sequentially.
 
@@ -138,9 +138,9 @@ class EndToEndUtilTest(tf.test.TestCase):
         SessionTiming(10500, 10600, 10650, 11000, 11700, 12000, 12500, 13000),
         SessionTiming(14000, 14600, 14650, 15000, 15700, 17000, 17200, 18000))
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
-    self.assertEqual(breakdown.Output(), _expected_answer())
+    self.assertEqual(breakdown.output(), _expected_answer())
 
-  def test_EvalOverlappedWithTrain(self):
+  def test_eval_overlapped_with_train(self):
     # Test for the case where eval is done in parallel with train.
 
     def _expected_answer():
@@ -160,7 +160,7 @@ class EndToEndUtilTest(tf.test.TestCase):
         SessionTiming(1000, 1200, 1800, 2000, 2200, 2600, 2800, 3000),
         SessionTiming(14000, 14600, 14650, 15000, 15700, 17000, 17200, 18000))
     breakdown = end_to_end_util.EndToEndBreakDown(log_events)
-    self.assertEqual(breakdown.Output(), _expected_answer())
+    self.assertEqual(breakdown.output(), _expected_answer())
 
 if __name__ == '__main__':
   tf.test.main()
