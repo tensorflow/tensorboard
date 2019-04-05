@@ -107,24 +107,24 @@ describe('parser', () => {
             .that.is.an('array')
             .and.that.has.length(1);
 
-        const first_func = graph.library.function[0];
+        const firstFunc = graph.library.function[0];
 
-        expect(first_func).to.have.property('signature')
+        expect(firstFunc).to.have.property('signature')
             .that.has.property('name', 'foo');
 
-        expect(first_func).to.have.property('node_def')
+        expect(firstFunc).to.have.property('node_def')
             .that.is.an('array')
             .and.that.has.length(2);
 
-        expect(first_func.node_def[0]).to.have.property('name', 'NoOp');
-        expect(first_func.node_def[0]).to.not.have.property('input');
-        expect(first_func.node_def[0]).to.have.property('attr')
+        expect(firstFunc.node_def[0]).to.have.property('name', 'NoOp');
+        expect(firstFunc.node_def[0]).to.not.have.property('input');
+        expect(firstFunc.node_def[0]).to.have.property('attr')
             .that.deep.equal([{key: '_output_shapes', value: {list: {}}}]);
 
-        expect(first_func.node_def[1]).to.have.property('name', 'Identity');
-        expect(first_func.node_def[1]).to.have.property('input')
+        expect(firstFunc.node_def[1]).to.have.property('name', 'Identity');
+        expect(firstFunc.node_def[1]).to.have.property('input')
             .that.deep.equal(['placeholder_1', '^NoOp']);
-        expect(first_func.node_def[1]).to.have.property('attr')
+        expect(firstFunc.node_def[1]).to.have.property('attr')
             .that.deep.equal([
                 {key: 'T', value: {type: 'DT_BOOL'}},
                 {key: '_output_shapes', value: {list: {shape: [{}]}}}
