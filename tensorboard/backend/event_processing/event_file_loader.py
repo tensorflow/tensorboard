@@ -21,6 +21,7 @@ from __future__ import print_function
 import inspect
 
 from tensorboard.compat import tf
+from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
@@ -38,7 +39,7 @@ class RawEventFileLoader(object):
     file_path = platform_util.readahead_file_path(file_path)
     logger.debug('Opening a record reader pointing at %s', file_path)
     with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
+      self._reader = _pywrap_tensorflow.PyRecordReader_New(
           tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
     # Store it for logging purposes.
     self._file_path = file_path

@@ -72,3 +72,33 @@ def tf2():
     # As a fallback, try `tensorflow.compat.v2` if it's defined.
     return tf.compat.v2
   raise ImportError('cannot import tensorflow 2.0 API')
+
+
+@_lazy.lazy_load('tensorboard.compat._pywrap_tensorflow')
+def _pywrap_tensorflow():
+  """Provide pywrap_tensorflow access in TensorBoard.
+
+  pywrap_tensorflow cannot be accessed from tf.python.pywrap_tensorflow
+  and needs to be imported using
+  `from tensorflow.python import pywrap_tensorflow`. Therefore, we provide
+  a separate accessor function for it here.
+
+  NOTE: pywrap_tensorflow is not part of TensorFlow API and this
+  dependency will go away soon.
+
+  Returns:
+    pywrap_tensorflow import, if available.
+
+  Raises:
+    ImportError: if we couldn't import pywrap_tensorflow.
+  """
+  try:
+    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
+  except ImportError:
+    try:
+      from tensorflow.python import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+      return pywrap_tensorflow
+    except ImportError:
+      pass
+  from tensorboard.compat.tensorflow_stub import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+  return pywrap_tensorflow

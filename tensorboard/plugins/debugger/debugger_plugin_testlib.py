@@ -25,6 +25,7 @@ import threading
 
 import portpicker  # pylint: disable=import-error
 import tensorflow as tf
+from tensorflow.python import pywrap_tensorflow
 from werkzeug import wrappers
 from werkzeug import test as werkzeug_test
 
@@ -60,7 +61,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.log_dir = self.get_temp_dir()
     file_prefix = tf.compat.as_bytes(
         os.path.join(self.log_dir, 'events.debugger'))
-    writer = tf.compat.v1.pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = pywrap_tensorflow.EventsWriter(file_prefix)
     device_name = '/job:localhost/replica:0/task:0/cpu:0'
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
@@ -106,7 +107,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     os.mkdir(run_foo_directory)
     file_prefix = tf.compat.as_bytes(
         os.path.join(run_foo_directory, 'events.debugger'))
-    writer = tf.compat.v1.pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = pywrap_tensorflow.EventsWriter(file_prefix)
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
             device_name=device_name,
