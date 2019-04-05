@@ -169,21 +169,18 @@ breaks the training session into multiple categories.
 ### How To Use This Tool
 
 When a TensorFlow job that is implemented with the TPU-Estimator is executed,
- a subdirectory named ```profile``` will be created inside the model directory.
+ a subdirectory named `profile` will be created inside the model directory.
  Within that subdirectory, there will be a TF event file with name of the form
-events.out.tfevents.XXXXXXXXX.profile_logger.
+`events.out.tfevents.XXXXXXXXX.profile_logger`.
 
 With this event file, use the script
-tensorboard/plugins/profile/tfevents_to_endtoend.py to generate a JSON
+`tensorboard/plugins/profile/tfevents_to_endtoend.py` to generate a JSON
  file in the log directory where TensorBoard will inspect:
 
 ```
-    bazel build -c opt tensorboard/plugins/profile:tfevents_to_endtoend
-    ./bazel-bin/tensorboard/plugins/profile/tfevents_to_endtoend
-     --tfevents_file=./events.out.tfevents.12345.profiler_logger
-     --target_dir=/tmp/profile_demo/plugins/profile/bar
-    ./bazel-bin/tensorboard/tensorboard --logdir=/tmp/profile_demo
+bazel build -c opt tensorboard/plugins/profile:tfevents_to_endtoend
+./bazel-bin/tensorboard/plugins/profile/tfevents_to_endtoend
+  --tfevents_file=./events.out.tfevents.12345.profiler_logger
+  --target_dir=/tmp/profile_demo/plugins/profile/bar
+./bazel-bin/tensorboard/tensorboard --logdir=/tmp/profile_demo
 ```
-
-
-
