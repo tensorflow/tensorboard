@@ -13,8 +13,15 @@
 # limitations under the License.
 # ==============================================================================
 
+import os
 import struct
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
+
+
+def directory_check(path):
+    '''Initialize the directory for log files.'''
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 class RecordWriter(object):
     def __init__(self, logfile):

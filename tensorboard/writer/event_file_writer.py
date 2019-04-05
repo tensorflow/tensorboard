@@ -26,7 +26,7 @@ import time
 import six
 
 from tensorboard.compat.proto import event_pb2
-from tensorboard.writer.record_writer import RecordWriter
+from tensorboard.writer.record_writer import RecordWriter, directory_check
 
 
 class EventsWriter(object):
@@ -106,6 +106,7 @@ class EventFileWriter(object):
             pending events and summaries to disk.
         """
         self._logdir = logdir
+        directory_check(self._logdir)
         self._event_queue = six.moves.queue.Queue(max_queue)
         self._ev_writer = EventsWriter(os.path.join(
             self._logdir, "events"), filename_suffix)
