@@ -220,6 +220,9 @@ class TensorBoard(object):
       event_file = os.path.expanduser(self.flags.event_file)
       efi.inspect(self.flags.logdir, event_file, self.flags.tag)
       return 0
+    if self.flags.version:
+      logger.info('Not bringing up Tensorboard, but will print its version.')
+      return version.VERSION
     try:
       server = self._make_server()
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
