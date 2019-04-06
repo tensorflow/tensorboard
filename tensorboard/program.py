@@ -222,7 +222,8 @@ class TensorBoard(object):
       return 0
     if self.flags.version:
       logger.info('Not bringing up Tensorboard, but will describe its version.')
-      return version.VERSION
+      print(version.Version)
+      return 0
     try:
       server = self._make_server()
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
