@@ -74,6 +74,7 @@ def tf2():
   raise ImportError('cannot import tensorflow 2.0 API')
 
 
+# TODO(https://github.com/tensorflow/tensorboard/issues/1711): remove this
 @_lazy.lazy_load('tensorboard.compat._pywrap_tensorflow')
 def _pywrap_tensorflow():
   """Provide pywrap_tensorflow access in TensorBoard.
