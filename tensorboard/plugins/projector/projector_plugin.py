@@ -32,6 +32,7 @@ from google.protobuf import text_format
 
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
+from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 from tensorboard.util import tb_logging
@@ -423,8 +424,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     reader = None
     if config.model_checkpoint_path and _using_tf():
       try:
-        reader = tf.compat.v1.pywrap_tensorflow.NewCheckpointReader(
-            config.model_checkpoint_path)
+        reader = tf.train.load_checkpoint(config.model_checkpoint_path)
       except Exception:  # pylint: disable=broad-except
         logger.warn('Failed reading "%s"', config.model_checkpoint_path)
     self.readers[run] = reader
