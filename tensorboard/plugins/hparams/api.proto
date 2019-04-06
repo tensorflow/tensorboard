@@ -101,7 +101,6 @@ enum DataType {
   DATA_TYPE_STRING = 1;
   DATA_TYPE_BOOL = 2;
   DATA_TYPE_FLOAT64 = 3;
-  DATA_TYPE_INT64 = 4;
 }
 
 // Represents the closed interval [min_value, max_value] of the real line.
