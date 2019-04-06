@@ -1,6 +1,5 @@
 # Description:
-# TensorBoard, a dashboard for investigating TensorFlow
-
+# Writer interfaces for TensorBoard if tensorflow is not present
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
@@ -17,7 +16,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat/tensorflow_stub",
         "@org_pythonhosted_six",

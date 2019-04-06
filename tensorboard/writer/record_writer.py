@@ -33,25 +33,19 @@ class RecordWriter(object):
         """
         self._writer = open(logfile, 'wb')
 
-    # Format of a single record:
+    # Format of a single record: (little-endian)
     # uint64    length
     # uint32    masked crc of length
     # byte      data[length]
     # uint32    masked crc of data
     def write(self, data):
-        header = struct.pack('Q', len(data))
-        header_crc = struct.pack('I', masked_crc32c(header))
-        footer_crc = struct.pack('I', masked_crc32c(data))
+        header = struct.pack('<Q', len(data))
+        header_crc = struct.pack('<I', masked_crc32c(header))
+        footer_crc = struct.pack('<I', masked_crc32c(data))
         self._writer.write(header + header_crc + data + footer_crc)
 
     def flush(self):
-        if self._writer is not None:
-            self._writer.flush()
-        else:
-            raise OSError('file writer is missing')
+        self._writer.flush()
 
     def close(self):
-        if self._writer is not None:
-            self._writer.close()
-        else:
-            raise OSError('file writer is missing')
+        self._writer.close()
