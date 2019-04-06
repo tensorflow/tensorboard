@@ -221,7 +221,6 @@ class TensorBoard(object):
       efi.inspect(self.flags.logdir, event_file, self.flags.tag)
       return 0
     if self.flags.version:
-      logger.info('Not bringing up Tensorboard, but will describe its version.')
       print(version.VERSION)
       return 0
     try:
