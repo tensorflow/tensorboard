@@ -19,12 +19,18 @@ from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
 
 
 def directory_check(path):
-    '''Initialize the directory for log files.'''
+    """Initialize the directory for log files."""
     if not os.path.exists(path):
         os.makedirs(path)
 
 class RecordWriter(object):
+    """Write encoded protobuf to a file with packing defined in tensorflow"""
     def __init__(self, logfile):
+        """Open a file to keep the tensorboard records.
+
+        Args:
+        logfile: (string) The location where the file will be opened.
+        """
         self._writer = open(logfile, 'wb')
 
     # Format of a single record:
@@ -33,10 +39,10 @@ class RecordWriter(object):
     # byte      data[length]
     # uint32    masked crc of data
     def write(self, data):
-        header_len = struct.pack('Q', len(data))
-        header_len_crc = struct.pack('I', masked_crc32c(header_len))
+        header = struct.pack('Q', len(data))
+        header_crc = struct.pack('I', masked_crc32c(header))
         footer_crc = struct.pack('I', masked_crc32c(data))
-        self._writer.write(header_len + header_len_crc + data + footer_crc)
+        self._writer.write(header + header_crc + data + footer_crc)
 
     def flush(self):
         if self._writer is not None:

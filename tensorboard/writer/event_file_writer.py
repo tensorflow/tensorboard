@@ -207,7 +207,7 @@ class _EventLoggerThread(threading.Thread):
                 else:
                     event = self._queue.get(False)
 
-                if event == self._shutdown_signal:
+                if event is self._shutdown_signal:
                     return
                 self._ev_writer.write_event(event)
                 self._has_pending_events = True
