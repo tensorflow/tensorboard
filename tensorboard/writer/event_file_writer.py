@@ -26,7 +26,7 @@ import time
 import six
 
 from tensorboard.compat.proto import event_pb2
-from tensorboard.writer.record_writer import RecordWriter, directory_check
+from tensorboard.writer.record_writer import RecordWriter
 
 
 class EventsWriter(object):
@@ -43,7 +43,7 @@ class EventsWriter(object):
           filename_suffix: The string that will be appended to
             the filename of the event file.
         '''
-        self._file_name = file_prefix + ".out.tfevents." + str(time.time())[:10] + "." +\
+        self._file_name = file_prefix + ".out.tfevents." + "%010d" % time.time() + "." +\
             socket.gethostname() + filename_suffix
         self._num_outstanding_events = 0
         self._py_recordio_writer = RecordWriter(self._file_name)
@@ -106,7 +106,8 @@ class EventFileWriter(object):
             pending events and summaries to disk.
         """
         self._logdir = logdir
-        directory_check(self._logdir)
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
         self._event_queue = six.moves.queue.Queue(max_queue)
         self._ev_writer = EventsWriter(os.path.join(
             self._logdir, "events"), filename_suffix)
@@ -120,20 +121,6 @@ class EventFileWriter(object):
     def get_logdir(self):
         """Returns the directory where event file will be written."""
         return self._logdir
-
-    def reopen(self):
-        """Reopens the EventFileWriter.
-
-        Can be called after `close()` to add more events in the same directory.
-        The events will go into a new events file and a new write/flush worker
-        is created. Does nothing if the EventFileWriter was not closed.
-        """
-        if self._closed:
-            self._closed = False
-            self._worker = _EventLoggerThread(
-                self._event_queue, self._ev_writer, self._flush_secs
-            )
-            self._worker.start()
 
     def add_event(self, event):
         """Adds an event to the event file.
