@@ -25,6 +25,7 @@ export class Minimap {
   /** A buffer canvas used for temporary drawing to avoid flickering. */
   private canvasBuffer: HTMLCanvasElement;
   private download: HTMLLinkElement;
+  private svgdownload: HTMLLinkElement;
   private downloadCanvas: HTMLCanvasElement;
 
   /** The minimap svg used for holding the viewpoint rectangle. */
@@ -297,6 +298,29 @@ export class Minimap {
     };
     image.src =
         'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgXml);
+    
+    // download svg
+    let $svgdownload = d3.select('#svggraphdownload');
+    this.svgdownload = <HTMLLinkElement>$svgdownload.node();
+    $svgdownload.on('click', d => {
+      // Revoke the old URL, if any. Then, generate a new URL.
+      URL.revokeObjectURL(this.svgdownload.href);
+      const svgBlob = new Blob([svgXml], {type: 'image/svg+xml;charset=utf-8'});
+
+      const dataUrl = URL.createObjectURL(svgBlob);
+      const prefix = dataUrl.slice(0, dataUrl.indexOf(","));
+      if (!prefix.endsWith(";base64")) {
+        console.warn(`non-base64 data URL (${prefix}); cannot use blob download`);
+        this.svgdownload.href = dataUrl;
+        return;
+      }
+
+      const data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+      const bytes = 
+        new Uint8Array(data.length).map((_, i) => data.charCodeAt(i));
+        const blob = new Blob([bytes], {type: "image/svg+xml;charset=utf-8"});
+        this.svgdownload.href = URL.createObjectURL(blob);
+    });
   }
 
   /**

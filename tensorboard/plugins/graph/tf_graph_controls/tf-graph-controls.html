@@ -347,6 +347,13 @@ paper-dropdown-menu {
     </paper-button>
     <a href="#" id="graphdownload" class="title" download="graph.png"></a>
   </div>
+  <div class="control-holder">
+    <paper-button class="icon-button" on-click="svgdownload" alt="Download SVG">
+      <iron-icon icon="file-download" class="button-icon"></iron-icon>
+      <span class="button-text">Download SVG</span>
+    </paper-button>
+    <a href="#" id="svggraphdownload" class="title" download="graph.svg"></a>
+  </div>
   <div class="control-holder runs">
     <div class="title">Run <span class="counter">([[datasets.length]])</span></div>
     <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left" class="run-dropdown">
@@ -1063,6 +1070,9 @@ Polymer({
   download: function() {
     this.$.graphdownload.click();
   },
+  svgdownload: function() {
+    this.$.svggraphdownload.click();
+  },
   _updateFileInput: function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1079,6 +1089,7 @@ Polymer({
       filePath = filePath.substring(lastSlashIndex + 1);
     }
     this._setDownloadFilename(filePath);
+    this._setSVGDownloadFilename(filePath);
     this.set('selectedFile', e);
   },
   _datasetsChanged: function(newDatasets, oldDatasets) {
@@ -1107,6 +1118,7 @@ Polymer({
     this._selectedGraphType = this._getDefaultSelectionType();
     this.$['trace-inputs'].active = false; // Set trace input to off-state.
     this._setDownloadFilename(this.datasets[runIndex] ? this.datasets[runIndex].name : '');
+    this._setSVGDownloadFilename(this.datasets[runIndex] ? this.datasets[runIndex].name : '');
   },
   _selectedTagIndexChanged() {
      this._selectedGraphType = this._getDefaultSelectionType();
@@ -1136,6 +1148,9 @@ Polymer({
   },
   _setDownloadFilename: function(name) {
     this.$.graphdownload.setAttribute('download', name + '.png');
+  },
+  _setSVGDownloadFilename: function(name) {
+    this.$.svggraphdownload.setAttribute('download', name + '.svg');
   },
   _statsNotNull: function(stats) {
     return stats !== null;
