@@ -376,6 +376,11 @@ Example usage:
 
 See tensorboard/backend/event_processing/event_file_inspector.py for more info.\
 ''')
+    
+    parser.add_argument(
+        '--version',
+        action='store_true',
+        help='Prints the version of Tensorboard')
 
     parser.add_argument(
         '--tag',
