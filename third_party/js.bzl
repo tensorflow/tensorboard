@@ -207,22 +207,6 @@ def tensorboard_js_workspace():
   )
 
   filegroup_external(
-      name = "ai_google_pair_umap_js",
-      # no @license header
-      licenses = ["notice"],  # Apache License 2.0
-      sha256_urls = {
-          "f605f4ebf68715bd298d90152d7014ccf40126b4692cedb6cb96329eb6a11dd6": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.2/lib/umap-js.min.js",
-              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.min.js",
-          ],
-          "f8becda889561f0043bef763a06f258969e83de0e837231cb44a998ca247acf7": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts",
-              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts",
-          ],
-      },
-  )
-
-  filegroup_external(
       name = "com_palantir_plottable",
       # no @license header
       licenses = ["notice"],  # MIT

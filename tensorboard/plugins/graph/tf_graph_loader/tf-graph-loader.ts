@@ -93,9 +93,8 @@ Polymer({
       this._load(this.selection);
     });
   },
-  // TODO(stephanwlee): Use `tf.graph.Selection` when tf-graph-control is TypeScript.
-  _load: function({run, tag, type: selectionType}:
-      {run: string, tag: string|null, type: tf.graph.SelectionType}): Promise<void> {
+  _load: function(selection: tf.graph.controls.Selection): Promise<void> {
+    const {run, tag, type: selectionType} = selection;
     const {overridingHierarchyParams} = this;
 
     switch (selectionType) {

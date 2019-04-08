@@ -22,7 +22,6 @@
 /** @type {!Object} */ var dagre;
 /** @type {!Object} */ var numeric;
 /** @type {!Object} */ var weblas;
-/** @type {!Object} */ var UMAP;
 /** @type {!Object} */ var graphlib;
 /** @type {!Object} */ var Plottable;
 /** @type {!Object} */ var GroupEffect;
