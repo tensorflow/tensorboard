@@ -57,7 +57,7 @@ TensorKeyWithArgs = collections.namedtuple(
 
 # A `TensorKey` represents an entry in either `input_layers` or `output_layers`
 # fields of a Keras functional model's `config` data. See module docstring for
-# more nformation. Alternatively, see below link for TensorFlow.js type
+# more information. Alternatively, see below link for TensorFlow.js type
 # definition.
 # https://github.com/tensorflow/tfjs-layers/blob/4106f4290ef18e7bde7baaa9995b82b6024ea2ef/src/keras_format/model_serialization.ts#L19-L20
 TensorKey = collections.namedtuple(
@@ -118,7 +118,7 @@ def _is_model(layer):
   Returns:
     bool: True if layer is a model.
   """
-  return layer.get('config').get('layers') is not None
+  return layer.get('config', {}).get('layers') is not None
 
 
 def _get_inbound_nodes(tensor_key_with_args_array):
@@ -126,19 +126,19 @@ def _get_inbound_nodes(tensor_key_with_args_array):
 
   Keras model serialization records input to a layer in a property,
   `tensor_key_with_args_array`, and it can be of below forms:
-  - [['name_1', 1, 0], ['name_2', 1, 1]]: two invocations witn single input.
+  - [['name_1', 1, 0], ['name_2', 1, 1]]: two invocations with a single input.
   - [
       [['name_1', 0, 0], ['name_2', 1, 0]],
       [['name_3', 0, 0], ['name_4', 1, 0]]]: two invocations with multiple
     inputs. Multiple inputs are only applicable to limited keras layers like
     keras.layers.add, keras.layers.concat, and etc...
 
-  Note that there cannot be fixture of types as a layer that takes multiple
-  inputs have precondition on size of the input.
+  Note that there cannot be a mixture of two forms where a layer can take both
+  a single input and multiple inputs.
 
   Args:
-    tensor_key_with_args_array: Value of `tensor_key_with_args_array` of a Keras
-    model serialization.
+    tensor_key_with_args_array: Value of `inbound_nodes` of a Keras model
+        serialization.
 
   Raises:
     ValueError: when the `tensor_key_with_args_array` violate our assumption
@@ -147,16 +147,14 @@ def _get_inbound_nodes(tensor_key_with_args_array):
   Returns:
     List of invocations that has a list of inputs.
   """
-  normalized_key_array_list = tensor_key_with_args_array \
-      if tensor_key_with_args_array else []
+  normalized_key_array_list = tensor_key_with_args_array or []
 
   is_single_input_mode = isinstance(
       normalized_key_array_list[0][0], six.string_types) \
           if normalized_key_array_list else False
   invocations = []
   for key_array in normalized_key_array_list:
-    if (is_single_input_mode and not
-        isinstance(key_array[0], six.string_types)):
+    if (is_single_input_mode != isinstance(key_array[0], six.string_types)):
       raise ValueError('Expected all inbound nodes to have the same type')
 
     if is_single_input_mode:
@@ -165,43 +163,46 @@ def _get_inbound_nodes(tensor_key_with_args_array):
       invocations.append(key_array)
 
   normalized_key_array_list = []
-  for invocation in invocations:
-    inbound_invocation = []
-    for input_layer in invocation:
-      inbound_invocation.append(
+  return [
+      [
           TensorKeyWithArgs(
               inbound_layer=input_layer[0],
               node_index=input_layer[1],
               tensor_index=input_layer[2],
-              node_args=input_layer[3]))
-    normalized_key_array_list.append(inbound_invocation)
-  return normalized_key_array_list
+              node_args=input_layer[3],
+          )
+          for input_layer in invocation
+      ]
+      for invocation in invocations
+  ]
 
 
 def _get_tensor_key(tensor_key_array):
   """Return normalized list of TensorKeyArray and returns list of TensorKeys.
 
-  A model configuration has fields 'input_layers' and 'output_layers' which can
-  be of below forms:
-  - ['in_layer_name', 0, 0]
-  - [['in_layer_is_model', 1, 0], ['in_layer_is_model', 1, 1]]
+  A model configuration has fields `input_layers` and `output_layers`.
+  Each is either a raw `TensorKey` or a list of raw `TensorKey`s. This
+  function normalizes such a value to always be a list of `TensorKey`s,
+  forming a singleton list in the case where the input is a single raw
+  `TensorKey`.
 
   Args:
     tensor_key_array: Value from 'input_layers' or 'output_layers' from Keras
-        model configuraiton.
+        model configuration.
 
   Returns:
-    A list of TensorKey.
+    A list of `TensorKey` values.
   """
-  normalized_key_array_list = ([tensor_key_array] if isinstance(
-      tensor_key_array[0], six.string_types) else tensor_key_array)
+  normalized_key_array_list = ([tensor_key_array] if tensor_key_array and
+      isinstance(tensor_key_array[0], six.string_types) else tensor_key_array)
 
-  tensor_keys = []
-  for node in normalized_key_array_list:
-    tensor_keys.append(TensorKey(layer_name=node[0],
-                              node_index=node[1],
-                              tensor_index=node[2]))
-  return tensor_keys
+  return [
+      TensorKey(
+          layer_name=node[0],
+          node_index=node[1],
+          tensor_index=node[2])
+      for node in normalized_key_array_list
+  ]
 
 
 def _normalize_sequential_models(keras_model):
