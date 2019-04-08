@@ -348,6 +348,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":plugin_util",
+        "//tensorboard/util:test_case",
         "@org_pythonhosted_six",
     ],
 )

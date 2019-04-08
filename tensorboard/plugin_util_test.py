@@ -19,12 +19,12 @@ from __future__ import print_function
 import textwrap
 
 import six
-import unittest
 
 from tensorboard import plugin_util
+from tensorboard.util import test_case
 
 
-class MarkdownToSafeHTMLTest(unittest.TestCase):
+class MarkdownToSafeHTMLTest(test_case.TestCase):
 
   def _test(self, markdown_string, expected):
     actual = plugin_util.markdown_to_safe_html(markdown_string)
@@ -124,4 +124,4 @@ class MarkdownToSafeHTMLTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  test_case.main()
