@@ -28,6 +28,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":http_util",
+        "//tensorboard/util:test_case",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -51,6 +52,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":json_util",
+        "//tensorboard/util:test_case",
     ],
 )
 
@@ -86,6 +88,7 @@ py_test(
         ":application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_case",
         "@org_pocoo_werkzeug",
     ],
 )

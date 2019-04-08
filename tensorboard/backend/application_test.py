@@ -29,7 +29,6 @@ import socket
 import tempfile
 
 import six
-import unittest
 
 try:
   # python version >= 3.3
@@ -43,6 +42,7 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+from tensorboard.util import test_case
 
 
 class FakeFlags(object):
@@ -117,7 +117,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
 
-class ApplicationTest(unittest.TestCase):
+class ApplicationTest(test_case.TestCase):
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -150,7 +150,7 @@ class ApplicationTest(unittest.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class ApplicationBaseUrlTest(unittest.TestCase):
+class ApplicationBaseUrlTest(test_case.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
@@ -190,14 +190,11 @@ class ApplicationBaseUrlTest(unittest.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class ApplicationPluginNameTest(unittest.TestCase):
-
-  def setUp(self):
-    self.temp_dir = tempfile.mkdtemp()
-    self.addCleanup(shutil.rmtree, self.temp_dir)
+class ApplicationPluginNameTest(test_case.TestCase):
 
   def _test(self, name, should_be_okay):
-    temp_dir = tempfile.mkdtemp(prefix=self.temp_dir)
+    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
+    self.addCleanup(shutil.rmtree, temp_dir)
     multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
@@ -235,14 +232,11 @@ class ApplicationPluginNameTest(unittest.TestCase):
     self._test('Scalar-Dashboard_3000.1', True)
 
 
-class ApplicationPluginRouteTest(unittest.TestCase):
-
-  def setUp(self):
-    self.temp_dir = tempfile.mkdtemp()
-    self.addCleanup(shutil.rmtree, self.temp_dir)
+class ApplicationPluginRouteTest(test_case.TestCase):
 
   def _test(self, route, should_be_okay):
-    temp_dir = tempfile.mkdtemp(prefix=self.temp_dir)
+    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
+    self.addCleanup(shutil.rmtree, temp_dir)
     multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=application.DEFAULT_SIZE_GUIDANCE,
         purge_orphaned_data=True)
@@ -271,7 +265,7 @@ class ApplicationPluginRouteTest(unittest.TestCase):
     self._test('runaway', False)
 
 
-class ParseEventFilesSpecTest(unittest.TestCase):
+class ParseEventFilesSpecTest(test_case.TestCase):
 
   def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
     """
@@ -392,16 +386,14 @@ class ParseEventFilesSpecTest(unittest.TestCase):
           ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
 
 
-class TensorBoardPluginsTest(unittest.TestCase):
+class TensorBoardPluginsTest(test_case.TestCase):
 
   def setUp(self):
     self.context = None
-    self.temp_dir = tempfile.mkdtemp()
-    self.addCleanup(shutil.rmtree, self.temp_dir)
     dummy_assets_zip_provider = lambda: None
     # The application should have added routes for both plugins.
     self.app = application.standard_tensorboard_wsgi(
-        FakeFlags(logdir=self.temp_dir),
+        FakeFlags(logdir=self.get_temp_dir()),
         [
           base_plugin.BasicLoader(functools.partial(
               FakePlugin,
@@ -438,12 +430,12 @@ class TensorBoardPluginsTest(unittest.TestCase):
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include both plugins.
     mapping = self.context.plugin_name_to_instance
-    six.assertCountEqual(self, ['foo', 'bar'], list(mapping.keys()))
+    self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
-class ApplicationConstructionTest(unittest.TestCase):
+class ApplicationConstructionTest(test_case.TestCase):
 
   def testExceptions(self):
     logdir = '/fake/foo'
@@ -469,14 +461,10 @@ class ApplicationConstructionTest(unittest.TestCase):
       application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
 
 
-class DbTest(unittest.TestCase):
-
-  def setUp(self):
-    self.temp_dir = tempfile.mkdtemp()
-    self.addCleanup(shutil.rmtree, self.temp_dir)
+class DbTest(test_case.TestCase):
 
   def testSqliteDb(self):
-    db_uri = 'sqlite:' + os.path.join(self.temp_dir, 'db')
+    db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
     db_module, db_connection_provider = application.get_database_info(db_uri)
     self.assertTrue(hasattr(db_module, 'Date'))
     with contextlib.closing(db_connection_provider()) as conn:
@@ -491,7 +479,7 @@ class DbTest(unittest.TestCase):
         self.assertEqual(('justine',), c.fetchone())
 
   def testTransactionRollback(self):
-    db_uri = 'sqlite:' + os.path.join(self.temp_dir, 'db')
+    db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
     _, db_connection_provider = application.get_database_info(db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
@@ -510,7 +498,7 @@ class DbTest(unittest.TestCase):
 
   def testTransactionRollback_doesntDoAnythingIfIsolationLevelIsNone(self):
     # NOTE: This is a terrible idea. Don't do this.
-    db_uri = ('sqlite:' + os.path.join(self.temp_dir, 'db') +
+    db_uri = ('sqlite:' + os.path.join(self.get_temp_dir(), 'db') +
               '?isolation_level=null')
     _, db_connection_provider = application.get_database_info(db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
@@ -538,4 +526,4 @@ class DbTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  test_case.main()

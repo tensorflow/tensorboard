@@ -17,15 +17,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import unittest
-
-
 from tensorboard.backend import json_util
+from tensorboard.util import test_case
 
 _INFINITY = float('inf')
 
 
-class FloatWrapperTest(unittest.TestCase):
+class FloatWrapperTest(test_case.TestCase):
 
   def _assertWrapsAs(self, to_wrap, expected):
     """Asserts that |to_wrap| becomes |expected| when wrapped."""
@@ -63,4 +61,4 @@ class FloatWrapperTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  test_case.main()

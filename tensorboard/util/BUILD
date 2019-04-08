@@ -64,6 +64,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":platform_util",
+        ":test_case",
     ],
 )
 
@@ -80,6 +81,17 @@ py_library(
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat/tensorflow_stub",
+    ],
+)
+
+py_library(
+    name = "test_case",
+    testonly = 1,
+    srcs = ["test_case.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tb_logging",
+        "@org_pythonhosted_six",
     ],
 )
 

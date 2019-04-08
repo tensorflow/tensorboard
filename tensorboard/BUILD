@@ -82,6 +82,7 @@ py_test(
         ":manager",
         ":version",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:test_case",
         "@org_pythonhosted_six",
     ],
 )
@@ -144,6 +145,7 @@ py_test(
         ":program",
         "//tensorboard/backend:application",
         "//tensorboard/plugins/core:core_plugin",
+        "//tensorboard/util:test_case",
         "@org_pocoo_werkzeug",
     ],
 )

@@ -27,7 +27,6 @@ import shutil
 import tempfile
 
 import six
-import unittest
 
 try:
   # python version >= 3.3
@@ -38,6 +37,7 @@ except ImportError:
 from tensorboard import manager
 from tensorboard import version
 from tensorboard.util import tb_logging
+from tensorboard.util import test_case
 
 
 def _make_info(i=0):
@@ -61,7 +61,7 @@ def _make_info(i=0):
   )
 
 
-class TensorBoardInfoTest(unittest.TestCase):
+class TensorBoardInfoTest(test_case.TestCase):
   """Unit tests for TensorBoardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
@@ -169,7 +169,7 @@ class TensorBoardInfoTest(unittest.TestCase):
     self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
-class CacheKeyTest(unittest.TestCase):
+class CacheKeyTest(test_case.TestCase):
   """Unit tests for `manager.cache_key`."""
 
   def test_result_is_str(self):
@@ -255,20 +255,18 @@ class CacheKeyTest(unittest.TestCase):
     self.assertEqual(with_list, with_tuple)
 
 
-class TensorBoardInfoIoTest(unittest.TestCase):
+class TensorBoardInfoIoTest(test_case.TestCase):
   """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
   def setUp(self):
     super(TensorBoardInfoIoTest, self).setUp()
-    self.temp_dir = tempfile.mkdtemp()
-    self.patcher = mock.patch.dict(os.environ, {"TMPDIR": self.temp_dir})
-    self.patcher.start()
+    patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
+    patcher.start()
+    self.addCleanup(patcher.stop)
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
 
   def tearDown(self):
-    self.patcher.stop()
-    shutil.rmtree(self.temp_dir)
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
 
   def _list_info_dir(self):
@@ -330,19 +328,19 @@ class TensorBoardInfoIoTest(unittest.TestCase):
     def remove_info(i):
       with mock.patch("os.getpid", lambda: 76540 + i):
         manager.remove_info_file()
-    six.assertCountEqual(self, manager.get_all(), [])
+    self.assertItemsEqual(manager.get_all(), [])
     add_info(1)
-    six.assertCountEqual(self, manager.get_all(), [_make_info(1)])
+    self.assertItemsEqual(manager.get_all(), [_make_info(1)])
     add_info(2)
-    six.assertCountEqual(self, manager.get_all(), [_make_info(1), _make_info(2)])
+    self.assertItemsEqual(manager.get_all(), [_make_info(1), _make_info(2)])
     remove_info(1)
-    six.assertCountEqual(self, manager.get_all(), [_make_info(2)])
+    self.assertItemsEqual(manager.get_all(), [_make_info(2)])
     add_info(3)
-    six.assertCountEqual(self, manager.get_all(), [_make_info(2), _make_info(3)])
+    self.assertItemsEqual(manager.get_all(), [_make_info(2), _make_info(3)])
     remove_info(3)
-    six.assertCountEqual(self, manager.get_all(), [_make_info(2)])
+    self.assertItemsEqual(manager.get_all(), [_make_info(2)])
     remove_info(2)
-    six.assertCountEqual(self, manager.get_all(), [])
+    self.assertItemsEqual(manager.get_all(), [])
 
   def test_get_all_ignores_bad_files(self):
     with open(os.path.join(self.info_dir, "pid-1234.info"), "w") as outfile:
@@ -358,4 +356,4 @@ class TensorBoardInfoIoTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-  unittest.main()
+  test_case.main()

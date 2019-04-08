@@ -34,7 +34,7 @@ class TensorBoardTest(unittest.TestCase):
     # Many useful flags are defined under the core plugin.
     tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader()])
     tb.configure(logdir='foo')
-    self.assertTrue(tb.flags.logdir.startswith('foo'))
+    self.assertStartsWith(tb.flags.logdir, 'foo')
 
     with six.assertRaisesRegex(self, ValueError, 'Unknown TensorBoard flag'):
       tb.configure(foo='bar')
@@ -61,7 +61,7 @@ class WerkzeugServerTest(unittest.TestCase):
     server = program.WerkzeugServer(
         self._StubApplication(),
         self.make_flags(host='', port=0, path_prefix=''))
-    self.assertTrue(server.get_url().startswith('http://'))
+    self.assertStartsWith(server.get_url(), 'http://')
 
   def testSpecifiedHost(self):
     one_passed = False
@@ -69,7 +69,7 @@ class WerkzeugServerTest(unittest.TestCase):
       server = program.WerkzeugServer(
           self._StubApplication(),
           self.make_flags(host='127.0.0.1', port=0, path_prefix=''))
-      self.assertTrue(server.get_url().startswith('http://127.0.0.1:'))
+      self.assertStartsWith(server.get_url(), 'http://127.0.0.1:')
       one_passed = True
     except program.TensorBoardServerException:
       # IPv4 is not supported
@@ -78,7 +78,7 @@ class WerkzeugServerTest(unittest.TestCase):
       server = program.WerkzeugServer(
           self._StubApplication(),
           self.make_flags(host='::1', port=0, path_prefix=''))
-      self.assertTrue(server.get_url().startswith('http://[::1]:'))
+      self.assertStartsWith(server.get_url(), 'http://[::1]:')
       one_passed = True
     except program.TensorBoardServerException:
       # IPv6 is not supported
