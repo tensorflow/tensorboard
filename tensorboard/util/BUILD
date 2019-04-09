@@ -91,7 +91,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
