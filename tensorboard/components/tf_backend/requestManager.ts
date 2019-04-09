@@ -56,7 +56,7 @@ export class RequestNetworkError extends Error {
     this.url = url;
   }
 }
- 
+
 /** The HTTP method-type to use. Currently only 'GET' and 'POST' are
  * supported.
  */
@@ -64,23 +64,23 @@ export enum HttpMethodType {
   GET = 'GET',
   POST = 'POST',
 }
-  
+
 /**
  * Holds options that can be used to configure the HTTP request.
  */
 export class RequestOptions {
   public methodType: HttpMethodType;
-  
+
   /** The content-type request header to use. Cannot be set for a GET request.*/
   public contentType?: string;
 
-  /** The request body to use. This is the object that is passed to the 
+  /** The request body to use. This is the object that is passed to the
    * XMLHttpRequest.send() method. If not given the 'send' method is called
-   * without an argument. 
+   * without an argument.
    */
   public body?: any;
 
-  /** If specified, this will be the value set in the 
+  /** If specified, this will be the value set in the
    * XMLHttpRequest.withCredentials property.
    */
   public withCredentials?: boolean;
@@ -98,7 +98,7 @@ export class RequestOptions {
     // make much sense.
   }
 }
-  
+
 export class RequestManager {
   private _queue: ResolveReject[];
   private _maxRetries: number;
@@ -154,6 +154,32 @@ export class RequestManager {
           return Promise.reject(rejection);
         });
     return promise;
+  }
+
+  public fetch(url: string, fetchOptions?: object): Promise<Response> {
+    return new Promise((resolve, reject) => {
+        const resolver = {resolve: resolve, reject: reject};
+        this._queue.push(resolver);
+        this.launchRequests();
+    }).then(() => {
+      let numTries = 1;
+      return new Promise<Response>((resolve) => {
+        const retryFetch = () => {
+          fetch(url, fetchOptions).then((response) => {
+            if (!response.ok && this._maxRetries > numTries) {
+              numTries++;
+              retryFetch();
+              return;
+            }
+            resolve(response);
+            this._nActiveRequests--;
+            this.launchRequests();
+          });
+        }
+
+        retryFetch();
+      });
+    });
   }
 
   public clearQueue() {
@@ -231,7 +257,7 @@ export class RequestManager {
     });
   }
 }
-  
+
 function buildXMLHttpRequest(methodType: HttpMethodType, url: string,
                              withCredentials?: boolean,
                              contentType?: string): XMLHttpRequest {
@@ -257,7 +283,7 @@ function requestOptionsFromPostData(postData?: {[key: string]: string}):
   result.body = formDataFromDictionary(postData);
   return result;
 }
-  
+
 function formDataFromDictionary(postData: {[key: string]: string}) {
   const formData = new FormData();
   for (let postKey in postData) {
