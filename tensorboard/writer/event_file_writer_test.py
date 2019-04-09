@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import glob
 import os
 import tensorflow as tf
 from tensorboard.writer.event_file_writer import EventFileWriter
+from tensorboard.writer.event_file_writer import _AsyncWriter
+from tensorboard.writer.event_file_writer import _AsyncWriterThread
 from tensorboard.compat.proto import event_pb2, summary_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
 from google.protobuf import json_format
@@ -48,6 +50,35 @@ class EventFileWriterTest(tf.test.TestCase):
     summary_from_disk = event_from_disk.summary
     self.assertProtoEquals(summary.SerializeToString(), summary_from_disk.SerializeToString())
 
+  def test_setting_filename_suffix_works(self):
+    pass
+
+  def test_async_writer_without_write(self):
+    pass
+  
+  def test_async_writer_write_once(self):
+    pass
+
+  def test_async_writer_write_queue_full(self):
+    # call writer multiple times
+    pass
+
+  def test_async_writer_write_one_slot_queue(self):
+    # set max_queue = 1
+    pass
+
+  def test_async_writer_auto_flushing(self):
+    pass
+
+  def test_async_writer_flush_before_flush_secs(self):
+    pass
+
+  def test_async_writer_close_triggers_flush(self):
+    pass
+
+  def test_write_after_async_writer_closed(self):
+    # expect nothing is written
+    pass
 
 if __name__ == '__main__':
   tf.test.main()

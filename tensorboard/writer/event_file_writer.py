@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os.path
+import os
 import socket
 import threading
 import time
@@ -27,6 +27,21 @@ import six
 
 from tensorboard.compat.proto import event_pb2
 from tensorboard.writer.record_writer import RecordWriter
+
+
+class AtomicCounter(object):
+  def __init__(self, initial_value):
+    self._value = initial_value
+    self._lock = threading.Lock()
+
+  def get(self):
+    with self._lock:
+      try:
+        return self._value
+      finally:
+        self._value += 1
+
+_global_uid = AtomicCounter(0)
 
 
 class EventsWriter(object):
@@ -44,12 +59,13 @@ class EventsWriter(object):
             the filename of the event file.
         '''
         self._file_name = file_prefix + ".out.tfevents." + "%010d" % time.time() + "." +\
-            socket.gethostname() + filename_suffix
+            socket.gethostname()+ ".%s.%s" % (os.getpid(), _global_uid.get()) + filename_suffix
         self._num_outstanding_events = 0
         self._py_recordio_writer = RecordWriter(self._file_name)
         # Initialize an event instance.
         self._event = event_pb2.Event()
         self._event.wall_time = time.time()
+        self._event.file_version='brain.Event:2'
         self._lock = threading.Lock()
         self.write_event(self._event)
 
@@ -214,3 +230,25 @@ class _EventLoggerThread(threading.Thread):
                     self._has_pending_events = False
                 # Do it again in flush_secs.
                 self._next_event_flush_time = now + self._flush_secs
+
+
+class _AsyncWriter(object):
+    def __init__(self, writer):
+        pass
+
+    def write(self, data):
+        pass
+
+    def flush(self):
+        pass
+
+    def close(self):
+        pass
+
+
+class _AsyncWriterThread(object):
+    def __init__(self):
+        pass
+
+    def run(self):
+        pass
