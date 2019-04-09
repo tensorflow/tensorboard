@@ -26,7 +26,6 @@ from __future__ import print_function
 import atexit
 import os
 import shutil
-import six
 import tempfile
 import unittest
 
