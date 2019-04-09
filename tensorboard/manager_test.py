@@ -265,9 +265,6 @@ class TensorBoardInfoIoTest(test_case.TestCase):
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
 
-  def tearDown(self):
-    tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
-
   def _list_info_dir(self):
     return os.listdir(self.info_dir)
 
