@@ -80,7 +80,10 @@ class TestCase(unittest.TestCase):
     regardless of their order.
 
     Same as assertCountEqual in Python 3 with unittest.TestCase."""
-    six.assertCountEqual(self, actual, expected, msg)
+    if hasattr(self, 'assertCountEqual'):
+        self.assertCountEqual(actual, expected, msg)
+    else:
+        super(TestCase, self).assertItemsEqual(actual, expected, msg)
 
   def assertStartsWith(self, actual, expected_start, msg=None):
     """Test that string first starts with string second."""
