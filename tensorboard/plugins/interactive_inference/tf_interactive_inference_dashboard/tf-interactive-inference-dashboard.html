@@ -2116,11 +2116,15 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
+
+    // Special feature names and feature name prefixes and suffixes for parsing
+    // inference and attribution information from TFMA-generated input.
     const classificationResultsKey = 'predictions__probabilities';
     const regressionResultsKey = 'predictions';
     const attributionPrefix = 'attributions__';
-    const attributionSparseKeyPrefix = '_keys';
-    const attributionSparseValuePrefix = '_values';
+    const featureForAttributionPrefix = 'features__';
+    const attributionSparseKeySuffix = '_keys';
+    const attributionSparseValueSuffix = '_values';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -2763,6 +2767,7 @@ limitations under the License.
 
       selectedIndicesChanged_: function(event) {
         this.selected = event.detail.value;
+        this.setAttributions();
         this.selectedDataUpdated_();
         if (this.showNearestCounterfactual && this.selected.length != 0) {
           this.findClosestCounterfactual_();
@@ -4011,7 +4016,8 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureWithAttribution[1] + '$');
+              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 attrib[featToTest] = selectedData[key];
@@ -4030,7 +4036,8 @@ limitations under the License.
           // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureWithAttribution[1] + '$');
+              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 const attribKeys = selectedData[key];
