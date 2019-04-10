@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,39 +60,35 @@ def get_temp_dir():
 
 class TestCase(unittest.TestCase):
   """TensorBoard base test class.
+
   This class can lazily create a temporary directory for tests to use.
   """
 
-  def __init__(self, method='runTest'):
-    super(TestCase, self).__init__(method)
-    self._method = method
+  def __init__(self, methodName='runTest'):
+    super(TestCase, self).__init__(methodName)
     self._tempdir = None
 
-  def setUp(self):
-    super(TestCase, self).setUp()
-
-  def tearDown(self):
-    super(TestCase, self).tearDown()
-
   def assertItemsEqual(self, actual, expected, msg=None):
-    """Test that sequence first contains the same elements as second,
+    """Test that sequence actual contains the same elements as expected,
     regardless of their order.
 
-    Same as assertCountEqual in Python 3 with unittest.TestCase."""
+    Same as assertCountEqual in Python 3 with unittest.TestCase.
+    """
     if hasattr(self, 'assertCountEqual'):
         self.assertCountEqual(actual, expected, msg)
     else:
         super(TestCase, self).assertItemsEqual(actual, expected, msg)
 
   def assertStartsWith(self, actual, expected_start, msg=None):
-    """Test that string first starts with string second."""
+    """Test that string actual starts with string expected_start."""
     if not actual.startswith(expected_start):
-      if msg is None:
-        msg = '{} does not start with {}'.format(actual, expected_start)
-      raise AssertionError(msg)
+      fail_msg = '%r does not start with %r' % (actual, expected_start)
+      fail_msg += ' : %r' % (msg) if msg else ''
+      self.fail(fail_msg)
 
   def get_temp_dir(self):
     """Returns a unique temporary directory for the test to use.
+
     If you call this method multiple times during in a test, it will return the
     same folder. However, across different runs the directories will be
     different. This will ensure that across different runs tests will not be
@@ -100,6 +96,7 @@ class TestCase(unittest.TestCase):
     If you need multiple unique directories within a single test, you should
     use tempfile.mkdtemp as follows:
       tempfile.mkdtemp(dir=self.get_temp_dir()):
+
     Returns:
       string, the path to the unique temporary directory created for this test.
     """
