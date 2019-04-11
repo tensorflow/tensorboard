@@ -16,15 +16,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard import test as tb_test
 from tensorboard.util import platform_util
-from tensorboard.util import test_case
 
 
-class PlatformUtilTest(test_case.TestCase):
+class PlatformUtilTest(tb_test.TestCase):
 
   def test_readahead_file_path(self):
     self.assertEqual('foo/bar', platform_util.readahead_file_path('foo/bar'))
 
 
 if __name__ == '__main__':
-  test_case.main()
+  tb_test.main()

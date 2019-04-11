@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TensorBoard test case helper module.
+"""TensorBoard test module.
 
-This module provides a TensorBoard base test class with some of the
-niceties of tf.test.TestCase, while only requiring standard unittest
-be installed.
+This module provides a TensorBoard base test class and main function
+with some of the niceties of tf.test, while only requiring standard
+unittest be installed.
 """
 
 from __future__ import absolute_import
@@ -26,6 +26,7 @@ from __future__ import print_function
 import atexit
 import os
 import shutil
+import six
 import tempfile
 import unittest
 
@@ -74,10 +75,7 @@ class TestCase(unittest.TestCase):
 
     Same as assertCountEqual in Python 3 with unittest.TestCase.
     """
-    if hasattr(self, 'assertCountEqual'):
-        self.assertCountEqual(actual, expected, msg)
-    else:
-        super(TestCase, self).assertItemsEqual(actual, expected, msg)
+    return six.assertCountEqual(super(TestCase, self), actual, expected, msg)
 
   def assertStartsWith(self, actual, expected_start, msg=None):
     """Test that string actual starts with string expected_start."""

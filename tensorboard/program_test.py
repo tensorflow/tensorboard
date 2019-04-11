@@ -23,11 +23,11 @@ import argparse
 import six
 
 from tensorboard import program
+from tensorboard import test as tb_test
 from tensorboard.plugins.core import core_plugin
-from tensorboard.util import test_case
 
 
-class TensorBoardTest(test_case.TestCase):
+class TensorBoardTest(tb_test.TestCase):
   """Tests the TensorBoard program."""
 
   def testConfigure(self):
@@ -40,7 +40,7 @@ class TensorBoardTest(test_case.TestCase):
       tb.configure(foo='bar')
 
 
-class WerkzeugServerTest(test_case.TestCase):
+class WerkzeugServerTest(tb_test.TestCase):
   """Tests the default Werkzeug implementation of TensorBoardServer.
 
   Mostly useful for IPv4/IPv6 testing. This test should run with only IPv4, only
@@ -87,4 +87,4 @@ class WerkzeugServerTest(test_case.TestCase):
 
 
 if __name__ == '__main__':
-  test_case.main()
+  tb_test.main()

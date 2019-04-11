@@ -80,9 +80,9 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":manager",
+        ":test",
         ":version",
         "//tensorboard/util:tb_logging",
-        "//tensorboard/util:test_case",
         "@org_pythonhosted_six",
     ],
 )
@@ -143,10 +143,21 @@ py_test(
     deps = [
         ":default",
         ":program",
+        ":test",
         "//tensorboard/backend:application",
         "//tensorboard/plugins/core:core_plugin",
-        "//tensorboard/util:test_case",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "test",
+    testonly = 1,
+    srcs = ["test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -348,7 +359,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":plugin_util",
-        "//tensorboard/util:test_case",
+        ":test",
         "@org_pythonhosted_six",
     ],
 )

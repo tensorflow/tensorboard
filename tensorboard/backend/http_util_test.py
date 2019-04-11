@@ -26,11 +26,12 @@ import struct
 import six
 from werkzeug import test as wtest
 from werkzeug import wrappers
+
+from tensorboard import test as tb_test
 from tensorboard.backend import http_util
-from tensorboard.util import test_case
 
 
-class RespondTest(test_case.TestCase):
+class RespondTest(tb_test.TestCase):
 
   def testHelloWorld(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -197,4 +198,4 @@ def _bitflip(bs):
                   for i in range(len(bs)))
 
 if __name__ == '__main__':
-  test_case.main()
+  tb_test.main()
