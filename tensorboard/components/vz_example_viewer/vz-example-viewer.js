@@ -289,17 +289,15 @@ var vz_example_viewer;
         },
         haveSaliency: function () {
             var _this = this;
+            // Saliency-coloring waits until the display elements have been updated
+            // to avoid coloring divs that are then re-ordered/re-used/re-named by
+            // the dom-repeat of feature divs.
+            requestAnimationFrame(function () { return _this._haveSaliencyImpl(); });
+        },
+        _haveSaliencyImpl: function () {
+            var _this = this;
             if (!this.filteredFeaturesList || !this.saliency ||
                 Object.keys(this.saliency).length === 0 || !this.colors) {
-                return;
-            }
-            // TODO(jwexler): Find a way to do this without requestAnimationFrame.
-            // If the inputs for the features have yet to be rendered, wait to
-            // perform this processing. There should be inputs for all non-image
-            // features.
-            if (this.selectAll('input.value-pill').size() <
-                (this.filteredFeaturesList.length - Object.keys(this.imageInfo).length)) {
-                requestAnimationFrame(function () { return _this.haveSaliency(); });
                 return;
             }
             // Reset all backgrounds to the neutral color.
