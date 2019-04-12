@@ -23,19 +23,18 @@ from __future__ import print_function
 import glob
 import os
 import shutil
-import unittest
 import tempfile
 import time
-from tensorboard.writer.event_file_writer import EventFileWriter
-from tensorboard.writer.event_file_writer import _AsyncWriter
-from tensorboard.writer.event_file_writer import _AsyncWriterThread
+from tensorboard.summary.writer.event_file_writer import EventFileWriter
+from tensorboard.summary.writer.event_file_writer import _AsyncWriter
+from tensorboard.summary.writer.event_file_writer import _AsyncWriterThread
 from tensorboard.compat.proto import event_pb2, summary_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
-from google.protobuf import json_format
+# from tensorboard import test as tb_test
+import unittest as tb_test
 
-
-class EventFileWriterTest(unittest.TestCase):
+class EventFileWriterTest(tb_test.TestCase):
   def __init__(self, *args, **kwargs):
     super(EventFileWriterTest, self).__init__(*args, **kwargs)
 
@@ -181,4 +180,4 @@ def get_copy_by_OS(oldfilename):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  tb_test.main()

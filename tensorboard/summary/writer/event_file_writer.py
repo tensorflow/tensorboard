@@ -26,7 +26,7 @@ import time
 import six
 
 from tensorboard.compat.proto import event_pb2
-from tensorboard.writer.record_writer import RecordWriter
+from tensorboard.summary.writer.record_writer import RecordWriter
 
 
 class AtomicCounter(object):

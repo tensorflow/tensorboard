@@ -31,6 +31,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":writer",
+        # "//tensorboard:test",
     ],
 )
 
@@ -42,5 +43,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":writer",
+        # "//tensorboard:test",
     ],
 )
