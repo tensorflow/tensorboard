@@ -43,3 +43,7 @@ class RecordWriter(object):
 
     def close(self):
         self._writer.close()
+
+    @property
+    def closed(self):
+        return self._writer.closed

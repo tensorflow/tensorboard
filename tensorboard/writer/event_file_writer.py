@@ -41,64 +41,11 @@ class AtomicCounter(object):
       finally:
         self._value += 1
 
+
 _global_uid = AtomicCounter(0)
 
 
-class EventsWriter(object):
-    '''Writes `Event` protocol buffers to an event file.'''
-
-    def __init__(self, file_prefix, filename_suffix=''):
-        '''
-        Events files have a name of the form
-        '/some/file/path/[file_prefix].out.tfevents.[timestamp].[hostname]'
-
-        Args:
-          file_prefix: The string that will be prepended to
-            the filename of the event file.
-          filename_suffix: The string that will be appended to
-            the filename of the event file.
-        '''
-        self._file_name = file_prefix + ".out.tfevents." + "%010d" % time.time() + "." +\
-            socket.gethostname()+ ".%s.%s" % (os.getpid(), _global_uid.get()) + filename_suffix
-        self._num_outstanding_events = 0
-        self._py_recordio_writer = RecordWriter(self._file_name)
-        # Initialize an event instance.
-        self._event = event_pb2.Event()
-        self._event.wall_time = time.time()
-        self._event.file_version='brain.Event:2'
-        self._lock = threading.Lock()
-        self.write_event(self._event)
-
-    def write_event(self, event):
-        '''Append "protobuf event" to the file.'''
-
-        # Check if event is of type event_pb2.Event proto.
-        if not isinstance(event, event_pb2.Event):
-            raise TypeError("Expected an event_pb2.Event proto, "
-                            " but got %s" % type(event))
-        return self._write_serialized_event(event.SerializeToString())
-
-    def _write_serialized_event(self, event_str):
-        with self._lock:
-            self._num_outstanding_events += 1
-            self._py_recordio_writer.write(event_str)
-
-    def flush(self):
-        '''Flushes the event file to disk.'''
-        with self._lock:
-            self._num_outstanding_events = 0
-            self._py_recordio_writer.flush()
-        return True
-
-    def close(self):
-        '''Call self.flush().'''
-        return_value = self.flush()
-        with self._lock:
-            self._py_recordio_writer.close()
-        return return_value
-
-
-class EventFileWriter(object):
+class EventFileWriter(object):  # Owned by FileWriter
     """Writes `Event` protocol buffers to an event file.
 
     The `EventFileWriter` class creates an event file in the specified directory,
@@ -106,7 +53,7 @@ class EventFileWriter(object):
     is encoded using the tfrecord format, which is similar to RecordIO.
     """
 
-    def __init__(self, logdir, max_queue=10, flush_secs=120, filename_suffix=''):
+    def __init__(self, logdir, max_queue_size=10, flush_secs=120, filename_suffix=''):
         """Creates a `EventFileWriter` and an event file to write to.
 
         On construction the summary writer creates a new event file in `logdir`.
@@ -117,22 +64,21 @@ class EventFileWriter(object):
 
         Args:
           logdir: A string. Directory where event file will be written.
-          max_queue: Integer. Size of the queue for pending events and summaries.
+          max_queue_size: Integer. Size of the queue for pending events and summaries.
           flush_secs: Number. How often, in seconds, to flush the
             pending events and summaries to disk.
         """
         self._logdir = logdir
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        self._event_queue = six.moves.queue.Queue(max_queue)
-        self._ev_writer = EventsWriter(os.path.join(
-            self._logdir, "events"), filename_suffix)
-        self._flush_secs = flush_secs
-        self._closed = False
-        self._worker = _EventLoggerThread(self._event_queue, self._ev_writer,
-                                          flush_secs)
+        self._file_name = logdir + "/events.out.tfevents.%010d.%s.%s.%s" %\
+            (time.time(), socket.gethostname(), os.getpid(), _global_uid.get()) +\
+            filename_suffix
+        self._async_writer = _AsyncWriter(RecordWriter(self._file_name), max_queue_size, flush_secs)
 
-        self._worker.start()
+        # Initialize an event instance.
+        _event = event_pb2.Event(wall_time=time.time(), file_version='brain.Event:2')
+        self.add_event(_event)
 
     def get_logdir(self):
         """Returns the directory where event file will be written."""
@@ -144,8 +90,10 @@ class EventFileWriter(object):
         Args:
           event: An `Event` protocol buffer.
         """
-        if not self._closed:
-            self._event_queue.put(event)
+        if not isinstance(event, event_pb2.Event):
+            raise TypeError("Expected an event_pb2.Event proto, "
+                            " but got %s" % type(event))
+        self._async_writer.write(event.SerializeToString())
 
     def flush(self):
         """Flushes the event file to disk.
@@ -153,102 +101,115 @@ class EventFileWriter(object):
         Call this method to make sure that all pending events have been written to
         disk.
         """
-        if not self._closed:
-            self._event_queue.join()
-            self._ev_writer.flush()
+        self._async_writer.flush()
 
     def close(self):
         """Performs a final flush of the event file to disk, stops the
         write/flush worker and closes the file. Call this method when you do not
         need the summary writer anymore.
         """
-        if not self._closed:
-            self.flush()
-            self._worker.stop()
-            self._ev_writer.close()
-            self._closed = True
+        self._async_writer.flush()
+        self._async_writer.close()
 
 
-class _EventLoggerThread(threading.Thread):
+class _AsyncWriter(object):  # _AsyncWriter
+    '''Writes bytes to an event file.'''
+
+    def __init__(self, writerinstance, max_queue_size=20, flush_secs=120, dummy_delay=False):
+        """Writes bytes to an event file.
+        Args:
+            writerinstance: A RecordWriter instance
+            max_queue_size: Integer. Size of the queue for pending events and summaries.
+            flush_secs: Number. How often, in seconds, to flush the
+                pending events and summaries to disk.
+        """
+        self._writer = writerinstance
+        self._byte_queue = six.moves.queue.Queue(max_queue_size)
+        self._worker = _AsyncWriterThread(self._byte_queue, self._writer, flush_secs, dummy_delay)
+        self._lock = threading.Lock()
+        self._worker.start()
+
+    def write(self, bytestream):
+        '''Append bytes to the queue.'''
+        with self._lock:
+            self._byte_queue.put(bytestream)
+
+    def flush(self):
+        '''Write all the enqueued bytestream before this flush call to disk.
+        Block until all the above bytestream are written.
+        '''
+        with self._lock:
+            self._writer.flush()
+
+    def close(self):
+        '''Call self.flush().'''
+        self._worker.stop()
+        self.flush()
+        with self._lock:
+            self._writer.close()
+        assert self._writer.closed
+
+
+class _AsyncWriterThread(threading.Thread):
     """Thread that logs events."""
 
-    def __init__(self, queue, ev_writer, flush_secs):
-        """Creates an _EventLoggerThread.
+    def __init__(self, queue, record_writer, flush_secs, dummy_delay):
+        """Creates an _AsyncWriterThread.
         Args:
-          queue: A Queue from which to dequeue events.
-          ev_writer: An event writer. Used to log brain events for
-           the visualizer.
+          queue: A Queue from which to dequeue data.
+          record_writer: An protobuf record_writer writer.
           flush_secs: How often, in seconds, to flush the
             pending file to disk.
         """
         threading.Thread.__init__(self)
         self.daemon = True
         self._queue = queue
-        self._ev_writer = ev_writer
+        self._record_writer = record_writer
         self._flush_secs = flush_secs
-        # The first event will be flushed immediately.
-        self._next_event_flush_time = 0
-        self._has_pending_events = False
+        # The first data will be flushed immediately.
+        self._next_flush_time = 0
+        self._has_pending_data = False
         self._shutdown_signal = object()
+        self._dummy_delay = dummy_delay
 
     def stop(self):
         self._queue.put(self._shutdown_signal)
         self.join()
 
     def run(self):
-        # Here wait on the queue until an event appears, or till the next
+        # Here wait on the queue until an data appears, or till the next
         # time to flush the writer, whichever is earlier. If we have an
-        # event, write it. If not, an empty queue exception will be raised
+        # data, write it. If not, an empty queue exception will be raised
         # and we can proceed to flush the writer.
         while True:
             now = time.time()
-            queue_wait_duration = self._next_event_flush_time - now
-            event = None
+            queue_wait_duration = self._next_flush_time - now
+            data = None
             try:
                 if queue_wait_duration > 0:
-                    event = self._queue.get(True, queue_wait_duration)
+                    data = self._queue.get(True, queue_wait_duration)
                 else:
-                    event = self._queue.get(False)
+                    data = self._queue.get(False)
 
-                if event is self._shutdown_signal:
+                if data is self._shutdown_signal:
                     return
-                self._ev_writer.write_event(event)
-                self._has_pending_events = True
+                self._record_writer.write(data)
+                if self._dummy_delay:
+                    time.sleep(0.1)
+                self._has_pending_data = True
             except six.moves.queue.Empty:
                 pass
             finally:
-                if event:
+                if data:
                     self._queue.task_done()
 
             now = time.time()
-            if now > self._next_event_flush_time:
-                if self._has_pending_events:
-                    # Small optimization - if there are no pending events,
+            if now > self._next_flush_time:
+                if self._has_pending_data:
+                    # Small optimization - if there are no pending data,
                     # there's no need to flush, since each flush can be
                     # expensive (e.g. uploading a new file to a server).
-                    self._ev_writer.flush()
-                    self._has_pending_events = False
+                    self._record_writer.flush()
+                    self._has_pending_data = False
                 # Do it again in flush_secs.
-                self._next_event_flush_time = now + self._flush_secs
-
-
-class _AsyncWriter(object):
-    def __init__(self, writer):
-        pass
-
-    def write(self, data):
-        pass
-
-    def flush(self):
-        pass
-
-    def close(self):
-        pass
-
-
-class _AsyncWriterThread(object):
-    def __init__(self):
-        pass
-
-    def run(self):
-        pass
+                self._next_flush_time = now + self._flush_secs

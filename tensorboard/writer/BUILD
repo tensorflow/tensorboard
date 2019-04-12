@@ -34,3 +34,15 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
+
+py_test(
+    name = "record_writer_test",
+    size = "small",
+    srcs = ["record_writer_test.py"],
+    main = "record_writer_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":writer",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
