@@ -375,11 +375,11 @@ Polymer({
     // Saliency-coloring waits until the display elements have been updated
     // to avoid coloring divs that are then re-ordered/re-used/re-named by
     // the dom-repeat of feature divs.
-    this.debounce('haveSaliency', () => this.haveSaliencyImpl(),
+    this.debounce('haveSaliency', () => this._haveSaliencyImpl(),
                   ATTRIBUTION_TIMER_DELAY_MS);
   },
 
-  haveSaliencyImpl: function() {
+  _haveSaliencyImpl: function() {
     if (!this.filteredFeaturesList || !this.saliency ||
         Object.keys(this.saliency).length === 0 || !this.colors) {
       return;
