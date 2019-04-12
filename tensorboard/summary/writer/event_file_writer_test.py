@@ -31,8 +31,7 @@ from tensorboard.summary.writer.event_file_writer import _AsyncWriterThread
 from tensorboard.compat.proto import event_pb2, summary_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
-# from tensorboard import test as tb_test
-import unittest as tb_test
+from tensorboard import test as tb_test
 
 class EventFileWriterTest(tb_test.TestCase):
   def __init__(self, *args, **kwargs):
