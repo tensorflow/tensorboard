@@ -90,6 +90,7 @@ py_binary(
         "profile_demo.google_chart_demo.json",
         "profile_demo.memory_viewer.json",
         "profile_demo.op_profile.json",
+        "profile_demo.pod_viewer.json",
     ],
     srcs_version = "PY2AND3",
     deps = [
