@@ -23,7 +23,7 @@ from __future__ import print_function
 import glob
 import os
 import shutil
-import tensorflow as tf
+import unittest
 import tempfile
 import time
 from tensorboard.writer.event_file_writer import EventFileWriter
@@ -31,10 +31,11 @@ from tensorboard.writer.event_file_writer import _AsyncWriter
 from tensorboard.writer.event_file_writer import _AsyncWriterThread
 from tensorboard.compat.proto import event_pb2, summary_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
 from google.protobuf import json_format
 
 
-class EventFileWriterTest(tf.test.TestCase):
+class EventFileWriterTest(unittest.TestCase):
   def __init__(self, *args, **kwargs):
     super(EventFileWriterTest, self).__init__(*args, **kwargs)
 
@@ -48,12 +49,12 @@ class EventFileWriterTest(tf.test.TestCase):
     w.add_event(fakeevent)
     w.close()
     event_files = sorted(glob.glob(os.path.join(logdir, '*')))
-    print(event_files)
     self.assertEqual(len(event_files), 1)
-    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+    r = PyRecordReader_New(event_files[0])
+    r.read()
+    events = r.event_strs
     event_from_disk = events[1]
-    summary_from_disk = event_from_disk.summary
-    self.assertProtoEquals(summary.SerializeToString(), summary_from_disk.SerializeToString())
+    assert fakeevent.SerializeToString() == event_from_disk
 
   def test_setting_filename_suffix_works(self):
     logdir = tempfile.mkdtemp()
@@ -69,9 +70,13 @@ class EventFileWriterTest(tf.test.TestCase):
       w = EventFileWriter(logdir)
       w.close()
       event_files = sorted(glob.glob(os.path.join(logdir, '*')))
-      events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+      r = PyRecordReader_New(event_files[0])
+      r.read()
+      events = r.event_strs
       assert len(events) == 1
-      assert events[0].file_version == "brain.Event:2"
+      s = event_pb2.Event()
+      s.ParseFromString(events[0])
+      assert s.file_version == "brain.Event:2"
 
   def test_async_writer_write_once(self):
     logfile = tempfile.NamedTemporaryFile().name
@@ -176,4 +181,4 @@ def get_copy_by_OS(oldfilename):
 
 
 if __name__ == '__main__':
-  tf.test.main()
+  unittest.main()

@@ -22,7 +22,7 @@ from __future__ import print_function
 import glob
 import os
 import tempfile
-import tensorflow as tf
+import unittest
 from tensorboard.writer.record_writer import RecordWriter
 from tensorboard.compat.proto import event_pb2, summary_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
@@ -30,7 +30,7 @@ from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_
 from google.protobuf import json_format
 
 
-class RecordWriterTest(tf.test.TestCase):
+class RecordWriterTest(unittest.TestCase):
   def __init__(self, *args, **kwargs):
     super(RecordWriterTest, self).__init__(*args, **kwargs)
 
@@ -70,4 +70,4 @@ class RecordWriterTest(tf.test.TestCase):
 
 
 if __name__ == '__main__':
-  tf.test.main()
+  unittest.main()
