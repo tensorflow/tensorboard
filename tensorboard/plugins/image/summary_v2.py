@@ -62,7 +62,11 @@ def image(name,
   """
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'image_summary', values=[data, max_outputs, step]) as (tag, _):
     tf.debugging.assert_rank(data, 4)
     tf.debugging.assert_non_negative(max_outputs)

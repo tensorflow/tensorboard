@@ -83,7 +83,11 @@ def audio(name,
       description=description,
       encoding=metadata.Encoding.Value('WAV'))
   inputs = [data, sample_rate, max_outputs, step]
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'audio_summary', values=inputs) as (tag, _):
     tf.debugging.assert_rank(data, 3)
     tf.debugging.assert_non_negative(max_outputs)
