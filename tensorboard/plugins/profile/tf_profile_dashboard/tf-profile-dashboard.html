@@ -31,6 +31,7 @@ limitations under the License.
 <link rel="import" href="../tf-op-profile/tf-op-profile.html">
 <link rel="import" href="../tf-profile-common/tf-profile-common.html">
 <link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
+<link rel="import" href="../pod-viewer/pod-viewer-dashboard.html">
 <link rel="import" href="../google-chart/google-chart-demo.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -185,6 +186,11 @@ profile run can have multiple tools that present the performance profile as diff
             node="[[_activeBufferDetails]]"
           ></buffer-details>
         </template>
+        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
+          <details-card
+            hidden="[[!_activeDetailsCard]]"
+            nodes="[[_activePodDetails]]"
+          ></details-card>
       </div>
     </div>
   </div>
@@ -208,6 +214,12 @@ profile run can have multiple tools that present the performance profile as diff
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'overview_page')]]" restamp="true">
       <overview-page _data="[[_overviewPageData]]"></overview-page>
+    </template>
+    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
+     <pod-viewer-dashboard
+       _data="[[_podViewerData]]"
+       active="{{_activePodDetails}}"
+     ></pod-viewer-dashboard>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
       <memory-viewer-dashboard
@@ -261,7 +273,8 @@ profile run can have multiple tools that present the performance profile as diff
     padding-right: 5px;
   }
   tf-op-details,
-  buffer-details {
+  buffer-details,
+  details-card {
     width: 100%;
     will-change: transform;
   }
@@ -393,6 +406,9 @@ profile run can have multiple tools that present the performance profile as diff
       _memoryViewerData: {
         type: Object,
       },
+      _podViewerData: {
+        type: Object,
+      },
       _googleChartDemoData: {
         type: Object,
       },
@@ -421,6 +437,10 @@ profile run can have multiple tools that present the performance profile as diff
       _activeBufferDetails: {
         type: Object,
         value: () => {},
+      },
+      _activePodDetails: {
+        type: Array,
+        value: () => [],
       },
     },
     reload: function() {
@@ -600,6 +620,10 @@ profile run can have multiple tools that present the performance profile as diff
       case "memory_viewer":
           this._memoryViewerData = data;
           this._toolInScope = "memory_viewer";
+          break;
+      case "pod_viewer":
+          this._podViewerData = data;
+          this._toolInScope = "pod_viewer";
           break;
       case "google_chart_demo":
           this._googleChartDemoData = data;
