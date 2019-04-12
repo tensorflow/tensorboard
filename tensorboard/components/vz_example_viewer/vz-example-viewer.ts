@@ -82,7 +82,6 @@ const BASE_64_IMAGE_ENCODING_PREFIX = 'base64,';
 const LEGEND_WIDTH_PX = 260;
 const LEGEND_HEIGHT_PX = 20;
 const CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
-const ATTRIBUTION_TIMER_DELAY_MS = 200;
 const clipSaliencyRatio = .95;
 
 // Colors for the saliency color scale.
@@ -375,8 +374,7 @@ Polymer({
     // Saliency-coloring waits until the display elements have been updated
     // to avoid coloring divs that are then re-ordered/re-used/re-named by
     // the dom-repeat of feature divs.
-    this.debounce('haveSaliency', () => this._haveSaliencyImpl(),
-                  ATTRIBUTION_TIMER_DELAY_MS);
+    requestAnimationFrame(() => this._haveSaliencyImpl());
   },
 
   _haveSaliencyImpl: function() {
