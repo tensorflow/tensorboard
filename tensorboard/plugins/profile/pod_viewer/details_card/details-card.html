@@ -1,15 +1,16 @@
 <!--
 @license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================
 -->
 
 <!--
@@ -42,13 +43,13 @@ paper-card {
   font-size: 20px;
   font-weight: bold;
 }
-.codeStyle {
+.code-style {
   font-size: 14px;
   font-weight: normal;
 }
   </style>
   <template>
-   <paper-card id="card" heading="[[name]] [[id]]"
+    <paper-card id="card" heading="[[name]] [[id]]"
                 hidden="[[!name]]" elevation="2">
       <template is="dom-repeat" items=[[nodes]] as="node">
         <div class="card-content info">
@@ -59,13 +60,13 @@ paper-card {
             <p>Data Transferred: <span class="value">
                 [[sizeMiB_(node.dataSize)]] MiB</span></p>
             <p>Latency: <span class="value">
-                [[format_(node.durationUs)]] Us</span></p>
+                [[format_(node.durationUs)]] &mu;s</span></p>
             <p>BW: <span class="value">
                 [[bw_(node.dataSize, node.durationUs)]] GiB/s</span></p>
           </div>
           <div hidden="[[!isChannel]]">
             <p>Send Delay: <span class="value">
-                [[format_(node.sendDelayUs)]] Us</span></p>
+                [[format_(node.sendDelayUs)]] &mu;s</span></p>
             <p>From: <span class="value">
               Chip[[chipId_(node.srcCoreId)]], Core[[nodeId_(node.srcCoreId)]]
             </span></p>
@@ -73,28 +74,28 @@ paper-card {
               Chip[[chipId_(node.dstCoreId)]], Core[[nodeId_(node.dstCoreId)]]
             </span></p>
             <p>Hlo Names</p>
-            <code class="codeStyle">
+            <code class="code-style">
               <template is="dom-repeat" items=[[node.hloNames]]>"[[item]]"
               </template>
             </code>
           </div>
-         <div hidden="[[!hasReplicaGroups]]">
-          <h5>Replica Groups</h5>
-          <code class="codeStyle">
-            <template is="dom-repeat" items=[[node.replicaGroups]]>
-             {[[item.replicaIds]]}<br>
+          <div hidden="[[!hasReplicaGroups]]">
+            <h5>Replica Groups</h5>
+            <code class="code-style">
+              <template is="dom-repeat" items=[[node.replicaGroups]]>
+               {[[item.replicaIds]]}<br>
+              </template>
+            </code>
+          </div>
+          <div hidden="[[!isStepBreakdown]]">
+            <template is="dom-repeat" items=[[stepBreakdownLayers]]>
+              <h5> [[item.label]]: <span class="value">
+                [[getStepBreakdownValue_(node, item.key)]] &mu;s
+                ([[getStepBreakdownPct_(node, item.key)]])</span></h5>
             </template>
-          </code>
-         </div>
-         <div hidden="[[!isStepBreakdown]]">
-           <template is="dom-repeat" items=[[stepBreakdownEle]]>
-             <h5> [[item.label]]: <span class="value">
-               [[getStepBreakdownValue_(node, item.key)]] Us
-               ([[getStepBreakdownPct_(node, item.key)]])</span></h5>
-           </template>
-         </div>
-      </div>
-     </template>
+          </div>
+        </div>
+      </template>
     </paper-card>
   </template>
   <script src="details-card.js"></script>

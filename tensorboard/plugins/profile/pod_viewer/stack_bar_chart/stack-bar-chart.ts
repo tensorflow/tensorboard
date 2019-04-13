@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,6 +12,10 @@ limitations under the License.
 
 namespace pod_viewer_stack_bar_chart {
 
+const BAR_WIDTH = 50;
+const SVG_HEIGHT = 300;
+const SVG_MIN_WIDTH = 1600;
+
 Polymer({
   is: 'stack-bar-chart',
   properties: {
@@ -20,66 +24,63 @@ Polymer({
     },
     data: {
       type: Object,
-      notify: true,
-      observer: 'dataChanged_',
+      observer: '_dataChanged',
     },
-    ready_: {
-      type: Boolean,
-      value: false,
-    },
-    stackEle: {
-      type: Array,
+    activeBar: {
+      type: Object,
       notify: true,
-      observer: 'onStackEleChanged_',
     },
     xDomainFunc: {
       type: Object,
       notify: true,
     },
-    active: {
-      type: Object,
+    stackLayers: {
+      type: Array,
       notify: true,
+      observer: '_onStackLayersChanged',
+    },
+    _ready: {
+      type: Boolean,
+      value: false,
     },
   },
   /**
    * Main function to draw a stacked bar chart.
    */
   stackBarChart: function(data) {
-    if (!data || !this.ready_ || this.stackEle.length == 0) {
+    if (!data || !this._ready || this.stackLayers.length == 0) {
       return;
     }
-    d3.selectAll('#' + this.id + ' g > *').remove();
-    d3.select('#' + this.id + ' svg').remove();
-    d3.select('#' + this.id + '.svg-container').remove();
-    const stackKey = this.stackEle.map((d) => d.key);
-    const stackLabel = this.stackEle.map((d) => d.label);
+    d3.select(this).selectAll('g > *').remove();
+    d3.select(this).select('svg').remove();
+    d3.select(this).select('.svg-container').remove();
+    const stackKey = this.stackLayers.map((d) => d.key);
+    const stackLabel = this.stackLayers.map((d) => d.label);
     const margin = {top: 20, right: 20, bottom: 30, left: 100};
-    const width = 1600 - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
-    const barWidth = 50;
-    const xScaleRange = data.length * barWidth;
+    const width = SVG_MIN_WIDTH - margin.left - margin.right;
+    const height = SVG_HEIGHT - margin.top - margin.bottom;
+    const xScaleRange = data.length * BAR_WIDTH;
     let xScale = d3.scaleBand().range([0, xScaleRange]).padding(0.4);
     let yScale = d3.scaleLinear().range([height, 0]);
     let colorScale = d3.scaleOrdinal<number, string>(d3.schemeCategory10)
                        .domain([0, 19]);
-    let svg = d3.select('#' + this.id + ' #chart')
-                  .append('svg')
-                  .attr(
-                      'width',
-                      Math.max(width, xScaleRange + margin.left + margin.right))
-                  .attr('height', height + margin.top + margin.bottom)
-                  .append('g')
-                  .attr(
-                      'transform',
+    let svg = d3.select(this.$.chart)
+                .append('svg')
+                .attr('width',
+                      Math.max(SVG_MIN_WIDTH,
+                               xScaleRange + margin.left + margin.right))
+                .attr('height', SVG_HEIGHT)
+                .append('g')
+                .attr('transform',
                       'translate(' + margin.left + ',' + margin.top + ')');
     let stack = d3.stack()
-                    .keys(stackKey)
-                    .order(d3.stackOrderNone)
-                    .offset(d3.stackOffsetNone);
+                  .keys(stackKey)
+                  .order(d3.stackOrderNone)
+                  .offset(d3.stackOffsetNone);
     const layers = stack(data);
     xScale.domain(data.map(this.xDomainFunc));
     yScale.domain([0, d3.max(layers[layers.length - 1], (d) => d[0] + d[1])])
-        .nice();
+          .nice();
     this.drawLayers(svg, layers, xScale, yScale, colorScale);
     this.drawAxes(svg, xScale, yScale, height);
     this.drawLegend(svg, stackLabel, colorScale);
@@ -90,28 +91,28 @@ Polymer({
   drawLayers: function(svg, layers, xScale, yScale, colorScale) {
     let parent = this;
     let layer = svg.selectAll('.layer')
-                    .data(layers)
-                    .enter()
-                    .append('g')
-                    .attr('class', 'layer')
-                    .style('fill', (d, i) => colorScale(i));
+                   .data(layers)
+                   .enter()
+                   .append('g')
+                   .attr('class', 'layer')
+                   .style('fill', (d, i) => colorScale(i));
     layer.selectAll('rect')
-        .data((d) => d)
-        .enter()
-        .append('rect')
-        .attr('width', xScale.bandwidth())
-        .attr('y', (d) => yScale(d[1]))
-        .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
-        .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
-        .on('mouseover',
-            function(d) {
-              d3.select(this).style('opacity', 0.5);
-              parent.active = d.data;
-            })
-        .on('mouseout', function(d) {
-          d3.select(this).style('opacity', 1.0);
-          parent.active = null;
-        });
+         .data((d) => d)
+         .enter()
+         .append('rect')
+         .attr('width', xScale.bandwidth())
+         .attr('y', (d) => yScale(d[1]))
+         .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
+         .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
+         .on('mouseover',
+             function(d) {
+               d3.select(this).style('opacity', 0.5);
+               parent.activeBar = d.data;
+             })
+         .on('mouseout', function(d) {
+             d3.select(this).style('opacity', 1.0);
+             parent.activeBar = null;
+         });
   },
   /**
    * Draw the axes of the chart.
@@ -120,15 +121,15 @@ Polymer({
     let xAxis = d3.axisBottom(xScale);
     let yAxis = d3.axisLeft(yScale);
     svg.append('g')
-        .attr('class', 'axis axis--x')
-        .style('font-size', 14)
-        .attr('transform', 'translate(0,' + (height + 5) + ')')
-        .call(xAxis);
+       .attr('class', 'axis axis--x')
+       .style('font-size', 14)
+       .attr('transform', 'translate(0,' + (height + 5) + ')')
+       .call(xAxis);
     svg.append('g')
-        .attr('class', 'axis axis--y')
-        .style('font-size', 14)
-        .attr('transform', 'translate(0,0)')
-        .call(yAxis);
+       .attr('class', 'axis axis--y')
+       .style('font-size', 14)
+       .attr('transform', 'translate(0,0)')
+       .call(yAxis);
   },
   /**
    * Draw the legends of the chart.
@@ -142,30 +143,29 @@ Polymer({
     const yAxisToLegend = 200;
     let legend =
         svg.append('g')
-            .attr('font-family', 'sans-serif')
-            .attr('font-size', 14)
-            .attr('text-anchor', 'start')
-            .selectAll('g')
-            .data(labels.slice())
-            .enter()
-            .append('g')
-            .attr(
-                'transform',
-                (d, i) => 'translate(' +
-                    (i * legendWidth -
-                     Math.floor(i / labelsPerLane) * legendWidth *
-                         labelsPerLane) +
-                    ',' + Math.floor(i / labelsPerLane) * legendHeight + ')');
+           .attr('font-family', 'sans-serif')
+           .attr('font-size', 14)
+           .attr('text-anchor', 'start')
+           .selectAll('g')
+           .data(labels.slice())
+           .enter()
+           .append('g')
+           .attr('transform',
+                 (d, i) => 'translate(' +
+                     (i * legendWidth -
+                       Math.floor(i / labelsPerLane) * legendWidth *
+                         labelsPerLane) + ',' +
+                           Math.floor(i / labelsPerLane) * legendHeight + ')');
     legend.append('rect')
-        .attr('x', yAxisToLegend)
-        .attr('width', iconSize)
-        .attr('height', iconSize)
-        .attr('fill', (d, i) => colorScale(i));
+          .attr('x', yAxisToLegend)
+          .attr('width', iconSize)
+          .attr('height', iconSize)
+          .attr('fill', (d, i) => colorScale(i));
     legend.append('text')
-        .attr('x', yAxisToLegend + margin + iconSize)
-        .attr('y', 9.5)
-        .attr('dy', '0.32em')
-        .text((d) => d);
+          .attr('x', yAxisToLegend + margin + iconSize)
+          .attr('y', 9.5)
+          .attr('dy', '0.32em')
+          .text((d) => d);
   },
   /**
    * Redraw the stack bar chart.
@@ -179,7 +179,7 @@ Polymer({
   /**
    * Redraws the stack bar chart when the stack elements changed.
    */
-  onStackEleChanged_: function(newData) {
+  _onStackLayersChanged: function(newData) {
     if (!newData || newData.length == 0) {
       return;
     }
@@ -188,14 +188,14 @@ Polymer({
   /**
    * Redraws the stack bar chart when the input data changed.
    */
-  dataChanged_: function(newData) {
+  _dataChanged: function(newData) {
     if (!newData) {
       return;
     }
     this.redraw(newData);
   },
   attached: function() {
-    this.ready_ = true;
+    this._ready = true;
     this.redraw(this.data);
   },
 });

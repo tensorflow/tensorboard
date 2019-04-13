@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -11,6 +11,12 @@ limitations under the License.
 ==============================================================================*/
 
 namespace pod_viewer_details_card {
+
+interface StepBreakdownNode {
+  /* Examples 'highFlopsComputeUs', 'lowFlopsComputeUs', 'Send', 'Recv'*/
+  [key: string]: number;
+  totalDurationUs: number;
+}
 
 Polymer({
   is: 'details-card',
@@ -46,8 +52,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
-    stepBreakdownEle: {
+    stepBreakdownLayers: {
       type: Array,
+      value: () => { return [
+          {key: 'highFlopsComputeUs', label: 'High flops compute'},
+          {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
+          {key: 'hostInfeedDurationUs', label: 'Infeed'},
+          {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
+          {key: 'crsDurationUs', label: 'All reduce'},
+          {key: 'sendDurationUs', label: 'Send'},
+          {key: 'recvDurationUs', label: 'Recv'},]; },
     },
   },
   /**
@@ -129,7 +143,8 @@ Polymer({
   /**
    * Return a formatted value associated with a specific breakdown.
    */
-  getStepBreakdownValue_: function(node, key): string {
+  getStepBreakdownValue_: function(node: undefined | StepBreakdownNode,
+                                   key: undefined|string): string {
     if (!key || !node) {
       return '';
     }
@@ -138,22 +153,12 @@ Polymer({
   /**
    * Return a the percentage of a specific breakdown.
    */
-  getStepBreakdownPct_: function(node, key): string {
+  getStepBreakdownPct_: function(node: undefined | StepBreakdownNode,
+                                 key: undefined|string): string {
     if (!key || !node || !node.totalDurationUs) {
       return '';
     }
     return (node[key] / node.totalDurationUs * 100).toFixed(2) + '%';
-  },
-  ready() {
-    this.stepBreakdownEle = [
-      {key: 'highFlopsComputeUs', label: 'High flops compute'},
-      {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
-      {key: 'hostInfeedDurationUs', label: 'Infeed'},
-      {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-      {key: 'crsDurationUs', label: 'All reduce'},
-      {key: 'sendDurationUs', label: 'Send'},
-      {key: 'recvDurationUs', label: 'Recv'}
-    ];
   },
 });
 

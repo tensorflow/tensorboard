@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,151 +12,189 @@ limitations under the License.
 
 namespace pod_viewer_dashboard {
 
+interface PodStatsSequence {
+  podStatsMap: any,
+}[];
+
+interface PodViewerInputData {
+  podStatsSequence: PodStatsSequence,
+  runEnvironment?: any,
+}
+
 Polymer({
   is: 'pod-viewer-dashboard',
   properties: {
-    _data: {
+    /**
+     * @type {?PodViewerInputData}
+     */
+    data: {
       type: Object,
+      value: () => ({}),
+      observer: '_dataChanged',
       notify: true,
     },
-    podStats: {
-      type: Object,
-      notify: true,
-      observer: 'podStatsChanged_',
-    },
-    stepStats: {
+    /**
+     * Active elements selected to be shown in the details card.
+     */
+    activeDetails: {
       type: Array,
-      value: null,
-      notify: true,
-    },
-    channelDb: {
-      type: Array,
-      value: null,
-      notify: true,
-    },
-    allReduceDb: {
-      type: Array,
-      value: null,
-      notify: true,
-    },
-    stepBreakdownEle: {
-      type: Array,
-      notify: true,
-    },
-    channelEle: {
-      type: Array,
-      notify: true,
-    },
-    allReduceEle: {
-      type: Array,
-      notify: true,
-    },
-    stepBreakdownFunc: {
-      type: Object,
-      notify: true,
-    },
-    channelFunc: {
-      type: Object,
-      notify: true,
-    },
-    allReduceFunc: {
-      type: Object,
-      notify: true,
-    },
-    runEnvironment: {
-      type: Object,
-      notify: true,
-    },
-    curStepId: {
-      type: Number,
-      value: 0,
-      observer: 'stepChanged_',
-    },
-    maxStepId: {
-      type: Number,
-    },
-    stepNum: {
-      type: Number,
-      computed: 'getStepNum(podStats)',
-    },
-    selectedChipId: {
-      type: Number,
-      value: -1,
       notify: true,
     },
     selectedChannel: {
       type: Array,
       notify: true,
-      observer: 'selectedChannelChanged_',
+      observer: '_selectedChannelChanged',
     },
-    activeBarChartEle: {
+    activeBar: {
       type: Object,
       notify: true,
-      observer: 'activeBarChartEleChanged_',
+      observer: '_activeBarChanged',
     },
-    hloInfoMap: {
+    curStepId: {
+      type: Number,
+      value: 0,
+    },
+    _podStatsMaps: {
       type: Object,
-      notify: true,
+      computed: '_computePodStatsMaps(data)',
     },
-    active: {
+    _maxStepId: {
+      type: Number,
+      computed: '_computeMaxStepId(_podStatsMaps)',
+    },
+    _error_message: {
+      type: String,
+      computed: '_computeErrorMessage(_maxStepId)',
+    },
+    _runEnvironment: {
+      type: Object,
+      computed: '_computeRunEnvironment(data)',
+    },
+    _stepBreakdownLayers: {
       type: Array,
-      value: () => [],
-      notify: true,
+      value: () => { return [
+          {key: 'highFlopsComputeUs', label: 'High flops compute'},
+          {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
+          {key: 'hostInfeedDurationUs', label: 'Infeed'},
+          {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
+          {key: 'crsDurationUs', label: 'All reduce'},
+          {key: 'sendDurationUs', label: 'Send'},
+          {key: 'recvDurationUs', label: 'Recv'}]; },
     },
-    ready_: {
-      type: Boolean,
-      value: false,
+    _podStats: {
+      type: Object,
+      computed:
+          '_computePodStats(_podStatsMaps, curStepId, _stepBreakdownLayers)',
+    },
+    _stepStats: {
+      type: Array,
+      computed: '_computeStepStats(_podStats)',
+    },
+    _channelDb: {
+      type: Array,
+      computed: '_computeChannelDb(_podStats)',
+    },
+    _allReduceDb: {
+      type: Array,
+      computed: '_computeAllReduceDb(_podStats)',
+    },
+    _channelLayers: {
+      type: Array,
+      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+    },
+    _allReduceLayers: {
+      type: Array,
+      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+    },
+    _stepBreakdownFunc: {
+      type: Object,
+      value: (d) => (d) => `(${d.chipId}, ${d.nodeId})`,
+    },
+    _channelFunc: {
+      type: Object,
+      value: (d) => (d) => d.channelId,
+    },
+    _allReduceFunc: {
+      type: Object,
+      value: (d) => function(d) {
+               if (!d.name) return '';
+               const res =
+                   d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
+               return res.length > 1 ? res : res + '0';
+             },
     },
   },
-  observers: [
-    'dataChanged_(_data, ready_)',
-  ],
-  /**
-   * Updates the UI when new data is loaded.
-   */
-  dataChanged_(newData, ready) {
-    if (!newData || !ready) {
-      return;
+  _computePodStatsMaps(data : PodViewerInputData|undefined|null) : any[] {
+    if (!data) return [];
+    return data.podStatsSequence.podStatsMap;
+  },
+  _computeRunEnvironment(data: PodViewerInputData|undefined|null) : any {
+    return data.runEnvironment;
+  },
+  _computeMaxStepId(podStatsMaps : any[]) : number {
+    return podStatsMaps.length - 1;
+  },
+  _computeErrorMessage(maxStepId: number) : string {
+    if (maxStepId >= 0) { return ''; }
+    return "WARNING: No step time measured. "
+           + "This might happen if your profile duration is too short, "
+           + "try increase profile duration to cover a full step. "
+           + "If you have an inference job or not use TpuEstimator, "
+           + "please skip this tool.";
+  },
+  _computePodStats(podStatsMaps : any[], curStepId: number,
+                   stepBreakdown: any[]) : any {
+    if (curStepId < 0 || curStepId >= podStatsMaps.length || !stepBreakdown) {
+      return null;
     }
-    this.maxStepId = newData.podStatsSequence.podStatsMap.length - 1;
+    return this._populateLowFlopsCompute(
+               podStatsMaps[curStepId], stepBreakdown);
+  },
+  _computeStepStats(podStats) {
+    if (!podStats || !podStats['podStatsPerCore']) return null;
+    let stepStats = [];
+    for (const i in podStats['podStatsPerCore']) {
+      stepStats.push(podStats['podStatsPerCore'][i]);
+    }
+    stepStats.sort((a, b) => a.chipId - b.chipId);
+    return stepStats;
+  },
+  _computeChannelDb(podStats) {
+    if (!podStats || !podStats.channelDb || podStats.channelDb.length <=0 ) {
+      return null;
+    }
+    return podStats.channelDb.sort((a, b) => b.durationUs - a.durationUs);
+  },
+  _computeAllReduceDb(podStats) {
+    if (!podStats || !podStats.allReduceOpDb
+        || podStats.allReduceOpDb.length <=0) {
+      return null;
+    }
+    return podStats.allReduceOpDb.sort((a, b) => b.durationUs - a.durationUs);
+  },
+  _dataChanged(newData) {
+    if (!newData) { return; }
     this.curStepId = 0;
-    if (this.maxStepId > 0) {
-      this.podStats = this.populateLowFlopsCompute_(
-        newData.podStatsSequence.podStatsMap['0']);
-    }
-    this.runEnvironment = newData.runEnvironment;
-    this.hloInfoMap = newData.hloInfoMap;
-  },
-  /**
-   * Updates the UI when curStepId changes.
-   */
-  stepChanged_(newStep: number) {
-    if (!this._data) {
-      return;
-    }
-    if (newStep > this.maxStepId) {
-      return;
-    }
-    this.podStats = this.populateLowFlopsCompute_(
-      this._data.podStatsSequence.podStatsMap[newStep.toString()]);
   },
   /**
    * Updates the input of the details card when selected channel changed.
    */
-  selectedChannelChanged_(newChannel) {
-    if (!newChannel) {
-      return;
+  _selectedChannelChanged(newChannel) {
+    if (newChannel) {
+      this.activeDetails = newChannel;
     }
-    this.active = newChannel;
   },
-  activeBarChartEleChanged_(newEle) {
-    if (!newEle) {
-      return;
+  _activeBarChanged(newBar) {
+    if (newBar) {
+      this.activeDetails = [newBar];
     }
-    this.active = [newEle];
   },
-  populateLowFlopsCompute_(podStats) {
-    if (!podStats || !this.ready_) return null;
+  /**
+   * Calculate the lowFlopsComputeUs by deducting all other breakdown from the
+   * total duration.
+   */
+  _populateLowFlopsCompute(podStats, layers) {
+    if (!podStats || !layers) return null;
     let podStatsPerCore = podStats['podStatsPerCore'];
     for (let i in podStatsPerCore) {
       let val = podStatsPerCore[i];
@@ -164,69 +202,23 @@ Polymer({
         // already populated.
         return;
       }
-      // lowFlopsComputeUs is calculated by deducting all other breakdown from
-      // the total duration.
       val['lowFlopsComputeUs'] = val.totalDurationUs;
-      for (let j = 0; j < this.stepBreakdownEle.length; j++) {
+      for (let j = 0; j < layers.length; j++) {
         if (j == 1) {
           continue;
         }
         // Skip the lowFlopsComputeUs.
-        val['lowFlopsComputeUs'] -= val[this.stepBreakdownEle[j].key];
+        val['lowFlopsComputeUs'] -= val[layers[j].key];
       }
     }
    return podStats;
   },
   /**
-   * Updates the data sent to stack bar chart when pod stats changed.
-   */
-  podStatsChanged_(newStats) {
-    if (!newStats) {
-      return;
-    }
-    let stepStats = [];
-    for (const i in newStats['podStatsPerCore']) {
-      stepStats.push(newStats['podStatsPerCore'][i]);
-    }
-    stepStats.sort((a, b) => a.chipId - b.chipId);
-    this.stepStats = stepStats;
-    if (newStats['channelDb'].length > 0) {
-      this.channelDb = newStats['channelDb'].sort(
-          (a, b) => b.durationUs - a.durationUs);
-    }
-    if (newStats['allReduceOpDb'].length > 0) {
-      this.allReduceDb = newStats['allReduceOpDb'].sort(
-          (a, b) => b.durationUs - a.durationUs);
-    }
-  },
-  /**
    * Returns the step number of the current step.
    */
-  getStepNum(podStats): number {
-    return parseInt(podStats.stepNum, 10);
+  _getStepNum(podStats): string {
+    return podStats ? podStats.stepNum : '';
   },
-  ready() {
-    this.stepBreakdownEle = [
-      {key: 'highFlopsComputeUs', label: 'High flops compute'},
-      {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
-      {key: 'hostInfeedDurationUs', label: 'Infeed'},
-      {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-      {key: 'crsDurationUs', label: 'All reduce'},
-      {key: 'sendDurationUs', label: 'Send'},
-      {key: 'recvDurationUs', label: 'Recv'}
-    ];
-    this.channelEle = [{key: 'durationUs', label: 'Duration (us)'}];
-    this.allReduceEle = [{key: 'durationUs', label: 'Duration (us)'}];
-    this.stepBreakdownFunc = (d) => {
-      return '(' + d.chipId + ',' + d.nodeId + ')';
-    };
-    this.channelFunc = (d) => d.channelId;
-    this.allReduceFunc = function(d) {
-      const res = d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
-      return res.length > 1 ? res : res + '0';
-    };
-    this.ready_ = true;
-  }
 });
 
 } // namespace pod_viewer_dashboard

@@ -188,7 +188,7 @@ profile run can have multiple tools that present the performance profile as diff
         </template>
         <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
           <details-card
-            hidden="[[!_activeDetailsCard]]"
+            hidden="[[!_activePodDetails]]"
             nodes="[[_activePodDetails]]"
           ></details-card>
       </div>
@@ -216,10 +216,10 @@ profile run can have multiple tools that present the performance profile as diff
       <overview-page _data="[[_overviewPageData]]"></overview-page>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
-     <pod-viewer-dashboard
-       _data="[[_podViewerData]]"
-       active="{{_activePodDetails}}"
-     ></pod-viewer-dashboard>
+      <pod-viewer-dashboard
+        data="[[_podViewerData]]"
+        active-details="{{_activePodDetails}}"
+      ></pod-viewer-dashboard>
     </template>
     <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
       <memory-viewer-dashboard
@@ -440,7 +440,7 @@ profile run can have multiple tools that present the performance profile as diff
       },
       _activePodDetails: {
         type: Array,
-        value: () => [],
+        value: () => {},
       },
     },
     reload: function() {
