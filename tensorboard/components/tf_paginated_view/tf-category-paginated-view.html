@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../polymer/polymer.html">
@@ -23,17 +23,16 @@ limitations under the License.
 <link rel="import" href="tf-paginated-view-store.html">
 
 <!--
-  tf-category-paginated-view takes a list of items and renders subset of them using
-  template passed. Depending on global pagination setting, list of items is
-  broken down into discrete "pages" and when there are multiple pages, this
-  component renders pagination controls.
+  tf-category-paginated-view takes a category and renders subset of its items
+  using template passed.
 
-  The API signature of the component is similar to that of dom-repeat: it takes
-  `items` and `as` and it feeds an item to the template passed as `as`.
+  This component renders a toggleable card (like accordion) that renders,
+  depending on global pagination setting, discrete "pages" of items. When there
+  are multiple pages, this component renders pagination controls.
 
   Example usage:
 
-      <tf-category-paginated-view items="[[items]]" as="meow">
+      <tf-category-paginated-view category="[[category]]" as="meow">
         <template>
           <div>[[meow.nyan]]</div>
         </template>
@@ -41,57 +40,154 @@ limitations under the License.
 -->
 <dom-module id="tf-category-paginated-view">
   <template>
-    <span id="top-of-container"></span>
-    <template is="dom-if" if="[[_multiplePagesExist]]">
-      <div class="big-page-buttons" style="margin-bottom: 10px;">
-        <paper-button
-          on-tap="_performPreviousPage"
-          disabled$="[[!_hasPreviousPage]]"
-        >Previous page</paper-button><!--
-        --><paper-button
-          on-tap="_performNextPage"
-          disabled$="[[!_hasNextPage]]"
-        >Next page</paper-button>
-      </div>
-    </template>
-    <div><slot id="template"></slot></div>
-    <div id="items"></div>
-    <template is="dom-if" if="[[_multiplePagesExist]]">
-      <div id="controls-container">
-        <div style="display: inline-block; padding: 0 5px">
-          Page
-          <paper-input
-            id="page-input"
-            type="number"
-            no-label-float
-            min="1"
-            max="[[_pageCount]]"
-            value="[[_pageInputValue]]"
-            style="display: inline-block; width: [[_inputWidth]];"
-            on-input="_handlePageInputEvent"
-            on-change="_handlePageChangeEvent"
-            on-focus="_handlePageFocusEvent"
-            on-blur="_handlePageBlurEvent"
-          ></paper-input>
-          of [[_pageCount]]
+    <slot id="template"></slot>
+    <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">
+      <button class="heading" on-tap="_togglePane" open-button$="[[opened]]">
+        <span class="name">
+          <template is="dom-if" if="[[_isSearchResults]]">
+            <template is="dom-if" if="[[_isCompositeSearch(category)]]">
+              <span>Tags matching multiple experiments</span>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span>&nbsp;<strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+            <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
+              <span class="light">Tags matching /</span>
+              <span class="category-name">[[category.name]]</span>
+              <span class="light">/</span>
+              <template is="dom-if" if="[[_isUniversalSearchQuery]]">
+                <span> (all tags)</span>
+              </template>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span> <strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+          </template>
+          <template is="dom-if" if="[[!_isSearchResults]]">
+            <span class="category-name">[[category.name]]</span>
+          </template>
+        </span>
+        <span class="count"><span>[[_count]]</span></span>
+      </button>
+      <!-- TODO(stephanwlee): investigate further. For some reason,
+        transitionend that the iron-collapse relies on sometimes does not
+        trigger when rendering a chart with a spinner. A toy example cannot
+        reproduce this bug. -->
+      <iron-collapse opened="[[opened]]" no-animation>
+        <div class="content">
+          <span id="top-of-container"></span>
+          <template is="dom-if" if="[[_multiplePagesExist]]">
+            <div class="big-page-buttons" style="margin-bottom: 10px;">
+              <paper-button
+                on-tap="_performPreviousPage"
+                disabled$="[[!_hasPreviousPage]]"
+              >Previous page</paper-button>
+              <paper-button
+                on-tap="_performNextPage"
+                disabled$="[[!_hasNextPage]]"
+              >Next page</paper-button>
+            </div>
+          </template>
+
+          <div id="items"></div>
+          <template is="dom-if" if="[[_multiplePagesExist]]">
+            <div id="controls-container">
+              <div style="display: inline-block; padding: 0 5px">
+                Page
+                <paper-input
+                   id="page-input"
+                   type="number"
+                   no-label-float
+                   min="1"
+                   max="[[_pageCount]]"
+                   value="[[_pageInputValue]]"
+                   style="display: inline-block; width: [[_inputWidth]];"
+                   on-input="_handlePageInputEvent"
+                   on-change="_handlePageChangeEvent"
+                   on-focus="_handlePageFocusEvent"
+                   on-blur="_handlePageBlurEvent"
+                 ></paper-input>
+                 of [[_pageCount]]
+              </div>
+            </div>
+
+            <div class="big-page-buttons" style="margin-top: 10px;">
+              <paper-button
+                on-tap="_performPreviousPage"
+                disabled$="[[!_hasPreviousPage]]"
+              >Previous page</paper-button>
+              <paper-button
+                on-tap="_performNextPage"
+                disabled$="[[!_hasNextPage]]"
+              >Next page</paper-button>
+            </div>
+          </template>
         </div>
-      </div>
-      <div class="big-page-buttons" style="margin-top: 10px;">
-        <paper-button
-          on-tap="_performPreviousPage"
-          disabled$="[[!_hasPreviousPage]]"
-        >Previous page</paper-button><!--
-        --><paper-button
-          on-tap="_performNextPageAndJumpToTop"
-          disabled$="[[!_hasNextPage]]"
-        >Next page</paper-button>
-      </div>
+      </iron-collapse>
     </template>
     <style>
       :host {
-        display: flex;
-        flex-direction: column;
+        display: block;
+        margin: 0 5px 1px 10px;
       }
+
+      :host(:first-of-type) {
+        margin-top: 10px;
+      }
+
+      :host(:last-of-type) {
+        margin-bottom: 20px;
+      }
+
+      .heading {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        padding: 10px 15px;
+      }
+
+      .heading::-moz-focus-inner {
+        padding: 10px 15px;
+      }
+
+      .content {
+        padding: 15px;
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background: white;
+      }
+
+      [open-button] {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
+
+      .name {
+        display: inline-flex;
+        float: left;
+      }
+
+      .light {
+        color: var(--paper-grey-500);
+      }
+
+      .category-name {
+        white-space: pre;
+      }
+
+      .count {
+        float: right;
+        margin-right: 5px;
+        font-size: 12px;
+        color: var(--paper-grey-500);
+      }
+
       #controls-container {
         justify-content: center;
         display: flex;
@@ -126,356 +222,437 @@ limitations under the License.
     </style>
   </template>
   <script>
+    Polymer({
+      is: "tf-category-paginated-view",
+      properties: {
+        /**
+         * The category object represented by this pane. Should be of
+         * type Category<any> (from categorizationUtils.ts).
+         */
+        category: Object,
 
-  Polymer({
-    is: 'tf-category-paginated-view',
-    properties: {
-      /**
-       * An arbitrary list of items to render
-       */
-      items: {
-        type: Array,
-        value: () => [],
+        initialOpened: Boolean,
+
+        /**
+         * Allows opening and closing the pane, which is open by default.
+         */
+        opened: {
+          type: Boolean,
+          notify: true,
+          readOnly: true,
+        },
+
+        _count: {
+          type: Number,
+          computed: '_computeCount(category.items.*)',
+        },
+        _paneRendered: {
+          type: Boolean,
+          computed: '_computePaneRendered(category)',
+          observer: '_onPaneRenderedChanged',
+        },
+        _itemsRendered: {
+          type: Boolean,
+          computed: '_computeItemsRendered(opened, _paneRendered)',
+        },
+        _isSearchResults: {
+          type: Boolean,
+          computed: '_computeIsSearchResults(category.metadata.type)',
+        },
+        _isInvalidSearchResults: {
+          type: Boolean,
+          computed: '_computeIsInvalidSearchResults(category.metadata)',
+        },
+        _isUniversalSearchQuery: {
+          type: Boolean,
+          computed: '_computeIsUniversalSearchQuery(category.metadata)',
+        },
+
+        /**
+         * Callback that returns a stable string key for an item
+         */
+        getCategoryItemKey: {
+          type: Function,
+          value: () => (item, index) => JSON.stringify(item),
+        },
+
+        as: {
+          type: String,
+          value: 'item'
+        },
+
+        /**
+         * A list of rendered and mounted items.
+         */
+        _renderedItems: {
+          type: Array,
+          value: () => [],
+        },
+
+        /**
+         * A map of stamped child components.
+         */
+        _renderedTemplateInst: {
+          type: Object,
+          value: () => new Map(),
+        },
+
+        /**
+         * When item is removed, it is placed in a cache and the oldest item gets
+         * removed when LRU grows more than size of the 2x_limit.
+         */
+        _lruCachedItems: {
+          type: Object,
+          value: () => new Map(),
+        },
+
+        /**
+         * The maximum number of items to include on each page.
+         */
+        _limit: {
+          type: Number,
+          value: 12,  // reasonably small and has lots of factors
+        },
+
+        // At any time we'll mark one particular item('s index) as
+        // "active," and we'll always render the page containing that
+        // item. Clicking the next/previous page buttons will adjust this
+        // index by `_limit`.
+        //
+        // We track an active index instead of an active page so that any
+        // changes to the `_limit` will keep roughly the same set of items
+        // displayed. (Cf.: in a browser, when you zoom to adjust the text
+        // size, your reading position stays in about the same place.)
+        // (This decision incurs hardly any additional complexity, which
+        // is good because otherwise it wouldn't really be worth it.)
+        //
+        // Range invariant: let `count = items.length`. If `count > 0`
+        // then `0 <= _activeIndex && _activeIndex < count`; otherwise,
+        // if `count === 0` then `_activeIndex === 0`.
+        _activeIndex: {
+          type: Number,
+          value: 0,
+        },
+
+        _currentPage: {
+          type: Number,  // 1-indexed
+          computed: '_computeCurrentPage(_limit, _activeIndex)',
+        },
+        _pageCount: {
+          type: Number,
+          computed: '_computePageCount(category.items, _limit)',
+        },
+        _multiplePagesExist: {
+          type: Boolean,
+          computed: '_computeMultiplePagesExist(_pageCount)',
+        },
+        _hasPreviousPage: {
+          type: Boolean,
+          computed: '_computeHasPreviousPage(_currentPage)',
+        },
+        _hasNextPage: {
+          type: Boolean,
+          computed: '_computeHasNextPage(_currentPage, _pageCount)',
+        },
+        _inputWidth: {
+          type: String,
+          computed: '_computeInputWidth(_pageCount)',
+        },
+
+        _pageInputValue: {
+          type: String,  // value displayed in the input field at any time
+          computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
+          observer: '_updatePageInputValue',
+        },
+        _pageInputRawValue: {
+          type: String,  // updated live as the user types
+          value: '',
+        },
+        _pageInputFocused: {
+          type: Boolean,
+          value: false,
+        },
+        _domBootstrapped: {
+          type: Boolean,
+          value: false,
+        },
+        _ctor: {
+          type: Function,
+          value: () => null,
+        },
       },
 
-      /**
-       * Callback that returns a stable string key for an item
-       */
-      getItemKey: {
-        type: Function,
-        value: () => (item, index) => index,
+      observers: [
+        '_clampActiveIndex(category.items)',
+        '_updateRenderedItems(_itemsRendered, category.items, _limit, _activeIndex, _pageCount)',
+        '_bootstrapDom(_itemsRendered, isAttached)',
+        '_updateDom(_renderedItems.*, _domBootstrapped)',
+        '_trimCache(_limit)',
+      ],
+
+      behaviors: [
+        tf_dashboard_common.ArrayUpdateHelper,
+      ],
+
+      _computeCount() {
+        return this.category.items.length;
       },
 
-      as: {
-        type: String,
-        value: 'item'
+      _togglePane() {
+        this._setOpened(!this.opened);
       },
 
-      /**
-       * A list of rendered and mounted items.
-       */
-      _renderedItems: {
-        type: Array,
-        value: () => [],
-      },
-
-      /**
-       * A map of stamped child components.
-       */
-      _renderedTemplateInst: {
-        type: Object,
-        value: () => new Map(),
-      },
-
-      /**
-       * When item is removed, it is placed in a cache and the oldest item gets
-       * removed when LRU grows more than size of the 2x_limit.
-       */
-      _lruCachedItems: {
-        type: Object,
-        value: () => new Map(),
-      },
-
-      /**
-       * The maximum number of items to include on each page.
-       */
-      _limit: {
-        type: Number,
-        value: 12,  // reasonably small and has lots of factors
-      },
-
-      // At any time we'll mark one particular item('s index) as
-      // "active," and we'll always render the page containing that
-      // item. Clicking the next/previous page buttons will adjust this
-      // index by `_limit`.
-      //
-      // We track an active index instead of an active page so that any
-      // changes to the `_limit` will keep roughly the same set of items
-      // displayed. (Cf.: in a browser, when you zoom to adjust the text
-      // size, your reading position stays in about the same place.)
-      // (This decision incurs hardly any additional complexity, which
-      // is good because otherwise it wouldn't really be worth it.)
-      //
-      // Range invariant: let `count = items.length`. If `count > 0`
-      // then `0 <= _activeIndex && _activeIndex < count`; otherwise,
-      // if `count === 0` then `_activeIndex === 0`.
-      _activeIndex: {
-        type: Number,
-        value: 0,
-      },
-
-      _currentPage: {
-        type: Number,  // 1-indexed
-        computed: '_computeCurrentPage(_limit, _activeIndex)',
-      },
-      _pageCount: {
-        type: Number,
-        computed: '_computePageCount(items, _limit)',
-      },
-      _multiplePagesExist: {
-        type: Boolean,
-        computed: '_computeMultiplePagesExist(_pageCount)',
-      },
-      _hasPreviousPage: {
-        type: Boolean,
-        computed: '_computeHasPreviousPage(_currentPage)',
-      },
-      _hasNextPage: {
-        type: Boolean,
-        computed: '_computeHasNextPage(_currentPage, _pageCount)',
-      },
-      _inputWidth: {
-        type: String,
-        computed: '_computeInputWidth(_pageCount)',
-      },
-
-      _pageInputValue: {
-        type: String,  // value displayed in the input field at any time
-        computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
-        observer: '_updatePageInputValue',
-      },
-      _pageInputRawValue: {
-        type: String,  // updated live as the user types
-        value: '',
-      },
-      _pageInputFocused: {
-        type: Boolean,
-        value: false,
-      },
-      _bootstrapped: {
-        type: Boolean,
-        value: false,
-      },
-    },
-    observers: [
-      '_clampActiveIndex(items)',
-      '_updateRenderedItems(items, _limit, _activeIndex, _pageCount)',
-      '_updateDom(_renderedItems.*)',
-      '_trimCache(_limit)',
-    ],
-
-    behaviors: [
-      tf_dashboard_common.ArrayUpdateHelper,
-    ],
-
-    _ensureTemplatized() {
-      // Polymer is not ready (and props/DOM for the components are not
-      // populated)
-      if (!this.isAttached) return false;
-
-      if (!this._ctor) {
-        const templateNode = this.$.template.assignedElements()[0];
-        this._ctor = Polymer.Templatize.templatize(templateNode, this, {
-            parentModel: true,
-            instanceProps: {
-              [this.as]: true,
-              active: true,
-            },
-            forwardHostProp: function(prop, value) {
-              // Polymer uses `call` to invoke this method.
-              this._renderedTemplateInst.forEach(inst => {
-                inst.forwardHostProp(prop, value);
-              });
-            },
-        });
-      }
-      return true;
-    },
-
-    attached() {
-      this._limitListener = () => {
-        this.set('_limit', tf_paginated_view.getLimit());
-      };
-      tf_paginated_view.addLimitListener(this._limitListener);
-      this._limitListener();
-      this._bootstrapDom();
-      this._bootstrapped = true;
-    },
-
-    detached() {
-      tf_paginated_view.removeLimitListener(this._limitListener);
-      this._bootstrapped = false;
-    },
-
-    _updateRenderedItems(items, limit, activeIndex, pageCount) {
-      const activePageIndex = Math.floor(activeIndex / limit);
-      const domItems = (items || [])
-          .slice(activePageIndex * limit, (activePageIndex + 1) * limit);
-      this.updateArrayProp('_renderedItems', domItems, this.getItemKey);
-    },
-
-    _bootstrapDom() {
-      this._ensureTemplatized();
-      Array.from(this.$.items.children)
-          .forEach(child => Polymer.dom(this.$.items).removeChild(child));
-      this._lruCachedItems.clear();
-
-      this._renderedItems
-          .forEach((item, index) => this._insertItem(item, index));
-    },
-
-    _updateDom(event) {
-      if (!this._bootstrapped) return;
-      // These are uninteresting.
-      if (event.path == '_renderedItems' ||
-          event.path == '_renderedItems.length') {
-        return;
-      }
-
-      if (event.path === '_renderedItems.splices') {
-        event.value.indexSplices.forEach(splice => {
-          const {index, addedCount, object, removed} = splice;
-          removed.forEach(item => {
-            this._removeItem(item, this.$.items.children[index]);
-          });
-          object.slice(index, index + addedCount)
-              .forEach((item, ind) => this._insertItem(item, index + ind));
-          this._trimCache();
-        });
-      } else {
-        // Update the stamped and mounted DOM model by notifying.
-        const key = this.getItemKey(event.value);
-        if (this._renderedTemplateInst.has(key)) {
-          this._renderedTemplateInst.get(key).notifyPath(
-              this.as,
-              event.value,
-              true /* fromAbove */);
-        } else {
-          console.warn(`Expected '${key}' to exist in the DOM but ` +
-              `could not find one.`);
+      _onPaneRenderedChanged(newRendered, oldRendered) {
+        if (newRendered && newRendered !== oldRendered) {
+          // Force dom-if render without waiting for one rAF.
+          this.$.ifRendered.render();
         }
-      }
-    },
+      },
 
-    _trimCache() {
-      while (this._lruCachedItems.size > this._limit * 2) {
-        const [firstKey] = this._lruCachedItems.keys();
-        this._lruCachedItems.delete(firstKey);
-        this._renderedTemplateInst.delete(firstKey);
-      }
-    },
+      _computePaneRendered(category) {
+        // Show a category unless it's a search results category where
+        // there wasn't actually a search query.
+        return !(
+            category.metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+            && category.name === "");
+      },
 
-    _removeItem(item, node) {
-      Polymer.dom(node.parentNode).removeChild(node);
-      this._lruCachedItems.set(this.getItemKey(item), node);
-    },
+      _computeItemsRendered() {
+        return this._paneRendered && this.opened;
+      },
 
-    _insertItem(item, atIndex) {
-      if (!this._ensureTemplatized()) {
-        throw new Error('Expected templatized before inserting an item');
-      }
+      _computeIsSearchResults(type) {
+        return type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
+      },
 
-      let fragOrEl;
-      const key = this.getItemKey(item);
-      if (this._lruCachedItems.has(key)) {
-        fragOrEl = this._lruCachedItems.get(key);
-        this._lruCachedItems.delete(key);
-      } else {
-        const inst = new this.__ctor({[this.as]: item});
-        fragOrEl = inst.root;
-        this._renderedTemplateInst.set(key, inst);
-      }
+      _computeIsInvalidSearchResults(metadata) {
+        return (
+            metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+            && !metadata.validRegex);
+      },
 
-      if (this.$.items.children[atIndex]) {
-        Polymer.dom(this.$.items)
-            .insertBefore(fragOrEl, this.$.items.children[atIndex]);
-      } else {
-        Polymer.dom(this.$.items).appendChild(fragOrEl);
-      }
-    },
+      _computeIsUniversalSearchQuery(metadata) {
+        return (
+            metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+            && metadata.universalRegex);
+      },
 
-    _computeCurrentPage(limit, activeIndex) {
-      return Math.floor(activeIndex / limit) + 1;
-    },
-    _computePageCount(items, limit) {
-      return Math.ceil((items || []).length / limit);
-    },
-    _computeMultiplePagesExist(pageCount) {
-      return pageCount > 1;
-    },
-    _computeHasPreviousPage(currentPage) {
-      return currentPage > 1;
-    },
-    _computeHasNextPage(currentPage, pageCount) {
-      return currentPage < pageCount;
-    },
-    _computeInputWidth(pageCount) {
-      // Add 20px for the +/- arrows added by browsers.
-      return `calc(${pageCount.toString().length}em + 20px)`;
-    },
+      _isCompositeSearch() {
+        const {type, compositeSearch} = this.category.metadata;
+        return compositeSearch &&
+            type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
+      },
 
-    /**
-     * Update _activeIndex, maintaining its range invariant.
-     */
-    _setActiveIndex(index) {
-      const maxIndex = (this.items || []).length - 1;
-      if (index > maxIndex) {
-        index = maxIndex;
-      }
-      if (index < 0) {
-        index = 0;
-      }
-      this.set('_activeIndex', index);
-    },
+      ready() {
+        this._setOpened(this.initialOpened == null ? true : this.initialOpened);
+        this._limitListener = () => {
+          this.set('_limit', tf_paginated_view.getLimit());
+        };
+        tf_paginated_view.addLimitListener(this._limitListener);
+        this._limitListener();
+      },
 
-    _clampActiveIndex(items) {
-      this._setActiveIndex(this._activeIndex);
-    },
-    _performPreviousPage() {
-      this._setActiveIndex(this._activeIndex - this._limit);
-    },
-    _performNextPage() {
-      this._setActiveIndex(this._activeIndex + this._limit);
-    },
-    _performNextPageAndJumpToTop() {
-      const topMarker = this.$$('#top-of-container');
-      const offsetFromTop = topMarker.getBoundingClientRect().top;
-      // NOTE: `offsetFromTop` does not take into account the fact that
-      // the "TensorBoard" tab bar occludes the main content pane, so
-      // we're off by order-of-50 pixels. IM(@wchargin)O, this isn't
-      // really a big problem: it turns out that only the collapsable
-      // card title and the top navigation buttons will be hidden (and
-      // this also means that it will be rare for this to happen at
-      // all). If we wanted, we could get proper metrics here, but doing
-      // so is tricky. Cf. https://stackoverflow.com/q/123999.
-      if (offsetFromTop < 0) {
-        // We're below the top of the page.
-        topMarker.scrollIntoView();
-      }
-      this._performNextPage();
-    },
+      detached() {
+        tf_paginated_view.removeLimitListener(this._limitListener);
+      },
 
-    _computePageInputValue(focused, rawValue, currentPage) {
-      return focused ? rawValue : currentPage.toString();
-    },
-    _handlePageInputEvent(e) {
-      this.set('_pageInputRawValue', e.target.value);
-      const oneIndexedPage = e.target.valueAsNumber;
-      if (isNaN(oneIndexedPage)) return;
-      const page =
-        Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
-      this._setActiveIndex(this._limit * page);
-    },
-    _handlePageChangeEvent() {
-      // Occurs on Enter, etc. Commit the true state.
-      this.set('_pageInputRawValue', this._currentPage.toString());
-    },
-    _handlePageFocusEvent() {
-      // Discard any old (or uninitialized) state before we grant focus.
-      this.set('_pageInputRawValue', this._pageInputValue);
-      this.set('_pageInputFocused', true);
-    },
-    _handlePageBlurEvent() {
-      this.set('_pageInputFocused', false);
-    },
-    _updatePageInputValue(newValue) {
-      // Force two-way binding.
-      const pageInput = this.$$('#page-input input');
-      if (pageInput) {
-        pageInput.value = newValue;
-      }
-    },
+      _ensureTemplatized() {
+        // Polymer is not ready (and props/DOM for the components are not
+        // populated)
+        if (!this.isAttached) return false;
 
-  });
+        if (!this._ctor) {
+          const templateNode = this.$.template.assignedElements()[0];
+          this._ctor = Polymer.Templatize.templatize(templateNode, this, {
+              parentModel: true,
+              instanceProps: {
+                [this.as]: true,
+                active: true,
+              },
+              forwardHostProp: function(prop, value) {
+                // Polymer uses `call` to invoke this method.
+                this._renderedTemplateInst.forEach(inst => {
+                  inst.forwardHostProp(prop, value);
+                });
+              },
+          });
+        }
+        return true;
+      },
+
+
+      _updateRenderedItems(itemsRendered, _, limit, activeIndex, pageCount) {
+        if (!itemsRendered) return;
+        const activePageIndex = Math.floor(activeIndex / limit);
+        const domItems = (this.category.items || [])
+            .slice(activePageIndex * limit, (activePageIndex + 1) * limit);
+        this.updateArrayProp(
+            '_renderedItems', domItems, this.getCategoryItemKey);
+      },
+
+      _bootstrapDom() {
+        if (!this._itemsRendered ||
+            !this._ensureTemplatized() ||
+            this._domBootstrapped) {
+          return;
+        }
+        const itemsContainer = this.$$('#items');
+        Array.from(itemsContainer.children).forEach(child => {
+          Polymer.dom(itemsContainer).removeChild(child);
+        });
+        this._lruCachedItems.clear();
+
+        this._renderedItems
+            .forEach((item, index) => this._insertItem(item, index));
+        this._domBootstrapped = true;
+      },
+
+      _updateDom(event) {
+        if (!this._itemsRendered || !this._domBootstrapped) return;
+        // These are uninteresting.
+        if (event.path == '_renderedItems' ||
+            event.path == '_renderedItems.length') {
+          return;
+        }
+
+        if (event.path === '_renderedItems.splices') {
+          event.value.indexSplices.forEach(splice => {
+            const {index, addedCount, object, removed} = splice;
+            removed.forEach(item => {
+              this._removeItem(item, this.$$('#items').children[index]);
+            });
+            object.slice(index, index + addedCount)
+                .forEach((item, ind) => this._insertItem(item, index + ind));
+            this._trimCache();
+          });
+        } else {
+          // Update the stamped and mounted DOM model by notifying.
+          const key = this.getCategoryItemKey(event.value);
+          if (this._renderedTemplateInst.has(key)) {
+            this._renderedTemplateInst.get(key).notifyPath(
+                this.as,
+                event.value,
+                true /* fromAbove */);
+          } else {
+            console.warn(`Expected '${key}' to exist in the DOM but ` +
+                `could not find one.`);
+          }
+        }
+      },
+
+      _trimCache() {
+        while (this._lruCachedItems.size > this._limit * 2) {
+          const [firstKey] = this._lruCachedItems.keys();
+          this._lruCachedItems.delete(firstKey);
+          this._renderedTemplateInst.delete(firstKey);
+        }
+      },
+
+      _removeItem(item, node) {
+        Polymer.dom(node.parentNode).removeChild(node);
+        this._lruCachedItems.set(this.getCategoryItemKey(item), node);
+      },
+
+      _insertItem(item, atIndex) {
+        if (!this._ensureTemplatized()) {
+          throw new Error('Expected templatized before inserting an item');
+        }
+
+        const itemsContainer = this.$$('#items');
+        if (!itemsContainer) return;
+        let fragOrEl;
+        const key = this.getCategoryItemKey(item);
+        if (this._lruCachedItems.has(key)) {
+          fragOrEl = this._lruCachedItems.get(key);
+          this._lruCachedItems.delete(key);
+        } else {
+          const prop = {[this.as]: item, active: true};
+          const inst = new this._ctor(prop);
+          fragOrEl = inst.root;
+          this._renderedTemplateInst.set(key, inst);
+        }
+
+        if (itemsContainer.children[atIndex]) {
+          Polymer.dom(itemsContainer)
+              .insertBefore(fragOrEl, itemsContainer.children[atIndex]);
+        } else {
+          Polymer.dom(itemsContainer).appendChild(fragOrEl);
+        }
+      },
+
+      _computeCurrentPage(limit, activeIndex) {
+        return Math.floor(activeIndex / limit) + 1;
+      },
+      _computePageCount(items, limit) {
+        return Math.ceil((items || []).length / limit);
+      },
+      _computeMultiplePagesExist(pageCount) {
+        return pageCount > 1;
+      },
+      _computeHasPreviousPage(currentPage) {
+        return currentPage > 1;
+      },
+      _computeHasNextPage(currentPage, pageCount) {
+        return currentPage < pageCount;
+      },
+      _computeInputWidth(pageCount) {
+        // Add 20px for the +/- arrows added by browsers.
+        return `calc(${pageCount.toString().length}em + 20px)`;
+      },
+
+      /**
+       * Update _activeIndex, maintaining its range invariant.
+       */
+      _setActiveIndex(index) {
+        const maxIndex = (this.category.items || []).length - 1;
+        if (index > maxIndex) {
+          index = maxIndex;
+        }
+        if (index < 0) {
+          index = 0;
+        }
+        this.set('_activeIndex', index);
+      },
+
+      _clampActiveIndex(items) {
+        this._setActiveIndex(this._activeIndex);
+      },
+      _performPreviousPage() {
+        this._setActiveIndex(this._activeIndex - this._limit);
+      },
+      _performNextPage() {
+        this._setActiveIndex(this._activeIndex + this._limit);
+      },
+      _computePageInputValue(focused, rawValue, currentPage) {
+        return focused ? rawValue : currentPage.toString();
+      },
+      _handlePageInputEvent(e) {
+        this.set('_pageInputRawValue', e.target.value);
+        const oneIndexedPage = e.target.valueAsNumber;
+        if (isNaN(oneIndexedPage)) return;
+        const page =
+          Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+        this._setActiveIndex(this._limit * page);
+      },
+      _handlePageChangeEvent() {
+        // Occurs on Enter, etc. Commit the true state.
+        this.set('_pageInputRawValue', this._currentPage.toString());
+      },
+      _handlePageFocusEvent() {
+        // Discard any old (or uninitialized) state before we grant focus.
+        this.set('_pageInputRawValue', this._pageInputValue);
+        this.set('_pageInputFocused', true);
+      },
+      _handlePageBlurEvent() {
+        this.set('_pageInputFocused', false);
+      },
+      _updatePageInputValue(newValue) {
+        // Force two-way binding.
+        const pageInput = this.$$('#page-input input');
+        if (pageInput) {
+          pageInput.value = newValue;
+        }
+      },
+    });
   </script>
 </dom-module>
