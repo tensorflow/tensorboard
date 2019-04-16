@@ -55,6 +55,7 @@ limitations under the License.
         min="1"
         step="1"
         on-change="_paginationLimitChanged"
+        on-value-changed="_paginationLimitValidate"
       ></paper-input>
     </paper-dialog>
     <paper-header-panel>
@@ -911,12 +912,15 @@ limitations under the License.
         this.$.settings.open();
         this.$.paginationLimitInput.value = tf_paginated_view.getLimit();
       },
+      _paginationLimitValidate(event) {
+        event.target.validate();
+      },
       _paginationLimitChanged(e) {
-        const value = e.target.valueAsNumber;
+        const value = Number.parseInt(e.target.value, 10);
         // We set type="number" and min="1" on the input, but Polymer
         // doesn't actually enforce those, so we have to check manually.
         if (value === +value && value > 0) {
-          tf_paginated_view.setLimit(e.target.valueAsNumber);
+          tf_paginated_view.setLimit(value);
         }
       },
     });
