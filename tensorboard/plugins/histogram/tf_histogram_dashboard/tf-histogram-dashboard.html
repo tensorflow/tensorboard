@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view2.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-histogram-loader.html">
@@ -96,7 +96,7 @@ limitations under the License.
               opened="[[_shouldOpen(index)]]"
               restamp="[[_restamp]]"
             >
-              <tf-paginated-view2
+              <tf-category-paginated-view
                 items="[[category.items]]"
                 get-item-key="[[_getItemKey]]"
                 pages="{{category._pages}}"
@@ -111,7 +111,7 @@ limitations under the License.
                     request-manager="[[_requestManager]]"
                   ></tf-histogram-loader>
                 </template>
-              </tf-paginated-view2>
+              </tf-category-paginated-view>
             </tf-category-pane>
           </template>
         </template>
