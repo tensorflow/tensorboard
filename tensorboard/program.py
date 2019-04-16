@@ -381,7 +381,6 @@ def with_port_scanning(cls):
     # max_attempts: how many ports shall we try?
     should_scan = flags.port is None
     base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
-    max_attempts = 10 if should_scan else 1
 
     if base_port > 0xFFFF:
       raise TensorBoardServerException(
