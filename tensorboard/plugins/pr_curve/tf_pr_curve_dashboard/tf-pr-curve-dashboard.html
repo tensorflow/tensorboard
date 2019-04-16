@@ -62,7 +62,6 @@ limitations under the License.
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
-       </div>
       </div>
       <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
@@ -137,8 +136,14 @@ limitations under the License.
         type: String,
         value: 'step',
       },
-      _selectedRuns: Array,
-      _runToTagInfo: Object,
+      _selectedRuns: {
+        type: Array,
+        value: () => [],
+      },
+      _runToTagInfo: {
+        type: Object,
+        value: () => ({}),
+      },
       // The steps that the step slider for each run should use.
       _runToAvailableTimeEntries: {
         type: Object, // map<run: string, steps: number[]>
