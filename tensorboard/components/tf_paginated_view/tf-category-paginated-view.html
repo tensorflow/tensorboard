@@ -23,7 +23,7 @@ limitations under the License.
 <link rel="import" href="tf-paginated-view-store.html">
 
 <!--
-  tf-paginated-view2 takes a list of items and renders subset of them using
+  tf-category-paginated-view takes a list of items and renders subset of them using
   template passed. Depending on global pagination setting, list of items is
   broken down into discrete "pages" and when there are multiple pages, this
   component renders pagination controls.
@@ -33,13 +33,13 @@ limitations under the License.
 
   Example usage:
 
-      <tf-paginated-view2 items="[[items]]" as="meow">
+      <tf-category-paginated-view items="[[items]]" as="meow">
         <template>
           <div>[[meow.nyan]]</div>
         </template>
-      </tf-paginated-view2>
+      </tf-category-paginated-view>
 -->
-<dom-module id="tf-paginated-view2">
+<dom-module id="tf-category-paginated-view">
   <template>
     <span id="top-of-container"></span>
     <template is="dom-if" if="[[_multiplePagesExist]]">
@@ -128,7 +128,7 @@ limitations under the License.
   <script>
 
   Polymer({
-    is: 'tf-paginated-view2',
+    is: 'tf-category-paginated-view',
     properties: {
       /**
        * An arbitrary list of items to render
