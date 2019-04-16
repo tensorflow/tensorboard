@@ -8,9 +8,10 @@ tf_web_library(
     name = "tf_paginated_view",
     srcs = [
         "paginatedViewStore.ts",
-        "tf-paginated-view.html",
-        "tf-paginated-view2.html",
+        "tf-category-paginated-view.html",
+        "tf-dom-repeat.html",
         "tf-paginated-view-store.html",
+        "tf-paginated-view.html",
     ],
     path = "/tf-paginated-view",
     visibility = ["//visibility:public"],

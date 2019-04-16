@@ -10,7 +10,6 @@ tf_web_library(
     srcs = [
         "categorizationUtils.ts",
         "tf-categorization-utils.html",
-        "tf-category-pane.html",
         "tf-tag-filterer.html",
     ],
     path = "/tf-categorization-utils",

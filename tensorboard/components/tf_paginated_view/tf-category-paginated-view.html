@@ -18,7 +18,7 @@ limitations under the License.
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="tf-category-pane">
+<dom-module id="tf-category-paginated-view">
   <template>
     <template is="dom-if" if="[[_rendered]]" id="ifRendered">
       <button class="heading"
@@ -129,7 +129,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-category-pane",
+      is: "tf-category-paginated-view",
       properties: {
         /**
          * The category object represented by this pane. Should be of
