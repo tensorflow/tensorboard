@@ -464,7 +464,9 @@ flag.\
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     FlagsError = base_plugin.FlagsError
-    if flags.inspect:
+    if flags.version:
+      pass  # Don't validate flags if we're just printing the version.
+    elif flags.inspect:
       if flags.logdir and flags.event_file:
         raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')
