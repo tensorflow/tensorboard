@@ -82,6 +82,18 @@ var vz_projector;
                 state.tSNEis3d = true;
                 test.assert.deepEqual([0, 1, 2], vz_projector.stateGetAccessorDimensions(state));
             });
+            it('returns [0, 1] for 2d umap', function () {
+                var state = new vz_projector.State();
+                state.selectedProjection = 'umap';
+                state.umapIs3d = false;
+                test.assert.deepEqual([0, 1], vz_projector.stateGetAccessorDimensions(state));
+            });
+            it('returns [0, 1, 2] for 3d umap', function () {
+                var state = new vz_projector.State();
+                state.selectedProjection = 'umap';
+                state.umapIs3d = true;
+                test.assert.deepEqual([0, 1, 2], vz_projector.stateGetAccessorDimensions(state));
+            });
             it('returns pca component dimensions array for pca', function () {
                 var state = new vz_projector.State();
                 state.selectedProjection = 'pca';

@@ -32,6 +32,9 @@ var vz_projector;
             pcaIs3d: { type: Boolean, value: true, observer: '_pcaDimensionToggleObserver' },
             tSNEis3d: { type: Boolean, value: true, observer: '_tsneDimensionToggleObserver' },
             superviseFactor: { type: Number, value: 0 },
+            // UMAP parameters
+            umapIs3d: { type: Boolean, value: true, observer: '_umapDimensionToggleObserver' },
+            umapNeighbors: { type: Number, value: 15 },
             // PCA projection.
             pcaComponents: Array,
             pcaX: { type: Number, value: 0, observer: 'showPCAIfEnabled' },
@@ -76,7 +79,8 @@ var vz_projector;
                 this.querySelector('#learning-rate-slider');
             this.superviseFactorInput =
                 this.querySelector('#supervise-factor-slider');
-            this.iterationLabel = this.querySelector('.run-tsne-iter');
+            this.iterationLabelTsne = this.querySelector('.run-tsne-iter');
+            this.runUmapButton = this.querySelector('#run-umap');
         };
         ProjectionsPanel.prototype.disablePolymerChangesTriggerReprojection = function () {
             this.polymerChangesTriggerReprojection = false;
@@ -180,6 +184,9 @@ var vz_projector;
                 this.learningRateInput.value = bookmark.tSNELearningRate.toString();
             }
             this.tSNEis3d = bookmark.tSNEis3d;
+            // UMAP
+            this.umapIs3d = bookmark.umapIs3d;
+            this.umapNeighbors = bookmark.umapNeighbors;
             // custom
             this.customSelectedSearchByMetadataOption =
                 bookmark.customSelectedSearchByMetadataOption;
@@ -199,8 +206,8 @@ var vz_projector;
             this.setZDropdownEnabled(this.pcaIs3d);
             this.updateTSNEPerplexityFromSliderChange();
             this.updateTSNELearningRateFromUIChange();
-            if (this.iterationLabel) {
-                this.iterationLabel.innerText = bookmark.tSNEIteration.toString();
+            if (this.iterationLabelTsne) {
+                this.iterationLabelTsne.innerText = bookmark.tSNEIteration.toString();
             }
             if (bookmark.selectedProjection != null) {
                 this.showTab(bookmark.selectedProjection);
@@ -222,6 +229,8 @@ var vz_projector;
                 bookmark.tSNELearningRate = +this.learningRateInput.value;
             }
             bookmark.tSNEis3d = this.tSNEis3d;
+            // UMAP
+            bookmark.umapIs3d = this.umapIs3d;
             // custom
             bookmark.customSelectedSearchByMetadataOption =
                 this.customSelectedSearchByMetadataOption;
@@ -284,6 +293,9 @@ var vz_projector;
         ProjectionsPanel.prototype._tsneDimensionToggleObserver = function () {
             this.beginProjection(this.currentProjection);
         };
+        ProjectionsPanel.prototype._umapDimensionToggleObserver = function () {
+            this.beginProjection(this.currentProjection);
+        };
         ProjectionsPanel.prototype.metadataChanged = function (spriteAndMetadata) {
             // Project by options for custom projections.
             var searchByMetadataIndex = -1;
@@ -335,6 +347,9 @@ var vz_projector;
             else if (projection === 'tsne') {
                 this.showTSNE();
             }
+            else if (projection === 'umap') {
+                this.showUmap();
+            }
             else if (projection === 'custom') {
                 if (this.dataSet != null) {
                     this.dataSet.stopTSNE();
@@ -371,7 +386,7 @@ var vz_projector;
                 if (iteration != null) {
                     _this.runTsneButton.disabled = false;
                     _this.pauseTsneButton.disabled = false;
-                    _this.iterationLabel.innerText = '' + iteration;
+                    _this.iterationLabelTsne.innerText = '' + iteration;
                     _this.projector.notifyProjectionPositionsUpdated();
                     if (!projectionChangeNotified && _this.dataSet.projections['tsne']) {
                         _this.projector.onProjectionChanged();
@@ -384,6 +399,44 @@ var vz_projector;
                     _this.pauseTsneButton.innerText = 'Pause';
                     _this.pauseTsneButton.disabled = true;
                     _this.perturbTsneButton.disabled = true;
+                    _this.projector.onProjectionChanged();
+                }
+            });
+        };
+        ProjectionsPanel.prototype.showUmap = function () {
+            var dataSet = this.dataSet;
+            if (dataSet == null) {
+                return;
+            }
+            var accessors = vz_projector.getProjectionComponents('umap', [0, 1, this.umapIs3d ? 2 : null]);
+            var dimensionality = this.umapIs3d ? 3 : 2;
+            var projection = new vz_projector.Projection('umap', accessors, dimensionality, dataSet);
+            this.projector.setProjection(projection);
+            if (!this.dataSet.hasUmapRun) {
+                this.runUmap();
+            }
+            else {
+                this.projector.notifyProjectionPositionsUpdated();
+            }
+        };
+        ProjectionsPanel.prototype.runUmap = function () {
+            var _this = this;
+            var projectionChangeNotified = false;
+            this.runUmapButton.disabled = true;
+            var nComponents = this.umapIs3d ? 3 : 2;
+            var nNeighbors = this.umapNeighbors;
+            this.dataSet.projectUmap(nComponents, nNeighbors, function (iteration) {
+                if (iteration != null) {
+                    _this.runUmapButton.disabled = false;
+                    _this.projector.notifyProjectionPositionsUpdated();
+                    if (!projectionChangeNotified && _this.dataSet.projections['umap']) {
+                        _this.projector.onProjectionChanged();
+                        projectionChangeNotified = true;
+                    }
+                }
+                else {
+                    _this.runUmapButton.innerText = 'Re-run';
+                    _this.runUmapButton.disabled = false;
                     _this.projector.onProjectionChanged();
                 }
             });
@@ -521,6 +574,9 @@ var vz_projector;
         };
         ProjectionsPanel.prototype.getTsneSampleSizeText = function () {
             return vz_projector.TSNE_SAMPLE_SIZE.toLocaleString();
+        };
+        ProjectionsPanel.prototype.getUmapSampleSizeText = function () {
+            return vz_projector.UMAP_SAMPLE_SIZE.toLocaleString();
         };
         return ProjectionsPanel;
     }(vz_projector.ProjectionsPanelPolymer));
