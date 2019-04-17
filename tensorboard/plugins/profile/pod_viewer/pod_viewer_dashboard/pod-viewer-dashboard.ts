@@ -12,9 +12,15 @@ limitations under the License.
 
 namespace pod_viewer_dashboard {
 
+interface PodStatsMap {
+  stepNum: number,
+  channelDb: Array<any>,
+  allReduceOpDb: Array<any>,
+};
+
 interface PodStatsSequence {
-  podStatsMap: any,
-}[];
+  podStatsMap: Array<PodStatsMap>,
+};
 
 interface PodViewerInputData {
   podStatsSequence: PodStatsSequence,
