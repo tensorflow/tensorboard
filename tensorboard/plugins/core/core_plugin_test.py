@@ -52,6 +52,7 @@ class FakeFlags(object):
       db='',
       path_prefix=''):
     self.inspect = inspect
+    self.version = version
     self.logdir = logdir
     self.event_file = event_file
     self.db = db
@@ -80,6 +81,7 @@ class CorePluginTest(tf.test.TestCase):
   def testFlag(self):
     loader = core_plugin.CorePluginLoader()
     loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
+    loader.fix_flags(FakeFlags(version=True))
     loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
     loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp'))
     loader.fix_flags(FakeFlags(inspect=False, db='sqlite:foo'))
