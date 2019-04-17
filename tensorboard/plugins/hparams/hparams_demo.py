@@ -14,11 +14,9 @@
 # ==============================================================================
 """Write sample summary data for the hparams plugin.
 
-Each training-session here is a temperature simulation and records temperature
-related metric. See the function `run` below for more details.
-
-This demo is a slightly modified version of
-tensorboard/plugins/scalar/scalar_demo.py.
+See also `hparams_minimal_demo.py` in this directory for a demo that
+runs much faster, using synthetic data instead of actually training
+MNIST models.
 """
 
 from __future__ import absolute_import
@@ -28,238 +26,277 @@ from __future__ import print_function
 import hashlib
 import math
 import os.path
+import random
 import shutil
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
-
-# TODO(erez): This code currently does not support eager mode and can't
-# be run in tensorflow 2.0. Some of the issues are that it uses
-# uses tf.compart.v1.summary.FileWriter which can't be used in eager
-# mode (which is the default in 2.0). Fix this when we change this
-# demo to be more typical to a machine learning experiment (b/121228006).
-import tensorflow.compat.v1 as tf
-
-from absl import flags
 from absl import app
+from absl import flags
 from google.protobuf import struct_pb2
+import numpy as np
+import six
+from six.moves import xrange  # pylint: disable=redefined-builtin
+import tensorflow as tf
 
-from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary
+from tensorboard.plugins.hparams import summary as hparams_summary
 
 
-FLAGS = flags.FLAGS
+if int(tf.__version__.split(".")[0]) < 2:
+  # The tag names emitted for Keras metrics changed from "acc" (in 1.x)
+  # to "accuracy" (in 2.x), so this demo does not work properly in
+  # TensorFlow 1.x (even with `tf.enable_eager_execution()`).
+  raise ImportError("TensorFlow 2.x is required to run this demo.")
 
 
-flags.DEFINE_integer('num_session_groups', 50,
-                     'The approximate number of session groups to create.')
-flags.DEFINE_string('logdir', '/tmp/hparams_demo',
-                    'The directory to write the summary information to.')
-flags.DEFINE_integer('summary_freq', 1,
-                     'Summaries will be every n steps, '
-                     'where n is the value of this flag.')
-flags.DEFINE_integer('num_steps', 100,
-                     'Number of steps per trial.')
+flags.DEFINE_integer(
+    "num_session_groups",
+    30,
+    "The approximate number of session groups to create.",
+)
+flags.DEFINE_string(
+    "logdir",
+    "/tmp/hparams_demo",
+    "The directory to write the summary information to.",
+)
+flags.DEFINE_integer(
+    "summary_freq",
+    600,
+    "Summaries will be written every n steps, where n is the value of "
+        "this flag.",
+)
+flags.DEFINE_integer(
+    "num_epochs",
+    5,
+    "Number of epochs per trial.",
+)
 
 
-# Total number of sessions is given by:
-# len(TEMPERATURE_LIST)^2 * len(HEAT_COEFFICIENTS) * 2
-HEAT_COEFFICIENTS = {
-    'water': 0.001,
-    'air': 0.003
-}
-TEMPERATURE_LIST = []
+# We'll use MNIST for this example.
+DATASET = tf.keras.datasets.mnist
+INPUT_SHAPE = (28, 28)
+OUTPUT_CLASSES = 10
 
 
-# We can't initialize TEMPERATURE_LIST directly since the initialization
-# depends on a flag and flag parsing hasn't happened yet. Instead, we use
-# a function that we call in main() below.
-def init_temperature_list():
-  global TEMPERATURE_LIST
-  TEMPERATURE_LIST = [
-      270+i*50.0
-      for i in xrange(
-          0, int(math.sqrt(FLAGS.num_session_groups/len(HEAT_COEFFICIENTS))))]
+def model_fn(hparams, seed):
+  """Create a Keras model with the given hyperparameters.
+
+  Args:
+    hparams: A dict mapping hyperparameter names to values.
+    seed: A hashable object to be used as a random seed (e.g., to
+      construct dropout layers in the model).
+
+  Returns:
+    A compiled Keras model.
+  """
+  rng = random.Random(seed)
+
+  model = tf.keras.models.Sequential()
+  model.add(tf.keras.layers.Input(INPUT_SHAPE))
+  model.add(tf.keras.layers.Reshape(INPUT_SHAPE + (1,)))  # grayscale channel
+
+  # Add convolutional layers.
+  conv_filters = 8
+  for _ in xrange(hparams["conv_layers"]):
+    model.add(tf.keras.layers.Conv2D(
+        filters=conv_filters,
+        kernel_size=hparams["conv_kernel_size"],
+        padding="same",
+        activation="relu",
+    ))
+    model.add(tf.keras.layers.MaxPool2D(pool_size=2, padding="same"))
+    conv_filters *= 2
+
+  model.add(tf.keras.layers.Flatten())
+  model.add(tf.keras.layers.Dropout(hparams["dropout"], seed=rng.random()))
+
+  # Add fully connected layers.
+  dense_neurons = 32
+  for _ in xrange(hparams["dense_layers"]):
+    model.add(tf.keras.layers.Dense(dense_neurons, activation="relu"))
+    dense_neurons *= 2
+
+  # Add the final output layer.
+  model.add(tf.keras.layers.Dense(OUTPUT_CLASSES, activation="softmax"))
+
+  model.compile(
+      loss="sparse_categorical_crossentropy",
+      optimizer=hparams["optimizer"],
+      metrics=["accuracy"],
+  )
+  return model
 
 
-def fingerprint(string):
-  m = hashlib.md5()
-  m.update(string.encode('utf-8'))
-  return m.hexdigest()
+def run(data, base_logdir, session_id, group_id, hparams):
+  """Run a training/validation session.
+
+  Flags must have been parsed for this function to behave.
+
+  Args:
+    data: The data as loaded by `prepare_data()`.
+    base_logdir: The top-level logdir to which to write summary data.
+    session_id: A unique string ID for this session.
+    group_id: The string ID of the session group that includes this
+      session.
+    hparams: A dict mapping hyperparameter names to values.
+  """
+  model = model_fn(hparams=hparams, seed=session_id)
+  logdir = os.path.join(base_logdir, session_id)
+
+  # We need a manual summary writer for writing hparams metadata.
+  writer = tf.summary.create_file_writer(logdir)
+  with writer.as_default():
+    pb = hparams_summary.session_start_pb(hparams, group_name=group_id)
+    tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
+    writer.flush()
+
+  callback = tf.keras.callbacks.TensorBoard(
+      logdir,
+      update_freq=flags.FLAGS.summary_freq,
+      profile_batch=0,  # workaround for issue #2084
+  )
+  ((x_train, y_train), (x_test, y_test)) = data
+  result = model.fit(
+      x=x_train,
+      y=y_train,
+      epochs=flags.FLAGS.num_epochs,
+      shuffle=False,
+      validation_data=(x_test, y_test),
+      callbacks=[callback],
+  )
+
+  with writer.as_default():
+    pb = hparams_summary.session_end_pb(api_pb2.STATUS_SUCCESS)
+    tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
+    writer.flush()
+  writer.close()
+
+
+def prepare_data():
+  """Load and normalize data."""
+  ((x_train, y_train), (x_test, y_test)) = DATASET.load_data()
+  x_train = x_train.astype("float32")
+  x_test = x_test.astype("float32")
+  x_train /= 255.0
+  x_test /= 255.0
+  return ((x_train, y_train), (x_test, y_test))
 
 
 def create_experiment_summary():
-  """Returns a summary proto buffer holding this experiment."""
+  """Create an `api_pb2.Experiment` proto describing the experiment."""
+  def discrete_domain(values):
+    domain = struct_pb2.ListValue()
+    domain.extend(values)
+    return domain
 
-  # Convert TEMPERATURE_LIST to google.protobuf.ListValue
-  temperature_list = struct_pb2.ListValue()
-  temperature_list.extend(TEMPERATURE_LIST)
-  materials = struct_pb2.ListValue()
-  materials.extend(HEAT_COEFFICIENTS.keys())
-  return summary.experiment_pb(
-      hparam_infos=[
-          api_pb2.HParamInfo(name='initial_temperature',
-                             display_name='Initial temperature',
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name='ambient_temperature',
-                             display_name='Ambient temperature',
-                             type=api_pb2.DATA_TYPE_FLOAT64,
-                             domain_discrete=temperature_list),
-          api_pb2.HParamInfo(name='material',
-                             display_name='Material',
-                             type=api_pb2.DATA_TYPE_STRING,
-                             domain_discrete=materials)
-      ],
-      metric_infos=[
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag='temperature/current/scalar_summary'),
-              display_name='Current Temp.'),
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag='temperature/difference_to_ambient/scalar_summary'),
-              display_name='Difference To Ambient Temp.'),
-          api_pb2.MetricInfo(
-              name=api_pb2.MetricName(
-                  tag='delta/scalar_summary'),
-              display_name='Delta T')
-      ]
+  hparams = [
+      api_pb2.HParamInfo(
+          name="conv_layers",
+          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
+          domain_discrete=discrete_domain([1, 2, 3]),
+      ),
+      api_pb2.HParamInfo(
+          name="conv_kernel_size",
+          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
+          domain_discrete=discrete_domain([3, 5]),
+      ),
+      api_pb2.HParamInfo(
+          name="dense_layers",
+          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
+          domain_discrete=discrete_domain([1, 2, 3]),
+      ),
+      api_pb2.HParamInfo(
+          name="dropout",
+          type=api_pb2.DATA_TYPE_FLOAT64,
+          domain_interval=api_pb2.Interval(min_value=0.1, max_value=0.4),
+      ),
+      api_pb2.HParamInfo(
+          name="optimizer",
+          type=api_pb2.DATA_TYPE_STRING,
+          domain_discrete=discrete_domain(["adam", "adagrad"]),
+      ),
+  ]
+  metrics = [
+      api_pb2.MetricInfo(
+          name=api_pb2.MetricName(group="validation", tag="epoch_accuracy"),
+          display_name="accuracy (val.)",
+      ),
+      api_pb2.MetricInfo(
+          name=api_pb2.MetricName(group="validation", tag="epoch_loss"),
+          display_name="loss (val.)",
+      ),
+      api_pb2.MetricInfo(
+          name=api_pb2.MetricName(group="train", tag="batch_accuracy"),
+          display_name="accuracy (train)",
+      ),
+      api_pb2.MetricInfo(
+          name=api_pb2.MetricName(group="train", tag="batch_loss"),
+          display_name="loss (train)",
+      ),
+  ]
+  return hparams_summary.experiment_pb(
+      hparam_infos=hparams,
+      metric_infos=metrics,
   )
 
 
-def run(logdir, session_id, hparams, group_name):
-  """Runs a temperature simulation.
-
-  This will simulate an object at temperature `initial_temperature`
-  sitting at rest in a large room at temperature `ambient_temperature`.
-  The object has some intrinsic `heat_coefficient`, which indicates
-  how much thermal conductivity it has: for instance, metals have high
-  thermal conductivity, while the thermal conductivity of water is low.
-
-  Over time, the object's temperature will adjust to match the
-  temperature of its environment. We'll track the object's temperature,
-  how far it is from the room's temperature, and how much it changes at
-  each time step.
-
-  Arguments:
-    logdir: the top-level directory into which to write summary data
-    session_id: an id for the session.
-    hparams: A dictionary mapping a hyperparameter name to its value.
-    group_name: an id for the session group this session belongs to.
-  """
-  tf.reset_default_graph()
-  tf.set_random_seed(0)
-
-  initial_temperature = hparams['initial_temperature']
-  ambient_temperature = hparams['ambient_temperature']
-  heat_coefficient = HEAT_COEFFICIENTS[hparams['material']]
-  session_dir = os.path.join(logdir, session_id)
-  writer = tf.summary.FileWriter(session_dir)
-  writer.add_summary(summary.session_start_pb(hparams=hparams,
-                                              group_name=group_name))
-  writer.flush()
-  with tf.name_scope('temperature'):
-    # Create a mutable variable to hold the object's temperature, and
-    # create a scalar summary to track its value over time. The name of
-    # the summary will appear as 'temperature/current' due to the
-    # name-scope above.
-    temperature = tf.Variable(
-        tf.constant(initial_temperature),
-        name='temperature')
-    scalar_summary.op('current', temperature,
-                      display_name='Temperature',
-                      description='The temperature of the object under '
-                                  'simulation, in Kelvins.')
-
-    # Compute how much the object's temperature differs from that of its
-    # environment, and track this, too: likewise, as
-    # 'temperature/difference_to_ambient'.
-    ambient_difference = temperature - ambient_temperature
-    scalar_summary.op('difference_to_ambient', ambient_difference,
-                      display_name='Difference to ambient temperature',
-                      description=('The difference between the ambient '
-                                   'temperature and the temperature of the '
-                                   'object under simulation, in Kelvins.'))
-
-  # Newton suggested that the rate of change of the temperature of an
-  # object is directly proportional to this `ambient_difference` above,
-  # where the proportionality constant is what we called the heat
-  # coefficient. But in real life, not everything is quite so clean, so
-  # we'll add in some noise. (The value of 50 is arbitrary, chosen to
-  # make the data look somewhat interesting. :-) )
-  noise = 50 * tf.random.normal([])
-  delta = -heat_coefficient * (ambient_difference + noise)
-  scalar_summary.op('delta', delta,
-                    description='The change in temperature from the previous '
-                                'step, in Kelvins.')
-
-  # Collect all the scalars that we want to keep track of.
-  summ = tf.summary.merge_all()
-
-  # Now, augment the current temperature by this delta that we computed,
-  # blocking the assignment on summary collection to avoid race conditions
-  # and ensure that the summary always reports the pre-update value.
-  with tf.control_dependencies([summ]):
-    update_step = temperature.assign_add(delta)
-
-  sess = tf.Session()
-  sess.run(tf.global_variables_initializer())
-  for step in xrange(FLAGS.num_steps):
-    # By asking TensorFlow to compute the update step, we force it to
-    # change the value of the temperature variable. We don't actually
-    # care about this value, so we discard it; instead, we grab the
-    # summary data computed along the way.
-    (s, _) = sess.run([summ, update_step])
-    if (step % FLAGS.summary_freq) == 0:
-      writer.add_summary(s, global_step=step)
-  writer.add_summary(summary.session_end_pb(api_pb2.STATUS_SUCCESS))
-  writer.close()
-
-
 def run_all(logdir, verbose=False):
-  """Run simulations on a reasonable set of parameters.
+  """Perform random search over the hyperparameter space.
 
   Arguments:
-    logdir: the directory into which to store all the runs' data
-    verbose: if true, print out each run's name as it begins.
+    logdir: The top-level directory into which to write data. This
+      directory should be empty or nonexistent.
+    verbose: If true, print out each run's name as it begins.
   """
-  writer = tf.summary.FileWriter(logdir)
-  writer.add_summary(create_experiment_summary())
-  writer.close()
-  session_num = 0
-  num_sessions = (len(TEMPERATURE_LIST)*len(TEMPERATURE_LIST)*
-                  len(HEAT_COEFFICIENTS)*2)
-  for initial_temperature in TEMPERATURE_LIST:
-    for ambient_temperature in TEMPERATURE_LIST:
-      for material in HEAT_COEFFICIENTS:
-        hparams = {u'initial_temperature': initial_temperature,
-                   u'ambient_temperature': ambient_temperature,
-                   u'material': material}
-        hparam_str = str(hparams)
-        group_name = fingerprint(hparam_str)
-        for repeat_idx in xrange(2):
-          session_id = str(session_num)
-          if verbose:
-            print('--- Running training session %d/%d' % (session_num + 1,
-                                                          num_sessions))
-            print(hparam_str)
-            print('--- repeat #: %d' % (repeat_idx+1))
-          run(logdir, session_id, hparams, group_name)
-          session_num += 1
+  data = prepare_data()
+  rng = random.Random(0)
+
+  base_writer = tf.summary.create_file_writer(logdir)
+  with base_writer.as_default():
+    experiment_string = create_experiment_summary().SerializeToString()
+    tf.summary.experimental.write_raw_pb(experiment_string, step=0)
+    base_writer.flush()
+  base_writer.close()
+
+  sessions_per_group = 2
+  num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
+  session_index = 0  # across all session groups
+  for group_index in xrange(flags.FLAGS.num_session_groups):
+    hparams = {
+        "conv_layers": rng.randint(1, 3),
+        "conv_kernel_size": rng.choice([3, 5]),
+        "dense_layers": rng.randint(1, 3),
+        "dropout": rng.uniform(0.1, 0.4),
+        "optimizer": rng.choice(["adam", "adagrad"])
+    }
+    hparams_string = str(hparams)
+    group_id = hashlib.sha256(hparams_string.encode("utf-8")).hexdigest()
+    for repeat_index in xrange(sessions_per_group):
+      session_id = str(session_index)
+      session_index += 1
+      if verbose:
+        print(
+            "--- Running training session %d/%d"
+            % (session_index, num_sessions)
+        )
+        print(hparams_string)
+        print("--- repeat #: %d" % (repeat_index + 1))
+      run(
+          data=data,
+          base_logdir=logdir,
+          session_id=session_id,
+          group_id=group_id,
+          hparams=hparams,
+      )
 
 
 def main(unused_argv):
-  if tf.executing_eagerly():
-    print('Sorry, this demo currently can\'t be run in eager mode.')
-    return
-
-  init_temperature_list()
-  shutil.rmtree(FLAGS.logdir, ignore_errors=True)
-  print('Saving output to %s.' % FLAGS.logdir)
-  run_all(FLAGS.logdir, verbose=True)
-  print('Done. Output saved to %s.' % FLAGS.logdir)
+  np.random.seed(0)
+  logdir = flags.FLAGS.logdir
+  shutil.rmtree(logdir, ignore_errors=True)
+  print("Saving output to %s." % logdir)
+  run_all(logdir=logdir, verbose=True)
+  print("Done. Output saved to %s." % logdir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   app.run(main)
