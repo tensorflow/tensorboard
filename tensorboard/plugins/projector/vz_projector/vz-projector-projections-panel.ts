@@ -25,6 +25,10 @@ export let ProjectionsPanelPolymer = PolymerElement({
     tSNEis3d:
         {type: Boolean, value: true, observer: '_tsneDimensionToggleObserver'},
     superviseFactor: {type: Number, value: 0},
+    // UMAP parameters
+    umapIs3d:
+        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},     
+    umapNeighbors: { type: Number, value: 15 },
     // PCA projection.
     pcaComponents: Array,
     pcaX: {type: Number, value: 0, observer: 'showPCAIfEnabled'},
@@ -72,6 +76,9 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   /** T-SNE perturb interval identifier, required to terminate perturbation. */
   private perturbInterval: number;
 
+  /** UMAP neighbors parameter */
+  private umapNeighbors: number;
+
   private searchByMetadataOptions: string[];
 
   /** Centroids for custom projections. */
@@ -83,6 +90,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   /** Polymer properties. */
   // TODO(nsthorat): Move these to a separate view controller.
   public tSNEis3d: boolean;
+  public umapIs3d: boolean;
   public pcaIs3d: boolean;
   public pcaX: number;
   public pcaY: number;
@@ -97,7 +105,9 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private learningRateInput: HTMLInputElement;
   private superviseFactorInput: HTMLInputElement;
   private zDropdown: HTMLElement;
-  private iterationLabel: HTMLElement;
+  private iterationLabelTsne: HTMLElement;
+
+  private runUmapButton: HTMLButtonElement;
 
   private customProjectionXLeftInput: ProjectorInput;
   private customProjectionXRightInput: ProjectorInput;
@@ -132,7 +142,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
         this.querySelector('#learning-rate-slider') as HTMLInputElement;
     this.superviseFactorInput =
         this.querySelector('#supervise-factor-slider') as HTMLInputElement;
-    this.iterationLabel = this.querySelector('.run-tsne-iter') as HTMLElement;
+    this.iterationLabelTsne = this.querySelector('.run-tsne-iter') as HTMLElement;
+    this.runUmapButton = this.querySelector('#run-umap') as HTMLButtonElement;
   }
 
   disablePolymerChangesTriggerReprojection() {
@@ -256,6 +267,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     }
     this.tSNEis3d = bookmark.tSNEis3d;
 
+    // UMAP
+    this.umapIs3d = bookmark.umapIs3d;
+    this.umapNeighbors = bookmark.umapNeighbors;
+
     // custom
     this.customSelectedSearchByMetadataOption =
         bookmark.customSelectedSearchByMetadataOption;
@@ -280,8 +295,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.setZDropdownEnabled(this.pcaIs3d);
     this.updateTSNEPerplexityFromSliderChange();
     this.updateTSNELearningRateFromUIChange();
-    if (this.iterationLabel) {
-      this.iterationLabel.innerText = bookmark.tSNEIteration.toString();
+    if (this.iterationLabelTsne) {
+      this.iterationLabelTsne.innerText = bookmark.tSNEIteration.toString();
     }
     if (bookmark.selectedProjection != null) {
       this.showTab(bookmark.selectedProjection);
@@ -306,6 +321,9 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       bookmark.tSNELearningRate = +this.learningRateInput.value;
     }
     bookmark.tSNEis3d = this.tSNEis3d;
+
+    // UMAP
+    bookmark.umapIs3d = this.umapIs3d;
 
     // custom
     bookmark.customSelectedSearchByMetadataOption =
@@ -376,6 +394,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.beginProjection(this.currentProjection);
   }
 
+  _umapDimensionToggleObserver() {
+    this.beginProjection(this.currentProjection);
+  }
+
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo) {
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;
@@ -436,6 +458,8 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       this.showPCA();
     } else if (projection === 'tsne') {
       this.showTSNE();
+    } else if (projection === 'umap') {
+      this.showUmap();
     } else if (projection === 'custom') {
       if (this.dataSet != null) {
         this.dataSet.stopTSNE();
@@ -478,7 +502,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
           if (iteration != null) {
             this.runTsneButton.disabled = false;
             this.pauseTsneButton.disabled = false;
-            this.iterationLabel.innerText = '' + iteration;
+            this.iterationLabelTsne.innerText = '' + iteration;
             this.projector.notifyProjectionPositionsUpdated();
 
             if (!projectionChangeNotified && this.dataSet.projections['tsne']) {
@@ -496,6 +520,50 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
           }
         });
   }
+
+  private showUmap() {
+    const dataSet = this.dataSet;
+    if (dataSet == null) {
+      return;
+    }
+    const accessors =
+        getProjectionComponents('umap', [0, 1, this.umapIs3d ? 2 : null]);
+    const dimensionality = this.umapIs3d ? 3 : 2;
+    const projection =
+        new Projection('umap', accessors, dimensionality, dataSet);
+    this.projector.setProjection(projection);
+
+    if (!this.dataSet.hasUmapRun) {
+      this.runUmap();
+    } else {
+      this.projector.notifyProjectionPositionsUpdated();
+    }
+  }
+
+  private runUmap() {
+    let projectionChangeNotified = false;
+    this.runUmapButton.disabled = true;
+
+    const nComponents = this.umapIs3d ? 3 : 2;
+    const nNeighbors = this.umapNeighbors;
+
+    this.dataSet.projectUmap(nComponents, nNeighbors,
+        (iteration: number) => {
+          if (iteration != null) {
+            this.runUmapButton.disabled = false;
+            this.projector.notifyProjectionPositionsUpdated();
+
+            if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+              this.projector.onProjectionChanged();
+              projectionChangeNotified = true;
+            }
+          } else {
+            this.runUmapButton.innerText = 'Re-run';
+            this.runUmapButton.disabled = false;
+            this.projector.onProjectionChanged();
+          }
+        });
+  }  
 
   // tslint:disable-next-line:no-unused-variable
   private showPCAIfEnabled() {
@@ -646,6 +714,10 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   getTsneSampleSizeText() {
     return TSNE_SAMPLE_SIZE.toLocaleString();
+  }
+
+  getUmapSampleSizeText() {
+    return UMAP_SAMPLE_SIZE.toLocaleString();
   }
 }
 
