@@ -27,14 +27,15 @@ Polymer({
     },
     stepBreakdownLayers: {
       type: Array,
-      value: () => { return [
-          {key: 'highFlopsComputeUs', label: 'High flops compute'},
-          {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
-          {key: 'hostInfeedDurationUs', label: 'Infeed'},
-          {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-          {key: 'crsDurationUs', label: 'All reduce'},
-          {key: 'sendDurationUs', label: 'Send'},
-          {key: 'recvDurationUs', label: 'Recv'},]; },
+      value: () => [
+        {key: 'highFlopsComputeUs', label: 'High flops compute'},
+        {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
+        {key: 'hostInfeedDurationUs', label: 'Infeed'},
+        {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
+        {key: 'crsDurationUs', label: 'All reduce'},
+        {key: 'sendDurationUs', label: 'Send'},
+        {key: 'recvDurationUs', label: 'Recv'},
+      ],
     },
   },
   _isAllReduce(node: DetailNode): node is podviewer.proto.AllReduceOpInfo {
@@ -84,9 +85,7 @@ Polymer({
    */
   _bandwidth: function(
       dataSize: undefined|number, duration: undefined|number): string {
-    if (!dataSize || !duration) {
-      return;
-    }
+    if (!dataSize || !duration) return;
     return this._format(dataSize / duration / 1073.74);
   },
   /**

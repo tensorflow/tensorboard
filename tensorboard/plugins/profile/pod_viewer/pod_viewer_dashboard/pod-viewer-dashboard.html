@@ -71,7 +71,7 @@ paper-slider {
 }
 .error-message {
   color: red;
-  font-size: 32 px;
+  font-size: 32px;
   font-weight: bold;
   margin-left: 16px;
   margin-top: 32px;
@@ -86,9 +86,9 @@ paper-slider {
         paper-slider sets which step to show.
       -->
       <span class="control-row-left">Please select a step
-        <paper-slider min=0 max="[[_maxStepId]]" snaps step="1"
-            value="{{curStepId}}">
-        </paper-slider> <span class="step-num-text">
+        <paper-slider min=0 max=[[_maxStepId]] snaps step=1
+            value={{curStepId}}></paper-slider>
+                <span class="step-num-text">
             Step [[_getStepNum(_podStatsMap)]]</span>
       </span>
     </div>

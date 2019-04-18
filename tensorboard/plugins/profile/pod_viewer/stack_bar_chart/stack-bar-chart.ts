@@ -15,6 +15,7 @@ namespace pod_viewer_stack_bar_chart {
 const BAR_WIDTH = 50;
 const SVG_HEIGHT = 300;
 const SVG_MIN_WIDTH = 1600;
+const SVG_MARGIN = {top: 20, right: 20, bottom: 30, left: 100};
 
 /** constants for legends */
 const LEGEND_WIDTH = 150;
@@ -33,6 +34,7 @@ Polymer({
   properties: {
     data: {
       type: Array,
+      value: () => [],
       observer: '_dataChanged',
     },
     activeBar: {
@@ -44,6 +46,7 @@ Polymer({
     },
     stackLayers: {
       type: Array,
+      value: () => [],
       observer: '_onStackLayersChanged',
     },
   },
@@ -59,9 +62,7 @@ Polymer({
     d3.select(this.$.chart).select('.svg-container').remove();
     const stackKey = this.stackLayers.map((d) => d.key);
     const stackLabel = this.stackLayers.map((d) => d.label);
-    const margin = {top: 20, right: 20, bottom: 30, left: 100};
-    const width = SVG_MIN_WIDTH - margin.left - margin.right;
-    const height = SVG_HEIGHT - margin.top - margin.bottom;
+    const height = SVG_HEIGHT - SVG_MARGIN.top - SVG_MARGIN.bottom;
     const xScaleRange = data.length * BAR_WIDTH;
     let xScale = d3.scaleBand().range([0, xScaleRange]).padding(0.4);
     let yScale = d3.scaleLinear().range([height, 0]);
@@ -69,13 +70,12 @@ Polymer({
                        .domain([0, 19]);
     let svg = d3.select(this.$.chart)
                 .append('svg')
-                .attr('width',
-                      Math.max(SVG_MIN_WIDTH,
-                               xScaleRange + margin.left + margin.right))
+                .attr('width', Math.max(SVG_MIN_WIDTH,
+                      xScaleRange + SVG_MARGIN.left + SVG_MARGIN.right))
                 .attr('height', SVG_HEIGHT)
                 .append('g')
                 .attr('transform',
-                      'translate(' + margin.left + ',' + margin.top + ')');
+                      'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
     let stack = d3.stack()
                   .keys(stackKey)
                   .order(d3.stackOrderNone)
@@ -168,29 +168,23 @@ Polymer({
   /**
    * Redraw the stack bar chart.
    */
-  redraw: function(data: Array<any>|undefined) {
-    if (!data) {
-      return;
-    }
+  redraw: function(data: Array<any>) {
+    if (!data || data.length == 0) return;
     this.stackBarChart(data);
   },
   /**
    * Redraws the stack bar chart when the stack elements changed.
    */
   _onStackLayersChanged:
-      function(newData: Array<podviewer.proto.StackLayer>|undefined) {
-    if (!newData || newData.length == 0) {
-      return;
-    }
+      function(newData: Array<podviewer.proto.StackLayer>) {
+    if (!newData || newData.length == 0) return;
     this.redraw(this.data);
   },
   /**
    * Redraws the stack bar chart when the input data changed.
    */
-  _dataChanged: function(newData: Array<any>|undefined) {
-    if (!newData) {
-      return;
-    }
+  _dataChanged: function(newData: Array<any>) {
+    if (!newData || newData.length == 0) return;
     this.redraw(newData);
   },
   attached: function() {

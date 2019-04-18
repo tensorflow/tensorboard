@@ -76,6 +76,7 @@ Polymer({
     },
     metrics: {
       type: Array,
+      value: () => [],
     },
     activeBar:{
       type: Object,
@@ -544,9 +545,7 @@ Polymer({
    * Updates the visible links when the selectedChannelIdChanged.
    */
   _selectedChannelIdChanged: function(newData: number, oldData: number) {
-    if (!this._linkData) {
-      return;
-    }
+    if (!this._linkData) return;
     if (this._linkData[oldData]) {
       d3.select(this.$.tpgraph)
         .selectAll('#cid' + oldData).style('visibility', 'hidden');
@@ -564,7 +563,7 @@ Polymer({
   _activeBarChanged: function(newData) {
     const colorScale = d3.scaleOrdinal<number, string>(d3.schemeCategory10)
                          .domain(d3.range(0, 19));
-    if (!newData) { return; }
+    if (!newData) return;
     if (newData.replicaGroups && newData.replicaGroups.length > 0) {
       // Colors the nodes within the same replica group to the same color.
       for (let i = 0; i < newData.replicaGroups.length; i++) {
