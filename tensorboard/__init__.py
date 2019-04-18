@@ -84,4 +84,15 @@ def summary():
   return importlib.import_module('tensorboard.summary')
 
 
+def load_ipython_extension(ipython):
+  """IPython API entry point.
+
+  Only intended to be called by the IPython runtime.
+
+  See:
+    https://ipython.readthedocs.io/en/stable/config/extensions/index.html
+  """
+  notebook._load_ipython_extension(ipython)
+
+
 __version__ = version.VERSION

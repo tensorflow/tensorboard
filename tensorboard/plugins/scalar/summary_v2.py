@@ -52,7 +52,11 @@ def scalar(name, data, step=None, description=None):
   """
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'scalar_summary', values=[data, step]) as (tag, _):
     tf.debugging.assert_scalar(data)
     return tf.summary.write(tag=tag,

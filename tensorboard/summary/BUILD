@@ -81,6 +81,7 @@ py_test(
     size = "small",
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":summary",
         ":summary_v1",

@@ -26,7 +26,6 @@ import re
 import tempfile
 
 import six
-import tensorflow as tf
 
 try:
   # python version >= 3.3
@@ -35,6 +34,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import manager
+from tensorboard import test as tb_test
 from tensorboard import version
 from tensorboard.util import tb_logging
 
@@ -60,7 +60,7 @@ def _make_info(i=0):
   )
 
 
-class TensorBoardInfoTest(tf.test.TestCase):
+class TensorBoardInfoTest(tb_test.TestCase):
   """Unit tests for TensorBoardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
@@ -168,7 +168,7 @@ class TensorBoardInfoTest(tf.test.TestCase):
     self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
-class CacheKeyTest(tf.test.TestCase):
+class CacheKeyTest(tb_test.TestCase):
   """Unit tests for `manager.cache_key`."""
 
   def test_result_is_str(self):
@@ -254,7 +254,7 @@ class CacheKeyTest(tf.test.TestCase):
     self.assertEqual(with_list, with_tuple)
 
 
-class TensorBoardInfoIoTest(tf.test.TestCase):
+class TensorBoardInfoIoTest(tb_test.TestCase):
   """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
   def setUp(self):
@@ -352,4 +352,4 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-  tf.test.main()
+  tb_test.main()

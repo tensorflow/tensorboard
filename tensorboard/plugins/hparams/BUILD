@@ -99,6 +99,23 @@ py_binary(
         ":summary",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/scalar:summary",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_binary(
+    name = "hparams_minimal_demo",
+    srcs = ["hparams_minimal_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/scalar:summary",
         "@org_pythonhosted_six",
