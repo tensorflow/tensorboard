@@ -31,12 +31,12 @@ import shutil
 
 from absl import app
 from absl import flags
-from google.protobuf import struct_pb2
 import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary as hparams_summary
 
@@ -76,6 +76,43 @@ DATASET = tf.keras.datasets.mnist
 INPUT_SHAPE = (28, 28)
 OUTPUT_CLASSES = 10
 
+HP_CONV_LAYERS = hp.HParam("conv_layers", hp.IntInterval(1, 3))
+HP_CONV_KERNEL_SIZE = hp.HParam("conv_kernel_size", hp.Discrete([3, 5]))
+HP_DENSE_LAYERS = hp.HParam("dense_layers", hp.IntInterval(1, 3))
+HP_DROPOUT = hp.HParam("dropout", hp.RealInterval(0.1, 0.4))
+HP_OPTIMIZER = hp.HParam("optimizer", hp.Discrete(["adam", "adagrad"]))
+
+HPARAMS = [
+    HP_CONV_LAYERS,
+    HP_CONV_KERNEL_SIZE,
+    HP_DENSE_LAYERS,
+    HP_DROPOUT,
+    HP_OPTIMIZER,
+]
+
+METRICS = [
+    hp.Metric(
+        "epoch_accuracy",
+        group="validation",
+        display_name="accuracy (val.)",
+    ),
+    hp.Metric(
+        "epoch_loss",
+        group="validation",
+        display_name="loss (val.)",
+    ),
+    hp.Metric(
+        "batch_accuracy",
+        group="train",
+        display_name="accuracy (train)",
+    ),
+    hp.Metric(
+        "batch_loss",
+        group="train",
+        display_name="loss (train)",
+    ),
+]
+
 
 def model_fn(hparams, seed):
   """Create a Keras model with the given hyperparameters.
@@ -96,10 +133,10 @@ def model_fn(hparams, seed):
 
   # Add convolutional layers.
   conv_filters = 8
-  for _ in xrange(hparams["conv_layers"]):
+  for _ in xrange(hparams[HP_CONV_LAYERS]):
     model.add(tf.keras.layers.Conv2D(
         filters=conv_filters,
-        kernel_size=hparams["conv_kernel_size"],
+        kernel_size=hparams[HP_CONV_KERNEL_SIZE],
         padding="same",
         activation="relu",
     ))
@@ -107,11 +144,11 @@ def model_fn(hparams, seed):
     conv_filters *= 2
 
   model.add(tf.keras.layers.Flatten())
-  model.add(tf.keras.layers.Dropout(hparams["dropout"], seed=rng.random()))
+  model.add(tf.keras.layers.Dropout(hparams[HP_DROPOUT], seed=rng.random()))
 
   # Add fully connected layers.
   dense_neurons = 32
-  for _ in xrange(hparams["dense_layers"]):
+  for _ in xrange(hparams[HP_DENSE_LAYERS]):
     model.add(tf.keras.layers.Dense(dense_neurons, activation="relu"))
     dense_neurons *= 2
 
@@ -120,7 +157,7 @@ def model_fn(hparams, seed):
 
   model.compile(
       loss="sparse_categorical_crossentropy",
-      optimizer=hparams["optimizer"],
+      optimizer=hparams[HP_OPTIMIZER],
       metrics=["accuracy"],
   )
   return model
@@ -145,7 +182,10 @@ def run(data, base_logdir, session_id, group_id, hparams):
   # We need a manual summary writer for writing hparams metadata.
   writer = tf.summary.create_file_writer(logdir)
   with writer.as_default():
-    pb = hparams_summary.session_start_pb(hparams, group_name=group_id)
+    pb = hparams_summary.session_start_pb(
+        {h.name: hparams[h] for h in hparams},
+        group_name=group_id,
+    )
     tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
     writer.flush()
 
@@ -181,64 +221,6 @@ def prepare_data():
   return ((x_train, y_train), (x_test, y_test))
 
 
-def create_experiment_summary():
-  """Create an `api_pb2.Experiment` proto describing the experiment."""
-  def discrete_domain(values):
-    domain = struct_pb2.ListValue()
-    domain.extend(values)
-    return domain
-
-  hparams = [
-      api_pb2.HParamInfo(
-          name="conv_layers",
-          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
-          domain_discrete=discrete_domain([1, 2, 3]),
-      ),
-      api_pb2.HParamInfo(
-          name="conv_kernel_size",
-          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
-          domain_discrete=discrete_domain([3, 5]),
-      ),
-      api_pb2.HParamInfo(
-          name="dense_layers",
-          type=api_pb2.DATA_TYPE_FLOAT64,  # actually int
-          domain_discrete=discrete_domain([1, 2, 3]),
-      ),
-      api_pb2.HParamInfo(
-          name="dropout",
-          type=api_pb2.DATA_TYPE_FLOAT64,
-          domain_interval=api_pb2.Interval(min_value=0.1, max_value=0.4),
-      ),
-      api_pb2.HParamInfo(
-          name="optimizer",
-          type=api_pb2.DATA_TYPE_STRING,
-          domain_discrete=discrete_domain(["adam", "adagrad"]),
-      ),
-  ]
-  metrics = [
-      api_pb2.MetricInfo(
-          name=api_pb2.MetricName(group="validation", tag="epoch_accuracy"),
-          display_name="accuracy (val.)",
-      ),
-      api_pb2.MetricInfo(
-          name=api_pb2.MetricName(group="validation", tag="epoch_loss"),
-          display_name="loss (val.)",
-      ),
-      api_pb2.MetricInfo(
-          name=api_pb2.MetricName(group="train", tag="batch_accuracy"),
-          display_name="accuracy (train)",
-      ),
-      api_pb2.MetricInfo(
-          name=api_pb2.MetricName(group="train", tag="batch_loss"),
-          display_name="loss (train)",
-      ),
-  ]
-  return hparams_summary.experiment_pb(
-      hparam_infos=hparams,
-      metric_infos=metrics,
-  )
-
-
 def run_all(logdir, verbose=False):
   """Perform random search over the hyperparameter space.
 
@@ -252,7 +234,8 @@ def run_all(logdir, verbose=False):
 
   base_writer = tf.summary.create_file_writer(logdir)
   with base_writer.as_default():
-    experiment_string = create_experiment_summary().SerializeToString()
+    experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
+    experiment_string = experiment.summary_pb().SerializeToString()
     tf.summary.experimental.write_raw_pb(experiment_string, step=0)
     base_writer.flush()
   base_writer.close()
@@ -261,13 +244,7 @@ def run_all(logdir, verbose=False):
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
   session_index = 0  # across all session groups
   for group_index in xrange(flags.FLAGS.num_session_groups):
-    hparams = {
-        "conv_layers": rng.randint(1, 3),
-        "conv_kernel_size": rng.choice([3, 5]),
-        "dense_layers": rng.randint(1, 3),
-        "dropout": rng.uniform(0.1, 0.4),
-        "optimizer": rng.choice(["adam", "adagrad"])
-    }
+    hparams = {h: sample_uniform(h.domain, rng) for h in HPARAMS}
     hparams_string = str(hparams)
     group_id = hashlib.sha256(hparams_string.encode("utf-8")).hexdigest()
     for repeat_index in xrange(sessions_per_group):
@@ -287,6 +264,27 @@ def run_all(logdir, verbose=False):
           group_id=group_id,
           hparams=hparams,
       )
+
+
+def sample_uniform(domain, rng):
+  """Sample a value uniformly from a domain.
+
+  Args:
+    domain: An `IntInterval`, `RealInterval`, or `Discrete` domain.
+    rng: A `random.Random` object; defaults to the `random` module.
+
+  Raises:
+    TypeError: If `domain` is not a known kind of domain.
+    IndexError: If the domain is empty.
+  """
+  if isinstance(domain, hp.IntInterval):
+    return rng.randint(domain.min_value, domain.max_value)
+  elif isinstance(domain, hp.RealInterval):
+    return rng.uniform(domain.min_value, domain.max_value)
+  elif isinstance(domain, hp.Discrete):
+    return rng.choice(domain.values)
+  else:
+    raise TypeError("unknown domain type: %r" % (domain,))
 
 
 def main(unused_argv):

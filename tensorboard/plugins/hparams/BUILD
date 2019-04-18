@@ -95,6 +95,7 @@ py_binary(
     srcs = ["hparams_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":api",
         ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_absl_app_installed",
@@ -102,7 +103,6 @@ py_binary(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/scalar:summary",
-        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
     ],
 )
@@ -145,6 +145,38 @@ sh_test(
         ":hparams_util",
     ],
 )
+
+py_library(
+    name = "api",
+    srcs = ["api.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "api_test",
+    srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":api",
+        ":metadata",
+        ":protos_all_py_pb2",
+        "//tensorboard:test",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_six",
+    ],
+)
+
 
 py_library(
     name = "summary",
