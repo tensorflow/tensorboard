@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="details-card.html">
+<link rel="import" href="pod-viewer-common.html">
 <link rel="import" href="stack-bar-chart.html">
 <link rel="import" href="topology-graph.html">
 
@@ -88,22 +89,22 @@ paper-slider {
         <paper-slider min=0 max="[[_maxStepId]]" snaps step="1"
             value="{{curStepId}}">
         </paper-slider> <span class="step-num-text">
-            Step [[_getStepNum(_podStats)]]</span>
+            Step [[_getStepNum(_podStatsMap)]]</span>
       </span>
     </div>
     <div class="pod-viewer-dashboard" hidden=[[_error_message]]>
       <div id="topo-graph">
         <topology-graph run-environment=[[_runEnvironment]]
-            data=[[_podStats]] metrics=[[_stepBreakdownLayers]]
+            data=[[_podStatsMap]] metrics=[[_stepBreakdownLayers]]
             active-bar=[[activeBar]] selected-channel={{selectedChannel}}>
         </topology-graph>
       </div>
       <div id="channel-bars" class="bar-chart" hidden="[[!_channelDb]]">
         <div id="title">
           <div class="stack-title">Latency of Send and Recv channels</div>
-          <p>(x-axis: channel id, y-axis: time(us))</p>
+          <p>(x-axis: channel id, y-axis: time(&mu;s))</p>
         </div>
-        <stack-bar-chart id="channel-chart" data=[[_channelDb]]
+        <stack-bar-chart data=[[_channelDb]]
                          stack-layers=[[_channelLayers]]
                          x-domain-func=[[_channelFunc]]
                          active-bar={{activeBar}}></stack-bar-chart>
@@ -113,9 +114,9 @@ paper-slider {
           <div class="stack-title">
             Duration of all-reduce op or custom fusion for all-reduce</div>
           <p>(x-axis: short names for all-reduces ops (a#)
-             or fusion (f#), y-axis: time(us))</p>
+             or fusion (f#), y-axis: time(&mu;s))</p>
         </div>
-        <stack-bar-chart id="all-reduce-chart" data=[[_allReduceDb]]
+        <stack-bar-chart data=[[_allReduceDb]]
                          stack-layers=[[_allReduceLayers]]
                          x-domain-func=[[_allReduceFunc]]
                          active-bar={{activeBar}}></stack-bar-chart>
@@ -123,9 +124,9 @@ paper-slider {
       <div id="stack-bars" class="bar-chart" hidden="[[!_stepStats]]">
         <div id="title">
           <div class="stack-title">Step breakdown</div>
-          <p>(x-axis: global chip id, core id, y-axis: time(us))</p>
+          <p>(x-axis: global chip id, core id, y-axis: time(&mu;s))</p>
         </div>
-        <stack-bar-chart id="stack-bar-chart" data=[[_stepStats]]
+        <stack-bar-chart data=[[_stepStats]]
                          stack-layers=[[_stepBreakdownLayers]]
                          x-domain-func=[[_stepBreakdownFunc]]
                          active-bar={{activeBar}}></stack-bar-chart>

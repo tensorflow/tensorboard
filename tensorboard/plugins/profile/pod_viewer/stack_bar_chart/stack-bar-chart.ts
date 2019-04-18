@@ -16,14 +16,23 @@ const BAR_WIDTH = 50;
 const SVG_HEIGHT = 300;
 const SVG_MIN_WIDTH = 1600;
 
+/** constants for legends */
+const LEGEND_WIDTH = 150;
+const LEGEND_HEIGHT = 30;
+const ICON_SIZE = 19;
+const LABELS_PER_LANE = 5;
+const LEGEND_MARGIN = 5;
+const YAXIS_TO_LEGEND = 200;
+const LEGEND_TEXT_HEIGHT = 9.5;
+const LEGEND_TEXT_SIZE = '0.32em';
+
+const FONT_SIZE = 14;
+
 Polymer({
   is: 'stack-bar-chart',
   properties: {
-    id: {
-      type: String,
-    },
     data: {
-      type: Object,
+      type: Array,
       observer: '_dataChanged',
     },
     activeBar: {
@@ -32,28 +41,22 @@ Polymer({
     },
     xDomainFunc: {
       type: Object,
-      notify: true,
     },
     stackLayers: {
       type: Array,
-      notify: true,
       observer: '_onStackLayersChanged',
-    },
-    _ready: {
-      type: Boolean,
-      value: false,
     },
   },
   /**
    * Main function to draw a stacked bar chart.
    */
-  stackBarChart: function(data) {
-    if (!data || !this._ready || this.stackLayers.length == 0) {
+  stackBarChart: function(data : Array<any>) {
+    if (!data.length || !this.isAttached || this.stackLayers.length == 0) {
       return;
     }
-    d3.select(this).selectAll('g > *').remove();
-    d3.select(this).select('svg').remove();
-    d3.select(this).select('.svg-container').remove();
+    d3.select(this.$.chart).selectAll('g > *').remove();
+    d3.select(this.$.chart).select('svg').remove();
+    d3.select(this.$.chart).select('.svg-container').remove();
     const stackKey = this.stackLayers.map((d) => d.key);
     const stackLabel = this.stackLayers.map((d) => d.label);
     const margin = {top: 20, right: 20, bottom: 30, left: 100};
@@ -88,7 +91,8 @@ Polymer({
   /**
    * Draw the layers for all the bars.
    */
-  drawLayers: function(svg, layers, xScale, yScale, colorScale) {
+  drawLayers: function(svg: any, layers: any, xScale: any, yScale: any,
+                       colorScale: any) {
     let parent = this;
     let layer = svg.selectAll('.layer')
                    .data(layers)
@@ -117,34 +121,26 @@ Polymer({
   /**
    * Draw the axes of the chart.
    */
-  drawAxes: function(svg, xScale, yScale, height) {
-    let xAxis = d3.axisBottom(xScale);
-    let yAxis = d3.axisLeft(yScale);
+  drawAxes: function(svg: any, xScale: any, yScale: any, height: number) {
     svg.append('g')
        .attr('class', 'axis axis--x')
-       .style('font-size', 14)
+       .style('font-size', FONT_SIZE)
        .attr('transform', 'translate(0,' + (height + 5) + ')')
-       .call(xAxis);
+       .call(d3.axisBottom(xScale));
     svg.append('g')
        .attr('class', 'axis axis--y')
-       .style('font-size', 14)
+       .style('font-size', FONT_SIZE)
        .attr('transform', 'translate(0,0)')
-       .call(yAxis);
+       .call(d3.axisLeft(yScale));
   },
   /**
    * Draw the legends of the chart.
    */
-  drawLegend: function(svg, labels, colorScale) {
-    const legendWidth = 150;
-    const legendHeight = 30;
-    const iconSize = 19;
-    const labelsPerLane = 5;
-    const margin = 5;
-    const yAxisToLegend = 200;
+  drawLegend: function(svg: any, labels: Array<string>, colorScale: any) {
     let legend =
         svg.append('g')
            .attr('font-family', 'sans-serif')
-           .attr('font-size', 14)
+           .attr('font-size', FONT_SIZE)
            .attr('text-anchor', 'start')
            .selectAll('g')
            .data(labels.slice())
@@ -152,25 +148,27 @@ Polymer({
            .append('g')
            .attr('transform',
                  (d, i) => 'translate(' +
-                     (i * legendWidth -
-                       Math.floor(i / labelsPerLane) * legendWidth *
-                         labelsPerLane) + ',' +
-                           Math.floor(i / labelsPerLane) * legendHeight + ')');
+                     (i * LEGEND_WIDTH -
+                       Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
+                         LABELS_PER_LANE) + ',' +
+                           Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT + ')'
+                );
+
     legend.append('rect')
-          .attr('x', yAxisToLegend)
-          .attr('width', iconSize)
-          .attr('height', iconSize)
+          .attr('x', YAXIS_TO_LEGEND)
+          .attr('width', ICON_SIZE)
+          .attr('height', ICON_SIZE)
           .attr('fill', (d, i) => colorScale(i));
     legend.append('text')
-          .attr('x', yAxisToLegend + margin + iconSize)
-          .attr('y', 9.5)
-          .attr('dy', '0.32em')
+          .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
+          .attr('y', LEGEND_TEXT_HEIGHT)
+          .attr('dy', LEGEND_TEXT_SIZE)
           .text((d) => d);
   },
   /**
    * Redraw the stack bar chart.
    */
-  redraw: function(data) {
+  redraw: function(data: Array<any>|undefined) {
     if (!data) {
       return;
     }
@@ -179,7 +177,8 @@ Polymer({
   /**
    * Redraws the stack bar chart when the stack elements changed.
    */
-  _onStackLayersChanged: function(newData) {
+  _onStackLayersChanged:
+      function(newData: Array<podviewer.proto.StackLayer>|undefined) {
     if (!newData || newData.length == 0) {
       return;
     }
@@ -188,14 +187,13 @@ Polymer({
   /**
    * Redraws the stack bar chart when the input data changed.
    */
-  _dataChanged: function(newData) {
+  _dataChanged: function(newData: Array<any>|undefined) {
     if (!newData) {
       return;
     }
     this.redraw(newData);
   },
   attached: function() {
-    this._ready = true;
     this.redraw(this.data);
   },
 });

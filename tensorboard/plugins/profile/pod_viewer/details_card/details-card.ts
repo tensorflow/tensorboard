@@ -12,45 +12,18 @@ limitations under the License.
 
 namespace pod_viewer_details_card {
 
-interface StepBreakdownNode {
-  /* Examples 'highFlopsComputeUs', 'lowFlopsComputeUs', 'Send', 'Recv'*/
-  [key: string]: number;
-  totalDurationUs: number;
-}
+type DetailNode = podviewer.proto.ChannelInfo | podviewer.proto.PodStatsRecord
+                      | podviewer.proto.AllReduceOpInfo;
 
 Polymer({
   is: 'details-card',
   properties: {
     nodes: {
       type: Array,
-      notify: true,
-      observer: 'updateCard_',
     },
-    name: {
+    _name: {
       type: String,
-      value: null,
-    },
-    id: {
-      type: Number,
-    },
-    utilization: {
-      type: Number,
-    },
-    isChannel: {
-      type: Boolean,
-      value: false,
-    },
-    isAllReduce: {
-      type: Boolean,
-      value: false,
-    },
-    hasReplicaGroups: {
-      type: Boolean,
-      value: false,
-    },
-    isStepBreakdown: {
-      type: Boolean,
-      value: false,
+      computed: '_computeName(nodes)',
     },
     stepBreakdownLayers: {
       type: Array,
@@ -64,44 +37,44 @@ Polymer({
           {key: 'recvDurationUs', label: 'Recv'},]; },
     },
   },
-  /**
-   * Update the details card.
-   */
-  updateCard_: function(nodes) {
+  _isAllReduce(node: DetailNode): node is podviewer.proto.AllReduceOpInfo {
+    return (<podviewer.proto.AllReduceOpInfo>node).replicaGroups !== undefined;
+  },
+  _isChannel(node: DetailNode): node is podviewer.proto.ChannelInfo {
+    return (<podviewer.proto.ChannelInfo>node).channelId != undefined;
+  },
+  _isStep(node: DetailNode): node is podviewer.proto.PodStatsRecord {
+    return (<podviewer.proto.PodStatsRecord>node).hostName != undefined;
+  },
+  _hasReplicaGroups(node: podviewer.proto.AllReduceOpInfo): boolean {
+    return node.replicaGroups && node.replicaGroups.length > 0;
+  },
+  _computeName: function(nodes: Array<DetailNode>): string {
     if (!nodes || nodes.length == 0) return;
-    this.isChannel = false;
-    this.isAllReduce = false;
-    this.isStepBreakdown = false;
-    this.hasReplicaGroups = false;
-    if (nodes[0].channelId) {
-      this.name = 'Channel #';
-      this.id = nodes[0].channelId;
-      this.isChannel = true;
-    } else if (nodes[0].hostName) {
-      this.name = 'Step breakdown of chip';
-      this.id = nodes[0].chipId;
-      this.isStepBreakdown = true;
-    } else if (nodes[0].replicaGroups) {
-      this.name = nodes[0].name;
-      this.id = null;
-      this.isAllReduce = true;
-      this.hasReplicaGroups = nodes[0].replicaGroups.length;
+    const node = nodes[0];
+    if (this._isChannel(node)){
+      return 'Channel # ' + (<podviewer.proto.ChannelInfo>node).channelId;
+    } else if (this._isAllReduce(node)) {
+      return (<podviewer.proto.AllReduceOpInfo>node).name;
+    } else if (this._isStep(node)) {
+      return 'Step breakdown of chip '
+               + (<podviewer.proto.PodStatsRecord>node).chipId
+               + ', core ' + (<podviewer.proto.PodStatsRecord>node).nodeId;
     }
+    return;
   },
   /**
    * Converts from number of bytes to MiB.
    */
-  bytesToMiB_: function(numBytes: number): number {
+  _bytesToMiB: function(numBytes: number): number {
     return numBytes / 1048576;
   },
   /**
    * Return the formatted data size in MiB.
    */
-  sizeMiB_: function(dataSize: undefined|number): string {
-    if (!dataSize) {
-      return '';
-    }
-    return this.format_(this.bytesToMiB_(dataSize));
+  _sizeMiB: function(dataSize: undefined|number): string {
+    if (!dataSize) return;
+    return this._format(this._bytesToMiB(dataSize));
   },
   /**
    * Return the formatted link bandwidth in GiB/s.
@@ -109,55 +82,47 @@ Polymer({
    * duration between the start of the send operation to the end of the
    * recv-done operation.
    */
-  bw_: function(dataSize: undefined|number, duration: undefined|number):
-      string {
-        if (!dataSize || !duration) {
-          return '';
-        }
-        return this.format_(dataSize / duration / 1073.74);
-      },
+  _bandwidth: function(
+      dataSize: undefined|number, duration: undefined|number): string {
+    if (!dataSize || !duration) {
+      return;
+    }
+    return this._format(dataSize / duration / 1073.74);
+  },
   /**
    * Return the chip id given the global core id.
    */
-  chipId_: function(coreId: undefined|number): number {
-    if (!coreId) {
-      return 0;
-    }
+  _chipId: function(coreId: number): number {
     return Math.floor(coreId / 2);
   },
   /**
    * Return the node ordinal given the global core id.
    */
-  nodeId_: function(coreId: undefined|number): number {
-    if (!coreId) {
-      return 0;
-    }
+  _nodeId: function(coreId: number): number {
     return coreId & 1;
   },
   /**
    * Format a number with two digits after the decimal point.
    */
-  format_: function(number: undefined|number): string {
+  _format: function(number: undefined|number): string {
     return number == null ? '' : number.toFixed(2);
   },
   /**
    * Return a formatted value associated with a specific breakdown.
    */
-  getStepBreakdownValue_: function(node: undefined | StepBreakdownNode,
-                                   key: undefined|string): string {
-    if (!key || !node) {
-      return '';
-    }
-    return this.format_(node[key]);
+  _getStepBreakdownValue:
+      function(node: undefined | podviewer.proto.PodStatsRecord,
+          key: undefined|string): string {
+    if (!key || !node) return;
+    return this._format(node[key]);
   },
   /**
    * Return a the percentage of a specific breakdown.
    */
-  getStepBreakdownPct_: function(node: undefined | StepBreakdownNode,
-                                 key: undefined|string): string {
-    if (!key || !node || !node.totalDurationUs) {
-      return '';
-    }
+  _getStepBreakdownPct:
+      function(node: undefined | podviewer.proto.PodStatsRecord,
+          key: undefined|string): string {
+    if (!key || !node || !node.totalDurationUs) return;
     return (node[key] / node.totalDurationUs * 100).toFixed(2) + '%';
   },
 });
