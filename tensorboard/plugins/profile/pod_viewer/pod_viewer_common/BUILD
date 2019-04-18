@@ -7,8 +7,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "pod_viewer_common",
     srcs = [
-        "proto.ts",
         "pod-viewer-common.html",
+        "proto.ts",
     ],
-    path = "/pod-viewer-common",
+    path = "/pod-viewer",
 )

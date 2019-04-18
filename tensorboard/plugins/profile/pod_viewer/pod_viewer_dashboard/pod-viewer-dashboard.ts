@@ -12,32 +12,16 @@ limitations under the License.
 
 namespace pod_viewer_dashboard {
 
-interface PodStatsMap {
-  stepNum: number,
-  channelDb: Array<any>,
-  allReduceOpDb: Array<any>,
-};
-
-interface PodStatsSequence {
-  podStatsMap: Array<PodStatsMap>,
-};
-
-interface PodViewerInputData {
-  podStatsSequence: PodStatsSequence,
-  runEnvironment?: any,
-}
-
 Polymer({
   is: 'pod-viewer-dashboard',
   properties: {
     /**
-     * @type {?PodViewerInputData}
+     * @type {?podviewer.proto.PodViewerInputData}
      */
     data: {
       type: Object,
       value: () => ({}),
       observer: '_dataChanged',
-      notify: true,
     },
     /**
      * Active elements selected to be shown in the details card.
@@ -78,132 +62,98 @@ Polymer({
     },
     _stepBreakdownLayers: {
       type: Array,
-      value: () => { return [
-          {key: 'highFlopsComputeUs', label: 'High flops compute'},
-          {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
-          {key: 'hostInfeedDurationUs', label: 'Infeed'},
-          {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-          {key: 'crsDurationUs', label: 'All reduce'},
-          {key: 'sendDurationUs', label: 'Send'},
-          {key: 'recvDurationUs', label: 'Recv'}]; },
+      value: () => [
+        {key: 'highFlopsComputeUs', label: 'High flops compute'},
+        {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
+        {key: 'hostInfeedDurationUs', label: 'Infeed'},
+        {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
+        {key: 'crsDurationUs', label: 'All reduce'},
+        {key: 'sendDurationUs', label: 'Send'},
+        {key: 'recvDurationUs', label: 'Recv'},
+      ],
     },
-    _podStats: {
+    _podStatsMap: {
       type: Object,
       computed:
-          '_computePodStats(_podStatsMaps, curStepId, _stepBreakdownLayers)',
+          '_computePodStatsMap(_podStatsMaps, curStepId, _stepBreakdownLayers)',
     },
     _stepStats: {
       type: Array,
-      computed: '_computeStepStats(_podStats)',
+      value: null,
+      computed: '_computeStepStats(_podStatsMap)',
     },
     _channelDb: {
       type: Array,
-      computed: '_computeChannelDb(_podStats)',
+      value: null,
+      computed: '_computeChannelDb(_podStatsMap)',
     },
     _allReduceDb: {
       type: Array,
-      computed: '_computeAllReduceDb(_podStats)',
+      value: null,
+      computed: '_computeAllReduceDb(_podStatsMap)',
     },
     _channelLayers: {
       type: Array,
-      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+      value: () => [
+        {key: 'durationUs', label: 'Duration (&mu;s)'},
+      ],
     },
     _allReduceLayers: {
       type: Array,
-      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+      value: () => [
+        {key: 'durationUs', label: 'Duration (&mu;s)'},
+      ],
     },
     _stepBreakdownFunc: {
-      type: Object,
-      value: (d) => (d) => `(${d.chipId}, ${d.nodeId})`,
+      type: Array,
+      value: () => (d) => `(${d.chipId}, ${d.nodeId})`,
     },
     _channelFunc: {
       type: Object,
-      value: (d) => (d) => d.channelId,
+      value: () => (d) => d.channelId,
     },
     _allReduceFunc: {
       type: Object,
-      value: (d) => function(d) {
-               if (!d.name) return '';
+      value: () => function(d) {
+               if (!d.name) return;
                const res =
                    d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
                return res.length > 1 ? res : res + '0';
              },
     },
   },
-  _computePodStatsMaps(data : PodViewerInputData|undefined|null) : any[] {
-    if (!data) return [];
+  _computePodStatsMaps(data: podviewer.proto.PodViewerInputData|undefined|null):
+                       Array<podviewer.proto.PodStatsMap> {
+    if (!data) return;
     return data.podStatsSequence.podStatsMap;
   },
-  _computeRunEnvironment(data: PodViewerInputData|undefined|null) : any {
+  _computeRunEnvironment(
+    data: podviewer.proto.PodViewerInputData|undefined|null):
+      podviewer.proto.RunEnvironment {
     return data.runEnvironment;
   },
-  _computeMaxStepId(podStatsMaps : any[]) : number {
+  _computeMaxStepId(podStatsMaps: Array<podviewer.proto.PodStatsMap>): number {
     return podStatsMaps.length - 1;
   },
-  _computeErrorMessage(maxStepId: number) : string {
-    if (maxStepId >= 0) { return ''; }
+  _computeErrorMessage(maxStepId: number): string {
+    if (maxStepId >= 0) return;
     return "WARNING: No step time measured. "
            + "This might happen if your profile duration is too short, "
            + "try increase profile duration to cover a full step. "
            + "If you have an inference job or not use TpuEstimator, "
            + "please skip this tool.";
   },
-  _computePodStats(podStatsMaps : any[], curStepId: number,
-                   stepBreakdown: any[]) : any {
-    if (curStepId < 0 || curStepId >= podStatsMaps.length || !stepBreakdown) {
-      return null;
-    }
-    return this._populateLowFlopsCompute(
-               podStatsMaps[curStepId], stepBreakdown);
-  },
-  _computeStepStats(podStats) {
-    if (!podStats || !podStats['podStatsPerCore']) return null;
-    let stepStats = [];
-    for (const i in podStats['podStatsPerCore']) {
-      stepStats.push(podStats['podStatsPerCore'][i]);
-    }
-    stepStats.sort((a, b) => a.chipId - b.chipId);
-    return stepStats;
-  },
-  _computeChannelDb(podStats) {
-    if (!podStats || !podStats.channelDb || podStats.channelDb.length <=0 ) {
-      return null;
-    }
-    return podStats.channelDb.sort((a, b) => b.durationUs - a.durationUs);
-  },
-  _computeAllReduceDb(podStats) {
-    if (!podStats || !podStats.allReduceOpDb
-        || podStats.allReduceOpDb.length <=0) {
-      return null;
-    }
-    return podStats.allReduceOpDb.sort((a, b) => b.durationUs - a.durationUs);
-  },
-  _dataChanged(newData) {
-    if (!newData) { return; }
-    this.curStepId = 0;
-  },
-  /**
-   * Updates the input of the details card when selected channel changed.
-   */
-  _selectedChannelChanged(newChannel) {
-    if (newChannel) {
-      this.activeDetails = newChannel;
-    }
-  },
-  _activeBarChanged(newBar) {
-    if (newBar) {
-      this.activeDetails = [newBar];
-    }
-  },
   /**
    * Calculate the lowFlopsComputeUs by deducting all other breakdown from the
    * total duration.
    */
-  _populateLowFlopsCompute(podStats, layers) {
-    if (!podStats || !layers) return null;
-    let podStatsPerCore = podStats['podStatsPerCore'];
-    for (let i in podStatsPerCore) {
-      let val = podStatsPerCore[i];
+  _populateLowFlopsCompute(podStatsMap: podviewer.proto.PodStatsMap | undefined,
+                           layers: Array<podviewer.proto.StackLayer>):
+                           podviewer.proto.PodStatsMap {
+    if (!podStatsMap || !layers) return;
+    let podStatsPerCore = podStatsMap.podStatsPerCore;
+    for (let coreId in podStatsPerCore) {
+      let val = podStatsPerCore[coreId];
       if (val.hasOwnProperty('lowFlopsComputeUs')) {
         // already populated.
         return;
@@ -217,13 +167,69 @@ Polymer({
         val['lowFlopsComputeUs'] -= val[layers[j].key];
       }
     }
-   return podStats;
+   return podStatsMap;
+  },
+  _computePodStatsMap(podStatsMaps: Array<podviewer.proto.PodStatsMap>,
+                      curStepId: number,
+                      layers: Array<podviewer.proto.StackLayer>):
+                      podviewer.proto.PodStatsMap {
+    if (curStepId < 0 || curStepId >= podStatsMaps.length || !layers) return;
+    return this._populateLowFlopsCompute(podStatsMaps[curStepId], layers);
+  },
+  _computeStepStats(podStatsMap: podviewer.proto.PodStatsMap):
+                    Array<podviewer.proto.PodStatsRecord> {
+    if (!podStatsMap || !podStatsMap.podStatsPerCore) return;
+    let stepStats = [];
+    for (const i in podStatsMap.podStatsPerCore) {
+      stepStats.push(podStatsMap.podStatsPerCore[i]);
+    }
+    stepStats.sort((a, b) => a.chipId - b.chipId);
+    return stepStats;
+  },
+  _computeChannelDb(podStatsMap: podviewer.proto.PodStatsMap):
+                    Array<podviewer.proto.ChannelInfo> {
+    if (!podStatsMap || !podStatsMap.channelDb
+        || podStatsMap.channelDb.length <= 0) {
+      return;
+    }
+    return podStatsMap.channelDb.sort((a, b) => b.durationUs - a.durationUs);
+  },
+  _computeAllReduceDb(podStatsMap: podviewer.proto.PodStatsMap):
+                      Array<podviewer.proto.AllReduceOpInfo> {
+    if (!podStatsMap || !podStatsMap.allReduceOpDb
+        || podStatsMap.allReduceOpDb.length <= 0) {
+      return;
+    }
+    return podStatsMap.allReduceOpDb.sort(
+               (a, b) => b.durationUs - a.durationUs);
+  },
+  _dataChanged(newData: podviewer.proto.PodViewerInputData) {
+    if (!newData) return;
+    this.curStepId = 0;
+  },
+  /**
+   * Updates the input of the details card when selected channel changed.
+   */
+  _selectedChannelChanged(newChannel: Array<podviewer.proto.ChannelInfo>) {
+    if (newChannel) {
+      this.activeDetails = newChannel;
+    }
+  },
+  /**
+   * The active bar could be one of the PodStatsRecord, ChannelInfo or
+   * AllReduceOpInfo. Reuse the details_card component to show any of these
+   * details.
+   */
+  _activeBarChanged(newBar: any) {
+    if (newBar) {
+      this.activeDetails = [newBar];
+    }
   },
   /**
    * Returns the step number of the current step.
    */
-  _getStepNum(podStats): string {
-    return podStats ? podStats.stepNum : '';
+  _getStepNum(podStatsMap: podviewer.proto.PodStatsMap): number {
+    return podStatsMap ? podStatsMap.stepNum : 0;
   },
 });
 

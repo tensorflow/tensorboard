@@ -19,79 +19,75 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="pod-viewer-common.html">
 
 <dom-module id="details-card">
   <style>
 paper-card {
+  max-height: 50vh;
+  overflow-y: auto;
   --paper-card-header-color: white;
   --paper-card-header: {
     background-color: rgb(178,34,34);
   }
   width: 100%;
-  max-height: 50vh;
-  overflow-y: auto;
 }
+
 .card-content > div {
-  top: -5px;
   margin-bottom: 1em;
+  top: -5px;
 }
+
 .value {
   font-weight: normal;
   text-align: right;
 }
+
 .info {
-  font-size: 20px;
-  font-weight: bold;
+  font: bold 20px;
 }
+
 .code-style {
-  font-size: 14px;
-  font-weight: normal;
+  font: normal 14px;
 }
   </style>
   <template>
-    <paper-card id="card" heading="[[name]] [[id]]"
-                hidden="[[!name]]" elevation="2">
+    <paper-card id="card" heading="[[_name]]" hidden="[[!_name]]" elevation="2">
       <template is="dom-repeat" items=[[nodes]] as="node">
         <div class="card-content info">
-          <div hidden="[[!isChannel]]">
+          <div hidden="[[!_isChannel(node)]]">
             <p>Replica Id: <span class="value">[[node.replicaId]]</span></p>
           </div>
-          <div hidden="[[isStepBreakdown]]">
-            <p>Data Transferred: <span class="value">
-                [[sizeMiB_(node.dataSize)]] MiB</span></p>
-            <p>Latency: <span class="value">
-                [[format_(node.durationUs)]] &mu;s</span></p>
+          <div hidden="[[_isStep(node)]]">
+            <p>Data Transferred: <span class="value">[[_sizeMiB(node.dataSize)]] MiB</span></p>
+            <p>Latency: <span class="value">[[_format(node.durationUs)]] &mu;s</span></p>
             <p>BW: <span class="value">
-                [[bw_(node.dataSize, node.durationUs)]] GiB/s</span></p>
+                [[_bandwidth(node.dataSize, node.durationUs)]] GiB/s</span></p>
           </div>
-          <div hidden="[[!isChannel]]">
-            <p>Send Delay: <span class="value">
-                [[format_(node.sendDelayUs)]] &mu;s</span></p>
-            <p>From: <span class="value">
-              Chip[[chipId_(node.srcCoreId)]], Core[[nodeId_(node.srcCoreId)]]
-            </span></p>
-            <p>To: <span class="value">
-              Chip[[chipId_(node.dstCoreId)]], Core[[nodeId_(node.dstCoreId)]]
-            </span></p>
+          <div hidden="[[!_isChannel(node)]]">
+            <p>Send Delay: <span class="value">[[_format(node.sendDelayUs)]] &mu;s</span></p>
+            <p>From: <span class="value">Chip[[_chipId(node.srcCoreId)]], Core[[_nodeId(node.srcCoreId)]]</span></p>
+            <p>To: <span class="value">Chip[[_chipId(node.dstCoreId)]], Core[[_nodeId(node.dstCoreId)]]</span></p>
             <p>Hlo Names</p>
             <code class="code-style">
-              <template is="dom-repeat" items=[[node.hloNames]]>"[[item]]"
+              <template is="dom-repeat" items=[[node.hloNames]]>
+                "[[item]]"
               </template>
             </code>
           </div>
-          <div hidden="[[!hasReplicaGroups]]">
+          <div hidden="[[!_hasReplicaGroups(node)]]">
             <h5>Replica Groups</h5>
             <code class="code-style">
               <template is="dom-repeat" items=[[node.replicaGroups]]>
-               {[[item.replicaIds]]}<br>
+                {[[item.replicaIds]]}<br>
               </template>
             </code>
           </div>
-          <div hidden="[[!isStepBreakdown]]">
+          <div hidden="[[!_isStep(node)]]">
             <template is="dom-repeat" items=[[stepBreakdownLayers]]>
-              <h5> [[item.label]]: <span class="value">
-                [[getStepBreakdownValue_(node, item.key)]] &mu;s
-                ([[getStepBreakdownPct_(node, item.key)]])</span></h5>
+              <h5>[[item.label]]: <span class="value">
+                  [[_getStepBreakdownValue(node, item.key)]] &mu;s
+                  [[_getStepBreakdownPct(node, item.key)]]</span></h5>
             </template>
           </div>
         </div>

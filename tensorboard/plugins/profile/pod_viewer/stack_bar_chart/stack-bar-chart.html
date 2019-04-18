@@ -19,6 +19,7 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="pod-viewer-common.html">
 
 <dom-module id='stack-bar-chart'>
   <template>
@@ -27,21 +28,24 @@ limitations under the License.
   display: block;
   margin-right: 1.5em;
 }
+
 .axis text {
   font: 14px sans-serif;
 }
+
 .svg-container {
   display: inline-block;
-  position: relative;
-  width: 90%;
   padding-bottom: 90%; /* aspect ratio */
+  position: relative;
   vertical-align: top;
+  width: 90%;
 }
+
 .svg-content-responsive {
   display: inline-block;
+  left: 0;
   position: absolute;
   top: 10px;
-  left: 0;
 }
 </style>
     <div class="stack-bar-chart">

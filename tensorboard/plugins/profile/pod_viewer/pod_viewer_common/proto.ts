@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-module tpu.profiler.podviewer.proto {
+module podviewer.proto {
   /**
    * Describes the replica groups in an all-reduce op (e.g., all-reduce and
    * all-to-all).
@@ -59,7 +59,7 @@ module tpu.profiler.podviewer.proto {
    */
   export interface AllReduceOpInfo {
     /** Name of this op. */
-    name: number;
+    name: string;
     /** Number of times this op occurred.
     occurrences: number;
     /**
@@ -114,14 +114,14 @@ module tpu.profiler.podviewer.proto {
     /** Step number */
     stepNum: number;
     /** A map from core_id to PodStatsRecord. */
-    podStatsPerCore: Array<{[key: number]: PodStatsRecord}>;
+    podStatsPerCore: {[key: number]: PodStatsRecord};
     /** Send and receive channel info. */
     channelDb: Array<ChannelInfo>;
     /**
      * A map from core ID to program replica id. Replica id map could change
      * during a profile session, but should stay stable within a step.
      */
-    coreIdToReplicaIdMap: Array<{[key: number]: number}>;
+    coreIdToReplicaIdMap: {[key: number]: number};
     /** All-reduce op info. */
     allReduceOpDb: Array<AllReduceOpInfo>;
   }
@@ -145,7 +145,7 @@ module tpu.profiler.podviewer.proto {
      * Duration from the beginning of the send op to the end of the recv-done
      * op in microseconds.
      */
-    duraionUs: number;
+    durationUs: number;
     /** Number of occurrences of a channel. */
     occurrences: number;
     /** Percentage of the link bandwidth used over the peak link bandwidth. */
@@ -168,5 +168,13 @@ module tpu.profiler.podviewer.proto {
     podStatsSequence: PodStatsSequence;
     /** Job run environment, including number of hosts used, type of TPU used. */
     runEnvironment: RunEnvironment;
+  }
+
+  /** Layer in stack bar chart. */
+  export interface StackLayer {
+    /** key to select the data. */
+    key: string;
+    /** Label to be shown in the UI. */
+    label: string;
   }
 }

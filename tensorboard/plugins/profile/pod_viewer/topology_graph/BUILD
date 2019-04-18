@@ -14,6 +14,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/profile/pod_viewer/pod_viewer_common",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_item",

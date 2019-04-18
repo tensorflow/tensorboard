@@ -14,5 +14,6 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/profile/pod_viewer/pod_viewer_common",
     ],
 )

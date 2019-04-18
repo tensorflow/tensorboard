@@ -13,6 +13,7 @@ tf_web_library(
     path = "/pod-viewer",
     deps = [
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/profile/pod_viewer/pod_viewer_common",
         "@org_polymer_paper_card",
     ],
 )
