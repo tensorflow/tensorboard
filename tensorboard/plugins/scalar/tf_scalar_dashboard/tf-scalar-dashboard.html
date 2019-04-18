@@ -24,7 +24,6 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/array-update-helper.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
@@ -33,7 +32,7 @@ limitations under the License.
 <link rel="import" href="../tf-data-selector/type.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
 <link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
@@ -130,39 +129,27 @@ limitations under the License.
             <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           </template>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane
+            <tf-category-paginated-view
               category="[[category]]"
-              opened="[[_getPaneOpened(category)]]"
-              on-opened-changed="_onPaneOpenChanged"
+              initial-opened="[[_shouldOpen(index)]]"
             >
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-scalar-card
-                          active="[[page.active]]"
-                          data-to-load="[[item.series]]"
-                          ignore-y-outliers="[[_ignoreYOutliers]]"
-                          multi-experiments="[[_getMultiExperiments(dataSelection)]]"
-                          request-manager="[[_requestManager]]"
-                          show-download-links="[[_showDownloadLinks]]"
-                          smoothing-enabled="[[_smoothingEnabled]]"
-                          smoothing-weight="[[_smoothingWeight]]"
-                          tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
-                          tag="[[item.tag]]"
-                          tooltip-sorting-method="[[_tooltipSortingMethod]]"
-                          x-type="[[_xType]]"
-                        ></tf-scalar-card>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+              <template>
+                <tf-scalar-card
+                  active="[[active]"
+                  data-to-load="[[item.series]]"
+                  ignore-y-outliers="[[_ignoreYOutliers]]"
+                  multi-experiments="[[_getMultiExperiments(dataSelection)]]"
+                  request-manager="[[_requestManager]]"
+                  show-download-links="[[_showDownloadLinks]]"
+                  smoothing-enabled="[[_smoothingEnabled]]"
+                  smoothing-weight="[[_smoothingWeight]]"
+                  tag-metadata="[[_tagMetadata(category, _runToTagInfo, item)]]"
+                  tag="[[item.tag]]"
+                  tooltip-sorting-method="[[_tooltipSortingMethod]]"
+                  x-type="[[_xType]]"
+                ></tf-scalar-card>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -232,12 +219,6 @@ limitations under the License.
               {defaultValue: true, useLocalStorage: true}),
           observer: '_ignoreYOutliersObserver',
         },
-
-        _paneOpened: {
-          type: Object,
-          value: () => ({}),
-        },
-
         /** @type {vz_chart_helpers.XType} */
         _xType: {
           type: String,
@@ -279,7 +260,6 @@ limitations under the License.
       ],
       observers: [
         '_updateCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady, dataSelection)',
-        '_updatePaneOpened(_categories.*)',
       ],
 
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
@@ -297,39 +277,9 @@ limitations under the License.
             tf_categorization_utils.CategoryType.SEARCH_RESULTS ?
                 '' : category.name;
       },
-
-      _updatePaneOpened() {
-        const paneOpen = this._paneOpened;
-        const newPaneOpened = {};
-
-        // Copy over the relevant values from the old pane state.
-        this._categories
-            .map(this._getCategoryKey)
-            .filter(name => paneOpen[name] != null)
-            .forEach(name => newPaneOpened[name] = paneOpen[name]);
-
-        if (Object.keys(newPaneOpened).length == 0) {
-          this._categories.slice(0, NUM_DEFAULT_OPENED_PANE)
-              .map(this._getCategoryKey)
-              .forEach(name => {
-                newPaneOpened[name] = true;
-              });
-        }
-
-        this._paneOpened = newPaneOpened;
+      _shouldOpen(index) {
+        return index <= 2;
       },
-
-      _getPaneOpened(category) {
-        return this._paneOpened[this._getCategoryKey(category)];
-      },
-
-      _onPaneOpenChanged(event) {
-        // The event can be triggered without the pane being mounted.
-        if (!this.isAttached || !event.target.isAttached) return;
-        const name = this._getCategoryKey(event.target.category);
-        this._paneOpened[name] = event.detail.value;
-      },
-
       ready() {
         this.reload();
       },
