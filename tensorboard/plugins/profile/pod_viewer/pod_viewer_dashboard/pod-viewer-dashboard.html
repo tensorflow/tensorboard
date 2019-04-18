@@ -59,7 +59,8 @@ paper-slider {
 }
 
 .step-num-text {
-  font: bold 20px;
+  font-size: 20px;
+  font-weight: bold;
   padding-left: 1em;
 }
 
@@ -78,7 +79,8 @@ paper-slider {
 
 .error-message {
   color: red;
-  font: bold 32px;
+  font-size: 32px;
+  font-weight: bold;
   margin-left: 16px;
   margin-top: 32px;
 }
@@ -92,9 +94,9 @@ paper-slider {
         paper-slider sets which step to show.
       -->
       <span class="control-row-left">Please select a step
-        <paper-slider min=0 max="[[_maxStepId]]" snaps step="1"
-            value="{{curStepId}}">
-        </paper-slider> <span class="step-num-text">
+        <paper-slider min=0 max=[[_maxStepId]] snaps step=1
+            value={{curStepId}}></paper-slider>
+                <span class="step-num-text">
             Step [[_getStepNum(_podStatsMap)]]</span>
       </span>
     </div>
@@ -108,7 +110,7 @@ paper-slider {
       <div id="channel-bars" class="bar-chart" hidden="[[!_channelDb]]">
         <div id="title">
           <div class="stack-title">Latency of Send and Recv channels</div>
-          <p>(x-axis: channel id, y-axis: time(&mu;s))</p>
+          <p>(x-axis: channel id, y-axis: time(µs))</p>
         </div>
         <stack-bar-chart data=[[_channelDb]]
                          stack-layers=[[_channelLayers]]
@@ -120,7 +122,7 @@ paper-slider {
           <div class="stack-title">
             Duration of all-reduce op or custom fusion for all-reduce
           </div>
-          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time(&mu;s))</p>
+          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time(µs))</p>
         </div>
         <stack-bar-chart data=[[_allReduceDb]]
                          stack-layers=[[_allReduceLayers]]
@@ -130,7 +132,7 @@ paper-slider {
       <div id="stack-bars" class="bar-chart" hidden="[[!_stepStats]]">
         <div id="title">
           <div class="stack-title">Step breakdown</div>
-          <p>(x-axis: global chip id, core id, y-axis: time(&mu;s))</p>
+          <p>(x-axis: global chip id, core id, y-axis: time(µs))</p>
         </div>
         <stack-bar-chart data=[[_stepStats]]
                          stack-layers=[[_stepBreakdownLayers]]

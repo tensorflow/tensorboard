@@ -20,7 +20,6 @@ Polymer({
      */
     data: {
       type: Object,
-      value: () => ({}),
       observer: '_dataChanged',
     },
     /**
@@ -62,14 +61,15 @@ Polymer({
     },
     _stepBreakdownLayers: {
       type: Array,
-      value: () => { return [
-          {key: 'highFlopsComputeUs', label: 'High flops compute'},
-          {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
-          {key: 'hostInfeedDurationUs', label: 'Infeed'},
-          {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-          {key: 'crsDurationUs', label: 'All reduce'},
-          {key: 'sendDurationUs', label: 'Send'},
-          {key: 'recvDurationUs', label: 'Recv'}]; },
+      value: () => [
+        {key: 'highFlopsComputeUs', label: 'High flops compute'},
+        {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
+        {key: 'hostInfeedDurationUs', label: 'Infeed'},
+        {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
+        {key: 'crsDurationUs', label: 'All reduce'},
+        {key: 'sendDurationUs', label: 'Send'},
+        {key: 'recvDurationUs', label: 'Recv'},
+      ],
     },
     _podStatsMap: {
       type: Object,
@@ -93,24 +93,28 @@ Polymer({
     },
     _channelLayers: {
       type: Array,
-      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+      value: () => [
+        {key: 'durationUs', label: 'Duration (s)'},
+      ],
     },
     _allReduceLayers: {
       type: Array,
-      value: () => { return [{key: 'durationUs', label: 'Duration (us)'}]; },
+      value: () => [
+        {key: 'durationUs', label: 'Duration (µs)'},
+      ],
     },
     _stepBreakdownFunc: {
-      type: Object,
-      value: (d) => (d) => `(${d.chipId}, ${d.nodeId})`,
+      type: Array,
+      value: () => (d) => `(${d.chipId}, ${d.nodeId})`,
     },
     _channelFunc: {
       type: Object,
-      value: (d) => (d) => d.channelId,
+      value: () => (d) => d.channelId,
     },
     _allReduceFunc: {
       type: Object,
-      value: (d) => function(d) {
-               if (!d.name) return '';
+      value: () => function(d) {
+               if (!d.name) return;
                const res =
                    d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
                return res.length > 1 ? res : res + '0';
@@ -131,7 +135,7 @@ Polymer({
     return podStatsMaps.length - 1;
   },
   _computeErrorMessage(maxStepId: number): string {
-    if (maxStepId >= 0) { return ''; }
+    if (maxStepId >= 0) return;
     return "WARNING: No step time measured. "
            + "This might happen if your profile duration is too short, "
            + "try increase profile duration to cover a full step. "
@@ -184,7 +188,7 @@ Polymer({
   _computeChannelDb(podStatsMap: podviewer.proto.PodStatsMap):
                     Array<podviewer.proto.ChannelInfo> {
     if (!podStatsMap || !podStatsMap.channelDb
-        || podStatsMap.channelDb.length <=0) {
+        || podStatsMap.channelDb.length <= 0) {
       return;
     }
     return podStatsMap.channelDb.sort((a, b) => b.durationUs - a.durationUs);
@@ -192,7 +196,7 @@ Polymer({
   _computeAllReduceDb(podStatsMap: podviewer.proto.PodStatsMap):
                       Array<podviewer.proto.AllReduceOpInfo> {
     if (!podStatsMap || !podStatsMap.allReduceOpDb
-        || podStatsMap.allReduceOpDb.length <=0) {
+        || podStatsMap.allReduceOpDb.length <= 0) {
       return;
     }
     return podStatsMap.allReduceOpDb.sort(

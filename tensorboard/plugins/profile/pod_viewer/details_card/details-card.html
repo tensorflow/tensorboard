@@ -44,11 +44,13 @@ paper-card {
 }
 
 .info {
-  font: bold 20px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .code-style {
-  font: normal 14px;
+  font-size: 14px;
+  font-weight: normal;
 }
   </style>
   <template>
@@ -60,15 +62,15 @@ paper-card {
           </div>
           <div hidden="[[_isStep(node)]]">
             <p>Data Transferred: <span class="value">[[_sizeMiB(node.dataSize)]] MiB</span></p>
-            <p>Latency: <span class="value">[[_format(node.durationUs)]] &mu;s</span></p>
+            <p>Latency: <span class="value">[[_format(node.durationUs)]] µs</span></p>
             <p>BW: <span class="value">
                 [[_bandwidth(node.dataSize, node.durationUs)]] GiB/s</span></p>
           </div>
           <div hidden="[[!_isChannel(node)]]">
-            <p>Send Delay: <span class="value">[[_format(node.sendDelayUs)]] &mu;s</span></p>
+            <p>Send Delay: <span class="value">[[_format(node.sendDelayUs)]] µs</span></p>
             <p>From: <span class="value">Chip[[_chipId(node.srcCoreId)]], Core[[_nodeId(node.srcCoreId)]]</span></p>
             <p>To: <span class="value">Chip[[_chipId(node.dstCoreId)]], Core[[_nodeId(node.dstCoreId)]]</span></p>
-            <p>Hlo Names</p>
+            <p>Hlo Names: </p>
             <code class="code-style">
               <template is="dom-repeat" items=[[node.hloNames]]>
                 "[[item]]"
@@ -76,7 +78,7 @@ paper-card {
             </code>
           </div>
           <div hidden="[[!_hasReplicaGroups(node)]]">
-            <h5>Replica Groups</h5>
+            <p>Replica Groups</p>
             <code class="code-style">
               <template is="dom-repeat" items=[[node.replicaGroups]]>
                 {[[item.replicaIds]]}<br>
@@ -85,9 +87,9 @@ paper-card {
           </div>
           <div hidden="[[!_isStep(node)]]">
             <template is="dom-repeat" items=[[stepBreakdownLayers]]>
-              <h5>[[item.label]]: <span class="value">
-                  [[_getStepBreakdownValue(node, item.key)]] &mu;s
-                  [[_getStepBreakdownPct(node, item.key)]]</span></h5>
+              <p>[[item.label]]: <span class="value">
+                  [[_getStepBreakdownValue(node, item.key)]] µs
+                  [[_getStepBreakdownPct(node, item.key)]]</span></p>
             </template>
           </div>
         </div>

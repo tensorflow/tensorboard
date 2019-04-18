@@ -76,6 +76,7 @@ Polymer({
     },
     metrics: {
       type: Array,
+      value: () => [],
     },
     activeBar:{
       type: Object,
@@ -105,11 +106,12 @@ Polymer({
     },
     _minChannelId: {
       type: Number,
-      computed: '_computeMinChannelId(_linkData)',
+      computed: '_computeMinChannelId(data)',
     },
     _maxChannelId: {
       type: Number,
-      computed: '_computeMaxChannelId(_linkData)',
+      value: 0,
+      computed: '_computeMaxChannelId(data)',
     },
     _xDimension: {
       type: Number,
@@ -157,21 +159,21 @@ Polymer({
       metrics: Array<podviewer.proto.StackLayer>,
       idx: number): Array<TopoData> {
     if (!data || !runEnvironment || !runEnvironment.topology || !metrics ||
-      idx >= metrics.length || idx < 0) {
+        idx >= metrics.length || idx < 0) {
       return;
     }
-    const xdim = runEnvironment.topology.xDimension;
+    const xdim = parseInt(runEnvironment.topology.xDimension, 10);
     return Object.keys(data.podStatsPerCore).map((core) => {
         const podStats = data.podStatsPerCore[core];
         return {
-          xdim: podStats.chipId % xdim,
-          ydim: Math.floor(podStats.chipId / xdim),
-          nid: podStats.nodeId,
-          cid: podStats.chipId,
-          rid: data.coreIdToReplicaIdMap[core], // replica id.
-          host: podStats.hostName,
-          value: podStats[metrics[idx].key],
-          total: podStats.totalDurationUs,
+            xdim: podStats.chipId % xdim,
+            ydim: Math.floor(podStats.chipId / xdim),
+            nid: podStats.nodeId,
+            cid: podStats.chipId,
+            rid: data.coreIdToReplicaIdMap[core], // replica id.
+            host: podStats.hostName,
+            value: podStats[metrics[idx].key],
+            total: podStats.totalDurationUs,
         };
     });
   },
@@ -215,11 +217,11 @@ Polymer({
   },
   _computeXDimension: function(env: podviewer.proto.RunEnvironment): number {
     if (!env || !env.topology) return;
-    return env.topology.xDimension;
+    return parseInt(env.topology.xDimension, 10);
   },
   _computeYDimension: function(env: podviewer.proto.RunEnvironment): number {
     if (!env || !env.topology) return;
-    return env.topology.yDimension;
+    return parseInt(env.topology.yDimension, 10);
   },
   _computeTotalCoreCount: function(xdim: number, ydim: number): number {
     return xdim * ydim * NODES_PER_CHIP;
@@ -244,15 +246,14 @@ Polymer({
         d3.scaleQuantile<string>().domain([0, 1.0]).range(MAIN_COLORS);
     const chipXDims = Array.from(Array(this._xDimension).keys());
     const chipYDims = Array.from(Array(this._yDimension).keys());
-    let svg =
-        d3.select(this.$.tpgraph)
-          .append('svg')
-          .attr('width', SVG_WIDTH)
-          .attr('height', hostYDim * this._hostGridHeight
-                            + SVG_MARGIN.bottom + SVG_MARGIN.top)
-          .append('g')
-          .attr('transform',
-                'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+    let svg = d3.select(this.$.tpgraph)
+        .append('svg')
+        .attr('width', SVG_WIDTH)
+        .attr('height', hostYDim * this._hostGridHeight
+            + SVG_MARGIN.bottom + SVG_MARGIN.top)
+        .append('g')
+        .attr('transform',
+            'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
     const hostData = this.createHostData(hostXDim, hostYDim);
     this.drawHostCards(
         svg, hostData, this._hostGridWidth, this._hostGridHeight);
@@ -262,17 +263,16 @@ Polymer({
     this._gLink = svg.append('svg:g').classed('link', true);
 
     // Add a svg:defs for the arrow head.
-    svg.append('svg:defs')
-       .append('svg:marker')
-       .attr('id', 'arrow')
-       .attr('viewBox', '0 -5 10 10')
-       .attr('markerWidth', 5)
-       .attr('markerHeight', 5)
-       .attr('orient', 'auto')
-       .append('svg:path')
-       .style('stroke', 'red')
-       .style('fill', 'red')
-       .attr('d', 'M0,-5L10,0L0,5');
+    svg.append('svg:defs').append('svg:marker')
+        .attr('id', 'arrow')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('markerWidth', 5)
+        .attr('markerHeight', 5)
+        .attr('orient', 'auto')
+        .append('svg:path')
+        .style('stroke', 'red')
+        .style('fill', 'red')
+        .attr('d', 'M0,-5L10,0L0,5');
     this.drawLabels(svg, chipXDims, chipYDims);
     const legendYLoc =
         this._hostGridHeight * Math.ceil(this._yDimension / HOST_Y_STRIDE) +
@@ -328,29 +328,20 @@ Polymer({
     let parent = this;
 
     // Draw label on x axis.
-    svg.selectAll('.xLabel')
-       .data(xdims)
-       .enter()
-       .append('text')
-       .text((d) => d)
-       .attr('x',
-             (d, i) => parent.getChipXLoc(
-                 Math.floor(i / parent._hostXStride), i % parent._hostXStride))
-       .attr('y', 0)
-       .style('text-anchor', 'middle')
-       .attr('transform', 'translate(' + CHIP_GRID_SIZE / 2 + ', -6)')
-       .attr('class', 'axis');
+    svg.selectAll('.xLabel').data(xdims).enter().append('text').text((d) => d)
+        .attr('x', (d, i) => parent.getChipXLoc(
+                       Math.floor(i / parent._hostXStride),
+                           i % parent._hostXStride))
+        .attr('y', 0)
+        .style('text-anchor', 'middle')
+        .attr('transform', 'translate(' + CHIP_GRID_SIZE / 2 + ', -6)')
+        .attr('class', 'axis');
 
     // Draw label on y axis.
-    svg.selectAll('.yLabel')
-       .data(ydims)
-       .enter()
-       .append('text')
-       .text((d) => d)
-       .attr('x', 0)
-       .attr('y',
-             (d, i) => parent.getChipYLoc(
-                 Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
+    svg.selectAll('.yLabel').data(ydims).enter().append('text').text((d) => d)
+        .attr('x', 0)
+        .attr('y', (d, i) => parent.getChipYLoc(
+                       Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
        .style('text-anchor', 'middle')
        .attr('transform', 'translate(-12,' + CHIP_GRID_SIZE / 2 + ')')
        .attr('class', 'axis');
@@ -360,22 +351,21 @@ Polymer({
    */
   drawHostCards: function(svg, data, gridWidth: number, gridHeight: number) {
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
-    cards.enter()
-         .append('rect')
-         .attr('x', (d) => d.xdim * gridWidth)
-         .attr('y', (d) => d.ydim * gridHeight)
-         .attr('rx', 4 * gridWidth / gridHeight)
-         .attr('ry', 4)
-         .attr('class', 'hour bordered')
-         .attr('width', gridWidth - HOST_TO_HOST_MARGIN)
-         .attr('height', gridHeight - HOST_TO_HOST_MARGIN)
-         .attr('border', 1)
-         .style('fill', 'F0F0F0')
-         .style('stroke', 'black')
-         .style('stroke-width', 1)
-         .merge(cards)
-         .transition()
-         .duration(1000);
+    cards.enter().append('rect')
+        .attr('x', (d) => d.xdim * gridWidth)
+        .attr('y', (d) => d.ydim * gridHeight)
+        .attr('rx', 4 * gridWidth / gridHeight)
+        .attr('ry', 4)
+        .attr('class', 'hour bordered')
+        .attr('width', gridWidth - HOST_TO_HOST_MARGIN)
+        .attr('height', gridHeight - HOST_TO_HOST_MARGIN)
+        .attr('border', 1)
+        .style('fill', 'F0F0F0')
+        .style('stroke', 'black')
+        .style('stroke-width', 1)
+        .merge(cards)
+        .transition()
+        .duration(1000);
     cards.exit().remove();
   },
   /**
@@ -384,46 +374,44 @@ Polymer({
   drawNodeCards: function(svg: any, data: Array<TopoData>, colorScale: any) {
     let parent = this;
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
-    cards.enter()
-         .append('rect')
-         .attr('id', (d) => 'rid' + d.rid)
-         .attr('x', (d) => parent.getNodeXLoc(
-                             Math.floor(d.xdim / parent._hostXStride),
-                               d.xdim % parent._hostXStride, d.nid))
-         .attr('y', (d) => parent.getChipYLoc(
-                             Math.floor(d.ydim / HOST_Y_STRIDE),
-                               d.ydim % HOST_Y_STRIDE))
-         .attr('rx', 4 / NODES_PER_CHIP)
-         .attr('ry', 4)
-         .attr('class', 'hour bordered')
-         .attr('width', parent._nodeGridWidth)
-         .attr('height', parent._nodeGridHeight)
-         .attr('border', 1)
-         .style('stroke', 'black')
-         .style('stroke-width', 1)
-         .style('fill', (d) => colorScale(d.value / d.total))
-         .merge(cards)
-         .on('mouseover',
+    cards.enter().append('rect')
+        .attr('id', (d) => 'rid' + d.rid)
+        .attr('x', (d) => parent.getNodeXLoc(
+                              Math.floor(d.xdim / parent._hostXStride),
+                                  d.xdim % parent._hostXStride, d.nid))
+        .attr('y', (d) => parent.getChipYLoc(
+                              Math.floor(d.ydim / HOST_Y_STRIDE),
+                                  d.ydim % HOST_Y_STRIDE))
+        .attr('rx', 4 / NODES_PER_CHIP)
+        .attr('ry', 4)
+        .attr('class', 'hour bordered')
+        .attr('width', parent._nodeGridWidth)
+        .attr('height', parent._nodeGridHeight)
+        .attr('border', 1)
+        .style('stroke', 'black')
+        .style('stroke-width', 1)
+        .style('fill', (d) => colorScale(d.value / d.total))
+        .merge(cards)
+        .on('mouseover',
              function(d) {
                // highlight text
                d3.select(this)
-                 .classed('cell-hover', true)
-                 .style('opacity', 0.5);
+                   .classed('cell-hover', true)
+                   .style('opacity', 0.5);
 
                // Update the tooltip position and value
                d3.select(parent.$.tooltip)
-                 .style('left', d3.event.pageX + 10 + 'px')
-                 .style('top', d3.event.pageY - 10 + 'px')
-                 .select('#value')
-                 .text(parent._getToolTipText(d));
+                   .style('left', d3.event.pageX + 10 + 'px')
+                   .style('top', d3.event.pageY - 10 + 'px')
+                   .select('#value')
+                   .text(parent._getToolTipText(d));
                d3.select(parent.$.tooltip)
-                 .classed('hidden', false);
+                   .classed('hidden', false);
              })
-         .on('mouseout',
+        .on('mouseout',
              function() {
-               d3.select(this)
-                 .classed('cell-hover', false)
-                 .style('opacity', 1.0);
+               d3.select(this).classed('cell-hover', false)
+                   .style('opacity', 1.0);
               d3.select(parent.$.tooltip).classed('hidden', true);
              });
     cards.exit().remove();
@@ -441,16 +429,15 @@ Polymer({
     let links = this._gLink.selectAll('.link').data(linkData);
 
     // attach the arrow from defs
-    links.enter()
-         .append('svg:path')
-         .attr('id', (d) => 'cid' + d.channelId)
-         .attr('stroke-width', 2)
-         .attr('stroke', 'red')
-         .attr('fill', 'none')
-         .attr('marker-end', 'url(#arrow)')
-         .style('visibility', 'hidden')
-         .merge(links)
-         .attr('d', (d) => parent.linkToPath(d));
+    links.enter().append('svg:path')
+        .attr('id', (d) => 'cid' + d.channelId)
+        .attr('stroke-width', 2)
+        .attr('stroke', 'red')
+        .attr('fill', 'none')
+        .attr('marker-end', 'url(#arrow)')
+        .style('visibility', 'hidden')
+        .merge(links)
+        .attr('d', (d) => parent.linkToPath(d));
 
     // Handle deleted links.
     links.exit().remove();
@@ -499,7 +486,7 @@ Polymer({
     res += 'replica id: ' + data.rid + '\n';
     if (parent.selectedMetricIdx >= 0) {
       res += parent.metrics[parent.selectedMetricIdx].label + ' spends ' +
-          data.value.toFixed(2) + '&mu;s in total, ';
+          data.value.toFixed(2) + ' µs in total, ';
       const pcnt = data.value / data.total * 100;
       res += 'taking ' + pcnt.toFixed(2) + '% of a step.';
     }
@@ -514,15 +501,15 @@ Polymer({
         [0].concat(colorScale.quantiles()), (d) => d);
     let legend_g = legend.enter().append('g').attr('class', 'legend');
     legend_g.append('rect')
-            .attr('x', (d, i) => legendElementWidth * i)
-            .attr('y', height)
-            .attr('width', legendElementWidth)
-            .attr('height', CHIP_GRID_SIZE)
-            .style('fill', (d, i) => MAIN_COLORS[i]);
+        .attr('x', (d, i) => legendElementWidth * i)
+        .attr('y', height)
+        .attr('width', legendElementWidth)
+        .attr('height', CHIP_GRID_SIZE)
+        .style('fill', (d, i) => MAIN_COLORS[i]);
     legend_g.append('text')
-            .text((d) => '\u2265 0.' + Math.round(d * 10))
-            .attr('x', (d, i) => legendElementWidth * i)
-            .attr('y', height + CHIP_GRID_SIZE * 2);
+        .text((d) => '\u2265 0.' + Math.round(d * 10))
+        .attr('x', (d, i) => legendElementWidth * i)
+        .attr('y', height + CHIP_GRID_SIZE * 2);
     legend.exit().remove();
   },
   /**
@@ -544,16 +531,14 @@ Polymer({
    * Updates the visible links when the selectedChannelIdChanged.
    */
   _selectedChannelIdChanged: function(newData: number, oldData: number) {
-    if (!this._linkData) {
-      return;
-    }
+    if (!this._linkData) return;
     if (this._linkData[oldData]) {
       d3.select(this.$.tpgraph)
-        .selectAll('#cid' + oldData).style('visibility', 'hidden');
+          .selectAll('#cid' + oldData).style('visibility', 'hidden');
     }
     if (this._linkData[newData]) {
       d3.select(this.$.tpgraph)
-        .selectAll('#cid' + newData).style('visibility', 'visible');
+          .selectAll('#cid' + newData).style('visibility', 'visible');
       this.selectedChannel = this._linkData[newData];
     }
   },
@@ -564,14 +549,14 @@ Polymer({
   _activeBarChanged: function(newData) {
     const colorScale = d3.scaleOrdinal<number, string>(d3.schemeCategory10)
                          .domain(d3.range(0, 19));
-    if (!newData) { return; }
+    if (!newData) return;
     if (newData.replicaGroups && newData.replicaGroups.length > 0) {
       // Colors the nodes within the same replica group to the same color.
       for (let i = 0; i < newData.replicaGroups.length; i++) {
         const group = newData.replicaGroups[i].replicaIds;
         for (let j = 0; j < group.length; j++) {
           d3.select(this.$.tpgraph).selectAll('#rid' + group[j])
-            .style('fill', colorScale(i % 20));
+              .style('fill', colorScale(i % 20));
         }
       }
       this.selectedMetricIdx = -1;
