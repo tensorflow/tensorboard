@@ -33,57 +33,60 @@ limitations under the License.
 .flex-horizontal {
   @apply --layout-horizontal;
 }
+
 .flexchild {
   @apply --layout-flex;
 }
+
 :host {
   display: block;
   margin-right: 1.5em;
 }
+
 .cells {
   fill: #aaa;
 }
+
 .label {
-  text-anchor: start;
   font: 24px sans-serif;
+  text-anchor: start;
 }
+
 /* disable text selection */
-svg *::selection {
+svg *::selection,
+svg *::-moz-selection,
+svg *::-webkit-selection {
   background : transparent;
 }
-svg *::-moz-selection {
-  background:transparent;
-}
-svg *::-webkit-selection {
-  background:transparent;
-}
+
 rect.selection {
-  stroke          : #333;
+  fill: transparent;
+  stroke: #333;
   stroke-dasharray: 4px;
-  stroke-opacity  : 0.5;
-  fill            : transparent;
+  stroke-opacity: .5;
 }
+
 rect.bordered {
-  stroke: #E6E6E6;
-  stroke-width:2px;
+  stroke: #e6e6e6;
+  stroke-width: 2px;
 }
+
 rect.cell-border {
   stroke: #eee;
-  stroke-width:0.3px;
+  stroke-width: .3px;
 }
+
 rect.cell-selected {
   stroke: rgb(51,102,153);
-  stroke-width:0.5px;
+  stroke-width: .5px;
 }
+
 rect.cell-hover {
-  stroke: #F00;
-  stroke-width:0.3px;
+  stroke: #f00;
+  stroke-width: .3px;
 }
+
 #tooltip {
-  position: absolute;
-  width: 200px;
-  height: auto;
-  padding: 10px;
   background-color: white;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -91,76 +94,85 @@ rect.cell-hover {
   -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  height: auto;
+  padding: 10px;
   pointer-events: none;
+  position: absolute;
+  width: 200px;
 }
+
 #tooltip.hidden {
   display: none;
 }
+
 #tooltip p {
+  font: 12px sans-serif;
   margin: 0;
-  font-family: sans-serif;
-  font-size: 12px;
   line-height: 20px;
 }
+
 #overview {
   margin-left: 20px;
 }
+
 paper-item:hover.menu-option {
   background: #e0e0e0;
 }
+
 paper-slider {
   --paper-slider-input: {width: 150px}
 }
+
 .metrics-button {
   height: 60px;
   width: 60px;
 }
-.tpheader {
+
+.topo-header {
   margin-left: 16px;
 }
+
 .control-row-left {
-  display: flex;
-  margin-left: 16px;
-  flex-flow: row nowrap;
   align-items: center;
-  line-height: 50px;
-  text-align: bottom;
+  display: flex;
+  flex-flow: row nowrap;
   justify-content: flex-start;
-}
-.metrics-label {
-  text-transform: uppercase;
-  padding: 0.5em;
-}
-.topo-title {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: bold;
-  vertical-align: bottom;
+  line-height: 50px;
+  margin-left: 16px;
   text-align: bottom;
+}
+
+.metrics-label {
+  padding: 0.5em;
+  text-transform: uppercase;
+}
+
+.topo-title {
+  font: bold 24px;
+  line-height: 32px;
+  text-align: bottom;
+  vertical-align: bottom;
 }
 </style>
     <div class="topology-graph">
-      <div class="tpheader container flex-horizontal">
-        <div class="control-row-left topo-title">
-          {{_tpuType}} {{_totalCoreCount}}</div>
+      <div class="topo-header container flex-horizontal">
+        <div class="control-row-left topo-title">{{_tpuType}} {{_totalCoreCount}}</div>
         <span class="control-row-left metrics-label">
-          [[_getSelectedMetricLabel(metrics, selectedMetricIdx)]]</span>
+            [[_getSelectedMetricLabel(metrics, selectedMetricIdx)]]</span>
         <paper-menu-button close-on-activate="true">
           <paper-icon-button raised icon="arrow-drop-down"
-            slot="dropdown-trigger" class="dropdown-trigger metrics-button">
+              slot="dropdown-trigger" class="dropdown-trigger metrics-button">
           </paper-icon-button>
-          <paper-listbox class="dropdown-content" slot="dropdown-content"
-            selected={{selectedMetricIdx}}>
+          <paper-listbox class="dropdown-content" slot="dropdown-content" selected={{selectedMetricIdx}}>
             <template is="dom-repeat" items=[[metrics]]>
               <paper-item value="[[item.key]]">[[item.label]]</paper-item>
             </template>
           </paper-listbox>
         </paper-menu-button>
         <div hidden="[[!_maxChannelId]]">
-          <span class="control-row-left metrics-label">
-            Please select a channel id
+          <span class="control-row-left metrics-label">Please select a channel id
             <paper-slider min=[[_minChannelId]] max=[[_maxChannelId]]
-              snaps step="1" value="{{selectedChannelId}}" editable>
+                snaps step="1" value="{{selectedChannelId}}" editable>
             </paper-slider>
           </span>
         </div>

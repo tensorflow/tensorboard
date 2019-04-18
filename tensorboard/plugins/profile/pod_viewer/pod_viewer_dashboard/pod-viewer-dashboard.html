@@ -31,48 +31,54 @@ limitations under the License.
   display: block;
   margin-right: 1.5em;
 }
+
 #control {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   overflow: auto;
+  padding: .5em;
+  text-align: bottom;
   text-transform: uppercase;
-  padding: 0.5em;
   vertical-align: bottom;
-  text-align: bottom;
 }
+
 .control-row-left {
-  display: flex;
-  margin-left: 16px;
-  flex-flow: row nowrap;
   align-items: center;
-  line-height: 50px;
-  text-align: bottom;
+  display: flex;
+  flex-flow: row nowrap;
   justify-content: flex-start;
+  line-height: 50px;
+  margin-left: 16px;
+  text-align: bottom;
 }
+
 paper-slider {
   --paper-slider-input: {width: 100px}
   --paper-slider-height: 3px;
 }
+
 .step-num-text {
+  font: bold 20px;
   padding-left: 1em;
-  font-size: 20px;
-  font-weight: bold;
 }
+
 .stack-title {
   font-size: 24px;
   line-height: 32px;
 }
+
 .bar-chart {
   overflow: auto;
 }
+
 #title {
   margin-left: 16px;
 }
+
 .error-message {
   color: red;
-  font-size: 32 px;
-  font-weight: bold;
+  font: bold 32px;
   margin-left: 16px;
   margin-top: 32px;
 }
@@ -112,9 +118,9 @@ paper-slider {
       <div id="all-reduce-bars" class="bar-chart" hidden="[[!_allReduceDb]]">
         <div id="title">
           <div class="stack-title">
-            Duration of all-reduce op or custom fusion for all-reduce</div>
-          <p>(x-axis: short names for all-reduces ops (a#)
-             or fusion (f#), y-axis: time(&mu;s))</p>
+            Duration of all-reduce op or custom fusion for all-reduce
+          </div>
+          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time(&mu;s))</p>
         </div>
         <stack-bar-chart data=[[_allReduceDb]]
                          stack-layers=[[_allReduceLayers]]
