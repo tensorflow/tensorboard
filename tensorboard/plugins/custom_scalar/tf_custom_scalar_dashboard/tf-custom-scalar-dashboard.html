@@ -22,11 +22,11 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
@@ -162,42 +162,45 @@ writer.add_summary(layout_summary)
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane
-                category="[[category]]"
-                opened="[[category.metadata.opened]]"
-                on-opened-changed="_categoryOpenedToggled"
-              >
-              <template is="dom-repeat" items="[[category.items]]" as="chart">
-                <template is="dom-if" if="[[chart.multiline]]">
-                  <tf-custom-scalar-multi-line-chart-card
-                    active="[[_active]]"
-                    request-manager="[[_requestManager]]"
-                    runs="[[_selectedRuns]]"
-                    title="[[chart.title]]"
-                    x-type="[[_xType]]"
-                    smoothing-enabled="[[_smoothingEnabled]]"
-                    smoothing-weight="[[_smoothingWeight]]"
-                    tooltip-sorting-method="[[tooltipSortingMethod]]"
-                    ignore-y-outliers="[[_ignoreYOutliers]]"
-                    show-download-links="[[_showDownloadLinks]]"
-                    tag-regexes="[[chart.multiline.tag]]"
-                  ></tf-custom-scalar-multi-line-chart-card>
-                </template>
-                <template is="dom-if" if="[[chart.margin]]">
-                  <tf-custom-scalar-margin-chart-card
-                    active="[[_active]]"
-                    request-manager="[[_requestManager]]"
-                    runs="[[_selectedRuns]]"
-                    title="[[chart.title]]"
-                    x-type="[[_xType]]"
-                    tooltip-sorting-method="[[tooltipSortingMethod]]"
-                    ignore-y-outliers="[[_ignoreYOutliers]]"
-                    show-download-links="[[_showDownloadLinks]]"
-                    margin-chart-series="[[chart.margin.series]]"
-                  ></tf-custom-scalar-margin-chart-card>
-                </template>
+            <tf-category-paginated-view
+              as="chart"
+              category="[[category]]"
+              disable-pagination
+              initial-opened="[[category.metadata.opened]]"
+            >
+              <template>
+                <div>
+                  <template is="dom-if" if="[[chart.multiline]]">
+                    <tf-custom-scalar-multi-line-chart-card
+                      active="[[active]]"
+                      request-manager="[[_requestManager]]"
+                      runs="[[_selectedRuns]]"
+                      title="[[chart.title]]"
+                      x-type="[[_xType]]"
+                      smoothing-enabled="[[_smoothingEnabled]]"
+                      smoothing-weight="[[_smoothingWeight]]"
+                      tooltip-sorting-method="[[tooltipSortingMethod]]"
+                      ignore-y-outliers="[[_ignoreYOutliers]]"
+                      show-download-links="[[_showDownloadLinks]]"
+                      tag-regexes="[[chart.multiline.tag]]"
+                    ></tf-custom-scalar-multi-line-chart-card>
+                  </template>
+                  <template is="dom-if" if="[[chart.margin]]">
+                    <tf-custom-scalar-margin-chart-card
+                      active="[[active]]"
+                      request-manager="[[_requestManager]]"
+                      runs="[[_selectedRuns]]"
+                      title="[[chart.title]]"
+                      x-type="[[_xType]]"
+                      tooltip-sorting-method="[[tooltipSortingMethod]]"
+                      ignore-y-outliers="[[_ignoreYOutliers]]"
+                      show-download-links="[[_showDownloadLinks]]"
+                      margin-chart-series="[[chart.margin.series]]"
+                    ></tf-custom-scalar-margin-chart-card>
+                  </template>
+                </div>
               </template>
-            </tf-category-pane>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
