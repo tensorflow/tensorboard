@@ -24,8 +24,11 @@ env:
     - BAZEL=0.22.0
     - BAZEL_SHA256SUM=8474ed28ed4998e2f5671ddf3a9a80ae9e484a5de3b8b70c8b654c017c65d363
   matrix:
-    - TF_VERSION_ID=tf-nightly
-    - TF_VERSION_ID=tf-nightly-2.0-preview
+      # Current nightlies broken, due to:
+      # https://github.com/tensorflow/tensorflow/issues/27955
+      # TODO(@wchargin): Revert once fixed by the 20190419 nightlies.
+    - TF_VERSION_ID=tf-nightly==1.14.1.dev20190417
+    - TF_VERSION_ID=tf-nightly-2.0-preview==2.0.0.dev20190417
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
