@@ -20,7 +20,6 @@ Polymer({
      */
     data: {
       type: Object,
-      value: () => ({}),
       observer: '_dataChanged',
     },
     /**
@@ -95,13 +94,13 @@ Polymer({
     _channelLayers: {
       type: Array,
       value: () => [
-        {key: 'durationUs', label: 'Duration (&mu;s)'},
+        {key: 'durationUs', label: 'Duration (s)'},
       ],
     },
     _allReduceLayers: {
       type: Array,
       value: () => [
-        {key: 'durationUs', label: 'Duration (&mu;s)'},
+        {key: 'durationUs', label: 'Duration (µs)'},
       ],
     },
     _stepBreakdownFunc: {

@@ -68,22 +68,19 @@ Polymer({
     let yScale = d3.scaleLinear().range([height, 0]);
     let colorScale = d3.scaleOrdinal<number, string>(d3.schemeCategory10)
                        .domain([0, 19]);
-    let svg = d3.select(this.$.chart)
-                .append('svg')
-                .attr('width', Math.max(SVG_MIN_WIDTH,
-                      xScaleRange + SVG_MARGIN.left + SVG_MARGIN.right))
-                .attr('height', SVG_HEIGHT)
-                .append('g')
-                .attr('transform',
-                      'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
-    let stack = d3.stack()
-                  .keys(stackKey)
-                  .order(d3.stackOrderNone)
-                  .offset(d3.stackOffsetNone);
+    let svg = d3.select(this.$.chart).append('svg')
+        .attr('width', Math.max(SVG_MIN_WIDTH,
+            xScaleRange + SVG_MARGIN.left + SVG_MARGIN.right))
+        .attr('height', SVG_HEIGHT)
+        .append('g')
+        .attr('transform',
+            'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+    let stack = d3.stack().keys(stackKey).order(d3.stackOrderNone)
+        .offset(d3.stackOffsetNone);
     const layers = stack(data);
     xScale.domain(data.map(this.xDomainFunc));
     yScale.domain([0, d3.max(layers[layers.length - 1], (d) => d[0] + d[1])])
-          .nice();
+        .nice();
     this.drawLayers(svg, layers, xScale, yScale, colorScale);
     this.drawAxes(svg, xScale, yScale, height);
     this.drawLegend(svg, stackLabel, colorScale);
@@ -94,76 +91,71 @@ Polymer({
   drawLayers: function(svg: any, layers: any, xScale: any, yScale: any,
                        colorScale: any) {
     let parent = this;
-    let layer = svg.selectAll('.layer')
-                   .data(layers)
-                   .enter()
-                   .append('g')
-                   .attr('class', 'layer')
-                   .style('fill', (d, i) => colorScale(i));
-    layer.selectAll('rect')
-         .data((d) => d)
-         .enter()
-         .append('rect')
-         .attr('width', xScale.bandwidth())
-         .attr('y', (d) => yScale(d[1]))
-         .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
-         .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
-         .on('mouseover',
-             function(d) {
-               d3.select(this).style('opacity', 0.5);
-               parent.activeBar = d.data;
-             })
-         .on('mouseout', function(d) {
-             d3.select(this).style('opacity', 1.0);
-             parent.activeBar = null;
-         });
+    let layer = svg.selectAll('.layer').data(layers).enter().append('g')
+        .attr('class', 'layer')
+        .style('fill', (d, i) => colorScale(i));
+    layer.selectAll('rect').data((d) => d).enter().append('rect')
+        .attr('width', xScale.bandwidth())
+        .attr('y', (d) => yScale(d[1]))
+        .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
+        .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
+        .on('mouseover',
+            function(d) {
+              d3.select(this).style('opacity', 0.5);
+              parent.activeBar = d.data;
+            })
+        .on('mouseout',
+            function(d) {
+              d3.select(this).style('opacity', 1.0);
+              parent.activeBar = null;
+            });
   },
   /**
    * Draw the axes of the chart.
    */
   drawAxes: function(svg: any, xScale: any, yScale: any, height: number) {
     svg.append('g')
-       .attr('class', 'axis axis--x')
-       .style('font-size', FONT_SIZE)
-       .attr('transform', 'translate(0,' + (height + 5) + ')')
-       .call(d3.axisBottom(xScale));
+        .attr('class', 'axis axis--x')
+        .style('font-size', FONT_SIZE)
+        .attr('transform', 'translate(0,' + (height + 5) + ')')
+        .call(d3.axisBottom(xScale));
     svg.append('g')
-       .attr('class', 'axis axis--y')
-       .style('font-size', FONT_SIZE)
-       .attr('transform', 'translate(0,0)')
-       .call(d3.axisLeft(yScale));
+        .attr('class', 'axis axis--y')
+        .style('font-size', FONT_SIZE)
+        .attr('transform', 'translate(0,0)')
+        .call(d3.axisLeft(yScale));
   },
   /**
    * Draw the legends of the chart.
    */
   drawLegend: function(svg: any, labels: Array<string>, colorScale: any) {
-    let legend =
-        svg.append('g')
-           .attr('font-family', 'sans-serif')
-           .attr('font-size', FONT_SIZE)
-           .attr('text-anchor', 'start')
-           .selectAll('g')
-           .data(labels.slice())
-           .enter()
-           .append('g')
-           .attr('transform',
-                 (d, i) => 'translate(' +
-                     (i * LEGEND_WIDTH -
-                       Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
-                         LABELS_PER_LANE) + ',' +
-                           Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT + ')'
-                );
+    let legend = svg.append('g')
+        .attr('font-family', 'sans-serif')
+        .attr('font-size', FONT_SIZE)
+        .attr('text-anchor', 'start')
+        .selectAll('g')
+        .data(labels.slice())
+        .enter()
+        .append('g')
+        .attr('transform',
+            (d, i) => 'translate(' +
+                (i * LEGEND_WIDTH -
+                    Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
+                        LABELS_PER_LANE) + ',' +
+                            Math.floor(i / LABELS_PER_LANE) *
+                                LEGEND_HEIGHT + ')'
+        );
 
     legend.append('rect')
-          .attr('x', YAXIS_TO_LEGEND)
-          .attr('width', ICON_SIZE)
-          .attr('height', ICON_SIZE)
-          .attr('fill', (d, i) => colorScale(i));
+        .attr('x', YAXIS_TO_LEGEND)
+        .attr('width', ICON_SIZE)
+        .attr('height', ICON_SIZE)
+        .attr('fill', (d, i) => colorScale(i));
     legend.append('text')
-          .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
-          .attr('y', LEGEND_TEXT_HEIGHT)
-          .attr('dy', LEGEND_TEXT_SIZE)
-          .text((d) => d);
+        .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
+        .attr('y', LEGEND_TEXT_HEIGHT)
+        .attr('dy', LEGEND_TEXT_SIZE)
+        .text((d) => d);
   },
   /**
    * Redraw the stack bar chart.

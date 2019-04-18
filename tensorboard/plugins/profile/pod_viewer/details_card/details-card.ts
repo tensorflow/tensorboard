@@ -59,8 +59,8 @@ Polymer({
       return (<podviewer.proto.AllReduceOpInfo>node).name;
     } else if (this._isStep(node)) {
       return 'Step breakdown of chip '
-               + (<podviewer.proto.PodStatsRecord>node).chipId
-               + ', core ' + (<podviewer.proto.PodStatsRecord>node).nodeId;
+          + (<podviewer.proto.PodStatsRecord>node).chipId
+              + ', core ' + (<podviewer.proto.PodStatsRecord>node).nodeId;
     }
     return;
   },

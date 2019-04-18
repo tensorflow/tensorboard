@@ -35,9 +35,9 @@ module podviewer.proto {
      * The X, Y, and Z dimensions of this topology. 0 means that dimension does
      *  not exist.
      */
-    xDimension: number;
-    yDimension: number;
-    zDimension?: number;
+    xDimension: string;
+    yDimension: string;
+    zDimension?: string;
   }
 
   /**
