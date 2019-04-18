@@ -51,7 +51,7 @@ Polymer({
       type: Number,
       computed: '_computeMaxStepId(_podStatsMaps)',
     },
-    _error_message: {
+    _errorMessage: {
       type: String,
       computed: '_computeErrorMessage(_maxStepId)',
     },
@@ -60,7 +60,7 @@ Polymer({
       computed: '_computeRunEnvironment(data)',
     },
     _stepBreakdownLayers: {
-      type: Array,
+      type: Object,
       value: () => [
         {key: 'highFlopsComputeUs', label: 'High flops compute'},
         {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
@@ -104,7 +104,7 @@ Polymer({
       ],
     },
     _stepBreakdownFunc: {
-      type: Array,
+      type: Object,
       value: () => (d) => `(${d.chipId}, ${d.nodeId})`,
     },
     _channelFunc: {
@@ -123,19 +123,19 @@ Polymer({
   },
   _computePodStatsMaps(data: podviewer.proto.PodViewerInputData|undefined|null):
                        Array<podviewer.proto.PodStatsMap> {
-    if (!data) return;
+    if (!data) return [];
     return data.podStatsSequence.podStatsMap;
   },
   _computeRunEnvironment(
-    data: podviewer.proto.PodViewerInputData|undefined|null):
-      podviewer.proto.RunEnvironment {
+      data: podviewer.proto.PodViewerInputData|undefined|null):
+          podviewer.proto.RunEnvironment {
     return data.runEnvironment;
   },
   _computeMaxStepId(podStatsMaps: Array<podviewer.proto.PodStatsMap>): number {
     return podStatsMaps.length - 1;
   },
   _computeErrorMessage(maxStepId: number): string {
-    if (maxStepId >= 0) return;
+    if (maxStepId >= 0) return '';
     return "WARNING: No step time measured. "
            + "This might happen if your profile duration is too short, "
            + "try increase profile duration to cover a full step. "
@@ -146,7 +146,7 @@ Polymer({
    * Calculate the lowFlopsComputeUs by deducting all other breakdown from the
    * total duration.
    */
-  _populateLowFlopsCompute(podStatsMap: podviewer.proto.PodStatsMap | undefined,
+  _populateLowFlopsCompute(podStatsMap: podviewer.proto.PodStatsMap|undefined,
                            layers: Array<podviewer.proto.StackLayer>):
                            podviewer.proto.PodStatsMap {
     if (!podStatsMap || !layers) return;
@@ -155,7 +155,7 @@ Polymer({
       let val = podStatsPerCore[coreId];
       if (val.hasOwnProperty('lowFlopsComputeUs')) {
         // already populated.
-        return;
+        return podStatsMap;
       }
       val['lowFlopsComputeUs'] = val.totalDurationUs;
       for (let j = 0; j < layers.length; j++) {
@@ -176,7 +176,7 @@ Polymer({
     return this._populateLowFlopsCompute(podStatsMaps[curStepId], layers);
   },
   _computeStepStats(podStatsMap: podviewer.proto.PodStatsMap):
-                    Array<podviewer.proto.PodStatsRecord> {
+                    Array<podviewer.proto.PodStatsRecord>|undefined {
     if (!podStatsMap || !podStatsMap.podStatsPerCore) return;
     let stepStats = [];
     for (const i in podStatsMap.podStatsPerCore) {
@@ -186,7 +186,7 @@ Polymer({
     return stepStats;
   },
   _computeChannelDb(podStatsMap: podviewer.proto.PodStatsMap):
-                    Array<podviewer.proto.ChannelInfo> {
+                    Array<podviewer.proto.ChannelInfo>|undefined {
     if (!podStatsMap || !podStatsMap.channelDb
         || podStatsMap.channelDb.length <= 0) {
       return;
@@ -194,7 +194,7 @@ Polymer({
     return podStatsMap.channelDb.sort((a, b) => b.durationUs - a.durationUs);
   },
   _computeAllReduceDb(podStatsMap: podviewer.proto.PodStatsMap):
-                      Array<podviewer.proto.AllReduceOpInfo> {
+                      Array<podviewer.proto.AllReduceOpInfo>|undefined {
     if (!podStatsMap || !podStatsMap.allReduceOpDb
         || podStatsMap.allReduceOpDb.length <= 0) {
       return;

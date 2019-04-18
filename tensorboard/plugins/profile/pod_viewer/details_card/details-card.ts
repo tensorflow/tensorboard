@@ -39,7 +39,7 @@ Polymer({
     },
   },
   _isAllReduce(node: DetailNode): node is podviewer.proto.AllReduceOpInfo {
-    return (<podviewer.proto.AllReduceOpInfo>node).replicaGroups !== undefined;
+    return (<podviewer.proto.AllReduceOpInfo>node).replicaGroups != undefined;
   },
   _isChannel(node: DetailNode): node is podviewer.proto.ChannelInfo {
     return (<podviewer.proto.ChannelInfo>node).channelId != undefined;
@@ -50,7 +50,7 @@ Polymer({
   _hasReplicaGroups(node: podviewer.proto.AllReduceOpInfo): boolean {
     return node.replicaGroups && node.replicaGroups.length > 0;
   },
-  _computeName: function(nodes: Array<DetailNode>): string {
+  _computeName: function(nodes: Array<DetailNode>): string|undefined {
     if (!nodes || nodes.length == 0) return;
     const node = nodes[0];
     if (this._isChannel(node)){
@@ -73,7 +73,7 @@ Polymer({
   /**
    * Return the formatted data size in MiB.
    */
-  _sizeMiB: function(dataSize: undefined|number): string {
+  _sizeMiB: function(dataSize: undefined|number): string|undefined {
     if (!dataSize) return;
     return this._format(this._bytesToMiB(dataSize));
   },
@@ -84,7 +84,8 @@ Polymer({
    * recv-done operation.
    */
   _bandwidth: function(
-      dataSize: undefined|number, duration: undefined|number): string {
+      dataSize: undefined|number, duration: undefined|number):
+          string|undefined {
     if (!dataSize || !duration) return;
     return this._format(dataSize / duration / 1073.74);
   },
@@ -110,8 +111,8 @@ Polymer({
    * Return a formatted value associated with a specific breakdown.
    */
   _getStepBreakdownValue:
-      function(node: undefined | podviewer.proto.PodStatsRecord,
-          key: undefined|string): string {
+      function(node: undefined|podviewer.proto.PodStatsRecord,
+          key: undefined|string): string|undefined {
     if (!key || !node) return;
     return this._format(node[key]);
   },
@@ -119,8 +120,8 @@ Polymer({
    * Return a the percentage of a specific breakdown.
    */
   _getStepBreakdownPct:
-      function(node: undefined | podviewer.proto.PodStatsRecord,
-          key: undefined|string): string {
+      function(node: undefined|podviewer.proto.PodStatsRecord,
+          key: undefined|string): string|undefined {
     if (!key || !node || !node.totalDurationUs) return;
     return (node[key] / node.totalDurationUs * 100).toFixed(2) + '%';
   },

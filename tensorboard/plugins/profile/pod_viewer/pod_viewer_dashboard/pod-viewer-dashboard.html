@@ -86,21 +86,20 @@ paper-slider {
 }
 
 </style>
-    <div class="error-message" hidden=[[!_error_message]]>
-      <span>[[_error_message]]</span>
+    <div class="error-message" hidden=[[!_errorMessage]]>
+      <span>[[_errorMessage]]</span>
     </div>
-    <div id="control" hidden=[[_error_message]]>
+    <div id="control" hidden=[[_errorMessage]]>
       <!--
         paper-slider sets which step to show.
       -->
       <span class="control-row-left">Please select a step
-        <paper-slider min=0 max=[[_maxStepId]] snaps step=1
-            value={{curStepId}}></paper-slider>
-                <span class="step-num-text">
-            Step [[_getStepNum(_podStatsMap)]]</span>
+        <paper-slider min=0 max=[[_maxStepId]] snaps step=1 value={{curStepId}}>
+        </paper-slider>
+        <span class="step-num-text">Step [[_getStepNum(_podStatsMap)]]</span>
       </span>
     </div>
-    <div class="pod-viewer-dashboard" hidden=[[_error_message]]>
+    <div class="pod-viewer-dashboard" hidden=[[_errorMessage]]>
       <div id="topo-graph">
         <topology-graph run-environment=[[_runEnvironment]]
             data=[[_podStatsMap]] metrics=[[_stepBreakdownLayers]]
@@ -110,7 +109,7 @@ paper-slider {
       <div id="channel-bars" class="bar-chart" hidden="[[!_channelDb]]">
         <div id="title">
           <div class="stack-title">Latency of Send and Recv channels</div>
-          <p>(x-axis: channel id, y-axis: time(µs))</p>
+          <p>(x-axis: channel id, y-axis: time (µs))</p>
         </div>
         <stack-bar-chart data=[[_channelDb]]
                          stack-layers=[[_channelLayers]]
@@ -122,7 +121,7 @@ paper-slider {
           <div class="stack-title">
             Duration of all-reduce op or custom fusion for all-reduce
           </div>
-          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time(µs))</p>
+          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time (µs))</p>
         </div>
         <stack-bar-chart data=[[_allReduceDb]]
                          stack-layers=[[_allReduceLayers]]
@@ -132,7 +131,7 @@ paper-slider {
       <div id="stack-bars" class="bar-chart" hidden="[[!_stepStats]]">
         <div id="title">
           <div class="stack-title">Step breakdown</div>
-          <p>(x-axis: global chip id, core id, y-axis: time(µs))</p>
+          <p>(x-axis: global chip id, core id, y-axis: time (µs))</p>
         </div>
         <stack-bar-chart data=[[_stepStats]]
                          stack-layers=[[_stepBreakdownLayers]]

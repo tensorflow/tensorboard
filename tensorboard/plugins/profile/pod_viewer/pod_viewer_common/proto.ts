@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ module podviewer.proto {
   export interface AllReduceOpInfo {
     /** Name of this op. */
     name: string;
-    /** Number of times this op occurred.
+    /** Number of times this op occurred. */
     occurrences: number;
     /**
      * Time in microseconds spent on this op (averaged across all of its
@@ -104,7 +104,7 @@ module podviewer.proto {
      */
     crsDurationUs: number;
     /** bottleneck out of the above mentioned metrics. */
-    bottleneck: number;
+    bottleneck: string;
   }
 
   /**

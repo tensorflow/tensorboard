@@ -154,8 +154,8 @@ Polymer({
    * Computes the topoData to be loaded into the topology graph.
    */
   _computeTopoData: function(
-      data: podviewer.proto.PodStatsMap | undefined,
-      runEnvironment: podviewer.proto.RunEnvironment | undefined,
+      data: podviewer.proto.PodStatsMap|undefined,
+      runEnvironment: podviewer.proto.RunEnvironment|undefined,
       metrics: Array<podviewer.proto.StackLayer>,
       idx: number): Array<TopoData> {
     if (!data || !runEnvironment || !runEnvironment.topology || !metrics ||
@@ -182,7 +182,7 @@ Polymer({
    */
   _computeLinkData: function(
       data: podviewer.proto.PodStatsMap): LinkData {
-    if (!data || !data.channelDb || data.channelDb.length == 0) return;
+    if (!data || !data.channelDb || data.channelDb.length == 0) return {};
     let links = {};
     data.channelDb.forEach(function(channel) {
       if (!links[channel.channelId]) {
@@ -325,13 +325,11 @@ Polymer({
    * Draw the labels on x-axis and y-axis.
    */
   drawLabels: function(svg: any, xdims: number[], ydims: number[]) {
-    let parent = this;
-
     // Draw label on x axis.
     svg.selectAll('.xLabel').data(xdims).enter().append('text').text((d) => d)
-        .attr('x', (d, i) => parent.getChipXLoc(
-                       Math.floor(i / parent._hostXStride),
-                           i % parent._hostXStride))
+        .attr('x', (d, i) => this.getChipXLoc(
+                       Math.floor(i / this._hostXStride),
+                           i % this._hostXStride))
         .attr('y', 0)
         .style('text-anchor', 'middle')
         .attr('transform', 'translate(' + CHIP_GRID_SIZE / 2 + ', -6)')
@@ -340,11 +338,11 @@ Polymer({
     // Draw label on y axis.
     svg.selectAll('.yLabel').data(ydims).enter().append('text').text((d) => d)
         .attr('x', 0)
-        .attr('y', (d, i) => parent.getChipYLoc(
+        .attr('y', (d, i) => this.getChipYLoc(
                        Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
-       .style('text-anchor', 'middle')
-       .attr('transform', 'translate(-12,' + CHIP_GRID_SIZE / 2 + ')')
-       .attr('class', 'axis');
+        .style('text-anchor', 'middle')
+        .attr('transform', 'translate(-12,' + CHIP_GRID_SIZE / 2 + ')')
+        .attr('class', 'axis');
   },
   /**
    * Draw the UI of host cards.
@@ -372,55 +370,52 @@ Polymer({
    * Draw the UI of node cards.
    */
   drawNodeCards: function(svg: any, data: Array<TopoData>, colorScale: any) {
-    let parent = this;
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
+    let parent = this;
     cards.enter().append('rect')
         .attr('id', (d) => 'rid' + d.rid)
-        .attr('x', (d) => parent.getNodeXLoc(
-                              Math.floor(d.xdim / parent._hostXStride),
-                                  d.xdim % parent._hostXStride, d.nid))
-        .attr('y', (d) => parent.getChipYLoc(
-                              Math.floor(d.ydim / HOST_Y_STRIDE),
-                                  d.ydim % HOST_Y_STRIDE))
+        .attr('x', (d) => {
+          return this.getNodeXLoc(
+              Math.floor(d.xdim / this._hostXStride),
+              d.xdim % this._hostXStride, d.nid);
+        })
+        .attr('y', (d) => {
+          return this.getChipYLoc(
+              Math.floor(d.ydim / HOST_Y_STRIDE),
+              d.ydim % HOST_Y_STRIDE);
+        })
         .attr('rx', 4 / NODES_PER_CHIP)
         .attr('ry', 4)
         .attr('class', 'hour bordered')
-        .attr('width', parent._nodeGridWidth)
-        .attr('height', parent._nodeGridHeight)
+        .attr('width', this._nodeGridWidth)
+        .attr('height', this._nodeGridHeight)
         .attr('border', 1)
         .style('stroke', 'black')
         .style('stroke-width', 1)
         .style('fill', (d) => colorScale(d.value / d.total))
         .merge(cards)
-        .on('mouseover',
-             function(d) {
-               // highlight text
-               d3.select(this)
-                   .classed('cell-hover', true)
-                   .style('opacity', 0.5);
+        .on('mouseover', function(d) {
+            // highlight text
+            d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
 
-               // Update the tooltip position and value
-               d3.select(parent.$.tooltip)
-                   .style('left', d3.event.pageX + 10 + 'px')
-                   .style('top', d3.event.pageY - 10 + 'px')
-                   .select('#value')
-                   .text(parent._getToolTipText(d));
-               d3.select(parent.$.tooltip)
-                   .classed('hidden', false);
-             })
-        .on('mouseout',
-             function() {
-               d3.select(this).classed('cell-hover', false)
-                   .style('opacity', 1.0);
-              d3.select(parent.$.tooltip).classed('hidden', true);
-             });
+            // Update the tooltip position and value
+            d3.select(parent.$.tooltip)
+                .style('left', d3.event.pageX + 10 + 'px')
+                .style('top', d3.event.pageY - 10 + 'px')
+                .select('#value')
+                .text(parent._getToolTipText(d));
+            d3.select(parent.$.tooltip).classed('hidden', false);
+        })
+        .on('mouseout', function() {
+            d3.select(this).classed('cell-hover', false).style('opacity', 1.0);
+            d3.select(parent.$.tooltip).classed('hidden', true);
+        });
     cards.exit().remove();
   },
   /**
    * Draw the UI of chip to chip links.
    */
-   drawLinks: function(linkData: Array<podviewer.proto.ChannelInfo>) {
-    let parent = this;
+  drawLinks: function(linkData: Array<podviewer.proto.ChannelInfo>) {
     if (!linkData || linkData.length == 0 || !this._gLink) {
       return;
     }
@@ -437,7 +432,7 @@ Polymer({
         .attr('marker-end', 'url(#arrow)')
         .style('visibility', 'hidden')
         .merge(links)
-        .attr('d', (d) => parent.linkToPath(d));
+        .attr('d', (d) => this.linkToPath(d));
 
     // Handle deleted links.
     links.exit().remove();
@@ -448,18 +443,18 @@ Polymer({
    * graph.
    */
   coreIdToPos: function(id: number): Position {
-    let p = this;
     const chipId = Math.floor(id / 2);
     const nodeId = id & 1;
-    const xDim = chipId % p._xDimension;
-    const yDim = Math.floor(chipId / p._xDimension);
-    const x =
-        p.getNodeXLoc(
-            Math.floor(xDim / p._hostXStride), xDim % p._hostXStride, nodeId) +
-                CHIP_GRID_SIZE / NODES_PER_CHIP / 2;
-    const y = p.getChipYLoc(
-                  Math.floor(yDim / HOST_Y_STRIDE), yDim % HOST_Y_STRIDE) +
-                  CHIP_GRID_SIZE / 2;
+    const xDim = chipId % this._xDimension;
+    const yDim = Math.floor(chipId / this._xDimension);
+    const x = CHIP_GRID_SIZE / NODES_PER_CHIP / 2 +
+        this.getNodeXLoc(
+            Math.floor(xDim / this._hostXStride),
+            xDim % this._hostXStride, nodeId);
+    const y = this.getChipYLoc(
+                  Math.floor(yDim / HOST_Y_STRIDE),
+                  yDim % HOST_Y_STRIDE)
+                      + CHIP_GRID_SIZE / 2;
     return {x: x, y: y};
   },
   /**
@@ -467,9 +462,8 @@ Polymer({
    * @return Path in svg format.
    */
   linkToPath: function(link: podviewer.proto.ChannelInfo): string {
-    let p = this;
-    const src = p.coreIdToPos(link.srcCoreId);
-    const dst = p.coreIdToPos(link.dstCoreId);
+    const src = this.coreIdToPos(link.srcCoreId);
+    const dst = this.coreIdToPos(link.dstCoreId);
     const path = 'M ' + src.x + ' ' + src.y + 'L ' + dst.x + ' ' + dst.y;
     return path;
   },
@@ -478,18 +472,18 @@ Polymer({
    * @return String to render in tool tips.
    */
   _getToolTipText: function(data: TopoData): string {
-    let parent = this;
-    let res = 'pos: (' + data.ydim + ',' + data.xdim + ')\n';
-    res += 'host: ' + data.host + '\n';
-    res += 'chip id: ' + data.cid + '\n';
-    res += 'node id: ' + data.nid + '\n';
-    res += 'replica id: ' + data.rid + '\n';
-    if (parent.selectedMetricIdx >= 0) {
-      res += parent.metrics[parent.selectedMetricIdx].label + ' spends ' +
-          data.value.toFixed(2) + ' µs in total, ';
-      const pcnt = data.value / data.total * 100;
-      res += 'taking ' + pcnt.toFixed(2) + '% of a step.';
-    }
+    const label = this.selectedMetricIdx >= 0 ?
+        this.metrics[this.selectedMetricIdx].label : '';
+    const nf = new Intl.NumberFormat(navigator.language,
+        {style: 'percent', minimumFractionDigits: 2});
+
+    let res = `pos: (${data.ydim}, ${data.xdim}),
+        host: ${data.host},
+        chip id: ${data.cid},
+        core id: ${data.nid},
+        replica id: ${data.rid}
+        ${label ? `${label} spends ${data.value.toFixed(2)}µs in total,
+            taking ${nf.format(data.value / data.total)} of a step.` : ''}`
     return res;
   },
   /**
@@ -499,14 +493,14 @@ Polymer({
     const legendElementWidth = CHIP_GRID_SIZE * 2;
     let legend = svg.selectAll('.legend').data(
         [0].concat(colorScale.quantiles()), (d) => d);
-    let legend_g = legend.enter().append('g').attr('class', 'legend');
-    legend_g.append('rect')
+    let legendG = legend.enter().append('g').attr('class', 'legend');
+    legendG.append('rect')
         .attr('x', (d, i) => legendElementWidth * i)
         .attr('y', height)
         .attr('width', legendElementWidth)
         .attr('height', CHIP_GRID_SIZE)
         .style('fill', (d, i) => MAIN_COLORS[i]);
-    legend_g.append('text')
+    legendG.append('text')
         .text((d) => '\u2265 0.' + Math.round(d * 10))
         .attr('x', (d, i) => legendElementWidth * i)
         .attr('y', height + CHIP_GRID_SIZE * 2);
