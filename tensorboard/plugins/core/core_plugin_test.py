@@ -47,6 +47,7 @@ class FakeFlags(object):
   def __init__(
       self,
       inspect,
+      version,
       logdir='',
       event_file='',
       db='',
