@@ -239,6 +239,8 @@ def _get_info_dir():
       pass
     else:
       raise
+  else:
+    os.chmod(path, 0o777)
   return path
 
 
