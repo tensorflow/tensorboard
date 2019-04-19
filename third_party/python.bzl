@@ -77,6 +77,17 @@ def tensorboard_python_workspace():
     )
 
     http_archive(
+        name = "org_pythonhosted_mock",
+        urls = [
+            "https://mirror.bazel.build/files.pythonhosted.org/packages/85/60/ec8c1af81337bab0caba188b218b6758bc94f125f49062f7c5f0647749d2/mock-1.0.0.tar.gz",
+            "https://files.pythonhosted.org/packages/85/60/ec8c1af81337bab0caba188b218b6758bc94f125f49062f7c5f0647749d2/mock-1.0.0.tar.gz",
+        ],
+        sha256 = "2d9fbe67001d2e8f02692075257f3c11e1b0194bd838c8ce3f49b31fc6c3f033",
+        strip_prefix = "mock-1.0.0",
+        build_file = str(Label("//third_party:mock.BUILD")),
+    )
+
+    http_archive(
         name = "org_pythonhosted_six",
         urls = [
             "https://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",

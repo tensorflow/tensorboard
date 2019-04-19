@@ -39,6 +39,7 @@ py_test(
         "//tensorboard/plugins/interactive_inference/utils:platform_utils",
         "//tensorboard/plugins/interactive_inference/utils:test_utils",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
