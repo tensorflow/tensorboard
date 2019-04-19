@@ -633,17 +633,16 @@ profile run can have multiple tools that present the performance profile as diff
       }
     },
     _maybeUpdateActiveHosts: function(datasetName, toolName) {
-       if(datasetName == null || toolName == null) return null;
-       var profileHostsUrl = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('profile', '/hosts'),
-            {tag: toolName,
-             run: datasetName,
-            });
-       this._requestManager.request(profileHostsUrl).then((hostList) => {
-           this.set('_activeHostsList', hostList.sort((a, b) => {
-               return vz_sorting.compareTagNames(a, b);}
-           ));
-       });
+      if(datasetName == null || toolName == null) return null;
+      this._activeHostsList = [];
+      var profileHostsUrl = tf_backend.addParams(
+          tf_backend.getRouter().pluginRoute('profile', '/hosts'),
+          {tag: toolName, run: datasetName});
+      this._requestManager.request(profileHostsUrl).then((hostList) => {
+          this.set('_activeHostsList', hostList.sort((a, b) => {
+              return vz_sorting.compareTagNames(a, b);}
+          ));
+      });
     },
     _datasetsChanged: function(newDatasets, oldDatasets) {
       if (this._datasets) {
