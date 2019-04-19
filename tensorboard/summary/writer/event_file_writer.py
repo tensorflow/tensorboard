@@ -109,7 +109,6 @@ class EventFileWriter(object):
         write/flush worker and closes the file. Call this method when you do not
         need the summary writer anymore.
         """
-        self._async_writer.flush()
         self._async_writer.close()
 
 
@@ -164,7 +163,7 @@ class _AsyncWriter(object):
 
 
 class _AsyncWriterThread(threading.Thread):
-    """Thread that logs events."""
+    """Thread that processes asynchronous writes for _AsyncWriter."""
 
     def __init__(self, queue, record_writer, flush_secs, dummy_delay):
         """Creates an _AsyncWriterThread.

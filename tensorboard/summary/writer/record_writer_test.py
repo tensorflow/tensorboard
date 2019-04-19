@@ -30,7 +30,7 @@ class RecordWriterTest(tb_test.TestCase):
     super(RecordWriterTest, self).__init__(*args, **kwargs)
 
   def test_expect_bytes_written(self):
-    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    filename = os.path.join(self.get_temp_dir(), "expect_bytes_written")
     byte_len = 64
     w = RecordWriter(filename)
     random_bytes = bytearray(os.urandom(byte_len))
@@ -40,7 +40,7 @@ class RecordWriterTest(tb_test.TestCase):
       self.assertEqual(len(f.read()), (8 + 4 + byte_len + 4))  # uint64+uint32+data+uint32
 
   def test_empty_record(self):
-    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    filename = os.path.join(self.get_temp_dir(), "empty_record")
     w = RecordWriter(filename)
     bytes_to_write = b""
     w.write(bytes_to_write)
@@ -50,16 +50,17 @@ class RecordWriterTest(tb_test.TestCase):
     self.assertEqual(r.event_strs[0], bytes_to_write)
 
   def test_record_writer_roundtrip(self):
-    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    filename = os.path.join(self.get_temp_dir(), "record_writer_roundtrip")
     w = RecordWriter(filename)
     bytes_to_write = b"hello world"
-    for _ in range(50):
+    times_to_test = 50
+    for _ in range(times_to_test):
       w.write(bytes_to_write)
     w.close()
 
     r = PyRecordReader_New(filename)
     r.read()
-    for i in range(50):
+    for i in range(times_to_test):
       self.assertEqual(r.event_strs[i], bytes_to_write)
 
 
