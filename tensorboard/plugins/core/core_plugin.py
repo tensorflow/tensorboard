@@ -376,6 +376,11 @@ Example usage:
 
 See tensorboard/backend/event_processing/event_file_inspector.py for more info.\
 ''')
+    
+    parser.add_argument(
+        '--version',
+        action='store_true',
+        help='Prints the version of Tensorboard')
 
     parser.add_argument(
         '--tag',
@@ -459,7 +464,9 @@ flag.\
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     FlagsError = base_plugin.FlagsError
-    if flags.inspect:
+    if flags.version:
+      pass  
+    elif flags.inspect:
       if flags.logdir and flags.event_file:
         raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')

@@ -2116,11 +2116,15 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
-    const classificationResultsKey = 'probabilities';
-    const regressionResultsKey = 'score';
-    const attributionPrefix = 'pig_';
-    const attributionSparseKeyPrefix = 'pig_keys_';
-    const attributionSparseValuePrefix = 'pig_vals_';
+
+    // Special feature names and feature name prefixes and suffixes for parsing
+    // inference and attribution information from TFMA-generated input.
+    const classificationResultsKey = 'predictions__probabilities';
+    const regressionResultsKey = 'predictions';
+    const attributionPrefix = 'attributions__';
+    const featureForAttributionPrefix = 'features__';
+    const attributionSparseKeySuffix = '_keys';
+    const attributionSparseValueSuffix = '_values';
 
     function deleteElement(elt){
       if (elt && elt.parentElement){
@@ -2763,6 +2767,7 @@ limitations under the License.
 
       selectedIndicesChanged_: function(event) {
         this.selected = event.detail.value;
+        this.setAttributions();
         this.selectedDataUpdated_();
         if (this.showNearestCounterfactual && this.selected.length != 0) {
           this.findClosestCounterfactual_();
@@ -4002,7 +4007,7 @@ limitations under the License.
         const selectedData = this.visdata[this.selected[0]];
         const attributionFinder = new RegExp(attributionPrefix + '(.*)');
         const sparseAttributionFinder =
-            new RegExp(attributionSparseKeyPrefix + '(.*)');
+            new RegExp(attributionPrefix + '(.*)' + attributionSparseKeySuffix);
         for (let key in selectedData) {
           let featureWithAttribution = attributionFinder.exec(key);
           // If this feature represents an attribution, set the attribution
@@ -4011,7 +4016,8 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureWithAttribution[1] + '$');
+              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 attrib[featToTest] = selectedData[key];
@@ -4022,19 +4028,21 @@ limitations under the License.
           featureWithAttribution = sparseAttributionFinder.exec(key);
           // If this feature represents a sparse attribution, set the
           // attribution values for the appropriate example feature.
-          // Sparse attribution is represented by features with the format
-          // "{attributionSparseKeyPrefix}{featureName}" containing a list of
-          // feature values for which we have attribution values and
-          // "{attributionSparseValuePrefix}{featureName}" containing a
-          // same-sized list of attribution amounts for those feature values.
+          // "{attributionPrefix}{featureName}{attributionSparseKeySuffix}"
+          // containing a list of feature values for which we have attribution
+          // values and
+          // "{attributionPrefix}{featureName}{attributionSparseValueSuffix}"
+          // containing a same-sized list of attribution amounts for those
+          // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureWithAttribution[1] + '$');
+              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 const attribKeys = selectedData[key];
                 const attribVals = selectedData[key.replace(
-                  attributionSparseKeyPrefix, attributionSparseValuePrefix)];
+                  attributionSparseKeySuffix, attributionSparseValueSuffix)];
                 const len = Array.isArray(selectedData[featToTest]) ?
                       selectedData[featToTest].length : 1;
                 const attribList = Array.apply(null, Array(len)).map(

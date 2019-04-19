@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 describe('parser', () => {
-  const {assert} = chai;
+  const {assert, expect} = chai;
 
   describe('parsing GraphDef pbtxt', () => {
     it('parses a simple pbtxt', () => {
@@ -46,6 +46,89 @@ describe('parser', () => {
         assert.equal('MatMul', nodes[2].op);
         assert.equal('Q', nodes[2].input[0]);
         assert.equal('W', nodes[2].input[1]);
+      });
+    });
+
+    it('parses function def library', () => {
+      const pbtxt = tf.graph.test.util.stringToArrayBuffer(`library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "placeholder_1"
+              type: DT_INT32
+            }
+            input_arg {
+              name: "placeholder_2"
+              type: DT_BOOL
+            }
+            output_arg {
+              name: "identity"
+              type: DT_BOOL
+            }
+          }
+          node_def {
+            name: "NoOp"
+            op: "NoOp"
+            attr {
+              key: "_output_shapes"
+              value {
+                list {
+                }
+              }
+            }
+          }
+          node_def {
+            name: "Identity"
+            op: "Identity"
+            input: "placeholder_1"
+            input: "^NoOp"
+            attr {
+              key: "T"
+              value {
+                type: DT_BOOL
+              }
+            }
+            attr {
+              key: "_output_shapes"
+              value {
+                list {
+                  shape {
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`);
+      return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+        expect(graph).to.have.property('library')
+            .that.has.property('function')
+            .that.is.an('array')
+            .and.that.has.length(1);
+
+        const firstFunc = graph.library.function[0];
+
+        expect(firstFunc).to.have.property('signature')
+            .that.has.property('name', 'foo');
+
+        expect(firstFunc).to.have.property('node_def')
+            .that.is.an('array')
+            .and.that.has.length(2);
+
+        expect(firstFunc.node_def[0]).to.have.property('name', 'NoOp');
+        expect(firstFunc.node_def[0]).to.not.have.property('input');
+        expect(firstFunc.node_def[0]).to.have.property('attr')
+            .that.deep.equal([{key: '_output_shapes', value: {list: {}}}]);
+
+        expect(firstFunc.node_def[1]).to.have.property('name', 'Identity');
+        expect(firstFunc.node_def[1]).to.have.property('input')
+            .that.deep.equal(['placeholder_1', '^NoOp']);
+        expect(firstFunc.node_def[1]).to.have.property('attr')
+            .that.deep.equal([
+                {key: 'T', value: {type: 'DT_BOOL'}},
+                {key: '_output_shapes', value: {list: {shape: [{}]}}}
+            ]);
       });
     });
 

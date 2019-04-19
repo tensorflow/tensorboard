@@ -75,12 +75,24 @@ def _get_context():
 
 
 def load_ipython_extension(ipython):
-  """IPython API entry point.
+  """Deprecated: use `%load_ext tensorboard` instead.
 
-  Only intended to be called by the IPython runtime.
+  Raises:
+    RuntimeError: Always.
+  """
+  raise RuntimeError(
+      "Use '%load_ext tensorboard' instead of '%load_ext tensorboard.notebook'."
+  )
 
-  See:
-    https://ipython.readthedocs.io/en/stable/config/extensions/index.html
+
+def _load_ipython_extension(ipython):
+  """Load the TensorBoard notebook extension.
+
+  Intended to be called from `%load_ext tensorboard`. Do not invoke this
+  directly.
+
+  Args:
+    ipython: An `IPython.InteractiveShell` instance.
   """
   _register_magics(ipython)
 

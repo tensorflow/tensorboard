@@ -53,7 +53,7 @@ def deprecated_extract_dts_from_closure_libraries(ctx):
   # File.extension does not have leading "." whereas JS_FILE_TYPE does.
   clutz_js_externs = [f for f in ctx.files._clutz_externs
                       if '.%s' % f.extension in JS_FILE_TYPE]
-  srcs = (depset(clutz_js_externs) + js.srcs)
+  srcs = depset(transitive=[depset(clutz_js_externs), js.srcs])
   args = ["-o", js_typings.path]
   for src in srcs:
     args.append(src.path)
