@@ -26,10 +26,11 @@ from traitlets import observe
 from traitlets import Unicode
 from traitlets import Set
 from tensorboard.plugins.interactive_inference.utils import inference_utils
+from witwidget.notebook import base
 
 
 @widgets.register
-class WitWidget(widgets.DOMWidget):
+class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   """WIT widget for Jupyter."""
   _view_name = Unicode('WITView').tag(sync=True)
   _view_module = Unicode('wit-widget').tag(sync=True)
@@ -58,93 +59,19 @@ class WitWidget(widgets.DOMWidget):
       config_builder: WitConfigBuilder object containing settings for WIT.
       height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
-    super(WitWidget, self).__init__(layout=Layout(height='%ipx' % height))
-    tf.logging.set_verbosity(tf.logging.WARN)
-    config = config_builder.build()
-    copied_config = dict(config)
-    self.estimator_and_spec = (
-      dict(config.get('estimator_and_spec'))
-      if 'estimator_and_spec' in config else {})
-    self.compare_estimator_and_spec = (
-      dict(config.get('compare_estimator_and_spec'))
-      if 'compare_estimator_and_spec' in config else {})
-    if 'estimator_and_spec' in copied_config:
-      del copied_config['estimator_and_spec']
-    if 'compare_estimator_and_spec' in copied_config:
-      del copied_config['compare_estimator_and_spec']
-
-    self.custom_predict_fn = (
-      config.get('custom_predict_fn')
-      if 'custom_predict_fn' in config else None)
-    self.compare_custom_predict_fn = (
-      config.get('compare_custom_predict_fn')
-      if 'compare_custom_predict_fn' in config else None)
-    if 'custom_predict_fn' in copied_config:
-      del copied_config['custom_predict_fn']
-    if 'compare_custom_predict_fn' in copied_config:
-      del copied_config['compare_custom_predict_fn']
-
-    self._set_examples(config['examples'])
-    del copied_config['examples']
-
-    self.config = copied_config
+    widgets.DOMWidget.__init__(self, layout=Layout(height='%ipx' % height))
+    base.WitWidgetBase.__init__(self, config_builder, height)
 
     # Ensure the visualization takes all available width.
     display(HTML("<style>.container { width:100% !important; }</style>"))
 
   def _set_examples(self, examples):
-    self.examples = [json_format.MessageToJson(ex) for ex in examples]
-    self.updated_example_indices = set(range(len(examples)))
+    base.WitWidgetBase._set_examples(self, examples)
     self._generate_sprite()
-
-  def json_to_proto(self, json):
-    ex = (tf.train.SequenceExample()
-          if self.config.get('are_sequence_examples')
-          else tf.train.Example())
-    json_format.Parse(json, ex)
-    return ex
 
   @observe('infer')
   def _infer(self, change):
-    indices_to_infer = sorted(self.updated_example_indices)
-    examples_to_infer = [
-      self.json_to_proto(self.examples[index]) for index in indices_to_infer]
-    infer_objs = []
-    serving_bundle = inference_utils.ServingBundle(
-      self.config.get('inference_address'),
-      self.config.get('model_name'),
-      self.config.get('model_type'),
-      self.config.get('model_version'),
-      self.config.get('model_signature'),
-      self.config.get('uses_predict_api'),
-      self.config.get('predict_input_tensor'),
-      self.config.get('predict_output_tensor'),
-      self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'),
-      self.custom_predict_fn)
-    infer_objs.append(inference_utils.run_inference_for_inference_results(
-      examples_to_infer, serving_bundle))
-    if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator') or
-        self.compare_custom_predict_fn):
-      serving_bundle = inference_utils.ServingBundle(
-        self.config.get('inference_address_2'),
-        self.config.get('model_name_2'),
-        self.config.get('model_type'),
-        self.config.get('model_version_2'),
-        self.config.get('model_signature_2'),
-        self.config.get('uses_predict_api'),
-        self.config.get('predict_input_tensor'),
-        self.config.get('predict_output_tensor'),
-        self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec'),
-        self.compare_custom_predict_fn)
-      infer_objs.append(inference_utils.run_inference_for_inference_results(
-        examples_to_infer, serving_bundle))
-    self.updated_example_indices = set()
-    self.inferences = {
-      'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': self.config.get('label_vocab')}
+    base.WitWidgetBase.infer_impl(self)
 
   # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')
@@ -157,46 +84,7 @@ class WitWidget(widgets.DOMWidget):
   @observe('infer_mutants')
   def _infer_mutants(self, change):
     info = self.infer_mutants
-    example_index = int(info['example_index'])
-    feature_name = info['feature_name']
-    examples = (self.examples if example_index == -1
-                else [self.examples[example_index]])
-    examples = [self.json_to_proto(ex) for ex in examples]
-    scan_examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    serving_bundles = []
-    serving_bundles.append(inference_utils.ServingBundle(
-      self.config.get('inference_address'),
-      self.config.get('model_name'),
-      self.config.get('model_type'),
-      self.config.get('model_version'),
-      self.config.get('model_signature'),
-      self.config.get('uses_predict_api'),
-      self.config.get('predict_input_tensor'),
-      self.config.get('predict_output_tensor'),
-      self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'),
-      self.custom_predict_fn))
-    if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator') or
-        self.compare_custom_predict_fn):
-      serving_bundles.append(inference_utils.ServingBundle(
-        self.config.get('inference_address_2'),
-        self.config.get('model_name_2'),
-        self.config.get('model_type'),
-        self.config.get('model_version_2'),
-        self.config.get('model_signature_2'),
-        self.config.get('uses_predict_api'),
-        self.config.get('predict_input_tensor'),
-        self.config.get('predict_output_tensor'),
-        self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec'),
-        self.compare_custom_predict_fn))
-    viz_params = inference_utils.VizParams(
-      info['x_min'], info['x_max'],
-      scan_examples, 10,
-      info['feature_index_pattern'])
-    json_mapping = inference_utils.mutant_charts_for_feature(
-      examples, feature_name, serving_bundles, viz_params)
+    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
     json_mapping['counter'] = self.mutant_charts_counter
     self.mutant_charts_counter += 1
     self.mutant_charts = json_mapping
@@ -223,18 +111,6 @@ class WitWidget(widgets.DOMWidget):
     self._generate_sprite()
 
   def _generate_sprite(self):
-    # Generate a sprite image for the examples if the examples contain the
-    # standard encoded image feature.
-    if not self.examples:
-      return
-    example_to_check = self.json_to_proto(self.examples[0])
-    feature_list = (example_to_check.context.feature
-                    if self.config.get('are_sequence_examples')
-                    else example_to_check.features.feature)
-    if 'image/encoded' in feature_list:
-      example_strings = [
-        self.json_to_proto(ex).SerializeToString()
-        for ex in self.examples]
-      encoded = base64.b64encode(
-        inference_utils.create_sprite_image(example_strings))
-      self.sprite = 'data:image/png;base64,{}'.format(encoded)
+    sprite = base.WitWidgetBase.create_sprite(self)
+    if sprite is not None:
+      self.sprite = sprite
