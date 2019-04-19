@@ -19,15 +19,19 @@ from __future__ import print_function
 
 import abc
 import collections
+import os
 import time
 
 from google.protobuf import text_format
 import six
+import tensorflow as tf
 
 from tensorboard import test
 from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
+from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.util import test_util
 
 
 class ExperimentTest(test.TestCase):
@@ -238,6 +242,112 @@ class DiscreteTest(test.TestCase):
     with six.assertRaisesRegex(
         self, ValueError, r"dtype mismatch: not isinstance\(2, str\)"):
       hp.Discrete(["one", 2])
+
+
+class KerasCallbackTest(test.TestCase):
+  def setUp(self):
+    super(KerasCallbackTest, self).setUp()
+    HP_DENSE_NEURONS = hp.HParam("dense_neurons", hp.IntInterval(4, 16))
+    self.hparams = {
+        "optimizer": "adam",
+        HP_DENSE_NEURONS: 8,
+    }
+    self.model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(self.hparams[HP_DENSE_NEURONS], input_shape=(1,)),
+        tf.keras.layers.Dense(1, activation="sigmoid"),
+    ])
+    self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])
+    self.logdir = os.path.join(self.get_temp_dir(), "logs")
+    self.callback = hp.KerasCallback(
+        self.logdir,
+        self.hparams,
+        group_name="psl27",
+    )
+
+  @test_util.run_v2_only("Requires eager mode.")
+  def test_eager(self):
+    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+    files = os.listdir(self.logdir)
+    self.assertEqual(len(files), 1, files)
+    events_file = os.path.join(self.logdir, files[0])
+    plugin_data = []
+    for event in tf.compat.v1.train.summary_iterator(events_file):
+      if event.WhichOneof("what") != "summary":
+        continue
+      self.assertEqual(len(event.summary.value), 1, event.summary.value)
+      value = event.summary.value[0]
+      self.assertEqual(
+          value.metadata.plugin_data.plugin_name,
+          metadata.PLUGIN_NAME,
+      )
+      plugin_data.append(value.metadata.plugin_data.content)
+
+    self.assertEqual(len(plugin_data), 2, plugin_data)
+    (start_plugin_data, end_plugin_data) = plugin_data
+    start_pb = metadata.parse_session_start_info_plugin_data(start_plugin_data)
+    end_pb = metadata.parse_session_end_info_plugin_data(end_plugin_data)
+
+    # Remove any dependence on system time.
+    start_pb.start_time_secs = 123.45
+    end_pb.end_time_secs = 234.56
+
+    expected_start_pb = plugin_data_pb2.SessionStartInfo()
+    text_format.Merge(
+        """
+        start_time_secs: 123.45
+        group_name: "psl27"
+        hparams {
+          key: "optimizer"
+          value {
+            string_value: "adam"
+          }
+        }
+        hparams {
+          key: "dense_neurons"
+          value {
+            number_value: 8.0
+          }
+        }
+        """,
+        expected_start_pb,
+    )
+    self.assertEqual(start_pb, expected_start_pb)
+
+    expected_end_pb = plugin_data_pb2.SessionEndInfo()
+    text_format.Merge(
+        """
+        end_time_secs: 234.56
+        status: STATUS_SUCCESS
+        """,
+        expected_end_pb,
+    )
+    self.assertEqual(end_pb, expected_end_pb)
+
+
+  @test_util.run_v1_only("Requires non-eager mode.")
+  def test_non_eager_failure(self):
+    with six.assertRaisesRegex(
+        self, RuntimeError, "only supported in TensorFlow eager mode"):
+      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+  def test_duplicate_hparam_names_across_object_and_string(self):
+    hparams = {
+        "foo": 1,
+        hp.HParam("foo"): 1,
+    }
+    with six.assertRaisesRegex(
+        self, ValueError, "multiple values specified for hparam 'foo'"):
+      hp.KerasCallback(self.logdir, hparams)
+
+  def test_duplicate_hparam_names_from_two_objects(self):
+    hparams = {
+        hp.HParam("foo"): 1,
+        hp.HParam("foo"): 1,
+    }
+    with six.assertRaisesRegex(
+        self, ValueError, "multiple values specified for hparam 'foo'"):
+      hp.KerasCallback(self.logdir, hparams)
 
 
 if __name__ == "__main__":

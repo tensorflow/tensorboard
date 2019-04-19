@@ -37,8 +37,6 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import api as hp
-from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary as hparams_summary
 
 
 if int(tf.__version__.split(".")[0]) < 2:
@@ -179,21 +177,12 @@ def run(data, base_logdir, session_id, group_id, hparams):
   model = model_fn(hparams=hparams, seed=session_id)
   logdir = os.path.join(base_logdir, session_id)
 
-  # We need a manual summary writer for writing hparams metadata.
-  writer = tf.summary.create_file_writer(logdir)
-  with writer.as_default():
-    pb = hparams_summary.session_start_pb(
-        {h.name: hparams[h] for h in hparams},
-        group_name=group_id,
-    )
-    tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
-    writer.flush()
-
   callback = tf.keras.callbacks.TensorBoard(
       logdir,
       update_freq=flags.FLAGS.summary_freq,
       profile_batch=0,  # workaround for issue #2084
   )
+  hparams_callback = hp.KerasCallback(logdir, hparams, group_name=group_id)
   ((x_train, y_train), (x_test, y_test)) = data
   result = model.fit(
       x=x_train,
@@ -201,14 +190,8 @@ def run(data, base_logdir, session_id, group_id, hparams):
       epochs=flags.FLAGS.num_epochs,
       shuffle=False,
       validation_data=(x_test, y_test),
-      callbacks=[callback],
+      callbacks=[callback, hparams_callback],
   )
-
-  with writer.as_default():
-    pb = hparams_summary.session_end_pb(api_pb2.STATUS_SUCCESS)
-    tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
-    writer.flush()
-  writer.close()
 
 
 def prepare_data():
