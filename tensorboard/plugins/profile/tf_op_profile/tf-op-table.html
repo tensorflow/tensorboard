@@ -72,8 +72,7 @@ limitations under the License.
   white-space: nowrap;
 }
 /* Match indented names */
-#header > #name { padding-left: 2em; }
-    </style>
+#header > #name { padding-left: 2em; }</style>
     <div id="header">
       <span id="time">Time</span>
       <span id="name">Name</span>
@@ -203,6 +202,10 @@ Polymer({
    Its text is in an inner div that remains vertically centered. */
 #utilization { align-self: stretch; }
 #utilization div { position: relative; top: 50%; transform: translateY(-50%); }
+
+[hidden] {
+  display: none !important;
+}
     </style>
     <div id="row"
          on-click="_handleHeaderClick"

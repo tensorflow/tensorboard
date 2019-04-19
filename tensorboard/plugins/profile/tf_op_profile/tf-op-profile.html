@@ -69,6 +69,9 @@ paper-slider {
   margin-bottom: 2em;
   width: 600px;
 }
+[hidden] {
+  display: none;
+}
     </style>
     <div class="tf-op-profile">
       <h4>Overall TPU FLOPS utilization is
@@ -84,7 +87,7 @@ paper-slider {
         that is idle.</p>
       </div>
       <div id="control">
-        <span class="controlRowLeft" hidden="[[!_hasTwoProfiles]]">By Program
+        <span class="controlRowLeft" hidden$="[[!_hasTwoProfiles]]">By Program
           <paper-toggle-button checked={{isByCategory}}>
           </paper-toggle-button>By Category</span>
         <!--
