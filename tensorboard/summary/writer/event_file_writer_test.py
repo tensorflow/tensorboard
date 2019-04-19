@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# """Integration tests for the Writer."""
+# """Tests for EventFileWriter and _AsyncWriter"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,11 +27,11 @@ import tempfile
 import time
 from tensorboard.summary.writer.event_file_writer import EventFileWriter
 from tensorboard.summary.writer.event_file_writer import _AsyncWriter
-from tensorboard.summary.writer.event_file_writer import _AsyncWriterThread
-from tensorboard.compat.proto import event_pb2, summary_pb2
+from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
 from tensorboard import test as tb_test
+
 
 class EventFileWriterTest(tb_test.TestCase):
   def __init__(self, *args, **kwargs):
@@ -52,7 +52,7 @@ class EventFileWriterTest(tb_test.TestCase):
     r.read()
     events = r.event_strs
     event_from_disk = events[1]
-    assert fakeevent.SerializeToString() == event_from_disk
+    self.assertEqual(fakeevent.SerializeToString(), event_from_disk)
 
   def test_setting_filename_suffix_works(self):
     logdir = tempfile.mkdtemp()
@@ -60,7 +60,12 @@ class EventFileWriterTest(tb_test.TestCase):
     w = EventFileWriter(logdir, filename_suffix='.event_horizon')
     w.close()
     event_files = sorted(glob.glob(os.path.join(logdir, '*')))
-    assert event_files[0].split('.')[-1] == 'event_horizon'
+    self.assertEqual(event_files[0].split('.')[-1], 'event_horizon')
+
+
+class AsyncWriterTest(tb_test.TestCase):
+  def __init__(self, *args, **kwargs):
+    super(AsyncWriterTest, self).__init__(*args, **kwargs)
 
   def test_async_writer_without_write(self):
     for i in range(100):
@@ -71,41 +76,41 @@ class EventFileWriterTest(tb_test.TestCase):
       r = PyRecordReader_New(event_files[0])
       r.read()
       events = r.event_strs
-      assert len(events) == 1
+      self.assertEqual(len(events), 1)
       s = event_pb2.Event()
       s.ParseFromString(events[0])
-      assert s.file_version == "brain.Event:2"
+      self.assertEqual(s.file_version, "brain.Event:2")
 
   def test_async_writer_write_once(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'))
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
     w.write(random_bytes)
     w.close()
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes)
 
   def test_async_writer_write_queue_full(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'), dummy_delay=True)
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'), dummy_delay=True)
     random_bytes = bytearray(os.urandom(64))
     repeat = 100
     for i in range(repeat):
       w.write(random_bytes)
     w.close()
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes * repeat
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes * repeat)
 
   def test_async_writer_write_one_slot_queue(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'), max_queue_size=1, dummy_delay=True)
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=1, dummy_delay=True)
     random_bytes = bytearray(os.urandom(64))
     repeat = 10  # faster
     for i in range(repeat):
       w.write(random_bytes)
     w.close()
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes * repeat
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes * repeat)
 
   # write    ...................................
   # flush    ---------^---------^---------^
@@ -116,60 +121,61 @@ class EventFileWriterTest(tb_test.TestCase):
   # I set 0.9 here in case the CI is too slow.
 
   def test_async_writer_auto_flushing(self):
-    logfile = tempfile.NamedTemporaryFile().name
+    filename = tempfile.NamedTemporaryFile().name
     flush_timer = 1
     tolerance = 0.9  # The undelying writer need time to complete.
-    w = _AsyncWriter(open(logfile, 'wb'), max_queue_size=500, flush_secs=flush_timer)
+    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=500, flush_secs=flush_timer)
     random_bytes = bytearray(os.urandom(64))
     repeat = 100
     for i in range(repeat):
       w.write(random_bytes)
       time.sleep(0.1)
       if i % (flush_timer * 10) == 0:
-        with open(get_copy_by_OS(logfile), 'rb') as f:
+        with open(get_copy_by_OS(filename), 'rb') as f:
           nbytes = len(f.read())
           # print(i, nbytes, i * len(random_bytes) * tolerance, nbytes / (1+i * len(random_bytes)))
-          assert nbytes >= i * len(random_bytes) * tolerance
+          self.assertGreaterEqual(nbytes, i * len(random_bytes) * tolerance)
     w.close()
 
     # make sure all data is written
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes * repeat
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes * repeat)
 
   def test_async_writer_flush_before_flush_secs(self):
     # This test equals test_async_writer_write_once,
     # since flush() is implicitly called by close() and the default flush time is 120 secs.
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'))
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
     w.write(random_bytes)
     w.flush()  # flush() is implicitly called by close()
     w.close()
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes)
 
   def test_async_writer_close_triggers_flush(self):
     # This test equals test_async_writer_write_once,
     # since flush() is implicitly called by close() and the default flush time is 120 secs.
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'))
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
     w.write(random_bytes)
     w.close()
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes)
 
   def test_write_after_async_writer_closed(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = _AsyncWriter(open(logfile, 'wb'))
+    filename = tempfile.NamedTemporaryFile().name
+    w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
     w.write(random_bytes)
     w.close()
 
-    w.write(random_bytes)
+    with self.assertRaises(IOError):
+      w.write(random_bytes)
     # nothing is written to the file after close
-    with open(logfile, 'rb') as f:
-      assert f.read() == random_bytes
+    with open(filename, 'rb') as f:
+      self.assertEqual(f.read(), random_bytes)
 
 
 def get_copy_by_OS(oldfilename):

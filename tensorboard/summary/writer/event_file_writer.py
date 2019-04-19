@@ -45,12 +45,13 @@ class AtomicCounter(object):
 _global_uid = AtomicCounter(0)
 
 
-class EventFileWriter(object):  # Owned by FileWriter
+class EventFileWriter(object):
     """Writes `Event` protocol buffers to an event file.
 
     The `EventFileWriter` class creates an event file in the specified directory,
     and asynchronously writes Event protocol buffers to the file. The Event file
-    is encoded using the tfrecord format, which is similar to RecordIO.
+    is encoded using the tfrecord format, which is similar to RecordIO. The instance is
+    usually created and managed by `torch.utils.tensorboard.FileWriter` in pytorch.
     """
 
     def __init__(self, logdir, max_queue_size=10, flush_secs=120, filename_suffix=''):
@@ -71,14 +72,14 @@ class EventFileWriter(object):  # Owned by FileWriter
         self._logdir = logdir
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        self._file_name = logdir + "/events.out.tfevents.%010d.%s.%s.%s" %\
-            (time.time(), socket.gethostname(), os.getpid(), _global_uid.get()) +\
-            filename_suffix
+        self._file_name = os.path.join(logdir, "events.out.tfevents.%010d.%s.%s.%s" %
+            (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix
         self._async_writer = _AsyncWriter(RecordWriter(self._file_name), max_queue_size, flush_secs)
 
         # Initialize an event instance.
         _event = event_pb2.Event(wall_time=time.time(), file_version='brain.Event:2')
         self.add_event(_event)
+        self.flush()
 
     def get_logdir(self):
         """Returns the directory where event file will be written."""
@@ -112,42 +113,54 @@ class EventFileWriter(object):  # Owned by FileWriter
         self._async_writer.close()
 
 
-class _AsyncWriter(object):  # _AsyncWriter
-    '''Writes bytes to an event file.'''
+class _AsyncWriter(object):
+    '''Writes bytes to an file.'''
 
-    def __init__(self, writerinstance, max_queue_size=20, flush_secs=120, dummy_delay=False):
-        """Writes bytes to an event file.
+    def __init__(self, record_writer, max_queue_size=20, flush_secs=120, dummy_delay=False):
+        """Writes bytes to an file asynchronously.
+        An instance of this class holds a queue to keep the incoming data temporarily.
+        Data passed to the `write` function will be put to the queue and the function
+        returns immediately. This class also maintains a thread to write data in the
+        queue to disk. The first initialization paremeter is an instance of
+        `tensorboard.summary.record_writer` which computes the CRC checksum and then write
+        the combined result to the disk. So we use an async approach to improve performance.
+
         Args:
-            writerinstance: A RecordWriter instance
-            max_queue_size: Integer. Size of the queue for pending events and summaries.
+            record_writer: A RecordWriter instance
+            max_queue_size: Integer. Size of the queue for pending bytestrings.
             flush_secs: Number. How often, in seconds, to flush the
-                pending events and summaries to disk.
+                pending bytestrings to disk.
         """
-        self._writer = writerinstance
+        self._writer = record_writer
+        self._closed = False
         self._byte_queue = six.moves.queue.Queue(max_queue_size)
         self._worker = _AsyncWriterThread(self._byte_queue, self._writer, flush_secs, dummy_delay)
         self._lock = threading.Lock()
         self._worker.start()
 
-    def write(self, bytestream):
-        '''Append bytes to the queue.'''
+    def write(self, bytestring):
+        '''Enqueue the given bytes to be written asychronously'''
+        if self._closed:
+            raise IOError('Writer is closed')
         with self._lock:
-            self._byte_queue.put(bytestream)
+            self._byte_queue.put(bytestring)
 
     def flush(self):
-        '''Write all the enqueued bytestream before this flush call to disk.
-        Block until all the above bytestream are written.
+        '''Write all the enqueued bytestring before this flush call to disk.
+        Block until all the above bytestring are written.
         '''
         with self._lock:
-            self._writer.flush()
+            self._byte_queue.join()
 
     def close(self):
-        '''Call self.flush().'''
-        self._worker.stop()
-        self.flush()
-        with self._lock:
-            self._writer.close()
-        assert self._writer.closed
+        '''Closes the underlying writer, flushing any pending writes first.'''
+        if not self._closed:
+            with self._lock:
+                if not self._closed:
+                    self._closed = True
+                    self._worker.stop()
+                    self._writer.flush()
+                    self._writer.close()
 
 
 class _AsyncWriterThread(threading.Thread):
@@ -157,7 +170,7 @@ class _AsyncWriterThread(threading.Thread):
         """Creates an _AsyncWriterThread.
         Args:
           queue: A Queue from which to dequeue data.
-          record_writer: An protobuf record_writer writer.
+          record_writer: An instance of record_writer writer.
           flush_secs: How often, in seconds, to flush the
             pending file to disk.
         """

@@ -13,58 +13,54 @@
 # limitations under the License.
 # ==============================================================================
 
-# """Integration tests for the Writer."""
+# """Tests for RecordWriter"""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import glob
 import os
-import tempfile
 from tensorboard.summary.writer.record_writer import RecordWriter
-from tensorboard.compat.proto import event_pb2, summary_pb2
-from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
 from tensorboard import test as tb_test
+
 
 class RecordWriterTest(tb_test.TestCase):
   def __init__(self, *args, **kwargs):
     super(RecordWriterTest, self).__init__(*args, **kwargs)
 
   def test_expect_bytes_written(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = RecordWriter(logfile)
-    random_bytes = bytearray(os.urandom(64))
+    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    byte_len = 64
+    w = RecordWriter(filename)
+    random_bytes = bytearray(os.urandom(byte_len))
     w.write(random_bytes)
     w.close()
-    with open(logfile, 'rb') as f:
-      assert len(f.read()) == (8 + 4 + 64 + 4)  # uint64+uint32+data+uint32
-
-  # crc'ed file content of empty data
-  # b'\x00\x00\x00\x00\x00\x00\x00\x00)\x03\x98\x07\xd8\xea\x82\xa2'
+    with open(filename, 'rb') as f:
+      self.assertEqual(len(f.read()), (8 + 4 + byte_len + 4))  # uint64+uint32+data+uint32
 
   def test_empty_record(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = RecordWriter(logfile)
-    random_bytes = bytearray(os.urandom(0))
-    w.write(random_bytes)
+    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    w = RecordWriter(filename)
+    bytes_to_write = b""
+    w.write(bytes_to_write)
     w.close()
-    r = PyRecordReader_New(logfile)
+    r = PyRecordReader_New(filename)
     r.read()
-    assert r.event_strs[0] == random_bytes
+    self.assertEqual(r.event_strs[0], bytes_to_write)
 
   def test_record_writer_roundtrip(self):
-    logfile = tempfile.NamedTemporaryFile().name
-    w = RecordWriter(logfile)
-    random_bytes = bytearray(os.urandom(64))
-    w.write(random_bytes)
+    filename = os.path.join(self.get_temp_dir(), "recordtest")
+    w = RecordWriter(filename)
+    bytes_to_write = b"hello world"
+    for _ in range(50):
+      w.write(bytes_to_write)
     w.close()
-    with open(logfile, 'rb') as f:
-      print(f.read())
-    r = PyRecordReader_New(logfile)
+
+    r = PyRecordReader_New(filename)
     r.read()
-    assert r.event_strs[0] == random_bytes
+    for i in range(50):
+      self.assertEqual(r.event_strs[i], bytes_to_write)
 
 
 if __name__ == '__main__':
