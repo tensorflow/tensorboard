@@ -477,7 +477,7 @@ Polymer({
     const nf = new Intl.NumberFormat(navigator.language,
         {style: 'percent', minimumFractionDigits: 2});
 
-    let res = `pos: (${data.ydim}, ${data.xdim}),
+    const res = `pos: (${data.ydim}, ${data.xdim}),
         host: ${data.host},
         chip id: ${data.cid},
         core id: ${data.nid},
