@@ -171,7 +171,7 @@ session group.
       _metricName: tf.hparams.utils.metricName,
 
       _sessionGroupHParam(sessionGroup, hparam) {
-        if (sessionGroup === null ||
+        if (sessionGroup == null ||
             !Object.prototype.hasOwnProperty.call(sessionGroup.hparams,
                                                   hparam)) {
           return "";
