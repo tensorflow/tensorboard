@@ -178,12 +178,9 @@ Polymer({
   _computeStepStats(podStatsMap: podviewer.proto.PodStatsMap):
                     Array<podviewer.proto.PodStatsRecord>|undefined {
     if (!podStatsMap || !podStatsMap.podStatsPerCore) return;
-    let stepStats = [];
-    for (const i in podStatsMap.podStatsPerCore) {
-      stepStats.push(podStatsMap.podStatsPerCore[i]);
-    }
-    stepStats.sort((a, b) => a.chipId - b.chipId);
-    return stepStats;
+    const obj = podStatsMap.podStatsPerCore;
+    return Object.keys(obj).map((key) => obj[key])
+               .sort((a, b) => a.chipId - b.chipId);
   },
   _computeChannelDb(podStatsMap: podviewer.proto.PodStatsMap):
                     Array<podviewer.proto.ChannelInfo>|undefined {
@@ -191,7 +188,8 @@ Polymer({
         || podStatsMap.channelDb.length <= 0) {
       return;
     }
-    return podStatsMap.channelDb.sort((a, b) => b.durationUs - a.durationUs);
+    return podStatsMap.channelDb.slice()
+               .sort((a, b) => b.durationUs - a.durationUs);
   },
   _computeAllReduceDb(podStatsMap: podviewer.proto.PodStatsMap):
                       Array<podviewer.proto.AllReduceOpInfo>|undefined {
@@ -199,8 +197,8 @@ Polymer({
         || podStatsMap.allReduceOpDb.length <= 0) {
       return;
     }
-    return podStatsMap.allReduceOpDb.sort(
-               (a, b) => b.durationUs - a.durationUs);
+    return podStatsMap.allReduceOpDb.slice()
+               .sort((a, b) => b.durationUs - a.durationUs);
   },
   _dataChanged(newData: podviewer.proto.PodViewerInputData) {
     if (!newData) return;
