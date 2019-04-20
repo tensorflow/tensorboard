@@ -313,6 +313,7 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
         value: () => new tf_backend.RequestManager(),
       },
+      _isAttached: Boolean,
       _isAvailable: Boolean,
       // Whether this dashboard is initialized. This dashboard should only be
       // initialized once.
@@ -439,6 +440,7 @@ profile run can have multiple tools that present the performance profile as diff
       '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
     ],
     attached: function() {
+      this.set('_isAttached', true);
       // Check if the plugin was created
       this._requestManager
           .request(tf_backend.getRouter().pluginsListing())
@@ -455,7 +457,7 @@ profile run can have multiple tools that present the performance profile as diff
           });
     },
     detached: function() {
-      this.set('_isAvailable', false);
+      this.set('_isAttached', false);
     },
     _openCaptureProfileDialog: function() {
       this.$.captureProfileDialog.open();
