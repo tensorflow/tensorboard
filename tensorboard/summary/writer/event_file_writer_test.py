@@ -90,7 +90,7 @@ class AsyncWriterTest(tb_test.TestCase):
 
   def test_async_writer_write_queue_full(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_write_queue_full")
-    w = _AsyncWriter(open(filename, 'wb'), dummy_delay=False)
+    w = _AsyncWriter(open(filename, 'wb'))
     bytes_to_write = b"hello world"
     repeat = 100
     for i in range(repeat):
@@ -101,7 +101,7 @@ class AsyncWriterTest(tb_test.TestCase):
 
   def test_async_writer_write_one_slot_queue(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_write_one_slot_queue")
-    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=1, dummy_delay=False)
+    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=1)
     bytes_to_write = b"hello world"
     repeat = 10  # faster
     for i in range(repeat):

@@ -116,7 +116,7 @@ class EventFileWriter(object):
 class _AsyncWriter(object):
     '''Writes bytes to an file.'''
 
-    def __init__(self, record_writer, max_queue_size=20, flush_secs=120, dummy_delay=False):
+    def __init__(self, record_writer, max_queue_size=20, flush_secs=120):
         """Writes bytes to an file asynchronously.
         An instance of this class holds a queue to keep the incoming data temporarily.
         Data passed to the `write` function will be put to the queue and the function
@@ -134,7 +134,7 @@ class _AsyncWriter(object):
         self._writer = record_writer
         self._closed = False
         self._byte_queue = six.moves.queue.Queue(max_queue_size)
-        self._worker = _AsyncWriterThread(self._byte_queue, self._writer, flush_secs, dummy_delay)
+        self._worker = _AsyncWriterThread(self._byte_queue, self._writer, flush_secs)
         self._lock = threading.Lock()
         self._worker.start()
 
@@ -167,7 +167,7 @@ class _AsyncWriter(object):
 class _AsyncWriterThread(threading.Thread):
     """Thread that processes asynchronous writes for _AsyncWriter."""
 
-    def __init__(self, queue, record_writer, flush_secs, dummy_delay):
+    def __init__(self, queue, record_writer, flush_secs):
         """Creates an _AsyncWriterThread.
         Args:
           queue: A Queue from which to dequeue data.
@@ -184,7 +184,6 @@ class _AsyncWriterThread(threading.Thread):
         self._next_flush_time = 0
         self._has_pending_data = False
         self._shutdown_signal = object()
-        self._dummy_delay = dummy_delay
 
     def stop(self):
         self._queue.put(self._shutdown_signal)
@@ -208,8 +207,6 @@ class _AsyncWriterThread(threading.Thread):
                 if data is self._shutdown_signal:
                     return
                 self._record_writer.write(data)
-                if self._dummy_delay:
-                    time.sleep(0.1)
                 self._has_pending_data = True
             except six.moves.queue.Empty:
                 pass
