@@ -19,13 +19,13 @@ from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
 
 class RecordWriter(object):
     """Write encoded protobuf to a file with packing defined in tensorflow"""
-    def __init__(self, filename):
+    def __init__(self, general_writer):
         """Open a file to keep the tensorboard records.
 
         Args:
         filename: (string) The location where the file will be opened.
         """
-        self._writer = open(filename, 'wb')
+        self._writer = general_writer
 
     # Format of a single record: (little-endian)
     # uint64    length

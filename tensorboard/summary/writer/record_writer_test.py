@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 import os
 from tensorboard.summary.writer.record_writer import RecordWriter
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
@@ -32,7 +33,7 @@ class RecordWriterTest(tb_test.TestCase):
   def test_expect_bytes_written(self):
     filename = os.path.join(self.get_temp_dir(), "expect_bytes_written")
     byte_len = 64
-    w = RecordWriter(filename)
+    w = RecordWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(byte_len))
     w.write(random_bytes)
     w.close()
@@ -41,17 +42,17 @@ class RecordWriterTest(tb_test.TestCase):
 
   def test_empty_record(self):
     filename = os.path.join(self.get_temp_dir(), "empty_record")
-    w = RecordWriter(filename)
+    w = RecordWriter(open(filename, 'wb'))
     bytes_to_write = b""
     w.write(bytes_to_write)
     w.close()
     r = PyRecordReader_New(filename)
-    r.read()
-    self.assertEqual(r.event_strs[0], bytes_to_write)
+    r.GetNext()
+    self.assertEqual(r.record(), bytes_to_write)
 
   def test_record_writer_roundtrip(self):
     filename = os.path.join(self.get_temp_dir(), "record_writer_roundtrip")
-    w = RecordWriter(filename)
+    w = RecordWriter(open(filename, 'wb'))
     bytes_to_write = b"hello world"
     times_to_test = 50
     for _ in range(times_to_test):
@@ -59,9 +60,17 @@ class RecordWriterTest(tb_test.TestCase):
     w.close()
 
     r = PyRecordReader_New(filename)
-    r.read()
     for i in range(times_to_test):
-      self.assertEqual(r.event_strs[i], bytes_to_write)
+      r.GetNext()
+      self.assertEqual(r.record(), bytes_to_write)
+
+  def test_expect_bytes_written_bytes_IO(self):
+    byte_len = 64
+    Bytes_io = six.BytesIO()
+    w = RecordWriter(Bytes_io)
+    random_bytes = bytearray(os.urandom(byte_len))
+    w.write(random_bytes)
+    self.assertEqual(len(Bytes_io.getvalue()), (8 + 4 + byte_len + 4))  # uint64+uint32+data+uint32
 
 
 if __name__ == '__main__':

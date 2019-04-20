@@ -74,7 +74,8 @@ class EventFileWriter(object):
             os.makedirs(logdir)
         self._file_name = os.path.join(logdir, "events.out.tfevents.%010d.%s.%s.%s" %
             (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix
-        self._async_writer = _AsyncWriter(RecordWriter(self._file_name), max_queue_size, flush_secs)
+        self._general_file_writer = open(self._file_name, 'wb')
+        self._async_writer = _AsyncWriter(RecordWriter(self._general_file_writer), max_queue_size, flush_secs)
 
         # Initialize an event instance.
         _event = event_pb2.Event(wall_time=time.time(), file_version='brain.Event:2')
@@ -150,6 +151,7 @@ class _AsyncWriter(object):
         '''
         with self._lock:
             self._byte_queue.join()
+            self._writer.flush()
 
     def close(self):
         '''Closes the underlying writer, flushing any pending writes first.'''

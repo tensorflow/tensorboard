@@ -49,10 +49,9 @@ class EventFileWriterTest(tb_test.TestCase):
     event_files = sorted(glob.glob(os.path.join(logdir, '*')))
     self.assertEqual(len(event_files), 1)
     r = PyRecordReader_New(event_files[0])
-    r.read()
-    events = r.event_strs
-    event_from_disk = events[1]
-    self.assertEqual(fakeevent.SerializeToString(), event_from_disk)
+    r.GetNext()  # meta data, so skip
+    r.GetNext()
+    self.assertEqual(fakeevent.SerializeToString(), r.record())
 
   def test_setting_filename_suffix_works(self):
     logdir = self.get_temp_dir()
@@ -74,11 +73,10 @@ class AsyncWriterTest(tb_test.TestCase):
       w.close()
       event_files = sorted(glob.glob(os.path.join(logdir, '*')))
       r = PyRecordReader_New(event_files[0])
-      r.read()
-      events = r.event_strs
-      self.assertEqual(len(events), 1)
+      r.GetNext()
+      event = r.record()
       s = event_pb2.Event()
-      s.ParseFromString(events[0])
+      s.ParseFromString(event)
       self.assertEqual(s.file_version, "brain.Event:2")
 
   def test_async_writer_write_once(self):
@@ -92,7 +90,7 @@ class AsyncWriterTest(tb_test.TestCase):
 
   def test_async_writer_write_queue_full(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_write_queue_full")
-    w = _AsyncWriter(open(filename, 'wb'), dummy_delay=True)
+    w = _AsyncWriter(open(filename, 'wb'), dummy_delay=False)
     bytes_to_write = b"hello world"
     repeat = 100
     for i in range(repeat):
@@ -103,7 +101,7 @@ class AsyncWriterTest(tb_test.TestCase):
 
   def test_async_writer_write_one_slot_queue(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_write_one_slot_queue")
-    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=1, dummy_delay=True)
+    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=1, dummy_delay=False)
     bytes_to_write = b"hello world"
     repeat = 10  # faster
     for i in range(repeat):
@@ -142,20 +140,27 @@ class AsyncWriterTest(tb_test.TestCase):
       self.assertEqual(f.read(), random_bytes * repeat)
 
   def test_async_writer_flush_before_flush_secs(self):
-    # This test equals test_async_writer_write_once,
-    # since flush() is implicitly called by close() and the default flush time is 120 secs.
     filename = os.path.join(self.get_temp_dir(), "async_writer_flush_before_flush_secs")
     w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
     w.write(random_bytes)
     w.flush()  # flush() is implicitly called by close()
-    w.close()
     with open(filename, 'rb') as f:
       self.assertEqual(f.read(), random_bytes)
+    w.write(random_bytes)
+    with open(filename, 'rb') as f:  # without flush, the file content should be the same.
+      self.assertEqual(f.read(), random_bytes)
+    w.flush()
+    with open(filename, 'rb') as f:  # after flush, the file content will be updated.
+      self.assertEqual(f.read(), random_bytes + random_bytes)
+    w.write(random_bytes)
+    with open(filename, 'rb') as f:  # without flush, the file content should be the same.
+      self.assertEqual(f.read(), random_bytes + random_bytes)
+    w.close()
+    with open(filename, 'rb') as f:  # after close, new contents flushes implicitly.
+      self.assertEqual(f.read(), random_bytes + random_bytes + random_bytes)
 
   def test_async_writer_close_triggers_flush(self):
-    # This test equals test_async_writer_write_once,
-    # since flush() is implicitly called by close() and the default flush time is 120 secs.
     filename = os.path.join(self.get_temp_dir(), "async_writer_close_triggers_flush")
     w = _AsyncWriter(open(filename, 'wb'))
     random_bytes = bytearray(os.urandom(64))
