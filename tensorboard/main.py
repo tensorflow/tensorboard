@@ -51,7 +51,8 @@ def run_main():
   program.setup_environment()
 
   if getattr(tf, '__version__', 'stub') == 'stub':
-    logger.warn("TensorFlow installation not found - running with reduced feature set.")
+    print("TensorFlow installation not found - running with reduced feature set.",
+          file=sys.stderr)
 
   tensorboard = program.TensorBoard(default.get_plugins(),
                                     program.get_default_assets_zip_provider())

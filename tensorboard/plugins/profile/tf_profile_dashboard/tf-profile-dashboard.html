@@ -302,6 +302,10 @@ profile run can have multiple tools that present the performance profile as diff
     "ACTIVE": "ACTIVE",
   };
 
+  (function() {
+
+  const PLUGIN_NAME = 'profile';
+
   Polymer({
     is: "tf-profile-dashboard",
     properties: {
@@ -309,11 +313,7 @@ profile run can have multiple tools that present the performance profile as diff
         type: Object,
         value: () => new tf_backend.RequestManager(),
       },
-      _canceller: {
-        type: Object,
-        value: () => new tf_backend.Canceller(),
-      },
-      _isAttached: Boolean,
+      _isAvailable: Boolean,
       // Whether this dashboard is initialized. This dashboard should only be
       // initialized once.
       _initialized: Boolean,
@@ -434,7 +434,7 @@ profile run can have multiple tools that present the performance profile as diff
     ready: function() {
     },
     observers: [
-      '_maybeInitializeDashboard(_isAttached)',
+      '_maybeInitializeDashboard(_isAttached, _isAvailable)',
       '_maybeUpdateData(_selectedHostName)',
       '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
     ],
@@ -442,23 +442,20 @@ profile run can have multiple tools that present the performance profile as diff
       // Check if the plugin was created
       this._requestManager
           .request(tf_backend.getRouter().pluginsListing())
-          .then(this._canceller.cancellable(result => {
-            if (result.cancelled) {
-              return;
-            }
-            if (!('profile' in result.value)) {
+          .then(plugins => {
+            if (!(PLUGIN_NAME in plugins)) {
               // The plugin was not created
               this.$.initialDialog.openNoTensorFlowDialog();
-              this.set('_isAttached', false);
+              this.set('_isAvailable', false);
             } else {
               // The plugin was created
               this.$.initialDialog.closeDialog();
-              this.set('_isAttached', true);
+              this.set('_isAvailable', true);
             }
-          }));
+          });
     },
     detached: function() {
-      this.set('_isAttached', false);
+      this.set('_isAvailable', false);
     },
     _openCaptureProfileDialog: function() {
       this.$.captureProfileDialog.open();
@@ -484,8 +481,8 @@ profile run can have multiple tools that present the performance profile as diff
       this.$.toast.text = text;
       this.$.toast.open();
     },
-    _maybeInitializeDashboard: function(isAttached) {
-      if (this._initialized || !isAttached) {
+    _maybeInitializeDashboard: function(isAttached, isAvailable) {
+      if (this._initialized || !isAttached || !isAvailable) {
         // Either this dashboard is already initialized ... or we are not yet
         // ready to initialize.
         return;
@@ -704,10 +701,11 @@ profile run can have multiple tools that present the performance profile as diff
   });
 
   tf_tensorboard.registerDashboard({
-    plugin: 'profile',
+    plugin: PLUGIN_NAME,
     elementName: 'tf-profile-dashboard',
     isReloadDisabled: true,
   });
 
+  })();
 </script>
 </dom-module>

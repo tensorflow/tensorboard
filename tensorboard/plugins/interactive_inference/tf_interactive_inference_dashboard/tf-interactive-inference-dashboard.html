@@ -2130,6 +2130,10 @@ limitations under the License.
       }
     }
 
+    (function() {
+
+    const PLUGIN_NAME = 'whatif';
+
     Polymer({
       is: "tf-interactive-inference-dashboard",
       properties: {
@@ -2558,11 +2562,8 @@ limitations under the License.
         // Check if the plugin was created
         this._requestManager
             .request(tf_backend.getRouter().pluginsListing())
-            .then(this._canceller.cancellable(result => {
-              if (result.cancelled) {
-                return;
-              }
-              if (!('whatif' in result.value)) {
+            .then(plugins => {
+              if (!(PLUGIN_NAME in plugins)) {
                 // The plugin was not created
                 this.$.inferencesettings.close();
                 this.$.initialDialog.openNoTensorFlowDialog();
@@ -2571,7 +2572,7 @@ limitations under the License.
                 this.$.initialDialog.closeDialog();
                 resizer.call(dragResize);
               }
-            }));
+            });
       },
 
       settingsClicked_: function() {
@@ -5568,10 +5569,11 @@ limitations under the License.
     });
 
     tf_tensorboard.registerDashboard({
-      plugin: 'whatif',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-interactive-inference-dashboard',
       tabName: 'What-If Tool',
     });
 
+    })();
   </script>
 </dom-module>

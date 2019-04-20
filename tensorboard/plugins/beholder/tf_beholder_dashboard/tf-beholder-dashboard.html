@@ -336,7 +336,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
     "use strict";
     (function() {
 
-    const PLUGIN_NAME = 'beholder'
+    const PLUGIN_NAME = 'beholder';
 
     Polymer({
       is: 'tf-beholder-dashboard',
@@ -348,12 +348,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           value: () => new tf_backend.RequestManager(10, 0),
         },
 
-        _canceller: {
-          type: Object,
-          value: () => new tf_backend.Canceller(),
-        },
-
-        _isAttached: Boolean,
+        _isAvailable: Boolean,
 
         _values: {
           type: String,
@@ -489,20 +484,17 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         // Check if the plugin was created
         this._requestManager
             .request(tf_backend.getRouter().pluginsListing())
-            .then(this._canceller.cancellable(result => {
-              if (result.cancelled) {
-                return;
-              }
-              if (!('beholder' in result.value)) {
+            .then(plugins => {
+              if (!(PLUGIN_NAME in plugins)) {
                 // The plugin was not created
                 this.$.initialDialog.openNoTensorFlowDialog();
-                this.set('_isAttached', false);
+                this.set('_isAvailable', false);
               } else {
                 // The plugin was created
                 this.$.initialDialog.closeDialog();
-                this.set('_isAttached', true);
+                this.set('_isAvailable', true);
               }
-            }));
+            });
       },
 
       ready() {
@@ -510,7 +502,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
       },
 
       reload() {
-        if (this._isAttached) {
+        if (this._isAvailable) {
           const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
 
           this._requestManager.request(url).then(response => {
@@ -520,12 +512,13 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         }
       },
     });
-    })();
 
     tf_tensorboard.registerDashboard({
-      plugin: 'beholder',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-beholder-dashboard',
       shouldRemoveDom: true,
     });
+
+    })();
   </script>
 </dom-module>

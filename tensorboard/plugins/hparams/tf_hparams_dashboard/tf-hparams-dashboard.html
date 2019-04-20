@@ -34,6 +34,10 @@ limitations under the License.
   </template>
   <script>
     'use strict';
+    (function() {
+
+    const PLUGIN_NAME = 'hparams';
+
     Polymer({
       is: 'tf-hparams-dashboard',
       properties: {
@@ -42,7 +46,7 @@ limitations under the License.
           value: () => {
             return new tf.hparams.Backend(
                 /* apiUrl= */ tf_backend.getRouter().pluginRoute(
-                    /* pluginName= */ 'hparams',
+                    /* pluginName= */ PLUGIN_NAME,
                     /* route= */ ''),
                 new tf_backend.RequestManager(),
                 /* Use GETs if we're running in colab (due to b/126387106).
@@ -51,45 +55,40 @@ limitations under the License.
             )
           }
         },
-        _canceller: {
-          type: Object,
-          value: () => new tf_backend.Canceller(),
-        },
-        _isAttached: Boolean
+        _isAvailable: Boolean
       },
 
-      // This is called by the tensorboard web framework on attaching plugin.
       attached: function() {
         // Check if the plugin was created
         this._backend._requestManager
             .request(tf_backend.getRouter().pluginsListing())
-            .then(this._canceller.cancellable(result => {
-              if (result.cancelled) {
-                return;
-              }
-              if (!('hparams' in result.value)) {
+            .then(plugins => {
+              if (!(PLUGIN_NAME in plugins)) {
                 // The plugin was not created
                 this.$.initialDialog.openNoTensorFlowDialog();
-                this.set('_isAttached', false);
+                this.set('_isAvailable', false);
               } else {
                 // The plugin was created
                 this.$.initialDialog.closeDialog();
-                this.set('_isAttached', true);
+                this.set('_isAvailable', true);
               }
-            }));
+            });
       },
 
       // This is called by the tensorboard web framework to refresh the plugin.
       reload() {
-        if (this._isAttached) {
+        if (this._isAvailable) {
             this.$["hparams-main"].reload();
         }
       }
     });
+
     // Register the plugin main element with Tensorboard.
     tf_tensorboard.registerDashboard({
-      plugin: 'hparams',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-hparams-dashboard'
     });
+
+    })();
   </script>
 </dom-module>
