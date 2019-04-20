@@ -248,7 +248,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       },
 
       _allowLogScale(column) {
-        if (!this._isNumericColumn(column.index)) {
+        if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
           return false;
         }
         const [min, max] = tf.hparams.utils.numericColumnExtent(

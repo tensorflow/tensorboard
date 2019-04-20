@@ -207,7 +207,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                            error-message="Invalid input"
                            invalid="[[_pageNumberInput.invalid]]"
                            on-value-changed="_queryServer">
-                <div slot="suffix"> / [[_pageCountStr]]</div>
+                <div slot="suffix" class="page-suffix"> / [[_pageCountStr]]</div>
               </paper-input>
             </div>
             <div class="inline-element page-size-input">
@@ -304,6 +304,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
       }
       paper-listbox {
         max-height: 15em;
+      }
+      .page-suffix {
+        white-space: nowrap;
       }
     </style>
   </template>
