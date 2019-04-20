@@ -76,6 +76,12 @@ def tensorboard_python_workspace():
         build_file = str(Label("//third_party:werkzeug.BUILD")),
     )
 
+    # We use `mock==1.0.0` because later versions depend on `pbr`, which
+    # doesn't work well in a hermetic context (it tries to look up some
+    # global configuration files; see GitHub pull request #2132).
+    #
+    # This dependency can go away entirely once we drop Python 2 support
+    # and can just depend on `unittest.mock`.
     http_archive(
         name = "org_pythonhosted_mock",
         urls = [
