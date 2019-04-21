@@ -308,10 +308,9 @@ class TensorBoard(object):
 
 class TensorBoardServer(object):
   """Class for customizing TensorBoard WSGI app serving."""
-  __metaclass__ = ABCMeta
 
-  @abstractmethod
-  def __init__(self, wsgi_app, flags):
+  @six.add_metaclass
+  def __init__(self, wsgi_app, flags, metaclass=ABCMeta):
     """Create a flag-configured HTTP server for TensorBoard's WSGI app.
 
     Args:
@@ -320,13 +319,13 @@ class TensorBoardServer(object):
     """
     raise NotImplementedError()
 
-  @abstractmethod
-  def serve_forever(self):
+  @six.add_metaclass
+  def serve_forever(self, metaclass=ABCMeta):
     """Blocking call to start serving the TensorBoard server."""
     raise NotImplementedError()
 
-  @abstractmethod
-  def get_url(self):
+  @six.add_metaclass
+  def get_url(self, metaclass=ABCMeta):
     """Returns a URL at which this server should be reachable."""
     raise NotImplementedError()
 

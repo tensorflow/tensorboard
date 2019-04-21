@@ -44,12 +44,11 @@ class TBPlugin(object):
       name must only contain characters among [A-Za-z0-9_.-], and must
       be nonempty, or a ValueError will similarly be thrown.
   """
-  __metaclass__ = ABCMeta
-
+  
   plugin_name = None
 
-  @abstractmethod
-  def get_plugin_apps(self):
+  @six.add_metaclass
+  def get_plugin_apps(self, metaclass=ABCMeta):
     """Returns a set of WSGI applications that the plugin implements.
 
     Each application gets registered with the tensorboard app and is served
@@ -61,8 +60,8 @@ class TBPlugin(object):
     """
     raise NotImplementedError()
 
-  @abstractmethod
-  def is_active(self):
+  @six.add_metaclass
+  def is_active(self, metaclass=ABCMeta):
     """Determines whether this plugin is active.
 
     A plugin may not be active for instance if it lacks relevant data. If a
