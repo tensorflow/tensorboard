@@ -894,13 +894,20 @@ function extractOutputShapes(attr: Array<{key: string, value: any}>):
   for (let i = 0; i < attr.length; i++) {
     let {key, value} = attr[i];
     if (key === OUTPUT_SHAPES_KEY) {
-      if (!value.list.shape) {
+      let shapes = value.list.shape;
+      if (!shapes) {
         // The OUTPUT_SHAPES_KEY lacks a value. We know nothing about the shape.
         return null;
       }
 
+      if (shapes.length === undefined) {
+        // If a single shape exists, it will have been parsed into an object,
+        // not a list.
+        shapes = [shapes];
+      }
+
       // Map all output tensors into array of numbers denoting their shape.
-      let result = value.list.shape.map(shape => {
+      let result = shapes.map(shape => {
         if (shape.unknown_rank) {
           // This output tensor is of unknown rank. We don't know if it is a
           // scalar, or a tensor, or of what shape it is.
