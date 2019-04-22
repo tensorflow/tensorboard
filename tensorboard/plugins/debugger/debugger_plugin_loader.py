@@ -99,8 +99,9 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       # pylint: disable=g-import-not-at-top,unused-import
       import tensorflow
     except ImportError:
-      raise ImportError('To use the debugger plugin, you need to have '
-          ' TensorFlow installed:\n  pip install tensorflow')
+      raise ImportError(
+          'To use the debugger plugin, you need to have TensorFlow installed:\n'
+          '  pip install tensorflow')
     try:
       # pylint: disable=line-too-long,g-import-not-at-top
       from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
