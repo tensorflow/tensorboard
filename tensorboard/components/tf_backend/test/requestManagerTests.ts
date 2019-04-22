@@ -381,7 +381,8 @@ describe('backend', () => {
         this.stubbedFetch = sandbox.stub(window, 'fetch');
         this.clock = sandbox.useFakeTimers();
 
-        this.resolvesAfter = function(value: any, timeInMs: number): Promise<any> {
+        this.resolvesAfter = function(value: any, timeInMs: number):
+            Promise<any> {
           return new Promise((resolve) => {
             setTimeout(() => resolve(value), timeInMs);
           });
@@ -389,7 +390,8 @@ describe('backend', () => {
       });
 
       it('resolves', async function() {
-        this.stubbedFetch.returns(Promise.resolve(new Response('Success', {status: 200})));
+        this.stubbedFetch.returns(
+            Promise.resolve(new Response('Success', {status: 200})));
         const rm = new RequestManager();
 
         const response = await rm.fetch('foo');
@@ -398,7 +400,6 @@ describe('backend', () => {
         expect(response).to.have.property('status', 200);
         const body = await response.text();
         expect(body).to.equal('Success');
-
       });
 
       it('retries', async function() {

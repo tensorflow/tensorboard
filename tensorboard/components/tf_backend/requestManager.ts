@@ -156,7 +156,7 @@ export class RequestManager {
     return promise;
   }
 
-  public fetch(url: string, fetchOptions?: object): Promise<Response> {
+  public fetch(url: string, fetchOptions?: RequestInit): Promise<Response> {
     return new Promise((resolve, reject) => {
         const resolver = {resolve: resolve, reject: reject};
         this._queue.push(resolver);
