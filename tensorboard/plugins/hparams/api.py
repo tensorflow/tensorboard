@@ -117,6 +117,22 @@ class Experiment(object):
     )
 
 
+def experiment(experiment):
+  """Write a top-level experiment summary.
+
+  Args:
+    experiment: An `Experiment` value to write.
+
+  Returns:
+    `True` on success, or `False` if no summary was written because no
+    default summary writer was available.
+  """
+  if not isinstance(experiment, Experiment):
+    raise TypeError("type(experiment) is %r" % (type(experiment),))
+  raw_pb = experiment.summary_pb().SerializeToString()
+  return tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=0)
+
+
 class HParam(object):
   """A hyperparameter in an experiment.
 

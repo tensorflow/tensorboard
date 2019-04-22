@@ -155,6 +155,63 @@ class ExperimentTest(test.TestCase):
         expected_experiment_pb,
     )
 
+  def _assert_unique_summary(self, logdir, summary_pb):
+    """Test that `logdir` contains exactly one summary, `summary_pb`.
+
+    Specifically, `logdir` must be a directory containing exactly one
+    entry, which must be an events file of whose events exactly one is a
+    summary, which must be equal to `summary_pb`.
+
+    Args:
+      logdir: String path to a logdir.
+      summary_pb: A `summary_pb2.Summary` object.
+    """
+    files = os.listdir(logdir)
+    self.assertEqual(len(files), 1, files)
+    events_file = os.path.join(logdir, files[0])
+    for event in tf.compat.v1.train.summary_iterator(events_file):
+      if event.WhichOneof("what") != "summary":
+        continue
+      self.assertEqual(event.summary, summary_pb)
+      break
+    else:
+      self.fail("No summary data found")
+
+  @test_util.run_v2_only("Requires eager summary writing semantics.")
+  def test_write_experiment_v2(self):
+    experiment = hp.Experiment(
+        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
+        metrics=[hp.Metric("accuracy")],
+    )
+    logdir = os.path.join(self.get_temp_dir(), "logs")
+    with tf.compat.v2.summary.create_file_writer(logdir).as_default() as w:
+      self.assertTrue(hp.experiment(experiment))
+      w.close()
+    self._assert_unique_summary(logdir, experiment.summary_pb())
+
+  @test_util.run_v2_only("Requires eager summary writing semantics.")
+  def test_write_experiment_v2_no_default_writer(self):
+    experiment = hp.Experiment(
+        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
+        metrics=[hp.Metric("accuracy")],
+    )
+    self.assertFalse(hp.experiment(experiment))  # no writer
+
+  @test_util.run_v1_only("Requires graph-mode summary writing semantics.")
+  def test_write_experiment_v1(self):
+    experiment = hp.Experiment(
+        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
+        metrics=[hp.Metric("accuracy")],
+    )
+    logdir = os.path.join(self.get_temp_dir(), "logs")
+    with tf.compat.v1.Session() as sess:
+      with tf.compat.v2.summary.create_file_writer(logdir).as_default() as w:
+        with tf.compat.v2.summary.record_if(True):
+          tf.contrib.summary.initialize()
+          self.assertTrue(sess.run(hp.experiment(experiment)))
+          w.close()
+    self._assert_unique_summary(logdir, experiment.summary_pb())
+
 
 class IntIntervalTest(test.TestCase):
   def test_simple(self):
