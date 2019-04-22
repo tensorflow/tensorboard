@@ -83,6 +83,8 @@ on the `html` tag of your document.
 (function() {
   "use strict";
 
+  let googleChartsLoaded = false;
+ 
   Polymer({
     is: 'google-chart',
 
@@ -488,6 +490,10 @@ on the `html` tag of your document.
     },
 
     attached: function() {
+      if (googleChartsLoaded) {
+        return;
+      }
+      googleChartsLoaded = true;
       var url = "https://www.gstatic.com/charts/loader.js";
       var script = document.createElement('script');
       script.src = url;

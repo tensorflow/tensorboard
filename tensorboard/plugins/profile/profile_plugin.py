@@ -56,14 +56,17 @@ TOOLS = {
     'overview_page': 'overview_page.json',
     'memory_viewer': 'memory_viewer.json',
     'google_chart_demo': 'google_chart_demo.json',
+    'end_to_end': 'end_to_end.json',
 }
+
 
 # Tools that consume raw data.
 _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
                              'overview_page',
                              'memory_viewer',
-                             'google_chart_demo',])
+                             'google_chart_demo',
+                             'end_to_end',])
 
 def process_raw_trace(raw_trace):
   """Processes raw trace data and returns the UI data."""
@@ -359,6 +362,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     tool = request.args.get('tag')
     host = request.args.get('host')
+    if host is None:
+      host = ''
     run_dir = self._run_dir(run)
     # Profile plugin "run" is the last component of run dir.
     profile_run = os.path.basename(run_dir)

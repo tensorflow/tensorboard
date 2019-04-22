@@ -33,6 +33,8 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import plugin_asset_util
+from tensorboard.compat.proto import event_pb2
+from tensorboard.plugins.profile import end_to_end_helper
 from tensorboard.plugins.profile import profile_demo_data
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2
@@ -91,6 +93,7 @@ def dump_data(logdir):
       shutil.copyfile(
           'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
           os.path.join(run_dir, 'google_chart_demo.json'))
+      end_to_end_helper.create_demo(run_dir)
 
   # Unsupported tool data should not be displayed.
   run_dir = os.path.join(plugin_logdir, 'empty')
