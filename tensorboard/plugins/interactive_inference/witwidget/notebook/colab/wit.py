@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import json
 import tensorflow as tf
 from IPython import display
 from google.colab import output
-from google.protobuf import json_format
-from tensorboard.plugins.interactive_inference.utils import inference_utils
 from witwidget.notebook import base
 
 
@@ -182,7 +179,7 @@ class WitWidget(base.WitWidgetBase):
       config_builder: WitConfigBuilder object containing settings for WIT.
       height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
-    base.WitWidgetBase.__init__(self, config_builder, height)
+    base.WitWidgetBase.__init__(self, config_builder)
     # Add this instance to the static instance list.
     WitWidget.widgets.append(self)
 
@@ -206,7 +203,7 @@ class WitWidget(base.WitWidgetBase):
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
   def infer(self):
-    super.infer_impl(self)
+    base.WitWidgetBase.infer_impl(self)
     output.eval_js("""inferenceCallback('{inferences}')""".format(
       inferences=json.dumps(self.inferences)))
 
@@ -227,18 +224,17 @@ class WitWidget(base.WitWidgetBase):
     self._generate_sprite()
 
   def get_eligible_features(self):
-    examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    features_list = inference_utils.get_eligible_features(
-      examples, 10)
+    features_list = base.WitWidgetBase.get_eligible_features_impl(self)
     output.eval_js("""eligibleFeaturesCallback('{features_list}')""".format(
       features_list=json.dumps(features_list)))
 
   def infer_mutants(self, info):
-    json_mapping = super.infer_mutants_impl(self, info)
+    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
     output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
       json_mapping=json.dumps(json_mapping)))
 
   def _generate_sprite(self):
-    sprite = super.create_sprite(self)
+    sprite = base.WitWidgetBase.create_sprite(self)
     if sprite is not None:
+      print(sprite)
       output.eval_js("""spriteCallback('{sprite}')""".format(sprite=sprite))

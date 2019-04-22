@@ -14,22 +14,26 @@
 
 import base64
 import json
+import googleapiclient.discovery
 import tensorflow as tf
+import sys
 from IPython import display
-from google.colab import output
 from google.protobuf import json_format
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
+# Constants used in mutant inference generation.
+NUM_MUTANTS_TO_GENERATE = 10
+NUM_EXAMPLES_FOR_MUTANT_ANALYSIS = 50
+
 
 class WitWidgetBase(object):
-  """WIT widget base class."""
+  """WIT widget base class for common code between Jupyter and Colab."""
 
-  def __init__(self, config_builder, height=1000):
-    """Constructor for colab notebook WitWidget.
+  def __init__(self, config_builder):
+    """Constructor for WitWidgetBase.
 
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
-      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
     tf.logging.set_verbosity(tf.logging.WARN)
     config = config_builder.build()
@@ -61,6 +65,12 @@ class WitWidgetBase(object):
 
     self.config = copied_config
 
+    # If using CMLE for prediction, set the correct custom prediction functions.
+    if self.config.get('use_cmle'):
+      self.custom_predict_fn = self._predict_cmle_model
+    if self.config.get('use_cmle_compare'):
+      self.compare_custom_predict_fn = self._predict_cmle_compare_model
+
   def _get_element_html(self):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
@@ -77,6 +87,7 @@ class WitWidgetBase(object):
     return ex
 
   def infer_impl(self):
+    """Performs inference on examples that require inference."""
     indices_to_infer = sorted(self.updated_example_indices)
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
@@ -117,30 +128,8 @@ class WitWidgetBase(object):
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
       'label_vocab': self.config.get('label_vocab')}
 
-  def delete_example(self, index):
-    self.examples.pop(index)
-    self.updated_example_indices = set([
-      i if i < index else i - 1 for i in self.updated_example_indices])
-    self._generate_sprite()
-
-  def update_example(self, index, example):
-    self.updated_example_indices.add(index)
-    self.examples[index] = example
-    self._generate_sprite()
-
-  def duplicate_example(self, index):
-    self.examples.append(self.examples[index])
-    self.updated_example_indices.add(len(self.examples) - 1)
-    self._generate_sprite()
-
-  def get_eligible_features(self):
-    examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    features_list = inference_utils.get_eligible_features(
-      examples, 10)
-    output.eval_js("""eligibleFeaturesCallback('{features_list}')""".format(
-      features_list=json.dumps(features_list)))
-
   def infer_mutants_impl(self, info):
+    """Performs mutant inference on specified examples."""
     example_index = int(info['example_index'])
     feature_name = info['feature_name']
     examples = (self.examples if example_index == -1
@@ -182,7 +171,15 @@ class WitWidgetBase(object):
     return inference_utils.mutant_charts_for_feature(
       examples, feature_name, serving_bundles, viz_params)
 
+  def get_eligible_features_impl(self):
+    """Returns information about features eligible for mutant inference."""
+    examples = [self.json_to_proto(ex) for ex in self.examples[
+      0:NUM_EXAMPLES_FOR_MUTANT_ANALYSIS]]
+    return inference_utils.get_eligible_features(
+      examples, NUM_MUTANTS_TO_GENERATE)
+
   def create_sprite(self):
+    """Returns an encoded image of thumbnails for image examples."""
     # Generate a sprite image for the examples if the examples contain the
     # standard encoded image feature.
     if not self.examples:
@@ -197,6 +194,76 @@ class WitWidgetBase(object):
         for ex in self.examples]
       encoded = base64.b64encode(
         inference_utils.create_sprite_image(example_strings))
+      if sys.version_info >= (3, 0):
+        encoded = encoded.decode('utf-8')
       return 'data:image/png;base64,{}'.format(encoded)
     else:
       return None
+
+  def _json_from_tf_examples(self, tf_examples):
+    json_exs = []
+    for ex in tf_examples:
+      json_ex = {}
+      # Strip out any explicitly-labeled target feature from the example.
+      # This is needed because CMLE models that accept JSON cannot handle when
+      # non-input features are provided as part of the object to run prediction
+      # on.
+      for feat in ex.features.feature:
+        if feat == self.config.get('target_feature'):
+          continue
+        if ex.features.feature[feat].HasField('int64_list'):
+          json_ex[feat] = ex.features.feature[feat].int64_list.value[0]
+        elif ex.features.feature[feat].HasField('float_list'):
+          json_ex[feat] = ex.features.feature[feat].float_list.value[0]
+        else:
+          json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
+      json_exs.append(json_ex)
+    return json_exs
+
+  def _predict_cmle_model(self, examples):
+    return self._predict_cmle_impl(
+      examples, self.config.get('inference_address'),
+      self.config.get('model_name'), self.config.get('model_signature'))
+
+  def _predict_cmle_compare_model(self, examples):
+    return self._predict_cmle_impl(
+      examples, self.config.get('inference_address_2'),
+      self.config.get('model_name_2'), self.config.get('model_signature_2'))
+
+  def _predict_cmle_impl(self, examples, project, model, version):
+    """Custom prediction function for running inference through CMLE."""
+    service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
+    name = 'projects/{}/models/{}'.format(project, model)
+    if version is not None:
+      name += '/versions/{}'.format(version)
+
+    # Properly package the examples to send for prediction.
+    if self.config.get('uses_json_input'):
+      examples_for_predict = self._json_from_tf_examples(examples)
+    else:
+      examples_for_predict = [{'b64': base64.b64encode(
+        example.SerializeToString()).decode('utf-8') }
+        for example in examples]
+
+    response = service.projects().predict(
+        name=name,
+        body={'instances': examples_for_predict}
+    ).execute()
+    if 'error' in response:
+      raise RuntimeError(response['error'])
+
+    # Get the key to extract the prediction results from.
+    results_key = self.config.get('predict_output_tensor')
+    if results_key is None:
+      if self.config.get('model_type') == 'classification':
+        results_key = 'probabilities'
+      else:
+        results_key = 'outputs'
+
+    # Parse the results from the response and return them.
+    if self.config.get('model_type') == 'classification':
+      return [pred[results_key] for pred in response['predictions']]
+    else:
+      # For regression models, flatten the final dimension as WIT expects
+      # a 1-D list of numbers for results from all predicted examples.
+      return [pred[results_key][0] for pred in response['predictions']]

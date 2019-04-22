@@ -12,20 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import json
 import ipywidgets as widgets
 import tensorflow as tf
 from IPython.core.display import display, HTML
 from ipywidgets import Layout
-from google.protobuf import json_format
 from traitlets import Dict
 from traitlets import Int
 from traitlets import List
 from traitlets import observe
 from traitlets import Unicode
 from traitlets import Set
-from tensorboard.plugins.interactive_inference.utils import inference_utils
 from witwidget.notebook import base
 
 
@@ -60,7 +56,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
       height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
     widgets.DOMWidget.__init__(self, layout=Layout(height='%ipx' % height))
-    base.WitWidgetBase.__init__(self, config_builder, height)
+    base.WitWidgetBase.__init__(self, config_builder)
 
     # Ensure the visualization takes all available width.
     display(HTML("<style>.container { width:100% !important; }</style>"))
@@ -76,9 +72,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')
   def _get_eligible_features(self, change):
-    examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    features_list = inference_utils.get_eligible_features(
-      examples, 10)
+    features_list = base.WitWidgetBase.get_eligible_features_impl(self)
     self.eligible_features = features_list
 
   @observe('infer_mutants')
