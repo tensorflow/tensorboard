@@ -91,10 +91,12 @@ Polymer({
   drawLayers: function(svg: any, layers: any, xScale: any, yScale: any,
                        colorScale: any) {
     let parent = this;
-    let layer = svg.selectAll('.layer').data(layers).enter().append('g')
+    let layer = svg.selectAll('.layer').data(layers);
+    layer.enter().append('g').merge(layer)
         .attr('class', 'layer')
-        .style('fill', (d, i) => colorScale(i));
-    layer.selectAll('rect').data((d) => d).enter().append('rect')
+        .style('fill', (d, i) => colorScale(i))
+        .selectAll('rect').data((d) => d)
+        .enter().append('rect')
         .attr('width', xScale.bandwidth())
         .attr('y', (d) => yScale(d[1]))
         .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
@@ -134,9 +136,8 @@ Polymer({
         .attr('font-size', FONT_SIZE)
         .attr('text-anchor', 'start')
         .selectAll('g')
-        .data(labels.slice())
-        .enter()
-        .append('g')
+        .data(labels.slice());
+    legend.enter().append('g').merge(legend)
         .attr('transform',
             (d, i) => 'translate(' +
                 (i * LEGEND_WIDTH -

@@ -326,7 +326,9 @@ Polymer({
    */
   drawLabels: function(svg: any, xdims: number[], ydims: number[]) {
     // Draw label on x axis.
-    svg.selectAll('.xLabel').data(xdims).enter().append('text').text((d) => d)
+    let xLabel = svg.selectAll('.xLabel').data(xdims);
+    xLabel.enter().append('text').merge(xLabel)
+        .text((d) => d)
         .attr('x', (d, i) => this.getChipXLoc(
                        Math.floor(i / this._hostXStride),
                            i % this._hostXStride))
@@ -336,7 +338,9 @@ Polymer({
         .attr('class', 'axis');
 
     // Draw label on y axis.
-    svg.selectAll('.yLabel').data(ydims).enter().append('text').text((d) => d)
+    let yLabel = svg.selectAll('.yLabel').data(ydims);
+    yLabel.enter().append('text').merge(yLabel)
+        .text((d) => d)
         .attr('x', 0)
         .attr('y', (d, i) => this.getChipYLoc(
                        Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
@@ -349,7 +353,7 @@ Polymer({
    */
   drawHostCards: function(svg, data, gridWidth: number, gridHeight: number) {
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
-    cards.enter().append('rect')
+    cards.enter().append('rect').merge(cards)
         .attr('x', (d) => d.xdim * gridWidth)
         .attr('y', (d) => d.ydim * gridHeight)
         .attr('rx', 4 * gridWidth / gridHeight)
@@ -361,7 +365,6 @@ Polymer({
         .style('fill', 'F0F0F0')
         .style('stroke', 'black')
         .style('stroke-width', 1)
-        .merge(cards)
         .transition()
         .duration(1000);
     cards.exit().remove();
@@ -372,7 +375,7 @@ Polymer({
   drawNodeCards: function(svg: any, data: Array<TopoData>, colorScale: any) {
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
     let parent = this;
-    cards.enter().append('rect')
+    cards.enter().append('rect').merge(cards)
         .attr('id', (d) => 'rid' + d.rid)
         .attr('x', (d) => {
           return this.getNodeXLoc(
@@ -393,7 +396,6 @@ Polymer({
         .style('stroke', 'black')
         .style('stroke-width', 1)
         .style('fill', (d) => colorScale(d.value / d.total))
-        .merge(cards)
         .on('mouseover', function(d) {
             // highlight text
             d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
@@ -424,14 +426,13 @@ Polymer({
     let links = this._gLink.selectAll('.link').data(linkData);
 
     // attach the arrow from defs
-    links.enter().append('svg:path')
+    links.enter().append('svg:path').merge(links)
         .attr('id', (d) => 'cid' + d.channelId)
         .attr('stroke-width', 2)
         .attr('stroke', 'red')
         .attr('fill', 'none')
         .attr('marker-end', 'url(#arrow)')
         .style('visibility', 'hidden')
-        .merge(links)
         .attr('d', (d) => this.linkToPath(d));
 
     // Handle deleted links.
@@ -493,7 +494,8 @@ Polymer({
     const legendElementWidth = CHIP_GRID_SIZE * 2;
     let legend = svg.selectAll('.legend').data(
         [0].concat(colorScale.quantiles()), (d) => d);
-    let legendG = legend.enter().append('g').attr('class', 'legend');
+    let legendG = legend.enter().append('g').merge(legend)
+                      .attr('class', 'legend');
     legendG.append('rect')
         .attr('x', (d, i) => legendElementWidth * i)
         .attr('y', height)
