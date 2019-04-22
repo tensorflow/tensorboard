@@ -51,6 +51,8 @@ through tpu profiler analysis grpc. The grpc channel is not secured.\
     try:
       # pylint: disable=g-import-not-at-top,unused-import
       import tensorflow
+      # pylint: disable=g-import-not-at-top,unused-import
+      from tensorflow.python.eager import profiler_client
     except ImportError:
       return
     # pylint: disable=g-import-not-at-top
