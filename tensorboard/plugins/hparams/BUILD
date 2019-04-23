@@ -164,9 +164,6 @@ py_test(
     name = "api_test",
     srcs = ["api_test.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":api",
         ":metadata",
