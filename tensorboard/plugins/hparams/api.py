@@ -205,6 +205,16 @@ class IntInterval(Domain):
   """A domain that takes on all integer values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
+    """Create an `IntInterval`.
+
+    Args:
+      min_value: The lower bound (inclusive) of the interval.
+      max_value: The upper bound (inclusive) of the interval.
+
+    Raises:
+      TypeError: If `min_value` or `max_value` is not an `int`.
+      ValueError: If `min_value > max_value`.
+    """
     if not isinstance(min_value, int):
       raise TypeError("min_value must be an int: %r" % (min_value,))
     if not isinstance(max_value, int):
@@ -242,6 +252,16 @@ class RealInterval(Domain):
   """A domain that takes on all real values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
+    """Create a `RealInterval`.
+
+    Args:
+      min_value: The lower bound (inclusive) of the interval.
+      max_value: The upper bound (inclusive) of the interval.
+
+    Raises:
+      TypeError: If `min_value` or `max_value` is not an `float`.
+      ValueError: If `min_value > max_value`.
+    """
     if not isinstance(min_value, float):
       raise TypeError("min_value must be a float: %r" % (min_value,))
     if not isinstance(max_value, float):
