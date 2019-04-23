@@ -22,9 +22,6 @@ from __future__ import print_function
 
 import glob
 import os
-import shutil
-import tempfile
-import time
 from tensorboard.summary.writer.event_file_writer import EventFileWriter
 from tensorboard.summary.writer.event_file_writer import _AsyncWriter
 from tensorboard.compat.proto import event_pb2
@@ -34,8 +31,6 @@ from tensorboard import test as tb_test
 
 
 class EventFileWriterTest(tb_test.TestCase):
-  def __init__(self, *args, **kwargs):
-    super(EventFileWriterTest, self).__init__(*args, **kwargs)
 
   def test_event_file_writer_roundtrip(self):
     _TAGNAME = 'dummy'
@@ -61,23 +56,18 @@ class EventFileWriterTest(tb_test.TestCase):
     event_files = sorted(glob.glob(os.path.join(logdir, '*')))
     self.assertEqual(event_files[0].split('.')[-1], 'event_horizon')
 
+  def test_async_writer_without_write(self):
+    logdir = self.get_temp_dir()
+    w = EventFileWriter(logdir)
+    w.close()
+    event_files = sorted(glob.glob(os.path.join(logdir, '*')))
+    r = PyRecordReader_New(event_files[0])
+    r.GetNext()
+    s = event_pb2.Event.FromString(r.record())
+    self.assertEqual(s.file_version, "brain.Event:2")
+
 
 class AsyncWriterTest(tb_test.TestCase):
-  def __init__(self, *args, **kwargs):
-    super(AsyncWriterTest, self).__init__(*args, **kwargs)
-
-  def test_async_writer_without_write(self):
-    for i in range(100):
-      logdir = self.get_temp_dir()
-      w = EventFileWriter(logdir)
-      w.close()
-      event_files = sorted(glob.glob(os.path.join(logdir, '*')))
-      r = PyRecordReader_New(event_files[0])
-      r.GetNext()
-      event = r.record()
-      s = event_pb2.Event()
-      s.ParseFromString(event)
-      self.assertEqual(s.file_version, "brain.Event:2")
 
   def test_async_writer_write_once(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_write_once")
@@ -110,83 +100,27 @@ class AsyncWriterTest(tb_test.TestCase):
     with open(filename, 'rb') as f:
       self.assertEqual(f.read(), bytes_to_write * repeat)
 
-  # write         ...................................
-  # flush         ---------^---------^---------^           (^: flush -: idle)
-  # #obj in queue 12345678901234567890  (expected, because the IO overhead)
-  # Make strict comparion for the flushing result is possible, but it requires accessing
-  # the queue inside the async writer. So I write the test to simulate real write and flush.
-  # In my experiment, the tolerance can be set as high to roughly to 0.95.
-  # I set 0.9 here in case the CI is too slow.
-
-  def test_async_writer_auto_flushing(self):
-    filename = os.path.join(self.get_temp_dir(), "async_writer_auto_flushing")
-    flush_timer = 1
-    tolerance = 0.9  # The undelying writer need time to complete.
-    w = _AsyncWriter(open(filename, 'wb'), max_queue_size=500, flush_secs=flush_timer)
-    random_bytes = bytearray(os.urandom(64))
-    repeat = 100
-    for i in range(repeat):
-      w.write(random_bytes)
-      time.sleep(0.1)
-      if i % (flush_timer * 10) == 0:
-        with open(get_copy_by_OS(filename), 'rb') as f:
-          nbytes = len(f.read())
-          # print(i, nbytes, i * len(random_bytes) * tolerance, nbytes / (1+i * len(random_bytes)))
-          self.assertGreaterEqual(nbytes, i * len(random_bytes) * tolerance)
-    w.close()
-
-    # make sure all data is written
-    with open(filename, 'rb') as f:
-      self.assertEqual(f.read(), random_bytes * repeat)
-
-  def test_async_writer_flush_before_flush_secs(self):
-    filename = os.path.join(self.get_temp_dir(), "async_writer_flush_before_flush_secs")
-    w = _AsyncWriter(open(filename, 'wb'))
-    random_bytes = bytearray(os.urandom(64))
-    w.write(random_bytes)
-    w.flush()  # flush() is implicitly called by close()
-    with open(filename, 'rb') as f:
-      self.assertEqual(f.read(), random_bytes)
-    w.write(random_bytes)
-    with open(filename, 'rb') as f:  # without flush, the file content should be the same.
-      self.assertEqual(f.read(), random_bytes)
-    w.flush()
-    with open(filename, 'rb') as f:  # after flush, the file content will be updated.
-      self.assertEqual(f.read(), random_bytes + random_bytes)
-    w.write(random_bytes)
-    with open(filename, 'rb') as f:  # without flush, the file content should be the same.
-      self.assertEqual(f.read(), random_bytes + random_bytes)
-    w.close()
-    with open(filename, 'rb') as f:  # after close, new contents flushes implicitly.
-      self.assertEqual(f.read(), random_bytes + random_bytes + random_bytes)
-
   def test_async_writer_close_triggers_flush(self):
     filename = os.path.join(self.get_temp_dir(), "async_writer_close_triggers_flush")
     w = _AsyncWriter(open(filename, 'wb'))
-    random_bytes = bytearray(os.urandom(64))
-    w.write(random_bytes)
+    bytes_to_write = b"x" * 64
+    w.write(bytes_to_write)
     w.close()
     with open(filename, 'rb') as f:
-      self.assertEqual(f.read(), random_bytes)
+      self.assertEqual(f.read(), bytes_to_write)
 
   def test_write_after_async_writer_closed(self):
     filename = os.path.join(self.get_temp_dir(), "write_after_async_writer_closed")
     w = _AsyncWriter(open(filename, 'wb'))
-    random_bytes = bytearray(os.urandom(64))
-    w.write(random_bytes)
+    bytes_to_write = b"x" * 64
+    w.write(bytes_to_write)
     w.close()
 
     with self.assertRaises(IOError):
-      w.write(random_bytes)
+      w.write(bytes_to_write)
     # nothing is written to the file after close
     with open(filename, 'rb') as f:
-      self.assertEqual(f.read(), random_bytes)
-
-
-def get_copy_by_OS(oldfilename):
-  newfilename = tempfile.NamedTemporaryFile().name
-  shutil.copy(oldfilename, newfilename)
-  return newfilename
+      self.assertEqual(f.read(), bytes_to_write)
 
 
 if __name__ == '__main__':

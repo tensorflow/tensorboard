@@ -50,8 +50,7 @@ class EventFileWriter(object):
 
     The `EventFileWriter` class creates an event file in the specified directory,
     and asynchronously writes Event protocol buffers to the file. The Event file
-    is encoded using the tfrecord format, which is similar to RecordIO. The instance is
-    usually created and managed by `torch.utils.tensorboard.FileWriter` in pytorch.
+    is encoded using the tfrecord format, which is similar to RecordIO.
     """
 
     def __init__(self, logdir, max_queue_size=10, flush_secs=120, filename_suffix=''):
@@ -73,7 +72,7 @@ class EventFileWriter(object):
         if not os.path.exists(logdir):
             os.makedirs(logdir)
         self._file_name = os.path.join(logdir, "events.out.tfevents.%010d.%s.%s.%s" %
-            (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix
+            (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix  # noqa E128
         self._general_file_writer = open(self._file_name, 'wb')
         self._async_writer = _AsyncWriter(RecordWriter(self._general_file_writer), max_queue_size, flush_secs)
 
@@ -114,14 +113,14 @@ class EventFileWriter(object):
 
 
 class _AsyncWriter(object):
-    '''Writes bytes to an file.'''
+    '''Writes bytes to a file.'''
 
     def __init__(self, record_writer, max_queue_size=20, flush_secs=120):
-        """Writes bytes to an file asynchronously.
+        """Writes bytes to a file asynchronously.
         An instance of this class holds a queue to keep the incoming data temporarily.
         Data passed to the `write` function will be put to the queue and the function
         returns immediately. This class also maintains a thread to write data in the
-        queue to disk. The first initialization paremeter is an instance of
+        queue to disk. The first initialization parameter is an instance of
         `tensorboard.summary.record_writer` which computes the CRC checksum and then write
         the combined result to the disk. So we use an async approach to improve performance.
 
@@ -140,9 +139,9 @@ class _AsyncWriter(object):
 
     def write(self, bytestring):
         '''Enqueue the given bytes to be written asychronously'''
-        if self._closed:
-            raise IOError('Writer is closed')
         with self._lock:
+            if self._closed:
+                raise IOError('Writer is closed')
             self._byte_queue.put(bytestring)
 
     def flush(self):
@@ -150,6 +149,8 @@ class _AsyncWriter(object):
         Block until all the above bytestring are written.
         '''
         with self._lock:
+            if self._closed:
+                raise IOError('Writer is closed')
             self._byte_queue.join()
             self._writer.flush()
 

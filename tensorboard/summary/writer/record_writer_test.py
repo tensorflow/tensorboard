@@ -27,15 +27,13 @@ from tensorboard import test as tb_test
 
 
 class RecordWriterTest(tb_test.TestCase):
-  def __init__(self, *args, **kwargs):
-    super(RecordWriterTest, self).__init__(*args, **kwargs)
 
   def test_expect_bytes_written(self):
     filename = os.path.join(self.get_temp_dir(), "expect_bytes_written")
     byte_len = 64
     w = RecordWriter(open(filename, 'wb'))
-    random_bytes = bytearray(os.urandom(byte_len))
-    w.write(random_bytes)
+    bytes_to_write = b"x" * byte_len
+    w.write(bytes_to_write)
     w.close()
     with open(filename, 'rb') as f:
       self.assertEqual(len(f.read()), (8 + 4 + byte_len + 4))  # uint64+uint32+data+uint32
@@ -68,8 +66,8 @@ class RecordWriterTest(tb_test.TestCase):
     byte_len = 64
     Bytes_io = six.BytesIO()
     w = RecordWriter(Bytes_io)
-    random_bytes = bytearray(os.urandom(byte_len))
-    w.write(random_bytes)
+    bytes_to_write = b"x" * byte_len
+    w.write(bytes_to_write)
     self.assertEqual(len(Bytes_io.getvalue()), (8 + 4 + byte_len + 4))  # uint64+uint32+data+uint32
 
 
