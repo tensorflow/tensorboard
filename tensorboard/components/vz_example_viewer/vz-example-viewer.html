@@ -123,45 +123,34 @@ limitations under the License.
         --iron-autogrow-textarea: {
           font-size: 14px;
           color: #34A853;
+          font-weight: 500;
         }
       }
 
       .value-pill {
         text-align: left;
-        border-radius: 18px;
+        border-radius: 4px;
         margin: 4px;
-        text-overflow: ellipsis;
         padding: 4px 8px;
         border: 1px solid #FFFFFF;
         color: #3C4043;
       }
 
       .value-pill:hover {
-        /* border: 1px solid #ffeb3b; */
         background:#f8f9fa;
+        border: 1px solid #ff0000;
       }
 
       .value-pill:focus {
         background: white;
         border: 1px solid #ffeb3b;
-        outline: none;
       }
 
       .value-compare {
         text-align: left;
         border-radius: 4px;
-        text-overflow: ellipsis;
         padding: 4px 8px;
-        border: none;
-      }
-
-      .value-different {
-        color: #34A853;
-        font-weight: 500;
-      }
-
-      .value-same {
-        color: #5F6368;
+        border: 1px solid #FFFFFF;
       }
 
       input[type=number]::-webkit-inner-spin-button,
@@ -194,6 +183,7 @@ limitations under the License.
         max-width: 300px;
         min-width: 150px;
         font-size: 14px;
+        margin-top: 4px;
         color: #3C4043;
         line-height: 1.6em;
         text-overflow: ellipsis;
