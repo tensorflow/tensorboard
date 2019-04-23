@@ -145,6 +145,31 @@ var tf_backend;
             });
             return promise;
         };
+        RequestManager.prototype.fetch = function (url, fetchOptions) {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                var resolver = { resolve: resolve, reject: reject };
+                _this._queue.push(resolver);
+                _this.launchRequests();
+            }).then(function () {
+                var numTries = 1;
+                return new Promise(function (resolve) {
+                    var retryFetch = function () {
+                        fetch(url, fetchOptions).then(function (response) {
+                            if (!response.ok && _this._maxRetries > numTries) {
+                                numTries++;
+                                retryFetch();
+                                return;
+                            }
+                            resolve(response);
+                            _this._nActiveRequests--;
+                            _this.launchRequests();
+                        });
+                    };
+                    retryFetch();
+                });
+            });
+        };
         RequestManager.prototype.clearQueue = function () {
             while (this._queue.length > 0) {
                 this._queue.pop().reject(new RequestCancellationError('Request cancelled by clearQueue'));
