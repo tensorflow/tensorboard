@@ -87,7 +87,7 @@ by default. The user can select a different run from a dropdown menu.
           out-graph="{{_graph}}"
           out-stats="{{_stats}}"
           progress="{{_progress}}"
-          out-hierarchy-params="{{_hierarchyParams}}"
+          hierarchy-params="[[_hierarchyParams]]"
           compatibility-provider="[[_compatibilityProvider]]"
     ></tf-graph-loader>
     <tf-graph-board id="graphboard"
@@ -238,7 +238,11 @@ Polymer({
     _selection: {
       type: Object,
     },
-    _compatibilityProvider: Object
+    _compatibilityProvider: Object,
+    _hierarchyParams: {
+      type: Object,
+      value: () => tf.graph.hierarchy.DefaultHierarchyParams,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
