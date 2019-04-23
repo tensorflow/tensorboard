@@ -77,7 +77,7 @@ limitations under the License.
         display: block;
         padding: 8px;
         width: fit-content;
-        border: 1px solid lightgrey;
+        border: 1px solid #DADCE0;
       }
 
       .hide-saliency-controls {
@@ -87,8 +87,6 @@ limitations under the License.
       .outer {
         width: 100%;
         overflow: auto;
-        margin: 5px;
-        border-top: 1px solid lightgrey;
       }
 
       .image {
@@ -130,14 +128,17 @@ limitations under the License.
 
       .value-pill {
         text-align: left;
-        border-radius: 4px;
-        border: 1px solid transparent;
+        border-radius: 18px;
+        margin: 4px;
+        text-overflow: ellipsis;
+        padding: 4px 8px;
+        border: 1px solid #FFFFFF;
         color: #3C4043;
       }
 
       .value-pill:hover {
-        border: 1px solid #ffeb3b;
-        background: #FAFAFB;
+        /* border: 1px solid #ffeb3b; */
+        background:#f8f9fa;
       }
 
       .value-pill:focus {
@@ -149,7 +150,18 @@ limitations under the License.
       .value-compare {
         text-align: left;
         border-radius: 4px;
-        border: 1px solid transparent;
+        text-overflow: ellipsis;
+        padding: 4px 8px;
+        border: none;
+      }
+
+      .value-different {
+        color: #34A853;
+        font-weight: 500;
+      }
+
+      .value-same {
+        color: #5F6368;
       }
 
       input[type=number]::-webkit-inner-spin-button,
@@ -171,36 +183,42 @@ limitations under the License.
 
       .feature-name {
         display: flex;
-        padding-left: 5px;
-        border-left: 1px solid lightgrey;
-        border-right: 1px solid lightgrey;
-        border-bottom: 1px solid lightgrey;
+        padding-left: 4px;
+        margin: 4px 20px 4px 8px;
         justify-content: space-between;
+        color:#80868b;
       }
 
       .feature-name-text {
-        margin-top: 8px;
         width: 300px;
         max-width: 300px;
-        min-width: 300px;
+        min-width: 150px;
         font-size: 14px;
+        color: #3C4043;
+        line-height: 1.6em;
+        text-overflow: ellipsis;
         white-space: pre-wrap;
         word-wrap: break-word;
-        color: #3C4043;
+        padding-right: 8px;
       }
 
       .feature-name-header-text {
         width: 300px;
         max-width: 300px;
-        min-width: 300px;
+        min-width: 150px;
+        color: #202124;
+        font-size: 12px;
+        line-height: 1.8em;
+        text-overflow: ellipsis;
         white-space: pre-wrap;
         word-wrap: break-word;
-        color: #80868B;
-        font-size: 12px;
       }
 
       .feature-name.feature-name-header {
-        padding: 4px 0 4px 5px;
+        padding: 4px 4px 0px 4px;
+        background: #f8f9fa;
+        margin: 0px;
+        border-bottom: 1px solid #e8eaed;
       }
 
       .slider {
@@ -239,11 +257,11 @@ limitations under the License.
 
       .delete-value-button {
         position: absolute;
-        background: #ffeb3b;
+        background: #ffe603;
         color: #5F6368;
-        border-radius: 10px;
-        max-width: 20px;
-        max-height: 20px;
+        border-radius: 12px;
+        max-width: 24px;
+        max-height: 24px;
         padding: 0;
         margin-top: 2px;
         opacity: 1;
@@ -258,11 +276,11 @@ limitations under the License.
       }
 
       .delete-feature-button {
-        max-height: 15px;
-        max-width: 15px;
+        max-height: 20px;
+        max-width: 20px;
         padding: 0;
-        margin-left: 5px;
-        margin-top: 1px;
+        margin-left: 4px;
+        margin-top: 0px;
       }
 
       .add-value-button {
@@ -288,7 +306,7 @@ limitations under the License.
       }
 
       .imagecard {
-        margin: 5px 2px;
+        margin: 4px;
       }
 
       .image-scale-button {
@@ -311,7 +329,7 @@ limitations under the License.
 
       .image-bottom-bar {
         width: 100%;
-        background: gray;
+        background: #3C4043;
       }
 
       .image-upload-input {
@@ -325,8 +343,9 @@ limitations under the License.
       .value-header-text {
         min-width: 130px;
         width: 130px;
-        color: #80868B;
+        color: #202124;
         font-size: 12px;
+        line-height: 1.8em;
       }
 
       paper-dialog {
@@ -335,7 +354,7 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid lightgray;
+        border: 1px solid #DADCE0;
         color: var(--tb-orange-dark);
         font-size: 14px;
         font-weight: 500;
@@ -345,15 +364,15 @@ limitations under the License.
       }
 
       .control-button[disabled] {
-        color: lightgray;
+        color: #DADCE0;
       }
 
       .value-text {
-        border-bottom: 4px solid #ffeb3b;
+        border-bottom: 2px solid #ffeb3b;
       }
 
       .compare-value-text {
-        border-bottom: 4px solid #34A853;
+        border-bottom: 2px solid #34A853;
       }
     </style>
     <div class="outer">
@@ -363,7 +382,7 @@ limitations under the License.
         </paper-input>
       </template>
       <div class="feature-name feature-name-header">
-        <div class="feature-name-header-text">Feature name</div>
+        <div class="feature-name-header-text">Feature</div>
         <div class="value-pills-holder flex-controls value-header-text">
           <div class="value-text">Value(s)</div>
         </div>
