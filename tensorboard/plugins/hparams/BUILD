@@ -162,6 +162,7 @@ py_library(
 
 py_test(
     name = "api_test",
+    size = "small",
     srcs = ["api_test.py"],
     srcs_version = "PY2AND3",
     deps = [
@@ -173,7 +174,6 @@ py_test(
         "@org_pythonhosted_six",
     ],
 )
-
 
 py_library(
     name = "summary",
