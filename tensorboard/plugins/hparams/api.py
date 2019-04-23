@@ -25,7 +25,10 @@ import abc
 import time
 
 import six
+<<<<<<< HEAD
 import tensorflow as tf
+=======
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary
@@ -206,6 +209,19 @@ class IntInterval(Domain):
   """A domain that takes on all integer values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
+<<<<<<< HEAD
+=======
+    """Create an `IntInterval`.
+
+    Args:
+      min_value: The lower bound (inclusive) of the interval.
+      max_value: The upper bound (inclusive) of the interval.
+
+    Raises:
+      TypeError: If `min_value` or `max_value` is not an `int`.
+      ValueError: If `min_value > max_value`.
+    """
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
     if not isinstance(min_value, int):
       raise TypeError("min_value must be an int: %r" % (min_value,))
     if not isinstance(max_value, int):
@@ -243,6 +259,19 @@ class RealInterval(Domain):
   """A domain that takes on all real values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
+<<<<<<< HEAD
+=======
+    """Create a `RealInterval`.
+
+    Args:
+      min_value: The lower bound (inclusive) of the interval.
+      max_value: The upper bound (inclusive) of the interval.
+
+    Raises:
+      TypeError: If `min_value` or `max_value` is not an `float`.
+      ValueError: If `min_value > max_value`.
+    """
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
     if not isinstance(min_value, float):
       raise TypeError("min_value must be a float: %r" % (min_value,))
     if not isinstance(max_value, float):
@@ -283,6 +312,25 @@ class Discrete(Domain):
   """
 
   def __init__(self, values, dtype=None):
+<<<<<<< HEAD
+=======
+    """Construct a discrete domain.
+
+    Args:
+      values: A iterable of the values in this domain.
+      dtype: The Python data type of values in this domain: one of
+        `int`, `float`, `bool`, or `str`. If `values` is non-empty,
+        `dtype` may be `None`, in which case it will be inferred as the
+        type of the first element of `values`.
+
+    Raises:
+      ValueError: If `values` is empty but no `dtype` is specified.
+      ValueError: If `dtype` or its inferred value is not `int`,
+        `float`, `bool`, or `str`.
+      TypeError: If an element of `values` is not an instance of
+        `dtype`.
+    """
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
     self._values = list(values)
     if dtype is None:
       if self._values:
@@ -294,7 +342,11 @@ class Discrete(Domain):
     self._dtype = dtype
     for value in self._values:
       if not isinstance(value, self._dtype):
+<<<<<<< HEAD
         raise ValueError(
+=======
+        raise TypeError(
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
             "dtype mismatch: not isinstance(%r, %s)"
             % (value, self._dtype.__name__)
         )
@@ -377,6 +429,7 @@ class Metric(object):
         description=self._description,
         dataset_type=self._dataset_type,
     )
+<<<<<<< HEAD
 
 
 class KerasCallback(tf.keras.callbacks.Callback):
@@ -466,3 +519,5 @@ def _normalize_hparams(hparams):
       raise ValueError("multiple values specified for hparam %r" % (k,))
     result[k] = v
   return result
+=======
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~

@@ -61,6 +61,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -73,6 +74,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -87,6 +89,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -162,24 +165,37 @@ py_library(
 
 py_test(
     name = "api_test",
+<<<<<<< HEAD
     srcs = ["api_test.py"],
     srcs_version = "PY2AND3",
     visibility = [
         "//visibility:public",
     ],
+=======
+    size = "small",
+    srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
     deps = [
         ":api",
         ":metadata",
         ":protos_all_py_pb2",
+<<<<<<< HEAD
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/util:test_util",
+=======
+        "//tensorboard:test",
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
     ],
 )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 py_library(
     name = "summary",
     srcs = ["summary.py"],
