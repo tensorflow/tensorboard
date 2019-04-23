@@ -2559,6 +2559,10 @@ limitations under the License.
           self.$.dive.$.vis._onIronResize();
         });
 
+        resizer.call(dragResize);
+      },
+
+      attached: function() {
         // Check if the plugin was created
         this._requestManager
             .request(tf_backend.getRouter().pluginsListing())
@@ -2567,10 +2571,6 @@ limitations under the License.
                 // The plugin was not created
                 this.$.inferencesettings.close();
                 this.$.initialDialog.openNoTensorFlowDialog();
-              } else {
-                // The plugin was created
-                this.$.initialDialog.closeDialog();
-                resizer.call(dragResize);
               }
             });
       },
