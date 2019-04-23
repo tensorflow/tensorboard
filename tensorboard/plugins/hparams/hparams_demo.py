@@ -37,11 +37,6 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import api as hp
-<<<<<<< HEAD
-=======
-from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary as hparams_summary
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 
 
 if int(tf.__version__.split(".")[0]) < 2:
@@ -182,19 +177,6 @@ def run(data, base_logdir, session_id, group_id, hparams):
   model = model_fn(hparams=hparams, seed=session_id)
   logdir = os.path.join(base_logdir, session_id)
 
-<<<<<<< HEAD
-=======
-  # We need a manual summary writer for writing hparams metadata.
-  writer = tf.summary.create_file_writer(logdir)
-  with writer.as_default():
-    pb = hparams_summary.session_start_pb(
-        {h.name: hparams[h] for h in hparams},
-        group_name=group_id,
-    )
-    tf.summary.experimental.write_raw_pb(pb.SerializeToString(), step=0)
-    writer.flush()
-
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
   callback = tf.keras.callbacks.TensorBoard(
       logdir,
       update_freq=flags.FLAGS.summary_freq,

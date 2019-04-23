@@ -19,28 +19,19 @@ from __future__ import print_function
 
 import abc
 import collections
-<<<<<<< HEAD
 import os
-=======
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 import time
 
 from google.protobuf import text_format
 import six
-<<<<<<< HEAD
 import tensorflow as tf
-=======
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 
 from tensorboard import test
 from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
-<<<<<<< HEAD
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.util import test_util
-=======
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 
 
 class ExperimentTest(test.TestCase):
@@ -249,8 +240,7 @@ class DiscreteTest(test.TestCase):
 
   def test_dtype_mismatch(self):
     with six.assertRaisesRegex(
-<<<<<<< HEAD
-        self, ValueError, r"dtype mismatch: not isinstance\(2, str\)"):
+        self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"):
       hp.Discrete(["one", 2])
 
 
@@ -360,11 +350,5 @@ class KerasCallbackTest(test.TestCase):
       hp.KerasCallback(self.logdir, hparams)
 
 
-=======
-        self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"):
-      hp.Discrete(["one", 2])
-
-
->>>>>>> c8a8940f1b53b786bb3a19f09fef4cc753b0fea2~
 if __name__ == "__main__":
   test.main()
