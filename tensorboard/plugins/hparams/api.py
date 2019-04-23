@@ -282,6 +282,22 @@ class Discrete(Domain):
   """
 
   def __init__(self, values, dtype=None):
+    """Construct a discrete domain.
+
+    Args:
+      values: A iterable of the values in this domain.
+      dtype: The Python data type of values in this domain: one of
+        `int`, `float`, `bool`, or `str`. If `values` is non-empty,
+        `dtype` may be `None`, in which case it will be inferred as the
+        type of the first element of `values`.
+
+    Raises:
+      ValueError: If `values` is empty but no `dtype` is specified.
+      ValueError: If `dtype` or its inferred value is not `int`,
+        `float`, `bool`, or `str`.
+      TypeError: If an element of `values` is not an instance of
+        `dtype`.
+    """
     self._values = list(values)
     if dtype is None:
       if self._values:
@@ -293,7 +309,7 @@ class Discrete(Domain):
     self._dtype = dtype
     for value in self._values:
       if not isinstance(value, self._dtype):
-        raise ValueError(
+        raise TypeError(
             "dtype mismatch: not isinstance(%r, %s)"
             % (value, self._dtype.__name__)
         )

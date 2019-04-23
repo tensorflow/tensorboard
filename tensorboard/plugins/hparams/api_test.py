@@ -236,7 +236,7 @@ class DiscreteTest(test.TestCase):
 
   def test_dtype_mismatch(self):
     with six.assertRaisesRegex(
-        self, ValueError, r"dtype mismatch: not isinstance\(2, str\)"):
+        self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"):
       hp.Discrete(["one", 2])
 
 
