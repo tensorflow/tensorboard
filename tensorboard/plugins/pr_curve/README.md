@@ -96,7 +96,7 @@ to 1) that increase from left to right.
 
 As shown below, one effective use case is writing the output of the
 `tf.contrib.metrics.precision_recall_at_equal_thresholds` streaming metric to
-disk. The run and space time of this metric scales linearly with the size of the
+disk. The run time and space of this metric scales linearly with the size of the
 predictions tensor (unlike `pr_curve_streaming_op`, which scales quadratically).
 Hence, for instance, use cases that assign a prediction per pixel in a big image
 may prefer using `precision_recall_at_equal_thresholds`.

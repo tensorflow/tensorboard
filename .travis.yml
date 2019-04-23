@@ -102,7 +102,6 @@ install:
   - pip install flake8==3.5.0
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
-  - pip install mock==2.0.0
   - pip install moto==1.3.7
   - pip install yamllint==1.5.0
   - |
