@@ -196,7 +196,7 @@ limitations under the License.
         bottom: 0;
         overflow: hidden;
       }
-      :host paper-toast {
+      paper-toast {
         text-align: center;
         font-size: 110%;
         width: 40vw;
@@ -204,8 +204,8 @@ limitations under the License.
       }
       tf-dashboard-layout {
         --tf-dashboard-layout-sidebar-basis: auto;
-        --tf-dashboard-layout-sidebar-max-width: unset;
-        --tf-dashboard-layout-sidebar-min-width: unset;
+        --tf-dashboard-layout-sidebar-max-width: none;
+        --tf-dashboard-layout-sidebar-min-width: none;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -365,16 +365,16 @@ limitations under the License.
         font-size: 80%;
         float: right;
       }
-      /deep/ .context-menu ul {
+      .context-menu ul {
         list-style-type: none;
         margin: 0;
         padding: 0;
         cursor: default;
       }
-      /deep/ .context-menu ul li {
+      .context-menu ul li {
         padding: 4px 16px;
       }
-      /deep/ .context-menu ul li:hover {
+      .context-menu ul li:hover {
         background-color: #f3913e;
         color: white;
       }
@@ -389,6 +389,9 @@ limitations under the License.
       vz-line-chart {
         height: 300px;
         position: relative;
+      }
+      [hidden] {
+        display: none;
       }
     </style>
   </template>

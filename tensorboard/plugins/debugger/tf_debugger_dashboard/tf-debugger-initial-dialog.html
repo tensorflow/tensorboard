@@ -26,9 +26,9 @@ limitations under the License.
       <div id="dashboard-backdrop"></div>
     </template>
     <paper-dialog id="dialog"
-                  modal
-                  opened="{{_open}}"
-                  with-backdrop="[[_useNativeBackdrop]]">
+                  no-cancel-on-outside-click
+                  no-cancel-on-esc-key
+                  opened="{{_open}}">
       <h2 id='dialog-title'>[[_title]]</h2>
       <template is="dom-if" if="[[_hasCustomMessage]]">
         <div class="custom-message">[[_customMessage]]</div>
@@ -155,15 +155,6 @@ model.fit(...)
         type: Boolean,
         computed: '_computeHidden(_open)',
         reflectToAttribute: true,  // for CSS
-      },
-      // Suppress the native paper-dialog backdrop. We use a custom one. We make
-      // the dialog reference this bound property instead of directly setting
-      // the attribute to the string "false" in the HTML because Polymer
-      // unfortunately parses "false" as a true-ey value (a non-empty string).
-      _useNativeBackdrop: {
-        type: Boolean,
-        value: false,
-        readOnly: true,
       },
     },
     openDialog(host, port) {
