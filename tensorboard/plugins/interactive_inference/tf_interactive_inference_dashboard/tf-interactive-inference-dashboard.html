@@ -2571,6 +2571,9 @@ limitations under the License.
                 // The plugin was not created
                 this.$.inferencesettings.close();
                 this.$.initialDialog.openNoTensorFlowDialog();
+              } else {
+                // The plugin was created
+                this.$.initialDialog.closeDialog();
               }
             });
       },
