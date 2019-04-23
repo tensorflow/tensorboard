@@ -520,17 +520,18 @@ limitations under the License.
 
       paper-tab {
         font-size: 14px;
-        font-weight: 500;
-        padding: 0 32px;
+        font-weight: 400;
+        padding: 0 24px;
+        letter-spacing: 0.1px;
       }
 
       paper-tab:not(.iron-selected) {
-        color: #5F6368
+        color: #3C4043;
       }
 
       paper-tab.iron-selected {
         color: #202124;
-        font-weight: 700;
+        font-weight: 500;
       }
 
       .roc-holder {
@@ -632,12 +633,13 @@ limitations under the License.
       }
 
       .main-bottom-bar {
-        height: 50px;
-        min-height: 50px;
+        height: 52px;
+        min-height: 52px;
         flex-grow: 0;
         display: flex;
-        box-shadow: 0 2px 5px grey;
-        margin-bottom: 3px;
+        /* box-shadow: 0 2px 5px grey;
+        margin-bottom: 3px; */
+        border-bottom: solid 1px #DADCE0;
         justify-content: space-between;
       }
 
@@ -684,7 +686,7 @@ limitations under the License.
       .resizer {
         display: table;
         height: 100%;
-        width: 10px;
+        width: 8px;
         border-left: 1px solid var(--wit-color-gray300);
         border-right: 1px solid var(--wit-color-gray300);
         cursor: pointer;
@@ -886,7 +888,7 @@ limitations under the License.
       }
 
       .dialog-title {
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 500;
       }
 
@@ -929,7 +931,7 @@ limitations under the License.
       }
 
       .button-prefix-label {
-        margin: 13px 0 0 10px;
+        margin: 12px 0 0 12px;
         color: grey;
         font-size: 14px;
       }
@@ -1117,7 +1119,7 @@ limitations under the License.
         flex-direction: row-reverse;
       }
       .counterfactual-toggle {
-        margin: 10px 0 0 8px;
+        margin: 4px 4px 4px 6px;
         --paper-toggle-button-checked-bar-color: #81C995;
       }
       .datapoint-button {
@@ -1138,7 +1140,7 @@ limitations under the License.
         margin-top: -2px;
       }
       .tabs {
-        padding-left: 36px;
+        padding-left: 32px;
         text-transform: none;
       }
       .rotated-icon {
@@ -1245,7 +1247,7 @@ limitations under the License.
                   <paper-tabs class="tabs"
                     noink
                     selected="{{sideTabSelected}}">
-                    <paper-tab>Datapoint Editor</paper-tab>
+                    <paper-tab>Datapoint editor</paper-tab>
                     <paper-tab>[[getPerformanceTabTitle(modelType, multiClass)]]</paper-tab>
                     <paper-tab>Features</paper-tab>
                   </paper-tabs>
