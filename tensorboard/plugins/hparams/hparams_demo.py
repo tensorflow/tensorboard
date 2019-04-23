@@ -118,7 +118,7 @@ def model_fn(hparams, seed):
   """Create a Keras model with the given hyperparameters.
 
   Args:
-    hparams: A dict mapping hyperparameter names to values.
+    hparams: A dict mapping hyperparameters in `HPARAMS` to values.
     seed: A hashable object to be used as a random seed (e.g., to
       construct dropout layers in the model).
 
@@ -174,7 +174,7 @@ def run(data, base_logdir, session_id, group_id, hparams):
     session_id: A unique string ID for this session.
     group_id: The string ID of the session group that includes this
       session.
-    hparams: A dict mapping hyperparameter names to values.
+    hparams: A dict mapping hyperparameters in `HPARAMS` to values.
   """
   model = model_fn(hparams=hparams, seed=session_id)
   logdir = os.path.join(base_logdir, session_id)
