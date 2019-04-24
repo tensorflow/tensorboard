@@ -56,8 +56,11 @@ limitations under the License.
           <div class="debugger-section-title">Runtime Node List</div>
           <div class="toggle-source-code">
             Show Code:
-            <paper-toggle-button class="toggle-source-code" id="show-source-code">
-            </paper-toggle-button>
+            <paper-toggle-button
+              class="toggle-source-code"
+              id="show-source-code"
+              checked="{{_sourceCodeShown}}"
+            ></paper-toggle-button>
           </div>
           <tf-op-selector
               debug-watches=[[_debugWatches]]
@@ -119,26 +122,28 @@ limitations under the License.
               <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
             </template>
           </paper-tabs>
-          <span id="runtime-graph-device-name">
-          </span>
-          <paper-dropdown-menu
-            id="active-runtime-graph-device-name"
-            no-label-float="true"
-            label="Device name"
-            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-          >
-            <paper-listbox class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
-              </template>
-            </paper-listbox>
-          </paper-dropdown-menu>
-          <paper-spinner-lite
-            class="spinner"
-            id="top-right-spinner"
-            hidden="[[!_busy]]"
-            active="[[_busy]]">
-          </paper-spinner-lite>
+          <div class="runtime-graph-device">
+            <span id="runtime-graph-device-name">
+            </span>
+            <paper-dropdown-menu
+              id="active-runtime-graph-device-name"
+              no-label-float="true"
+              label="Device name"
+              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+            >
+              <paper-listbox class="dropdown-content" slot="dropdown-content">
+                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                  <paper-item no-label-float=true>[[item]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <paper-spinner-lite
+              class="spinner"
+              id="top-right-spinner"
+              hidden="[[!_busy]]"
+              active="[[_busy]]">
+            </paper-spinner-lite>
+          </div>
           <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
@@ -251,6 +256,11 @@ limitations under the License.
       }
       #x-type-selector paper-button {
         margin: 5px 3px;
+      }
+      .runtime-graph-device {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
       }
       #runtime-graph-device-name {
         font-size: 85%;
@@ -550,6 +560,7 @@ limitations under the License.
         _sourceCodeShown: {
           type: Boolean,
           value: false,
+          observer: '_showSourceCodeChanged',
         },
 
         _graphProgress: {
@@ -644,9 +655,6 @@ limitations under the License.
         "_sizeDashboardRegions(_leftPaneWidth, _topRightQuadrantHeight, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
-      listeners: {
-        'show-source-code.change': '_showSourceCodeChanged',
-      },
 
       ready() {
         this._handleWindowResize();
@@ -859,7 +867,6 @@ limitations under the License.
       },
 
       _showSourceCodeChanged(event) {
-        this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
           this.$$('#node-entries').style.height = '40%';
           this.$.sourceCodeView.render();

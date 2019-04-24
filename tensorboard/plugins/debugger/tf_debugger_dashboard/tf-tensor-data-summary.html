@@ -245,6 +245,7 @@ limitations under the License.
     },
 
     _renderLatest(latestTensorData, expandHandler) {
+      if (!latestTensorData) return;
       const watchKey = this._tensorData2WatchKey(latestTensorData);
       let instanceExpandHandler = null;
       if (!(latestTensorData.dtype === 'Uninitialized' ||
