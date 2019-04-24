@@ -121,8 +121,12 @@ tf-op-bar {
           <tf-op-bar value="[[_memoryUtilization(node)]]"></tf-op-bar>
         </div>
         <div hidden="[[!node.xla.expression]]">
-          <b>Expression: </b>
+          <b>XLA Expression: </b>
           <code class="expression">[[node.xla.expression]]</code>
+        </div>
+        <div hidden="[[!node.xla.provenance]]">
+          <b>TensorFlow Name: </b>
+          <code class="expression">[[node.xla.provenance]]</code>
         </div>
         <div class="unavailable" hidden="[[!_fused(node)]]">
           Performance information for individual fused operations is not available.
