@@ -137,7 +137,7 @@ Polymer({
         .attr('text-anchor', 'start')
         .selectAll('g')
         .data(labels.slice());
-    legend.enter().append('g').merge(legend)
+    let legendG = legend.enter().append('g').merge(legend)
         .attr('transform',
             (d, i) => 'translate(' +
                 (i * LEGEND_WIDTH -
@@ -147,12 +147,12 @@ Polymer({
                                 LEGEND_HEIGHT + ')'
         );
 
-    legend.append('rect')
+    legendG.append('rect')
         .attr('x', YAXIS_TO_LEGEND)
         .attr('width', ICON_SIZE)
         .attr('height', ICON_SIZE)
         .attr('fill', (d, i) => colorScale(i));
-    legend.append('text')
+    legendG.append('text')
         .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
         .attr('y', LEGEND_TEXT_HEIGHT)
         .attr('dy', LEGEND_TEXT_SIZE)
