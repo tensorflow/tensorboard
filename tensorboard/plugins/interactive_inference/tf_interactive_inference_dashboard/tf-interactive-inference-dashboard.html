@@ -1826,6 +1826,7 @@ limitations under the License.
                                   <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
                                     label="[[getConfusionMatrixLabel(index, numModels)]]"
                                     background="[[getConfusionMatrixColor(index)]]"
+                                    all-items="[[allConfMatrixLabels]]"
                                     class="conf-matrix">
                                   </tf-confusion-matrix>
                                 </template>
@@ -1897,6 +1898,7 @@ limitations under the License.
                                 <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
                                   label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
                               </template>
@@ -1995,6 +1997,7 @@ limitations under the License.
                                     <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
                                       label="[[getConfusionMatrixLabel(index, numModels)]]"
                                       background="[[getConfusionMatrixColor(index)]]"
+                                      all-items="[[allConfMatrixLabels]]"
                                       class="conf-matrix">
                                     </tf-confusion-matrix>
                                     </template>
@@ -2036,6 +2039,7 @@ limitations under the License.
                                 <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
                                   label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
                               </template>
@@ -2517,6 +2521,10 @@ limitations under the License.
           type: Array,
           value: () => ([d3.color('rgb(18, 181, 206)'),
                          d3.color('rgb(250, 120, 23)')]),
+        },
+        allConfMatrixLabels: {
+          type: Object,
+          value: () => ({}),
         }
       },
 
@@ -3047,6 +3055,7 @@ limitations under the License.
             if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
               // For binary classifiers, update the confusion matrices values
               // for all possible classification thresholds.
+              this.allConfMatrixLabels = {};
               inferenceStats.thresholds = [];
               for (let i = 0; i < 101; i++) {
                 inferenceStats.thresholds.push(
@@ -3115,6 +3124,7 @@ limitations under the License.
               // For multi-class classifiers, update the confusion matrices.
               inferenceStats.results = {};
               inferenceStats.faceted = {};
+              const allLabels = {};
               for (let i = 0; i < this.examplesAndInferences.length; i++) {
                 const item = this.visdata[i];
                 let facetedStats = null;
@@ -3138,6 +3148,8 @@ limitations under the License.
                 const modelInferenceValueStr =
                   this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
+                allLabels[item[modelInferenceValueStr]] = true;
+                allLabels[item[modelInferenceValueStr]] = true;
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
@@ -3158,6 +3170,7 @@ limitations under the License.
                   }
                 }
               }
+              this.allConfMatrixLabels = allLabels;
             } else {
               // For regression models, calculate inference error.
               inferenceStats.results = {errors: []};
