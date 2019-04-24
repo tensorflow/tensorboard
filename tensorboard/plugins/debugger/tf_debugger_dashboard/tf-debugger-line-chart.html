@@ -16,18 +16,18 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 
 <dom-module id="tf-debugger-line-chart">
   <template>
-    <vz-line-chart
+    <vz-line-chart2
       x-components-creation-method="[[_lineChartXComponentsCreationMethod]]"
       y-value-accessor="[[_lineChartYValueAccessor]]"
       tooltip-columns="[[_lineChartTooltipColumns]]"
       smoothing-enabled="[[_lineChartSmoothingEnabled]]"
-    ></vz-line-chart>
+    ></vz-line-chart2>
     <style>
-      vz-line-chart {
+      vz-line-chart2 {
         height: 300px;
         position: relative;
       }
@@ -102,14 +102,15 @@ limitations under the License.
         if (data == null) {
           return;
         }
-        this.$$('vz-line-chart').setVisibleSeries([this._defaultSeriesName]);
+        const chart = this.$$('vz-line-chart2');
+        chart.setVisibleSeries([this._defaultSeriesName]);
         let seriesData = [];
         const xData = data['x'];
         const yData = data['y'];
         for (let i = 0; i < xData.length; ++i) {
           seriesData.push({'step': xData[i], 'scalar': yData[i]});
         }
-        this.$$('vz-line-chart').setSeriesData(this._defaultSeriesName, seriesData);
+        chart.setSeriesData(this._defaultSeriesName, seriesData);
       },
     });
   </script>
