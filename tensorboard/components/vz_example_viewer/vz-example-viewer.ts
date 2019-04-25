@@ -836,12 +836,12 @@ Polymer({
       this.getBoundingClientRect().right -
       inputControl.getBoundingClientRect().right + 30) + 'px';
     this.showDeleteValueButton = true;
-
   },
 
 
   onInputBlur: function(event: Event) {
     this.showDeleteValueButton = false;
+    const inputControl = event.target as HTMLInputElement;
   },
 
   /**
