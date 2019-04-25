@@ -95,43 +95,23 @@ profile run can have multiple tools that present the performance profile as diff
 <template is="dom-if" if="[[_isState(_topLevelState, 'DATA_NOT_FOUND')]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
-    <p>To collect a profile, you need to run your model on Google Cloud TPUs and
-    capture the trace information while your model is running. You may want to
-    check out the
-    <a
-      href="https://github.com/tensorflow/tensorboard/blob/1.6/tensorboard/plugins/profile/README.md"
-      rel="noopener"
-      target="_blank"
-    >README</a>
-    and perhaps the
-    <a
-      href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
-      rel="noopener"
-      target="_blank"
-    >tutorial</a> on how to use the
-    <a
-      href="https://pypi.python.org/pypi/cloud-tpu-profiler"
-      rel="noopener"
-      target="_blank"
-    >cloud-tpu-profiler</a>.
-    </p>
-    <p>
-    If you’re new to TPUs, and want to find out how
-    to run models, check out the
-    <a
-      href="https://cloud.google.com/tpu/docs/quickstart"
-      rel="noopener"
-      target="_blank"
-    >Quickstart Using a TPU</a>.
-    </p>
-    <p>
-    If you think profiling is done properly, please see the page of
-    <a
-      href="https://cloud.google.com/tpu/docs/troubleshooting"
-      rel="noopener"
-      target="_blank"
-    >Google Cloud TPU Troubleshooting and FAQ</a>
-    and consider filing an issue on GitHub.</p>
+
+    <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
+
+    <p>If you have a model running on CPU, GPU, or Google Cloud TPU, you may be
+        able to use the above button to capture a profile.
+    <p>If you’re a CPU or GPU user, please use the IP address option. You may want to check out the
+        <a href="https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/docs/r2/tensorboard_profiling_keras.ipynb" rel="noopener" target="_blank">tutorial</a> on how to
+        start a TensorFlow profiler server and profile a Keras model on a GPU.
+    <p>If you're a TPU user, please use the TPU name option and you may want to check out the
+        <a href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+            rel="noopener" target="_blank">tutorial</a>
+        on how to interpreting the profiling results.
+    <p>If you think profiling is done properly, please see the page of
+        <a href="https://cloud.google.com/tpu/docs/troubleshooting"
+            rel="noopener"
+            target="_blank">Google Cloud TPU Troubleshooting and FAQ</a>
+        and consider filing an issue on GitHub.</p>
   </div>
 </template>
 <template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
