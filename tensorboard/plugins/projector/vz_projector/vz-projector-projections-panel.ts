@@ -27,7 +27,7 @@ export let ProjectionsPanelPolymer = PolymerElement({
     superviseFactor: {type: Number, value: 0},
     // UMAP parameters
     umapIs3d:
-        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},     
+        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},
     umapNeighbors: { type: Number, value: 15 },
     // PCA projection.
     pcaComponents: Array,
@@ -130,20 +130,21 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   ready() {
-    this.zDropdown = this.querySelector('#z-dropdown') as HTMLElement;
-    this.runTsneButton = this.querySelector('.run-tsne') as HTMLButtonElement;
+    super.ready();
+    this.zDropdown = this.$$('#z-dropdown') as HTMLElement;
+    this.runTsneButton = this.$$('.run-tsne') as HTMLButtonElement;
     this.pauseTsneButton =
-        this.querySelector('.pause-tsne') as HTMLButtonElement;
+        this.$$('.pause-tsne') as HTMLButtonElement;
     this.perturbTsneButton =
-        this.querySelector('.perturb-tsne') as HTMLButtonElement;
+        this.$$('.perturb-tsne') as HTMLButtonElement;
     this.perplexitySlider =
-        this.querySelector('#perplexity-slider') as HTMLInputElement;
+        this.$$('#perplexity-slider') as HTMLInputElement;
     this.learningRateInput =
-        this.querySelector('#learning-rate-slider') as HTMLInputElement;
+        this.$$('#learning-rate-slider') as HTMLInputElement;
     this.superviseFactorInput =
-        this.querySelector('#supervise-factor-slider') as HTMLInputElement;
-    this.iterationLabelTsne = this.querySelector('.run-tsne-iter') as HTMLElement;
-    this.runUmapButton = this.querySelector('#run-umap') as HTMLButtonElement;
+        this.$$('#supervise-factor-slider') as HTMLInputElement;
+    this.iterationLabelTsne = this.$$('.run-tsne-iter') as HTMLElement;
+    this.runUmapButton = this.$$('#run-umap') as HTMLButtonElement;
   }
 
   disablePolymerChangesTriggerReprojection() {
@@ -158,7 +159,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     if (this.perplexitySlider) {
       this.perplexity = +this.perplexitySlider.value;
     }
-    (this.querySelector('.tsne-perplexity span') as HTMLSpanElement).innerText =
+    (this.$$('.tsne-perplexity span') as HTMLSpanElement).innerText =
         '' + this.perplexity;
   }
 
@@ -166,12 +167,12 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     if (this.learningRateInput) {
       this.learningRate = Math.pow(10, +this.learningRateInput.value);
     }
-    (this.querySelector('.tsne-learning-rate span') as HTMLSpanElement)
+    (this.$$('.tsne-learning-rate span') as HTMLSpanElement)
         .innerText = '' + this.learningRate;
   }
 
   private updateTSNESuperviseFactorFromUIChange() {
-    (this.querySelector('.tsne-supervise-factor span') as HTMLSpanElement)
+    (this.$$('.tsne-supervise-factor span') as HTMLSpanElement)
         .innerText = ('' + this.superviseFactor);
     if (this.dataSet) {
       this.dataSet.setSuperviseFactor(this.superviseFactor);
@@ -181,7 +182,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   private setupUIControls() {
     {
       const self = this;
-      const inkTabs = this.querySelectorAll('.ink-tab');
+      const inkTabs = this.root.querySelectorAll('.ink-tab');
       for (let i = 0; i < inkTabs.length; i++) {
         inkTabs[i].addEventListener('click', function() {
           let id = this.getAttribute('data-tab');
@@ -241,7 +242,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
     // work.
     const inputs =
-        this.querySelectorAll('paper-dropdown-menu paper-input input');
+        this.root.querySelectorAll('paper-dropdown-menu paper-input input');
     for (let i = 0; i < inputs.length; i++) {
       (inputs[i] as HTMLElement).style.fontSize = '14px';
     }
@@ -375,12 +376,12 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.updateTSNEPerplexityFromSliderChange();
     this.clearCentroids();
 
-    (this.querySelector('#tsne-sampling') as HTMLElement).style.display =
+    (this.$$('#tsne-sampling') as HTMLElement).style.display =
         pointCount > TSNE_SAMPLE_SIZE ? null : 'none';
     const wasSampled =
         (dataSet == null) ? false : (dataSet.dim[0] > PCA_SAMPLE_DIM ||
                                      dataSet.dim[1] > PCA_SAMPLE_DIM);
-    (this.querySelector('#pca-sampling') as HTMLElement).style.display =
+    (this.$$('#pca-sampling') as HTMLElement).style.display =
         wasSampled ? null : 'none';
     this.showTab('pca');
   }
@@ -416,21 +417,21 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     this.currentProjection = id;
 
     const tab =
-        this.querySelector('.ink-tab[data-tab="' + id + '"]') as HTMLElement;
-    const allTabs = this.querySelectorAll('.ink-tab');
+        this.$$('.ink-tab[data-tab="' + id + '"]') as HTMLElement;
+    const allTabs = this.root.querySelectorAll('.ink-tab');
     for (let i = 0; i < allTabs.length; i++) {
       util.classed(allTabs[i] as HTMLElement, 'active', false);
     }
 
     util.classed(tab, 'active', true);
 
-    const allTabContent = this.querySelectorAll('.ink-panel-content');
+    const allTabContent = this.root.querySelectorAll('.ink-panel-content');
     for (let i = 0; i < allTabContent.length; i++) {
       util.classed(allTabContent[i] as HTMLElement, 'active', false);
     }
 
     util.classed(
-        this.querySelector('.ink-panel-content[data-panel="' + id + '"]') as
+        this.$$('.ink-panel-content[data-panel="' + id + '"]') as
             HTMLElement,
         'active', true);
 
@@ -563,7 +564,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
             this.projector.onProjectionChanged();
           }
         });
-  }  
+  }
 
   // tslint:disable-next-line:no-unused-variable
   private showPCAIfEnabled() {
@@ -580,7 +581,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
       totalVariance += variances[this.pcaZ];
     }
     msg += (totalVariance * 100).toFixed(1) + '%.';
-    (this.querySelector('#total-variance') as HTMLElement).innerHTML = msg;
+    (this.$$('#total-variance') as HTMLElement).innerHTML = msg;
   }
 
   private showPCA() {
@@ -659,7 +660,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 
   private computeCentroid(name: InputControlName) {
-    const input = this.querySelector('#' + name) as ProjectorInput;
+    const input = this.$$('#' + name) as ProjectorInput;
     if (input == null) {
       return;
     }
@@ -681,7 +682,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
 
   private setupCustomProjectionInputField(name: InputControlName):
       ProjectorInput {
-    let input = this.querySelector('#' + name) as ProjectorInput;
+    let input = this.$$('#' + name) as ProjectorInput;
     input.registerInputChangedListener((input, inRegexMode) => {
       if (this.polymerChangesTriggerReprojection) {
         this.computeCentroid(name);
@@ -721,6 +722,6 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
   }
 }
 
-document.registerElement(ProjectionsPanel.prototype.is, ProjectionsPanel);
+customElements.define(ProjectionsPanel.prototype.is, ProjectionsPanel);
 
 }  // namespace vz_projector

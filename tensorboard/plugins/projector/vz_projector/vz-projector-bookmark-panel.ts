@@ -39,13 +39,14 @@ export class BookmarkPanel extends BookmarkPanelPolymer {
   private expandMoreButton: HTMLButtonElement;
 
   ready() {
+    super.ready();
     this.savedStates = [];
     this.setupUploadButton();
     this.ignoreNextProjectionEvent = false;
     this.expandLessButton =
-        this.querySelector('#expand-less') as HTMLButtonElement;
+        this.$$('#expand-less') as HTMLButtonElement;
     this.expandMoreButton =
-        this.querySelector('#expand-more') as HTMLButtonElement;
+        this.$$('#expand-more') as HTMLButtonElement;
   }
 
   initialize(
@@ -128,13 +129,13 @@ export class BookmarkPanel extends BookmarkPanelPolymer {
 
   /** Handles a click on the upload bookmarks button. */
   _uploadFile() {
-    let fileInput = this.querySelector('#state-file');
+    let fileInput = this.$$('#state-file');
     (fileInput as HTMLInputElement).click();
   }
 
   private setupUploadButton() {
     // Show and setup the load view button.
-    const fileInput = this.querySelector('#state-file') as HTMLInputElement;
+    const fileInput = this.$$('#state-file') as HTMLInputElement;
     fileInput.onchange = () => {
       const file: File = fileInput.files[0];
       // Clear out the value of the file chooser. This ensures that if the user
@@ -274,6 +275,6 @@ export class BookmarkPanel extends BookmarkPanelPolymer {
     return true;
   }
 }
-document.registerElement(BookmarkPanel.prototype.is, BookmarkPanel);
+customElements.define(BookmarkPanel.prototype.is, BookmarkPanel);
 
 }  // namespace vz_projector
