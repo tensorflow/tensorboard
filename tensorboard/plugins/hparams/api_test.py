@@ -255,7 +255,11 @@ class DiscreteTest(test.TestCase):
 
 class KerasCallbackTest(test.TestCase):
 
-  def _initialize_model(self):
+  def setUp(self):
+    super(KerasCallbackTest, self).setUp()
+    self.logdir = os.path.join(self.get_temp_dir(), "logs")
+
+  def _initialize_model(self, writer):
     HP_DENSE_NEURONS = hp.HParam("dense_neurons", hp.IntInterval(4, 16))
     self.hparams = {
         "optimizer": "adam",
@@ -266,12 +270,7 @@ class KerasCallbackTest(test.TestCase):
         tf.keras.layers.Dense(1, activation="sigmoid"),
     ])
     self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])
-    self.logdir = os.path.join(self.get_temp_dir(), "logs")
-    self.callback = hp.KerasCallback(
-        self.logdir,
-        self.hparams,
-        group_name="psl27",
-    )
+    self.callback = hp.KerasCallback(writer, self.hparams, group_name="psl27")
 
   def test_eager(self):
     def mock_time():
@@ -280,7 +279,7 @@ class KerasCallbackTest(test.TestCase):
     mock_time.time = 1556227801.875
     initial_time = mock_time()
     with mock.patch("time.time", mock_time):
-      self._initialize_model()
+      self._initialize_model(writer=self.logdir)
       self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
     final_time = mock_time()
 
@@ -348,13 +347,40 @@ class KerasCallbackTest(test.TestCase):
     )
     self.assertEqual(end_pb, expected_end_pb)
 
+  def test_explicit_writer(self):
+    writer = tf.compat.v2.summary.create_file_writer(
+        self.logdir,
+        filename_suffix=".magic",
+    )
+    self._initialize_model(writer=writer)
+    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+    files = os.listdir(self.logdir)
+    self.assertEqual(len(files), 1, files)
+    filename = files[0]
+    self.assertTrue(filename.endswith(".magic"), filename)
+    # We'll assume that the contents are correct, as in the case where
+    # the file writer was constructed implicitly.
+
   def test_non_eager_failure(self):
     with tf.compat.v1.Graph().as_default():
       assert not tf.executing_eagerly()
-      self._initialize_model()
+      self._initialize_model(writer=self.logdir)
       with six.assertRaisesRegex(
           self, RuntimeError, "only supported in TensorFlow eager mode"):
         self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+  def test_reuse_failure(self):
+    self._initialize_model(writer=self.logdir)
+    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    with six.assertRaisesRegex(
+        self, RuntimeError, "cannot be reused across training sessions"):
+      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+  def test_invalid_writer(self):
+    with six.assertRaisesRegex(
+        self, TypeError, "writer must be a `SummaryWriter` or `str`, not None"):
+      hp.KerasCallback(writer=None, hparams={})
 
   def test_duplicate_hparam_names_across_object_and_string(self):
     hparams = {

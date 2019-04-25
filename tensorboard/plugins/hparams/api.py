@@ -423,7 +423,7 @@ class KerasCallback(tf.keras.callbacks.Callback):
 
   def __init__(
       self,
-      logdir,
+      writer,
       hparams,
       group_name=None,
   ):
@@ -433,6 +433,9 @@ class KerasCallback(tf.keras.callbacks.Callback):
     callback object is valid for only one call to `model.fit`.
 
     Args:
+      writer: The `SummaryWriter` object to which hparams should be
+        written, or a logdir (as a `str`) to be passed to
+        `tf.summary.create_file_writer` to create such a writer.
       logdir: The log directory for this session.
       hparams: A `dict` mapping hyperparameters to the values used in
         this session. Keys should be the names of `HParam` objects used
@@ -449,9 +452,18 @@ class KerasCallback(tf.keras.callbacks.Callback):
     """
     self._hparams = _normalize_hparams(hparams)
     self._group_name = group_name if group_name is not None else ""
-    self._writer = tf.compat.v2.summary.create_file_writer(logdir)
+    if writer is None:
+      raise TypeError("writer must be a `SummaryWriter` or `str`, not None")
+    elif isinstance(writer, str):
+      self._writer = tf.compat.v2.summary.create_file_writer(writer)
+    else:
+      self._writer = writer
 
   def _write_summary(self, pb, step=None):
+    if self._writer is None:
+      raise RuntimeError(
+          "hparams Keras callback cannot be reused across training sessions"
+      )
     raw_pb = pb.SerializeToString()
     if not tf.executing_eagerly():
       raise RuntimeError(
@@ -473,7 +485,7 @@ class KerasCallback(tf.keras.callbacks.Callback):
         summary.session_end_pb(api_pb2.STATUS_SUCCESS),
         step=0,
     )
-    self._writer.close()
+    self._writer = None
 
 
 def _normalize_hparams(hparams):
