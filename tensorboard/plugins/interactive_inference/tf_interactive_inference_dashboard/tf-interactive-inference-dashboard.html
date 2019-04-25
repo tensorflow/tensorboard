@@ -1351,16 +1351,6 @@ limitations under the License.
                               </paper-icon-button>
                             </div>
                             <div class="control-divider"></div>
-                            <paper-icon-button class="datapoint-control-button" icon="subject" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="setExampleCollapsed_" alt="collapse feature values" title="Collapse feature values">
-                            </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="editor:format-line-spacing" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                                on-tap="setExampleShow_" alt="show all feature values" title="Show all feature values">
-                            </paper-icon-button>
-                            <paper-icon-button class="datapoint-control-button" icon="editor:format-align-justify" disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                              on-tap="setExampleExpanded_" alt="expand all feature values" title="Expand all feature values">
-                            </paper-icon-button>
-                            <div class="control-divider"></div>
                             <paper-input value="{{featureSearchValue}}" label="Search features"
                                 class="datapoint-control-filter-input feature-search-input"
                                 disabled$="[[!hasSelected(selectedExampleAndInference)]]" no-label-float>
@@ -2329,7 +2319,7 @@ limitations under the License.
         // Mode of how individual examples are display in the side panel.
         exampleDisplayMode: {
           type: String,
-          value: 'grid'
+          value: 'stacked'
         },
         // Search string for feature searching.
         featureSearchValue: String,

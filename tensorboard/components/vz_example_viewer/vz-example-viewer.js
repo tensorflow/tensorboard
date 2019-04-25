@@ -726,6 +726,7 @@ var vz_example_viewer;
         },
         onInputBlur: function (event) {
             this.showDeleteValueButton = false;
+            var inputControl = event.target;
         },
         /**
          * When a feature is deleted, updates the example proto appropriately.
