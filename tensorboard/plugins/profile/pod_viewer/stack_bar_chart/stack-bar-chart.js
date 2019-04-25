@@ -128,19 +128,19 @@ var pod_viewer_stack_bar_chart;
                 .attr('text-anchor', 'start')
                 .selectAll('g')
                 .data(labels.slice());
-            legend.enter().append('g').merge(legend)
+            var legendG = legend.enter().append('g').merge(legend)
                 .attr('transform', function (d, i) { return 'translate(' +
                 (i * LEGEND_WIDTH -
                     Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
                         LABELS_PER_LANE) + ',' +
                 Math.floor(i / LABELS_PER_LANE) *
                     LEGEND_HEIGHT + ')'; });
-            legend.append('rect')
+            legendG.append('rect')
                 .attr('x', YAXIS_TO_LEGEND)
                 .attr('width', ICON_SIZE)
                 .attr('height', ICON_SIZE)
                 .attr('fill', function (d, i) { return colorScale(i); });
-            legend.append('text')
+            legendG.append('text')
                 .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
                 .attr('y', LEGEND_TEXT_HEIGHT)
                 .attr('dy', LEGEND_TEXT_SIZE)
