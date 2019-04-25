@@ -84,6 +84,14 @@ limitations under the License.
          */
         counts: Object,
 
+        /**
+         * Dictionary where keys are all cell labels to be used in the
+         * confusion matrix. If empty, then the cell labels are extracted
+         * from the provided counts dictionary. This is used for when a
+         * confusion matrix should have more rows/columns that just the
+         * information from counts, such as in a multiclass problem where
+         * the counts do not contain information from all possible classes.
+         */
         allItems: {type: Object, value: {}},
 
         // Label appears in top-right corner of confusion matrix.

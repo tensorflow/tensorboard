@@ -2528,6 +2528,8 @@ limitations under the License.
           value: () => ([d3.color('rgb(18, 181, 206)'),
                          d3.color('rgb(250, 120, 23)')]),
         },
+        // Dictionary where keys contain all cell labels for confusion
+        // matrices.
         allConfMatrixLabels: {
           type: Object,
           value: () => ({}),
@@ -3077,7 +3079,6 @@ limitations under the License.
             if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
               // For binary classifiers, update the confusion matrices values
               // for all possible classification thresholds.
-              this.allConfMatrixLabels = {};
               inferenceStats.thresholds = [];
               for (let i = 0; i < 101; i++) {
                 inferenceStats.thresholds.push(
@@ -3136,6 +3137,11 @@ limitations under the License.
                   }
                 }
               }
+              // For binary classification, no need to specify all possible
+              // labels for the confusion matrices as the data contains both
+              // classes.
+              this.allConfMatrixLabels = {};
+
               this.calcThresholdStats(inferenceStats.thresholds);
               for(let key in inferenceStats.faceted) {
                 if (inferenceStats.faceted.hasOwnProperty(key)) {
