@@ -42,6 +42,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="./tf-inference-panel.html">
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
@@ -1183,6 +1184,7 @@ limitations under the License.
         --paper-toggle-button-label-color: #3C4043;
       }
     </style>
+    <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
       <tf-inference-panel
           inference-address="{{inferenceAddress}}"
@@ -2138,12 +2140,16 @@ limitations under the License.
       }
     }
 
+    (function() {
+
+    const PLUGIN_NAME = 'whatif';
+
     Polymer({
       is: "tf-interactive-inference-dashboard",
       properties: {
 
         // TensorBoard plugin standard.
-        requestManager: {
+        _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(),
         },
@@ -2568,6 +2574,22 @@ limitations under the License.
         });
 
         resizer.call(dragResize);
+      },
+
+      attached: function() {
+        // Check if the plugin was created
+        this._requestManager
+            .request(tf_backend.getRouter().pluginsListing())
+            .then(plugins => {
+              if (!(PLUGIN_NAME in plugins)) {
+                // The plugin was not created
+                this.$.inferencesettings.close();
+                this.$.initialDialog.openNoTensorFlowDialog();
+              } else {
+                // The plugin was created
+                this.$.initialDialog.closeDialog();
+              }
+            });
       },
 
       settingsClicked_: function() {
@@ -4470,7 +4492,7 @@ limitations under the License.
             thenDoFn(result);
           }
         });
-        this.requestManager.request(url, postData).then(wrapperFn)
+        this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
               this.exampleStatusStr = 'Request failed';
               this.showToast_('Request failed: ' + reason);
@@ -5573,10 +5595,11 @@ limitations under the License.
     });
 
     tf_tensorboard.registerDashboard({
-      plugin: 'whatif',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-interactive-inference-dashboard',
       tabName: 'What-If Tool',
     });
 
+    })();
   </script>
 </dom-module>

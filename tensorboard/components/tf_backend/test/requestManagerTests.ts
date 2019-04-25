@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
 
+const {expect} = chai;
+
 interface MockRequest {
   resolve: Function;
   reject: Function;
@@ -90,6 +92,15 @@ function waitForCondition(check: () => boolean): Promise<any> {
 }
 
 describe('backend', () => {
+  let sandbox;
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   describe('request manager', () => {
     it('request loads JSON properly', (done) => {
       const rm = new RequestManager();
@@ -302,7 +313,7 @@ describe('backend', () => {
 
     describe('tests using sinon.fakeServer', function() {
       let server;
-      
+
       beforeEach(function() {
         server = sinon.fakeServer.create();
         server.respondImmediately = true;
@@ -312,7 +323,7 @@ describe('backend', () => {
       afterEach(function() {
         server.restore();
       });
-      
+
       it('builds correct XMLHttpRequest when request(url) is called',
          function() {
            const rm = new RequestManager();
@@ -363,6 +374,113 @@ describe('backend', () => {
                  "text/plain;charset=utf-8");
              });
          });
+    });
+
+    describe('fetch', () => {
+      beforeEach(function() {
+        this.stubbedFetch = sandbox.stub(window, 'fetch');
+        this.clock = sandbox.useFakeTimers();
+
+        this.resolvesAfter = function(value: any, timeInMs: number):
+            Promise<any> {
+          return new Promise((resolve) => {
+            setTimeout(() => resolve(value), timeInMs);
+          });
+        }
+      });
+
+      it('resolves', async function() {
+        this.stubbedFetch.returns(
+            Promise.resolve(new Response('Success', {status: 200})));
+        const rm = new RequestManager();
+
+        const response = await rm.fetch('foo');
+
+        expect(response).to.have.property('ok', true);
+        expect(response).to.have.property('status', 200);
+        const body = await response.text();
+        expect(body).to.equal('Success');
+      });
+
+      it('retries', async function() {
+        this.stubbedFetch.onCall(0).returns(
+            Promise.resolve(new Response('Error 1', {status: 500})));
+        this.stubbedFetch.onCall(1).returns(
+            Promise.resolve(new Response('Error 2', {status: 500})));
+        this.stubbedFetch.onCall(2).returns(
+            Promise.resolve(new Response('Success', {status: 200})));
+        const rm = new RequestManager();
+
+        const response = await rm.fetch('foo');
+
+        expect(response).to.have.property('ok', true);
+        expect(response).to.have.property('status', 200);
+        const body = await response.text();
+        expect(body).to.equal('Success');
+      });
+
+      it('gives up after max retries', async function() {
+        const failure = new Response('Error', {status: 500});
+        this.stubbedFetch.returns(Promise.resolve(failure));
+        const rm = new RequestManager();
+
+        const response = await rm.fetch('foo');
+
+        // TODO(stephanwlee): Make sure to use sinon-chai when typing is proper.
+        expect(this.stubbedFetch.callCount).to.equal(3);
+        expect(response).to.have.property('ok', false);
+        expect(response).to.have.property('status', 500);
+        const body = await response.text();
+        expect(body).to.equal('Error');
+      });
+
+      it('sends requests concurrently', async function() {
+        this.stubbedFetch.onCall(0).returns(
+            this.resolvesAfter(new Response('nay', {status: 200}), 3000));
+        this.stubbedFetch.onCall(1).returns(
+            Promise.resolve(new Response('yay', {status: 200})));
+
+        const rm = new RequestManager(/** nSimultaneousRequests */ 2);
+
+        const promise1 = rm.fetch('foo');
+        const promise2 = rm.fetch('bar');
+
+        const secondResponse = await Promise.race([promise1, promise2]);
+        const secondBody = await secondResponse.text();
+        expect(secondBody).to.equal('yay');
+
+        this.clock.tick(3000);
+
+        const firstResponse = await promise1;
+        const firstBody = await firstResponse.text();
+        expect(firstBody).to.equal('nay');
+      });
+
+      it('queues requests', async function() {
+        this.stubbedFetch.onCall(0).returns(
+            this.resolvesAfter(new Response('nay', {status: 200}), 3000));
+        this.stubbedFetch.onCall(1).returns(
+            Promise.resolve(new Response('yay', {status: 200})));
+
+
+        const rm = new RequestManager(/** nSimultaneousRequests */ 1);
+
+        const promise1 = rm.fetch('foo');
+        const promise2 = rm.fetch('bar');
+
+        expect(rm.activeRequests()).to.equal(1);
+        expect(rm.outstandingRequests()).to.equal(2);
+
+        this.clock.tick(3000);
+
+        const firstResponse = await Promise.race([promise1, promise2]);
+        const firstBody = await firstResponse.text();
+        expect(firstBody).to.equal('nay');
+
+        const secondResponse = await promise2;
+        const secondBody = await secondResponse.text();
+        expect(secondBody).to.equal('yay');
+      });
     });
   });
 });

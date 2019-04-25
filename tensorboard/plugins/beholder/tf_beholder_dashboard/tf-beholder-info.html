@@ -20,8 +20,7 @@ limitations under the License.
 
 <dom-module id="tf-beholder-info">
   <template>
-
-    <template id="repeater" is="dom-repeat" items="{{items}}">
+    <template is="dom-repeat" items="[[_items]]">
       <div class="section-info" style$="height: [[item.height]]px">
         <ul>
           <li>[[item.name]]</li>
@@ -65,9 +64,9 @@ limitations under the License.
           value: 10000,
         },
 
-        items: {
+        _items: {
           type: Array,
-          value: [{name:'Loading...'}],
+          value: () => [{name:'Loading...'}],
         },
 
         _xhr: Object,
@@ -96,9 +95,9 @@ limitations under the License.
       _onLoad() {
         if (this._xhr.status == 200) {
           const response = JSON.parse(this._xhr.responseText);
-          for (var item of response) {
-            this.push('items', item);
-          }
+          console.assert(
+              Array.isArray(response), 'Expected response to be in an array');
+          this._items = response;
         }
         this._retry(this._getSleep());
       },
