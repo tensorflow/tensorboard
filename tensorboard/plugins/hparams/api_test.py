@@ -34,6 +34,9 @@ from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.util import test_util
 
 
+tf.compat.v1.enable_eager_execution()
+
+
 class ExperimentTest(test.TestCase):
   def test_summary_pb(self):
     hparams = [
@@ -245,8 +248,8 @@ class DiscreteTest(test.TestCase):
 
 
 class KerasCallbackTest(test.TestCase):
-  def setUp(self):
-    super(KerasCallbackTest, self).setUp()
+
+  def _initialize_model(self):
     HP_DENSE_NEURONS = hp.HParam("dense_neurons", hp.IntInterval(4, 16))
     self.hparams = {
         "optimizer": "adam",
@@ -264,8 +267,8 @@ class KerasCallbackTest(test.TestCase):
         group_name="psl27",
     )
 
-  @test_util.run_v2_only("Requires eager mode.")
   def test_eager(self):
+    self._initialize_model()
     self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
 
     files = os.listdir(self.logdir)
@@ -324,12 +327,13 @@ class KerasCallbackTest(test.TestCase):
     )
     self.assertEqual(end_pb, expected_end_pb)
 
-
-  @test_util.run_v1_only("Requires non-eager mode.")
   def test_non_eager_failure(self):
-    with six.assertRaisesRegex(
-        self, RuntimeError, "only supported in TensorFlow eager mode"):
-      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    with tf.compat.v1.Graph().as_default():
+      assert not tf.executing_eagerly()
+      self._initialize_model()
+      with six.assertRaisesRegex(
+          self, RuntimeError, "only supported in TensorFlow eager mode"):
+        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
 
   def test_duplicate_hparam_names_across_object_and_string(self):
     hparams = {
@@ -338,7 +342,7 @@ class KerasCallbackTest(test.TestCase):
     }
     with six.assertRaisesRegex(
         self, ValueError, "multiple values specified for hparam 'foo'"):
-      hp.KerasCallback(self.logdir, hparams)
+      hp.KerasCallback(self.get_temp_dir(), hparams)
 
   def test_duplicate_hparam_names_from_two_objects(self):
     hparams = {
@@ -347,7 +351,7 @@ class KerasCallbackTest(test.TestCase):
     }
     with six.assertRaisesRegex(
         self, ValueError, "multiple values specified for hparam 'foo'"):
-      hp.KerasCallback(self.logdir, hparams)
+      hp.KerasCallback(self.get_temp_dir(), hparams)
 
 
 if __name__ == "__main__":
