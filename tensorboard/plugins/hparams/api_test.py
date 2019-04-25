@@ -26,6 +26,12 @@ from google.protobuf import text_format
 import six
 import tensorflow as tf
 
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
 from tensorboard import test
 from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
@@ -268,8 +274,15 @@ class KerasCallbackTest(test.TestCase):
     )
 
   def test_eager(self):
-    self._initialize_model()
-    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    def mock_time():
+      mock_time.time += 1
+      return mock_time.time
+    mock_time.time = 1556227801.875
+    initial_time = mock_time()
+    with mock.patch("time.time", mock_time):
+      self._initialize_model()
+      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    final_time = mock_time()
 
     files = os.listdir(self.logdir)
     self.assertEqual(len(files), 1, files)
@@ -291,14 +304,22 @@ class KerasCallbackTest(test.TestCase):
     start_pb = metadata.parse_session_start_info_plugin_data(start_plugin_data)
     end_pb = metadata.parse_session_end_info_plugin_data(end_plugin_data)
 
-    # Remove any dependence on system time.
-    start_pb.start_time_secs = 123.45
-    end_pb.end_time_secs = 234.56
+    # We're not the only callers of `time.time`; Keras calls it
+    # internally an unspecified number of times, so we're not guaranteed
+    # to know the exact values. Instead, we perform relative checks...
+    self.assertGreater(start_pb.start_time_secs, initial_time)
+    self.assertLess(start_pb.start_time_secs, end_pb.end_time_secs)
+    self.assertLess(start_pb.start_time_secs, final_time)
+    self.assertEqual(start_pb.start_time_secs % 1, initial_time % 1)
+    self.assertEqual(end_pb.end_time_secs % 1, initial_time % 1)
+    # ...and then stub out the times for proto equality checks below.
+    start_pb.start_time_secs = 1234.5
+    end_pb.end_time_secs = 6789.0
 
     expected_start_pb = plugin_data_pb2.SessionStartInfo()
     text_format.Merge(
         """
-        start_time_secs: 123.45
+        start_time_secs: 1234.5
         group_name: "psl27"
         hparams {
           key: "optimizer"
@@ -320,7 +341,7 @@ class KerasCallbackTest(test.TestCase):
     expected_end_pb = plugin_data_pb2.SessionEndInfo()
     text_format.Merge(
         """
-        end_time_secs: 234.56
+        end_time_secs: 6789.0
         status: STATUS_SUCCESS
         """,
         expected_end_pb,
