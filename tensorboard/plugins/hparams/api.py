@@ -452,15 +452,12 @@ class KerasCallback(tf.keras.callbacks.Callback):
 
   def _write_summary(self, pb, step=None):
     raw_pb = pb.SerializeToString()
-    with self._writer.as_default():
-      result = tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=step)
-    sentinel = object()
-    if getattr(result, "numpy", sentinel) is sentinel:
-      # Not an eager tensor, so the summary wasn't actually written. We
-      # don't have access to any session context to force the op. Bail.
+    if not tf.executing_eagerly():
       raise RuntimeError(
           "hparams Keras callback only supported in TensorFlow eager mode"
       )
+    with self._writer.as_default():
+      result = tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=step)
 
   def on_train_begin(self, logs=None):
     del logs  # unused
