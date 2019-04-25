@@ -429,7 +429,8 @@ class KerasCallback(tf.keras.callbacks.Callback):
   ):
     """Create a callback for logging hyperparameters to TensorBoard.
 
-    Each callback object is good for one session only.
+    As with the standard `tf.keras.callbacks.TensorBoard` class, each
+    callback object is valid for only one call to `model.fit`.
 
     Args:
       logdir: The log directory for this session.
