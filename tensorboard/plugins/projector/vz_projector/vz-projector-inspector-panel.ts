@@ -50,17 +50,16 @@ export class InspectorPanel extends InspectorPanelPolymer {
   private limitMessage: HTMLDivElement;
 
   ready() {
+    super.ready();
     this.resetFilterButton =
-        this.querySelector('.reset-filter') as HTMLButtonElement;
+        this.$$('.reset-filter') as HTMLButtonElement;
     this.setFilterButton =
-        this.querySelector('.set-filter') as HTMLButtonElement;
+        this.$$('.set-filter') as HTMLButtonElement;
     this.clearSelectionButton =
-        this.querySelector('.clear-selection') as HTMLButtonElement;
-    this.limitMessage = this.querySelector('.limit-msg') as HTMLDivElement;
-    this.searchBox = this.querySelector('#search-box') as ProjectorInput;
+        this.$$('.clear-selection') as HTMLButtonElement;
+    this.limitMessage = this.$$('.limit-msg') as HTMLDivElement;
+    this.searchBox = this.$$('#search-box') as ProjectorInput;
     this.displayContexts = [];
-    // https://www.polymer-project.org/1.0/docs/devguide/styling#scope-subtree
-    this.scopeSubtree(this, true);
   }
 
   initialize(
@@ -110,7 +109,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
       // Make the default label the first non-numeric column.
       this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
     }
-    this.updateInspectorPane(this.selectedPointIndices, 
+    this.updateInspectorPane(this.selectedPointIndices,
         this.neighborsOfFirstPoint);
   }
 
@@ -132,7 +131,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
 
     this.metadataColumn = metadataColumn;
     this.addContext('.metadata-info');
-    let list = this.querySelector('.metadata-list') as HTMLDivElement;
+    let list = this.$$('.metadata-list') as HTMLDivElement;
     list.innerHTML = '';
 
     let entries = stat[0].uniqueEntries.sort((a, b) => a.count - b.count);
@@ -196,23 +195,23 @@ export class InspectorPanel extends InspectorPanelPolymer {
       this.displayContexts.push(context);
     }
     this.displayContexts.forEach( c => {
-      (this.querySelector(c) as HTMLDivElement).style.display = 'none';
+      (this.$$(c) as HTMLDivElement).style.display = 'none';
     });
-    (this.querySelector(context) as HTMLDivElement).style.display = null;
+    (this.$$(context) as HTMLDivElement).style.display = null;
   }
 
   private removeContext(context: string) {
     this.displayContexts = this.displayContexts.filter(c => c !== context);
-    (this.querySelector(context) as HTMLDivElement).style.display = 'none';
+    (this.$$(context) as HTMLDivElement).style.display = 'none';
 
     if (this.displayContexts.length > 0) {
       let lastContext = this.displayContexts[this.displayContexts.length - 1];
-      (this.querySelector(lastContext) as HTMLDivElement).style.display = null;
+      (this.$$(lastContext) as HTMLDivElement).style.display = null;
     }
   }
 
   private updateSearchResults(indices: number[]) {
-    const container = this.querySelector('.matches-list') as HTMLDivElement;
+    const container = this.$$('.matches-list') as HTMLDivElement;
     const list = container.querySelector('.list') as HTMLDivElement;
     list.innerHTML = '';
     if (indices.length === 0) {
@@ -258,7 +257,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
   }
 
   private updateNeighborsList(neighbors: knn.NearestEntry[]) {
-    const nnlist = this.querySelector('.nn-list') as HTMLDivElement;
+    const nnlist = this.$$('.nn-list') as HTMLDivElement;
     nnlist.innerHTML = '';
 
     if (neighbors.length === 0) {
@@ -346,9 +345,9 @@ export class InspectorPanel extends InspectorPanelPolymer {
   private setupUI(projector: Projector) {
     this.distFunc = vector.cosDist;
     const eucDist =
-        this.querySelector('.distance a.euclidean') as HTMLLinkElement;
+        this.$$('.distance a.euclidean') as HTMLLinkElement;
     eucDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
+      const links = this.root.querySelectorAll('.distance a');
       for (let i = 0; i < links.length; i++) {
         util.classed(links[i] as HTMLElement, 'selected', false);
       }
@@ -361,9 +360,9 @@ export class InspectorPanel extends InspectorPanelPolymer {
       this.updateNeighborsList(neighbors);
     };
 
-    const cosDist = this.querySelector('.distance a.cosine') as HTMLLinkElement;
+    const cosDist = this.$$('.distance a.cosine') as HTMLLinkElement;
     cosDist.onclick = () => {
-      const links = this.querySelectorAll('.distance a');
+      const links = this.root.querySelectorAll('.distance a');
       for (let i = 0; i < links.length; i++) {
         util.classed(links[i] as HTMLElement, 'selected', false);
       }
@@ -424,6 +423,6 @@ export class InspectorPanel extends InspectorPanelPolymer {
   };
 }
 
-document.registerElement(InspectorPanel.prototype.is, InspectorPanel);
+customElements.define(InspectorPanel.prototype.is, InspectorPanel);
 
 }  // namespace vz_projector
