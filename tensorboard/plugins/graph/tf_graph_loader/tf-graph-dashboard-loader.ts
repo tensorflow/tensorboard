@@ -20,7 +20,7 @@ interface GraphRunTag {
 }
 
 Polymer({
-  is: 'tf-graph-loader',
+  is: 'tf-graph-dashboard-loader',
 
   properties: {
     datasets: Array,
