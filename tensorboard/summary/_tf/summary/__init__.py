@@ -26,7 +26,7 @@
 """
 Operations for writing summary data, for use in analysis and visualization.
 
-The tf.summary module provides APIs for writing summary data. This data can be
+The `tf.summary` module provides APIs for writing summary data. This data can be
 visualized in TensorBoard, the visualization toolkit that comes with TensorFlow.
 See the [TensorBoard website](https://www.tensorflow.org/tensorboard) for more
 detailed tutorials about how to use these APIs, or some quick examples below.
@@ -38,7 +38,7 @@ writer = tf.summary.create_file_writer("/tmp/mylogs")
 with writer.as_default():
   for step in range(100):
     # other model code would go here
-    tf.summary.scalar("metric", 0.5, step=step)
+    tf.summary.scalar("my_metric", 0.5, step=step)
     writer.flush()
 ```
 
@@ -48,13 +48,13 @@ Example usage with `tf.function` graph execution:
 writer = tf.summary.create_file_writer("/tmp/mylogs")
 
 @tf.function
-def my_func(metric, step):
+def my_func(step):
   # other model code would go here
   with writer.as_default():
-    tf.summary.scalar("metric", metric, step=step)
+    tf.summary.scalar("my_metric", 0.5, step=step)
 
 for step in range(100):
-  my_func(0.5, step)
+  my_func(step)
   writer.flush()
 ```
 
@@ -66,15 +66,15 @@ with tf.compat.v1.Graph().as_default():
   step_update = step.assign_add(1)
   writer = tf.summary.create_file_writer("/tmp/mylogs")
   with writer.as_default():
-    tf.summary.scalar("metric", 0.5, step=step)
-  all_summary_ops = tf.compat.v1.all_v2_summary_ops()
+    tf.summary.scalar("my_metric", 0.5, step=step)
+  all_summary_ops = tf.compat.v1.summary.all_v2_summary_ops()
   writer_flush = writer.flush()
 
   sess = tf.compat.v1.Session()
   sess.run([writer.init(), step.initializer])
   for i in range(100):
-    sess.run(step_update)
     sess.run(all_summary_ops)
+    sess.run(step_update)
     sess.run(writer_flush)
 ```
 
