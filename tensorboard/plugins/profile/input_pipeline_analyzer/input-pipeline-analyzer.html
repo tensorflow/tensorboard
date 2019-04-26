@@ -425,6 +425,8 @@ You may obtain a copy of the License at
                   .labelFormatter(function(n){
                                   return Number(n).toFixed(2) + "%" ;});
         let plot = new Plottable.Components.Table([[pie, legend]]);
+        // clear previous chart then draw the plot.
+        div.select('*').remove();
         plot.renderTo(div);
       }
     },

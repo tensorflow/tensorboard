@@ -169,10 +169,14 @@ Polymer({
    return podStatsMap;
   },
   _computePodStatsMap(podStatsMaps: Array<podviewer.proto.PodStatsMap>,
-                      curStepId: number,
-                      layers: Array<podviewer.proto.StackLayer>):
-                      podviewer.proto.PodStatsMap {
-    if (curStepId < 0 || curStepId >= podStatsMaps.length || !layers) return;
+      curStepId: number,
+      layers: Array<podviewer.proto.StackLayer>): podviewer.proto.PodStatsMap {
+    if (!podStatsMaps ||
+        curStepId < 0 ||
+        curStepId >= podStatsMaps.length ||
+        !layers) {
+      return;
+    }
     return this._populateLowFlopsCompute(podStatsMaps[curStepId], layers);
   },
   _computeStepStats(podStatsMap: podviewer.proto.PodStatsMap):

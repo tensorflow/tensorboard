@@ -72,6 +72,9 @@ Polymer({
         position: relative;
         top: -10px;
       }
+      .card-content {
+        background: #fff;
+      }
       .card-content > div {
         margin-bottom: 1em;
       }
@@ -169,7 +172,6 @@ Polymer({
     if (!node) return;
     var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
     this.$.card.updateStyles({"--paper-card-background-color": color});
-    this.$.subheader.style.backgroundColor = color;
   },
   _subheader: function(node) {
     if (!node) return null;

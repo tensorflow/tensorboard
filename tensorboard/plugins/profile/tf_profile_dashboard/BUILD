@@ -20,6 +20,7 @@ tf_web_library(
         "//tensorboard/plugins/profile/input_pipeline_analyzer",
         "//tensorboard/plugins/profile/memory_viewer/memory_viewer_dashboard",
         "//tensorboard/plugins/profile/overview_page",
+        "//tensorboard/plugins/profile/pod_viewer/details_card",
         "//tensorboard/plugins/profile/pod_viewer/pod_viewer_dashboard",
         "//tensorboard/plugins/profile/tf_op_profile",
         "//tensorboard/plugins/profile/tf_profile_common",
