@@ -285,7 +285,7 @@ class BarChart {
     tooltipHeaderRow.insert('th', ':first-child');
 
     const plot = this.plot;
-    const pointer = new Plottable.Interactions.Pointer();
+    const pointer = new vz_chart_helpers.PointerInteraction();
     pointer.attachTo(plot);
 
     var hideTooltips = () => {

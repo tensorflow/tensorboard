@@ -30,7 +30,7 @@ limitations under the License.
         width: 100%;
       }
     </style>
-    <tf-interactive-inference-dashboard id="dash" local="true" model-type="regression" model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard id="dash" local="true" model-type="regression">
     </tf-interactive-inference-dashboard>
   </template>
   <script>
@@ -44,6 +44,8 @@ limitations under the License.
         categories: Object,
       },
       ready: async function() {
+        this.$.dash.modelName = "demo";
+        this.$.dash.inferenceAddress = "demo";
         this.$.dash.updateNumberOfModels();
         this.means = {
           'age': 38.64358543876172,

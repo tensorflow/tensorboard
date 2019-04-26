@@ -35,7 +35,7 @@ limitations under the License.
       }
     </style>
     <canvas id="spritecanvas"></canvas>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]" model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]">
     </tf-interactive-inference-dashboard>
   </template>
   <script>
@@ -52,6 +52,8 @@ limitations under the License.
         images: Array,
       },
       ready: async function() {
+        this.$.dash.modelName = "demo";
+        this.$.dash.inferenceAddress = "demo";
         this.$.dash.updateNumberOfModels();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/images/model.json', {credentials: 'include'}));
