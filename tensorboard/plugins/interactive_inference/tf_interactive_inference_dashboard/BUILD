@@ -17,7 +17,7 @@ tf_web_library(
         ":tf_inference_viewer",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_bar_chart",
-        "//tensorboard/components/vz_line_chart",
+        "//tensorboard/components/vz_line_chart2",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@ai_google_pair_facets//facets_overview/components/facets_overview",
         "@org_polymer_iron_collapse",
