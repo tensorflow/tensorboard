@@ -98,9 +98,9 @@ py_binary(
     srcs = ["hparams_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":api",
         ":protos_all_py_pb2",
         ":summary",
-        ":summary_v2",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_numpy_installed",
@@ -146,6 +146,30 @@ sh_test(
     srcs = ["hparams_util_test.sh"],
     data = [
         ":hparams_util",
+    ],
+)
+
+py_library(
+    name = "api",
+    srcs = ["api.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":summary_v2",
+    ],
+)
+
+py_test(
+    name = "api_test",
+    size = "small",
+    srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":summary_v2",
+        "//tensorboard:test",
     ],
 )
 
