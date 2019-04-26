@@ -215,10 +215,8 @@ def run_all(logdir, verbose=False):
   data = prepare_data()
   rng = random.Random(0)
 
-  with tf.summary.create_file_writer(logdir).as_default() as base_writer:
-    experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
-    hp.experiment(experiment)
-    base_writer.close()
+  with tf.summary.create_file_writer(logdir).as_default():
+    hp.hparams_config(hparams=HPARAMS, metrics=METRICS)
 
   sessions_per_group = 2
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group

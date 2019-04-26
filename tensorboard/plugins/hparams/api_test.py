@@ -42,9 +42,11 @@ from tensorboard.plugins.hparams import plugin_data_pb2
 tf.compat.v1.enable_eager_execution()
 
 
-class ExperimentTest(test.TestCase):
-  def test_summary_pb(self):
-    hparams = [
+class HParamsConfigTest(test.TestCase):
+  def setUp(self):
+    self.logdir = os.path.join(self.get_temp_dir(), "logs")
+
+    self.hparams = [
         hp.HParam("learning_rate", hp.RealInterval(1e-2, 1e-1)),
         hp.HParam("dense_layers", hp.IntInterval(2, 7)),
         hp.HParam("optimizer", hp.Discrete(["adam", "sgd"])),
@@ -56,7 +58,7 @@ class ExperimentTest(test.TestCase):
             description="descriptive",
         ),
     ]
-    metrics = [
+    self.metrics = [
         hp.Metric("samples_per_second"),
         hp.Metric(group="train", tag="batch_loss", display_name="loss (train)"),
         hp.Metric(
@@ -67,25 +69,11 @@ class ExperimentTest(test.TestCase):
             dataset_type=hp.Metric.VALIDATION,
         ),
     ]
-    experiment = hp.Experiment(
-        hparams=hparams,
-        metrics=metrics,
-        user="zalgo",
-        description="nothing to see here; move along",
-        time_created_secs=1555624767,
-    )
+    self.time_created_secs = 1555624767.0
 
-    self.assertEqual(experiment.hparams, hparams)
-    self.assertEqual(experiment.metrics, metrics)
-    self.assertEqual(experiment.user, "zalgo"),
-    self.assertEqual(experiment.description, "nothing to see here; move along")
-    self.assertEqual(experiment.time_created_secs, 1555624767)
-
-    expected_experiment_pb = api_pb2.Experiment()
+    self.expected_experiment_pb = api_pb2.Experiment()
     text_format.Merge(
         """
-        description: "nothing to see here; move along"
-        user: "zalgo"
         time_created_secs: 1555624767.0
         hparam_infos {
           name: "learning_rate"
@@ -154,71 +142,80 @@ class ExperimentTest(test.TestCase):
           dataset_type: DATASET_VALIDATION
         }
         """,
-        expected_experiment_pb,
-    )
-    actual_summary_pb = experiment.summary_pb()
-    plugin_content = actual_summary_pb.value[0].metadata.plugin_data.content
-    self.assertEqual(
-        metadata.parse_experiment_plugin_data(plugin_content),
-        expected_experiment_pb,
+        self.expected_experiment_pb,
     )
 
-  def _assert_unique_summary(self, logdir, summary_pb):
-    """Test that `logdir` contains exactly one summary, `summary_pb`.
+  def _get_unique_summary_value(self, logdir):
+    """Get the unique summary `Value` stored in `logdir`.
 
     Specifically, `logdir` must be a directory containing exactly one
     entry, which must be an events file of whose events exactly one is a
-    summary, which must be equal to `summary_pb`.
+    summary, which must have exactly one `value`. This unique `value`
+    will be returned.
 
     Args:
       logdir: String path to a logdir.
-      summary_pb: A `summary_pb2.Summary` object.
+
+    Returns:
+      A `summary_pb2.Summary.Value` object.
     """
     files = os.listdir(logdir)
     self.assertEqual(len(files), 1, files)
     events_file = os.path.join(logdir, files[0])
-    for event in tf.compat.v1.train.summary_iterator(events_file):
-      if event.WhichOneof("what") != "summary":
-        continue
-      self.assertEqual(event.summary, summary_pb)
-      break
-    else:
-      self.fail("No summary data found")
+    summaries = [
+        event.summary
+        for event in tf.compat.v1.train.summary_iterator(events_file)
+        if event.WhichOneof("what") == "summary"
+    ]
+    self.assertEqual(len(summaries), 1, summaries)
+    values = summaries[0].value
+    self.assertEqual(len(values), 1, values)
+    return values[0]
 
-  @test_util.run_v2_only("Requires eager summary writing semantics.")
-  def test_write_experiment_v2(self):
-    experiment = hp.Experiment(
-        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
-        metrics=[hp.Metric("accuracy")],
+  def _check_logdir(self, logdir):
+    """Test that the experiment summary was written to `logdir`."""
+    actual_value = self._get_unique_summary_value(logdir)
+    self.assertEqual(
+        actual_value.metadata.plugin_data.plugin_name,
+        metadata.PLUGIN_NAME,
     )
-    logdir = os.path.join(self.get_temp_dir(), "logs")
-    with tf.compat.v2.summary.create_file_writer(logdir).as_default() as w:
-      self.assertTrue(hp.experiment(experiment))
-      w.close()
-    self._assert_unique_summary(logdir, experiment.summary_pb())
+    plugin_content = actual_value.metadata.plugin_data.content
+    self.assertEqual(
+        metadata.parse_experiment_plugin_data(plugin_content),
+        self.expected_experiment_pb,
+    )
 
-  @test_util.run_v2_only("Requires eager summary writing semantics.")
-  def test_write_experiment_v2_no_default_writer(self):
-    experiment = hp.Experiment(
-        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
-        metrics=[hp.Metric("accuracy")],
-    )
-    self.assertFalse(hp.experiment(experiment))  # no writer
+  def test_eager(self):
+    with tf.compat.v2.summary.create_file_writer(self.logdir).as_default():
+      result = hp.hparams_config(
+          hparams=self.hparams,
+          metrics=self.metrics,
+          time_created_secs=self.time_created_secs,
+      )
+      self.assertTrue(result)
+    self._check_logdir(self.logdir)
 
-  @test_util.run_v1_only("Requires graph-mode summary writing semantics.")
-  def test_write_experiment_v1(self):
-    experiment = hp.Experiment(
-        hparams=[hp.HParam("num_units", hp.Discrete([16, 32]))],
-        metrics=[hp.Metric("accuracy")],
+  def test_graph_mode(self):
+    with \
+        tf.compat.v1.Graph().as_default(), \
+        tf.compat.v1.Session() as sess, \
+        tf.compat.v2.summary.create_file_writer(self.logdir).as_default() as w:
+      sess.run(w.init())
+      summ = hp.hparams_config(
+          hparams=self.hparams,
+          metrics=self.metrics,
+          time_created_secs=self.time_created_secs,
+      )
+      self.assertTrue(sess.run(summ))
+    self._check_logdir(self.logdir)
+
+  def test_eager_no_default_writer(self):
+    result = hp.hparams_config(
+        hparams=self.hparams,
+        metrics=self.metrics,
+        time_created_secs=self.time_created_secs,
     )
-    logdir = os.path.join(self.get_temp_dir(), "logs")
-    with tf.compat.v1.Session() as sess:
-      with tf.compat.v2.summary.create_file_writer(logdir).as_default() as w:
-        with tf.compat.v2.summary.record_if(True):
-          tf.contrib.summary.initialize()
-          self.assertTrue(sess.run(hp.experiment(experiment)))
-          w.close()
-    self._assert_unique_summary(logdir, experiment.summary_pb())
+    self.assertFalse(result)  # no default writer
 
 
 class IntIntervalTest(test.TestCase):
