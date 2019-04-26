@@ -308,8 +308,6 @@ class KerasCallbackTest(test.TestCase):
     self.assertGreater(start_pb.start_time_secs, initial_time)
     self.assertLess(start_pb.start_time_secs, end_pb.end_time_secs)
     self.assertLessEqual(start_pb.start_time_secs, final_time)
-    self.assertEqual(start_pb.start_time_secs % 1, initial_time % 1)
-    self.assertEqual(end_pb.end_time_secs % 1, initial_time % 1)
     # ...and then stub out the times for proto equality checks below.
     start_pb.start_time_secs = 1234.5
     end_pb.end_time_secs = 6789.0
