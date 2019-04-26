@@ -1818,6 +1818,7 @@ limitations under the License.
                                   <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
                                     label="[[getConfusionMatrixLabel(index, numModels)]]"
                                     background="[[getConfusionMatrixColor(index)]]"
+                                    all-items="[[allConfMatrixLabels]]"
                                     class="conf-matrix">
                                   </tf-confusion-matrix>
                                 </template>
@@ -1889,6 +1890,7 @@ limitations under the License.
                                 <tf-confusion-matrix counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
                                   label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
                               </template>
@@ -1987,6 +1989,7 @@ limitations under the License.
                                     <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index, featureValueThreshold)]]"
                                       label="[[getConfusionMatrixLabel(index, numModels)]]"
                                       background="[[getConfusionMatrixColor(index)]]"
+                                      all-items="[[allConfMatrixLabels]]"
                                       class="conf-matrix">
                                     </tf-confusion-matrix>
                                     </template>
@@ -2028,6 +2031,7 @@ limitations under the License.
                                 <tf-confusion-matrix counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
                                   label="[[getConfusionMatrixLabel(index, numModels)]]"
                                   background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
                                   class="conf-matrix">
                                 </tf-confusion-matrix>
                               </template>
@@ -2513,6 +2517,12 @@ limitations under the License.
           type: Array,
           value: () => ([d3.color('rgb(18, 181, 206)'),
                          d3.color('rgb(250, 120, 23)')]),
+        },
+        // Dictionary where keys contain all cell labels for confusion
+        // matrices.
+        allConfMatrixLabels: {
+          type: Array,
+          value: () => ([]),
         }
       },
 
@@ -3117,6 +3127,11 @@ limitations under the License.
                   }
                 }
               }
+              // For binary classification, no need to specify all possible
+              // labels for the confusion matrices as the data contains both
+              // classes.
+              this.allConfMatrixLabels = [];
+
               this.calcThresholdStats(inferenceStats.thresholds);
               for(let key in inferenceStats.faceted) {
                 if (inferenceStats.faceted.hasOwnProperty(key)) {
@@ -3127,6 +3142,7 @@ limitations under the License.
               // For multi-class classifiers, update the confusion matrices.
               inferenceStats.results = {};
               inferenceStats.faceted = {};
+              const allLabels = new Set();
               for (let i = 0; i < this.examplesAndInferences.length; i++) {
                 const item = this.visdata[i];
                 let facetedStats = null;
@@ -3150,6 +3166,8 @@ limitations under the License.
                 const modelInferenceValueStr =
                   this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
+                allLabels.add(item[modelInferenceValueStr]);
+                allLabels.add(item[modelInferenceValueStr]);
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
@@ -3170,6 +3188,7 @@ limitations under the License.
                   }
                 }
               }
+              this.allConfMatrixLabels = Array.from(allLabels.values());
             } else {
               // For regression models, calculate inference error.
               inferenceStats.results = {errors: []};
