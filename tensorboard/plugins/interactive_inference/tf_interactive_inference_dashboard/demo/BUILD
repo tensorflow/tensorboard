@@ -18,6 +18,7 @@ tf_web_library(
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+         "@org_polymer_web_animations_js",
     ],
 )
 
@@ -43,6 +44,7 @@ tf_web_library(
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+         "@org_polymer_web_animations_js",
     ],
 )
 
@@ -68,6 +70,7 @@ tf_web_library(
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+         "@org_polymer_web_animations_js",
     ],
 )
 
@@ -93,6 +96,7 @@ tf_web_library(
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+         "@org_polymer_web_animations_js",
     ],
 )
 
@@ -119,6 +123,7 @@ tf_web_library(
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:webcomponentsjs",
+         "@org_polymer_web_animations_js",
     ],
 )
 
