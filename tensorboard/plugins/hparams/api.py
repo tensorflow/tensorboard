@@ -464,11 +464,11 @@ class KerasCallback(tf.keras.callbacks.Callback):
       raise RuntimeError(
           "hparams Keras callback cannot be reused across training sessions"
       )
-    raw_pb = pb.SerializeToString()
     if not tf.executing_eagerly():
       raise RuntimeError(
           "hparams Keras callback only supported in TensorFlow eager mode"
       )
+    raw_pb = pb.SerializeToString()
     with self._writer.as_default():
       result = tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=step)
 
