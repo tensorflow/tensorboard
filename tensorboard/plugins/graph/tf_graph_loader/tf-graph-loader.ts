@@ -78,10 +78,10 @@ Polymer({
     this.debounce('load', () => {
       const dataset = this.datasets[this.selectedData];
       if (!dataset) return;
-      this._fetchAndConstructHierarchicalGraph(dataset.path);
+      this._parseAndConstructHierarchicalGraph(dataset.path);
     });
   },
-  _fetchAndConstructHierarchicalGraph(
+  _parseAndConstructHierarchicalGraph(
       path: (string|null), pbTxtFile?: Blob): void {
     const {
       overridingHierarchyParams,
@@ -120,7 +120,7 @@ Polymer({
     // selects the same file, we'll re-read it.
     target.value = '';
 
-    this._fetchAndConstructHierarchicalGraph(null, file);
+    this._parseAndConstructHierarchicalGraph(null, file);
   },
 });
 
