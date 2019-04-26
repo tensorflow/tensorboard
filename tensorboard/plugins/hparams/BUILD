@@ -157,6 +157,7 @@ py_library(
         "//visibility:public",
     ],
     deps = [
+        ":keras",
         ":summary_v2",
     ],
 )
@@ -168,8 +169,40 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":api",
+        ":keras",
         ":summary_v2",
         "//tensorboard:test",
+    ],
+)
+
+py_library(
+    name = "keras",
+    srcs = ["keras.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "keras_test",
+    size = "small",
+    srcs = ["keras_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":keras",
+        ":metadata",
+        ":protos_all_py_pb2",
+        ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 

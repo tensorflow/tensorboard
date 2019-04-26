@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard.plugins.hparams import keras
 from tensorboard.plugins.hparams import summary_v2
 
 
@@ -25,13 +26,15 @@ Discrete = summary_v2.Discrete
 Domain = summary_v2.Domain
 HParam = summary_v2.HParam
 IntInterval = summary_v2.IntInterval
-KerasCallback = summary_v2.KerasCallback
 Metric = summary_v2.Metric
 RealInterval = summary_v2.RealInterval
 hparams_config = summary_v2.hparams_config
 
+KerasCallback = keras.Callback
+
 
 del absolute_import
 del division
+del keras
 del print_function
 del summary_v2
