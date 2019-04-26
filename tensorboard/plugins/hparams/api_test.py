@@ -37,7 +37,6 @@ from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
-from tensorboard.util import test_util
 
 
 tf.compat.v1.enable_eager_execution()
