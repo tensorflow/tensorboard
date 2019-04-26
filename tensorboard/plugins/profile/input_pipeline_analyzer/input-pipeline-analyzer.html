@@ -21,10 +21,12 @@ You may obtain a copy of the License at
   time on host and on device.
 -->
 
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
+<link rel="import" href="../tf-imports/plottable.html">
 
 <dom-module id="input-pipeline-analyzer">
   <template>
+    <style include="plottable-style"></style>
     <style>
       .section-header {
         text-decoration: underline;
@@ -128,7 +130,7 @@ You may obtain a copy of the License at
               </td>
               <td><div class="y-axis-title">milliseconds</div></td>
               <td class="right-pane">
-                <vz-line-chart id="device_step_chart" style="height:300px;"></vz-line-chart>
+                <vz-line-chart2 id="device_step_chart" style="height:300px;"></vz-line-chart2>
                 <div><p class="x-axis-title">training step number</p></div>
               </td>
             </tr>
@@ -160,7 +162,7 @@ You may obtain a copy of the License at
               </td>
               <td><div class="y-axis-title"><p>% of device step time</p></div></td>
               <td class="right-pane">
-                <vz-line-chart id="device_infeed_chart" style="height:300px;"></vz-line-chart>
+                <vz-line-chart2 id="device_infeed_chart" style="height:300px;"></vz-line-chart2>
                 <div><p class="x-axis-title">training step number</p></div>
               </td>
             </tr>
