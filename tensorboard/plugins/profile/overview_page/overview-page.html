@@ -27,7 +27,7 @@ You may obtain a copy of the License at
     (5) Recommendation for next steps
 -->
 
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 <link rel="import" href="../paper-card/paper-card.html">
 
 <dom-module id="overview-page">
@@ -36,7 +36,9 @@ You may obtain a copy of the License at
      paper-card {
        margin: 5px;
        --paper-card-header-color: #F5F5F5;
-       --paper-card-header: background-color: #4285F4;
+       --paper-card-header: {
+         background-color: #4285F4;
+       }
      }
      .flex-horizontal {
        @apply --layout-horizontal;
@@ -53,7 +55,7 @@ You may obtain a copy of the License at
      .top-ops-table {
        width: 100%;
      }
-     vz-line-chart.step-graph {
+     vz-line-chart2.step-graph {
        width: 860px;
        height: 200px;
      }
@@ -120,8 +122,8 @@ You may obtain a copy of the License at
               <tr>
                 <td><div class="y-axis-title">milliseconds</div></td>
                 <td>
-                  <vz-line-chart class="step-graph" id="device_step_chart">
-                  </vz-line-chart>
+                  <vz-line-chart2 class="step-graph" id="device_step_chart">
+                  </vz-line-chart2>
                   <div><p class="x-axis-title">training step number</p></div>
                 </td>
               </tr>
@@ -251,14 +253,15 @@ You may obtain a copy of the License at
        const recommendationJson = this._data[3];
        this._recommendationJson = recommendationJson;
        this._statement = recommendationJson.p['statement'];
+       let color = 'green';
        if (this._statement.includes('HIGHLY')) {
-         this.customStyle['--summary-color'] = 'red';
+         color = 'red';
        } else if (this._statement.includes('MODERATE')) {
-         this.customStyle['--summary-color'] = 'orange';
-       } else {
-         this.customStyle['--summary-color'] = 'green';
+         color = 'orange';
        }
-       this.updateStyles();
+       this.updateStyles({
+         '--summary-color': color,
+       });
      },
 
      /* Displays performance summary for the profile run */
