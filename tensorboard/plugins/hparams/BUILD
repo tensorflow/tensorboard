@@ -172,8 +172,10 @@ py_test(
         ":api",
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
