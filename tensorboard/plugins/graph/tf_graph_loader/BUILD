@@ -6,10 +6,10 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "tf_graph_loader",
+    name = "tf_graph_dashboard_loader",
     srcs = [
-        "tf-graph-loader.html",
-        "tf-graph-loader.ts",
+        "tf-graph-dashboard-loader.html",
+        "tf-graph-dashboard-loader.ts",
     ],
     path = "/tf-graph-loader",
     deps = [
@@ -21,7 +21,7 @@ tf_web_library(
 )
 
 tensorboard_webcomponent_library(
-    name = "legacy",
+    name = "legacy_dashboard_loader",
     srcs = [":tf_graph_loader"],
     destdir = "tf-graph-loader",
     deps = [
