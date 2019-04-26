@@ -117,7 +117,6 @@ class Experiment(object):
     )
 
 
-<<<<<<< HEAD
 def experiment(experiment):
   """Write a top-level experiment summary.
 
@@ -134,8 +133,6 @@ def experiment(experiment):
   return tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=0)
 
 
-=======
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 class HParam(object):
   """A hyperparameter in an experiment.
 
@@ -225,8 +222,6 @@ class IntInterval(Domain):
   """A domain that takes on all integer values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
-<<<<<<< HEAD
-=======
     """Create an `IntInterval`.
 
     Args:
@@ -237,7 +232,6 @@ class IntInterval(Domain):
       TypeError: If `min_value` or `max_value` is not an `int`.
       ValueError: If `min_value > max_value`.
     """
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
     if not isinstance(min_value, int):
       raise TypeError("min_value must be an int: %r" % (min_value,))
     if not isinstance(max_value, int):
@@ -275,8 +269,6 @@ class RealInterval(Domain):
   """A domain that takes on all real values in a closed interval."""
 
   def __init__(self, min_value=None, max_value=None):
-<<<<<<< HEAD
-=======
     """Create a `RealInterval`.
 
     Args:
@@ -287,7 +279,6 @@ class RealInterval(Domain):
       TypeError: If `min_value` or `max_value` is not an `float`.
       ValueError: If `min_value > max_value`.
     """
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
     if not isinstance(min_value, float):
       raise TypeError("min_value must be a float: %r" % (min_value,))
     if not isinstance(max_value, float):
@@ -328,8 +319,6 @@ class Discrete(Domain):
   """
 
   def __init__(self, values, dtype=None):
-<<<<<<< HEAD
-=======
     """Construct a discrete domain.
 
     Args:
@@ -346,7 +335,6 @@ class Discrete(Domain):
       TypeError: If an element of `values` is not an instance of
         `dtype`.
     """
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
     self._values = list(values)
     if dtype is None:
       if self._values:
@@ -358,11 +346,7 @@ class Discrete(Domain):
     self._dtype = dtype
     for value in self._values:
       if not isinstance(value, self._dtype):
-<<<<<<< HEAD
-        raise ValueError(
-=======
         raise TypeError(
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
             "dtype mismatch: not isinstance(%r, %s)"
             % (value, self._dtype.__name__)
         )
@@ -455,21 +439,12 @@ class KerasCallback(tf.keras.callbacks.Callback):
 
   def __init__(
       self,
-<<<<<<< HEAD
-      logdir,
-=======
       writer,
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
       hparams,
       group_name=None,
   ):
     """Create a callback for logging hyperparameters to TensorBoard.
 
-<<<<<<< HEAD
-    Each callback object is good for one session only.
-
-    Args:
-=======
     As with the standard `tf.keras.callbacks.TensorBoard` class, each
     callback object is valid for only one call to `model.fit`.
 
@@ -477,7 +452,6 @@ class KerasCallback(tf.keras.callbacks.Callback):
       writer: The `SummaryWriter` object to which hparams should be
         written, or a logdir (as a `str`) to be passed to
         `tf.summary.create_file_writer` to create such a writer.
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
       logdir: The log directory for this session.
       hparams: A `dict` mapping hyperparameters to the values used in
         this session. Keys should be the names of `HParam` objects used
@@ -494,21 +468,6 @@ class KerasCallback(tf.keras.callbacks.Callback):
     """
     self._hparams = _normalize_hparams(hparams)
     self._group_name = group_name if group_name is not None else ""
-<<<<<<< HEAD
-    self._writer = tf.compat.v2.summary.create_file_writer(logdir)
-
-  def _write_summary(self, pb, step=None):
-    raw_pb = pb.SerializeToString()
-    with self._writer.as_default():
-      result = tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=step)
-    sentinel = object()
-    if getattr(result, "numpy", sentinel) is sentinel:
-      # Not an eager tensor, so the summary wasn't actually written. We
-      # don't have access to any session context to force the op. Bail.
-      raise RuntimeError(
-          "hparams Keras callback only supported in TensorFlow eager mode"
-      )
-=======
     if writer is None:
       raise TypeError("writer must be a `SummaryWriter` or `str`, not None")
     elif isinstance(writer, str):
@@ -528,7 +487,6 @@ class KerasCallback(tf.keras.callbacks.Callback):
     raw_pb = pb.SerializeToString()
     with self._writer.as_default():
       result = tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=step)
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
   def on_train_begin(self, logs=None):
     del logs  # unused
@@ -543,11 +501,7 @@ class KerasCallback(tf.keras.callbacks.Callback):
         summary.session_end_pb(api_pb2.STATUS_SUCCESS),
         step=0,
     )
-<<<<<<< HEAD
-    self._writer.close()
-=======
     self._writer = None
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
 
 def _normalize_hparams(hparams):

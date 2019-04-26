@@ -215,20 +215,10 @@ def run_all(logdir, verbose=False):
   data = prepare_data()
   rng = random.Random(0)
 
-<<<<<<< HEAD
   with tf.summary.create_file_writer(logdir).as_default() as base_writer:
     experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
     hp.experiment(experiment)
     base_writer.close()
-=======
-  base_writer = tf.summary.create_file_writer(logdir)
-  with base_writer.as_default():
-    experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
-    experiment_string = experiment.summary_pb().SerializeToString()
-    tf.summary.experimental.write_raw_pb(experiment_string, step=0)
-    base_writer.flush()
-  base_writer.close()
->>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
   sessions_per_group = 2
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
