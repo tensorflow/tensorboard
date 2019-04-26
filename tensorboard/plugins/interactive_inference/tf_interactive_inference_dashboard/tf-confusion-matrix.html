@@ -85,14 +85,14 @@ limitations under the License.
         counts: Object,
 
         /**
-         * Dictionary where keys are all cell labels to be used in the
+         * Array where entries are all cell labels to be used in the
          * confusion matrix. If empty, then the cell labels are extracted
          * from the provided counts dictionary. This is used for when a
          * confusion matrix should have more rows/columns that just the
          * information from counts, such as in a multiclass problem where
          * the counts do not contain information from all possible classes.
          */
-        allItems: {type: Object, value: {}},
+        allItems: {type: Array, value: () => ([])},
 
         // Label appears in top-right corner of confusion matrix.
         label: String,
@@ -121,19 +121,21 @@ limitations under the License.
           return;
         }
 
-        // Get all labels from the provided object, or counts dict.
-        let allLabels = allItems;
-        if (Object.keys(allLabels).length == 0) {
+        // Get all labels from the provided list, or counts dict.
+        let labelsList = allItems;
+        if (labelsList == null || labelsList.length == 0) {
+          const labelsSet = new Set();
           const outerLabelList = Object.keys(counts);
           for (let i = 0; i < outerLabelList.length; i++) {
-            allLabels[outerLabelList[i]] = true;
+            labelsSet.add(outerLabelList[i]);
             const innerLabelList = Object.keys(counts[outerLabelList[i]]);
             for (let j = 0; j < innerLabelList.length; j++) {
-              allLabels[innerLabelList[j]] = true;
+              labelsSet.add(innerLabelList[j]);
             }
           }
+          labelsList = Array.from(labelsSet.values());
         }
-        let labelsList = Object.keys(allLabels).sort();
+        labelsList = labelsList.sort();
 
         // For binary classification confusion matrices, we want the 'Yes'
         // column/row to appear before 'No', so we reverse this labels list.

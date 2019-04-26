@@ -2531,8 +2531,8 @@ limitations under the License.
         // Dictionary where keys contain all cell labels for confusion
         // matrices.
         allConfMatrixLabels: {
-          type: Object,
-          value: () => ({}),
+          type: Array,
+          value: () => ([]),
         }
       },
 
@@ -3140,7 +3140,7 @@ limitations under the License.
               // For binary classification, no need to specify all possible
               // labels for the confusion matrices as the data contains both
               // classes.
-              this.allConfMatrixLabels = {};
+              this.allConfMatrixLabels = [];
 
               this.calcThresholdStats(inferenceStats.thresholds);
               for(let key in inferenceStats.faceted) {
@@ -3152,7 +3152,7 @@ limitations under the License.
               // For multi-class classifiers, update the confusion matrices.
               inferenceStats.results = {};
               inferenceStats.faceted = {};
-              const allLabels = {};
+              const allLabels = new Set();
               for (let i = 0; i < this.examplesAndInferences.length; i++) {
                 const item = this.visdata[i];
                 let facetedStats = null;
@@ -3176,8 +3176,8 @@ limitations under the License.
                 const modelInferenceValueStr =
                   this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
-                allLabels[item[modelInferenceValueStr]] = true;
-                allLabels[item[modelInferenceValueStr]] = true;
+                allLabels.add(item[modelInferenceValueStr]);
+                allLabels.add(item[modelInferenceValueStr]);
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
@@ -3198,7 +3198,7 @@ limitations under the License.
                   }
                 }
               }
-              this.allConfMatrixLabels = allLabels;
+              this.allConfMatrixLabels = Array.from(allLabels.values());
             } else {
               // For regression models, calculate inference error.
               inferenceStats.results = {errors: []};
