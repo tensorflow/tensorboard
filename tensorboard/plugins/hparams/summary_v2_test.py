@@ -33,10 +33,10 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import test
-from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.plugins.hparams import summary_v2 as hp
 
 
 tf.compat.v1.enable_eager_execution()

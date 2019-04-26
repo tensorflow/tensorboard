@@ -36,7 +36,7 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorboard.plugins.hparams import api as hp
+from tensorboard.plugins.hparams import summary_v2 as hp
 
 
 if int(tf.__version__.split(".")[0]) < 2:
