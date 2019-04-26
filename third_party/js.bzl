@@ -61,9 +61,15 @@ def tensorboard_js_workspace():
               "http://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-x64.tar.xz",
           ],
       },
+      sha256_urls_extract_ppc64le = {
+          "6f6362cba63c20eab4914c2983edd9699c1082792d0a35ef9c54d18b6c488e59": [
+              "http://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-ppc64le.tar.xz",
+          ],
+      },
       strip_prefix = {
           "node-v6.9.1-darwin-x64.tar.xz": "node-v6.9.1-darwin-x64",
           "node-v6.9.1-linux-x64.tar.xz": "node-v6.9.1-linux-x64",
+          "node-v6.9.1-linux-ppc64le.tar.xz": "node-v6.9.1-linux-ppc64le",
       },
       executable = [
           "node",
