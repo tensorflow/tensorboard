@@ -43,6 +43,7 @@ py_library(
         ":notebook",
         ":program",
         "//tensorboard/summary",
+        "//tensorboard/summary/writer",
     ],
 )
 
@@ -83,6 +84,7 @@ py_test(
         ":test",
         ":version",
         "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -101,6 +103,7 @@ py_test(
     deps = [
         ":manager",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
     data = [

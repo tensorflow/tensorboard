@@ -116,7 +116,7 @@ def model_fn(hparams, seed):
   """Create a Keras model with the given hyperparameters.
 
   Args:
-    hparams: A dict mapping hyperparameter names to values.
+    hparams: A dict mapping hyperparameters in `HPARAMS` to values.
     seed: A hashable object to be used as a random seed (e.g., to
       construct dropout layers in the model).
 
@@ -172,7 +172,7 @@ def run(data, base_logdir, session_id, group_id, hparams):
     session_id: A unique string ID for this session.
     group_id: The string ID of the session group that includes this
       session.
-    hparams: A dict mapping hyperparameter names to values.
+    hparams: A dict mapping hyperparameters in `HPARAMS` to values.
   """
   model = model_fn(hparams=hparams, seed=session_id)
   logdir = os.path.join(base_logdir, session_id)
@@ -215,10 +215,20 @@ def run_all(logdir, verbose=False):
   data = prepare_data()
   rng = random.Random(0)
 
+<<<<<<< HEAD
   with tf.summary.create_file_writer(logdir).as_default() as base_writer:
     experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
     hp.experiment(experiment)
     base_writer.close()
+=======
+  base_writer = tf.summary.create_file_writer(logdir)
+  with base_writer.as_default():
+    experiment = hp.Experiment(hparams=HPARAMS, metrics=METRICS)
+    experiment_string = experiment.summary_pb().SerializeToString()
+    tf.summary.experimental.write_raw_pb(experiment_string, step=0)
+    base_writer.flush()
+  base_writer.close()
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
   sessions_per_group = 2
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group

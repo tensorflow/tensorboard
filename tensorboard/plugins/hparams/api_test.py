@@ -26,12 +26,27 @@ from google.protobuf import text_format
 import six
 import tensorflow as tf
 
+<<<<<<< HEAD
+=======
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 from tensorboard import test
 from tensorboard.plugins.hparams import api as hp
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+<<<<<<< HEAD
 from tensorboard.util import test_util
+=======
+
+
+tf.compat.v1.enable_eager_execution()
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
 
 class ExperimentTest(test.TestCase):
@@ -155,6 +170,7 @@ class ExperimentTest(test.TestCase):
         expected_experiment_pb,
     )
 
+<<<<<<< HEAD
   def _assert_unique_summary(self, logdir, summary_pb):
     """Test that `logdir` contains exactly one summary, `summary_pb`.
 
@@ -212,6 +228,8 @@ class ExperimentTest(test.TestCase):
           w.close()
     self._assert_unique_summary(logdir, experiment.summary_pb())
 
+=======
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
 class IntIntervalTest(test.TestCase):
   def test_simple(self):
@@ -297,13 +315,26 @@ class DiscreteTest(test.TestCase):
 
   def test_dtype_mismatch(self):
     with six.assertRaisesRegex(
+<<<<<<< HEAD
         self, ValueError, r"dtype mismatch: not isinstance\(2, str\)"):
+=======
+        self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"):
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
       hp.Discrete(["one", 2])
 
 
 class KerasCallbackTest(test.TestCase):
+<<<<<<< HEAD
   def setUp(self):
     super(KerasCallbackTest, self).setUp()
+=======
+
+  def setUp(self):
+    super(KerasCallbackTest, self).setUp()
+    self.logdir = os.path.join(self.get_temp_dir(), "logs")
+
+  def _initialize_model(self, writer):
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
     HP_DENSE_NEURONS = hp.HParam("dense_neurons", hp.IntInterval(4, 16))
     self.hparams = {
         "optimizer": "adam",
@@ -314,6 +345,7 @@ class KerasCallbackTest(test.TestCase):
         tf.keras.layers.Dense(1, activation="sigmoid"),
     ])
     self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])
+<<<<<<< HEAD
     self.logdir = os.path.join(self.get_temp_dir(), "logs")
     self.callback = hp.KerasCallback(
         self.logdir,
@@ -324,6 +356,20 @@ class KerasCallbackTest(test.TestCase):
   @test_util.run_v2_only("Requires eager mode.")
   def test_eager(self):
     self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+=======
+    self.callback = hp.KerasCallback(writer, self.hparams, group_name="psl27")
+
+  def test_eager(self):
+    def mock_time():
+      mock_time.time += 1
+      return mock_time.time
+    mock_time.time = 1556227801.875
+    initial_time = mock_time.time
+    with mock.patch("time.time", mock_time):
+      self._initialize_model(writer=self.logdir)
+      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    final_time = mock_time.time
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
     files = os.listdir(self.logdir)
     self.assertEqual(len(files), 1, files)
@@ -345,14 +391,30 @@ class KerasCallbackTest(test.TestCase):
     start_pb = metadata.parse_session_start_info_plugin_data(start_plugin_data)
     end_pb = metadata.parse_session_end_info_plugin_data(end_plugin_data)
 
+<<<<<<< HEAD
     # Remove any dependence on system time.
     start_pb.start_time_secs = 123.45
     end_pb.end_time_secs = 234.56
+=======
+    # We're not the only callers of `time.time`; Keras calls it
+    # internally an unspecified number of times, so we're not guaranteed
+    # to know the exact values. Instead, we perform relative checks...
+    self.assertGreater(start_pb.start_time_secs, initial_time)
+    self.assertLess(start_pb.start_time_secs, end_pb.end_time_secs)
+    self.assertLessEqual(start_pb.start_time_secs, final_time)
+    # ...and then stub out the times for proto equality checks below.
+    start_pb.start_time_secs = 1234.5
+    end_pb.end_time_secs = 6789.0
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
     expected_start_pb = plugin_data_pb2.SessionStartInfo()
     text_format.Merge(
         """
+<<<<<<< HEAD
         start_time_secs: 123.45
+=======
+        start_time_secs: 1234.5
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
         group_name: "psl27"
         hparams {
           key: "optimizer"
@@ -374,13 +436,18 @@ class KerasCallbackTest(test.TestCase):
     expected_end_pb = plugin_data_pb2.SessionEndInfo()
     text_format.Merge(
         """
+<<<<<<< HEAD
         end_time_secs: 234.56
+=======
+        end_time_secs: 6789.0
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
         status: STATUS_SUCCESS
         """,
         expected_end_pb,
     )
     self.assertEqual(end_pb, expected_end_pb)
 
+<<<<<<< HEAD
 
   @test_util.run_v1_only("Requires non-eager mode.")
   def test_non_eager_failure(self):
@@ -388,6 +455,43 @@ class KerasCallbackTest(test.TestCase):
         self, RuntimeError, "only supported in TensorFlow eager mode"):
       self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
 
+=======
+  def test_explicit_writer(self):
+    writer = tf.compat.v2.summary.create_file_writer(
+        self.logdir,
+        filename_suffix=".magic",
+    )
+    self._initialize_model(writer=writer)
+    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+    files = os.listdir(self.logdir)
+    self.assertEqual(len(files), 1, files)
+    filename = files[0]
+    self.assertTrue(filename.endswith(".magic"), filename)
+    # We'll assume that the contents are correct, as in the case where
+    # the file writer was constructed implicitly.
+
+  def test_non_eager_failure(self):
+    with tf.compat.v1.Graph().as_default():
+      assert not tf.executing_eagerly()
+      self._initialize_model(writer=self.logdir)
+      with six.assertRaisesRegex(
+          self, RuntimeError, "only supported in TensorFlow eager mode"):
+        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+  def test_reuse_failure(self):
+    self._initialize_model(writer=self.logdir)
+    self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+    with six.assertRaisesRegex(
+        self, RuntimeError, "cannot be reused across training sessions"):
+      self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+  def test_invalid_writer(self):
+    with six.assertRaisesRegex(
+        self, TypeError, "writer must be a `SummaryWriter` or `str`, not None"):
+      hp.KerasCallback(writer=None, hparams={})
+
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
   def test_duplicate_hparam_names_across_object_and_string(self):
     hparams = {
         "foo": 1,
@@ -395,7 +499,11 @@ class KerasCallbackTest(test.TestCase):
     }
     with six.assertRaisesRegex(
         self, ValueError, "multiple values specified for hparam 'foo'"):
+<<<<<<< HEAD
       hp.KerasCallback(self.logdir, hparams)
+=======
+      hp.KerasCallback(self.get_temp_dir(), hparams)
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
   def test_duplicate_hparam_names_from_two_objects(self):
     hparams = {
@@ -404,7 +512,11 @@ class KerasCallbackTest(test.TestCase):
     }
     with six.assertRaisesRegex(
         self, ValueError, "multiple values specified for hparam 'foo'"):
+<<<<<<< HEAD
       hp.KerasCallback(self.logdir, hparams)
+=======
+      hp.KerasCallback(self.get_temp_dir(), hparams)
+>>>>>>> 15331f807a5a7a640136a7fa546d1c8c970ea430~
 
 
 if __name__ == "__main__":

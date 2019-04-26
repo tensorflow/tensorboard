@@ -221,7 +221,7 @@ class TensorBoard(object):
       event_file = os.path.expanduser(self.flags.event_file)
       efi.inspect(self.flags.logdir, event_file, self.flags.tag)
       return 0
-    if self.flags.version:
+    if self.flags.version_tb:
       print(version.VERSION)
       return 0
     try:

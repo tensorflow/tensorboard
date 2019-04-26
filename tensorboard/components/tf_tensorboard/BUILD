@@ -47,6 +47,19 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "plugin_dialog",
+    srcs = [
+        "plugin-dialog.html",
+    ],
+    path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:polymer",
+    ],
+)
+
+tf_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
