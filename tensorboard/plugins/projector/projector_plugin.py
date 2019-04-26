@@ -406,9 +406,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         if ckpt_path:
           config.model_checkpoint_path = ckpt_path
 
-      # Sanity check for the checkpoint file.
+      # Sanity check for the checkpoint file existing.
       if (config.model_checkpoint_path and _using_tf() and
-          not tf.compat.v1.train.checkpoint_exists(config.model_checkpoint_path)):
+          not tf.io.gfile.glob(config.model_checkpoint_path + '*')):
         logger.warn('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
         continue
