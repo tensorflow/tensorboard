@@ -276,11 +276,11 @@ class KerasCallbackTest(test.TestCase):
       mock_time.time += 1
       return mock_time.time
     mock_time.time = 1556227801.875
-    initial_time = mock_time()
+    initial_time = mock_time.time
     with mock.patch("time.time", mock_time):
       self._initialize_model(writer=self.logdir)
       self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
-    final_time = mock_time()
+    final_time = mock_time.time
 
     files = os.listdir(self.logdir)
     self.assertEqual(len(files), 1, files)
@@ -307,7 +307,7 @@ class KerasCallbackTest(test.TestCase):
     # to know the exact values. Instead, we perform relative checks...
     self.assertGreater(start_pb.start_time_secs, initial_time)
     self.assertLess(start_pb.start_time_secs, end_pb.end_time_secs)
-    self.assertLess(start_pb.start_time_secs, final_time)
+    self.assertLessEqual(start_pb.start_time_secs, final_time)
     self.assertEqual(start_pb.start_time_secs % 1, initial_time % 1)
     self.assertEqual(end_pb.end_time_secs % 1, initial_time % 1)
     # ...and then stub out the times for proto equality checks below.
