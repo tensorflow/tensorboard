@@ -203,9 +203,9 @@ class WitWidget(base.WitWidgetBase):
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
   def infer(self):
-    base.WitWidgetBase.infer_impl(self)
+    inferences = base.WitWidgetBase.infer_impl(self)
     output.eval_js("""inferenceCallback('{inferences}')""".format(
-      inferences=json.dumps(self.inferences)))
+      inferences=json.dumps(inferences)))
 
   def delete_example(self, index):
     self.examples.pop(index)
@@ -236,5 +236,4 @@ class WitWidget(base.WitWidgetBase):
   def _generate_sprite(self):
     sprite = base.WitWidgetBase.create_sprite(self)
     if sprite is not None:
-      print(sprite)
       output.eval_js("""spriteCallback('{sprite}')""".format(sprite=sprite))

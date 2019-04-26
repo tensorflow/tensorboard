@@ -67,7 +67,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
 
   @observe('infer')
   def _infer(self, change):
-    base.WitWidgetBase.infer_impl(self)
+    self.inferences = base.WitWidgetBase.infer_impl(self)
 
   # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')

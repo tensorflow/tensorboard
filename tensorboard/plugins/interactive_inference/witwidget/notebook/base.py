@@ -68,7 +68,7 @@ class WitWidgetBase(object):
     # If using CMLE for prediction, set the correct custom prediction functions.
     if self.config.get('use_cmle'):
       self.custom_predict_fn = self._predict_cmle_model
-    if self.config.get('use_cmle_compare'):
+    if self.config.get('use_cmle_2'):
       self.compare_custom_predict_fn = self._predict_cmle_compare_model
 
   def _get_element_html(self):
@@ -124,7 +124,7 @@ class WitWidgetBase(object):
       infer_objs.append(inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
     self.updated_example_indices = set()
-    self.inferences = {
+    return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
       'label_vocab': self.config.get('label_vocab')}
 
@@ -223,14 +223,16 @@ class WitWidgetBase(object):
   def _predict_cmle_model(self, examples):
     return self._predict_cmle_impl(
       examples, self.config.get('inference_address'),
-      self.config.get('model_name'), self.config.get('model_signature'))
+      self.config.get('model_name'), self.config.get('model_signature'),
+      self.config.get('force_json_input'))
 
   def _predict_cmle_compare_model(self, examples):
     return self._predict_cmle_impl(
       examples, self.config.get('inference_address_2'),
-      self.config.get('model_name_2'), self.config.get('model_signature_2'))
+      self.config.get('model_name_2'), self.config.get('model_signature_2'),
+      self.config.get('force_json_input_2'))
 
-  def _predict_cmle_impl(self, examples, project, model, version):
+  def _predict_cmle_impl(self, examples, project, model, version, force_json):
     """Custom prediction function for running inference through CMLE."""
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
@@ -238,7 +240,7 @@ class WitWidgetBase(object):
       name += '/versions/{}'.format(version)
 
     # Properly package the examples to send for prediction.
-    if self.config.get('uses_json_input'):
+    if self.config.get('uses_json_input') or force_json:
       examples_for_predict = self._json_from_tf_examples(examples)
     else:
       examples_for_predict = [{'b64': base64.b64encode(

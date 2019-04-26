@@ -466,7 +466,7 @@ class WitConfigBuilder(object):
       tf_examples.append(ex)
     return tf_examples
 
-  def set_cmle_model(self, project, model, version=None):
+  def set_cmle_model(self, project, model, version=None, force_json_input=None):
     """Sets the model information for a model served by CMLE.
 
     CMLE is Google's Cloud Machine Learning Engine.
@@ -475,6 +475,9 @@ class WitConfigBuilder(object):
       project: The name of the CMLE project.
       model: The name of the CMLE model.
       version: Optional, the version of the CMLE model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
 
     Returns:
       self, in order to enabled method chaining.
@@ -484,9 +487,12 @@ class WitConfigBuilder(object):
     self.store('use_cmle', True)
     if version is not None:
       self.set_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input', True)
     return self
 
-  def set_compare_cmle_model(self, project, model, version=None):
+  def set_compare_cmle_model(self, project, model, version=None,
+                             force_json_input=None):
     """Sets the model information for a second model served by CMLE.
 
     CMLE is Google's Cloud Machine Learning Engine.
@@ -495,15 +501,20 @@ class WitConfigBuilder(object):
       project: The name of the CMLE project.
       model: The name of the CMLE model.
       version: Optional, the version of the CMLE model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
 
     Returns:
       self, in order to enabled method chaining.
     """
     self.set_compare_inference_address(project)
     self.set_compare_model_name(model)
-    self.store('use_cmle_compare', True)
+    self.store('use_cmle_2', True)
     if version is not None:
       self.set_compare_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input_2', True)
     return self
 
   def set_target_feature(self, target):
