@@ -587,6 +587,29 @@ var tf;
                 isReferenceEdge: isRefEdge
             });
         }
+        graph_1.DefaultBuildParams = {
+            enableEmbedding: true,
+            inEmbeddingTypes: ['Const'],
+            outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
+            // This is the whitelist of inputs on op types that are considered
+            // reference edges. "Assign 0" indicates that the first input to
+            // an OpNode with operation type "Assign" is a reference edge.
+            refEdges: {
+                'Assign 0': true,
+                'AssignAdd 0': true,
+                'AssignSub 0': true,
+                'assign 0': true,
+                'assign_add 0': true,
+                'assign_sub 0': true,
+                'count_up_to 0': true,
+                'ScatterAdd 0': true,
+                'ScatterSub 0': true,
+                'ScatterUpdate 0': true,
+                'scatter_add 0': true,
+                'scatter_sub 0': true,
+                'scatter_update 0': true,
+            },
+        };
         function build(graphDef, params, tracker) {
             /**
              * A dictionary that maps each in-embedding node name to the node

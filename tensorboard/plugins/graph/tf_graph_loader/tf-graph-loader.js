@@ -1,3 +1,38 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,16 +78,9 @@ var tf;
                         type: Object,
                         value: function () { return new tf.graph.op.TpuCompatibilityProvider(); },
                     },
-                    /**
-                     * If this optional object is provided, graph logic will override
-                     * the HierarchyParams it uses to build the graph with properties within
-                     * this object. For possible properties that this object can have, please
-                     * see documentation on the HierarchyParams TypeScript interface.
-                     * @type {Object}
-                     */
-                    overridingHierarchyParams: {
+                    hierarchyParams: {
                         type: Object,
-                        value: function () { return ({}); }
+                        value: function () { return tf.graph.hierarchy.DefaultHierarchyParams; },
                     },
                     outGraphHierarchy: {
                         type: Object,
@@ -64,25 +92,20 @@ var tf;
                         readOnly: true,
                         notify: true
                     },
-                    /**
-                     * @type {?GraphRunTag}
-                     */
-                    _graphRunTag: Object,
-                    outHierarchyParams: {
-                        type: Object,
-                        readOnly: true,
-                        notify: true
-                    },
                     /** @type {Object} */
                     outStats: {
                         type: Object,
                         readOnly: true,
                         notify: true
                     },
+                    /**
+                     * @type {?GraphRunTag}
+                     */
+                    _graphRunTag: Object,
                 },
                 observers: [
-                    '_selectionChanged(selection, overridingHierarchyParams, compatibilityProvider)',
-                    '_selectedFileChanged(selectedFile, overridingHierarchyParams, compatibilityProvider)',
+                    '_selectionChanged(selection, compatibilityProvider)',
+                    '_selectedFileChanged(selectedFile, compatibilityProvider)',
                 ],
                 _selectionChanged: function () {
                     var _this = this;
@@ -95,7 +118,6 @@ var tf;
                 _load: function (selection) {
                     var _this = this;
                     var run = selection.run, tag = selection.tag, selectionType = selection.type;
-                    var overridingHierarchyParams = this.overridingHierarchyParams;
                     switch (selectionType) {
                         case tf.graph.SelectionType.OP_GRAPH:
                         case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
@@ -107,7 +129,7 @@ var tf;
                             if (tag)
                                 params.set('tag', tag);
                             var graphPath = tf_backend.getRouter().pluginRoute('graphs', '/graph', params);
-                            return this._fetchAndConstructHierarchicalGraph(graphPath, null, overridingHierarchyParams).then(function () {
+                            return this._fetchAndConstructHierarchicalGraph(graphPath).then(function () {
                                 _this._graphRunTag = { run: run, tag: tag };
                             });
                         }
@@ -146,7 +168,7 @@ var tf;
                     // Reset the progress bar to 0.
                     this.set('progress', {
                         value: 0,
-                        msg: ''
+                        msg: '',
                     });
                     var tracker = tf.graph.util.getTracker(this);
                     tf.graph.parser.fetchAndParseMetadata(path, tracker)
@@ -154,94 +176,26 @@ var tf;
                         _this._setOutStats(stats);
                     });
                 },
-                _fetchAndConstructHierarchicalGraph: function (path, pbTxtFile, overridingHierarchyParams) {
-                    var _this = this;
-                    // Reset the progress bar to 0.
-                    this.set('progress', {
-                        value: 0,
-                        msg: ''
-                    });
-                    var tracker = tf.graph.util.getTracker(this);
-                    var hierarchyParams = {
-                        verifyTemplate: true,
-                        // If a set of numbered op nodes has at least this number of nodes
-                        // then group them into a series node.
-                        seriesNodeMinSize: 5,
-                        // A map of series node names to series grouping settings, to indicate
-                        // if a series is to be rendered as grouped or ungrouped.
-                        // Starts out empty which allows the renderer to decide which series
-                        // are initially rendered grouped and which aren't.
-                        seriesMap: {},
-                        rankDirection: 'BT',
-                        useGeneralizedSeriesPatterns: false,
-                    };
-                    _.forOwn(overridingHierarchyParams, function (value, key) {
-                        hierarchyParams[key] = value;
-                    });
-                    this._setOutHierarchyParams(hierarchyParams);
-                    var dataTracker = tf.graph.util.getSubtaskTracker(tracker, 30, 'Data');
-                    return tf.graph.parser.fetchAndParseGraphData(path, pbTxtFile, dataTracker)
-                        .then(function (graph) {
-                        if (!graph.node) {
-                            throw new Error('The graph is empty. This can happen when ' +
-                                'TensorFlow could not trace any graph. Please refer to ' +
-                                'https://github.com/tensorflow/tensorboard/issues/1961 for more ' +
-                                'information.');
-                        }
-                        // Build the flat graph (consists only of Op nodes).
-                        // This is the whitelist of inputs on op types that are considered
-                        // reference edges. "Assign 0" indicates that the first input to
-                        // an OpNode with operation type "Assign" is a reference edge.
-                        var refEdges = {};
-                        refEdges["Assign 0"] = true;
-                        refEdges["AssignAdd 0"] = true;
-                        refEdges["AssignSub 0"] = true;
-                        refEdges["assign 0"] = true;
-                        refEdges["assign_add 0"] = true;
-                        refEdges["assign_sub 0"] = true;
-                        refEdges["count_up_to 0"] = true;
-                        refEdges["ScatterAdd 0"] = true;
-                        refEdges["ScatterSub 0"] = true;
-                        refEdges["ScatterUpdate 0"] = true;
-                        refEdges["scatter_add 0"] = true;
-                        refEdges["scatter_sub 0"] = true;
-                        refEdges["scatter_update 0"] = true;
-                        var buildParams = {
-                            enableEmbedding: true,
-                            inEmbeddingTypes: ['Const'],
-                            outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
-                            refEdges: refEdges
-                        };
-                        var graphTracker = tf.graph.util.getSubtaskTracker(tracker, 20, 'Graph');
-                        return tf.graph.build(graph, buildParams, graphTracker);
-                    }, function () {
-                        throw new Error('Malformed GraphDef. This can sometimes be caused by a ' +
-                            'bad network connection or difficulty reconciling multiple GraphDefs;' +
-                            ' for the latter case, please refer to ' +
-                            'https://github.com/tensorflow/tensorboard/issues/1929.');
-                    })
-                        .then(function (graph) {
-                        // Populate compatibile field of OpNode based on whitelist
-                        tf.graph.op.checkOpsForCompatibility(graph, _this.compatibilityProvider);
-                        _this._setOutGraph(graph);
-                        var hierarchyTracker = tf.graph.util.getSubtaskTracker(tracker, 50, 'Namespace hierarchy');
-                        return tf.graph.hierarchy.build(graph, hierarchyParams, hierarchyTracker);
-                    })
-                        .then(function (graphHierarchy) {
-                        // Update the properties which notify the parent with the
-                        // graph hierarchy and whether the data has live stats or not.
-                        _this._setOutGraphHierarchy(graphHierarchy);
-                    })
-                        .catch(function (e) {
-                        // Generic error catch, for errors that happened outside
-                        // asynchronous tasks.
-                        var msg = "Graph visualization failed.\n\n" + e;
-                        tracker.reportError(msg, e);
-                        // Don't swallow the error.
-                        throw e;
+                _fetchAndConstructHierarchicalGraph: function (path, pbTxtFile) {
+                    return __awaiter(this, void 0, void 0, function () {
+                        var tracker;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            // Reset the progress bar to 0.
+                            this.set('progress', {
+                                value: 0,
+                                msg: '',
+                            });
+                            tracker = tf.graph.util.getTracker(this);
+                            return [2 /*return*/, tf.graph.loader.fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, this.compatibilityProvider, this.hierarchyParams).then(function (_a) {
+                                    var graph = _a.graph, graphHierarchy = _a.graphHierarchy;
+                                    _this._setOutGraph(graph);
+                                    _this._setOutGraphHierarchy(graphHierarchy);
+                                })];
+                        });
                     });
                 },
-                _selectedFileChanged: function (e, overridingHierarchyParams) {
+                _selectedFileChanged: function (e) {
                     if (!e) {
                         return;
                     }
@@ -253,7 +207,7 @@ var tf;
                     // Clear out the value of the file chooser. This ensures that if the user
                     // selects the same file, we'll re-read it.
                     target.value = '';
-                    this._fetchAndConstructHierarchicalGraph(null, file, overridingHierarchyParams);
+                    this._fetchAndConstructHierarchicalGraph(null, file);
                 },
             });
         })(loader = graph_1.loader || (graph_1.loader = {}));

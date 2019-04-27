@@ -17,6 +17,7 @@ tf_web_library(
         "graph.js",
         "hierarchy.js",
         "layout.js",
+        "loader.js",
         "minimap.js",
         "node.js",
         "op.js",

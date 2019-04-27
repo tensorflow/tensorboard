@@ -319,6 +319,13 @@ var tf;
                     targetList.push(metaedge);
                 });
             }
+            hierarchy_1.DefaultHierarchyParams = {
+                verifyTemplate: true,
+                seriesNodeMinSize: 5,
+                seriesMap: {},
+                rankDirection: 'BT',
+                useGeneralizedSeriesPatterns: false,
+            };
             /**
              * @param graph The raw graph.
              * @param params Parameters used when building a hierarchy.
