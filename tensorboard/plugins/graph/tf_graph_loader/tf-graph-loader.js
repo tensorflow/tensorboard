@@ -83,10 +83,10 @@ var tf;
                         var dataset = _this.datasets[_this.selectedData];
                         if (!dataset)
                             return;
-                        _this._fetchAndConstructHierarchicalGraph(dataset.path);
+                        _this._parseAndConstructHierarchicalGraph(dataset.path);
                     });
                 },
-                _fetchAndConstructHierarchicalGraph: function (path, pbTxtFile) {
+                _parseAndConstructHierarchicalGraph: function (path, pbTxtFile) {
                     var _this = this;
                     var _a = this, overridingHierarchyParams = _a.overridingHierarchyParams, compatibilityProvider = _a.compatibilityProvider;
                     // Reset the progress bar to 0.
@@ -112,7 +112,7 @@ var tf;
                     // Clear out the value of the file chooser. This ensures that if the user
                     // selects the same file, we'll re-read it.
                     target.value = '';
-                    this._fetchAndConstructHierarchicalGraph(null, file);
+                    this._parseAndConstructHierarchicalGraph(null, file);
                 },
             });
         })(loader = graph_1.loader || (graph_1.loader = {}));
