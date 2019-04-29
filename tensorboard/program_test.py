@@ -63,7 +63,7 @@ class WerkzeugServerTest(tf.test.TestCase):
         self.make_flags(host='', port=0, path_prefix=''))
     self.assertStartsWith(server.get_url(), 'http://')
     
-    def testPathPrefixSlash(self):
+  def testPathPrefixSlash(self):
     #Test that checks the path prefix ends with one trailing slash
     server = program.WerkzeugServer(
         self._StubApplication(),
