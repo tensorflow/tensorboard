@@ -80,50 +80,50 @@ model.fit(...)
         </div>
       </template>
     </paper-dialog>
+    <style>
+      /** We rely on a separate `_hidden` property instead of directly making use
+          of the `_open` attribute because this CSS specification may strangely
+          affect other elements throughout TensorBoard. See #899. */
+      :host[_hidden] {
+        display: none;
+      }
+
+      :host, #dashboard-backdrop {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
+      #dashboard-backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+
+      .code-example {
+        margin: 10px;
+        font-family: monospace;
+      }
+      .code-example-section {
+        padding-bottom: 15px;
+      }
+      .code-example-section-title {
+        font-weight: bold;
+      }
+      .code-snippet {
+        padding-left: 1em;
+      }
+
+      #dialog-title {
+        padding-bottom: 15px;
+      }
+
+      .custom-message {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+    </style>
   </template>
-  <style>
-    /** We rely on a separate `_hidden` property instead of directly making use
-        of the `_open` attribute because this CSS specification may strangely
-        affect other elements throughout TensorBoard. See #899. */
-    :host[_hidden] {
-      display: none;
-    }
-
-    :host, #dashboard-backdrop {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-
-    #dashboard-backdrop {
-      background: rgba(0, 0, 0, 0.6);
-    }
-
-    .code-example {
-      margin: 10px;
-      font-family: monospace;
-    }
-    .code-example-section {
-      padding-bottom: 15px;
-    }
-    .code-example-section-title {
-      font-weight: bold;
-    }
-    .code-snippet {
-      padding-left: 1em;
-    }
-
-    #dialog-title {
-      padding-bottom: 15px;
-    }
-
-    .custom-message {
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-  </style>
   <script>
 
   Polymer({
