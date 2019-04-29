@@ -26,14 +26,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import sys
 import unittest
+
 
 class TfSummaryExportTest(unittest.TestCase):
 
   def test_tf_summary_export(self):
-    # Check as a precondition that TF wasn't already imported.
+    # Ensure that TF wasn't already imported, since we want this test to cover
+    # the entire flow of "import tensorflow; use tf.summary" and if TF was in
+    # fact already imported that reduces the comprehensiveness of the test.
+    # This means this test has to be kept in its own file and that no other
+    # test methods in this file should import tensorflow.
     self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
     import tensorflow as tf
     if not tf.__version__.startswith('2.'):
@@ -46,7 +50,7 @@ class TfSummaryExportTest(unittest.TestCase):
         ['scalar', 'image', 'audio', 'histogram', 'text']
         + ['write', 'create_file_writer', 'SummaryWriter'])
     self.assertLessEqual(expected_symbols, frozenset(dir(tf.summary)))
-    # Ensure we can deference symbols as well.
+    # Ensure we can dereference symbols as well.
     print(tf.summary.scalar)
     print(tf.summary.write)
 
