@@ -101,59 +101,59 @@ limitations under the License.
         </td>
       </tr>
     </table>
+    <style>
+      .tensor-value-buttons {
+        height: 75%;
+        font-size: 10px;
+      }
+      .tensor-value-view-table {
+        width: 500px;
+        display: inline-table;
+        border-spacing: 5px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        background-color: #f8f8f8;
+        box-shadow: 3px 3px 1px 1px #d8d8d8;
+      }
+      .tensor-value-view-td {
+        width: 350px;
+      }
+      .value-card-input {
+        width: 150px;
+      }
+      #tensor-name {
+        display: inline-block;
+        position: relative;
+        width: 50%;
+        cursor: pointer;
+        color: blue;
+        text-decoration: underline;
+      }
+      #debug-op {
+        font-size: 90%;
+      }
+      .value-image {
+        image-rendering: pixelated;
+      }
+      .value-view-icon-button {
+        display: inline-block;
+        float: right;
+        text-align: right;
+        width: 20%;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 90%;
+        color: blue;
+      }
+      #slicing, #time-indices {
+        --paper-input-container-input: {
+          font-family: monospace;
+        };
+      }
+    </style>
   </template>
-  <style>
-    .tensor-value-buttons {
-      height: 75%;
-      font-size: 10px;
-    }
-    .tensor-value-view-table {
-      width: 500px;
-      display: inline-table;
-      border-spacing: 5px;
-      padding-top: 3px;
-      padding-bottom: 3px;
-      padding-left: 3px;
-      padding-right: 3px;
-      background-color: #f8f8f8;
-      box-shadow: 3px 3px 1px 1px #d8d8d8;
-    }
-    .tensor-value-view-td {
-      width: 350px;
-    }
-    .value-card-input {
-      width: 150px;
-    }
-    #tensor-name {
-      display: inline-block;
-      position: relative;
-      width: 50%;
-      cursor: pointer;
-      color: blue;
-      text-decoration: underline;
-    }
-    #debug-op {
-      font-size: 90%;
-    }
-    .value-image {
-      image-rendering: pixelated;
-    }
-    .value-view-icon-button {
-      display: inline-block;
-      float: right;
-      text-align: right;
-      width: 20%;
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 90%;
-      color: blue;
-    }
-    #slicing, #time-indices {
-      --paper-input-container-input: {
-        font-family: monospace;
-      };
-    }
-  </style>
   <script>
 
   Polymer({

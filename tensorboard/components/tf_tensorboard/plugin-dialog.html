@@ -32,26 +32,26 @@ limitations under the License.
       <h2 id='dialog-title'>[[_title]]</h2>
       <div class="custom-message">[[_customMessage]]</div>
     </paper-dialog>
+    <style>
+      /** We rely on a separate `_hidden` property instead of directly making use
+          of the `_open` attribute because this CSS specification may strangely
+          affect other elements throughout TensorBoard. See #899. */
+      #dashboard-backdrop {
+        background: rgba(0, 0, 0, 0.6);
+        width: 100%;
+        height: 100%;
+      }
+
+      #dialog-title {
+        padding-bottom: 15px;
+      }
+
+      .custom-message {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+    </style>
   </template>
-  <style>
-    /** We rely on a separate `_hidden` property instead of directly making use
-        of the `_open` attribute because this CSS specification may strangely
-        affect other elements throughout TensorBoard. See #899. */
-    #dashboard-backdrop {
-      background: rgba(0, 0, 0, 0.6);
-      width: 100%;
-      height: 100%;
-    }
-
-    #dialog-title {
-      padding-bottom: 15px;
-    }
-
-    .custom-message {
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-  </style>
   <script>
 
   Polymer({
