@@ -1,0 +1,86 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Tests for util functions to create/parse mesh plugin metadata."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+from mock import patch
+import six
+import tensorflow as tf
+from tensorflow_graphics.tensorboard.mesh_visualizer import metadata
+from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
+
+
+class MetadataTest(tf.test.TestCase):
+
+  def _create_metadata(self):
+    """Creates metadata with dummy data."""
+    self.name = 'unique_name'
+    self.display_name = 'my mesh'
+    self.json_config = '{}'
+    self.shape = [1, 100, 3]
+    self.summary_metadata = metadata.create_summary_metadata(
+        self.name,
+        self.display_name,
+        plugin_data_pb2.MeshPluginData.ContentType.VERTEX,
+        self.shape,
+        json_config=self.json_config)
+
+  def test_get_instance_name(self):
+    """Tests proper creation of instance name based on display_name."""
+    display_name = 'my_mesh'
+    instance_name = metadata.get_instance_name(
+        display_name, plugin_data_pb2.MeshPluginData.ContentType.VERTEX)
+    self.assertEqual('%s_VERTEX' % display_name, instance_name)
+
+  def test_create_summary_metadata(self):
+    """Tests MeshPlugin metadata creation."""
+    self._create_metadata()
+    self.assertEqual(self.display_name,
+                     self.summary_metadata.display_name)
+    self.assertEqual(metadata.PLUGIN_NAME,
+                     self.summary_metadata.plugin_data.plugin_name)
+
+  def test_parse_plugin_metadata(self):
+    """Tests parsing of saved plugin metadata."""
+    self._create_metadata()
+    parsed_metadata = metadata.parse_plugin_metadata(
+        self.summary_metadata.plugin_data.content)
+    self.assertEqual(self.name, parsed_metadata.name)
+    self.assertEqual(plugin_data_pb2.MeshPluginData.ContentType.VERTEX,
+                     parsed_metadata.content_type)
+    self.assertEqual(self.shape, parsed_metadata.shape)
+    self.assertEqual(self.json_config, parsed_metadata.json_config)
+
+  def test_metadata_version(self):
+    """Tests that only the latest version of metadata is supported."""
+    self._create_metadata()
+    # Change the version.
+    with patch.object(metadata, 'get_current_version', return_value=100):
+      # Try to parse metadata from a prior version.
+      with self.assertRaises(ValueError):
+        metadata.parse_plugin_metadata(
+            self.summary_metadata.plugin_data.content)
+
+  def test_metadata_format(self):
+    """Tests that metadata content must be passed as a serialized string."""
+    with six.assertRaisesRegex(self, TypeError, r'Content type must be bytes.'):
+      metadata.parse_plugin_metadata(123)
+
+
+if __name__ == '__main__':
+  tf.test.main()
