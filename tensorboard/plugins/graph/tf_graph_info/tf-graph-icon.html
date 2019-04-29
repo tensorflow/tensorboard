@@ -19,20 +19,20 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 
 <dom-module id="tf-graph-icon">
-  <style>
-    .faded-rect {
-      fill: url(#rectHatch);
-    }
-
-    .faded-ellipse {
-      fill: url(#ellipseHatch);
-    }
-
-    .faded-rect, .faded-ellipse, .faded-series {
-      stroke:   var(--tb-graph-faded) !important;
-    }
-  </style>
   <template>
+    <style>
+      .faded-rect {
+        fill: url(#rectHatch);
+      }
+
+      .faded-ellipse {
+        fill: url(#ellipseHatch);
+      }
+
+      .faded-rect, .faded-ellipse, .faded-series {
+        stroke: var(--tb-graph-faded) !important;
+      }
+    </style>
     <template is="dom-if" if="[[_isType(node, type, 'OP')]]">
       <template is="dom-if" if="[[_isConst(node, const)]]">
         <svg height$="[[height]]"

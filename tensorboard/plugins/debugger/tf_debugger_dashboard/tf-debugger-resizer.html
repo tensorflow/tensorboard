@@ -25,57 +25,57 @@ limitations under the License.
         <span class="bars-text">| |</span>
       </div>
     </div>
+    <style>
+      :host[_resizer-identifier] {
+        position: absolute;
+        background: #ccc;
+        user-select: none;
+      }
+
+      :host[is-horizontal] {
+        cursor: row-resize;
+        height: 10px;
+        left: 0;
+        right: 0;
+      }
+
+      :host[_is-vertical] {
+        cursor: col-resize;
+        right: -15px;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+      }
+
+      .bars {
+        width: 80%;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 5px;
+        transform: translate(-50%, -50%);
+      }
+
+      /** This block prevents the bars rotator from having a height that is
+          the entire viewport, thus occluding it and giving it an undesired cursor
+          value. */
+      .bars-rotator {
+        display: inline-block;
+      }
+
+      :host[is-horizontal] .bars-rotator {
+        transform: rotate(90deg);
+      }
+
+      .bars-text {
+        transform: scaleY(15);
+        white-space: nowrap;
+        display: block;
+        font-weight: 400;
+      }
+    </style>
   </template>
-  <style>
-    :host[_resizer-identifier] {
-      position: absolute;
-      background: #ccc;
-      user-select: none;
-    }
-
-    :host[is-horizontal] {
-      cursor: row-resize;
-      height: 10px;
-      left: 0;
-      right: 0;
-    }
-
-    :host[_is-vertical] {
-      cursor: col-resize;
-      right: -15px;
-      top: 0;
-      bottom: 0;
-      width: 10px;
-    }
-
-    .bars {
-      width: 80%;
-      text-align: center;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      font-size: 5px;
-      transform: translate(-50%, -50%);
-    }
-
-    /** This block prevents the bars rotator from having a height that is 
-        the entire viewport, thus occluding it and giving it an undesired cursor
-        value. */
-    .bars-rotator {
-      display: inline-block;
-    }
-
-    :host[is-horizontal] .bars-rotator {
-      transform: rotate(90deg);
-    }
-
-    .bars-text {
-      transform: scaleY(15);
-      white-space: nowrap;
-      display: block;
-      font-weight: 400;
-    }
-  </style>
   <script>
   Polymer({
     is: "tf-debugger-resizer",

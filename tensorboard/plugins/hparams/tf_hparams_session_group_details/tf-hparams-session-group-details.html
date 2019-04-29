@@ -68,14 +68,13 @@ clicks on a row in table-view or a curve in parallel-coords view.
         </template>
       </template>
     </div>
+    <!-- "iron-flex" is needed to use the layout classes in the div above -->
+    <style include="iron-flex">
+      :host {
+        display: block;
+      }
+    </style>
   </template>
-
-  <!-- "iron-flex" is needed to use the layout classes in the div above -->
-  <style include="iron-flex">
-    :host {
-      display: block;
-    }
-  </style>
   <script>
     'use strict';
     Polymer({
