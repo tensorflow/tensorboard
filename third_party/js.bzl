@@ -61,9 +61,15 @@ def tensorboard_js_workspace():
               "http://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-x64.tar.xz",
           ],
       },
+      sha256_urls_extract_ppc64le = {
+          "6f6362cba63c20eab4914c2983edd9699c1082792d0a35ef9c54d18b6c488e59": [
+              "http://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-ppc64le.tar.xz",
+          ],
+      },
       strip_prefix = {
           "node-v6.9.1-darwin-x64.tar.xz": "node-v6.9.1-darwin-x64",
           "node-v6.9.1-linux-x64.tar.xz": "node-v6.9.1-linux-x64",
+          "node-v6.9.1-linux-ppc64le.tar.xz": "node-v6.9.1-linux-ppc64le",
       },
       executable = [
           "node",
@@ -204,6 +210,18 @@ def tensorboard_js_workspace():
           ],
       },
       rename = {"numeric-1.2.6.js": "numeric.js"},
+  )
+
+  filegroup_external(
+      name = "ai_google_pair_umap_js",
+      # no @license header
+      licenses = ["notice"],  # Apache License 2.0
+      sha256_urls = {
+          "85a2ff924f1bf4757976aca22fd0efb045d9b3854f5a4ae838c64e4d11e75005": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/PAIR-code/umap-js/1.0.5/lib/umap-js.min.js",
+              "https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.5/lib/umap-js.min.js",
+          ],
+      },
   )
 
   filegroup_external(

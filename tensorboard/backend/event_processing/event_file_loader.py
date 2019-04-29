@@ -38,7 +38,7 @@ class RawEventFileLoader(object):
       raise ValueError('A file path is required')
     file_path = platform_util.readahead_file_path(file_path)
     logger.debug('Opening a record reader pointing at %s', file_path)
-    with tf.errors.raise_exception_on_not_ok_status() as status:
+    with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
       self._reader = _pywrap_tensorflow.PyRecordReader_New(
           tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
     # Store it for logging purposes.
@@ -65,7 +65,7 @@ class RawEventFileLoader(object):
     while True:
       try:
         if legacy_get_next:
-          with tf.errors.raise_exception_on_not_ok_status() as status:
+          with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
             self._reader.GetNext(status)
         else:
           self._reader.GetNext()

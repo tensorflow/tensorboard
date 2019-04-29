@@ -43,6 +43,7 @@ py_library(
         ":notebook",
         ":program",
         "//tensorboard/summary",
+        "//tensorboard/summary/writer",
     ],
 )
 
@@ -77,11 +78,13 @@ py_test(
     srcs = ["manager_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
+    tags = ["support_notf"],
     deps = [
         ":manager",
+        ":test",
         ":version",
         "//tensorboard/util:tb_logging",
-        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -100,6 +103,7 @@ py_test(
     deps = [
         ":manager",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
     data = [
@@ -138,13 +142,25 @@ py_test(
     size = "small",
     srcs = ["program_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":default",
         ":program",
-        "//tensorboard:expect_tensorflow_installed",
+        ":test",
         "//tensorboard/backend:application",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "test",
+    testonly = 1,
+    srcs = ["test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -343,9 +359,10 @@ py_test(
     size = "small",
     srcs = ["plugin_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":plugin_util",
-        "//tensorboard:expect_tensorflow_installed",
+        ":test",
         "@org_pythonhosted_six",
     ],
 )

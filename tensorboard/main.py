@@ -51,13 +51,8 @@ def run_main():
   program.setup_environment()
 
   if getattr(tf, '__version__', 'stub') == 'stub':
-    # Unless the user has explicitly requested running without TensorFlow by setting the
-    # TENSORBOARD_NO_TF environment variable, we check for TensorFlow here so that if it's
-    # missing we generate a clear and immediate error rather than partial functionality.
-    # TODO(#2027): Remove environment check once we have placeholder UI
-    if os.getenv('TENSORBOARD_NO_TF') is None:
-      import tensorflow  # pylint: disable=unused-import
-    logger.warn("TensorFlow installation not found - running with reduced feature set.")
+    print("TensorFlow installation not found - running with reduced feature set.",
+          file=sys.stderr)
 
   tensorboard = program.TensorBoard(default.get_plugins(),
                                     program.get_default_assets_zip_provider())

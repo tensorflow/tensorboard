@@ -82,7 +82,17 @@ limitations under the License.
          * contains 1 true negative, 2 false positives, 3 true positives and
          * 4 false negatives.
          */
-        counts: {type: Object, observer: 'drawMatrix'},
+        counts: Object,
+
+        /**
+         * Array where entries are all cell labels to be used in the
+         * confusion matrix. If empty, then the cell labels are extracted
+         * from the provided counts dictionary. This is used for when a
+         * confusion matrix should have more rows/columns that just the
+         * information from counts, such as in a multiclass problem where
+         * the counts do not contain information from all possible classes.
+         */
+        allItems: {type: Array, value: () => ([])},
 
         // Label appears in top-right corner of confusion matrix.
         label: String,
@@ -95,29 +105,37 @@ limitations under the License.
         },
       },
 
+      observers: [
+        'drawMatrix(counts, allItems)',
+      ],
+
       ready: function() {
         // Allows d3-created elements in this Polymer element to be styled by
         // the css rules above.
         this.scopeSubtree(this.$.holder, true);
       },
 
-      drawMatrix: function(counts) {
+      drawMatrix: function(counts, allItems) {
         this.$.holder.innerHTML = '';
         if (!counts) {
           return;
         }
 
-        // Get all labels from the counts dict.
-        let allLabels = {};
-        const outerLabelList = Object.keys(counts);
-        for (let i = 0; i < outerLabelList.length; i++) {
-          allLabels[outerLabelList[i]] = true;
-          const innerLabelList = Object.keys(counts[outerLabelList[i]]);
-          for (let j = 0; j < innerLabelList.length; j++) {
-            allLabels[innerLabelList[j]] = true;
+        // Get all labels from the provided list, or counts dict.
+        let labelsList = allItems;
+        if (labelsList == null || labelsList.length == 0) {
+          const labelsSet = new Set();
+          const outerLabelList = Object.keys(counts);
+          for (let i = 0; i < outerLabelList.length; i++) {
+            labelsSet.add(outerLabelList[i]);
+            const innerLabelList = Object.keys(counts[outerLabelList[i]]);
+            for (let j = 0; j < innerLabelList.length; j++) {
+              labelsSet.add(innerLabelList[j]);
+            }
           }
+          labelsList = Array.from(labelsSet.values());
         }
-        let labelsList = Object.keys(allLabels).sort();
+        labelsList = labelsList.sort();
 
         // For binary classification confusion matrices, we want the 'Yes'
         // column/row to appear before 'No', so we reverse this labels list.

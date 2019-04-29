@@ -36,6 +36,12 @@ module tf.graph.util {
     return result;
   }
 
+  export type Tracker = {
+    setMessage: (msg: string) => void;
+    updateProgress: (value: number) => void;
+    reportError: (msg: string, error: Error) => void;
+  };
+
   /**
    * Creates a tracker that sets the progress property of the
    * provided polymer component. The provided component must have
@@ -43,7 +49,7 @@ module tf.graph.util {
    * property is an object with a numerical 'value' property and a
    * string 'msg' property.
    */
-  export function getTracker(polymerComponent: any) {
+  export function getTracker(polymerComponent: any): Tracker {
     return {
       setMessage: function(msg) {
         polymerComponent.set(

@@ -12,6 +12,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_tensorboard:plugin_dialog",
         "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/vz_sorting",
         "//tensorboard/plugins/graph/tf_graph_controls",
@@ -19,6 +20,7 @@ tf_web_library(
         "//tensorboard/plugins/profile/input_pipeline_analyzer",
         "//tensorboard/plugins/profile/memory_viewer/memory_viewer_dashboard",
         "//tensorboard/plugins/profile/overview_page",
+        "//tensorboard/plugins/profile/pod_viewer/pod_viewer_dashboard",
         "//tensorboard/plugins/profile/tf_op_profile",
         "//tensorboard/plugins/profile/tf_profile_common",
         "@org_polymer",

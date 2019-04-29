@@ -61,6 +61,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -73,6 +74,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -87,12 +89,30 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
 py_binary(
     name = "hparams_demo",
     srcs = ["hparams_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":protos_all_py_pb2",
+        ":summary",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/plugins/scalar:summary",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_binary(
+    name = "hparams_minimal_demo",
+    srcs = ["hparams_minimal_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":protos_all_py_pb2",
@@ -130,6 +150,37 @@ sh_test(
 )
 
 py_library(
+    name = "api",
+    srcs = ["api.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "api_test",
+    size = "small",
+    srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":metadata",
+        ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
@@ -139,6 +190,7 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )

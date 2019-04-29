@@ -20,7 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
-<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-dashboard-loader.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -79,7 +79,7 @@ by default. The user can select a different run from a dropdown menu.
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
   <div class="center">
-    <tf-graph-loader id="loader"
+    <tf-graph-dashboard-loader id="loader"
           datasets="[[_datasets]]"
           selection="[[_selection]]"
           selected-file="[[_selectedFile]]"
@@ -87,9 +87,9 @@ by default. The user can select a different run from a dropdown menu.
           out-graph="{{_graph}}"
           out-stats="{{_stats}}"
           progress="{{_progress}}"
-          out-hierarchy-params="{{_hierarchyParams}}"
+          hierarchy-params="[[_hierarchyParams]]"
           compatibility-provider="[[_compatibilityProvider]]"
-    ></tf-graph-loader>
+    ></tf-graph-dashboard-loader>
     <tf-graph-board id="graphboard"
         devices-for-stats="[[_devicesForStats]]"
         color-by="[[_colorBy]]"
@@ -238,7 +238,11 @@ Polymer({
     _selection: {
       type: Object,
     },
-    _compatibilityProvider: Object
+    _compatibilityProvider: Object,
+    _hierarchyParams: {
+      type: Object,
+      value: () => tf.graph.hierarchy.DefaultHierarchyParams,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
