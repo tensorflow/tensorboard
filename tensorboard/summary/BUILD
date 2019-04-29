@@ -52,6 +52,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "summary_test",
+    size = "small",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":summary",
+        ":summary_v1",
+        ":summary_v2",
+    ],
+)
+
 # This library provides a _tf.summary package with summary API symbols from
 # TensorBoard, meant to be overlayed into TensorFlow's namespace as tf.summary.
 #
@@ -77,14 +90,12 @@ py_library(
 )
 
 py_test(
-    name = "summary_test",
+    name = "tf_summary_test",
     size = "small",
-    srcs = ["summary_test.py"],
+    srcs = ["tf_summary_test.py"],
     srcs_version = "PY2AND3",
-    tags = ["support_notf"],
     deps = [
-        ":summary",
-        ":summary_v1",
-        ":summary_v2",
+        ":tf_summary",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
