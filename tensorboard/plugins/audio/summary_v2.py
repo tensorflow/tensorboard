@@ -71,8 +71,10 @@ def audio(name,
     ValueError: if a default writer exists, but no step was provided and
       `tf.summary.experimental.get_step()` is None.
   """
-  # TODO(nickfelt): get encode_wav() exported in the public API.
-  from tensorflow.python.ops import gen_audio_ops
+  audio_ops = getattr(tf, 'audio', None)
+  if audio_ops is None:
+    # Fallback for older versions of TF without tf.audio.
+    from tensorflow.python.ops import gen_audio_ops as audio_ops
 
   if encoding is None:
     encoding = 'wav'
@@ -92,7 +94,7 @@ def audio(name,
     tf.debugging.assert_rank(data, 3)
     tf.debugging.assert_non_negative(max_outputs)
     limited_audio = data[:max_outputs]
-    encode_fn = functools.partial(gen_audio_ops.encode_wav,
+    encode_fn = functools.partial(audio_ops.encode_wav,
                                   sample_rate=sample_rate)
     encoded_audio = tf.map_fn(encode_fn, limited_audio,
                               dtype=tf.string,
