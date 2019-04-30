@@ -84,13 +84,20 @@ limitations under the License.
       },
     },
     openNoTensorFlowDialog() {
-      this.set(
-          '_title',
-          'This plugin is disabled without TensorFlow');
-      this.set(
-          '_customMessage',
+      this.openDialog(
+          'This plugin is disabled without TensorFlow',
           'To enable this plugin in TensorBoard, install TensorFlow with '
               + '"pip install tensorflow" or equivalent.');
+    },
+    openOldTensorFlowDialog(version) {
+      this.openDialog(
+          'This plugin is disabled without TensorFlow ' + version,
+          'To enable this plugin in TensorBoard, install TensorFlow '
+              + version + ' or greater with "pip install tensorflow" or equivalent.');
+    },
+    openDialog(title, message) {
+      this.set('_title', title);
+      this.set('_customMessage', message);
       this.$.dialog.open();
     },
     closeDialog() {
