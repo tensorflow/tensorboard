@@ -373,7 +373,7 @@ export class DataSet {
 
     // Handle the slight modal flicker caused by switching between knn and 
     // tracking umap progress
-    await util.runModalAsyncTask('', async () => {}, UMAP_MSG_ID);  
+    logging.setModalMessage('', UMAP_MSG_ID);
 
     if (this.umapWorkerManager == null) {
       // We need to add the umap-js script to the worker code, which is only
@@ -403,17 +403,16 @@ export class DataSet {
 
     this.nearest = await this.computeKnn(sampledData, nNeighbors);
     
-    const nEpochs = await util.runModalAsyncTask('Initializing UMAP...', 
-      async () => {
-      const knnIndices: number[][] = this.nearest.map(row => 
-        row.map(entry => entry.index));
-      const knnDistances: number[][] = this.nearest.map(row => 
-        row.map(entry => entry.dist)
-      );
-
-      // Initialize UMAP and return the number of epochs.
-      return this.umapWorkerManager.initializeFit(X, knnIndices, knnDistances);
-    }, UMAP_MSG_ID);
+    const knnIndices: number[][] = this.nearest.map(row => 
+      row.map(entry => entry.index));
+    const knnDistances: number[][] = this.nearest.map(row => 
+      row.map(entry => entry.dist)
+    );
+        
+    // Initialize UMAP and return the number of epochs.
+    logging.setModalMessage('Initializing UMAP...', UMAP_MSG_ID);
+    const nEpochs = await this.umapWorkerManager.initializeFit(
+      X, knnIndices, knnDistances);
     
     // Now, iterate through all epoch batches of the UMAP optimization, updating
     // the modal window with the progress rather than animating each step since
@@ -422,17 +421,17 @@ export class DataSet {
       const progressMsg = 
         `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`; 
 
-      return util.runModalAsyncTask(progressMsg, async () => {
-        // Compute a batch of epochs since we don't want to update the UI
-        // on every epoch.
-        const nSteps = Math.min(epochStepSize, nEpochs - currentEpoch);
-        currentEpoch = await this.umapWorkerManager.stepOptimize(nSteps);
-        stepCallback(currentEpoch);
+      logging.setModalMessage(progressMsg, UMAP_MSG_ID);
 
-        if (currentEpoch < nEpochs) {
-          return recursiveStep();
-        } 
-      }, UMAP_MSG_ID);
+      // Compute a batch of epochs since we don't want to update the UI
+      // on every epoch.
+      const nSteps = Math.min(epochStepSize, nEpochs - currentEpoch);
+      currentEpoch = await this.umapWorkerManager.stepOptimize(nSteps);
+      stepCallback(currentEpoch);
+
+      if (currentEpoch < nEpochs) {
+        return recursiveStep();
+      } 
     }
   
     await recursiveStep();

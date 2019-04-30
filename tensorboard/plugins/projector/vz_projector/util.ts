@@ -195,30 +195,6 @@ export function runAsyncTask<T>(
   });
 }
 
-/**
- * Logs an async task in the message modal.
- *
- * @param message The message to display to the user.
- * @param task The async function / promise to run.
- * @param msgId Optional. ID of an existing message. If provided, will overwrite
- *     an existing message and won't automatically clear the message when the
- *     task is done.
- * @return The value returned by the task.
- */
-export async function runModalAsyncTask<T>(
-  message: string, 
-  task: () => Promise<T>, 
-  messageId: string = null, 
-) {
-  let autoClear = (messageId == null);
-  messageId = logging.setModalMessage(message, messageId);
-  const result = task();
-  if (autoClear) {
-    logging.setModalMessage(null, messageId);
-  }
-  return result;
-}
-
 
 /**
  * Parses the URL for query parameters, e.g. ?foo=1&bar=2 will return
