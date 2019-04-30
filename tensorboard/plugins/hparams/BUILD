@@ -159,6 +159,7 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
