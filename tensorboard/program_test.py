@@ -68,12 +68,12 @@ class WerkzeugServerTest(tb_test.TestCase):
     server = program.WerkzeugServer(
         self._StubApplication(),
         self.make_flags(host='', port=0, path_prefix='/test'))
-    self.assertEndsWith(server.get_url(), 'http://127.0.0.1:0/test/')
+    self.assertEndsWith(server.get_url(), '/test/')
 
     server = program.WerkzeugServer(
         self._StubApplication(),
         self.make_flags(host='', port=0, path_prefix='/test/'))
-    self.assertEndsWith(server.get_url(), 'http://127.0.0.1:0/test/')
+    self.assertEndsWith(server.get_url(), '/test/')
 
   def testSpecifiedHost(self):
     one_passed = False
