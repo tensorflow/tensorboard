@@ -31,90 +31,44 @@ from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary
 
 
-class Experiment(object):
-  """A top-level experiment description.
+def hparams_config(hparams, metrics, time_created_secs=None):
+  """Write a top-level experiment configuration.
 
-  An experiment has a fixed set of hyperparameters and metrics, and
-  consists of multiple sessions. Each session has different associated
-  hyperparameter values and metric values.
+  This configuration describes the hyperparameters and metrics that will
+  be tracked in the experiment, but does not record any actual values of
+  those hyperparameters and metrics. It can be created before any models
+  are actually trained.
+
+  Args:
+    hparams: A list of `HParam` values.
+    metrics: A list of `Metric` values.
+    time_created_secs: The time that this experiment was created, as
+      seconds since epoch. Defaults to the current time.
   """
-
-  def __init__(
-      self,
-      hparams,
-      metrics,
-      user=None,
-      description=None,
-      time_created_secs=None,
-  ):
-    """Create an experiment object.
-
-    Args:
-      hparams: A list of `HParam` values.
-      metrics: A list of `Metric` values.
-      user: An optional string denoting the user or group that owns this
-        experiment.
-      description: An optional Markdown string describing this
-        experiment.
-      time_created_secs: The time that this experiment was created, as
-        seconds since epoch. Defaults to the current time.
-    """
-    self._hparams = list(hparams)
-    self._metrics = list(metrics)
-    self._user = user
-    self._description = description
-    if time_created_secs is None:
-      time_created_secs = time.time()
-    self._time_created_secs = time_created_secs
-
-  @property
-  def hparams(self):
-    return list(self._hparams)
-
-  @property
-  def metrics(self):
-    return list(self._metrics)
-
-  @property
-  def user(self):
-    return self._user
-
-  @property
-  def description(self):
-    return self._description
-
-  @property
-  def time_created_secs(self):
-    return self._time_created_secs
-
-  def summary_pb(self):
-    """Create a top-level experiment summary describing this experiment.
-
-    The resulting summary should be written to a log directory that
-    encloses all the individual sessions' log directories.
-
-    Analogous to the low-level `experiment_pb` function in the
-    `hparams.summary` module.
-    """
-    hparam_infos = []
-    for hparam in self._hparams:
-      info = api_pb2.HParamInfo(
-          name=hparam.name,
-          description=hparam.description,
-          display_name=hparam.display_name,
-      )
-      domain = hparam.domain
-      if domain is not None:
-        domain.update_hparam_info(info)
-      hparam_infos.append(info)
-    metric_infos = [metric.as_proto() for metric in self._metrics]
-    return summary.experiment_pb(
-        hparam_infos=hparam_infos,
-        metric_infos=metric_infos,
-        user=self._user,
-        description=self._description,
-        time_created_secs=self._time_created_secs,
+  hparam_infos = []
+  for hparam in hparams:
+    info = api_pb2.HParamInfo(
+        name=hparam.name,
+        description=hparam.description,
+        display_name=hparam.display_name,
     )
+    domain = hparam.domain
+    if domain is not None:
+      domain.update_hparam_info(info)
+    hparam_infos.append(info)
+  metric_infos = [metric.as_proto() for metric in metrics]
+  experiment_pb = summary.experiment_pb(
+      hparam_infos=hparam_infos,
+      metric_infos=metric_infos,
+      time_created_secs=time_created_secs,
+  )
+  raw_pb = experiment_pb.SerializeToString()
+  summary_scope = (
+      getattr(tf.compat.v2.summary.experimental, "summary_scope", None)
+      or tf.summary.summary_scope
+  )
+  with summary_scope("hparams_summary"):
+    return tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=0)
 
 
 class HParam(object):
@@ -439,7 +393,7 @@ class KerasCallback(tf.keras.callbacks.Callback):
       logdir: The log directory for this session.
       hparams: A `dict` mapping hyperparameters to the values used in
         this session. Keys should be the names of `HParam` objects used
-        in an `Experiment`, or the `HParam` objects themselves. Values
+        in an experiment, or the `HParam` objects themselves. Values
         should be Python `bool`, `int`, `float`, or `string` values,
         depending on the type of the hyperparameter.
       group_name: The name of the session group containing this session,
