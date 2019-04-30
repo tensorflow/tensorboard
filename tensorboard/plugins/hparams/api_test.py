@@ -19,6 +19,7 @@ from __future__ import print_function
 
 from tensorboard import test
 from tensorboard.plugins.hparams import api
+from tensorboard.plugins.hparams import keras
 from tensorboard.plugins.hparams import summary_v2
 
 
@@ -28,7 +29,7 @@ class ApiTest(test.TestCase):
     self.assertIs(api.HParam, summary_v2.HParam)
 
   def test_has_keras_dependent_attributes(self):
-    self.assertIs(api.KerasCallback, summary_v2.KerasCallback)
+    self.assertIs(api.KerasCallback, keras.Callback)
 
 
 if __name__ == "__main__":
