@@ -445,8 +445,9 @@ profile run can have multiple tools that present the performance profile as diff
           .request(tf_backend.getRouter().pluginsListing())
           .then(plugins => {
             if (!(PLUGIN_NAME in plugins)) {
-              // The plugin was not created
-              this.$.initialDialog.openNoTensorFlowDialog();
+              // The plugin was not created and so either didn't have
+              // TensorFlow or had an old version
+              this.$.initialDialog.openOldTensorFlowDialog('1.14');
               this.set('_isAvailable', false);
             } else {
               // The plugin was created
