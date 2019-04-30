@@ -252,7 +252,7 @@ class DiscreteTest(test.TestCase):
       hp.Discrete(["one", 2])
 
 
-class KerasCallbackTest(test.TestCase):
+class KerasCallbackTest(tf.test.TestCase):
 
   def setUp(self):
     super(KerasCallbackTest, self).setUp()
@@ -399,4 +399,4 @@ class KerasCallbackTest(test.TestCase):
 
 
 if __name__ == "__main__":
-  test.main()
+  tf.test.main()
