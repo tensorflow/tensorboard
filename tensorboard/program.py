@@ -526,6 +526,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
       host = self._flags.host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
+    self._flags.path_prefix.rstrip('/')
     return 'http://%s:%d%s/' % (display_host, self.server_port,
                                self._flags.path_prefix)
 
