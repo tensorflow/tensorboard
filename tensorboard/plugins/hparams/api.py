@@ -34,10 +34,10 @@ from tensorboard.plugins.hparams import summary
 def hparams_config(hparams, metrics, time_created_secs=None):
   """Write a top-level experiment configuration.
 
-  This configuration includes the hyperparameters and metrics that will
-  be tracked in the experiment, but not any particular values of those
-  hyperparameters and metrics. It does not correspond to any particular
-  model instantiation.
+  This configuration describes the hyperparameters and metrics that will
+  be tracked in the experiment, but does not record any actual values of
+  those hyperparameters and metrics. It can be created before any models
+  are actually trained.
 
   Args:
     hparams: A list of `HParam` values.
