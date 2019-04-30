@@ -970,14 +970,15 @@ Polymer({
     var auxTitleElement = this.$$('.auxTitle');
     var auxTitleStyle = auxTitleElement.style;
     var functionLibraryTitleStyle = this.$$('.functionLibraryTitle').style;
-    var core = d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
+    const root = d3.select(this.$.svg);
+    var core = root.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
       tf.graph.scene.Class.Scene.CORE).node();
     // Only show labels if the graph is fully loaded.
     if (showLabels && core && this.progress && this.progress.value === 100) {
       var aux =
-        d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
+        root.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
           tf.graph.scene.Class.Scene.INEXTRACT).node() ||
-        d3.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
+        root.select("." + tf.graph.scene.Class.Scene.GROUP + ">." +
           tf.graph.scene.Class.Scene.OUTEXTRACT).node();
       var coreX = core.getCTM().e;
       var auxX = aux ? aux.getCTM().e : null;
@@ -996,7 +997,7 @@ Polymer({
         auxTitleStyle.display = 'none';
       }
 
-      let functionLibrary = d3.select(
+      let functionLibrary = root.select(
           "." + tf.graph.scene.Class.Scene.GROUP + ">." +
               tf.graph.scene.Class.Scene.FUNCTION_LIBRARY).node();
       let functionLibraryX =
