@@ -32,11 +32,12 @@ from tensorboard.plugins.hparams import summary
 
 
 def hparams_config(hparams, metrics, time_created_secs=None):
-  """Write a top-level experiment description.
+  """Write a top-level experiment configuration.
 
-  An experiment has a fixed set of hyperparameters and metrics, and
-  consists of multiple sessions. Each session has different associated
-  hyperparameter values and metric values.
+  This configuration includes the hyperparameters and metrics that will
+  be tracked in the experiment, but not any particular values of those
+  hyperparameters and metrics. It does not correspond to any particular
+  model instantiation.
 
   Args:
     hparams: A list of `HParam` values.
