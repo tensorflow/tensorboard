@@ -548,19 +548,11 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
     const nNeighbors = this.umapNeighbors;
 
     this.dataSet.projectUmap(nComponents, nNeighbors,
-        (iteration: number) => {
-          if (iteration != null) {
+        (iteration: number, isFinished = false) => {
+          if (isFinished) {
             this.runUmapButton.disabled = false;
-            this.projector.notifyProjectionPositionsUpdated();
-
-            if (!projectionChangeNotified && this.dataSet.projections['umap']) {
-              this.projector.onProjectionChanged();
-              projectionChangeNotified = true;
-            }
-          } else {
             this.runUmapButton.innerText = 'Re-run';
-            this.runUmapButton.disabled = false;
-            this.projector.onProjectionChanged();
+            this.projector.notifyProjectionPositionsUpdated();
           }
         });
   }  

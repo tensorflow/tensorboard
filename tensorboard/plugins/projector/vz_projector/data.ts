@@ -140,7 +140,7 @@ export class DataSet {
   private tsne: TSNE;
 
   hasUmapRun = false;
-  private umap: UMAP;
+  private umapWorkerManager: UmapWorkerManager;
 
   /** Creates a new Dataset */
   constructor(
@@ -363,81 +363,96 @@ export class DataSet {
             this.tsne.initDataDist(this.nearest);
           }).then(step);
     });
-  }
+  } 
 
   /** Runs UMAP on the data. */
   async projectUmap(
     nComponents: number, 
     nNeighbors: number, 
-    stepCallback: (iter: number) => void) {
-    this.hasUmapRun = true;
-    this.umap = new UMAP({nComponents, nNeighbors});
+    stepCallback: (iter: number, isFinished?: boolean) => void) {
+
+    // Handle the slight modal flicker caused by switching between knn and 
+    // tracking umap progress
+    await util.runModalAsyncTask('', async () => {}, UMAP_MSG_ID);  
+
+    if (this.umapWorkerManager == null) {
+      // We need to substitute the WORKER_BASEURL magic string in the worker
+      // function text with the correct origin for the umap script to be loaded
+      // properly in the worker.
+      let baseUrl = window.location.origin;
+      baseUrl = baseUrl.includes('localhost') ? 
+        `${baseUrl}/tf-imports` : baseUrl;
+      const workerStr = `(${umapWorkerFunction})();`
+        .replace('WORKER_BASEURL', baseUrl);
+
+      const blob = new Blob([workerStr]);
+      const blobURL = URL.createObjectURL(blob);
+      const umapWorker = new Worker(blobURL); 
+        
+      this.umapWorkerManager = new UmapWorkerManager(umapWorker);
+    }
+
+    await this.umapWorkerManager.create(nComponents, nNeighbors);
 
     let currentEpoch = 0;
     const epochStepSize = 10;
     const sampledIndices = this.shuffledDataIndices.slice(0, UMAP_SAMPLE_SIZE);
   
     const sampledData = sampledIndices.map(i => this.points[i]);
-    // TODO: Switch to a Float32-based UMAP internal
     const X = sampledData.map(x => Array.from(x.vector));
 
     this.nearest = await this.computeKnn(sampledData, nNeighbors);
     
-    const nEpochs = await util.runAsyncTask('Initializing UMAP...', () => {
-      const knnIndices = this.nearest.map(row => row.map(entry => entry.index));
-      const knnDistances = this.nearest.map(row => 
+    const nEpochs = await util.runModalAsyncTask('Initializing UMAP...', 
+      async () => {
+      const knnIndices: number[][] = this.nearest.map(row => 
+        row.map(entry => entry.index));
+      const knnDistances: number[][] = this.nearest.map(row => 
         row.map(entry => entry.dist)
       );
 
       // Initialize UMAP and return the number of epochs.
-      return this.umap.initializeFit(X, knnIndices, knnDistances);
+      return this.umapWorkerManager.initializeFit(X, knnIndices, knnDistances);
     }, UMAP_MSG_ID);
     
     // Now, iterate through all epoch batches of the UMAP optimization, updating
     // the modal window with the progress rather than animating each step since
     // the UMAP animation is not nearly as informative as t-SNE.
-    return new Promise((resolve, reject) => {
-      const step = () => {
+    const recursiveStep = async () => {
+      const progressMsg = 
+        `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`; 
+
+      return util.runModalAsyncTask(progressMsg, async () => {
         // Compute a batch of epochs since we don't want to update the UI
         // on every epoch.
-        const epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
-        for (let i = 0; i < epochsBatch; i++) {
-          currentEpoch = this.umap.step();
-        }
-        const progressMsg = 
-        `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`;
-        
-        // Wrap the logic in a util.runAsyncTask in order to correctly update
-        // the modal with the progress of the optimization.
-        util.runAsyncTask(progressMsg, () => {
-          if (currentEpoch < nEpochs) {
-            requestAnimationFrame(step);
-          } else {
-            const result = this.umap.getEmbedding();
-            sampledIndices.forEach((index, i) => {
-              const dataPoint = this.points[index];
-    
-              dataPoint.projections['umap-0'] = result[i][0];
-              dataPoint.projections['umap-1'] = result[i][1];
-              if (nComponents === 3) {
-                dataPoint.projections['umap-2'] = result[i][2];
-              }
-            });
-            this.projections['umap'] = true;
-    
-            logging.setModalMessage(null, UMAP_MSG_ID);
-            this.hasUmapRun = true;
-            stepCallback(currentEpoch);
-            resolve();
-          }
-        }, UMAP_MSG_ID, 0).catch(error => {
-          logging.setModalMessage(null, UMAP_MSG_ID);
-          reject(error);
-        });
-      }
+        const nSteps = Math.min(epochStepSize, nEpochs - currentEpoch);
+        currentEpoch = await this.umapWorkerManager.stepOptimize(nSteps);
+        stepCallback(currentEpoch);
 
-      requestAnimationFrame(step);
+        if (currentEpoch < nEpochs) {
+          return recursiveStep();
+        } 
+      }, UMAP_MSG_ID);
+    }
+  
+    await recursiveStep();
+
+    const embedding = await this.umapWorkerManager.getEmbedding();
+
+    sampledIndices.forEach((index, i) => {
+      const dataPoint = this.points[index];
+
+      dataPoint.projections['umap-0'] = embedding[i][0];
+      dataPoint.projections['umap-1'] = embedding[i][1];
+      if (nComponents === 3) {
+        dataPoint.projections['umap-2'] = embedding[i][2];
+      }
     });
+    this.projections['umap'] = true;
+    logging.setModalMessage(null, UMAP_MSG_ID);
+    this.hasUmapRun = true;
+
+    stepCallback(currentEpoch, true);
   }  
 
   /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
