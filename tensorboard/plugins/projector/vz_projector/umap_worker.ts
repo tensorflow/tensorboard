@@ -90,9 +90,10 @@ namespace vz_projector {
   export function umapWorkerFunction() {
     this.window = this;
 
-    // Can't import relative URL paths from a blob function, so we substitute
-    // the magic url prefix with our base url in the worker stringification step
-    this.importScripts('WORKER_BASEURL/umap-js.min.js');
+    // Since we're including the umap-js.min.js directly into the projector 
+    // html page, we're going to string replace it into the worker function 
+    // below
+    /** UMAP_JS_SCRIPT_CODE */
 
     function respondError(messageId: number, error: Error) {
       // @ts-ignore

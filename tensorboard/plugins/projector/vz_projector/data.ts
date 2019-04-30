@@ -376,19 +376,19 @@ export class DataSet {
     await util.runModalAsyncTask('', async () => {}, UMAP_MSG_ID);  
 
     if (this.umapWorkerManager == null) {
-      // We need to substitute the WORKER_BASEURL magic string in the worker
-      // function text with the correct origin for the umap script to be loaded
-      // properly in the worker.
-      let baseUrl = window.location.origin;
-      baseUrl = baseUrl.includes('localhost') ? 
-        `${baseUrl}/tf-imports` : baseUrl;
+      // We need to add the umap-js script to the worker code, which is only
+      // possible in our vulcanized (single-page payload) setup by pulling in 
+      // the code from the script tag and then substituting it into the worker
+      // code string. 
+      const umapScript = document.getElementById('umap-script');
+      const scriptStr = umapScript.innerHTML;
       const workerStr = `(${umapWorkerFunction})();`
-        .replace('WORKER_BASEURL', baseUrl);
+        .replace('/** UMAP_JS_SCRIPT_CODE */', scriptStr);
 
       const blob = new Blob([workerStr]);
       const blobURL = URL.createObjectURL(blob);
       const umapWorker = new Worker(blobURL); 
-        
+
       this.umapWorkerManager = new UmapWorkerManager(umapWorker);
     }
 
