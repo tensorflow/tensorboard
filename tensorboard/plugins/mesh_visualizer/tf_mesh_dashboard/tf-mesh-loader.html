@@ -35,7 +35,7 @@ limitations under the License.
       <template is="dom-if" if="[[_hasMultipleSamples]]">
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
       </template>
-      <template is="dom-if" if="[[_hasAtLeastOneStep]]">
+      <template is="dom-if" if="[[_computeHasAtLeastOneStep(_steps)]]">
         <div class="heading-row">
           <div class="heading-label">
             step <span style="font-weight: bold">[[toLocaleString_(_stepValue)]]</span>

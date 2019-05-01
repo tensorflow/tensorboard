@@ -86,14 +86,7 @@ limitations under the License.
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
-          <paper-input
-            no-label-float
-            label="Filter tags (regular expressions supported)"
-            value="{{_tagFilter}}"
-            class="search-input"
-          >
-          <iron-icon prefix icon="search"></iron-icon>
-          </paper-input>
+          <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
             <tf-category-pane category="[[category]]">
               <tf-paginated-view
@@ -112,8 +105,8 @@ limitations under the License.
                           of-samples="[[item.ofSamples]]"
                           request-manager="[[_requestManager]]"
                           class="tf-mesh-loader-container"
-                          on-camera-position-change="_onCameraPositionChanged"
-                          ></tf-mesh-loader>
+                          on-camera-position-change="_onCameraPositionChanged">                            
+                        </tf-mesh-loader>
                       </template>
                     </div>
                   </template>

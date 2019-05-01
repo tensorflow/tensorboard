@@ -80,11 +80,6 @@ Polymer({
      * defaults.
      */
     _cameraPositionInitialized: {type: Boolean, value: false},
-    /** @type {!bool} Determines if at least one step is present. */
-    _hasAtLeastOneStep: {
-      type: Boolean,
-      computed: '_computeHasAtLeastOneStep(_steps)',
-    },
     /** @type {!bool} Determines if multiple steps are present. */
     _hasMultipleSteps: {
       type: Boolean,
@@ -195,8 +190,8 @@ Polymer({
   _onCameraPositionChange: function() {
     if (!this._meshViewer.isReady()) return;
     const event = new CustomEvent('camera-position-change', {
-                              detail: this._meshViewer.getCameraPosition()
-                            });
+      detail: this._meshViewer.getCameraPosition()
+    });
     this.dispatchEvent(event);
   },
 
@@ -234,7 +229,7 @@ Polymer({
   redraw: function() {
     this._updateCanvasSize();
     // Do not render if not in the DOM.
-    if (!this.parentElement) return;
+    if (!this.isConnected) return;
     this._meshViewer.draw();
   },
 
