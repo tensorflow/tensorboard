@@ -97,6 +97,7 @@ limitations under the License.
                     <div class="layout horizontal wrap">
                       <template is="dom-repeat" items="[[page.items]]">
                         <tf-mesh-loader
+                          active
                           selected-view="[[_selectedView]]"
                           run="[[item.run]]"
                           tag="[[item.tag]]"
@@ -104,7 +105,7 @@ limitations under the License.
                           of-samples="[[item.ofSamples]]"
                           request-manager="[[_requestManager]]"
                           class="tf-mesh-loader-container"
-                          on-camera-position-change="_onCameraPositionChanged">                            
+                          on-camera-position-change="_onCameraPositionChanged">
                         </tf-mesh-loader>
                       </template>
                     </div>
