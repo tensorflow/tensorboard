@@ -87,11 +87,6 @@ Polymer({
      * defaults.
      */
     _cameraPositionInitialized: {type: Boolean, value: false},
-    /** @type {!bool} Determines if multiple steps are present. */
-    _hasAtLeastOneStep: {
-      type: Boolean,
-      computed: '_computeHasAtLeastOneStep(_steps)',
-    },
     /**
      * @type {number} Contains current step value (step number assigned
      * during training).
@@ -104,21 +99,6 @@ Polymer({
     _currentWallTime: {
       type: String,
       computed: '_computeCurrentWallTime(_currentStep)',
-    },
-    /** @type {number} Maximum step index loaded to the client. */
-    _maxStepIndex: {
-      type: Number,
-      computed: '_computeMaxStepIndex(_steps)',
-    },
-    /** @type {string} Formatted sample string. */
-    _sampleText: {
-      type: String,
-      computed: '_computeSampleText(sample)',
-    },
-    /** @type {!bool} Defines if multiple samples are present. */
-    _hasMultipleSamples: {
-      type: Boolean,
-      computed: '_computeHasMultipleSamples(ofSamples)',
     },
     /** @type {!bool} Defines if browser still loading data. */
     _isMeshLoading: {
@@ -152,7 +132,6 @@ Polymer({
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
     this._meshViewer.addEventListener(
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
-    this.set('active', true);
     this.reload();
   },
 
@@ -240,11 +219,11 @@ Polymer({
     this._meshViewer.draw();
   },
 
-  _computeHasAtLeastOneStep: function(steps) {
+  _hasAtLeastOneStep: function(steps) {
     return !!steps && steps.length > 0;
   },
 
-  _computeHasAtLeastOneStep: function(steps) {
+  _hasMultipleSteps: function(steps) {
     return !!steps && steps.length > 1;
   },
 
@@ -262,15 +241,15 @@ Polymer({
     return tf_card_heading.formatDate(currentStep.wall_time);
   },
 
-  _computeMaxStepIndex: function(steps) {
+  _getMaxStepIndex: function(steps) {
     return steps.length - 1;
   },
 
-  _computeSampleText: function(sample) {
+  _getSampleText: function(sample) {
     return String(sample + 1);
   },
 
-  _computeHasMultipleSamples: function(ofSamples) {
+  _hasMultipleSamples: function(ofSamples) {
     return ofSamples > 1;
   },
 
