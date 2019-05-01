@@ -25,5 +25,6 @@ tf_web_library(
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/components/tf_paginated_view",
+        "//tensorboard/components/tf_categorization_utils",
     ],
 )

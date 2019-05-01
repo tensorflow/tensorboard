@@ -340,7 +340,7 @@ limitations under the License.
         },
         _pageCount: {
           type: Number,
-          computed: '_computePageCount(category.items, _limit)',
+          computed: '_computePageCount(category.items.*, _limit)',
         },
         _multiplePagesExist: {
           type: Boolean,
@@ -383,8 +383,8 @@ limitations under the License.
       },
 
       observers: [
-        '_clampActiveIndex(category.items)',
-        '_updateRenderedItems(_itemsRendered, category.items, _limit, _activeIndex, _pageCount)',
+        '_clampActiveIndex(category.items.*)',
+        '_updateRenderedItems(_itemsRendered, category.items.*, _limit, _activeIndex, _pageCount)',
         '_bootstrapDom(_itemsRendered, isAttached)',
         '_updateDom(_renderedItems.*, _domBootstrapped)',
         '_trimCache(_limit)',
@@ -583,8 +583,9 @@ limitations under the License.
       _computeCurrentPage(limit, activeIndex) {
         return Math.floor(activeIndex / limit) + 1;
       },
-      _computePageCount(items, limit) {
-        return Math.ceil((items || []).length / limit);
+      _computePageCount(_, limit) {
+        return this.category ?
+            Math.ceil((this.category.items).length / limit) : 0;
       },
       _computeMultiplePagesExist(pageCount) {
         return pageCount > 1;
