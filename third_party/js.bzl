@@ -340,7 +340,7 @@ def tensorboard_js_workspace():
       strip_prefix = "vaadin-split-layout-1.1.0",
       path = "/vaadin-split-layout",
   )
-  
+
   web_library_external(
       name = "vaadin_vaadin_grid",
       licenses = ["notice"],  # Apache License 2.0
@@ -499,6 +499,21 @@ def tensorboard_js_workspace():
       sha256_urls = {
           "fccd26db2da462ec48e2d90fbdff1ee9a9d740f2c7efbd9789ba46eb98ecd1ae": [
               "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.5/dist/tf.min.js",
+          ],
+      },
+  )
+
+  filegroup_external(
+      name = "org_tensorflow_graphics_lib",
+      licenses = ["notice"],  # MIT
+      sha256_urls = {
+          "82bf620fbf10af00a83754b7ebadcbcd41af7181e1aa237cdd72a2881d8004fe": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+          ],
+          "0380aebf46bb74706b8430446a24239e15e35b6092bac76135dafa8eea082a90": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )
