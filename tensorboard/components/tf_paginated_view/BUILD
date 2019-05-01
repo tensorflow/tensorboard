@@ -11,7 +11,6 @@ tf_web_library(
         "tf-category-paginated-view.html",
         "tf-dom-repeat.html",
         "tf-paginated-view-store.html",
-        "tf-paginated-view.html",
     ],
     path = "/tf-paginated-view",
     visibility = ["//visibility:public"],
