@@ -841,7 +841,6 @@ Polymer({
 
   onInputBlur: function(event: Event) {
     this.showDeleteValueButton = false;
-    const inputControl = event.target as HTMLInputElement;
   },
 
   /**
