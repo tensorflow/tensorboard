@@ -17,7 +17,7 @@ tf_web_library(
     name = "test_web_library",
     srcs = [
         "tests.html",
-        "paginatedViewTests.ts",
+        "categoryPaginatedViewTests.ts",
     ],
     path = "/tf-paginated-view/test",
     deps = [
