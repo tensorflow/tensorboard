@@ -14,7 +14,6 @@ tf_web_library(
     path = "/tf-mesh-dashboard",
     visibility = ["//visibility:public"],
     deps = [
-        ":mesh-viewer",        
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_categorization_utils",
@@ -23,7 +22,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:threejs",
+        "//tensorboard/components/tf_imports:tf_graphics_lib",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_tensorboard:registry",
@@ -39,14 +38,3 @@ tf_web_library(
     ],
 )
 
-tf_web_library(
-    name = "mesh-viewer",
-    srcs = [
-        "tf-mesh-viewer.html",
-    ],
-    path = "/tf-mesh-dashboard",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/components/tf_imports:threejs",
-    ],
-)
