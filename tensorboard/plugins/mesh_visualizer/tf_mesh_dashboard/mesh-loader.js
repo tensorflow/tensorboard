@@ -35,6 +35,13 @@ Polymer({
      * @type {string}
      */
     selectedView: {type: String, value: 'all'},
+    /** @type {!bool} Defines if component is active and should get data to
+     *  display.
+     */
+    active: {
+      type: Boolean,
+      value: false,
+    },
     /** @type {!Object} Request manager to communicate with the server. */
     requestManager: Object,
     /**
@@ -145,7 +152,7 @@ Polymer({
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
     this._meshViewer.addEventListener(
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
-    this.isAttached = true;
+    this.set('active', true);
     this.reload();
   },
 
@@ -153,7 +160,7 @@ Polymer({
    * Function to call when component must be reloaded.
    */
   reload: function() {
-    if (!this.isAttached) {
+    if (!this.active) {
       return;
     }
     this.set('_isMeshLoading', true);
