@@ -25,13 +25,16 @@ import abc
 import time
 
 import six
-import tensorflow as tf
 
+from tensorboard.compat import tf2 as tf
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.plugins.hparams import summary
+from tensorboard.plugins.hparams import metadata
+from tensorboard.plugins.hparams import plugin_data_pb2
 
 
 def hparams_config(hparams, metrics, time_created_secs=None):
+  # NOTE: Keep docs in sync with `hparams_config_pb` below.
   """Write a top-level experiment configuration.
 
   This configuration describes the hyperparameters and metrics that will
@@ -44,6 +47,36 @@ def hparams_config(hparams, metrics, time_created_secs=None):
     metrics: A list of `Metric` values.
     time_created_secs: The time that this experiment was created, as
       seconds since epoch. Defaults to the current time.
+
+  Returns:
+    A tensor whose value is `True` on success, or `False` if no summary
+    was written because no default summary writer was available.
+  """
+  pb = hparams_config_pb(
+      hparams=hparams,
+      metrics=metrics,
+      time_created_secs=time_created_secs,
+  )
+  return _write_summary("hparams_config", pb)
+
+
+def hparams_config_pb(hparams, metrics, time_created_secs=None):
+  # NOTE: Keep docs in sync with `hparams_config_pb` below.
+  """Create a top-level experiment configuration.
+
+  This configuration describes the hyperparameters and metrics that will
+  be tracked in the experiment, but does not record any actual values of
+  those hyperparameters and metrics. It can be created before any models
+  are actually trained.
+
+  Args:
+    hparams: A list of `HParam` values.
+    metrics: A list of `Metric` values.
+    time_created_secs: The time that this experiment was created, as
+      seconds since epoch. Defaults to the current time.
+
+  Returns:
+    A TensorBoard `summary_pb2.Summary` message.
   """
   hparam_infos = []
   for hparam in hparams:
@@ -57,18 +90,54 @@ def hparams_config(hparams, metrics, time_created_secs=None):
       domain.update_hparam_info(info)
     hparam_infos.append(info)
   metric_infos = [metric.as_proto() for metric in metrics]
-  experiment_pb = summary.experiment_pb(
+  experiment = api_pb2.Experiment(
       hparam_infos=hparam_infos,
       metric_infos=metric_infos,
       time_created_secs=time_created_secs,
   )
-  raw_pb = experiment_pb.SerializeToString()
+  return _summary_pb(
+      metadata.EXPERIMENT_TAG,
+      plugin_data_pb2.HParamsPluginData(experiment=experiment),
+  )
+
+
+def _write_summary(name, pb):
+  """Write a summary, returning the writing op.
+
+  Args:
+    name: As passed to `summary_scope`.
+    pb: A `summary_pb2.Summary` message.
+
+  Returns:
+    A tensor whose value is `True` on success, or `False` if no summary
+    was written because no default summary writer was available.
+  """
+  raw_pb = pb.SerializeToString()
   summary_scope = (
-      getattr(tf.compat.v2.summary.experimental, "summary_scope", None)
+      getattr(tf.summary.experimental, "summary_scope", None)
       or tf.summary.summary_scope
   )
-  with summary_scope("hparams_summary"):
-    return tf.compat.v2.summary.experimental.write_raw_pb(raw_pb, step=0)
+  with summary_scope(name):
+    return tf.summary.experimental.write_raw_pb(raw_pb, step=0)
+
+
+def _summary_pb(tag, hparams_plugin_data):
+  """Create a summary holding the given `HParamsPluginData` message.
+
+  Args:
+    tag: The `str` tag to use.
+    hparams_plugin_data: The `HParamsPluginData` message to use.
+
+  Returns:
+    A TensorBoard `summary_pb2.Summary` message.
+  """
+  summary = summary_pb2.Summary()
+  tf_metadata = metadata.create_summary_metadata(hparams_plugin_data)
+  tb_metadata = summary_pb2.SummaryMetadata.FromString(
+      tf_metadata.SerializeToString()
+  )
+  summary.value.add(tag=tag, metadata=tb_metadata)
+  return summary
 
 
 class HParam(object):
