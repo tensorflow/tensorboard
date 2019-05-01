@@ -16,25 +16,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../tf-paginated-view2.html">
+<link rel="import" href="../../tf-categorization-utils/tf-categorization-utils.html">
+<link rel="import" href="../tf-category-paginated-view.html">
 <script src="../../web-component-tester/browser.js"></script>
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
 <body>
 <dom-module id="testable-wrapper">
 <template>
-  <tf-paginated-view2
-    id="paginedView"
+  <tf-category-paginated-view
+    id="view"
     _limit="[[_limit]]"
-    get-item-key="[[getItemKey]]"
-    items="[[items]]"
+    category="[[category]]"
   >
     <template>
       <span id$="[[item.id]]" number$="[[randomNumber]]">
         [[item.content]]
       </span>
     </template>
-  </tf-paginated-view2>
+  </tf-category-paginated-view>
 </template>
 <script>
   Polymer({
@@ -45,8 +45,7 @@ limitations under the License.
         value: 0,
       },
       _limit: Number,
-      getItemKey: Function,
-      items: Array,
+      category: Object,
     },
   })
 </script>
