@@ -233,13 +233,9 @@ limitations under the License.
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -252,13 +248,9 @@ limitations under the License.
         test("removal of last metric updates shadow DOM", function(done) {
           element.pop("schema.metricInfos"); // remove 'Delta T'
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -273,13 +265,9 @@ limitations under the License.
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Difference To Ambient Temp.",
@@ -375,6 +363,14 @@ limitations under the License.
             done();
           });
         });
+
+        function getColumnTitles() {
+          const columnTitlesNodes = Array.from(
+              element.root.querySelectorAll(".column-title"));
+          return columnTitlesNodes
+              .map(n => n.textContent)
+              .map(s => s.replace(/^\s*/,"").replace(/\s*$/,""));
+        }
       });
     </script>
   </body>
