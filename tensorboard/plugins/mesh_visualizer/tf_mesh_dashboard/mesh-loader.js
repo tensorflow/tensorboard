@@ -88,9 +88,9 @@ Polymer({
      */
     _cameraPositionInitialized: {type: Boolean, value: false},
     /** @type {!bool} Determines if multiple steps are present. */
-    _hasMultipleSteps: {
+    _hasAtLeastOneStep: {
       type: Boolean,
-      computed: '_computeHasMultipleSteps(_steps)',
+      computed: '_computeHasAtLeastOneStep(_steps)',
     },
     /**
      * @type {number} Contains current step value (step number assigned
@@ -244,7 +244,7 @@ Polymer({
     return !!steps && steps.length > 0;
   },
 
-  _computeHasMultipleSteps: function(steps) {
+  _computeHasAtLeastOneStep: function(steps) {
     return !!steps && steps.length > 1;
   },
 
