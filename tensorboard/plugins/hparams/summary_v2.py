@@ -61,7 +61,7 @@ def hparams_config(hparams, metrics, time_created_secs=None):
 
 
 def hparams_config_pb(hparams, metrics, time_created_secs=None):
-  # NOTE: Keep docs in sync with `hparams_config_pb` below.
+  # NOTE: Keep docs in sync with `hparams_config` above.
   """Create a top-level experiment configuration.
 
   This configuration describes the hyperparameters and metrics that will
