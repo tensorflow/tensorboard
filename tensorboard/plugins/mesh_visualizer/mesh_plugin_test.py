@@ -208,7 +208,7 @@ class MeshPluginTest(tf.test.TestCase):
       event_multiplexer.EventMultiplexer,
       "PluginRunToTagToContent",
       return_value={"bar": {
-          "foo": ""
+          "foo": "".encode("utf-8")
       }})
   def testMetadataComputedOnce(self, run_to_tag_mock):
     """Tests that metadata mapping computed once."""
