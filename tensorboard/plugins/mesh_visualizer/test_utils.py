@@ -15,7 +15,6 @@
 """Test utils for mesh plugin tests."""
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import google_type_annotations
 from __future__ import print_function
 
 import collections
@@ -23,99 +22,14 @@ import json
 import threading
 import numpy as np
 import tensorflow as tf
-from google3.third_party.tensorboard.compat.proto import event_pb2
-from google3.third_party.tensorboard.compat.proto import graph_pb2
-from google3.third_party.tensorboard.compat.proto import meta_graph_pb2
-from google3.third_party.tensorboard.compat.proto import summary_pb2
-from google3.third_party.tensorboard.util import tb_logging
+from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import meta_graph_pb2
+from tensorboard.compat.proto import summary_pb2
+from tensorboard.util import tb_logging
 
 Mesh = collections.namedtuple('Mesh', ('vertices', 'faces', 'colors'))
 logger = tb_logging.get_logger()
-
-
-# NOTE: copy FileWriter and FileWriterCache from tensorboard test_util.py
-# until this plugin start live in TensorBoard github repo.
-class FileWriter(tf.compat.v1.summary.FileWriter):
-  """FileWriter for test.
-
-  TensorFlow FileWriter uses TensorFlow's Protobuf Python binding which is
-  largely discouraged in TensorBoard. We do not want a TB.Writer but require one
-  for testing in integrational style (writing out event files and use the real
-  event readers).
-  """
-
-  def add_event(self, event):
-    if isinstance(event, event_pb2.Event):
-      tf_event = tf.compat.v1.Event.FromString(event.SerializeToString())
-    else:
-      logger.warn('Added TensorFlow event proto. '
-                  'Please prefer TensorBoard copy of the proto')
-      tf_event = event
-    super(FileWriter, self).add_event(tf_event)
-
-  def add_summary(self, summary, global_step=None):
-    if isinstance(summary, summary_pb2.Summary):
-      tf_summary = tf.compat.v1.Summary.FromString(summary.SerializeToString())
-    else:
-      logger.warn('Added TensorFlow summary proto. '
-                  'Please prefer TensorBoard copy of the proto')
-      tf_summary = summary
-    super(FileWriter, self).add_summary(tf_summary, global_step)
-
-  def add_session_log(self, session_log, global_step=None):
-    if isinstance(session_log, event_pb2.SessionLog):
-      tf_session_log = tf.compat.v1.SessionLog.FromString(
-          session_log.SerializeToString())
-    else:
-      logger.warn('Added TensorFlow session_log proto. '
-                  'Please prefer TensorBoard copy of the proto')
-      tf_session_log = session_log
-    super(FileWriter, self).add_session_log(tf_session_log, global_step)
-
-  def add_graph(self, graph, global_step=None, graph_def=None):
-    if isinstance(graph_def, graph_pb2.GraphDef):
-      tf_graph_def = tf.compat.v1.GraphDef.FromString(
-          graph_def.SerializeToString())
-    else:
-      tf_graph_def = graph_def
-
-    super(FileWriter, self).add_graph(
-        graph, global_step=global_step, graph_def=tf_graph_def)
-
-  def add_meta_graph(self, meta_graph_def, global_step=None):
-    if isinstance(meta_graph_def, meta_graph_pb2.MetaGraphDef):
-      tf_meta_graph_def = tf.compat.v1.MetaGraphDef.FromString(
-          meta_graph_def.SerializeToString())
-    else:
-      tf_meta_graph_def = meta_graph_def
-
-    super(FileWriter, self).add_meta_graph(
-        meta_graph_def=tf_meta_graph_def, global_step=global_step)
-
-
-class FileWriterCache(object):
-  """Cache for TensorBoard test file writers."""
-  # Cache, keyed by directory.
-  _cache = {}
-
-  # Lock protecting _FILE_WRITERS.
-  _lock = threading.RLock()
-
-  @staticmethod
-  def get(logdir):
-    """Returns the FileWriter for the specified directory.
-
-    Args:
-      logdir: str, name of the directory.
-
-    Returns:
-      A `FileWriter`.
-    """
-    with FileWriterCache._lock:
-      if logdir not in FileWriterCache._cache:
-        FileWriterCache._cache[logdir] = FileWriter(
-            logdir, graph=tf.compat.v1.get_default_graph())
-      return FileWriterCache._cache[logdir]
 
 
 def get_random_mesh(num_vertices,

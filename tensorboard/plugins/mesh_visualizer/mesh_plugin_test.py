@@ -20,21 +20,28 @@ from __future__ import print_function
 import collections
 import os
 import shutil
-from mock import patch
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_graphics.tensorboard.mesh_visualizer import mesh_plugin
-from tensorflow_graphics.tensorboard.mesh_visualizer import mesh_summary
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
-from tensorflow_graphics.tensorboard.mesh_visualizer import test_utils
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
-from google3.third_party.tensorboard.backend import application
-from google3.third_party.tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
-from google3.third_party.tensorboard.plugins import base_plugin
+from tensorboard.backend import application
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
+from tensorboard.plugins import base_plugin
+from tensorboard.plugins.mesh_visualizer import mesh_plugin
+from tensorboard.plugins.mesh_visualizer import mesh_summary
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh_visualizer import test_utils
+from tensorboard.util import test_util as tensorboard_test_util
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 
+@tensorboard_test_util.run_v1_only('Uses contrib') 
 class MeshPluginTest(tf.test.TestCase):
   """Tests for mesh plugin server."""
 
@@ -93,7 +100,7 @@ class MeshPluginTest(tf.test.TestCase):
     self.runs = ["bar"]
     self.steps = 20
     bar_directory = os.path.join(self.log_dir, self.runs[0])
-    with test_utils.FileWriterCache.get(bar_directory) as writer:
+    with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)
       for step in xrange(self.steps):
         writer.add_summary(
@@ -179,7 +186,7 @@ class MeshPluginTest(tf.test.TestCase):
         (self.runs[0], self.names[0], 0))
     self.assertEqual(200, response.status_code)
     metadata = test_utils.deserialize_json_response(response.get_data())
-    self.assertLen(metadata, self.steps)
+    self.assertEqual(len(metadata), self.steps)
     self.assertAllEqual(metadata[0]["content_type"],
                         plugin_data_pb2.MeshPluginData.VERTEX)
     self.assertAllEqual(metadata[0]["data_shape"], self.data[0].vertices.shape)
@@ -197,7 +204,7 @@ class MeshPluginTest(tf.test.TestCase):
       self.assertLessEqual(metadata[i - 1]["wall_time"],
                            metadata[i]["wall_time"])
 
-  @patch.object(
+  @mock.patch.object(
       event_multiplexer.EventMultiplexer,
       "PluginRunToTagToContent",
       return_value={"bar": {
@@ -212,7 +219,7 @@ class MeshPluginTest(tf.test.TestCase):
   def testIsActive(self):
     self.assertTrue(self.plugin.is_active())
 
-  @patch.object(
+  @mock.patch.object(
       event_multiplexer.EventMultiplexer,
       "PluginRunToTagToContent",
       return_value={})

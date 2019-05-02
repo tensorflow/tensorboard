@@ -20,8 +20,8 @@ from __future__ import print_function
 import json
 import tensorflow as tf
 
-from tensorflow_graphics.tensorboard.mesh_visualizer import metadata
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh_visualizer import metadata
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
 
 PLUGIN_NAME = 'mesh'
 

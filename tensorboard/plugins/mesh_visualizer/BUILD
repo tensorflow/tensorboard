@@ -23,6 +23,7 @@ py_test(
     deps = [
         ":metadata",        
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -38,9 +39,9 @@ py_library(
         "//tensorboard:expect_numpy_installed",        
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/backend/event_processing:event_accumulator",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/backend/event_processing:event_accumulator",        
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
         "@org_pocoo_werkzeug",
     ],
@@ -74,8 +75,10 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -100,8 +103,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":mesh_summary",
-        ":test_utils",
+        ":test_utils",        
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
     ],
 )
 
