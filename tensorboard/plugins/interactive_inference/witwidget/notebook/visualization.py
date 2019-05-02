@@ -15,6 +15,7 @@
 """Visualization API."""
 import sys
 import tensorflow as tf
+from numbers import Number
 
 
 def _is_colab():
@@ -34,16 +35,24 @@ class WitConfigBuilder(object):
     """Constructs the WitConfigBuilder object.
 
     Args:
-      examples: A list of tf.Example or tf.SequenceExample proto objects.
-      These are the examples that will be displayed in WIT. If not model to
+      examples: A list of tf.Example or tf.SequenceExample proto objects, or
+      raw JSON objects. JSON is allowed only for CMLE-hosted models (see
+      'set_cmle_model' and 'set_compare_cmle_model methods).
+      These are the examples that will be displayed in WIT. If no model to
       infer these examples with is specified through the methods on this class,
       then WIT will display the examples for exploration, but no model inference
       will be performed by the tool.
     """
     self.config = {}
-    self.set_examples(examples)
     self.set_model_type('classification')
     self.set_label_vocab([])
+    if len(examples) > 0 and not (
+        isinstance(examples[0], tf.train.Example) or
+        isinstance(examples[0], tf.train.SequenceExample)):
+      self.set_examples(self._convert_json_to_tf_examples(examples))
+      self._set_uses_json_input(True)
+    else:
+      self.set_examples(examples)
 
   def build(self):
     """Returns the configuration set through use of this builder object.
@@ -440,4 +449,92 @@ class WitConfigBuilder(object):
     # If no model name has been set, give a default
     if not self.has_compare_model_name():
       self.set_compare_model_name('2')
+    return self
+
+  def _convert_json_to_tf_examples(self, examples):
+    tf_examples = []
+    for json_ex in examples:
+      ex = tf.train.Example()
+      for feat in json_ex:
+        if isinstance(json_ex[feat], (int, long)):
+          ex.features.feature[feat].int64_list.value.append(json_ex[feat])
+        elif isinstance(json_ex[feat], Number):
+          ex.features.feature[feat].float_list.value.append(json_ex[feat])
+        else:
+          ex.features.feature[feat].bytes_list.value.append(
+            json_ex[feat].encode('utf-8'))
+      tf_examples.append(ex)
+    return tf_examples
+
+  def set_cmle_model(self, project, model, version=None, force_json_input=None):
+    """Sets the model information for a model served by CMLE.
+
+    CMLE is Google's Cloud Machine Learning Engine.
+
+    Args:
+      project: The name of the CMLE project.
+      model: The name of the CMLE model.
+      version: Optional, the version of the CMLE model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_inference_address(project)
+    self.set_model_name(model)
+    self.store('use_cmle', True)
+    if version is not None:
+      self.set_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input', True)
+    return self
+
+  def set_compare_cmle_model(self, project, model, version=None,
+                             force_json_input=None):
+    """Sets the model information for a second model served by CMLE.
+
+    CMLE is Google's Cloud Machine Learning Engine.
+
+    Args:
+      project: The name of the CMLE project.
+      model: The name of the CMLE model.
+      version: Optional, the version of the CMLE model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_compare_inference_address(project)
+    self.set_compare_model_name(model)
+    self.store('use_cmle_2', True)
+    if version is not None:
+      self.set_compare_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input_2', True)
+    return self
+
+  def set_target_feature(self, target):
+    """Sets the name of the target feature in the provided examples.
+
+    If the provided examples contain a feature that represents the target
+    that the model is trying to predict, it can be specified by this method.
+    This is necessary for CMLE models so that the target feature isn't sent
+    to the model for prediction, which can cause model inference errors.
+
+    Args:
+      target: The name of the feature in the examples that represents the value
+      that the model is trying to predict.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.store('target_feature', target)
+    return self
+
+  def _set_uses_json_input(self, is_json):
+    self.store('uses_json_input', is_json)
     return self

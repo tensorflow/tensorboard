@@ -43,6 +43,7 @@ if 'witwidget-gpu' in project_name:
   ]
 
 REQUIRED_PACKAGES = [
+    'google-api-python-client>=1.7.8',
     'ipywidgets>=7.0.0',
     'jupyter>=1.0,<2',
 ] + _TF_REQ
