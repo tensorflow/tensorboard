@@ -29,6 +29,7 @@ IntInterval = summary_v2.IntInterval
 Metric = summary_v2.Metric
 RealInterval = summary_v2.RealInterval
 hparams_config = summary_v2.hparams_config
+hparams_config_pb = summary_v2.hparams_config_pb
 
 KerasCallback = keras.Callback
 
