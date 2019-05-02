@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorflow_graphics.tensorboard.mesh_visualizer.mesh_summary."""
+"""Tests for tensorboard.plugins.mesh_visualizer.mesh_summary."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -20,13 +20,15 @@ from __future__ import print_function
 import json
 import tensorflow as tf
 
-from tensorflow_graphics.tensorboard.mesh_visualizer import mesh_summary
-from tensorflow_graphics.tensorboard.mesh_visualizer import metadata
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
-from tensorflow_graphics.tensorboard.mesh_visualizer import test_utils
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.mesh_visualizer import mesh_summary
+from tensorboard.plugins.mesh_visualizer import metadata
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh_visualizer import test_utils
+from tensorboard.util import test_util
 
 
+@test_util.run_v1_only('Uses contrib') 
 class MeshSummaryTest(tf.test.TestCase):
 
   def pb_via_op(self, summary_op):

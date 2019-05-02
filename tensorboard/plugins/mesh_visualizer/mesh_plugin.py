@@ -20,18 +20,18 @@ from __future__ import print_function
 import collections
 import numpy as np
 import six
-import tensorflow as tf
-from tensorflow_graphics.tensorboard.mesh_visualizer import metadata
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
+from tensorboard.util import tensor_util
 from werkzeug import wrappers
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.mesh_visualizer import metadata
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
 
 
 class MeshPlugin(base_plugin.TBPlugin):
   """A plugin that serves 3D visualization of meshes."""
 
-  plugin_name = 'mesh'
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates a MeshPlugin via TensorBoard core.
@@ -139,7 +139,7 @@ class MeshPlugin(base_plugin.TBPlugin):
 
   def _get_sample(self, tensor_event, sample):
     """Returns a single sample from a batch of samples."""
-    data = tf.make_ndarray(tensor_event.tensor_proto)
+    data = tensor_util.make_ndarray(tensor_event.tensor_proto)
     return data[sample].tolist()
 
   def _get_tensor_metadata(self, event, content_type, data_shape, config):
@@ -218,9 +218,9 @@ class MeshPlugin(base_plugin.TBPlugin):
     ]
 
     np_type = np.float32
-    if content_type == plugin_data_pb2.MeshPluginData.ContentType.FACE:
+    if content_type == plugin_data_pb2.MeshPluginData.ContentType.Value('FACE'):
       np_type = np.int32
-    elif content_type == plugin_data_pb2.MeshPluginData.ContentType.COLOR:
+    elif content_type == plugin_data_pb2.MeshPluginData.ContentType.Value('COLOR'):
       np_type = np.uint8
     response = np.array(response, dtype=np_type)
     # Looks like reshape can take around 160ms, so why not store it reshaped.

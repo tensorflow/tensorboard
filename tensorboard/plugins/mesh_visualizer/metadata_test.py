@@ -21,10 +21,12 @@ from __future__ import print_function
 from mock import patch
 import six
 import tensorflow as tf
-from tensorflow_graphics.tensorboard.mesh_visualizer import metadata
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh_visualizer import metadata
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.util import test_util
 
 
+@test_util.run_v1_only('Uses contrib') 
 class MetadataTest(tf.test.TestCase):
 
   def _create_metadata(self):
@@ -36,7 +38,7 @@ class MetadataTest(tf.test.TestCase):
     self.summary_metadata = metadata.create_summary_metadata(
         self.name,
         self.display_name,
-        plugin_data_pb2.MeshPluginData.ContentType.VERTEX,
+        plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'),
         self.shape,
         json_config=self.json_config)
 
@@ -44,7 +46,7 @@ class MetadataTest(tf.test.TestCase):
     """Tests proper creation of instance name based on display_name."""
     display_name = 'my_mesh'
     instance_name = metadata.get_instance_name(
-        display_name, plugin_data_pb2.MeshPluginData.ContentType.VERTEX)
+        display_name, plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'))
     self.assertEqual('%s_VERTEX' % display_name, instance_name)
 
   def test_create_summary_metadata(self):
@@ -61,7 +63,7 @@ class MetadataTest(tf.test.TestCase):
     parsed_metadata = metadata.parse_plugin_metadata(
         self.summary_metadata.plugin_data.content)
     self.assertEqual(self.name, parsed_metadata.name)
-    self.assertEqual(plugin_data_pb2.MeshPluginData.ContentType.VERTEX,
+    self.assertEqual(plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'),
                      parsed_metadata.content_type)
     self.assertEqual(self.shape, parsed_metadata.shape)
     self.assertEqual(self.json_config, parsed_metadata.json_config)

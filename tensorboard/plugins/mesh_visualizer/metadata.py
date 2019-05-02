@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_graphics.tensorboard.mesh_visualizer import plugin_data_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+
 
 # TODO(podlipensky): use this variable everywhere, avoid duplicating 'mesh'.
 # b/129002587
