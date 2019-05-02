@@ -157,7 +157,7 @@ class MeshPluginTest(tf.test.TestCase):
         (self.runs[0], self.names[0], 0, "VERTEX"))
     self.assertEqual(200, response.status_code)
     data = test_utils.deserialize_array_buffer_response(
-        response.response.next(), np.float32)
+        next(response.response), np.float32)
     vertices = np.tile(self.data[0].vertices.reshape(-1), self.steps)
     self.assertEqual(vertices.tolist(), data.tolist())
 
@@ -166,7 +166,7 @@ class MeshPluginTest(tf.test.TestCase):
         (self.runs[0], self.names[1], 0, "FACE"))
     self.assertEqual(200, response.status_code)
     data = test_utils.deserialize_array_buffer_response(
-        response.response.next(), np.int32)
+        next(response.response), np.int32)
     faces = np.tile(self.data[1].faces.reshape(-1), self.steps)
     self.assertEqual(faces.tolist(), data.tolist())
 
@@ -175,7 +175,7 @@ class MeshPluginTest(tf.test.TestCase):
         (self.runs[0], self.names[2], 0, "COLOR"))
     self.assertEqual(200, response.status_code)
     data = test_utils.deserialize_array_buffer_response(
-        response.response.next(), np.uint8)
+        next(response.response), np.uint8)
     colors = np.tile(self.data[2].colors.reshape(-1), self.steps)
     self.assertListEqual(colors.tolist(), data.tolist())
 
