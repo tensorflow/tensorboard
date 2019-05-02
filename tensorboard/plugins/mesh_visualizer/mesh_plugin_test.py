@@ -102,7 +102,7 @@ class MeshPluginTest(tf.test.TestCase):
     bar_directory = os.path.join(self.log_dir, self.runs[0])
     with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)
-      for step in xrange(self.steps):
+      for step in range(self.steps):
         writer.add_summary(
             sess.run(
                 merged_summary_op,
