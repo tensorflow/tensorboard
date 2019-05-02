@@ -73,6 +73,14 @@ def process_raw_trace(raw_trace):
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
+def get_workers_list(cluster_resolver):
+  """Parses TPU workers list from the cluster resolver."""
+  cluster_spec = cluster_resolver.cluster_spec()
+  task_indices = cluster_spec.task_indices('worker')
+  workers_list = [
+      cluster_spec.task_address('worker', i).split(':')[0] for i in task_indices
+  ]
+  return ','.join(workers_list)
 
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
@@ -426,15 +434,17 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, 'Invalid duration',
                                'text/plain', code=400)
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
+    workers_list = ''
     if is_tpu_name:
       tpu_cluster_resolver = (
           tf.distribute.cluster_resolver.TPUClusterResolver([service_addr]))
       service_addr = tpu_cluster_resolver.get_master()
+      workers_list = get_workers_list(tpu_cluster_resolver)
       # TPU cluster resolver always returns port 8470. Replace it with 8466
       # on which profiler service is running.
       service_addr = service_addr.replace('grpc://', '').replace(':8470', ':8466')
     try:
-      profiler_client.start_tracing(service_addr, self.logdir, duration)
+      profiler_client.start_tracing(service_addr, self.logdir, duration, workers_list);
       return http_util.Respond(
           request, {'result': 'Capture profile successfully. Please refresh'},
           'application/json')
