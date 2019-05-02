@@ -33,6 +33,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import test
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -145,19 +146,18 @@ class HParamsConfigTest(test.TestCase):
         self.expected_experiment_pb,
     )
 
-  def _get_unique_summary_value(self, logdir):
-    """Get the unique summary `Value` stored in `logdir`.
+  def _get_unique_summary(self, logdir):
+    """Get the unique `Summary` stored in `logdir`.
 
     Specifically, `logdir` must be a directory containing exactly one
     entry, which must be an events file of whose events exactly one is a
-    summary, which must have exactly one `value`. This unique `value`
-    will be returned.
+    summary. This unique summary will be returned.
 
     Args:
       logdir: String path to a logdir.
 
     Returns:
-      A `summary_pb2.Summary.Value` object.
+      A `summary_pb2.Summary` object.
     """
     files = os.listdir(logdir)
     self.assertEqual(len(files), 1, files)
@@ -168,13 +168,13 @@ class HParamsConfigTest(test.TestCase):
         if event.WhichOneof("what") == "summary"
     ]
     self.assertEqual(len(summaries), 1, summaries)
-    values = summaries[0].value
-    self.assertEqual(len(values), 1, values)
-    return values[0]
+    return summaries[0]
 
-  def _check_logdir(self, logdir):
-    """Test that the experiment summary was written to `logdir`."""
-    actual_value = self._get_unique_summary_value(logdir)
+  def _check_summary(self, summary_pb):
+    """Test that a summary contains exactly the expected experiment PB."""
+    values = summary_pb.value
+    self.assertEqual(len(values), 1, values)
+    actual_value = values[0]
     self.assertEqual(
         actual_value.metadata.plugin_data.plugin_name,
         metadata.PLUGIN_NAME,
@@ -184,6 +184,10 @@ class HParamsConfigTest(test.TestCase):
         metadata.parse_experiment_plugin_data(plugin_content),
         self.expected_experiment_pb,
     )
+
+  def _check_logdir(self, logdir):
+    """Test that the experiment summary was written to `logdir`."""
+    self._check_summary(self._get_unique_summary(logdir))
 
   def test_eager(self):
     with tf.compat.v2.summary.create_file_writer(self.logdir).as_default():
@@ -216,6 +220,23 @@ class HParamsConfigTest(test.TestCase):
         time_created_secs=self.time_created_secs,
     )
     self.assertFalse(result)  # no default writer
+
+  def test_pb_contents(self):
+    result = hp.hparams_config_pb(
+        hparams=self.hparams,
+        metrics=self.metrics,
+        time_created_secs=self.time_created_secs,
+    )
+    self._check_summary(result)
+
+  def test_pb_is_tensorboard_copy_of_proto(self):
+    result = hp.hparams_config_pb(
+        hparams=self.hparams,
+        metrics=self.metrics,
+        time_created_secs=self.time_created_secs,
+    )
+    self.assertIsInstance(result, summary_pb2.Summary)
+    self.assertNotIsInstance(result, tf.compat.v1.Summary)
 
 
 class IntIntervalTest(test.TestCase):
