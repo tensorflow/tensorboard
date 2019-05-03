@@ -231,6 +231,7 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
