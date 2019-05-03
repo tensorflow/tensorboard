@@ -23,10 +23,12 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":api",
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
         ":summary",
+        ":summary_v2",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/compat:tensorflow",
