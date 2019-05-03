@@ -13,19 +13,25 @@
 # limitations under the License.
 # ==============================================================================
 """TensorBoard 3D mesh visualizer plugin."""
+# Parser directives
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# Standard library modules
 import collections
+
+# Third-party modules
 import numpy as np
 import six
-from tensorboard.util import tensor_util
 from werkzeug import wrappers
+
+# First-party modules
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.mesh_visualizer import metadata
 from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.util import tensor_util
 
 
 class MeshPlugin(base_plugin.TBPlugin):
@@ -111,6 +117,7 @@ class MeshPlugin(base_plugin.TBPlugin):
 
     This method is called by TensorBoard when retrieving all the
     routes offered by the plugin.
+
     Returns:
       A dictionary mapping URL path to route that handles it.
     """
@@ -119,7 +126,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     return {
         '/tags': self._serve_tags,
         '/meshes': self._serve_mesh_metadata,
-        '/data': self._serve_mesh_data
+        '/data': self._serve_mesh_data,
     }
 
   def is_active(self):
@@ -127,6 +134,7 @@ class MeshPlugin(base_plugin.TBPlugin):
 
     This plugin is only active if TensorBoard sampled any summaries
     relevant to the mesh plugin.
+
     Returns:
       Whether this plugin is active.
     """
@@ -151,6 +159,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         representing content type in TensorEvent.
       data_shape: list of dimensions sizes of the tensor.
       config: rendering scene configuration as dictionary.
+
     Returns:
       Dictionary of transformed metadata.
     """
@@ -159,7 +168,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         'step': event.step,
         'content_type': content_type,
         'config': config,
-        'data_shape': list(data_shape)
+        'data_shape': list(data_shape),
     }
 
   def _get_tensor_data(self, event, sample):
@@ -177,8 +186,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     # Make sure we populate tags mapping structures.
     self.prepare_metadata()
 
-    # We fetch all the tensor events that contain tag.
-    tensor_events = []  # List of tuples (meta, tensor).
+    tensor_events = []  # List of tuples (meta, tensor) that contain tag.
     for instance_tag in self._tag_to_instance_tags[tag]:
       tensors = self._multiplexer.Tensors(run, instance_tag)
       meta = self._instance_tag_to_metadata[instance_tag]
@@ -186,7 +194,7 @@ class MeshPlugin(base_plugin.TBPlugin):
 
     # Make sure tensors sorted by timestamp in ascending order.
     tensor_events = sorted(
-        tensor_events, key=lambda tensor_data: tensor_data[1].wall_time)
+        tensor_events, key=lambda (_, event): event.wall_time)
 
     return tensor_events
 
@@ -202,11 +210,12 @@ class MeshPlugin(base_plugin.TBPlugin):
     Args:
       request: werkzeug.Request containing content_type as a name of enum
         plugin_data_pb2.MeshPluginData.ContentType.
+
     Returns:
       werkzeug.Response either float32 or int32 data in binary format.
     """
     tensor_events = self._collect_tensor_events(request)
-    content_type = request.args.get('content_type')
+    content_type = request.args['content_type']
     content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(
         content_type)
     sample = int(request.args.get('sample', 0))
@@ -217,11 +226,12 @@ class MeshPlugin(base_plugin.TBPlugin):
         if meta.content_type == content_type
     ]
 
-    np_type = np.float32
-    if content_type == plugin_data_pb2.MeshPluginData.ContentType.Value('FACE'):
-      np_type = np.int32
-    elif content_type == plugin_data_pb2.MeshPluginData.ContentType.Value('COLOR'):
-      np_type = np.uint8
+    np_type = {
+        plugin_data_pb2.MeshPluginData.VERTEX: np.float32,
+        plugin_data_pb2.MeshPluginData.FACE: np.int32,
+        plugin_data_pb2.MeshPluginData.COLOR: np.uint8,
+    }[content_type]
+
     response = np.array(response, dtype=np_type)
     # Looks like reshape can take around 160ms, so why not store it reshaped.
     response = response.reshape(-1).tobytes()
