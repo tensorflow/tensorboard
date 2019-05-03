@@ -36,8 +36,8 @@ class WitConfigBuilder(object):
 
     Args:
       examples: A list of tf.Example or tf.SequenceExample proto objects, or
-      raw JSON objects. JSON is allowed only for CMLE-hosted models (see
-      'set_cmle_model' and 'set_compare_cmle_model methods).
+      raw JSON objects. JSON is allowed only for AI Platform-hosted models (see
+      'set_ai_platform_model' and 'set_compare_ai_platform_model methods).
       These are the examples that will be displayed in WIT. If no model to
       infer these examples with is specified through the methods on this class,
       then WIT will display the examples for exploration, but no model inference
@@ -46,13 +46,7 @@ class WitConfigBuilder(object):
     self.config = {}
     self.set_model_type('classification')
     self.set_label_vocab([])
-    if len(examples) > 0 and not (
-        isinstance(examples[0], tf.train.Example) or
-        isinstance(examples[0], tf.train.SequenceExample)):
-      self.set_examples(self._convert_json_to_tf_examples(examples))
-      self._set_uses_json_input(True)
-    else:
-      self.set_examples(examples)
+    self.set_examples(examples)
 
   def build(self):
     """Returns the configuration set through use of this builder object.
@@ -77,10 +71,17 @@ class WitConfigBuilder(object):
     Returns:
       self, in order to enabled method chaining.
     """
-    self.store('examples', examples)
-    if len(examples) > 0:
-      self.store('are_sequence_examples',
-                 isinstance(examples[0], tf.train.SequenceExample))
+    if len(examples) > 0 and not (
+      isinstance(examples[0], tf.train.Example) or
+      isinstance(examples[0], tf.train.SequenceExample)):
+      # For examples provided as JSON, convert them to tf.Examples internally.
+      converted_examples = self._convert_json_to_tf_examples(examples)
+      self.store('examples', converted_examples)
+    else:
+      self.store('examples', examples)
+      if len(examples) > 0:
+        self.store('are_sequence_examples',
+                  isinstance(examples[0], tf.train.SequenceExample))
     return self
 
   def set_model_type(self, model):
@@ -452,29 +453,52 @@ class WitConfigBuilder(object):
     return self
 
   def _convert_json_to_tf_examples(self, examples):
+    self._set_uses_json_input(True)
     tf_examples = []
     for json_ex in examples:
       ex = tf.train.Example()
-      for feat in json_ex:
-        if isinstance(json_ex[feat], (int, long)):
-          ex.features.feature[feat].int64_list.value.append(json_ex[feat])
-        elif isinstance(json_ex[feat], Number):
-          ex.features.feature[feat].float_list.value.append(json_ex[feat])
-        else:
-          ex.features.feature[feat].bytes_list.value.append(
-            json_ex[feat].encode('utf-8'))
-      tf_examples.append(ex)
+      # JSON examples can be lists of values (for xgboost models for instance),
+      # or dicts of key/value pairs.
+      if isinstance(json_ex, list):
+        self._set_uses_json_list(True)
+        feature_names = self.config.get('feature_names')
+        for (i, value) in enumerate(json_ex):
+          # If feature names have been provided, use those feature names instead
+          # of list indices for feature name when storing as tf.Example.
+          if feature_names and len(feature_names) > i:
+            feat = feature_names[i]
+          else:
+            feat = str(i)
+          if isinstance(json_ex[i], (int, long)):
+            ex.features.feature[feat].int64_list.value.append(value)
+          elif isinstance(json_ex[i], Number):
+            ex.features.feature[feat].float_list.value.append(value)
+          else:
+            ex.features.feature[feat].bytes_list.value.append(
+              value.encode('utf-8'))
+        tf_examples.append(ex)
+      else:
+        for feat in json_ex:
+          if isinstance(json_ex[feat], (int, long)):
+            ex.features.feature[feat].int64_list.value.append(json_ex[feat])
+          elif isinstance(json_ex[feat], Number):
+            ex.features.feature[feat].float_list.value.append(json_ex[feat])
+          else:
+            ex.features.feature[feat].bytes_list.value.append(
+              json_ex[feat].encode('utf-8'))
+        tf_examples.append(ex)
     return tf_examples
 
-  def set_cmle_model(self, project, model, version=None, force_json_input=None):
-    """Sets the model information for a model served by CMLE.
+  def set_ai_platform_model(
+    self, project, model, version=None, force_json_input=None):
+    """Sets the model information for a model served by AI Platform.
 
-    CMLE is Google's Cloud Machine Learning Engine.
+    AI Platform Prediction a Google Cloud serving platform.
 
     Args:
-      project: The name of the CMLE project.
-      model: The name of the CMLE model.
-      version: Optional, the version of the CMLE model.
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
       force_json_input: Optional. If True and examples are provided as
       tf.Example protos, convert them to raw JSON objects before sending them
       for inference to this model.
@@ -484,23 +508,23 @@ class WitConfigBuilder(object):
     """
     self.set_inference_address(project)
     self.set_model_name(model)
-    self.store('use_cmle', True)
+    self.store('use_aip', True)
     if version is not None:
       self.set_model_signature(version)
     if force_json_input:
       self.store('force_json_input', True)
     return self
 
-  def set_compare_cmle_model(self, project, model, version=None,
-                             force_json_input=None):
-    """Sets the model information for a second model served by CMLE.
+  def set_compare_ai_platform_model(
+    self, project, model, version=None, force_json_input=None):
+    """Sets the model information for a second model served by AI Platform.
 
-    CMLE is Google's Cloud Machine Learning Engine.
+    AI Platform Prediction a Google Cloud serving platform.
 
     Args:
-      project: The name of the CMLE project.
-      model: The name of the CMLE model.
-      version: Optional, the version of the CMLE model.
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
       force_json_input: Optional. If True and examples are provided as
       tf.Example protos, convert them to raw JSON objects before sending them
       for inference to this model.
@@ -510,7 +534,7 @@ class WitConfigBuilder(object):
     """
     self.set_compare_inference_address(project)
     self.set_compare_model_name(model)
-    self.store('use_cmle_2', True)
+    self.store('use_aip_2', True)
     if version is not None:
       self.set_compare_model_signature(version)
     if force_json_input:
@@ -522,8 +546,8 @@ class WitConfigBuilder(object):
 
     If the provided examples contain a feature that represents the target
     that the model is trying to predict, it can be specified by this method.
-    This is necessary for CMLE models so that the target feature isn't sent
-    to the model for prediction, which can cause model inference errors.
+    This is necessary for AI Platform models so that the target feature isn't
+    sent to the model for prediction, which can cause model inference errors.
 
     Args:
       target: The name of the feature in the examples that represents the value
@@ -538,3 +562,47 @@ class WitConfigBuilder(object):
   def _set_uses_json_input(self, is_json):
     self.store('uses_json_input', is_json)
     return self
+
+  def _set_uses_json_list(self, is_list):
+    self.store('uses_json_list', is_list)
+    return self
+
+  def set_feature_names(self, feature_names):
+    """Sets the feature names of the provided list-based examples.
+
+    If examples are provided in JSON as lists, then this method can provide
+    a string feature name for each value in the example lists for readability.
+
+    Args:
+      feature_names: A list of strings where each index is the feature name of
+      the value at that index in each example's value list, for display
+      purposes.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.store('feature_names', feature_names)
+    # If examples have already been stored, update them to now use these
+    # provided feature names.
+    if self.config.get('examples'):
+      self.set_examples(self._add_feature_names_to_examples())
+    return self
+
+  def _add_feature_names_to_examples(self):
+    """Returns a new list of examples with updated feature names."""
+    adjusted_examples = []
+    feature_names = self.config.get('feature_names')
+    for ex in self.config.get('examples'):
+      adjusted_ex = tf.train.Example()
+      for feat in ex.features.feature:
+        feat_idx = int(feat)
+        adjusted_feat = feat
+        # Find the feature name for the current value index if one exists.
+        if len(feature_names) > feat_idx:
+          adjusted_feat = feature_names[feat_idx]
+        # Copy the feature value to a new tf.Example with the updated feature
+        # name.
+        adjusted_ex.features.feature[adjusted_feat].CopyFrom(
+          ex.features.feature[feat])
+      adjusted_examples.append(adjusted_ex)
+    return adjusted_examples
