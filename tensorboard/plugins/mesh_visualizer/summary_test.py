@@ -28,7 +28,7 @@ from tensorboard.plugins.mesh_visualizer import test_utils
 from tensorboard.util import test_util
 
 
-@test_util.run_v1_only('Uses contrib') 
+@test_util.run_v1_only('requires tf.Session') 
 class MeshSummaryTest(tf.test.TestCase):
 
   def pb_via_op(self, summary_op):

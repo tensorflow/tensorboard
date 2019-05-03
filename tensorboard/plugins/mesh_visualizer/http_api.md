@@ -36,7 +36,7 @@ Retrieves all necessary metadata to render a mesh with particular tag.
 Returns list of metadata for each data (tensor) that should be retrieved next. 
 This includes content type (i.e. vertices, faces or colors), shape of the 
 data, scene configuration, wall time etc. Type of the content maps directly to 
-underlying binary data type, i.e. `float32`, `int32` or `uint8`. 
+underlying binary data type, i.e. `float32`, `int32` or `uint8`. Content type mapping to heir enum constant representations is given by a [proto definition](https://github.com/tensorflow/tensorboard/plugins/mesh_visualizer/plugin_data.proto).
 
 Here is an example:
 ```json
