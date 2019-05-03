@@ -127,7 +127,7 @@ Polymer({
     // sometimes)
     this._dataProvider = new vz_mesh.ArrayBufferDataProvider(
         this.requestManager);
-    this._meshViewer = new vz_mesh.MeshViewer();
+    this._meshViewer = new vz_mesh.MeshViewer(this._runColor);
     this._meshViewer.addEventListener(
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
     this._meshViewer.addEventListener(
