@@ -106,9 +106,6 @@ class MeshPlugin(base_plugin.TBPlugin):
         # Make sure we only operate on user-defined tags here.
         tag = self._instance_tag_to_tag[instance_tag]
         meta = self._instance_tag_to_metadata[instance_tag]
-        # Shape should be at least BxNx3 where B represents the batch dimensions
-        # and N - the number of points, each with x,y,z coordinates.
-        assert len(meta.shape) >= 3
         response[run][tag] = {'samples': meta.shape[0]}
     return http_util.Respond(request, response, 'application/json')
 

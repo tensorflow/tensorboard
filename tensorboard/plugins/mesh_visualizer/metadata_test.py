@@ -29,12 +29,14 @@ from tensorboard.util import test_util
 @test_util.run_v1_only('requires tf.Session') 
 class MetadataTest(tf.test.TestCase):
 
-  def _create_metadata(self):
+  def _create_metadata(self, shape=None):
     """Creates metadata with dummy data."""
     self.name = 'unique_name'
     self.display_name = 'my mesh'
     self.json_config = '{}'
-    self.shape = [1, 100, 3]
+    if shape is None:
+      shape = [1, 100, 3]
+    self.shape = shape
     self.summary_metadata = metadata.create_summary_metadata(
         self.name,
         self.display_name,
@@ -77,6 +79,11 @@ class MetadataTest(tf.test.TestCase):
       with self.assertRaises(ValueError):
         metadata.parse_plugin_metadata(
             self.summary_metadata.plugin_data.content)
+
+  def test_tensor_shape(self):
+    """Tests that target tensor should be of particular shape."""    
+    with six.assertRaisesRegex(self, ValueError, r'Tensor shape should be of shape BxNx3.*'):
+      self._create_metadata([1])
 
   def test_metadata_format(self):
     """Tests that metadata content must be passed as a serialized string."""
