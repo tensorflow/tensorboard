@@ -19,6 +19,7 @@ load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
 
 def tensorboard_js_workspace():
+  """TensorBoard JavaScript dependencies."""
 
   ##############################################################################
   # TensorBoard Build Tools
