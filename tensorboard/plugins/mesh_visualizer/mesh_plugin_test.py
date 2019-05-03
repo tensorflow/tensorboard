@@ -29,7 +29,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.mesh_visualizer import mesh_plugin
-from tensorboard.plugins.mesh_visualizer import mesh_summary
+from tensorboard.plugins.mesh_visualizer import summary
 from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
 from tensorboard.plugins.mesh_visualizer import test_utils
 from tensorboard.util import test_util as tensorboard_test_util
@@ -79,17 +79,17 @@ class MeshPluginTest(tf.test.TestCase):
     # In case when name is present and display_name is not, we will reuse name
     # as display_name. Summaries below intended to test both cases.
     self.names = ["point_cloud", "mesh_no_color", "mesh_color"]
-    mesh_summary.op(
+    summary.op(
         self.names[0],
         point_cloud_vertices,
         description="just point cloud")
-    mesh_summary.op(
+    summary.op(
         self.names[1],
         mesh_no_color_vertices,
         faces=mesh_no_color_faces,
         display_name="name_to_display_in_ui",
         description="beautiful mesh in grayscale")
-    mesh_summary.op(
+    summary.op(
         self.names[2],
         mesh_color_vertices,
         faces=mesh_color_faces,
@@ -229,4 +229,3 @@ class MeshPluginTest(tf.test.TestCase):
 
 if __name__ == "__main__":
   tf.test.main()
-  

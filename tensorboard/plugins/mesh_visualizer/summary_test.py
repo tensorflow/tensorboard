@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorboard.plugins.mesh_visualizer.mesh_summary."""
+"""Tests for tensorboard.plugins.mesh_visualizer.summary."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -21,7 +21,7 @@ import json
 import tensorflow as tf
 
 from tensorboard.compat.proto import summary_pb2
-from tensorboard.plugins.mesh_visualizer import mesh_summary
+from tensorboard.plugins.mesh_visualizer import summary
 from tensorboard.plugins.mesh_visualizer import metadata
 from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
 from tensorboard.plugins.mesh_visualizer import test_utils
@@ -51,7 +51,7 @@ class MeshSummaryTest(tf.test.TestCase):
     display_name = "my_display_name"
     description = "my mesh is the best of meshes"
     tensor_data = test_utils.get_random_mesh(100)
-    tensor_summary = mesh_summary._get_tensor_summary(
+    tensor_summary = summary._get_tensor_summary(
         name, display_name, description, tensor_data.vertices,
         plugin_data_pb2.MeshPluginData.VERTEX, "", None)
     with self.test_session():
@@ -66,7 +66,7 @@ class MeshSummaryTest(tf.test.TestCase):
     tensor_data = test_utils.get_random_mesh(
         100, add_faces=True, add_colors=True)
     config_dict = {"foo": 1}
-    tensor_summary = mesh_summary.op(
+    tensor_summary = summary.op(
         name,
         tensor_data.vertices,
         faces=tensor_data.faces,
@@ -86,7 +86,7 @@ class MeshSummaryTest(tf.test.TestCase):
     tensor_data = test_utils.get_random_mesh(
         100, add_faces=True, add_colors=True)
     config_dict = {"foo": 1}
-    proto = mesh_summary.pb(
+    proto = summary.pb(
         name,
         tensor_data.vertices,
         faces=tensor_data.faces,
