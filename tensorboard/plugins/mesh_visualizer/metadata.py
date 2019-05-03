@@ -22,12 +22,10 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
 
 
-# TODO(podlipensky): use this variable everywhere, avoid duplicating 'mesh'.
-# b/129002587
 PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
-# `PrCurvePluginData` proto.
+# `MeshPluginData` proto.
 _PROTO_VERSION = 0
 
 

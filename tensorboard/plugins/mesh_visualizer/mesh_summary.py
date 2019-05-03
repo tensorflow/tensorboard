@@ -98,6 +98,7 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
     collections: Which TensorFlow graph collections to add the summary op to.
       Defaults to `['summaries']`. Can usually be ignored.
     config_dict: Dictionary with ThreeJS classes names and configuration.
+
   Returns:
     Merged summary for mesh/point cloud representation.
   """
@@ -108,9 +109,11 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
   # summaries internally. Those summaries will be regrouped on the client before
   # rendering.
   summaries = []
-  tensors = [(vertices, plugin_data_pb2.MeshPluginData.VERTEX),
-             (faces, plugin_data_pb2.MeshPluginData.FACE),
-             (colors, plugin_data_pb2.MeshPluginData.COLOR)]
+  tensors = [
+      (vertices, plugin_data_pb2.MeshPluginData.VERTEX),
+      (faces, plugin_data_pb2.MeshPluginData.FACE),
+      (colors, plugin_data_pb2.MeshPluginData.COLOR)
+  ]
 
   for tensor, content_type in tensors:
     if tensor is None:
