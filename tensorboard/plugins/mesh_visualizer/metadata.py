@@ -61,6 +61,10 @@ def create_summary_metadata(name,
   Returns:
     A `summary_pb2.SummaryMetadata` protobuf object.
   """
+  # Shape should be at least BxNx3 where B represents the batch dimensions
+  # and N - the number of points, each with x,y,z coordinates.
+  if len(shape) != 3:
+    raise ValueError('Tensor shape should be of shape BxNx3, but got %s.' % str(shape))
   mesh_plugin_data = plugin_data_pb2.MeshPluginData(
       version=get_current_version(),
       name=name,
