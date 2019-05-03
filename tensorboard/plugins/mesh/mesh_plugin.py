@@ -29,8 +29,8 @@ from werkzeug import wrappers
 # First-party modules
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.mesh_visualizer import metadata
-from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh import metadata
+from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import tensor_util
 
 

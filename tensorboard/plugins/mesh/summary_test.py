@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorboard.plugins.mesh_visualizer.summary."""
+"""Tests for tensorboard.plugins.mesh.summary."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -21,10 +21,10 @@ import json
 import tensorflow as tf
 
 from tensorboard.compat.proto import summary_pb2
-from tensorboard.plugins.mesh_visualizer import summary
-from tensorboard.plugins.mesh_visualizer import metadata
-from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
-from tensorboard.plugins.mesh_visualizer import test_utils
+from tensorboard.plugins.mesh import summary
+from tensorboard.plugins.mesh import metadata
+from tensorboard.plugins.mesh import plugin_data_pb2
+from tensorboard.plugins.mesh import test_utils
 from tensorboard.util import test_util
 
 

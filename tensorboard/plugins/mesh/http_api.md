@@ -38,7 +38,7 @@ This includes content type (i.e. vertices, faces or colors), shape of the
 data, scene configuration, wall time etc. Type of the content maps directly to 
 underlying binary data type, i.e. `float32`, `int32` or `uint8`. Content type 
 mapping to their enum constant representations is given by a 
-[proto definition](https://github.com/tensorflow/tensorboard/plugins/mesh_visualizer/plugin_data.proto).
+[proto definition](https://github.com/tensorflow/tensorboard/plugins/mesh/plugin_data.proto).
 
 Here is an example:
 ```json
