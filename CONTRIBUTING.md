@@ -20,3 +20,6 @@ If you want to add a major feature, it may be a good candidate for adding a plug
 ### Code reviews
 All submissions, including submissions by project members, require review. We
 use GitHub pull requests for this purpose.
+
+### Guidelines for adding Feature Request
+If you are adding any new feature or modifying any existing one then please add suitable tests with that, so that we can guide you in the process.
