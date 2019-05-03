@@ -194,7 +194,7 @@ class MeshPlugin(base_plugin.TBPlugin):
 
     # Make sure tensors sorted by timestamp in ascending order.
     tensor_events = sorted(
-        tensor_events, key=lambda (_, event): event.wall_time)
+        tensor_events, key=lambda tensor_data: tensor_data[1].wall_time)
 
     return tensor_events
 
