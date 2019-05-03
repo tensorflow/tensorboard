@@ -22,6 +22,8 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import hashlib
+import json
 import time
 
 import six
@@ -31,6 +33,75 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+
+
+def hparams(hparams, start_time_secs=None):
+  # NOTE: Keep docs in sync with `hparams_pb` below.
+  """Write hyperparameter values for a single trial.
+
+  Args:
+    hparams: A `dict` mapping hyperparameters to the values used in this
+      trial. Keys should be the names of `HParam` objects used in an
+      experiment, or the `HParam` objects themselves. Values should be
+      Python `bool`, `int`, `float`, or `string` values, depending on
+      the type of the hyperparameter.
+    start_time_secs: The time that this trial started training, as
+      seconds since epoch. Defaults to the current time.
+
+  Returns:
+    A tensor whose value is `True` on success, or `False` if no summary
+    was written because no default summary writer was available.
+  """
+  pb = hparams_pb(
+      hparams=hparams,
+      start_time_secs=start_time_secs,
+  )
+  return _write_summary("hparams", pb)
+
+
+def hparams_pb(hparams, start_time_secs=None):
+  # NOTE: Keep docs in sync with `hparams` above.
+  """Create a summary encoding hyperparameter values for a single trial.
+
+  Args:
+    hparams: A `dict` mapping hyperparameters to the values used in this
+      trial. Keys should be the names of `HParam` objects used in an
+      experiment, or the `HParam` objects themselves. Values should be
+      Python `bool`, `int`, `float`, or `string` values, depending on
+      the type of the hyperparameter.
+    start_time_secs: The time that this trial started training, as
+      seconds since epoch. Defaults to the current time.
+
+  Returns:
+    A TensorBoard `summary_pb2.Summary` message.
+  """
+  if start_time_secs is None:
+    start_time_secs = time.time()
+  hparams = _normalize_hparams(hparams)
+  group_name = _derive_session_group_name(hparams)
+
+  session_start_info = plugin_data_pb2.SessionStartInfo(
+      group_name=group_name,
+      start_time_secs=start_time_secs,
+  )
+  for hp_name in sorted(hparams):
+    hp_value = hparams[hp_name]
+    if isinstance(hp_value, bool):
+      session_start_info.hparams[hp_name].bool_value = hp_value
+    elif isinstance(hp_value, (float, int)):
+      session_start_info.hparams[hp_name].number_value = hp_value
+    elif isinstance(hp_value, six.string_types):
+      session_start_info.hparams[hp_name].string_value = hp_value
+    else:
+      raise TypeError(
+          "hparams[%r] = %r, of unsupported type %r"
+          % (hp_name, hp_value, type(hp_value))
+      )
+
+  return _summary_pb(
+      metadata.SESSION_START_INFO_TAG,
+      plugin_data_pb2.HParamsPluginData(session_start_info=session_start_info),
+  )
 
 
 def hparams_config(hparams, metrics, time_created_secs=None):
@@ -99,6 +170,39 @@ def hparams_config_pb(hparams, metrics, time_created_secs=None):
       metadata.EXPERIMENT_TAG,
       plugin_data_pb2.HParamsPluginData(experiment=experiment),
   )
+
+
+def _normalize_hparams(hparams):
+  """Normalize a dict keyed by `HParam`s and/or raw strings.
+
+  Args:
+    hparams: A `dict` whose keys are `HParam` objects and/or strings
+      representing hyperparameter names, and whose values are
+      hyperparameter values. No two keys may have the same name.
+
+  Returns:
+    A `dict` whose keys are hyperparameter names (as strings) and whose
+    values are the corresponding hyperparameter values.
+
+  Raises:
+    ValueError: If two entries in `hparams` share the same
+      hyperparameter name.
+  """
+  result = {}
+  for (k, v) in six.iteritems(hparams):
+    if isinstance(k, HParam):
+      k = k.name
+    if k in result:
+      raise ValueError("multiple values specified for hparam %r" % (k,))
+    result[k] = v
+  return result
+
+
+def _derive_session_group_name(hparams):
+  # Use `json.dumps` rather than `str` to ensure invariance under string
+  # type (incl. across Python versions) and dict iteration order.
+  jparams = json.dumps(hparams, sort_keys=True, separators=(",", ":"))
+  return hashlib.sha256(jparams.encode("utf-8")).hexdigest()
 
 
 def _write_summary(name, pb):
