@@ -10,6 +10,19 @@ load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
+# Public-facing API, included in Pip package.
+py_library(
+    name = "hparams",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":api",
+        ":summary",
+        ":summary_v2",
+    ],
+)
+
 py_library(
     name = "hparams_plugin",
     srcs = [
@@ -23,12 +36,9 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":api",
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
-        ":summary",
-        ":summary_v2",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/compat:tensorflow",
