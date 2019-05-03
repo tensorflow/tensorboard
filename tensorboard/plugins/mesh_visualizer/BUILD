@@ -52,7 +52,7 @@ py_library(
     srcs = ["test_utils.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":mesh_summary",
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",        
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -67,7 +67,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":mesh_plugin",
-        ":mesh_summary",
+        ":summary",
         ":test_utils",
         "//tensorboard:expect_numpy_installed",        
         "//tensorboard:expect_tensorflow_installed",        
@@ -82,8 +82,8 @@ py_test(
 )
 
 py_library(
-    name = "mesh_summary",
-    srcs = ["mesh_summary.py"],
+    name = "summary",
+    srcs = ["summary.py"],
     srcs_version = "PY2AND3",
     visibility = [
         "//visibility:public",
@@ -96,12 +96,12 @@ py_library(
 )
 
 py_test(
-    name = "mesh_summary_test",
+    name = "summary_test",
     size = "small",
-    srcs = ["mesh_summary_test.py"],
+    srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":mesh_summary",
+        ":summary",
         ":test_utils",        
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
