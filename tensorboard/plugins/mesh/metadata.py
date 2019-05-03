@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
-from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
+from tensorboard.plugins.mesh import plugin_data_pb2
 
 
 PLUGIN_NAME = 'mesh'

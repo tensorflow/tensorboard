@@ -28,10 +28,10 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.mesh_visualizer import mesh_plugin
-from tensorboard.plugins.mesh_visualizer import summary
-from tensorboard.plugins.mesh_visualizer import plugin_data_pb2
-from tensorboard.plugins.mesh_visualizer import test_utils
+from tensorboard.plugins.mesh import mesh_plugin
+from tensorboard.plugins.mesh import summary
+from tensorboard.plugins.mesh import plugin_data_pb2
+from tensorboard.plugins.mesh import test_utils
 from tensorboard.util import test_util as tensorboard_test_util
 
 try:
