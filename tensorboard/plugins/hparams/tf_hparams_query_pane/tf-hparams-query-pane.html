@@ -47,7 +47,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                 <div class="hparam">
                   <paper-checkbox
                     checked="{{hparam.displayed}}"
-                    on-change="_computeSchema"
+                    on-change="_updateSchema"
                     class="hparam-checkbox">
                     [[_hparamName(hparam.info)]]
                   </paper-checkbox>
@@ -115,7 +115,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                        scalars.-->
                   <paper-checkbox
                     checked="{{metric.displayed}}"
-                    on-change="_computeSchema"
+                    on-change="_updateSchema"
                     class="metric-checkbox">
                     [[_metricName(metric.info)]]
                   </paper-checkbox>
@@ -322,22 +322,54 @@ TODO(erez): Add aggregation controls for repeated sessions.
 
         // Defines the type and id of each metric and hparam in the
         // session groups.
-        // Contains two fields: "hparamInfos", and "metricInfos" containing
-        // arrays of HParamInfos and MetricInfos protocol buffers, respectively,
-        // as JavaScript objects. See the file api.proto for the
-        // definition of these protocol buffers.
+        //
+        // Fields:
+        // -------
+        //
+        // hparamColumn[]: Array of objects of the form:
+        // {
+        //   hparamInfo: HParamInfo Protocol buffer associated with the hparam.
+        //   displayed: Whether the hparam is currently displayed (checkbox next
+        //       to it is checked).
+        // }
+        // metricColumn[]: Array of objects of the form:
+        // {
+        //   metricInfo: MetricInfo Protocol buffer associated with the metric.
+        //   displayed: Whether the metric is currently displayed (checkbox next
+        //       to it is checked).
+        // }
+        //
+        // visibleSchema: {
+        //   hparamInfos: Array consisting of HParamInfos protocol buffers for
+        //     the displayed hparams.
+        //   metricInfos: Array consisting of MetricInfos protocol buffers for
+        //     the displayed metrics.
+        // }
+        // Note that the 'visibleSchema' field is deprecated and is included
+        // only to support the old-style schema that only contained the
+        // columns (metrics or hparams) that were displayed. It should be
+        // removed when all consumers are migrated to use
+        // the hparamColumns and metricColumns fields.
         schema: {
           type: Object,
           value: () => {
-            return {"hparamInfos": [], "metricInfos": []};
+            return {
+              hparamColumns: [],
+              metricColumns: [],
+
+              /* DEPRECATED. New code should use only hparamColumns, and
+                 metricColumns fields. See documenation above.*/
+              visibleSchema: {
+                hparamInfos: [],
+                metricInfos: [],
+              },
+            };
           },
           readOnly: true,
           notify: true
         },
 
         // The latest list of session groups received from the server.
-        // Note that we limit this list to only the first K session groups
-        // to avoid consuming a large amount of memory in the browser.
         // See the comments in the _buildListSessionGroupsRequest() methods for
         // more details.
         sessionGroups: {
@@ -580,29 +612,51 @@ TODO(erez): Add aggregation controls for repeated sessions.
         this.set("_metrics", result);
       },
 
-      // Computes the _schema property from the _experiment and _metrics
-      // properties.
       _computeSchema() {
+        this.push("schema.hparamColumns",
+                  ...this._hparams.map(
+                      hparam => ({hparamInfo: hparam.info,
+                                  displayed: hparam.displayed})));
+        this.push("schema.metricColumns",
+                  ...this._metrics.map(
+                      metric => ({metricInfo: metric.info,
+                                  displayed: metric.displayed})));
+        this._updateVisibleSchema();
+      },
+
+      _updateSchema() {
+        this._hparams.forEach((hparam,i) =>
+                              this.set(`schema.hparamColumns.${i}.displayed`,
+                                       hparam.displayed));
+        this._metrics.forEach((metric,i) =>
+                              this.set(`schema.metricColumns.${i}.displayed`,
+                                       metric.displayed));
+        this._updateVisibleSchema();
+      },
+
+      _updateVisibleSchema() {
+        const newHParamInfos =
+              this.schema.hparamColumns
+                .filter(hparamCol => hparamCol.displayed)
+                .map(hparamCol => hparamCol.hparamInfo);
+        const newMetricInfos =
+            this._metrics
+              .filter(metricCol => metricCol.displayed)
+              .map(metricCol => metricCol.metricInfo);
         // We have to use Polymer's 'path'-based array mutations so that
         // other elements (like a dom-repeat template) that depend on
         // schema.metricInfos and schema.hparamInfos would be notified of the
         // change and update correctly.
-        const newHParamInfos =
-              this._hparams
-                .filter(hparam => hparam.displayed)
-                .map(hparam => hparam.info);
-        const newMetricInfos =
-            this._metrics
-              .filter(metric => metric.displayed)
-              .map(metric => metric.info);
-        this.splice.apply(
-            this,
-            ["schema.hparamInfos", 0, this.schema.hparamInfos.length].concat(
-                newHParamInfos));
-        this.splice.apply(
-            this,
-            ["schema.metricInfos", 0, this.schema.metricInfos.length].concat(
-                newMetricInfos));
+        this.splice(
+            "schema.visibleSchema.hparamInfos",
+            0,
+            this.schema.visibleSchema.hparamInfos.length,
+            ...newHParamInfos);
+        this.splice(
+            "schema.visibleSchema.metricInfos",
+            0,
+            this.schema.visibleSchema.metricInfos.length,
+            ...newMetricInfos);
       },
 
       // Sends a query to the server for the list of session groups.

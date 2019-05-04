@@ -174,17 +174,37 @@ limitations under the License.
             assert.deepEqual(element.sessionGroups,
                              sessionGroupsResponse.sessionGroups);
             assert.deepEqual(element.schema, {
-              hparamInfos: experimentResponse.hparamInfos,
-              metricInfos: experimentResponse.metricInfos,
+              hparamColumns: experimentResponse.hparamInfos.map(
+                  h => {hparamInfo: h, displayed: true});
+              metricColumns: experimentResponse.metricInfos.map(
+                  m => {metricInfo: m, displayed: true});
+              visibleSchema: {
+                hparamInfos: experimentResponse.hparamInfos,
+                metricInfos: experimentResponse.metricInfos,
+              }
             });
             assert.deepEqual(element._experiment, experimentResponse);
             element._metrics[0].displayed=false
             element._metrics[1].displayed=false
             element._hparams[1].displayed=false
-            element._computeSchema()
+            element._updateSchema()
             assert.deepEqual(element.schema, {
-              hparamInfos: [experimentResponse.hparamInfos[0]],
-              metricInfos: [],
+              hparamColumns: [
+                { hparamInfo: experimentResponse.hparamInfos[0],
+                  displayed: true},
+                { hparamInfo: experimentResponse.hparamInfos[1],
+                  displayed: false},
+              ],
+              metricInfos: [
+                { metricInfo: experimentResponse.metricInfo[0],
+                  displayed: false},
+                { metricInfo: experimentResponse.metricInfo[1],
+                  displayed: false},
+              ],
+              visibleSchema: {
+                hparamInfos: [experimentResponse.hparamInfos[0]],
+                metricInfos: [],
+              }
             });
           });
         });

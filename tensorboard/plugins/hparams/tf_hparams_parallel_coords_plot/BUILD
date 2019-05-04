@@ -10,6 +10,7 @@ tf_web_library(
     name = "tf_hparams_parallel_coords_plot",
     srcs = [
         "tf-hparams-parallel-coords-plot.html",
+        "tf-hparams-parallel-coords-plot.ts",
         "utils.html",
     ],
     path = "/tf-hparams-parallel-coords-plot",

@@ -26,7 +26,7 @@ var tf;
     (function (parallel_coords_plot) {
       // Finds the "closest" path to a given 'target' point from a given array
       // of 'paths'.
-      // Each element in 'paths' represent a path and should be an object with
+      // Each element in 'paths' represents a path and should be an object with
       // a 'controlPoints' property containing a d-element array of the form
       // [[x1,y1],...,[x_d,y_d]] containing the path's control points
       // in ascending 'x' coordinate order, where d is the number of axes.
@@ -162,9 +162,9 @@ var tf;
           quantileScaleInverseImage;
 
       // Computes the inverse image (in the mathematical sense) of the
-      // real-line interval [a,b] under the given quantile scale mapping;
+      // real-line interval [a,b] under the given continuous scale mapping;
       // precisely: {x : scale(x) in [a,b]}
-      // Note that for a D3 continiuous scale this set is a real-line closed
+      // Note that for a D3 continuous scale this set is a real-line closed
       // interval. This function returns that interval as a 2-element array.
       function continuousScaleInverseImage(scale, a, b) {
         // D3 continuous scales are monotonic continuous functions; hence to
