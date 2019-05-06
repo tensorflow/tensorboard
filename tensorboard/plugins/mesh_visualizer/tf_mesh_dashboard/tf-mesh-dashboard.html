@@ -25,6 +25,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="tf-mesh-loader.html">
 
 <!--
   A frontend that displays a set of tf-mesh-loaders.
@@ -33,10 +34,7 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar all-controls">
-        <div class="sidebar-section">
-          <tf-runs-selector selected-runs="{{_selectedRuns}}">
-          </tf-runs-selector>
-        </div>
+
         <div class="sidebar-section view-control">
             <h3 class="title">Point of view</h3>
             <div>
@@ -54,14 +52,18 @@ limitations under the License.
                 <paper-tooltip animation-delay="0" for="user-radio-button" position="right" offset="0">
                   Keep current camera position and zoom level.
                 </paper-tooltip>
-                <paper-radio-button id="user-radio-button" name="share">
+                <paper-radio-button id="share-radio-button" name="share">
                   Share viewpoint
                 </paper-radio-button>
-                <paper-tooltip animation-delay="0" for="user-radio-button" position="right" offset="0">
+                <paper-tooltip animation-delay="0" for="share-radio-button" position="right" offset="0">
                   Share viewpoint among all cameras.
                 </paper-tooltip>
               </paper-radio-group>
             </div>
+        </div>
+        <div class="sidebar-section runs-selector">
+          <tf-runs-selector selected-runs="{{_selectedRuns}}">
+          </tf-runs-selector>
         </div>
       </div>
       <div class="center">
@@ -134,6 +136,14 @@ limitations under the License.
         font-weight: normal;
         font-size: 14px;
         margin-bottom: 5px;
+      }
+
+      .runs-selector {
+        flex-grow: 1;
+      }
+
+      tf-runs-selector {
+        display: flex;
       }
 
       .view-control {

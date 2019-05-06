@@ -139,7 +139,7 @@ Polymer({
    * Function to call when component must be reloaded.
    */
   reload: function() {
-    if (!this.active) {
+    if (!this.active || !this.isAttached) {
       return;
     }
     this.set('_isMeshLoading', true);
