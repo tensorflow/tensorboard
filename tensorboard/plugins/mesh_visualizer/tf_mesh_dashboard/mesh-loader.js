@@ -108,7 +108,7 @@ Polymer({
   },
 
   observers: [
-    'reload(run, tag)',
+    'reload(run, tag, active, _dataProvider)',
     '_updateScene(_currentStep)',
     '_updateView(selectedView)'
   ],
@@ -139,7 +139,7 @@ Polymer({
    * Function to call when component must be reloaded.
    */
   reload: function() {
-    if (!this.active) {
+    if (!this.active || !this._dataProvider) {
       return;
     }
     this.set('_isMeshLoading', true);
