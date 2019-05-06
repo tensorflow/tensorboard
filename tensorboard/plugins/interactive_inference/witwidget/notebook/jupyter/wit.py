@@ -61,8 +61,8 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
     # Ensure the visualization takes all available width.
     display(HTML("<style>.container { width:100% !important; }</style>"))
 
-  def _set_examples(self, examples):
-    base.WitWidgetBase._set_examples(self, examples)
+  def set_examples(self, examples):
+    base.WitWidgetBase.set_examples(self, examples)
     self._generate_sprite()
 
   @observe('infer')
