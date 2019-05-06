@@ -56,10 +56,20 @@ class WitWidgetBase(object):
     self.compare_custom_predict_fn = (
       config.get('compare_custom_predict_fn')
       if 'compare_custom_predict_fn' in config else None)
+    self.adjust_fn = (
+      config.get('adjust_prediction')
+      if 'adjust_prediction' in config else None)
+    self.compare_adjust_fn = (
+      config.get('adjust_prediction_2')
+      if 'adjust_prediction_2' in config else None)
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'adjust_prediction' in copied_config:
+      del copied_config['adjust_prediction']
+    if 'adjust_prediction' in copied_config:
+      del copied_config['adjust_prediction_2']
 
     self._set_examples(config['examples'])
     del copied_config['examples']
@@ -249,15 +259,16 @@ class WitWidgetBase(object):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
-      self.config.get('force_json_input'))
+      self.config.get('force_json_input'), self.adjust_fn)
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address_2'),
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
-      self.config.get('force_json_input_2'))
+      self.config.get('force_json_input_2'), self.compare_adjust_fn)
 
-  def _predict_aip_impl(self, examples, project, model, version, force_json):
+  def _predict_aip_impl(self, examples, project, model, version, force_json,
+                        adjust_prediction):
     """Custom prediction function for running inference through AI Platform."""
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
@@ -288,21 +299,19 @@ class WitWidgetBase(object):
         results_key = 'outputs'
 
     # Parse the results from the response and return them.
-    if self.config.get('model_type') == 'classification':
-      return [pred[results_key] for pred in response['predictions']]
-    else:
-      results = []
-      for pred in response['predictions']:
-        # For regression models, extract the single score for each example.
-        # This may require flattening an array depending on the return format.
-
-        # If the prediction is a raw number, use it.
-        if isinstance(pred, Number):
-          results.append(pred)
-        # If the prediction contains a key to fetch the regression score, find
-        # the score and use it.
-        else:
-          pred_result = pred[results_key]
-          results.append(
-            pred_result[0] if isinstance(pred_result, list) else pred_result)
-      return results
+    results = []
+    for pred in response['predictions']:
+      # If the prediction contains a key to fetch the prediction, use it.
+      if isinstance(pred, dict):
+        pred = pred[results_key]
+      # If the model is regression and the response is a list, extract the
+      # score by taking the first element.
+      if (self.config.get('model_type') == 'regression' and
+          isinstance(pred, list)):
+        pred = pred[0]
+      # If an prediction adjustment function was provided, use it to adjust
+      # the prediction.
+      if adjust_prediction:
+        pred = adjust_prediction(pred)
+      results.append(pred)
+    return results
