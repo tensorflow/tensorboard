@@ -390,7 +390,8 @@ export class DataSet {
       );
 
       // Initialize UMAP and return the number of epochs.
-      return this.umap.initializeFit(X, knnIndices, knnDistances);
+      this.umap.setPrecomputedKNN(knnIndices, knnDistances);
+      return this.umap.initializeFit(X);
     }, UMAP_MSG_ID);
     
     // Now, iterate through all epoch batches of the UMAP optimization, updating
