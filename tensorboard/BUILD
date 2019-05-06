@@ -188,6 +188,7 @@ py_library(
         "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
+        "//tensorboard/plugins/mesh:mesh_plugin",
     ],
 )
 
