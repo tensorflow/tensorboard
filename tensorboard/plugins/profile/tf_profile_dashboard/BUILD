@@ -29,6 +29,7 @@ tf_web_library(
         "@org_polymer_paper_menu",
         "@org_polymer_paper_progress",
         "@org_polymer_paper_radio_group",
+	"@org_polymer_paper_spinner",
         "@org_polymer_paper_toast",
     ],
 )
