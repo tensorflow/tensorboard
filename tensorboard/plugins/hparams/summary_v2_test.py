@@ -211,6 +211,7 @@ class HParamsConfigTest(test.TestCase):
           time_created_secs=self.time_created_secs,
       )
       self.assertTrue(sess.run(summ))
+      sess.run(w.flush())
     self._check_logdir(self.logdir)
 
   def test_eager_no_default_writer(self):
