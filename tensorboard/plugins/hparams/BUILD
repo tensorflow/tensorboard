@@ -169,10 +169,6 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-<<<<<<< HEAD
-        ":protos_all_py_pb2",
-        ":summary",
-=======
         ":keras",
         ":summary_v2",
     ],
@@ -200,16 +196,11 @@ py_library(
         ":summary",
         ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
->>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
         "@org_pythonhosted_six",
     ],
 )
 
 py_test(
-<<<<<<< HEAD
-    name = "api_test",
-    srcs = ["api_test.py"],
-=======
     name = "keras_test",
     size = "small",
     srcs = ["keras_test.py"],
@@ -230,21 +221,11 @@ py_test(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
->>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
     srcs_version = "PY2AND3",
     visibility = [
         "//visibility:public",
     ],
     deps = [
-<<<<<<< HEAD
-        ":api",
-        ":metadata",
-        ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:test",
-        "//tensorboard/util:test_util",
-        "@com_google_protobuf//:protobuf_python",
-=======
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard/compat",
@@ -267,15 +248,10 @@ py_test(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
->>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
         "@org_pythonhosted_six",
     ],
 )
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
 py_library(
     name = "summary",
     srcs = ["summary.py"],
