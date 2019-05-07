@@ -108,7 +108,7 @@ Polymer({
   },
 
   observers: [
-    'reload(run, tag)',
+    'reload(run, tag, active, _dataProvider)',
     '_updateScene(_currentStep)',
     '_updateView(selectedView)'
   ],
@@ -127,7 +127,7 @@ Polymer({
     // sometimes)
     this._dataProvider = new vz_mesh.ArrayBufferDataProvider(
         this.requestManager);
-    this._meshViewer = new vz_mesh.MeshViewer();
+    this._meshViewer = new vz_mesh.MeshViewer(this._runColor);
     this._meshViewer.addEventListener(
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
     this._meshViewer.addEventListener(
@@ -139,7 +139,7 @@ Polymer({
    * Function to call when component must be reloaded.
    */
   reload: function() {
-    if (!this.active) {
+    if (!this.active || !this._dataProvider) {
       return;
     }
     this.set('_isMeshLoading', true);

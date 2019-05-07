@@ -51,6 +51,7 @@ from tensorboard.plugins.profile import profile_plugin_loader
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.plugins.mesh import mesh_plugin
 
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,7 @@ _PLUGINS = [
     profile_plugin_loader.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
     hparams_plugin_loader.HParamsPluginLoader(),
+    mesh_plugin.MeshPlugin,
 ]
 
 def get_plugins():
