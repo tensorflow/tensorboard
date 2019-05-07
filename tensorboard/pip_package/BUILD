@@ -22,6 +22,7 @@ sh_binary(
         "//tensorboard:version",  # Version module (read by setup.py)
         "//tensorboard/plugins/beholder",  # User-facing beholder API
         "//tensorboard/plugins/hparams",  # User-facing hparams API
+        "//tensorboard/plugins/mesh:summary",  #  User-facing mesh summary API
         "//tensorboard/plugins/projector",  # User-facing projector API
         "//tensorboard/summary:tf_summary",  #  tf.summary API for TF 2.0
     ],
