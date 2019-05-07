@@ -5,6 +5,17 @@ exports_files(["LICENSE"])
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
+# Public-facing API, included in Pip package.
+py_library(
+    name = "mesh",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":summary",
+    ],
+)
+
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
