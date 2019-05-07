@@ -120,6 +120,7 @@ class HParamsTest(test.TestCase):
       sess.run(w.init())
       summ = hp.hparams(self.hparams, start_time_secs=self.start_time_secs)
       self.assertTrue(sess.run(summ))
+      sess.run(w.flush())
     self._check_logdir(self.logdir)
 
   def test_eager_no_default_writer(self):
