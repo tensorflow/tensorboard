@@ -56,7 +56,7 @@ class CallbackTest(tf.test.TestCase):
         tf.keras.layers.Dense(1, activation="sigmoid"),
     ])
     self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])
-    self.callback = keras.Callback(writer, self.hparams, group_name="psl27")
+    self.callback = keras.Callback(writer, self.hparams)
 
   def test_eager(self):
     def mock_time():
@@ -99,11 +99,13 @@ class CallbackTest(tf.test.TestCase):
     start_pb.start_time_secs = 1234.5
     end_pb.end_time_secs = 6789.0
 
+    start_pb.group_name = "do_not_care"
+
     expected_start_pb = plugin_data_pb2.SessionStartInfo()
     text_format.Merge(
         """
         start_time_secs: 1234.5
-        group_name: "psl27"
+        group_name: "do_not_care"
         hparams {
           key: "optimizer"
           value {
