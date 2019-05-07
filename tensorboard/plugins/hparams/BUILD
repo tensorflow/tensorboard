@@ -252,6 +252,26 @@ py_test(
     ],
 )
 
+py_test(
+    name = "summary_v2_notf_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    main = "summary_v2_test.py",
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":metadata",
+        ":protos_all_py_pb2",
+        ":summary_v2",
+        "//tensorboard:test",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
