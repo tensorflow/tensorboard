@@ -10,6 +10,19 @@ load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
+# Public-facing API, included in Pip package.
+py_library(
+    name = "hparams",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":api",
+        ":summary",
+        ":summary_v2",
+    ],
+)
+
 py_library(
     name = "hparams_plugin",
     srcs = [
@@ -26,7 +39,6 @@ py_library(
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
-        ":summary",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/compat:tensorflow",
@@ -61,6 +73,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -73,6 +86,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -87,6 +101,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -154,20 +169,74 @@ py_library(
         "//visibility:public",
     ],
     deps = [
+<<<<<<< HEAD
         ":protos_all_py_pb2",
         ":summary",
-        "@org_pythonhosted_six",
+=======
+        ":keras",
+        ":summary_v2",
     ],
 )
 
 py_test(
     name = "api_test",
+    size = "small",
     srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":keras",
+        ":summary_v2",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
+    name = "keras",
+    srcs = ["keras.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protos_all_py_pb2",
+        ":summary",
+        ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+<<<<<<< HEAD
+    name = "api_test",
+    srcs = ["api_test.py"],
+=======
+    name = "keras_test",
+    size = "small",
+    srcs = ["keras_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":keras",
+        ":metadata",
+        ":protos_all_py_pb2",
+        ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
     srcs_version = "PY2AND3",
     visibility = [
         "//visibility:public",
     ],
     deps = [
+<<<<<<< HEAD
         ":api",
         ":metadata",
         ":protos_all_py_pb2",
@@ -175,11 +244,38 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/util:test_util",
         "@com_google_protobuf//:protobuf_python",
+=======
+        ":metadata",
+        ":protos_all_py_pb2",
+        "//tensorboard/compat",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "@org_pythonhosted_six",
     ],
 )
 
+py_test(
+    name = "summary_v2_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metadata",
+        ":protos_all_py_pb2",
+        ":summary_v2",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
+        "@org_pythonhosted_six",
+    ],
+)
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
 py_library(
     name = "summary",
     srcs = ["summary.py"],
@@ -190,6 +286,7 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )

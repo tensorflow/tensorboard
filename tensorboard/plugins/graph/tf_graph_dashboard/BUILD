@@ -20,7 +20,7 @@ tf_web_library(
         "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
-        "//tensorboard/plugins/graph/tf_graph_loader",
+        "//tensorboard/plugins/graph/tf_graph_loader:tf_graph_dashboard_loader",
     ],
 )
 
@@ -35,7 +35,7 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/graph/tf_graph:legacy",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
-        "//tensorboard/plugins/graph/tf_graph_loader:legacy",
+        "//tensorboard/plugins/graph/tf_graph_loader:legacy_dashboard_loader",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

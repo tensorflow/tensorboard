@@ -41,6 +41,7 @@ tf_web_library(
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_tensorboard:plugin_dialog",
         "//tensorboard/components/tf_tensorboard:registry",
     ],
 )

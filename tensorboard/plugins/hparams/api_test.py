@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+<<<<<<< HEAD
 import abc
 import collections
 import os
@@ -405,6 +406,21 @@ class KerasCallbackTest(test.TestCase):
     with six.assertRaisesRegex(
         self, ValueError, "multiple values specified for hparam 'foo'"):
       hp.KerasCallback(self.logdir, hparams)
+=======
+from tensorboard import test
+from tensorboard.plugins.hparams import api
+from tensorboard.plugins.hparams import keras
+from tensorboard.plugins.hparams import summary_v2
+
+
+class ApiTest(test.TestCase):
+
+  def test_has_core_attributes(self):
+    self.assertIs(api.HParam, summary_v2.HParam)
+
+  def test_has_keras_dependent_attributes(self):
+    self.assertIs(api.KerasCallback, keras.Callback)
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
 
 
 if __name__ == "__main__":

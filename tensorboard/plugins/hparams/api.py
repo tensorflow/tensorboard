@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+<<<<<<< HEAD
 """Experimental public APIs for the HParams plugin.
 
 This module supports a spectrum of use cases, depending on how much
@@ -94,11 +95,15 @@ See the `Experiment`, `HParam`, `Metric`, and `KerasCallback` classes
 for API specifications. Consult the `hparams_demo.py` script for an
 end-to-end MNIST example.
 """
+=======
+"""Experimental public APIs for the HParams plugin."""
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+<<<<<<< HEAD
 import abc
 import time
 
@@ -560,3 +565,28 @@ def _normalize_hparams(hparams):
       raise ValueError("multiple values specified for hparam %r" % (k,))
     result[k] = v
   return result
+=======
+from tensorboard.plugins.hparams import keras
+from tensorboard.plugins.hparams import summary_v2
+
+
+Discrete = summary_v2.Discrete
+Domain = summary_v2.Domain
+HParam = summary_v2.HParam
+IntInterval = summary_v2.IntInterval
+Metric = summary_v2.Metric
+RealInterval = summary_v2.RealInterval
+hparams = summary_v2.hparams
+hparams_pb = summary_v2.hparams_pb
+hparams_config = summary_v2.hparams_config
+hparams_config_pb = summary_v2.hparams_config_pb
+
+KerasCallback = keras.Callback
+
+
+del absolute_import
+del division
+del keras
+del print_function
+del summary_v2
+>>>>>>> 8641172ee51e0dc3bae49783b56d913f5ca3ac24

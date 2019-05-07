@@ -221,7 +221,7 @@ class TensorBoard(object):
       event_file = os.path.expanduser(self.flags.event_file)
       efi.inspect(self.flags.logdir, event_file, self.flags.tag)
       return 0
-    if self.flags.version:
+    if self.flags.version_tb:
       print(version.VERSION)
       return 0
     try:
@@ -526,8 +526,8 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
       host = self._flags.host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
-    return 'http://%s:%d%s' % (display_host, self.server_port,
-                               self._flags.path_prefix)
+    return 'http://%s:%d%s/' % (display_host, self.server_port,
+                               self._flags.path_prefix.rstrip('/'))
 
 
 create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)

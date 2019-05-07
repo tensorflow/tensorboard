@@ -47,6 +47,19 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "plugin_dialog",
+    srcs = [
+        "plugin-dialog.html",
+    ],
+    path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:polymer",
+    ],
+)
+
+tf_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
@@ -62,6 +75,7 @@ tf_web_library(
         "//tensorboard/plugins/hparams/tf_hparams_dashboard",
         "//tensorboard/plugins/image/tf_image_dashboard",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
+        "//tensorboard/plugins/mesh_visualizer/tf_mesh_dashboard",
         "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
         "//tensorboard/plugins/profile/tf_profile_dashboard",
         "//tensorboard/plugins/projector/vz_projector",
