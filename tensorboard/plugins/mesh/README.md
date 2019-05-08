@@ -11,7 +11,7 @@ especially during the training stage, is critical to better understand how
 the model performs.
 
 ![Mesh Plugin in TensorBoard](
-https://storage.googleapis.com/tensorflow-graphics/git/readme/tensorboard_plugin.jpg){width="100%"}
+https://storage.googleapis.com/tensorflow-graphics/git/readme/tensorboard_plugin.jpg)
 
 This plugin intends to display 3D point cloud or mesh (triangulated point 
 cloud)
