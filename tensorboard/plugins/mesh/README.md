@@ -89,6 +89,14 @@ to install it before using the plugin.
 ```shell
 !pip install -q -U tb-nightly
 ```
+
+Then load Tensorboard extension and run it, similar to how you would do it in the Terminal:
+
+```shell
+%load_ext tensorboard
+%tensorboard --logdir=/path/to/logs
+```
+
 Please open [example colab](https://colab.sandbox.google.com/drive/1E6j9qXMGhxYb17diCR5qFMMk2YgC_Kk6) for more details.
 
 ### Terminal
