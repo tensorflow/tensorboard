@@ -64,7 +64,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
               <div>
                 <paper-radio-group class="scale-radio-group"
                                    selected="{{column.scale}}"
-                                   on-selected-changed="_notifyOptionsChanged">
+                                   on-selected-changed="_scaleChanged">
                   <paper-radio-button name="LINEAR">
                     Linear
                   </paper-radio-button>
@@ -217,7 +217,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         // If we set options.colorByColumnIndex at the same time as we
         // set the other options, Polymer first updates the drop-down menu
         // selected label and only then updates the list box with the new items.
-        // As a result the selected label gets an erroenous value (based on
+        // As a result the selected label gets an erroneous value (based on
         // the old elements in the list).
         // To overcome this, we first set the selected item to "undefined",
         // call flush to synchronously update the drop-down menu list with
@@ -251,19 +251,17 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         if (!this._isNumericColumn(column.index)) {
           return false;
         }
-        const [min, max] = tf.hparams.utils.numericColumnExtent(
+        const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(
             this.schema, this.sessionGroups, column.index);
         // Log scale is only defined when the domain does not include 0.
         return min > 0 || max < 0;
       },
 
-      _notifyOptionsChanged() {
-        // We rewrite options here to notify polymer that 'options' have
-        // changed so that other elements that depend on options will be
-        // updated.
-        const options = this.options;
-        this.options = {};
-        this.options = options;
+      _scaleChanged(event) {
+        // Notify polymer that the column changed so that other elements
+        // that depend on it will see the change.
+        const model = event.model;
+        this.notifyPath(`options.columns.${model.column.index}.scale`);
       },
 
       // Returns true if the scale is numeric.

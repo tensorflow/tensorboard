@@ -640,13 +640,20 @@ TODO(erez): Add aggregation controls for repeated sessions.
                 .filter(hparamCol => hparamCol.displayed)
                 .map(hparamCol => hparamCol.hparamInfo);
         const newMetricInfos =
-            this._metrics
+            this.schema.metricColumns
               .filter(metricCol => metricCol.displayed)
               .map(metricCol => metricCol.metricInfo);
         // We have to use Polymer's 'path'-based array mutations so that
         // other elements (like a dom-repeat template) that depend on
         // schema.metricInfos and schema.hparamInfos would be notified of the
         // change and update correctly.
+//        this.set("schema.visibleSchema", {});
+        this.set("schema.visibleSchema",
+                 {
+                   hparamInfos: newHParamInfos,
+                   metricInfos: newMetricInfos,
+                 });
+/*
         this.splice(
             "schema.visibleSchema.hparamInfos",
             0,
@@ -657,6 +664,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
             0,
             this.schema.visibleSchema.metricInfos.length,
             ...newMetricInfos);
+*/
       },
 
       // Sends a query to the server for the list of session groups.

@@ -1,15 +1,52 @@
-namespace tf {
-namespace hparams {
-namespace parallel_coords_plot {
+namespace tf.hparams.parallel_coords_plot {
 
-class NonNullBrushSelection {
-  public upperY: number;
-  public lowerY: number;
+/* TODO(erez): Replace with a proper TS wrapper class for Schema. */
+type Schema = any;
+/* TODO(erez): Replace with a proper TS wrapper class for Options. */
+type Options = any;
+/* TODO(erez): Replace with a proper TS wrapper class for SVGProperties. */
+
+export class SVGProperties {
+  constructor(svg: HTMLElement, numColumns: number) {
+    // We use the following algorithm for laying out our SVG:
+    // We compute a minimum size for the SVG based on the number columns
+    // and some margins. We set the svg "width" and "height" styles
+    // to "100%" so that it takes up the full area of its parent, but use
+    // "min-width" and "min-height", so that if the parent is too small
+    // the svg won't shrink down (it will overflow with scroll bars).
+    // If the parent is larger than the minimum size, we use the its
+    // preserveAspectRatio attr to scale the contents to fit the larger
+    // size.
+    this.svg = d3.select(svg);
+    const margin = {top: 30, right: 10, bottom: 10, left: 10};
+    const COL_WIDTH = 100;
+    const COL_HEIGHT = 200;
+    const totalWidth =
+      numColumns * COL_WIDTH + margin.left + margin.right;
+    const totalHeight = COL_HEIGHT + margin.top + margin.bottom;
+    this.svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+    this.svg.attr("preserveAspectRatio", "xMidYMid");
+    // Set a minimum width so scale factor want be less than 1
+    // (but if size of '#container' is larger then we'll scale up
+    // our svg).
+    this.svg.style("min-width", totalWidth + "px");
+    this.svg.style("min-height", totalHeight + "px");
+    // 'width' and 'height' store the width of the svg without our margins.
+    this.width = totalWidth - margin.left - margin.right;
+    this.height = totalHeight - margin.top - margin.bottom;
+    this.svgG = this.svg
+      .append("g")
+      .attr("transform",
+            tf.hparams.utils.translateStr(margin.left, margin.top));
+  }
+
+  public readonly svg: any;   /* D3 selection of the top level SVG*/
+  public readonly svgG: any;  /* D3 selection of the top level <g> element */
+  public readonly height: number;
+  public readonly width: number;
 }
 
-type BrushSelection = NonNullBrushSelection | null;
-
-enum ScaleType {
+export enum ScaleType {
   Linear = "LINEAR",
   Logarithmic = "LOG",
   Quantile = "QUANTILE",
@@ -17,7 +54,7 @@ enum ScaleType {
 }
 
 interface AxisBrushFilter {
-  public isPassing(value: any): boolean;
+  isPassing(value: any): boolean;
 }
 
 class AlwaysPassingBrushFilter implements AxisBrushFilter {
@@ -46,6 +83,11 @@ class IntervalBrushFilter implements AxisBrushFilter {
   private _before(a: number, b: number, useLessThan: boolean) : boolean {
     return (useLessThan && (a < b)) || (!useLessThan && (a <= b));
   }
+
+  private _lower: number;
+  private _upper: number;
+  private _lowerOpen: boolean
+  private _upperOpen: boolean;
 }
 
 class SetBrushFilter implements AxisBrushFilter {
@@ -56,19 +98,23 @@ class SetBrushFilter implements AxisBrushFilter {
   public isPassing(value: any): boolean {
     return this._domainSet.indexOf(value) !== -1;
   }
+
+  private _domainSet: any[];
 }
 
 class Axis {
   public constructor(svgProps: SVGProperties,
-                     interactionManager: interactionManager,
-                     colIndex: colIndex) {
+                     schema: Schema,
+                     interactionManager: InteractionManager,
+                     colIndex: number) {
     this._svgProps = svgProps;
+    this._schema = schema;
     this._interactionManager = interactionManager;
     this._colIndex = colIndex;
     this._isDisplayed = false;
     this._yScale = null;
     this._scaleType = null;
-    this._setBrushSelection(null);
+    this.setBrushSelection(null);
   }
 
   public colIndex(): number {
@@ -83,7 +129,7 @@ class Axis {
     return this._scaleType;
   }
 
-  public brushSelection(): BrushSelection {
+  public brushSelection(): d3.BrushSelection {
     return this._brushSelection;
   }
 
@@ -91,16 +137,17 @@ class Axis {
     return this._isDisplayed;
   }
 
-  public setBrushSelection(brushSelection: BrushSelection) {
+  public setBrushSelection(brushSelection: d3.BrushSelection) {
     this._brushSelection = brushSelection;
     this._brushFilter = this._buildBrushFilter(this._brushSelection);
   }
   
   public setDomainAndScale(domainValues: any[], scaleType: ScaleType) {
+    this._scaleType = scaleType;
     this._yScale = tf.hparams.parallel_coords_plot.createAxisScale(
       // Pass a copy since createAxisScale may permute the domainValues array.
       domainValues.slice(),
-      svgProps.height,
+      this._svgProps.height,
       this.scaleType());
     // TODO(erez): Try to modify the brush selection so that it selects
     // the same subset of the axis domain which was selected before
@@ -124,12 +171,25 @@ class Axis {
       // number of elements in the domain is greater than the
       // number of quantiles (since then the scale maps more than
       // one domain value to the same quantile).
-      d3axis = d3axis.tickValues(this.yScale().quantiles())
+      d3Axis = d3Axis
+        .tickValues(this.yScale().quantiles())
         .tickFormat(d3.format("-.6g"));
     }
-    d3.select(axisParent).removeAll("g");
-    d3.select(axisParent).append("g").classed("axis").call(d3Axis);
-    d3.select(axisParent).call(
+    const axisParentSel = d3.select(axisParent);
+    axisParentSel.selectAll("g").remove();
+    axisParentSel.append("g").classed("axis", true).call(d3Axis);
+    // Add axis title.
+    axisParentSel
+      .append("text")
+      .classed("axis-title", true)
+      .style("cursor", "move")
+      .style("text-anchor", "middle")
+      .attr("y", -9)
+      .text(colIndex =>
+            tf.hparams.utils.schemaColumnName(this._schema, colIndex));
+
+    // Add dragging event handlers.
+    axisParentSel.call(
       d3.drag()
         .on("start", () => {
           // We set an attribute on the axis that signals
@@ -146,47 +206,54 @@ class Axis {
 
     // Add the brush.
     const d3Brush = d3.brushY()
-      .extent([[-8, 0], [8, this._svgProps.height + 1]]);
+      .extent([[-8, 0], [8, this._svgProps.height + 1]])
+      /* Define the brush event handlers. D3 will call these both when
+         the user moves the brush selection and when we change the brush
+         selection programmatically using d3Brush.move(). We'd like to 
+         avoid calling the interactionManager in the latter case; thus,
+         we call _isInteractiveD3Event() to find out if the event was fired 
+         due to a programmetic change of the brush selection , and if so, 
+         ignore the event. */
       .on("start", () => {
-        if (!_isInteractiveEvent(d3.event)) {
+        if (!_isInteractiveD3Event(d3.event)) {
           return;
         }
         // We set the 'is-brushing' attribute on the containing
         // 'axis-parent'-classed <g> element to notify integration tests
         // that the axis is busy brushing.
         axisParent.setAttribute("is-brushing", "");
-        this._interactionManager.onBrushedChanged(
-          this.colIndex,
-          new BrushSelection(d3.event.selection));
+        this._interactionManager.onBrushChanged(
+          this.colIndex(), d3.event.selection);
       })
       .on("brush", () => {
-        if (!_isInteractiveEvent(d3.event)) {
+        if (!_isInteractiveD3Event(d3.event)) {
           return;
         }
-        this._interactionManager.onBrushedChanged(
-          this.colIndex,
-          new BrushSelection(d3.event.selection));
+        this._interactionManager.onBrushChanged(
+          this.colIndex(), d3.event.selection);
       })
       .on("end", () => {
-        if (!_isInteractiveEvent(d3.event)) {
+        if (!_isInteractiveD3Event(d3.event)) {
           return;
         }
-        this._interactionManager.onBrushedChanged(
-          this.colIndex,
-          new BrushSelection(d3.event.selection));
+        this._interactionManager.onBrushChanged(
+          this.colIndex(), d3.event.selection);
         axisParent.removeAttribute("is-brushing");
-      });                                                          
-    const brushG = d3.select(axisParent).append("g").classed("brush");
+      });
+    const brushG = d3.select(axisParent as SVGGElement)
+      .append("g")
+      .classed("brush", true);
     brushG.call(d3Brush);
     // Set the brush selection programmatically.
-    d3Brush.move(brushG, this.brushSelection().asArray());
+    // We need to cast brushG to 'any' here, since 
+    d3Brush.move(brushG as any, this.brushSelection());
   }
 
   public setDisplayed(value: boolean) {
     this._isDisplayed = value;
   }
 
-  private _buildBrushFilter(brushSelection: BrushSelection) {
+  private _buildBrushFilter(brushSelection: d3.BrushSelection) {
     if (brushSelection === null) {
       return new AlwaysPassingBrushFilter();
     }
@@ -200,7 +267,7 @@ class Axis {
       case ScaleType.Logarithmic: { /* Fall Through */
         const [lower, upper] =
           tf.hparams.parallel_coords_plot.continuousScaleInverseImage(
-            this.yScale(), brushSelection.lowerY, brushSelection.upperY);
+            this.yScale(), brushSelection[0], brushSelection[1]);
         return new IntervalBrushFilter(lower,
                                        upper,
                                        /*lowerOpen=*/ false,
@@ -209,7 +276,7 @@ class Axis {
       case ScaleType.Quantile: {
         const [lower, upper] =
           tf.hparams.parallel_coords_plot.quantileScaleInverseImage(
-            this.yScale(), brushSelection.lowerY, brushSelection.upperY);
+            this.yScale(), brushSelection[0], brushSelection[1]);
         return new IntervalBrushFilter(lower,
                                        upper,
                                        /*lowerOpen=*/ false,
@@ -218,26 +285,36 @@ class Axis {
       case ScaleType.NonNumeric:
         return new SetBrushFilter(
           tf.hparams.parallel_coords_plot.pointScaleInverseImage(
-            this.yScale(), brushSelection.lowerY, brushSelection.upperY));
+            this.yScale(), brushSelection[0], brushSelection[1]));
     }
     console.error("Unknown scale type: ", this._scaleType);
     return new AlwaysPassingBrushFilter();
   }
-  
+
+  private readonly _svgProps: SVGProperties;
+  private readonly _schema: Schema;
+  private readonly _interactionManager: InteractionManager;
   private readonly _colIndex: number;
+  private _isDisplayed: boolean;
+  private _yScale: any;  /* D3 scale */
+  private _scaleType: ScaleType | null;
+  private _brushSelection: d3.BrushSelection;
+  private _brushFilter: AxisBrushFilter;
 }
 
 class AxesManager {
-  public constructor(svgProps: SVGProperties, schema: Schema) {
+  public constructor(
+    svgProps: SVGProperties, schema: Schema,
+    interactionManager: InteractionManager) {
     this._svgProps = svgProps;
     this._schema = schema;
-    this._axes = this._createAxes();
+    this._axes = this._createAxes(interactionManager);
     this._stationaryAxesPositions = d3.scalePoint()
-      .range([1, svgProps.width - 1])
+      .range([1, this._svgProps.width - 1])
       .padding(0.5);
     this._draggedAxis = null;
     this._svgProps.svgG.selectAll("g.axis-parent").remove();
-    this._parentSel = this._svgProps.svgG.selectAll(".axis-parent");
+    this._parentsSel = this._svgProps.svgG.selectAll(".axis-parent");
   }
   
   public updateAxes(options: Options, sessionGroups: any[]) {
@@ -246,12 +323,13 @@ class AxesManager {
     // Traverse options.columns, and update each corresponding axis.
     const visibleColIndices: Set<number> = new Set<number>();
     options.columns.forEach(c => {
-      const colIndex = utils.getAbsoluteColIndex(this._schema, c.index);
+      const colIndex = tf.hparams.utils.getAbsoluteColumnIndex(
+        this._schema, c.index);
       let axis = this._axes[colIndex];
       axis.setDisplayed(true);
       const domainValues = sessionGroups.map(
-        sg => utils.columnValueByIndex(this._schema, sg, c.index));
-      axis.setDomainAndScale(domainValues, _scaleTypeFromString(c.scaleType));
+        sg => tf.hparams.utils.columnValueByIndex(this._schema, sg, colIndex));
+      axis.setDomainAndScale(domainValues, c.scale);
       visibleColIndices.add(colIndex);
     });
 
@@ -265,12 +343,15 @@ class AxesManager {
     this._updateStationaryAxesPositions(visibleColIndices);
     
     // Update the DOM.
-    this._parentSel = this._parentSel
-      .data(visibleColIndices, /*key=*/ (colIndex  => colIndex))
-      .join("g")
-      .classed("axis-parent", true);
+    this._parentsSel = this._parentsSel
+      .data(Array.from(visibleColIndices), /*key=*/ (colIndex  => colIndex));
+    this._parentsSel.exit().remove();
+    this._parentsSel = this._parentsSel.enter()
+      .append("g")
+      .classed("axis-parent", true)
+      .merge(this._parentsSel)
     const _this = this;
-    this._parentSel
+    this._parentsSel
       .call(sel => this._updateAxesPositionsInDOM(sel))
       .each(function(colIndex) {
         /* Here 'this' is the 'axis-parent'-classed <g> element,
@@ -295,7 +376,8 @@ class AxesManager {
    *     false otherwise. Note that the predicate will only be evaluated until
    *     the first time it returns false.
    */
-  public allVisibleAxesSatisfy(predicate: (xPosition, axis)=>boolean): boolean {
+  public allVisibleAxesSatisfy(
+    predicate: (xPosition, axis)=>boolean): boolean {
     return this._stationaryAxesPositions.domain().every(
       colIndex => predicate(this.getAxisPosition(colIndex),
                             this._axes[colIndex]));
@@ -317,7 +399,7 @@ class AxesManager {
     this._draggedAxisPosition = newX;
     let visibleColIndices = this._stationaryAxesPositions.domain();
     visibleColIndices.sort(
-      (ci1, ci2) => this._getAxisPosition(ci1) - this._getAxisPosition(ci2));
+      (ci1, ci2) => this.getAxisPosition(ci1) - this.getAxisPosition(ci2));
     this._stationaryAxesPositions.domain(visibleColIndices);
     this._updateAxesPositionsInDOM(this._parentsSel);
   }
@@ -334,6 +416,13 @@ class AxesManager {
     return this._draggedAxis !== null;
   }
 
+  public getAxisPosition(colIndex: number) : number {
+    return (this._draggedAxis !== null) &&
+      (this._draggedAxis.colIndex() === colIndex)
+      ? this._draggedAxisPosition
+      : this._stationaryAxesPositions(colIndex);
+  }
+
   /** 
    * Sets the domain of 'stationaryAxesPositions' to be the given 
    * visibleColIndices. Preserves the order of the indices in 
@@ -342,27 +431,29 @@ class AxesManager {
    * to the domain after the existing indices.
    */
   private _updateStationaryAxesPositions(visibleColIndices: Set<number>) {
+    // We're going to modify visibleColIndices so make a copy first, since
+    // the caller may count on it being unmodified.
+    visibleColIndices = new Set<number>(visibleColIndices);    
     let newDomain: number[] = this._stationaryAxesPositions.domain().filter(
       colIndex => visibleColIndices.has(colIndex));
-    newDomain.forEach(colIndex => visibleColIndices.remove(colIndex));
+    newDomain.forEach(colIndex => visibleColIndices.delete(colIndex));
     this._stationaryAxesPositions.domain(
-      newDomain.concat(...visibleColIndices));
+      /* TypeScript doesn't allow spreading a Set, so we convert to an 
+         Array first. */
+      newDomain.concat(...Array.from(visibleColIndices)));
   }
   
   private _updateAxesPositionsInDOM(selectionOrTransition) {
     selectionOrTransition.attr("transform",
-                               colIndex => this._getAxisPosition(colIndex));
+                               colIndex =>
+                               tf.hparams.utils.translateStr(
+                                 this.getAxisPosition(colIndex)));
   }
   
-  private _getAxisPosition(colIndex: number) : number {
-    return this._draggedAxis.colIndex() === colIndex
-      ? this._draggedAxisPosition
-      : this._stationaryAxesPositions(colIndex);
-  }
-
   private _createAxes(interactionManager: InteractionManager): Axis[] {
-    return d3.range(this._schema.numColumns()).map(
-      colIndex => new Axis(this._svgProps, interactionManager, colIndex)
+    return d3.range(tf.hparams.utils.numColumns(this._schema)).map(
+      colIndex => new Axis(
+        this._svgProps, this._schema, interactionManager, colIndex)
     );
   }
 
@@ -391,86 +482,116 @@ enum LineType {
   Foreground,
   Background,
 }
-  
+
+type SessionGroupCallback = (SessionGroup: any) => void;
 export class InteractionManager {
-  public constructor(
-    /* TODO(erez): Remove the parCoordsElement argument and replace
-       with the two callbacks: {selected, peaked}SessionGroupChanged. */
-    parCoordsElement: any /* HTMLElement */,
-                     svgProps: SVGProperties,
-                     schema: Schema) {
-    this._parCoordsElement = parCoordsElement;
+  public constructor(svgProps: SVGProperties,
+                     schema: Schema,
+                     peakedSessionGroupChangedCallback: SessionGroupCallback,
+                     selectedSessionChangedCallback: SessionGroupCallback) {
     this._svgProps = svgProps;
     this._schema = schema;
+    this._peakedSessionGroupChangedCB = peakedSessionGroupChangedCallback;
+    this._selectedSessionGroupChangedCB = selectedSessionChangedCallback;
     this._axesManager = new AxesManager(svgProps, schema,
                                         /*interactionManager=*/ this);
     this._linesManager = new LinesManager(svgProps, schema, this._axesManager);
+    this._svgProps.svg
+      .on("click", () => this.onClick())
+      .on("mousemove mouseenter", () => {
+        const [x, y] = d3.mouse(this._svgProps.svgG.node());
+        this.onMouseMoved(x, y);
+      })
+      .on("mouseleave", () => this.onMouseLeave());
   }
  
   public onDragStart(colIndex: number) {
     this._axesManager.dragStart(colIndex);
-    this._lines.hideBackgroundLines();
+    this._linesManager.hideBackgroundLines();
   }
   
   public onDrag(newX: number) {
     this._axesManager.drag(newX);
-    this._lines.recomputeControlPoints(LineType.Foreground);
+    this._linesManager.recomputeControlPoints(LineType.Foreground);
   }
 
   public onDragEnd() {
     this._axesManager.dragEnd(/*transitionDuration=*/ 500);
-    this._lines.recomputeControlPoints(LineType.Foreground,
+    this._linesManager.recomputeControlPoints(LineType.Foreground,
                                        /* transitionDuration=*/ 500);
     window.setTimeout(() => {
-      this._lines.recomputeControlPoints(LineType.Background);
-      this._lines.showBackground();
+      this._linesManager.recomputeControlPoints(LineType.Background);
+      this._linesManager.showBackgroundLines();
     }, 500);
   }
 
-  public onBrushChanged(colIndex: number, brushSelection: newBrushSelection) {
-    this._axesManager.getAxisForColIndex(colIndex).updateBrushSelection(
-      colIndex, newBrushSelection);
-    this._lines.recomputeForegroundLinesVisibility();
+  public onBrushChanged(colIndex: number,
+                        newBrushSelection: d3.BrushSelection) {
+    this._axesManager.getAxisForColIndex(colIndex).setBrushSelection(
+      newBrushSelection);
+    this._linesManager.recomputeForegroundLinesVisibility();
   }
   
-  public mouseMoved(newX:number, newY:number) {
-    this._lines.updatePeakedSessionGroup(
-      this._lines.findClosestSessionGroup(newX, newY));
-    this._parCoordsElement.closestSessionGroupChanged(
-      this._lines.peakedSessionGroupHandle().sessionGroup());
+  public onMouseMoved(newX:number, newY:number) {
+    this._linesManager.updatePeakedSessionGroup(
+      this._linesManager.findClosestSessionGroup(newX, newY));
+    this._peakedSessionGroupChangedCB(
+      this._linesManager.peakedSessionGroupHandle().sessionGroup());
+  }
+
+  public onMouseLeave() {
+    if (!this._linesManager.peakedSessionGroupHandle().isNull()) {
+      this._linesManager.clearPeakedSessionGroup()
+      this._peakedSessionGroupChangedCB(null);
+    }
   }
 
   public onClick() {
-    if (this._lines.peakedSessionGroupHandle().sessionGroup() ===
-        this._lines.selectedSessionGroupHandle().sessionGroup()) {
+    if (this._linesManager.peakedSessionGroupHandle().sessionGroup() ===
+        this._linesManager.selectedSessionGroupHandle().sessionGroup()) {
       /* If the selected session group is the same as the "peaked" one,
          clear the selection. */
-      this._lines.updateSelectedSessionGroup(new SessionGroupHandle());
+      this._linesManager.updateSelectedSessionGroup(new SessionGroupHandle());
     } else {
-      this._lines.updateSelectedSessionGroup(
-        this._lines.peakedSessionGroupHandle());
+      this._linesManager.updateSelectedSessionGroup(
+        this._linesManager.peakedSessionGroupHandle());
     }
-    this._element.selectedSessionGroupChanged(
-      this._lines.selectedSessionGroupHandle().sessionGroup());
+    this._selectedSessionGroupChangedCB(
+      this._linesManager.selectedSessionGroupHandle().sessionGroup());
   }
 
-  public onOptionsOrSessionGroupsChanged(newOptions: object,
+  public onOptionsOrSessionGroupsChanged(newOptions: Options,
                                          newSessionGroups: any[]) {
     this._axesManager.updateAxes(newOptions, newSessionGroups);
-    this._lines.redraw(
-      this._sessionGroups,
-      utils.getAbsoluteColIndex(
-        this._schema, newOptions.colorByColIndex),
+    this._linesManager.redraw(
+      newSessionGroups,
+      newOptions.colorByColumnIndex !== undefined
+        ? tf.hparams.utils.getAbsoluteColumnIndex(
+          this._schema, newOptions.colorByColumnIndex)
+        : null,
       newOptions.minColor,
       newOptions.maxColor);
+    // Polymer adds an extra ".tf-hparams-parallel-coords-plot" class to
+    // each rule selector in the <style> section in the element definition. When
+    // polymer stamps a template it adds this class to every element
+    // stamped; since we're injecting our own elements here, we add this
+    // class to each element so that the style rules defined in the element will
+    // apply.
+    this._svgProps.svgG.selectAll("*")
+      .classed("tf-hparams-parallel-coords-plot", true);
   }
+
+  private _svgProps: SVGProperties;
+  private _schema: Schema;
+  private _peakedSessionGroupChangedCB: SessionGroupCallback;
+  private _selectedSessionGroupChangedCB: SessionGroupCallback;
+  private _axesManager: AxesManager;
+  private _linesManager: LinesManager;
 };
 
 /**
  * A handle to a representation of a session group in the 'LinesManager' class 
  * below.
- * The only public interface of this class is the 'sessionGroup' method which
- * returns the corresponding sessionGroup object referenced by the handle.
  * The handle can also be "null" -- meaning it references no session group (
  * similar to a "null pointer"), in which case the 'sessionGroup()' method 
  * returns null.
@@ -482,7 +603,7 @@ class SessionGroupHandle {
    * 'LinesManager' class below. If sessionGroupSel is empty or undefined, a 
    * "null" handle will be constructed.
    */
-  SessionGroupHandle(sessionGroupSel?: any) {
+  public constructor(sessionGroupSel?: any) {
     if (sessionGroupSel === undefined) {
       sessionGroupSel = d3.selectAll(null);
     }
@@ -495,7 +616,13 @@ class SessionGroupHandle {
    * this is a "null" reference.
    */
   public sessionGroup(): any {
-    return this._sessionGroupSel.size() == 1 ? _sessionGroupSel.datum() : null;
+    return this._sessionGroupSel.size() === 1
+      ? this._sessionGroupSel.datum()
+      : null;
+  }
+
+  public isNull(): boolean {
+    return this.sessionGroup() === null;
   }
 
   /** 
@@ -505,6 +632,8 @@ class SessionGroupHandle {
   public selection(): any {
     return this._sessionGroupSel;
   }
+
+  private _sessionGroupSel: any /* D3 selection */
 };
   
 /**
@@ -521,14 +650,16 @@ class LinesManager {
     this._sessionGroups = [];
     this._svgProps.svgG.selectAll("g.background").remove();
     this._svgProps.svgG.selectAll("g.foreground").remove();
-    this._bgPathSel = this._svgProps.svgG.append("g")
+    this._bgPathsSel = this._svgProps.svgG.append("g")
       .classed("background", true)
       .selectAll("path");
-    this._fgPathSel = this._svgProps.svgG.append("g")
+    this._fgPathsSel = this._svgProps.svgG.append("g")
       .classed("foreground", true)
       .selectAll("path");
-    this._peakedSessionGroup = new SessionGroupHandle();
-    this._selectedSessionGroup = new SessionGroupHandle();
+    this._updateVisibleFgPathsSel();
+    this._peakedSessionGroupHandle = new SessionGroupHandle();
+    this._selectedSessionGroupHandle = new SessionGroupHandle();
+    this._d3line = d3.line().curve(d3.curveLinear);
   }
 
   /**
@@ -540,17 +671,15 @@ class LinesManager {
       return new SessionGroupHandle();
     }
     return new SessionGroupHandle(
-      this._fgPathSel.filter(sg => sg.name === sessionGroup.name));
+      this._fgPathsSel.filter(sg => sg.name === sessionGroup.name));
   }
   
   public hideBackgroundLines() {
-    this._backgroundHidden = true;
-    this._bgPathSel.attr("visibility", "hidden");
+    this._bgPathsSel.attr("visibility", "hidden");
   }
 
   public showBackgroundLines() {
-    this._backgroundHidden = false;
-    this._bgPathSel.attr("visibility", null);
+    this._bgPathsSel.attr("visibility", null);
   }
 
   public peakedSessionGroupHandle(): SessionGroupHandle {
@@ -572,17 +701,18 @@ class LinesManager {
    *     means no animation.
    */
   public recomputeControlPoints(lineType: LineType, transitionDuration = 0) {
-    pathSel = lineType == LineType.Foreground ? fgPathSel : bgPathSel;
+    const pathSel = (lineType === LineType.Foreground
+                     ? this._fgPathsSel : this._bgPathsSel);
     pathSel
       .transition().duration(transitionDuration)
-      .attr("d", sessionGroup => this._pathDAttribute(sessionGroup))
+      .attr("d", sessionGroup => this._pathDAttribute(sessionGroup));
     if (lineType === LineType.Foreground) {
       // Update the control points property, if we're updating the foreground
       // lines.
       window.setTimeout(
         () => {
           const _this = this;
-          this._fgPathSel.each(
+          this._fgPathsSel.each(
             function(sessionGroup) {
               // Here 'this' is the <path> element, and '_this' is the
               // 'LinesManager' instance.
@@ -593,48 +723,52 @@ class LinesManager {
   }
 
   public recomputeForegroundLinesVisibility() {
-    this._fgPathSel.classed(
+    this._fgPathsSel.classed(
       "invisible-path",
-      sessionGroup => {
-        this._axesManager.allVisibleAxesSatisfy(
+      sessionGroup => 
+        !this._axesManager.allVisibleAxesSatisfy(
           (xPosition, axis)=>
             axis.brushFilter().isPassing(
-              utils.columnValueByAbsoluteIndex(
+              tf.hparams.utils.columnValueByIndex(
                 this._schema, sessionGroup, axis.colIndex())))
-      });
-    this._visibleFgPathsSel = this.fgPathSel.filter(":not(.invisible-path)");
+    );
+    this._updateVisibleFgPathsSel()
   }
 
   public setForegroundLinesColor(
-    colorByColIndex: number | null,
+    colorByColumnIndex: number | null,
     minColor: string,
     maxColor: string) {
     const lineColorFunction =
-      this._createLineColorFunction(colorByColIndex, minColor, maxColor);
-    this._fgPathSel.attr("stroke", lineColorFunction)
+      this._createLineColorFunction(colorByColumnIndex, minColor, maxColor);
+    this._fgPathsSel.attr("stroke", lineColorFunction)
   }
   
   public redraw(sessionGroups: any[],
-                colorBycolIndex: number | null,
+                colorByColumnIndex: number | null,
                 minColor: string,
                 maxColor: string) {
     const peakedSG = this._peakedSessionGroupHandle.sessionGroup();
     const selectedSG = this._selectedSessionGroupHandle.sessionGroup();
     this._sessionGroups = sessionGroups;
-    this._fgPathSel = this._recomputePathSelection(this._fgPathSel);
-    this._bgPathSel = this._recomputePathSelection(this._bgPathSel);
+    this._fgPathsSel = this._recomputePathSelection(this._fgPathsSel);
+    this._bgPathsSel = this._recomputePathSelection(this._bgPathsSel);
     this._peakedSessionGroupHandle = this.getSessionGroupHandle(peakedSG);
     this._selectedSessionGroupHandle = this.getSessionGroupHandle(selectedSG);
     this.recomputeControlPoints(LineType.Foreground);
     this.recomputeControlPoints(LineType.Background);
     this.recomputeForegroundLinesVisibility();
-    this.setForegroundLinesColor(colorByColIndex, minColor, maxColor);
+    this.setForegroundLinesColor(colorByColumnIndex, minColor, maxColor);
   }
 
   public updatePeakedSessionGroup(newHandle: SessionGroupHandle) {
     this._peakedSessionGroupHandle.selection().classed("peaked-path", false);
     this._peakedSessionGroupHandle = newHandle;
     this._peakedSessionGroupHandle.selection().classed("peaked-path", true);
+  }
+
+  public clearPeakedSessionGroup() {
+    this.updatePeakedSessionGroup(new SessionGroupHandle());
   }
 
   public updateSelectedSessionGroup(newHandle: SessionGroupHandle) {
@@ -660,24 +794,27 @@ class LinesManager {
   }
   
   private _createLineColorFunction(
-    colorByColIndex: number | null,
+    colorByColumnIndex: number | null,
     minColor: string,
     maxColor: string): (any)=>string {
-    if (colorByColIndex === null) {
+    if (colorByColumnIndex === null) {
       /* Use a default color if no color-by column is selected. */
       return () => "red";
     }
-    return d3.scaleLinear()
-      .domain(utils.numericColumnExtentAbsoluteColIndex(
-        this.schema, this._sessionGroups, colorByColIndex))
+    const colorScale = d3.scaleLinear</*range=*/ string, /*output=*/ string>()
+      .domain(tf.hparams.utils.numericColumnExtent(
+        this._schema, this._sessionGroups, colorByColumnIndex))
       .range([minColor, maxColor])
       .interpolate(d3.interpolateLab);
+    return sessionGroup => colorScale(tf.hparams.utils.columnValueByIndex(
+      this._schema, sessionGroup, colorByColumnIndex));
   }
   
   private _recomputePathSelection(currentPathSel: any /* d3 selection */) {
-    return currentPathSel
-      .data(sessionGroups, /*key=*/ (sessionGroup=>sessionGroup.name))
-      .join("path");
+    currentPathSel = currentPathSel
+      .data(this._sessionGroups, /*key=*/ (sessionGroup=>sessionGroup.name));
+    currentPathSel.exit().remove();
+    return currentPathSel.enter().append("path").merge(currentPathSel);
   }
   
   /** Sets the controlPoints property of 'pathElement' to the control-points
@@ -692,28 +829,42 @@ class LinesManager {
    * a line representing the given 'sessionGroup'. The control points are
    * computed with respect to the current state of the axesManager.
    */
-  private _computeControlPoints(sessionGroup) {
+  private _computeControlPoints(sessionGroup): [number, number][] {
     return this._axesManager.mapVisibleAxes<[number, number]>(
-      (xPosition, axis) => [xPosition,
-                            axis.yScale()(
-                              utils.columnValueByAbsoluteIndex(
-                                this._schema, sessionGroup, axis.colIndex()))]);
+      (xPosition, axis) => [
+        xPosition,
+        axis.yScale()(
+          tf.hparams.utils.columnValueByIndex(
+            this._schema, sessionGroup, axis.colIndex()))
+      ]);
   }
 
-  private _pathDAttribute(sessionGroup) {
-    this._d3line(this._computeControlPoints(sessionGroup));
+  private _pathDAttribute(sessionGroup): string {
+    return this._d3line(this._computeControlPoints(sessionGroup));
   }
 
-  private _svgProps: SVGProperties;
-  private _schema: Schema;
-  private _axesManager: AxesManager;
+  private _updateVisibleFgPathsSel() {
+    this._visibleFgPathsSel = this._fgPathsSel.filter(":not(.invisible-path)");
+  }
+
+  private readonly _svgProps: SVGProperties;
+  private readonly _schema: Schema;
+  private readonly _d3line: any;  /* D3 line */
+  private readonly _axesManager: AxesManager;
   private _sessionGroups: any[];
-  private _fgPathSel: any /* D3 selection */
-  private _bgPathSel: any /* D3 selection */
+  private _fgPathsSel: any;  /* D3 selection */
+  private _bgPathsSel: any;  /* D3 selection */
+  /**
+   * Contains the subset of _fgPathsSel which is visible w.r.t the current
+   * brush filters.
+   */
+  private _visibleFgPathsSel: any /* D3 selection */
   private _peakedSessionGroupHandle: SessionGroupHandle;
-  private _selectedSessionGroup: SessionGroupHandle;
+  private _selectedSessionGroupHandle: SessionGroupHandle;
 }
 
-}  // namespace parallel_coords_plot
-}  // namespace hparams
-}  // namespace tf
+function _isInteractiveD3Event(d3Event: any) {
+  return d3.event.sourceEvent !== null;
+}
+    
+}  // namespace tf.hparams.parallel_coords_plot

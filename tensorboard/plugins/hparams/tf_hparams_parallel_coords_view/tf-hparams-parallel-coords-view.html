@@ -45,7 +45,7 @@ limitations under the License.
         <tf-hparams-scale-and-color-controls
           id="controls"
           class="section"
-          schema="[[schema]]"
+          schema="[[schema.visibleSchema]]"
           session-groups="[[sessionGroups]]"
           options="{{_options}}">
         </tf-hparams-scale-and-color-controls>
@@ -64,7 +64,7 @@ limitations under the License.
             <tf-hparams-session-group-values
               id="values"
               class="section"
-              schema="[[schema]]"
+              schema="[[schema.visibleSchema]]"
               session-group="[[_closestOrSelected(
                              _closestGroup, _selectedGroup)]]">
             </tf-hparams-session-group-values>
@@ -74,7 +74,7 @@ limitations under the License.
               backend="[[backend]]"
               experiment-name="[[experimentName]]"
               session-group="[[_selectedGroup]]"
-              schema="[[schema]]">
+              schema="[[schema.visibleSchema]]">
             </tf-hparams-session-group-details>
           </vaadin-split-layout>
         </vaadin-split-layout>

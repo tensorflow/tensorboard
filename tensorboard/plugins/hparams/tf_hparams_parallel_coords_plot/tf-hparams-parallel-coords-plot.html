@@ -122,7 +122,8 @@ limitations under the License.
     </style>
   </template>
 
-  <script src="tf-hparams-parallel-coords-plot.js">
+  <script src="tf-hparams-parallel-coords-plot.js"></script>
+  <script>
     Polymer({
       is: 'tf-hparams-parallel-coords-plot',
 
@@ -191,23 +192,34 @@ limitations under the License.
       // or schema.hparamColumns arrays.
       _schemaChanged() {
         const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
-            this.$.svg);
+            this.$.svg,
+            tf.hparams.utils.numColumns(this.schema));
         this._interactionManager =
             new tf.hparams.parallel_coords_plot.InteractionManager(
-                this, svgProps, this.schema);
+                svgProps,
+                this.schema,
+                (sessionGroup)=>this.closestSessionGroupChanged(sessionGroup),
+                (sessionGroup)=>this.selectedSessionGroupChanged(sessionGroup))
       },
 
       _optionsChanged() {
-        this._interactionManager.onOptionsOrSessionGroupsChanged(
-            this.options,
-            this._validSessionGroups);
+        // Ignore events happening before the schema was initialized.
+        if (this._interactionManager !== undefined) {
+          this._computeValidSessionGroups();
+          this._interactionManager.onOptionsOrSessionGroupsChanged(
+              this.options,
+              this._validSessionGroups);
+        }
       },
 
       _sessionGroupsChanged() {
         this._computeValidSessionGroups();
-        this._interactionManager.onOptionsOrSessionGroupsChanged(
-            this.options,
-            this._validSessionGroups);
+        // Ignore events happening before the schema was initialized.
+        if (this._interactionManager !== undefined) {
+          this._interactionManager.onOptionsOrSessionGroupsChanged(
+              this.options,
+              this._validSessionGroups);
+        }
       },
 
       closestSessionGroupChanged(sessionGroup) {
@@ -224,16 +236,23 @@ limitations under the License.
       // undefined as well. (This can happen during testing when we don't set
       // the sessionGroups property).
       _computeValidSessionGroups() {
+        const utils = tf.hparams.utils;
         if (this.sessionGroups === undefined) {
           this._validSessionGroups = undefined;
           return;
         }
         this._validSessionGroups = this.sessionGroups.filter((sg) => {
-          for (let i = 0; i < this._numCols(); ++i) {
-            if (this._colValue(sg, i) === undefined) {
-              return false;
-            }
-          }
+          for (let colIndex = 0;
+               colIndex < utils.numColumns(this.schema);
+               ++colIndex) {
+                 if (!utils.isColumnDisplayed(this.schema, colIndex)) {
+                   continue;
+                 }
+                 if (utils.columnValueByIndex(this.schema, sg, colIndex) ===
+                     undefined) {
+                   return false;
+                 }
+               }
           return true;
         });
       },

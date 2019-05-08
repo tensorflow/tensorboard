@@ -176,10 +176,10 @@ the vulcanization build step. Figure out why.
           const PLOT_MIN_HEIGHT = 0.4*PLOT_MIN_WIDTH;
           const CELL_MIN_WIDTH = 150;
           const CELL_MIN_HEIGHT = 0.75*CELL_MIN_WIDTH;
-          this.width = Math.max(CELL_MIN_WIDTH * utils.numColumns(this.schema),
+          this.width = Math.max(CELL_MIN_WIDTH * utils.numVisibleColumns(this.schema),
                                 PLOT_MIN_WIDTH);
           this.height = Math.max(
-              CELL_MIN_HEIGHT * utils.numMetrics(this.schema),
+              CELL_MIN_HEIGHT * utils.numVisibleMetrics(this.schema),
               PLOT_MIN_HEIGHT);
 
           this._container.style.width = this.width + "px";
@@ -212,10 +212,10 @@ the vulcanization build step. Figure out why.
 
         // An array containing the schema-columns (hparams followed by metrics)
         // indices. These index the columns of the scatter plot matrix.
-        const cols = d3.range(utils.numColumns(_this.schema));
+        const cols = d3.range(utils.numVisibleColumns(_this.schema));
         // An array containing the metric indices. These index the rows of the
         // scatter plot matrix.
-        const metrics = d3.range(utils.numMetrics(_this.schema));
+        const metrics = d3.range(utils.numVisibleMetrics(_this.schema));
 
         // The margin in pixels from the left to leave for the y-axis text
         // (tick values and x-axis label).
@@ -249,7 +249,7 @@ the vulcanization build step. Figure out why.
         // left corner.
         const xCoords = cols.map(c=>_this._cellScale(c, [0, cellWidth - 1]));
         const yCoords = metrics.map(m=>_this._cellScale(
-            m + utils.numHParams(_this.schema), [cellHeight - 1, 0]));
+            m + utils.numVisibleHParams(_this.schema), [cellHeight - 1, 0]));
 
         // ---------------------------------------------------------------------
         // Draw axes.
@@ -307,9 +307,9 @@ the vulcanization build step. Figure out why.
               .attr("text-anchor", "middle")
               .attr("x", cellWidth / 2)
               .attr("y", _this.height - 1 - xAxisTextMargin / 4)
-              .text(col=>utils.schemaColumnName(_this.schema, col))
+              .text(col=>utils.schemaVisibleColumnName(_this.schema, col))
             .append("title")   // Show full name as a tooltip.
-              .text(col=>utils.schemaColumnName(_this.schema, col));
+              .text(col=>utils.schemaVisibleColumnName(_this.schema, col));
 
         // Y-Axes and labels.
         const yAxesG = this._svg
@@ -355,7 +355,7 @@ the vulcanization build step. Figure out why.
                     cellHeight,
                     /* minLabelSize */ 20,
                     _this.options.columns[
-                      metric + utils.numHParams(_this.schema)].scale);
+                      metric + utils.numVisibleHParams(_this.schema)].scale);
               });
         // Append a label for each axis.
         yAxesG
@@ -853,17 +853,17 @@ the vulcanization build step. Figure out why.
       },
 
       _colValue(sessionGroup, colIndex) {
-        return tf.hparams.utils.columnValueByIndex(
+        return tf.hparams.utils.columnValueByVisibleIndex(
             this.schema, sessionGroup, colIndex);
       },
 
       _metricValue(sessionGroup, metricIndex) {
-        return tf.hparams.utils.metricValueByIndex(
+        return tf.hparams.utils.metricValueByVisibleIndex(
             this.schema, sessionGroup, metricIndex);
       },
 
       _colExtent(colIndex) {
-        return tf.hparams.utils.numericColumnExtent(
+        return tf.hparams.utils.visibleNumericColumnExtent(
             this.schema, this.sessionGroups, colIndex);
       },
     });
