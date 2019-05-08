@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import threading
 import unittest
 
@@ -157,8 +158,12 @@ def _run_conditionally(guard, name, default_reason=None):
 
   return _impl
 
-# TODO(#1996): Better detect TF2.0.
-_is_tf2 =  tf.__version__.startswith('2.')
+# Logic from `tensorflow.python.tf2`, assuming that `enable_v2_behavior`
+# has not been manually called (which we have no way to check).
+_is_tf2 = (
+    tf.__version__.startswith('2.')
+    or os.getenv('TF2_BEHAVIOR', '0') != '0'
+)
 run_v1_only = _run_conditionally(
     lambda: not _is_tf2,
     name='run_v1_only')
