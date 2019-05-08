@@ -165,11 +165,12 @@ from tensorboard.plugins.projector import visualize_embeddings
 tb.notebook.start  # don't invoke; just check existence
 "
   if [ -n "${smoke_tf}" ]; then
-    # Only test summary scalar and beholder with TF
+    # Only test summary scalar, beholder, and mesh summary
     python -c "
 import tensorboard as tb
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.beholder import Beholder, BeholderHook
+from tensorboard.plugins.mesh import summary
 "
   fi
 

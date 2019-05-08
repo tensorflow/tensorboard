@@ -29,7 +29,7 @@ py_library(
 
 py_test(
     name = "histograms_plugin_test",
-    size = "small",
+    size = "medium",
     srcs = ["histograms_plugin_test.py"],
     main = "histograms_plugin_test.py",
     srcs_version = "PY2AND3",
