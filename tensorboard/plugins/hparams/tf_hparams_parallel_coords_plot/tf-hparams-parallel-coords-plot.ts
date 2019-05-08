@@ -177,9 +177,9 @@ class Axis {
     }
     const axisParentSel = d3.select(axisParent);
     axisParentSel.selectAll("g").remove();
-    axisParentSel.append("g").classed("axis", true).call(d3Axis);
-    // Add axis title.
-    axisParentSel
+    axisParentSel.append("g").classed("axis", true)
+      .call(d3Axis)
+       // Add axis title.
       .append("text")
       .classed("axis-title", true)
       .style("cursor", "move")

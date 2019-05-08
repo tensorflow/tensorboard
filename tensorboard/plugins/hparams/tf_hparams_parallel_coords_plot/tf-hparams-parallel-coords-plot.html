@@ -182,8 +182,7 @@ limitations under the License.
       },
 
       observers: [
-        '_schemaChanged(schema.metricColumns.splices,' +
-            'schema.hparamColumns.splices)',
+        '_schemaChanged(schema)',
         '_optionsChanged(options.*)',
         '_sessionGroupsChanged(sessionGroups.*)',
       ],
@@ -198,8 +197,8 @@ limitations under the License.
             new tf.hparams.parallel_coords_plot.InteractionManager(
                 svgProps,
                 this.schema,
-                (sessionGroup)=>this.closestSessionGroupChanged(sessionGroup),
-                (sessionGroup)=>this.selectedSessionGroupChanged(sessionGroup))
+                sessionGroup => this.closestSessionGroupChanged(sessionGroup),
+                sessionGroup => this.selectedSessionGroupChanged(sessionGroup));
       },
 
       _optionsChanged() {

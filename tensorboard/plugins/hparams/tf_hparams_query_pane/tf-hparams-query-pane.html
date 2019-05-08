@@ -47,7 +47,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                 <div class="hparam">
                   <paper-checkbox
                     checked="{{hparam.displayed}}"
-                    on-change="_updateSchema"
+                    on-change="_hparamVisibilityChanged"
                     class="hparam-checkbox">
                     [[_hparamName(hparam.info)]]
                   </paper-checkbox>
@@ -115,7 +115,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                        scalars.-->
                   <paper-checkbox
                     checked="{{metric.displayed}}"
-                    on-change="_updateSchema"
+                    on-change="_metricVisibilityChanged"
                     class="metric-checkbox">
                     [[_metricName(metric.info)]]
                   </paper-checkbox>
@@ -220,9 +220,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
               </paper-input>
             </div>
           </div>
-        </div>
+        </vaadin-split-layout>
       </vaadin-split-layout>
-    </vaadin-split-layout>
+    </div>
     <style>
       .pane {
         display: flex;
@@ -357,8 +357,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
               hparamColumns: [],
               metricColumns: [],
 
-              /* DEPRECATED. New code should use only hparamColumns, and
-                 metricColumns fields. See documenation above.*/
+              // DEPRECATED. New code should use only hparamColumns, and
+              // metricColumns fields. See documenation above.
               visibleSchema: {
                 hparamInfos: [],
                 metricInfos: [],
@@ -536,7 +536,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this.set("_experiment", experiment);
           this._computeHParams();
           this._computeMetrics();
-          this._computeSchema();
+          this._setSchema(this._computeSchema());
           this._queryServer();
           this._resolveGetExperiment();
         });
@@ -613,58 +613,64 @@ TODO(erez): Add aggregation controls for repeated sessions.
       },
 
       _computeSchema() {
-        this.push("schema.hparamColumns",
-                  ...this._hparams.map(
-                      hparam => ({hparamInfo: hparam.info,
-                                  displayed: hparam.displayed})));
-        this.push("schema.metricColumns",
-                  ...this._metrics.map(
-                      metric => ({metricInfo: metric.info,
-                                  displayed: metric.displayed})));
-        this._updateVisibleSchema();
+        return {
+          hparamColumns: this._hparams.map(
+              hparam => ({hparamInfo: hparam.info,
+                          displayed: hparam.displayed})),
+          metricColumns: this._metrics.map(
+              metric => ({metricInfo: metric.info,
+                          displayed: metric.displayed})),
+          visibleSchema: this._computeVisibleSchema()
+        };
       },
 
-      _updateSchema() {
-        this._hparams.forEach((hparam,i) =>
-                              this.set(`schema.hparamColumns.${i}.displayed`,
-                                       hparam.displayed));
-        this._metrics.forEach((metric,i) =>
-                              this.set(`schema.metricColumns.${i}.displayed`,
-                                       metric.displayed));
+      _hparamVisibilityChanged(event) {
+        const hparamIndex = event.model.index;
+        // We'd like the notifications for the changed schema to be sent to
+        // consuming elements after both this.schema.hparamColumns and
+        // schema.visibleSchema are changed so that the schema is in a coherent
+        // state. Thus we first silently modify hparamColumns,
+        // then visibleSchema--which will also send the notification for the
+        // visibileSchema change--and then call notifyPath to send the
+        // notification for the hparamColumns change.
+        this.schema.hparamColumns[hparamIndex].displayed =
+            this._hparams[hparamIndex].displayed;
         this._updateVisibleSchema();
+        this.notifyPath(`schema.hparamColumns.${hparamIndex}.displayed`);
+      },
+
+      _metricVisibilityChanged(event) {
+        const metricIndex = event.model.index;
+        // We'd like the notifications for the changed schema to be sent to
+        // consuming elements after both this.schema.metricColumns and
+        // schema.visibleSchema are changed so that the schema is in a coherent
+        // state. Thus we first silently modify metricColumns,
+        // then visibleSchema--which will also send the notification for the
+        // visibileSchema change--and then call notifyPath to send the
+        // notification for the metricColumns change.
+        this.schema.metricColumns[metricIndex].displayed =
+            this._metrics[metricIndex].displayed;
+        this._updateVisibleSchema();
+        this.notifyPath(`schema.metricColumns.${metricIndex}.displayed`);
       },
 
       _updateVisibleSchema() {
+        this.set("schema.visibleSchema", this._computeVisibleSchema());
+      },
+
+      _computeVisibleSchema() {
         const newHParamInfos =
-              this.schema.hparamColumns
-                .filter(hparamCol => hparamCol.displayed)
-                .map(hparamCol => hparamCol.hparamInfo);
+              this._hparams
+                .filter(hparam => hparam.displayed)
+                .map(hparam => hparam.info);
         const newMetricInfos =
-            this.schema.metricColumns
-              .filter(metricCol => metricCol.displayed)
-              .map(metricCol => metricCol.metricInfo);
-        // We have to use Polymer's 'path'-based array mutations so that
-        // other elements (like a dom-repeat template) that depend on
-        // schema.metricInfos and schema.hparamInfos would be notified of the
-        // change and update correctly.
-//        this.set("schema.visibleSchema", {});
-        this.set("schema.visibleSchema",
-                 {
-                   hparamInfos: newHParamInfos,
-                   metricInfos: newMetricInfos,
-                 });
-/*
-        this.splice(
-            "schema.visibleSchema.hparamInfos",
-            0,
-            this.schema.visibleSchema.hparamInfos.length,
-            ...newHParamInfos);
-        this.splice(
-            "schema.visibleSchema.metricInfos",
-            0,
-            this.schema.visibleSchema.metricInfos.length,
-            ...newMetricInfos);
-*/
+              this._metrics
+                  .filter(metric => metric.displayed)
+                  .map(metric => metric.info);
+        return {
+          hparamInfos: newHParamInfos,
+          metricInfos: newMetricInfos,
+        };
       },
 
       // Sends a query to the server for the list of session groups.
