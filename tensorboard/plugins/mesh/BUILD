@@ -110,8 +110,7 @@ py_test(
 
 py_binary(
     name = "mesh_demo",
-    srcs = ["mesh_demo.py"],
-    python_version = "PY2",
+    srcs = ["mesh_demo.py"],    
     srcs_version = "PY2AND3",
     deps = [
         ":summary",                
