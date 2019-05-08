@@ -13,29 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Demo application for Mesh Plugin."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import os
 
+from absl import app
+from absl import flags
 import numpy as np
 import tensorflow as tf
 import trimesh
 
 from tensorboard.plugins.mesh import summary as mesh_summary
 
-tf.flags.DEFINE_string('logdir', '/tmp/mesh_demo',
+flags.DEFINE_string('logdir', '/tmp/mesh_demo',
                        'Directory to write event logs to.')
-tf.flags.DEFINE_string('sample_meshes', '',
+flags.DEFINE_string('sample_meshes', '',
                        'Path to folder with PLY files or string of comma '
                        'separated PLY files to visualize.')
-tf.flags.DEFINE_integer('batch_size', 1,
+flags.DEFINE_integer('batch_size', 1,
                         'Size of the batch. All provided PLY files will be '
                         'divided into batch_size groups and used at different '
                         'steps during training.')
-FLAGS = tf.flags.FLAGS
+FLAGS = flags.FLAGS
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -112,4 +113,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  tf.app.run()
+  app.run(main)
