@@ -158,7 +158,8 @@ WIT_HTML = """
     }};
     // BroadcastChannel to allow examples to be updated by a call from an
     // output cell that isn't the cell hosting the WIT widget.
-    const updateExampleListener = new BroadcastChannel('updateExamples');
+    const channelName = 'updateExamples' + id;
+    const updateExampleListener = new BroadcastChannel(channelName);
     updateExampleListener.onmessage = msg => {{
       window.updateExamplesCallback(msg.data);
     }};
@@ -185,6 +186,7 @@ class WitWidget(base.WitWidgetBase):
       height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
     self._ctor_complete = False
+    self.id = WitWidget.index
     base.WitWidgetBase.__init__(self, config_builder)
     # Add this instance to the static instance list.
     WitWidget.widgets.append(self)
@@ -192,7 +194,7 @@ class WitWidget(base.WitWidgetBase):
     # Display WIT Polymer element.
     display.display(display.HTML(self._get_element_html()))
     display.display(display.HTML(
-      WIT_HTML.format(height=height, id=WitWidget.index)))
+      WIT_HTML.format(height=height, id=self.id)))
 
     # Increment the static instance WitWidget index counter
     WitWidget.index += 1
@@ -217,8 +219,10 @@ class WitWidget(base.WitWidgetBase):
     if self._ctor_complete:
       # Use BroadcastChannel to allow this call to be made in a separate colab
       # cell from the cell that displays WIT.
-      output.eval_js("""(new BroadcastChannel('updateExamples')).postMessage(
-        {examples})""".format(examples=json.dumps(self.examples)))
+      channel_name = 'updateExamples{}'.format(self.id)
+      output.eval_js("""(new BroadcastChannel('{channel_name}')).postMessage(
+        {examples})""".format(
+          examples=json.dumps(self.examples), channel_name=channel_name))
       self._generate_sprite()
 
   def infer(self):
