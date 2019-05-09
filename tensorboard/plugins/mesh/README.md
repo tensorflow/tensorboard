@@ -36,8 +36,8 @@ point_colors = tf.constant([[[128, 104, 227], ...]], shape=[1, 1064, 3])
 summary = mesh_summary.op('point_cloud', vertices=point_cloud, colors=point_colors)
 ```
 
-**NOTE:** `colors` tensor is optional in this case but can be useful to show
-different semantics of the points.
+**NOTE:** The `colors` tensor is optional in this case but can be useful to 
+show different semantics of the points.
 
 A mesh can be represented by a point cloud together with a set of faces,
 where each face is represented by a list of indices of vertices in
@@ -53,7 +53,7 @@ faces = tf.constant([[[13, 78, 54], ...]], shape=[1, 752, 3])
 summary = mesh_summary.op('mesh', vertices=mesh, colors=colors, faces=faces)
 ```
 
-Again, only the `colors` tensor is optional for mesh summaries.
+The `colors` tensor is optional for mesh summaries.
 
 ## Scene configuration
 
@@ -94,8 +94,8 @@ a static attribute) and is fixed at summary-creation time.
 
 ## How to install
 
-Currently the plugin is part of TensorBoard nightly build, therefore you have 
-to install it before using the plugin.
+The mesh plugin isn’t yet part of stable TensorBoard, so you’ll need to 
+install the latest TensorBoard nightly build to use it.
 
 ### Colab
 
@@ -103,7 +103,7 @@ to install it before using the plugin.
 !pip install -q -U tb-nightly
 ```
 
-Then load Tensorboard extension and run it, similar to how you would do it in the Terminal:
+Then load TensorBoard extension and run it, similar to how you would do it in the Terminal:
 
 ```
 %load_ext tensorboard
