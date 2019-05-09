@@ -125,13 +125,3 @@ def tensorboard_python_workspace():
         sha256 = "77bc67484c3d7ce58de24b68b9f4ba26f9f7c459361a257e970350105cae4838",
         build_file = str(Label("//third_party:tf_serving.BUILD")),
     )
-
-    http_archive(
-        name = "org_python_trimesh",
-        urls = [
-            "https://files.pythonhosted.org/packages/7d/78/96bd48754bf541ae1c91a38416441e302fce243d46af1191cc2fef520c6c/trimesh-2.38.13.tar.gz",
-        ],
-        sha256 = "8bd608093969d7c1d23aac581278b2597e0ab2b351915ff93f74122b25a6c012",
-        strip_prefix = "trimesh-2.38.13",
-        build_file = str(Label("//third_party:trimesh.BUILD")),
-    )
