@@ -167,7 +167,7 @@ class ServingBundle(object):
   """Light-weight class for holding info to make the inference request.
 
   Attributes:
-    inference_address: A local address or blade address to send inference
+    inference_address: An address (such as "hostname:port") to send inference
       requests to.
     model_name: The Servo model name.
     model_type: One of ['classification', 'regression'].
