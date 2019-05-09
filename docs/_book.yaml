@@ -39,7 +39,7 @@ upper_tabs:
         path: /tensorboard/r2/hyperparameter_tuning_with_hparams
       - title: "What-If Tool"
         path: /tensorboard/r2/what_if_tool
-      - title: "Profiling Tool"
+      - title: "Profiling tool"
         path: /tensorboard/r2/tensorboard_profiling_keras
       - title: "TensorBoard in notebooks"
         path: /tensorboard/r2/tensorboard_in_notebooks
