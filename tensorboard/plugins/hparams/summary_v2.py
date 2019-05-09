@@ -236,11 +236,8 @@ def _summary_pb(tag, hparams_plugin_data):
     A TensorBoard `summary_pb2.Summary` message.
   """
   summary = summary_pb2.Summary()
-  tf_metadata = metadata.create_summary_metadata(hparams_plugin_data)
-  tb_metadata = summary_pb2.SummaryMetadata.FromString(
-      tf_metadata.SerializeToString()
-  )
-  summary.value.add(tag=tag, metadata=tb_metadata)
+  summary_metadata = metadata.create_summary_metadata(hparams_plugin_data)
+  summary.value.add(tag=tag, metadata=summary_metadata)
   return summary
 
 

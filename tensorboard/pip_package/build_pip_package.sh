@@ -163,6 +163,8 @@ import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
 from tensorboard.plugins.projector import visualize_embeddings
 tb.notebook.start  # don't invoke; just check existence
+from tensorboard.plugins.hparams import summary_v2 as hp
+hp.hparams_pb({'optimizer': 'adam', 'learning_rate': 0.02})
 "
   if [ -n "${smoke_tf}" ]; then
     # Only test summary scalar, beholder, and mesh summary

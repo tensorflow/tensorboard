@@ -21,10 +21,10 @@ import abc
 import collections
 import os
 import time
+import unittest
 
 from google.protobuf import text_format
 import six
-import tensorflow as tf
 
 try:
   # python version >= 3.3
@@ -33,6 +33,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import test
+from tensorboard.compat import tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
@@ -40,7 +41,15 @@ from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import summary_v2 as hp
 
 
-tf.compat.v1.enable_eager_execution()
+if tf.__version__ == "stub":
+  tf = None
+
+
+if tf is not None:
+  tf.compat.v1.enable_eager_execution()
+
+
+requires_tf = unittest.skipIf(tf is None, "Requires TensorFlow.")
 
 
 class HParamsTest(test.TestCase):
@@ -106,12 +115,14 @@ class HParamsTest(test.TestCase):
     """Test that the hparams summary was written to `logdir`."""
     self._check_summary(_get_unique_summary(self, logdir))
 
+  @requires_tf
   def test_eager(self):
     with tf.compat.v2.summary.create_file_writer(self.logdir).as_default():
       result = hp.hparams(self.hparams, start_time_secs=self.start_time_secs)
       self.assertTrue(result)
     self._check_logdir(self.logdir)
 
+  @requires_tf
   def test_graph_mode(self):
     with \
         tf.compat.v1.Graph().as_default(), \
@@ -123,6 +134,7 @@ class HParamsTest(test.TestCase):
       sess.run(w.flush())
     self._check_logdir(self.logdir)
 
+  @requires_tf
   def test_eager_no_default_writer(self):
     result = hp.hparams(self.hparams, start_time_secs=self.start_time_secs)
     self.assertFalse(result)  # no default writer
@@ -134,7 +146,8 @@ class HParamsTest(test.TestCase):
   def test_pb_is_tensorboard_copy_of_proto(self):
     result = hp.hparams_pb(self.hparams, start_time_secs=self.start_time_secs)
     self.assertIsInstance(result, summary_pb2.Summary)
-    self.assertNotIsInstance(result, tf.compat.v1.Summary)
+    if tf is not None:
+      self.assertNotIsInstance(result, tf.compat.v1.Summary)
 
   def test_consistency_across_string_key_and_object_key(self):
     hparams_1 = {
@@ -324,6 +337,7 @@ class HParamsConfigTest(test.TestCase):
     """Test that the experiment summary was written to `logdir`."""
     self._check_summary(_get_unique_summary(self, logdir))
 
+  @requires_tf
   def test_eager(self):
     with tf.compat.v2.summary.create_file_writer(self.logdir).as_default():
       result = hp.hparams_config(
@@ -334,6 +348,7 @@ class HParamsConfigTest(test.TestCase):
       self.assertTrue(result)
     self._check_logdir(self.logdir)
 
+  @requires_tf
   def test_graph_mode(self):
     with \
         tf.compat.v1.Graph().as_default(), \
@@ -348,6 +363,7 @@ class HParamsConfigTest(test.TestCase):
       self.assertTrue(sess.run(summ))
     self._check_logdir(self.logdir)
 
+  @requires_tf
   def test_eager_no_default_writer(self):
     result = hp.hparams_config(
         hparams=self.hparams,
@@ -371,7 +387,8 @@ class HParamsConfigTest(test.TestCase):
         time_created_secs=self.time_created_secs,
     )
     self.assertIsInstance(result, summary_pb2.Summary)
-    self.assertNotIsInstance(result, tf.compat.v1.Summary)
+    if tf is not None:
+      self.assertNotIsInstance(result, tf.compat.v1.Summary)
 
 
 def _get_unique_summary(self, logdir):
@@ -489,4 +506,7 @@ class DiscreteTest(test.TestCase):
 
 
 if __name__ == "__main__":
-  tf.test.main()
+  if tf is not None:
+    tf.test.main()
+  else:
+    test.main()
