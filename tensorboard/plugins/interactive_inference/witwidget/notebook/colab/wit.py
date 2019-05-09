@@ -156,7 +156,7 @@ WIT_HTML = """
         window.spriteCallback(wit.localAtlasUrl);
       }}
     }};
-    // BroadcastChannel to allow examples to be updated by a call from an
+    // BroadcastChannel allows examples to be updated by a call from an
     // output cell that isn't the cell hosting the WIT widget.
     const channelName = 'updateExamples' + id;
     const updateExampleListener = new BroadcastChannel(channelName);
