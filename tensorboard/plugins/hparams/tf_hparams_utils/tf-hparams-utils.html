@@ -115,7 +115,7 @@ var tf;
 
       // Returns the number of columns in schema having 'displayed' true.
       function numDisplayedColumns(schema) {
-        return numDisplatedHParams(schema) + numDisplayedMetric(schema);
+        return numDisplayedHParams(schema) + numDisplayedMetrics(schema);
       }
       utils.numDisplayedColumns = numDisplayedColumns;
 
@@ -323,16 +323,6 @@ var tf;
         return metricValue === undefined ? undefined : metricValue.value;
       }
       utils.metricValueByVisibleIndex = metricValueByVisibleIndex;
-
-      // DEPRECATED. Use hparamValueByIndex with a schema hparamIndex instead.
-      // Returns sessionGroup's hparam value of the visible hparam with index
-      // 'hparamIndex' in visibleSchema.hparamInfos.
-      function hparamValueByVisibleIndex(
-          visibleSchema, sessionGroup, hparamIndex) {
-        return sessionGroup.hparams[
-          visibleSchema.hparamInfos[hparamIndex].name];
-      }
-      utils.hparamValueByVisibleIndex = hparamValueByVisibleIndex;
 
       // DEPRECATED. Use columnValueByIndex with a schema columnIndex instead.
       // Returns sessionGroup's column value of the visible column with index

@@ -180,13 +180,33 @@ var tf;
       // and height and scale-type. This function may permute the given
       // 'domainValues' array.
       function createAxisScale(domainValues, axisHeight, scaleType) {
+        console.assert(domainValues.length > 0);
+        function computeNumericExtent() {
+          const [min, max] = d3.extent(domainValues);
+          if (min === max) {
+            // We shift the min and max of the extent here since
+            // d3.scaleLinear() and d3.scaleLog() both expect the domain
+            // to be an interval with more than one point. Since in this case
+            // all session groups would pass through a single point in the axis,
+            // the amount we shift by doesn't matter much. Since for
+            // log scales we don't allow the domain to contain 0, we need to
+            // be careful not to make the domain contain 0 if it hadn't before.
+            if (min > 0) {
+              return [min*0.5, min*1.5];
+            }
+            if (min < 0) {
+              return [min*1.5, min*0.5];
+            }
+            return [-1, 1];
+          }
+        }
         if (scaleType === "LINEAR") {
           return d3.scaleLinear()
-              .domain(d3.extent(domainValues))
+              .domain(computeNumericExtent())
               .range([axisHeight, 0]);
         }
         else if (scaleType === "LOG") {
-          const extent = d3.extent(domainValues);
+          const extent = computeNumericExtent();
           if (extent[0] <= 0 && extent[1] >= 0) {
             // We can't have a log scale for data whose extent contains 0.
             // Use a linear scale instead.

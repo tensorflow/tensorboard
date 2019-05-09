@@ -190,15 +190,18 @@ limitations under the License.
       // Called when entries are added or deleted from the schema.metricColumns
       // or schema.hparamColumns arrays.
       _schemaChanged() {
-        const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
-            this.$.svg,
-            tf.hparams.utils.numColumns(this.schema));
-        this._interactionManager =
-            new tf.hparams.parallel_coords_plot.InteractionManager(
-                svgProps,
-                this.schema,
-                sessionGroup => this.closestSessionGroupChanged(sessionGroup),
-                sessionGroup => this.selectedSessionGroupChanged(sessionGroup));
+        if (this.schema.loaded === true) {
+          const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
+              this.$.svg,
+              tf.hparams.utils.numColumns(this.schema));
+          this._interactionManager =
+              new tf.hparams.parallel_coords_plot.InteractionManager(
+                  svgProps,
+                  this.schema,
+                  sessionGroup => this.closestSessionGroupChanged(sessionGroup),
+                  sessionGroup =>
+                    this.selectedSessionGroupChanged(sessionGroup));
+        }
       },
 
       _optionsChanged() {
@@ -208,6 +211,11 @@ limitations under the License.
           this._interactionManager.onOptionsOrSessionGroupsChanged(
               this.options,
               this._validSessionGroups);
+          const gElement = d3.select(this.$.svg).selectAll("g").node();
+          this.$.svg.removeChild(gElement);
+          this.$.svg.forceRedraw();
+          this.$.svg.appendChild(gElement);
+          this.redrawCount++;
         }
       },
 
@@ -218,6 +226,11 @@ limitations under the License.
           this._interactionManager.onOptionsOrSessionGroupsChanged(
               this.options,
               this._validSessionGroups);
+          const gElement = d3.select(this.$.svg).selectAll("g").node();
+          this.$.svg.removeChild(gElement);
+          this.$.svg.forceRedraw();
+          this.$.svg.appendChild(gElement);
+          this.redrawCount++;
         }
       },
 

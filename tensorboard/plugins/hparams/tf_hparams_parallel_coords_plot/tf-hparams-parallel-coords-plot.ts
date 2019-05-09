@@ -155,8 +155,12 @@ class Axis {
     // This can't always be done (e.g. if we switched from a linear to a
     // quantile scale, or if the domain values changed significantly) but in
     // the cases when it is possible, it will be more convenient to the user.
-    // Currently, we just remove the brush selection.
-    this.setBrushSelection(null);
+    // Currently, we keep the same brush selection and recalculate the filter.
+    // Note that this function will be called every time data is reloaded
+    // (e.g. every 30 seconds by default in Tensorboard), so we have to make
+    // sure not to change the selection if the data hasn't changed, as that
+    // would be very annoying to the end user.
+    this._brushFilter = this._buildBrushFilter(this._brushSelection);
   }
 
   public brushFilter(): AxisBrushFilter {
@@ -563,6 +567,10 @@ export class InteractionManager {
   public onOptionsOrSessionGroupsChanged(newOptions: Options,
                                          newSessionGroups: any[]) {
     this._axesManager.updateAxes(newOptions, newSessionGroups);
+    const oldPeakedSessionGroupHandle =
+      this._linesManager.peakedSessionGroupHandle();
+    const oldSelectedSessionGroupHandle =
+      this._linesManager.selectedSessionGroupHandle();  
     this._linesManager.redraw(
       newSessionGroups,
       newOptions.colorByColumnIndex !== undefined
@@ -571,6 +579,19 @@ export class InteractionManager {
         : null,
       newOptions.minColor,
       newOptions.maxColor);
+    // A redraw may change the selected / peaked session group. So call the
+    // apropriate callbacks if needed.
+    if (!oldPeakedSessionGroupHandle.equalsTo(
+      this._linesManager.peakedSessionGroupHandle())) {
+      this._peakedSessionGroupChangedCB(
+        this._linesManager.peakedSessionGroupHandle().sessionGroup());
+    }
+    if (!oldSelectedSessionGroupHandle.equalsTo(
+      this._linesManager.selectedSessionGroupHandle())) {
+      this._selectedSessionGroupChangedCB(
+        this._linesManager.selectedSessionGroupHandle().sessionGroup());
+    }
+    
     // Polymer adds an extra ".tf-hparams-parallel-coords-plot" class to
     // each rule selector in the <style> section in the element definition. When
     // polymer stamps a template it adds this class to every element
@@ -631,6 +652,21 @@ class SessionGroupHandle {
    */
   public selection(): any {
     return this._sessionGroupSel;
+  }
+
+  /**
+   * Compares this handle to 'otherHandle' and returns true if both are null
+   * or both are not null and they reference equal session groups. 
+   * Session group equality is determined by their names.
+   */
+  public equalsTo(otherHandle: SessionGroupHandle): boolean {
+    if (this.isNull()) {
+      return otherHandle.isNull();
+    }
+    if (otherHandle.isNull()) {
+      return false;
+    }
+    return otherHandle.sessionGroup().name == this.sessionGroup().name;
   }
 
   private _sessionGroupSel: any /* D3 selection */
