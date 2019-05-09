@@ -31,7 +31,7 @@ else:
 class WitConfigBuilder(object):
   """Configuration builder for WitWidget settings."""
 
-  def __init__(self, examples):
+  def __init__(self, examples, feature_names=None):
     """Constructs the WitConfigBuilder object.
 
     Args:
@@ -42,11 +42,15 @@ class WitConfigBuilder(object):
       infer these examples with is specified through the methods on this class,
       then WIT will display the examples for exploration, but no model inference
       will be performed by the tool.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used for display purposes.
     """
     self.config = {}
     self.set_model_type('classification')
     self.set_label_vocab([])
-    self.set_examples(examples)
+    self.set_examples(examples, feature_names)
 
   def build(self):
     """Returns the configuration set through use of this builder object.
@@ -62,15 +66,21 @@ class WitConfigBuilder(object):
     if key in self.config:
       del self.config[key]
 
-  def set_examples(self, examples):
+  def set_examples(self, examples, feature_names=None):
     """Sets the examples to be displayed in WIT.
 
     Args:
-      examples: List of example protos.
+      examples: List of example protos or JSON objects.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used just for display purposes.
 
     Returns:
       self, in order to enabled method chaining.
     """
+    if feature_names:
+      self.store('feature_names', feature_names)
     if len(examples) > 0 and not (
       isinstance(examples[0], tf.train.Example) or
       isinstance(examples[0], tf.train.SequenceExample)):
@@ -469,25 +479,21 @@ class WitConfigBuilder(object):
             feat = feature_names[i]
           else:
             feat = str(i)
-          if isinstance(json_ex[i], (int, long)):
-            ex.features.feature[feat].int64_list.value.append(value)
-          elif isinstance(json_ex[i], Number):
-            ex.features.feature[feat].float_list.value.append(value)
-          else:
-            ex.features.feature[feat].bytes_list.value.append(
-              value.encode('utf-8'))
+          self._add_single_feature(feat, value, ex)
         tf_examples.append(ex)
       else:
         for feat in json_ex:
-          if isinstance(json_ex[feat], (int, long)):
-            ex.features.feature[feat].int64_list.value.append(json_ex[feat])
-          elif isinstance(json_ex[feat], Number):
-            ex.features.feature[feat].float_list.value.append(json_ex[feat])
-          else:
-            ex.features.feature[feat].bytes_list.value.append(
-              json_ex[feat].encode('utf-8'))
+          self._add_single_feature(feat, json_ex[feat], ex)
         tf_examples.append(ex)
     return tf_examples
+
+  def _add_single_feature(self, feat, value, ex):
+    if isinstance(value, (int, long)):
+      ex.features.feature[feat].int64_list.value.append(value)
+    elif isinstance(value, Number):
+      ex.features.feature[feat].float_list.value.append(value)
+    else:
+      ex.features.feature[feat].bytes_list.value.append(value.encode('utf-8'))
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
@@ -546,13 +552,13 @@ class WitConfigBuilder(object):
     """
     self.set_compare_inference_address(project)
     self.set_compare_model_name(model)
-    self.store('use_aip_2', True)
+    self.store('compare_use_aip', True)
     if version is not None:
       self.set_compare_model_signature(version)
     if force_json_input:
-      self.store('force_json_input_2', True)
+      self.store('compare_force_json_input', True)
     if adjust_prediction:
-      self.store('adjust_prediction_2', adjust_prediction)
+      self.store('compare_adjust_prediction', adjust_prediction)
     return self
 
   def set_target_feature(self, target):
@@ -580,43 +586,3 @@ class WitConfigBuilder(object):
   def _set_uses_json_list(self, is_list):
     self.store('uses_json_list', is_list)
     return self
-
-  def set_feature_names(self, feature_names):
-    """Sets the feature names of the provided list-based examples.
-
-    If examples are provided in JSON as lists, then this method can provide
-    a string feature name for each value in the example lists for readability.
-
-    Args:
-      feature_names: A list of strings where each index is the feature name of
-      the value at that index in each example's value list, for display
-      purposes.
-
-    Returns:
-      self, in order to enabled method chaining.
-    """
-    self.store('feature_names', feature_names)
-    # If examples have already been stored, update them to now use these
-    # provided feature names.
-    if self.config.get('examples'):
-      self.set_examples(self._add_feature_names_to_examples())
-    return self
-
-  def _add_feature_names_to_examples(self):
-    """Returns a new list of examples with updated feature names."""
-    adjusted_examples = []
-    feature_names = self.config.get('feature_names')
-    for ex in self.config.get('examples'):
-      adjusted_ex = tf.train.Example()
-      for feat in ex.features.feature:
-        feat_idx = int(feat)
-        adjusted_feat = feat
-        # Find the feature name for the current value index if one exists.
-        if len(feature_names) > feat_idx:
-          adjusted_feat = feature_names[feat_idx]
-        # Copy the feature value to a new tf.Example with the updated feature
-        # name.
-        adjusted_ex.features.feature[adjusted_feat].CopyFrom(
-          ex.features.feature[feat])
-      adjusted_examples.append(adjusted_ex)
-    return adjusted_examples

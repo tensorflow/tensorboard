@@ -56,20 +56,20 @@ class WitWidgetBase(object):
     self.compare_custom_predict_fn = (
       config.get('compare_custom_predict_fn')
       if 'compare_custom_predict_fn' in config else None)
-    self.adjust_fn = (
+    self.adjust_prediction_fn = (
       config.get('adjust_prediction')
       if 'adjust_prediction' in config else None)
-    self.compare_adjust_fn = (
-      config.get('adjust_prediction_2')
-      if 'adjust_prediction_2' in config else None)
+    self.compare_adjust_prediction_fn = (
+      config.get('compare_adjust_prediction')
+      if 'compare_adjust_prediction' in config else None)
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
     if 'adjust_prediction' in copied_config:
       del copied_config['adjust_prediction']
-    if 'adjust_prediction' in copied_config:
-      del copied_config['adjust_prediction_2']
+    if 'compare_adjust_prediction' in copied_config:
+      del copied_config['compare_adjust_prediction']
 
     self._set_examples(config['examples'])
     del copied_config['examples']
@@ -80,7 +80,7 @@ class WitWidgetBase(object):
     # functions.
     if self.config.get('use_aip'):
       self.custom_predict_fn = self._predict_aip_model
-    if self.config.get('use_aip_2'):
+    if self.config.get('compare_use_aip'):
       self.compare_custom_predict_fn = self._predict_aip_compare_model
 
   def _get_element_html(self):
@@ -259,13 +259,14 @@ class WitWidgetBase(object):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
-      self.config.get('force_json_input'), self.adjust_fn)
+      self.config.get('force_json_input'), self.adjust_prediction_fn)
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address_2'),
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
-      self.config.get('force_json_input_2'), self.compare_adjust_fn)
+      self.config.get('compare_force_json_input'),
+      self.compare_adjust_prediction_fn)
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
                         adjust_prediction):
