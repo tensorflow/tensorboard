@@ -180,25 +180,32 @@ var tf;
       // and height and scale-type. This function may permute the given
       // 'domainValues' array.
       function createAxisScale(domainValues, axisHeight, scaleType) {
-        console.assert(domainValues.length > 0);
         function computeNumericExtent() {
-          const [min, max] = d3.extent(domainValues);
-          if (min === max) {
-            // We shift the min and max of the extent here since
-            // d3.scaleLinear() and d3.scaleLog() both expect the domain
-            // to be an interval with more than one point. Since in this case
-            // all session groups would pass through a single point in the axis,
-            // the amount we shift by doesn't matter much. Since for
-            // log scales we don't allow the domain to contain 0, we need to
-            // be careful not to make the domain contain 0 if it hadn't before.
-            if (min > 0) {
-              return [min*0.5, min*1.5];
-            }
-            if (min < 0) {
-              return [min*1.5, min*0.5];
-            }
-            return [-1, 1];
+          if (domainValues.length === 0) {
+            // If there are no values, there won't be any session groups.
+            // We choose an arbitrary numeric domain that doesn't contain 0
+            // (to allow a log scale).
+            return [1, 2];
           }
+          const [min, max] = d3.extent(domainValues);
+          if (min !== max) {
+            return [min, max];
+          }
+          // We shift the min and max of the extent here since
+          // d3.scaleLinear() and d3.scaleLog() both expect the domain
+          // to be an interval with more than one point. Since in this case
+          // all session groups would pass through a single point in the axis,
+          // the axis resolution doesn't matter much so the amount we shift by
+          // doesn't matter much as well. Since for log scales we don't allow
+          // the domain to contain 0, we need to be careful not to make the
+          // domain contain 0 if it hadn't before.
+          if (min > 0) {
+            return [min*0.5, min*1.5];
+          }
+          if (min < 0) {
+            return [min*1.5, min*0.5];
+          }
+          return [-1, 1];
         }
         if (scaleType === "LINEAR") {
           return d3.scaleLinear()
@@ -235,6 +242,11 @@ var tf;
           // different procedure:
           const scaleRange = d3.range(kNumQuantiles).map(
               i => axisHeight - i * axisHeight / (kNumQuantiles - 1));
+          if (domainValues.length === 0) {
+            // No session groups in this case. We use a dummy value since
+            // d3.scaleQuantile() requires a non-empty domain.
+            domainValues = [1];
+          }
           return d3.scaleQuantile()
               .domain(_.uniq(domainValues))
               .range(scaleRange);

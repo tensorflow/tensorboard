@@ -211,10 +211,6 @@ limitations under the License.
           this._interactionManager.onOptionsOrSessionGroupsChanged(
               this.options,
               this._validSessionGroups);
-          const gElement = d3.select(this.$.svg).selectAll("g").node();
-          this.$.svg.removeChild(gElement);
-          this.$.svg.forceRedraw();
-          this.$.svg.appendChild(gElement);
           this.redrawCount++;
         }
       },
@@ -226,10 +222,6 @@ limitations under the License.
           this._interactionManager.onOptionsOrSessionGroupsChanged(
               this.options,
               this._validSessionGroups);
-          const gElement = d3.select(this.$.svg).selectAll("g").node();
-          this.$.svg.removeChild(gElement);
-          this.$.svg.forceRedraw();
-          this.$.svg.appendChild(gElement);
           this.redrawCount++;
         }
       },
