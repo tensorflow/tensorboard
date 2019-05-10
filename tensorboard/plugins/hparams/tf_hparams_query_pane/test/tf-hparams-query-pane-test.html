@@ -181,7 +181,8 @@ limitations under the License.
               visibleSchema: {
                 hparamInfos: experimentResponse.hparamInfos,
                 metricInfos: experimentResponse.metricInfos,
-              }
+              },
+              loaded: true,
             });
             assert.deepEqual(element._experiment, experimentResponse);
             element._metrics[0].displayed = false;
@@ -204,7 +205,8 @@ limitations under the License.
               visibleSchema: {
                 hparamInfos: [experimentResponse.hparamInfos[0]],
                 metricInfos: [],
-              }
+              },
+              loaded:true,
             });
           });
         });
