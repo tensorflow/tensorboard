@@ -61,8 +61,8 @@ that takes TensorFlow Example or SequenceExample protos
 (data points) as inputs directly in a jupyter or colab notebook.
 
 Additionally, the What-If Tool can analyze
-[CMLE-hosted](https://cloud.google.com/ml-engine/) classification or
-regresssion models that take TensorFlow Example protos, SequenceExample protos,
+[AI Platform Prediction-hosted](https://cloud.google.com/ml-engine/) classification
+or regresssion models that take TensorFlow Example protos, SequenceExample protos,
 or raw JSON objects as inputs.
 
 You can also use What-If Tool with a custom prediction function that takes
@@ -272,8 +272,8 @@ The model to be used for inference by the tool can be specified in many ways:
   object that is provided through the `set_estimator_and_feature_spec` method.
   In this case the inference will be done inside the notebook using the
   provided estimator.
-- As a model hosted by [CMLE](https://cloud.google.com/ml-engine/) through the
-  `set_cmle_model` method.
+- As a model hosted by [AI Platform Prediction](https://cloud.google.com/ml-engine/)
+  through the`set_ai_platform_model` method.
 - As a custom prediction function provided through `set_custom_predict_fn` method.
   In this case WIT will directly call the function for inference.
 - As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
