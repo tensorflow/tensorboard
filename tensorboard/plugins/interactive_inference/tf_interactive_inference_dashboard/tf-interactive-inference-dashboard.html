@@ -72,6 +72,7 @@ limitations under the License.
     </style>
     <style>
       :host {
+        font-family: 'Roboto', 'Noto', sans-serif;
         --paper-tab-ink: var(--tb-orange-dark);
         --wit-color-gray300: #DADCE0;
       }
@@ -2932,6 +2933,15 @@ limitations under the License.
           overallThresholds.push({threshold: 0.5})
         }
         this.set('overallThresholds', overallThresholds);
+
+        // If inference can be performed automatically at this point, due to
+        // examples already being set, and now the model being set, then
+        // cause inference to run.
+        if (!this.shouldDisableInferButton_(
+            this.examplesAndInferences, this.modelName, this.inferenceAddress,
+            this.updatedExample)) {
+          this.inferClicked_();
+        }
       },
 
       isComputedKeyStr_: function(feature) {
