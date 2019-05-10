@@ -1,10 +1,21 @@
-namespace tf.hparams.parallel_coords_plot {
+/*
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
-/* TODO(erez): Replace with a proper TS wrapper class for Schema. */
-type Schema = any;
-/* TODO(erez): Replace with a proper TS wrapper class for Options. */
-type Options = any;
-/* TODO(erez): Replace with a proper TS wrapper class for SVGProperties. */
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+namespace tf.hparams.parallel_coords_plot {
 
 export class SVGProperties {
   constructor(svg: HTMLElement, numColumns: number) {
@@ -104,7 +115,7 @@ class SetBrushFilter implements AxisBrushFilter {
 
 class Axis {
   public constructor(svgProps: SVGProperties,
-                     schema: Schema,
+                     schema: any,
                      interactionManager: InteractionManager,
                      colIndex: number) {
     this._svgProps = svgProps;
@@ -296,7 +307,7 @@ class Axis {
   }
 
   private readonly _svgProps: SVGProperties;
-  private readonly _schema: Schema;
+  private readonly _schema: any;
   private readonly _interactionManager: InteractionManager;
   private readonly _colIndex: number;
   private _isDisplayed: boolean;
@@ -308,7 +319,7 @@ class Axis {
 
 class AxesManager {
   public constructor(
-    svgProps: SVGProperties, schema: Schema,
+    svgProps: SVGProperties, schema: any,
     interactionManager: InteractionManager) {
     this._svgProps = svgProps;
     this._schema = schema;
@@ -321,7 +332,7 @@ class AxesManager {
     this._parentsSel = this._svgProps.svgG.selectAll(".axis-parent");
   }
   
-  public updateAxes(options: Options, sessionGroups: any[]) {
+  public updateAxes(options: any, sessionGroups: any[]) {
     console.assert(!this.isAxisDragging());
 
     // Traverse options.columns, and update each corresponding axis.
@@ -462,7 +473,7 @@ class AxesManager {
   }
 
   private _svgProps: SVGProperties;
-  private _schema: Schema;
+  private _schema: any;
   private _axes: Axis[];
   private _stationaryAxesPositions: any /* D3 point scale */;
   private _draggedAxis: Axis | null;
@@ -490,7 +501,7 @@ enum LineType {
 type SessionGroupCallback = (SessionGroup: any) => void;
 export class InteractionManager {
   public constructor(svgProps: SVGProperties,
-                     schema: Schema,
+                     schema: any,
                      peakedSessionGroupChangedCallback: SessionGroupCallback,
                      selectedSessionChangedCallback: SessionGroupCallback) {
     this._svgProps = svgProps;
@@ -564,7 +575,7 @@ export class InteractionManager {
       this._linesManager.selectedSessionGroupHandle().sessionGroup());
   }
 
-  public onOptionsOrSessionGroupsChanged(newOptions: Options,
+  public onOptionsOrSessionGroupsChanged(newOptions: any,
                                          newSessionGroups: any[]) {
     this._axesManager.updateAxes(newOptions, newSessionGroups);
     const oldPeakedSessionGroupHandle =
@@ -603,7 +614,7 @@ export class InteractionManager {
   }
 
   private _svgProps: SVGProperties;
-  private _schema: Schema;
+  private _schema: any;
   private _peakedSessionGroupChangedCB: SessionGroupCallback;
   private _selectedSessionGroupChangedCB: SessionGroupCallback;
   private _axesManager: AxesManager;
@@ -678,7 +689,7 @@ class SessionGroupHandle {
  */
 class LinesManager {
   public constructor(svgProps: SVGProperties,
-                     schema: Schema,
+                     schema: any,
                      axesManager: AxesManager) {
     this._svgProps = svgProps;
     this._schema = schema;
@@ -884,7 +895,7 @@ class LinesManager {
   }
 
   private readonly _svgProps: SVGProperties;
-  private readonly _schema: Schema;
+  private readonly _schema: any;
   private readonly _d3line: any;  /* D3 line */
   private readonly _axesManager: AxesManager;
   private _sessionGroups: any[];
