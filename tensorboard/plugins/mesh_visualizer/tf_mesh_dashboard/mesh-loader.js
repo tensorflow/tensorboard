@@ -108,8 +108,8 @@ Polymer({
   },
 
   observers: [
-    'reload(run, tag, active, _dataProvider)',
-    '_updateScene(_currentStep)',
+    'reload(run, tag, active, _dataProvider, _meshViewer)',
+    '_updateScene(_currentStep, _meshViewer)',
     '_updateView(selectedView)'
   ],
 
@@ -127,12 +127,12 @@ Polymer({
     // sometimes)
     this._dataProvider = new vz_mesh.ArrayBufferDataProvider(
         this.requestManager);
-    this._meshViewer = new vz_mesh.MeshViewer(this._runColor);
-    this._meshViewer.addEventListener(
+    const meshViewer = new vz_mesh.MeshViewer(this._runColor);
+    meshViewer.addEventListener(
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
-    this._meshViewer.addEventListener(
+    meshViewer.addEventListener(
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
-    this.reload();
+    this._meshViewer = meshViewer;
   },
 
   /**
@@ -150,19 +150,19 @@ Polymer({
       this.set('_isMeshLoading', false);
       if (!this._meshViewerAttached) {
         // Mesh viewer should be added to the dom once.
-        this.appendChild(this._meshViewer.getRenderer().domElement);
+        this.root.appendChild(this._meshViewer.getRenderer().domElement);
         this._meshViewerAttached = true;
       }
-    });
+    })
   },
 
   /**
    * Updates the scene.
-   * @param {!Object} currentStep Step datum.
    * @private
    */
-  _updateScene: function(currentStep) {
-    this._meshViewer.updateScene(currentStep, this);
+  _updateScene: function() {
+    if (!this._meshViewer || this._currentStep == null) return;
+    this._meshViewer.updateScene(this._currentStep, this);
     if (!this._cameraPositionInitialized) {
       this._meshViewer.resetView();
       this._cameraPositionInitialized = true;
