@@ -71,7 +71,7 @@ class WitWidgetBase(object):
     if 'compare_adjust_prediction' in copied_config:
       del copied_config['compare_adjust_prediction']
 
-    self._set_examples(config['examples'])
+    self.set_examples(config['examples'])
     del copied_config['examples']
 
     self.config = copied_config
@@ -87,7 +87,13 @@ class WitWidgetBase(object):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
-  def _set_examples(self, examples):
+  def set_examples(self, examples):
+    """Sets the examples shown in WIT.
+
+    The examples are initially set by the examples specified in the config
+    builder during construction. This method can change which examples WIT
+    displays.
+    """
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 

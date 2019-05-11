@@ -55,7 +55,6 @@ WIT_HTML = """
   <tf-interactive-inference-dashboard id="wit" local>
   </tf-interactive-inference-dashboard>
   <script>
-    const examples = {examples};
     const id = {id};
     const wit = document.querySelector("#wit");
     wit.parentElement.style.height = '{height}px';
@@ -147,7 +146,7 @@ WIT_HTML = """
       }}
       wit.updateNumberOfModels();
     }};
-    window.updateExamplesCallback = () => {{
+    window.updateExamplesCallback = examples => {{
       if (!wit.updateExampleContents) {{
         requestAnimationFrame(() => window.updateExamplesCallback(examples));
         return;
@@ -156,6 +155,13 @@ WIT_HTML = """
       if (wit.localAtlasUrl) {{
         window.spriteCallback(wit.localAtlasUrl);
       }}
+    }};
+    // BroadcastChannel allows examples to be updated by a call from an
+    // output cell that isn't the cell hosting the WIT widget.
+    const channelName = 'updateExamples' + id;
+    const updateExampleListener = new BroadcastChannel(channelName);
+    updateExampleListener.onmessage = msg => {{
+      window.updateExamplesCallback(msg.data);
     }};
   </script>
   """
@@ -179,6 +185,8 @@ class WitWidget(base.WitWidgetBase):
       config_builder: WitConfigBuilder object containing settings for WIT.
       height: Optional height in pixels for WIT to occupy. Defaults to 1000.
     """
+    self._ctor_complete = False
+    self.id = WitWidget.index
     base.WitWidgetBase.__init__(self, config_builder)
     # Add this instance to the static instance list.
     WitWidget.widgets.append(self)
@@ -186,8 +194,7 @@ class WitWidget(base.WitWidgetBase):
     # Display WIT Polymer element.
     display.display(display.HTML(self._get_element_html()))
     display.display(display.HTML(
-      WIT_HTML.format(
-        examples=json.dumps(self.examples), height=height, id=WitWidget.index)))
+      WIT_HTML.format(height=height, id=self.id)))
 
     # Increment the static instance WitWidget index counter
     WitWidget.index += 1
@@ -195,12 +202,28 @@ class WitWidget(base.WitWidgetBase):
     # Send the provided config and examples to JS
     output.eval_js("""configCallback('{config}')""".format(
       config=json.dumps(self.config)))
-    output.eval_js('updateExamplesCallback()')
+    output.eval_js("""updateExamplesCallback({examples})""".format(
+      examples=json.dumps(self.examples)))
     self._generate_sprite()
+    self._ctor_complete = True
 
   def _get_element_html(self):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
+
+  def set_examples(self, examples):
+    base.WitWidgetBase.set_examples(self, examples)
+    # If this is called outside of the ctor, use a BroadcastChannel to send
+    # the updated examples to the visualization. Inside of the ctor, no action
+    # is necessary as the ctor handles all communication.
+    if self._ctor_complete:
+      # Use BroadcastChannel to allow this call to be made in a separate colab
+      # cell from the cell that displays WIT.
+      channel_name = 'updateExamples{}'.format(self.id)
+      output.eval_js("""(new BroadcastChannel('{channel_name}')).postMessage(
+        {examples})""".format(
+          examples=json.dumps(self.examples), channel_name=channel_name))
+      self._generate_sprite()
 
   def infer(self):
     inferences = base.WitWidgetBase.infer_impl(self)
