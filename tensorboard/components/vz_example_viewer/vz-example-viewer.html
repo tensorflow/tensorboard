@@ -77,11 +77,15 @@ limitations under the License.
         display: block;
         padding: 8px;
         width: fit-content;
-        border: 1px solid #DADCE0;
       }
 
       .hide-saliency-controls {
         display: none;
+      }
+
+      .saliency-legend-label {
+        font-size: 12px;
+        color: #3C4043;
       }
 
       .outer {
@@ -678,19 +682,19 @@ limitations under the License.
                     class$="[[getAddValueButtonClass(readonly)]]">
       </paper-icon-button>
       <div class$="[[getSaliencyControlsHolderClass(saliency)]]">
-        <div class="saliency-legend-label">Saliency legend</div>
+        <div class="saliency-legend-label">Attribution legend</div>
         <div class="flex-controls">
           <svg id="saliencyLegend"></svg>
-          <paper-checkbox id="salCheckbox" checked on-change="showSalCheckboxChange">
-            Show saliency
-          </paper-checkbox>
+          <!--paper-checkbox id="salCheckbox" checked on-change="showSalCheckboxChange">
+            Show attributions
+          </paper-checkbox-->
         </div>
-        <div class="flex-controls">
-          <div class="slider-label">Saliency cutoff %</div>
+        <!--div class="flex-controls">
+          <div class="slider-label">Attribution cutoff %</div>
           <paper-slider class="slider" editable=true immediate-value="{{saliencyCutoff}}"
                         value="[[saliencyCutoff]]">
           </paper-slider>
-        </div>
+        </div-->
       </div>
     </div>
     <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"

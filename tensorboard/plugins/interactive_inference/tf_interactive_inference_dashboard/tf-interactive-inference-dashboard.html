@@ -4065,8 +4065,8 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^(' + featureForAttributionPrefix + ')?' + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 attrib[featToTest] = selectedData[key];
@@ -4085,8 +4085,8 @@ limitations under the License.
           // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^(' + featureForAttributionPrefix + ')?' + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 const attribKeys = selectedData[key];
@@ -4272,7 +4272,10 @@ limitations under the License.
         this.updatedExample = false;
       },
 
-      newAttributions: function(attributions) {
+      newAttributions_: function(attributions) {
+        if (Object.keys(attributions).length == 0) {
+          return;
+        }
         for (let i = 0; i < attributions.indices.length; i++) {
           const idx = attributions.indices[i];
           const datapoint = this.visdata[idx];
@@ -4280,7 +4283,7 @@ limitations under the License.
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
             const attribKey = attributionPrefix + keys[j];
-            datapoint[attribKey] = this.attribs;
+            datapoint[attribKey] = attribs[keys[j]];
           }
         }
         this.setAttributions();

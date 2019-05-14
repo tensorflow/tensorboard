@@ -85,9 +85,9 @@ const CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
 const clipSaliencyRatio = .95;
 
 // Colors for the saliency color scale.
-const posSaliencyColor = '#0f0';
-const negSaliencyColor = '#f00';
-const neutralSaliencyColor = '#e8eaed';
+const posSaliencyColor = '#007B83';
+const negSaliencyColor = '#FF847C';
+const neutralSaliencyColor = '#fff';
 
 
 const COLOR_INTERPOLATOR = d3.interpolateRgb;
@@ -294,15 +294,14 @@ Polymer({
       searchValue: string, saliency: SaliencyMap) {
     let filtered = featureList;
     const checkSal = saliency && Object.keys(saliency).length > 0;
-    // Create a dict of feature names to the total absolute saliency of all
-    // its feature values, to sort features with the most salienct features at
-    // the top.
+    // Create a dict of feature names to the total saliency of all
+    // its feature values, to sort salient features at the top.
     const saliencyTotals = checkSal ?
          Object.assign({}, ...Object.keys(saliency).map(
            name => ({[name]: typeof saliency[name] == 'number' ?
-                      Math.abs(saliency[name] as number) :
+                      saliency[name] as number :
                       (saliency[name] as Array<number>).reduce((total, cur) =>
-                          Math.abs(total) + Math.abs(cur) , 0)}))) :
+                          total + cur , 0)}))) :
                     {};
 
     if (searchValue != '') {
@@ -378,13 +377,14 @@ Polymer({
   },
 
   _haveSaliencyImpl: function() {
+    // Reset all backgrounds to the neutral color.
+    this.selectAll('.value-pill').style('background', neutralSaliencyColor);
+
     if (!this.filteredFeaturesList || !this.saliency ||
         Object.keys(this.saliency).length === 0 || !this.colors) {
       return;
     }
 
-    // Reset all backgrounds to the neutral color.
-    this.selectAll('.value-pill').style('background', neutralSaliencyColor);
     // Color the text of each input element of each feature according to the
     // provided saliency information.
     for (const feat of this.filteredFeaturesList) {
@@ -397,7 +397,7 @@ Polymer({
           (d: {}, i: number) => this.getColorForSaliency(val[i]) :
           () => this.getColorForSaliency(val);
       this.selectAll(
-            `input.${this.sanitizeFeature(feat.name)}.value-pill`)
+            `iron-autogrow-textarea.${this.sanitizeFeature(feat.name)}.value-pill`)
           .style('background',
               this.showSaliency ? colorFn : () => neutralSaliencyColor);
 
