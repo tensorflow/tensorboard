@@ -2186,6 +2186,12 @@ limitations under the License.
           observer: 'newInferences_',
           value: () => ({})
         },
+        // Attributions from inference.
+        attributions: {
+          type: Object,
+          observer: 'newAttributions_',
+          value: () => ({})
+        },
         // Examples and their inferences merged into a single list.
         // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
         examplesAndInferences : {
@@ -4059,7 +4065,7 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '^(' + featureForAttributionPrefix + ')?' + featureWithAttribution[1] +
               '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
@@ -4079,7 +4085,7 @@ limitations under the License.
           // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
+              '^(' + featureForAttributionPrefix + ')?' + featureWithAttribution[1] +
               '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
@@ -4264,6 +4270,21 @@ limitations under the License.
           }
         }
         this.updatedExample = false;
+      },
+
+      newAttributions: function(attributions) {
+        for (let i = 0; i < attributions.indices.length; i++) {
+          const idx = attributions.indices[i];
+          const datapoint = this.visdata[idx];
+          const attribs = attributions.attributions[i];
+          const keys = Object.keys(attribs);
+          for (let j = 0; j < keys.length; j++) {
+            const attribKey = attributionPrefix + keys[j];
+            datapoint[attribKey] = this.attribs;
+          }
+        }
+        this.setAttributions();
+        this.refreshDive_();
       },
 
       /**
