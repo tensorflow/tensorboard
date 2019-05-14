@@ -836,7 +836,6 @@ Polymer({
       this.getBoundingClientRect().right -
       inputControl.getBoundingClientRect().right + 30) + 'px';
     this.showDeleteValueButton = true;
-
   },
 
 

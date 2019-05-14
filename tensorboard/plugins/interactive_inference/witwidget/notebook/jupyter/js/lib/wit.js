@@ -19,6 +19,7 @@ var widgets = require('@jupyter-widgets/base');
 // python backend.
 var WITView = widgets.DOMWidgetView.extend({
   render: function() {
+    this.setupComplete = false;
     // Load up the WIT polymer element.
     this.loadAndCreateWhatIfToolElement();
 
@@ -36,35 +37,48 @@ var WITView = widgets.DOMWidgetView.extend({
    * Loads up the WIT element.
    */
   loadAndCreateWhatIfToolElement: function() {
+    const height = parseInt(
+      this.model.attributes.layout.attributes.height, 10) - 20;
+    const iframe = document.createElement('iframe');
     const templateLocation =
-        window.__webpack_public_path__ + 'wit_jupyter.html';
+      window.__webpack_public_path__ + 'wit_jupyter.html';
+    const src = `<link rel="import" href="${templateLocation}">
+    <tf-interactive-inference-dashboard local id="wit"></tf-interactive-inference-dashboard>
+    <script>
+      const wit = document.getElementById('wit');
+      wit.style.height = "${height}px";
+      wit.style.display = "block";
+    </script>
+    `;
+    iframe.frameBorder = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.srcdoc = src;
+    this.el.appendChild(iframe);
+    this.iframe = iframe;
 
-    // If the vulcanized template is not loaded yet, load it now.
-    if (!document.querySelector('link[href="' + templateLocation + '"]')) {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'import');
-      link.setAttribute('href', templateLocation);
+    // Invoke change listeners for initial settings.
+    this.configChanged();
+    this.examplesChanged();
+    this.spriteChanged();
+  },
 
-      // Create the polymer element upon loading the template.
-      link.onload = () => this.createWhatIfToolElement();
-
-      document.head.appendChild(link);
-    } else {
-      // If the template is already loaded then create the element.
-      this.createWhatIfToolElement();
-    }
+  /**
+   * Returns whether or not WIT is ready for calls to be made on it.
+   */
+  isViewReady: function() {
+    // Checks if the iframe has been created, WIT has been created in the iframe
+    // and WIT has completed setup and its methods are created.
+    return this.iframe.contentDocument &&
+      this.iframe.contentDocument.getElementById('wit') &&
+      this.iframe.contentDocument.getElementById('wit').updateExampleContents;
   },
 
   /**
    * Creates and configure the WIT polymer element.
    */
-  createWhatIfToolElement: function() {
-    // Create and attach WIT element to DOM.
-    this.view_ = document.createElement(
-      'tf-interactive-inference-dashboard');
-    this.view_.local = true;
-    this.el.appendChild(this.view_);
-
+  setupView: function() {
+    this.view_ = this.iframe.contentDocument.getElementById('wit');
     // Add listeners for changes from WIT Polymer element. Passes changes
     // along to python.
     this.view_.addEventListener('infer-examples', e => {
@@ -98,35 +112,67 @@ var WITView = widgets.DOMWidgetView.extend({
       this.mutantFeature = e.detail.feature_name;
       this.touch();
     });
-
-    // Invoke change listeners for initial settings.
-    this.configChanged();
-    this.examplesChanged();
-    this.spriteChanged();
+    this.setupComplete = true;
   },
 
   // Callback functions for when changes made on python side.
   examplesChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.examplesChanged());
+      return;
+    }
+
     const examples = this.model.get('examples');
     if (examples && examples.length > 0) {
       this.view_.updateExampleContents(examples, false);
     }
   },
   inferencesChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.inferencesChanged());
+      return;
+    }
     const inferences = this.model.get('inferences');
     this.view_.labelVocab = inferences['label_vocab'];
     this.view_.inferences = inferences['inferences'];
   },
   eligibleFeaturesChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.eligibleFeaturesChanged());
+      return;
+    }
     const features = this.model.get('eligible_features');
     this.view_.partialDepPlotEligibleFeatures = features;
   },
   mutantChartsChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.mutantChartsChanged());
+      return;
+    }
     const chartInfo = this.model.get('mutant_charts');
     this.view_.makeChartForFeature(chartInfo.chartType, this.mutantFeature,
         chartInfo.data);
   },
   configChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.configChanged());
+      return;
+    }
     const config = this.model.get('config');
     if (config == null) {
       return;
@@ -160,6 +206,13 @@ var WITView = widgets.DOMWidgetView.extend({
     this.view_.updateNumberOfModels();
   },
   spriteChanged: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.spriteChanged());
+      return;
+    }
     const spriteUrl = this.model.get('sprite');
     this.view_.hasSprite = true;
     this.view_.localAtlasUrl = spriteUrl;

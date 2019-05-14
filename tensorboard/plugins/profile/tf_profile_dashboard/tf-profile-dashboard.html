@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -34,6 +35,7 @@ limitations under the License.
 <link rel="import" href="../pod-viewer/pod-viewer-dashboard.html">
 <link rel="import" href="../google-chart/google-chart-demo.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
 
 <!--
@@ -60,7 +62,10 @@ profile run can have multiple tools that present the performance profile as diff
     </p>
   </div>
 </template>
-<paper-toast id="toast" text="" always-on-top></paper-toast>
+<paper-toast id="toast" duration="0" text="" always-on-top>
+  <paper-button onclick="toast.toggle()" class="yellow-button">Close now!</paper-button>
+</paper-toast>
+<tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
 <paper-dialog id="captureProfileDialog" modal>
   <paper-input label="Profiler Service URL or TPU name"
                always-float-label
@@ -93,43 +98,24 @@ profile run can have multiple tools that present the performance profile as diff
 <template is="dom-if" if="[[_isState(_topLevelState, 'DATA_NOT_FOUND')]]">
   <div style="max-width: 540px; margin: 80px auto 0 auto;">
     <h3>No profile data was found.</h3>
-    <p>To collect a profile, you need to run your model on Google Cloud TPUs and
-    capture the trace information while your model is running. You may want to
-    check out the
-    <a
-      href="https://github.com/tensorflow/tensorboard/blob/1.6/tensorboard/plugins/profile/README.md"
-      rel="noopener"
-      target="_blank"
-    >README</a>
-    and perhaps the
-    <a
-      href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
-      rel="noopener"
-      target="_blank"
-    >tutorial</a> on how to use the
-    <a
-      href="https://pypi.python.org/pypi/cloud-tpu-profiler"
-      rel="noopener"
-      target="_blank"
-    >cloud-tpu-profiler</a>.
-    </p>
-    <p>
-    If you’re new to TPUs, and want to find out how
-    to run models, check out the
-    <a
-      href="https://cloud.google.com/tpu/docs/quickstart"
-      rel="noopener"
-      target="_blank"
-    >Quickstart Using a TPU</a>.
-    </p>
-    <p>
-    If you think profiling is done properly, please see the page of
-    <a
-      href="https://cloud.google.com/tpu/docs/troubleshooting"
-      rel="noopener"
-      target="_blank"
-    >Google Cloud TPU Troubleshooting and FAQ</a>
-    and consider filing an issue on GitHub.</p>
+
+    <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
+    <paper-spinner class="capture-spinner" active="[[_capturingProfile]]"></paper-spinner>
+
+    <p>If you have a model running on CPU, GPU, or Google Cloud TPU, you may be
+        able to use the above button to capture a profile.
+    <p>If you’re a CPU or GPU user, please use the IP address option. You may want to check out the
+        <a href="https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/docs/r2/tensorboard_profiling_keras.ipynb" rel="noopener" target="_blank">tutorial</a> on how to
+        start a TensorFlow profiler server and profile a Keras model on a GPU.
+    <p>If you're a TPU user, please use the TPU name option and you may want to check out the
+        <a href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+            rel="noopener" target="_blank">tutorial</a>
+        on how to interpreting the profiling results.
+    <p>If you think profiling is done properly, please see the page of
+        <a href="https://cloud.google.com/tpu/docs/troubleshooting"
+            rel="noopener"
+            target="_blank">Google Cloud TPU Troubleshooting and FAQ</a>
+        and consider filing an issue on GitHub.</p>
   </div>
 </template>
 <template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
@@ -137,8 +123,8 @@ profile run can have multiple tools that present the performance profile as diff
   <div class="sidebar">
     <div class="allcontrols">
       <div class="sidebar-section">
-        <paper-button raised
-                      on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
+        <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
+	<paper-spinner class="capture-spinner" active="[[_capturingProfile]]"></paper-spinner>
       </div>
       <div class="sidebar-section">
         <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
@@ -278,6 +264,14 @@ profile run can have multiple tools that present the performance profile as diff
     width: 100%;
     will-change: transform;
   }
+  .yellow-button {
+    color: #eeff41;
+    text-transform: none;
+  }
+  .capture-spinner {
+    padding-left: 5px;
+    vertical-align: middle;
+  }
 </style>
 
 </template>
@@ -313,6 +307,10 @@ profile run can have multiple tools that present the performance profile as diff
     "ACTIVE": "ACTIVE",
   };
 
+  (function() {
+
+  const PLUGIN_NAME = 'profile';
+
   Polymer({
     is: "tf-profile-dashboard",
     properties: {
@@ -321,6 +319,7 @@ profile run can have multiple tools that present the performance profile as diff
         value: () => new tf_backend.RequestManager(),
       },
       _isAttached: Boolean,
+      _isAvailable: Boolean,
       // Whether this dashboard is initialized. This dashboard should only be
       // initialized once.
       _initialized: Boolean,
@@ -441,18 +440,37 @@ profile run can have multiple tools that present the performance profile as diff
       _activePodDetails: {
         type: Array,
       },
+      _capturingProfile: {
+	type: Boolean,
+	value: false,
+      },
     },
     reload: function() {
     },
     ready: function() {
     },
     observers: [
-      '_maybeInitializeDashboard(_isAttached)',
+      '_maybeInitializeDashboard(_isAttached, _isAvailable)',
       '_maybeUpdateData(_selectedHostName)',
       '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
     ],
     attached: function() {
       this.set('_isAttached', true);
+      // Check if the plugin was created
+      this._requestManager
+          .request(tf_backend.getRouter().pluginsListing())
+          .then(plugins => {
+            if (!(PLUGIN_NAME in plugins)) {
+              // The plugin was not created and so either didn't have
+              // TensorFlow or had an old version
+              this.$.initialDialog.openOldTensorFlowDialog('1.14');
+              this.set('_isAvailable', false);
+            } else {
+              // The plugin was created
+              this.$.initialDialog.closeDialog();
+              this.set('_isAvailable', true);
+            }
+          });
     },
     detached: function() {
       this.set('_isAttached', false);
@@ -464,6 +482,7 @@ profile run can have multiple tools that present the performance profile as diff
       return !profilerServiceAddress || profileDuration <= 0;
     },
     _captureProfile: function() {
+      this._capturingProfile = true;
       const captureProfileUrl = tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
           {
@@ -472,8 +491,17 @@ profile run can have multiple tools that present the performance profile as diff
             duration: this._profileDuration,
           });
       this._requestManager.request(captureProfileUrl).then((json) => {
-        this._showToast(json.result);
+	this._capturingProfile = false;
+        if (json.error != null) {
+	  // Profiling API specific error.
+	  this._showToast(
+	      'Failed to capture profile: ' + json.error);
+	  return;
+        }
+        this._showToast(json.result);	
       }).catch((error) => {
+	this._capturingProfile = false;
+	// Network error.
         this._showToast("Failed to capture profile: " + error);
       });
     },
@@ -481,8 +509,8 @@ profile run can have multiple tools that present the performance profile as diff
       this.$.toast.text = text;
       this.$.toast.open();
     },
-    _maybeInitializeDashboard: function(isAttached) {
-      if (this._initialized || !isAttached) {
+    _maybeInitializeDashboard: function(isAttached, isAvailable) {
+      if (this._initialized || !isAttached || !isAvailable) {
         // Either this dashboard is already initialized ... or we are not yet
         // ready to initialize.
         return;
@@ -705,10 +733,11 @@ profile run can have multiple tools that present the performance profile as diff
   });
 
   tf_tensorboard.registerDashboard({
-    plugin: 'profile',
+    plugin: PLUGIN_NAME,
     elementName: 'tf-profile-dashboard',
     isReloadDisabled: true,
   });
 
+  })();
 </script>
 </dom-module>

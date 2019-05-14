@@ -83,6 +83,13 @@ class TestCase(unittest.TestCase):
       fail_msg = '%r does not start with %r' % (actual, expected_start)
       fail_msg += ' : %r' % (msg) if msg else ''
       self.fail(fail_msg)
+  
+  def assertEndsWith(self, actual, expected_end, msg=None):
+    """Test that string actual ends with string expected_end."""
+    if not actual.endswith(expected_end):
+      fail_msg = '%r does not end with %r' % (actual, expected_end)
+      fail_msg += ' : %r' % (msg) if msg else ''
+      self.fail(fail_msg)
 
   def get_temp_dir(self):
     """Returns a unique temporary directory for the test to use.

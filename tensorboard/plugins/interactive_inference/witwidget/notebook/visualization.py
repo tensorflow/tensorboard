@@ -15,6 +15,7 @@
 """Visualization API."""
 import sys
 import tensorflow as tf
+from numbers import Number
 
 
 def _is_colab():
@@ -30,20 +31,26 @@ else:
 class WitConfigBuilder(object):
   """Configuration builder for WitWidget settings."""
 
-  def __init__(self, examples):
+  def __init__(self, examples, feature_names=None):
     """Constructs the WitConfigBuilder object.
 
     Args:
-      examples: A list of tf.Example or tf.SequenceExample proto objects.
-      These are the examples that will be displayed in WIT. If not model to
+      examples: A list of tf.Example or tf.SequenceExample proto objects, or
+      raw JSON objects. JSON is allowed only for AI Platform-hosted models (see
+      'set_ai_platform_model' and 'set_compare_ai_platform_model methods).
+      These are the examples that will be displayed in WIT. If no model to
       infer these examples with is specified through the methods on this class,
       then WIT will display the examples for exploration, but no model inference
       will be performed by the tool.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used for display purposes.
     """
     self.config = {}
-    self.set_examples(examples)
     self.set_model_type('classification')
     self.set_label_vocab([])
+    self.set_examples(examples, feature_names)
 
   def build(self):
     """Returns the configuration set through use of this builder object.
@@ -59,19 +66,32 @@ class WitConfigBuilder(object):
     if key in self.config:
       del self.config[key]
 
-  def set_examples(self, examples):
+  def set_examples(self, examples, feature_names=None):
     """Sets the examples to be displayed in WIT.
 
     Args:
-      examples: List of example protos.
+      examples: List of example protos or JSON objects.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used just for display purposes.
 
     Returns:
       self, in order to enabled method chaining.
     """
-    self.store('examples', examples)
-    if len(examples) > 0:
-      self.store('are_sequence_examples',
-                 isinstance(examples[0], tf.train.SequenceExample))
+    if feature_names:
+      self.store('feature_names', feature_names)
+    if len(examples) > 0 and not (
+      isinstance(examples[0], tf.train.Example) or
+      isinstance(examples[0], tf.train.SequenceExample)):
+      # For examples provided as JSON, convert them to tf.Examples internally.
+      converted_examples = self._convert_json_to_tf_examples(examples)
+      self.store('examples', converted_examples)
+    else:
+      self.store('examples', examples)
+      if len(examples) > 0:
+        self.store('are_sequence_examples',
+                  isinstance(examples[0], tf.train.SequenceExample))
     return self
 
   def set_model_type(self, model):
@@ -440,4 +460,129 @@ class WitConfigBuilder(object):
     # If no model name has been set, give a default
     if not self.has_compare_model_name():
       self.set_compare_model_name('2')
+    return self
+
+  def _convert_json_to_tf_examples(self, examples):
+    self._set_uses_json_input(True)
+    tf_examples = []
+    for json_ex in examples:
+      ex = tf.train.Example()
+      # JSON examples can be lists of values (for xgboost models for instance),
+      # or dicts of key/value pairs.
+      if isinstance(json_ex, list):
+        self._set_uses_json_list(True)
+        feature_names = self.config.get('feature_names')
+        for (i, value) in enumerate(json_ex):
+          # If feature names have been provided, use those feature names instead
+          # of list indices for feature name when storing as tf.Example.
+          if feature_names and len(feature_names) > i:
+            feat = feature_names[i]
+          else:
+            feat = str(i)
+          self._add_single_feature(feat, value, ex)
+        tf_examples.append(ex)
+      else:
+        for feat in json_ex:
+          self._add_single_feature(feat, json_ex[feat], ex)
+        tf_examples.append(ex)
+    return tf_examples
+
+  def _add_single_feature(self, feat, value, ex):
+    if isinstance(value, (int, long)):
+      ex.features.feature[feat].int64_list.value.append(value)
+    elif isinstance(value, Number):
+      ex.features.feature[feat].float_list.value.append(value)
+    else:
+      ex.features.feature[feat].bytes_list.value.append(value.encode('utf-8'))
+
+  def set_ai_platform_model(
+    self, project, model, version=None, force_json_input=None,
+    adjust_prediction=None):
+    """Sets the model information for a model served by AI Platform.
+
+    AI Platform Prediction a Google Cloud serving platform.
+
+    Args:
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+      adjust_prediction: Optional. If not None then this function takes the
+      prediction output from the model for a single example and converts it to
+      the appopriate format - a regression score or a list of class scores. Only
+      necessary if the model doesn't already abide by this format.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_inference_address(project)
+    self.set_model_name(model)
+    self.store('use_aip', True)
+    if version is not None:
+      self.set_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input', True)
+    if adjust_prediction:
+      self.store('adjust_prediction', adjust_prediction)
+    return self
+
+  def set_compare_ai_platform_model(
+    self, project, model, version=None, force_json_input=None,
+    adjust_prediction=None):
+    """Sets the model information for a second model served by AI Platform.
+
+    AI Platform Prediction a Google Cloud serving platform.
+
+    Args:
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+      adjust_prediction: Optional. If not None then this function takes the
+      prediction output from the model for a single example and converts it to
+      the appopriate format - a regression score or a list of class scores. Only
+      necessary if the model doesn't already abide by this format.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_compare_inference_address(project)
+    self.set_compare_model_name(model)
+    self.store('compare_use_aip', True)
+    if version is not None:
+      self.set_compare_model_signature(version)
+    if force_json_input:
+      self.store('compare_force_json_input', True)
+    if adjust_prediction:
+      self.store('compare_adjust_prediction', adjust_prediction)
+    return self
+
+  def set_target_feature(self, target):
+    """Sets the name of the target feature in the provided examples.
+
+    If the provided examples contain a feature that represents the target
+    that the model is trying to predict, it can be specified by this method.
+    This is necessary for AI Platform models so that the target feature isn't
+    sent to the model for prediction, which can cause model inference errors.
+
+    Args:
+      target: The name of the feature in the examples that represents the value
+      that the model is trying to predict.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.store('target_feature', target)
+    return self
+
+  def _set_uses_json_input(self, is_json):
+    self.store('uses_json_input', is_json)
+    return self
+
+  def _set_uses_json_list(self, is_list):
+    self.store('uses_json_list', is_list)
     return self
