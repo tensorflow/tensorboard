@@ -198,4 +198,5 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     experiment = request.args.get('experiment')
     output_format = request.args.get('format')
     (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+
     return http_util.Respond(request, body, mime_type)

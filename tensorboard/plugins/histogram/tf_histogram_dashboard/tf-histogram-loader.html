@@ -54,6 +54,28 @@ limitations under the License.
         icon="fullscreen"
         on-tap="_toggleExpanded"
       ></paper-icon-button>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links" style="display: flex; flex-direction: row;">
+          <paper-dropdown-menu
+            no-label-float="true"
+            label="run to download"
+            selected-item-label="{{_runToDownload}}"
+          >
+            <paper-menu class="dropdown-content" slot="dropdown-content">
+              <template is="dom-repeat" items="[[dataToLoad]]">
+                <paper-item no-label-float=true>[[item.run]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <a
+            download="run_[[_runToDownload]]-tag-[[tag]].csv"
+            href="[[_csvUrl(tag, _runToDownload)]]"
+          >CSV</a> <a
+          download="run_[[_runToDownload]]-tag-[[tag]].json"
+          href="[[_jsonUrl(tag, _runToDownload)]]"
+        >JSON</a>
+        </div>
+      </template>
     </div>
     <style>
       :host {
@@ -91,6 +113,36 @@ limitations under the License.
         margin-bottom: 10px;
         width: 90%;
       }
+
+      .download-links {
+        display: flex;
+        height: 32px;
+      }
+
+      .download-links a {
+        align-self: center;
+        font-size: 10px;
+        margin: 2px;
+      }
+
+      .download-links paper-dropdown-menu {
+        width: 100px;
+        --paper-input-container-label: {
+          font-size: 10px;
+        };
+        --paper-input-container-input: {
+          font-size: 10px;
+        }
+      }
+
+      paper-menu-button {
+        padding: 0;
+      }
+      paper-item a {
+        color: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+      }
     </style>
   </template>
   <script>
@@ -114,8 +166,11 @@ limitations under the License.
           value: () => ({tag, run}) => {
             const router = tf_backend.getRouter();
             return tf_backend.addParams(
-                router.pluginRoute('histograms', '/histograms'),
-                {tag, run});
+              router.pluginRoute('histograms', '/histograms'),
+              {
+                tag,
+                run,
+              });
           },
         },
         loadDataCallback: {
@@ -128,6 +183,7 @@ limitations under the License.
             };
           },
         },
+
         /** @type {{description: string, displayName: string}} */
         tagMetadata: Object,
         timeProperty: String,
@@ -154,6 +210,16 @@ limitations under the License.
       ],
 
       behaviors: [tf_dashboard_common.DataLoaderBehavior],
+
+
+      _csvUrl(tag, run) {
+        return tf_backend.addParams(
+          this.getDataLoadUrl({tag, run}),
+          {format: 'csv'});
+      },
+      _jsonUrl(tag, run) {
+        return this.getDataLoadUrl({tag, run});
+      },
 
       _computeDataToLoad(run, tag) {
         return [{run, tag}];
