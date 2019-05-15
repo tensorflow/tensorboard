@@ -19,6 +19,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/hparams/tf_hparams_query_pane:schema_d_ts",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values",
         "//tensorboard/plugins/hparams/tf_hparams_utils",
     ],

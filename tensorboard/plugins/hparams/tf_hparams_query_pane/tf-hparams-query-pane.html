@@ -322,52 +322,57 @@ TODO(erez): Add aggregation controls for repeated sessions.
 
         // Defines the type and id of each metric and hparam in the
         // session groups.
-        //
-        // Fields:
-        // -------
-        //
-        // hparamColumn[]: Array of objects of the form:
-        // {
-        //   hparamInfo: HParamInfo Protocol buffer associated with the hparam.
-        //   displayed: Whether the hparam is currently displayed (checkbox next
-        //       to it is checked).
-        // }
-        // metricColumn[]: Array of objects of the form:
-        // {
-        //   metricInfo: MetricInfo Protocol buffer associated with the metric.
-        //   displayed: Whether the metric is currently displayed (checkbox next
-        //       to it is checked).
-        // }
-        //
-        // visibleSchema: {
-        //   hparamInfos: Array consisting of HParamInfos protocol buffers for
-        //     the displayed hparams.
-        //   metricInfos: Array consisting of MetricInfos protocol buffers for
-        //     the displayed metrics.
-        // }
-        //
-        // loaded: <boolean>
+        // See the closure type definition below. Some explanations on the
+        // various fields follow:
+        // * hparamColumn[].hparamInfo stores the HParamInfo Protocol buffer
+        //   associated with the hparam.
+        // * metricColumn[].metricInfo stores the MetricInfo protocol buffer
+        //   associated with the metric.
+        // * hparamColumn[].displayed and metricColumn[].displayed stores
+        //   whether the hparam or metric is currently displayed (checkbox next
+        //   to it is checked).
+        // * visibleSchema.hparamInfos: Array consisting of
+        //   HParamInfos protocol buffers for each of the displayed hparams.
+        // * visibleSchema.metricInfos: Array consisting of MetricInfos
+        //   protocol buffers for each of the displayed metrics.
         //
         // Note that the 'visibleSchema' field is deprecated and is included
         // only to support the old-style schema that only contained the
         // columns (metrics or hparams) that were displayed. It should be
-        // removed when all consumers are migrated to use
-        // the hparamColumns and metricColumns fields.
+        // removed when all consumers are migrated to use the hparamColumns and
+        // metricColumns fields.
         //
         // The 'Schema' object is initialized to an 'empty' object here and then
-        // replaced oonce after the getExperiment() RPC
-        // returns. After that, the schema object's identity will remain the
-        // same object throught the lifetime of the page. Of course, its
+        // replaced once after the getExperiment() RPC
+        // returns. After that, the schema object's will remain the
+        // same object throughout the lifetime of the page. Of course, its
         // properties may change as a result of the user interacting with the
-        // plugin, but the identity of the object will remain the same.
+        // plugin, but the "identity" of the object will remain the same.
+        //
         // The 'loaded' property allows consuming elements to find out whether
-        // the schema object has been
-        // computed yet or not. It is 'false' for the 'empty' object, and then
-        // set to 'true' after the getExperiment() RPC returns and
-        // the schema is computed.
+        // the schema object has been computed yet or not. It is 'false' for
+        // the 'empty' object, and then set to 'true' after the getExperiment()
+        // RPC returns and the schema is computed.
         // TODO(erez): We could have set this to a null value initially, but
         // some consuming elements rely on visibleSchema always being not null.
-        schema: {
+        /**
+         * @type {{
+         *    hparamColumn: Array<{
+         *      hparamInfo: Object,
+         *      displayed: boolean
+         *    }>,
+         *    metricColumn: Array<{
+         *      metricInfo: Object,
+         *      displayed: boolean
+         *    }>,
+         *    visibleSchema: {
+         *      hparamInfos: Array<Object>,
+         *      metricInfos: Array<Object>
+         *    }>,
+         *    loaded: boolean
+         * }}
+         */
+         schema: {
           type: Object,
           value: () => {
             return {
