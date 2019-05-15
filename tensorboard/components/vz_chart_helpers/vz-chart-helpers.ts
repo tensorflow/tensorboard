@@ -117,11 +117,11 @@ export function multiscaleFormatter(digits: number): ((v: number) => string) {
     }
     let f: (x: number) => string;
     if (absv >= 1E4) {
-      f = d3.format('.' + digits + 'e');
+      f = d3.format('.' + digits + '~e');
     } else if (absv > 0 && absv < 0.01) {
-      f = d3.format('.' + digits + 'e');
+      f = d3.format('.' + digits + '~e');
     } else {
-      f = d3.format('.' + digits + 'g');
+      f = d3.format('.' + digits + '~g');
     }
     return f(v);
   };
@@ -192,8 +192,7 @@ export interface XComponents {
   /* tslint:enable */
 }
 
-export let stepFormatter =
-    Plottable.Formatters.siSuffix(STEP_FORMATTER_PRECISION);
+export const stepFormatter = d3.format(`.${STEP_FORMATTER_PRECISION}~s`);
 export function stepX(): XComponents {
   let scale = new Plottable.Scales.Linear();
   scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());

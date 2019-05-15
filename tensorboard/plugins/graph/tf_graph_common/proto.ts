@@ -19,7 +19,7 @@ limitations under the License.
  *     graph.proto
  *     step_stats.proto
  * These should stay in sync.
- * 
+ *
  * When adding a repeated field to this file, make sure to update the
  * GRAPH_REPEATED_FIELDS and METADATA_REPEATED_FIELDS lists within parser.ts.
  * Otherwise, the parser has no way of differentiating between a field with a
@@ -147,11 +147,16 @@ module tf.graph.proto {
     metanode_attr: Array<{[key: string]: any}>;
   }
 
+  export interface DevStat {
+    device: string;
+    node_stats: NodeExecStats[];
+  }
+
   /**
    * TensorFlow stats file definition as defined in the stats proto file.
    */
   export interface StepStats {
-    dev_stats: {device: string, node_stats: NodeExecStats[]}[];
+    dev_stats: DevStat[];
   }
 
   /**

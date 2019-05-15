@@ -19,6 +19,9 @@ module tf.graph.op {
   }
 
   export class TpuCompatibilityProvider implements CompatibilityProvider {
+    /**
+     * Whitelist of current Tensorflow ops valid on the TPU
+     */
     static readonly WHITELIST = [
       'Abs',
       'Acos',
@@ -396,7 +399,11 @@ module tf.graph.op {
       'StatsAggregatorSummary',
     ];
 
-    isNotTpuOp(opDevice: string): boolean {
+    /**
+     * Returns true if the node's inferred device is not the TPU.
+     * Note that this is only a best-effort check.
+     */
+    private isNotTpuOp(opDevice: string): boolean {
       if (opDevice.toLowerCase().search('cpu:') != -1) {
         return true;
       }
@@ -405,7 +412,6 @@ module tf.graph.op {
       }
       return (opDevice.toLowerCase().search('tpu') == -1);
     }
-
     opValid(opNode: OpNode): boolean {
       // Function library nodes are generally for internal use.
       if (opNode.name.search(FUNCTION_LIBRARY_NODE_PREFIX) == 0) {
@@ -423,12 +429,14 @@ module tf.graph.op {
       if (opNode.device && opNode.device.search('TPU_SYSTEM') != -1) {
         return true;
       }
-      return TpuCompatibilityProvider.WHITELIST.indexOf(opNode.op) != -1;
+      return _.includes(TpuCompatibilityProvider.WHITELIST, opNode.op);
     }
   }
 
-  export function checkOpsForCompatibility(graph: SlimGraph, provider: CompatibilityProvider) {
-    if(provider === null) {
+  export function checkOpsForCompatibility(
+    graph: SlimGraph,
+    provider: CompatibilityProvider) {
+    if (provider === null) {
       throw new Error('Compatibility provider required, but got: ' + provider);
     }
     _.each(graph.nodes, (node) => {
@@ -442,5 +450,4 @@ module tf.graph.op {
       });
     });
   }
-
 }  // close module tf.graph.op

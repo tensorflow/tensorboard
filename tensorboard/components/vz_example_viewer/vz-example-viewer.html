@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -76,7 +77,7 @@ limitations under the License.
         display: block;
         padding: 8px;
         width: fit-content;
-        border: 1px solid lightgrey;
+        border: 1px solid #DADCE0;
       }
 
       .hide-saliency-controls {
@@ -86,8 +87,6 @@ limitations under the License.
       .outer {
         width: 100%;
         overflow: auto;
-        margin: 5px;
-        border-top: 1px solid lightgrey;
       }
 
       .image {
@@ -103,53 +102,58 @@ limitations under the License.
 
       .value-pills-holder {
         flex-grow: 1;
+        flex-basis: 100%;
+      }
+
+      iron-autogrow-textarea {
+        border: 1px solid #FFFFFF;
+        border-radius: 4px;
+        font-size: 14px;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        --iron-autogrow-textarea: {
+          color: #3C4043;
+        }
+      }
+
+      iron-autogrow-textarea.value-same {
+        --iron-autogrow-textarea: {
+          color: #5F6368;
+        }
+      }
+
+      iron-autogrow-textarea.value-different {
+        --iron-autogrow-textarea: {
+          color: #34A853;
+          font-weight: 500;
+        }
       }
 
       .value-pill {
         text-align: left;
-        border-radius: 18px;
-        margin: 0 8px 8px 0;
-        text-overflow: ellipsis;
-        padding: 0 8px 4px;
-        border: 1px solid lightgray;
-        background: #e8eaed;
+        margin: 4px;
+        padding: 4px 8px;
+        color: #3C4043;
       }
 
       .value-pill:hover {
-        border: 1px solid rgba(224,145,31,0.8);
+        background: #f8f9fa;
       }
 
-      .value-pill:focus {
-        background: white;
-        border: 1px solid rgba(224,145,31,0.8);
-        outline: none;
+      .value-pill[focused] {
+        border: 1px solid #ffeb3b;
+        background: #f8f9fa;
       }
 
       .value-compare {
         text-align: left;
-        margin: 0 8px 8px 0;
-        text-overflow: ellipsis;
-        padding: 0 8px 4px;
-        border: none;
-      }
-
-      .value-different {
-        color: #e17500;
-      }
-
-      .value-same {
-        color: #1b4ca6;
-      }
-
-      input[type=number]::-webkit-inner-spin-button,
-      input[type=number]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
+        padding: 4px 8px;
       }
 
       .value-pill-stacked {
         width: 100%;
         margin: 4px 4px 4px 0;
+        padding: 2px;
       }
 
       .value-pill-grid {
@@ -159,36 +163,43 @@ limitations under the License.
 
       .feature-name {
         display: flex;
-        padding-left: 5px;
-        border-left: 1px solid lightgrey;
-        border-right: 1px solid lightgrey;
-        border-bottom: 1px solid lightgrey;
+        padding-left: 4px;
+        margin: 4px 20px 4px 8px;
         justify-content: space-between;
+        color:#80868b;
       }
 
       .feature-name-text {
-        margin-top: 3px;
         width: 300px;
         max-width: 300px;
-        min-width: 300px;
+        min-width: 150px;
         font-size: 14px;
+        margin-top: 4px;
+        color: #3C4043;
+        line-height: 1.6em;
+        text-overflow: ellipsis;
         white-space: pre-wrap;
         word-wrap: break-word;
+        padding-right: 8px;
       }
 
       .feature-name-header-text {
         width: 300px;
         max-width: 300px;
-        min-width: 300px;
+        min-width: 150px;
+        color: #202124;
+        font-size: 12px;
+        line-height: 1.8em;
+        text-overflow: ellipsis;
         white-space: pre-wrap;
         word-wrap: break-word;
-        color: grey;
-        font-weight: 500;
-        font-size: 16px;
       }
 
       .feature-name.feature-name-header {
-        padding: 4px 0 4px 5px;
+        padding: 4px 4px 0px 4px;
+        background: #f8f9fa;
+        margin: 0px;
+        border-bottom: 1px solid #e8eaed;
       }
 
       .slider {
@@ -227,11 +238,11 @@ limitations under the License.
 
       .delete-value-button {
         position: absolute;
-        background: #DA7421;
-        color: white;
-        border-radius: 10px;
-        max-width: 20px;
-        max-height: 20px;
+        background: #ffe603;
+        color: #5F6368;
+        border-radius: 12px;
+        max-width: 24px;
+        max-height: 24px;
         padding: 0;
         margin-top: 2px;
         opacity: 1;
@@ -246,11 +257,11 @@ limitations under the License.
       }
 
       .delete-feature-button {
-        max-height: 15px;
-        max-width: 15px;
+        max-height: 20px;
+        max-width: 20px;
         padding: 0;
-        margin-left: 5px;
-        margin-top: 1px;
+        margin-left: 4px;
+        margin-top: 0px;
       }
 
       .add-value-button {
@@ -260,6 +271,7 @@ limitations under the License.
         min-height: 20px;
         min-width: 20px;
         padding: 0;
+        color: #80868b;
       }
 
       .add-feature-button {
@@ -276,7 +288,7 @@ limitations under the License.
       }
 
       .imagecard {
-        margin: 5px 2px;
+        margin: 4px;
       }
 
       .image-scale-button {
@@ -299,15 +311,11 @@ limitations under the License.
 
       .image-bottom-bar {
         width: 100%;
-        background: gray;
+        background: #3C4043;
       }
 
       .image-upload-input {
         display: none;
-      }
-
-      .bold {
-        font-weight: bold;
       }
 
       .space-for-more-button {
@@ -317,9 +325,9 @@ limitations under the License.
       .value-header-text {
         min-width: 130px;
         width: 130px;
-        color: grey;
-        font-weight: 500;
-        font-size: 16px;
+        color: #202124;
+        font-size: 12px;
+        line-height: 1.8em;
       }
 
       paper-dialog {
@@ -328,7 +336,7 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid lightgray;
+        border: 1px solid #DADCE0;
         color: var(--tb-orange-dark);
         font-size: 14px;
         font-weight: 500;
@@ -338,23 +346,15 @@ limitations under the License.
       }
 
       .control-button[disabled] {
-        color: lightgray;
+        color: #DADCE0;
       }
 
-      .box {
-        width: 22px;
-        height: 12px;
-        margin: 2px 0 0 5px;
+      .value-text {
+        border-bottom: 2px solid #ffeb3b;
       }
 
-      .yellow {
-        background: rgb(250, 212, 17);
-        border: 2px solid black;
-      }
-
-      .green {
-        background: rgb(29, 107, 29);
-        border: 2px solid #44FF44;
+      .compare-value-text {
+        border-bottom: 2px solid #34A853;
       }
     </style>
     <div class="outer">
@@ -363,16 +363,14 @@ limitations under the License.
           <iron-icon icon="icons:search" prefix></iron-icon>
         </paper-input>
       </template>
-      <div class="feature-name bold feature-name-header">
-        <div class="feature-name-header-text">Feature name</div>
+      <div class="feature-name feature-name-header">
+        <div class="feature-name-header-text">Feature</div>
         <div class="value-pills-holder flex-controls value-header-text">
-          <div>Selected datapoint</div>
-          <div class="box yellow"></div>
+          <div class="value-text">Value(s)</div>
         </div>
         <template is="dom-if" if="[[compareMode]]">
           <div class="value-pills-holder flex-controls value-header-text">
-            <div>[[compareTitle]]</div>
-            <div class="box green"></div>
+            <div class="compare-value-text">[[compareTitle]]</div>
           </div>
         </template>
         <div class="space-for-more-button"></div>
@@ -451,7 +449,7 @@ limitations under the License.
             <div class="flex-controls value-pills-holder">
               <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
                 <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-                  <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                  <iron-autogrow-textarea class$="[[getInputPillClass(feat.name, displayMode)]]"
                         readonly$="[[readonly]]"
                         on-input="onValueChanged"
                         on-focus="onInputFocus"
@@ -459,11 +457,11 @@ limitations under the License.
                         data-feature="[[feat.name]]"
                         data-index="[[index]]"
                         value="[[value]]">
-                  </input>
+                  </iron-autogrow-textarea>
                 </template>
               </template>
               <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
-                <input type="text" class$="[[getInputPillClass(feat.name, displayMode)]]"
+                <iron-autogrow-textarea class$="[[getInputPillClass(feat.name, displayMode)]]"
                   readonly$="[[readonly]]"
                   on-input="onValueChanged"
                   on-focus="onInputFocus"
@@ -471,7 +469,7 @@ limitations under the License.
                   data-feature="[[feat.name]]"
                   data-index="[[zeroIndex]]"
                   value="[[getFirstFeatureValue(feat.name)]]">
-                </input>
+                </iron-autogrow-textarea>
                 <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
                   <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(feat.name, displayMode)]]">
                     ...
@@ -483,17 +481,17 @@ limitations under the License.
               <div class="flex-controls value-pills-holder">
                 <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
                   <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
-                    <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
+                    <iron-autogrow-textarea class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
                           readonly
                           value="[[value]]">
-                    </input>
+                    </iron-autogrow-textarea>
                   </template>
                 </template>
                 <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
-                  <input type="text" class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
+                  <iron-autogrow-textarea class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
                     readonly
                     value="[[getFirstCompareFeatureValue(feat.name)]]">
-                  </input>
+                  </iron-autogrow-textarea>
                   <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
                     <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(feat.name, displayMode)]]">
                       ...
@@ -606,7 +604,7 @@ limitations under the License.
                     <template is="dom-repeat"
                               items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
                               as="seqvalue">
-                      <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      <iron-autogrow-textarea class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
                           readonly$="[[readonly]]"
                           on-input="onValueChanged"
                           on-focus="onInputFocus"
@@ -615,11 +613,11 @@ limitations under the License.
                           data-index="[[index]]"
                           data-seq-num="[[seqNumber]]"
                           value="[[seqvalue]]">
-                      </input>
+                      </iron-autogrow-textarea>
                     </template>
                   </template>
                   <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
-                    <input type="text" class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                    <iron-autogrow-textarea class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
                       readonly$="[[readonly]]"
                       on-input="onValueChanged"
                       on-focus="onInputFocus"
@@ -628,7 +626,7 @@ limitations under the License.
                       data-index="[[zeroIndex]]"
                       data-seq-num="[[seqNumber]]"
                       value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
-                    </input>
+                    </iron-autogrow-textarea>
                     <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
                       <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(seqfeat.name, displayMode)]]">
                         ...
@@ -642,17 +640,17 @@ limitations under the License.
                       <template is="dom-repeat"
                                 items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
                                 as="seqvalue">
-                        <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
+                        <iron-autogrow-textarea class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
                             readonly
                             value="[[seqvalue]]">
-                        </input>
+                        </iron-autogrow-textarea>
                       </template>
                     </template>
                     <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
-                      <input type="text" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
+                      <iron-autogrow-textarea class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
                         readonly
                         value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
-                      </input>
+                      </iron-autogrow-textarea>
                       <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
                         <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber)]]">
                           ...

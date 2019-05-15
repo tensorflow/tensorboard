@@ -371,18 +371,15 @@ Polymer({
   },
 
   haveSaliency: function() {
+    // Saliency-coloring waits until the display elements have been updated
+    // to avoid coloring divs that are then re-ordered/re-used/re-named by
+    // the dom-repeat of feature divs.
+    requestAnimationFrame(() => this._haveSaliencyImpl());
+  },
+
+  _haveSaliencyImpl: function() {
     if (!this.filteredFeaturesList || !this.saliency ||
         Object.keys(this.saliency).length === 0 || !this.colors) {
-      return;
-    }
-
-    // TODO(jwexler): Find a way to do this without requestAnimationFrame.
-    // If the inputs for the features have yet to be rendered, wait to
-    // perform this processing. There should be inputs for all non-image
-    // features.
-    if (this.selectAll('input.value-pill').size() <
-        (this.filteredFeaturesList.length - Object.keys(this.imageInfo).length)) {
-      requestAnimationFrame(() => this.haveSaliency());
       return;
     }
 
@@ -839,7 +836,6 @@ Polymer({
       this.getBoundingClientRect().right -
       inputControl.getBoundingClientRect().right + 30) + 'px';
     this.showDeleteValueButton = true;
-
   },
 
 

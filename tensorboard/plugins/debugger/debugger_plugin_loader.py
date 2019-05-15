@@ -78,7 +78,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     """
     # Check that not both grpc port flags are specified.
     if flags.debugger_data_server_grpc_port > 0 and flags.debugger_port > 0:
-      raise ValueError(
+      raise base_plugin.FlagsError(
           '--debugger_data_server_grpc_port and --debugger_port are mutually '
           'exclusive. Do not use both of them at the same time.')
 
@@ -95,6 +95,13 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             context.flags.debugger_port > 0):
       return None
     flags = context.flags
+    try:
+      # pylint: disable=g-import-not-at-top,unused-import
+      import tensorflow
+    except ImportError:
+      raise ImportError(
+          'To use the debugger plugin, you need to have TensorFlow installed:\n'
+          '  pip install tensorflow')
     try:
       # pylint: disable=line-too-long,g-import-not-at-top
       from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib

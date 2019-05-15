@@ -17,6 +17,7 @@ tf_web_library(
         "graph.ts",
         "hierarchy.ts",
         "layout.ts",
+        "loader.ts",
         "minimap.ts",
         "node.ts",
         "op.ts",

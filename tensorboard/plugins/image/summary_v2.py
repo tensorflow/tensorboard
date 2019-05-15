@@ -22,14 +22,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.image import metadata
-from tensorboard.util import tensor_util
 
 
 def image(name,
           data,
-          step,
+          step=None,
           max_outputs=3,
           description=None):
   """Write an image summary.
@@ -43,7 +42,9 @@ def image(name,
       should be 1, 2, 3, or 4 (grayscale, grayscale with alpha, RGB, RGBA).
       Any of the dimensions may be statically unknown (i.e., `None`).
       Floating point data will be clipped to the range [0,1).
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
       many images will be emitted at each step. When more than
       `max_outputs` many images are provided, the first `max_outputs` many
@@ -54,13 +55,18 @@ def image(name,
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'image_summary', values=[data, max_outputs, step]) as (tag, _):
     tf.debugging.assert_rank(data, 4)
     tf.debugging.assert_non_negative(max_outputs)

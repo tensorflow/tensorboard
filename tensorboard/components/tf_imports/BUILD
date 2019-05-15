@@ -46,6 +46,16 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "umap-js",
+    srcs = [
+        "umap-js.html",
+        "@ai_google_pair_umap_js//:umap-js.min.js",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+)
+
+tf_web_library(
     name = "numericjs",
     srcs = [
         "numericjs.html",
@@ -129,9 +139,9 @@ tf_web_library(
 tf_web_library(
     name = "web_component_tester",
     testonly = 1,
-    visibility = ["//visibility:public"],
     srcs = ["web-component-tester.d.ts"],
     path = "/web_component_tester",
+    visibility = ["//visibility:public"],
     exports = [
         ":chai_typings",
         ":mocha_typings",
@@ -164,6 +174,39 @@ tf_web_library(
     visibility = ["//visibility:private"],
 )
 
+tf_web_library(
+    name = "vaadin_grid",
+    srcs = [
+        "vaadin-grid.html",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+    deps = ["@vaadin_vaadin_grid"],
+)
+
+tf_web_library(
+    name = "vaadin_split_layout",
+    srcs = [
+        "vaadin-split-layout.html",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+    deps = ["@vaadin_vaadin_split_layout"],
+)
+
+tf_web_library(
+    name = "tf_graphics_lib",
+    srcs = [
+        "tf_graphics_lib.html",
+        "@org_tensorflow_graphics_lib//:array-buffer-data-provider.js",
+        "@org_tensorflow_graphics_lib//:mesh-viewer.js",
+    ],
+    deps = [
+        ":threejs",
+    ],
+    path = "/tf-imports",
+)
+
 # Generate single TypeScript typings file for d3.js with no ES6 imports.
 #
 # The DefinitelyTyped definition of d3 v4 was written under the assumption that
@@ -182,7 +225,6 @@ tensorboard_typescript_bundle(
         "@org_definitelytyped_types_d3_selection//:index.d.ts",
         "@org_definitelytyped_types_d3_shape//:index.d.ts",
         "@org_definitelytyped_types_d3_scale//:index.d.ts",
-        "@org_definitelytyped_types_d3_request//:index.d.ts",
         "@org_definitelytyped_types_d3_interpolate//:index.d.ts",
         "@org_definitelytyped_types_d3_drag//:index.d.ts",
         "@org_definitelytyped_types_d3_brush//:index.d.ts",
@@ -198,7 +240,6 @@ tensorboard_typescript_bundle(
         "@org_definitelytyped_types_d3_hierarchy//:index.d.ts",
         "@org_definitelytyped_types_d3_polygon//:index.d.ts",
         "@org_definitelytyped_types_d3_quadtree//:index.d.ts",
-        "@org_definitelytyped_types_d3_queue//:index.d.ts",
         "@org_definitelytyped_types_d3_random//:index.d.ts",
         "@org_definitelytyped_types_d3_timer//:index.d.ts",
         "@org_definitelytyped_types_d3_voronoi//:index.d.ts",

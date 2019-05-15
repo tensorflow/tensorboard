@@ -27,6 +27,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "beholder_test",
+    srcs = ["beholder_test.py"],
+    size = "small",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":beholder",
+        "//tensorboard/util:test_util",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "beholder_plugin",
     srcs = ["beholder_plugin.py"],
@@ -44,6 +57,18 @@ py_library(
         "//tensorboard/util:encoder",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "beholder_plugin_loader",
+    srcs = ["beholder_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":beholder_plugin",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
     ],
 )
 

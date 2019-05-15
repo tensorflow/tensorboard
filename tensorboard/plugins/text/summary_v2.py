@@ -18,32 +18,42 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
+
+from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.text import metadata
 from tensorboard.util import tensor_util
 
 
-def text(name, data, step, description=None):
+def text(name, data, step=None, description=None):
   """Write a text summary.
 
   Arguments:
     name: A name for this summary. The summary tag used for TensorBoard will
       be this name prefixed by any active name scopes.
     data: A UTF-8 string tensor value.
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     description: Optional long-form description for this summary, as a
       constant `str`. Markdown is supported. Defaults to empty.
 
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'text_summary', values=[data, step]) as (tag, _):
     tf.debugging.assert_type(data, tf.string)
     return tf.summary.write(
@@ -66,12 +76,10 @@ def text_pb(tag, data, description=None):
   Returns:
     A `tf.Summary` protobuf object.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf
   try:
-    tensor = tensor_util.make_tensor_proto(data, dtype=tf.string)
+    tensor = tensor_util.make_tensor_proto(data, dtype=np.object)
   except TypeError as e:
-    raise TypeError("tensor must be of type string", e)
+    raise TypeError('tensor must be of type string', e)
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
   summary = summary_pb2.Summary()

@@ -16,15 +16,17 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
-versions.check(minimum_bazel_version = "0.16.1")
+versions.check(minimum_bazel_version = "0.22.0")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "b29a8bc2cb10513c864cb1084d6f38613ef14a143797cea0af0f91cd385f5e8c",
-    strip_prefix = "rules_closure-0.8.0",
+    sha256 = "0e6de40666f2ebb2b30dc0339745a274d9999334a249b05a3b1f46462e489adf",
+    # The changes that we need for Bazel 0.23 compatibility are not in
+    # any release, so we pin to HEAD as of 2019-02-22.
+    strip_prefix = "rules_closure-87d24b1df8b62405de8dd059cb604fd9d4b1e395",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/0.8.0.tar.gz",  # 2018-08-03
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",  # 2019-02-22
     ],
 )
 

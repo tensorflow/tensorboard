@@ -79,14 +79,11 @@ class VizParams(object):
       pieces = [token.strip() for token in pattern.split(',')]
       indices = []
       for piece in pieces:
-        try:
-          if '-' in piece:
-            lower, upper = [int(x.strip()) for x in piece.split('-')]
-            indices.extend(range(lower, upper + 1))
-          else:
-            indices.append(int(piece.strip()))
-        except ValueError as e:
-          raise common_utils.InvalidUserInputError(e)
+        if '-' in piece:
+          lower, upper = [int(x.strip()) for x in piece.split('-', 1)]
+          indices.extend(range(lower, upper + 1))
+        else:
+          indices.append(int(piece.strip()))
       return sorted(indices)
 
     self.x_min = to_float_or_none(x_min)
@@ -97,7 +94,12 @@ class VizParams(object):
     # By default, there are no specific user-requested feature indices.
     self.feature_indices = []
     if feature_index_pattern:
-      self.feature_indices = convert_pattern_to_indices(feature_index_pattern)
+      try:
+        self.feature_indices = convert_pattern_to_indices(
+            feature_index_pattern)
+      except ValueError as e:
+        # If the user-requested range is invalid, use the default range.
+        pass
 
 
 class OriginalFeatureList(object):
@@ -165,7 +167,7 @@ class ServingBundle(object):
   """Light-weight class for holding info to make the inference request.
 
   Attributes:
-    inference_address: A local address or blade address to send inference
+    inference_address: An address (such as "hostname:port") to send inference
       requests to.
     model_name: The Servo model name.
     model_type: One of ['classification', 'regression'].
@@ -181,6 +183,7 @@ class ServingBundle(object):
       Predict API.
     estimator: An estimator to use instead of calling an external model.
     feature_spec: A feature spec for use with the estimator.
+    custom_predict_fn: A custom prediction function.
 
   Raises:
     ValueError: If ServingBundle fails init validation.
@@ -188,7 +191,8 @@ class ServingBundle(object):
 
   def __init__(self, inference_address, model_name, model_type, model_version,
                signature, use_predict, predict_input_tensor,
-               predict_output_tensor, estimator=None, feature_spec=None):
+               predict_output_tensor, estimator=None, feature_spec=None,
+               custom_predict_fn=None):
     """Inits ServingBundle."""
     if not isinstance(inference_address, string_types):
       raise ValueError('Invalid inference_address has type: {}'.format(
@@ -215,6 +219,7 @@ class ServingBundle(object):
     self.predict_output_tensor = predict_output_tensor
     self.estimator = estimator
     self.feature_spec = feature_spec
+    self.custom_predict_fn = custom_predict_fn
 
 
 def proto_value_for_feature(example, feature_name):
@@ -591,6 +596,7 @@ def make_json_formatted_for_single_chart(mutant_features,
         x_label: value,
         y_label: sum(y_list) / float(len(y_list))
       })
+    list_of_points.sort(key=lambda p: p[x_label])
     return {key: list_of_points}
 
   else:
@@ -749,6 +755,11 @@ def run_inference(examples, serving_bundle):
     values = []
     for pred in preds:
       values.append(pred[preds_key])
+    return common_utils.convert_prediction_values(values, serving_bundle)
+  elif serving_bundle.custom_predict_fn:
+    # If custom_predict_fn is provided, pass examples directly for local
+    # inference.
+    values = serving_bundle.custom_predict_fn(examples)
     return common_utils.convert_prediction_values(values, serving_bundle)
   else:
     return platform_utils.call_servo(examples, serving_bundle)

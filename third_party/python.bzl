@@ -35,12 +35,12 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pythonhosted_urllib3",
         urls = [
-            "https://mirror.bazel.build/pypi.python.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
-            "https://pypi.python.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
-            "https://files.pythonhosted.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz",
+            "https://mirror.bazel.build/pypi.python.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
+            "https://pypi.python.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
+            "https://files.pythonhosted.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
         ],
-        sha256 = "de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22",
-        strip_prefix = "urllib3-1.24.1/src",
+        sha256 = "f03eeb431c77b88cf8747d47e94233a91d0e0fdae1cf09e0b21405a885700266",
+        strip_prefix = "urllib3-1.25/src",
         build_file = str(Label("//third_party:urllib3.BUILD")),
     )
 
@@ -69,12 +69,28 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pocoo_werkzeug",
         urls = [
-            "https://mirror.bazel.build/pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
-            "https://pypi.python.org/packages/b7/7f/44d3cfe5a12ba002b253f6985a4477edfa66da53787a2a838a40f6415263/Werkzeug-0.11.10.tar.gz",
+            "https://files.pythonhosted.org/packages/fe/7f/6d70f765ce5484e07576313897793cb49333dd34e462488ee818d17244af/Werkzeug-0.11.15.tar.gz",
         ],
-        strip_prefix = "Werkzeug-0.11.10",
-        sha256 = "cc64dafbacc716cdd42503cf6c44cb5a35576443d82f29f6829e5c49264aeeee",
+        strip_prefix = "Werkzeug-0.11.15",
+        sha256 = "455d7798ac263266dbd38d4841f7534dd35ca9c3da4a8df303f8488f38f3bcc0",
         build_file = str(Label("//third_party:werkzeug.BUILD")),
+    )
+
+    # We use `mock==1.0.0` because later versions depend on `pbr`, which
+    # doesn't work well in a hermetic context (it tries to look up some
+    # global configuration files; see GitHub pull request #2132).
+    #
+    # This dependency can go away entirely once we drop Python 2 support
+    # and can just depend on `unittest.mock`.
+    http_archive(
+        name = "org_pythonhosted_mock",
+        urls = [
+            "https://mirror.bazel.build/files.pythonhosted.org/packages/85/60/ec8c1af81337bab0caba188b218b6758bc94f125f49062f7c5f0647749d2/mock-1.0.0.tar.gz",
+            "https://files.pythonhosted.org/packages/85/60/ec8c1af81337bab0caba188b218b6758bc94f125f49062f7c5f0647749d2/mock-1.0.0.tar.gz",
+        ],
+        sha256 = "2d9fbe67001d2e8f02692075257f3c11e1b0194bd838c8ce3f49b31fc6c3f033",
+        strip_prefix = "mock-1.0.0",
+        build_file = str(Label("//third_party:mock.BUILD")),
     )
 
     http_archive(

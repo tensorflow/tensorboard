@@ -1,0 +1,47 @@
+upper_tabs:
+# Tabs left of dropdown menu
+- include: /_upper_tabs_left.yaml
+- include: /api_docs/_upper_tabs_api.yaml
+# Dropdown menu
+- name: Resources
+  path: /resources
+  is_default: true
+  menu:
+  - include: /resources/_menu_toc.yaml
+  lower_tabs:
+    # Subsite tabs
+    other:
+    - name: Guide
+      contents:
+      - title: Overview
+        path: /tensorboard/r1/overview
+      - title: Summaries
+        path: /tensorboard/r1/summaries
+      - title: Graphs
+        path: /tensorboard/r1/graphs
+      - title: Histograms
+        path: /tensorboard/r1/histograms
+    # - name: API
+    #   skip_translation: true
+    #   contents:
+    #   - include: /tensorboard/api_docs/python/_toc.yaml
+    - name: TF 2.0 Alpha
+      contents:
+      - title: "Get started"
+        path: /tensorboard/r2/get_started
+      - title: "Scalars and metrics"
+        path: /tensorboard/r2/scalars_and_keras
+      - title: "Image data"
+        path: /tensorboard/r2/image_summaries
+      - title: "Model graphs"
+        path: /tensorboard/r2/graphs
+      - title: "Hyperparameter tuning"
+        path: /tensorboard/r2/hyperparameter_tuning_with_hparams
+      - title: "What-If Tool"
+        path: /tensorboard/r2/what_if_tool
+      - title: "Profiling tool"
+        path: /tensorboard/r2/tensorboard_profiling_keras
+      - title: "TensorBoard in notebooks"
+        path: /tensorboard/r2/tensorboard_in_notebooks
+
+- include: /_upper_tabs_right.yaml

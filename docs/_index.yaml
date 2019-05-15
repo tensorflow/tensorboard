@@ -1,0 +1,55 @@
+book_path: /tensorboard/_book.yaml
+project_path: /tensorboard/_project.yaml
+description: <!--no description-->
+landing_page:
+  custom_css_path: /site-assets/css/style.css
+  rows:
+  - heading: "TensorBoard: TensorFlow's visualization toolkit"
+    items:
+    - classname: devsite-landing-row-50
+      description: >
+        TensorBoard provides the visualization and tooling needed for
+        machine learning experimentation:
+        <ul style="padding-left: 20px; margin: 20px 0;">
+          <li>Tracking and visualizing metrics such as loss and accuracy</li>
+          <li>Visualizing the model graph (ops and layers)</li>
+          <li>Viewing histograms of weights, biases, or other tensors as they
+              change over time</li>
+          <li>Projecting embeddings to a lower dimensional space</li>
+          <li>Displaying images, text, and audio data</li>
+          <li>Profiling TensorFlow programs</li>
+          <li>And much more</li>
+        </ul>
+      image_path: /tensorboard/images/tensorboard.gif
+      buttons:
+      - label: Learn More
+        path: /tensorboard/r1/overview
+        classname: button
+      - label: Explore the TF 2.0 Alpha
+        path: /tensorboard/r2/get_started
+        classname: button
+  - classname: devsite-landing-row-cards
+    items:
+    - heading: "The What-If Tool: Code-Free Probing of Machine Learning Models"
+      image_path: /resources/images/tf-logo-card-16x9.png
+      path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
+      buttons:
+      - label: "Read on Google AI blog"
+        path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
+    - heading: "Interactive supervision with TensorBoard"
+      image_path: /resources/images/tf-logo-card-16x9.png
+      path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
+      buttons:
+      - label: "Read on TensorFlow blog"
+        path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
+    - heading: "Hands-on TensorBoard"
+      youtube_id: eBbEDRsCmv4
+      buttons:
+      - label: Watch the video
+        path: https://www.youtube.com/watch?v=eBbEDRsCmv4
+    - heading: "TensorBoard on GitHub"
+      image_path: /resources/images/github-card-16x9.png
+      path: https://github.com/tensorflow/tensorboard
+      buttons:
+      - label: "View on GitHub"
+        path: https://github.com/tensorflow/tensorboard

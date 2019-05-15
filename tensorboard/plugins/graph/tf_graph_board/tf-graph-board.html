@@ -87,8 +87,9 @@ Example
 }
 
 #progress-msg {
-  width: 400px;
   margin-bottom: 5px;
+  white-space: pre-wrap;
+  width: 400px;
 }
 
 paper-progress {
@@ -201,7 +202,6 @@ Polymer({
       type: Object,
       notify: true
     },
-    compatNodeTitle: String,
     // Whether debugger data is enabled for this instance of Tensorboard.
     debuggerDataEnabled: Boolean,
     // Whether health pills are currently being loaded.
@@ -235,6 +235,7 @@ Polymer({
       type: String,
       notify: true,
     },
+    compatNodeTitle: String,
     // A function with signature EdgeThicknessFunction that computes the
     // thickness of a given edge.
     edgeWidthFunction: Object,

@@ -50,7 +50,10 @@ def deprecated_extract_dts_from_closure_libraries(ctx):
   if not js.srcs:
     return None
   js_typings = ctx.new_file(ctx.bin_dir, "%s-js-typings.d.ts" % ctx.label.name)
-  srcs = depset(JS_FILE_TYPE.filter(ctx.files._clutz_externs)) + js.srcs
+  # File.extension does not have leading "." whereas JS_FILE_TYPE does.
+  clutz_js_externs = [f for f in ctx.files._clutz_externs
+                      if '.%s' % f.extension in JS_FILE_TYPE]
+  srcs = depset(transitive=[depset(clutz_js_externs), js.srcs])
   args = ["-o", js_typings.path]
   for src in srcs:
     args.append(src.path)

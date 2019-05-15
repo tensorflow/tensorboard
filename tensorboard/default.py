@@ -31,30 +31,35 @@ from __future__ import print_function
 import logging
 import os
 
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
-from tensorboard.plugins.beholder import beholder_plugin
+from tensorboard.plugins.beholder import beholder_plugin_loader
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
+from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
-from tensorboard.plugins.debugger import debugger_plugin_loader
 from tensorboard.plugins.histogram import histograms_plugin
+from tensorboard.plugins.hparams import hparams_plugin_loader
 from tensorboard.plugins.image import images_plugin
-from tensorboard.plugins.interactive_inference import interactive_inference_plugin
+from tensorboard.plugins.interactive_inference import (
+    interactive_inference_plugin_loader
+)
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.lite import lite_plugin
-from tensorboard.plugins.profile import profile_plugin
+from tensorboard.plugins.profile import profile_plugin_loader
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.plugins.mesh import mesh_plugin
 
 
 logger = logging.getLogger(__name__)
 
 _PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin.BeholderPlugin,
+    beholder_plugin_loader.BeholderPluginLoader(),
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
@@ -66,9 +71,11 @@ _PLUGINS = [
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
     lite_plugin.LitePlugin,
-    interactive_inference_plugin.InteractiveInferencePlugin,
-    profile_plugin.ProfilePluginLoader(),
+    interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
+    profile_plugin_loader.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
+    hparams_plugin_loader.HParamsPluginLoader(),
+    mesh_plugin.MeshPlugin,
 ]
 
 def get_plugins():

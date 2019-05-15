@@ -27,6 +27,7 @@ limitations under the License.
         text-align: right;
       }
       th, td {
+        font-size: 14px;
         padding: 3px;
         font-weight: normal;
       }
@@ -38,6 +39,14 @@ limitations under the License.
         text-align: left;
         font-size: 10px;
       }
+      .total-label {
+        color: #5F6368;
+        font-size: 10px;
+        text-align: left;
+      }
+      .total-cell {
+        color: #5F6368;
+      }
       .actual-label {
         text-align: right;
         font-size: 10px;
@@ -46,18 +55,12 @@ limitations under the License.
         font-size: 10px;
         vertical-align: bottom;
       }
-      .correct {
-        border-left: 3px solid DarkSeaGreen;
-      }
-      .incorrect {
-        border-left: 3px solid lightcoral;
-      }
-      .blank {
-        background: darkgray;
+      .value-cell {
+        color: #202124;
+        border: 1px solid lightgrey;
       }
       .parenthetical {
         padding-right: 5px;
-        color: gray;
         width: 50px;
       }
     </style>
@@ -79,8 +82,32 @@ limitations under the License.
          * contains 1 true negative, 2 false positives, 3 true positives and
          * 4 false negatives.
          */
-        counts: {type: Object, observer: 'drawMatrix'},
+        counts: Object,
+
+        /**
+         * Array where entries are all cell labels to be used in the
+         * confusion matrix. If empty, then the cell labels are extracted
+         * from the provided counts dictionary. This is used for when a
+         * confusion matrix should have more rows/columns that just the
+         * information from counts, such as in a multiclass problem where
+         * the counts do not contain information from all possible classes.
+         */
+        allItems: {type: Array, value: () => ([])},
+
+        // Label appears in top-right corner of confusion matrix.
+        label: String,
+
+        // Color string for the base color to make the matrix cell
+        // backgrounds.
+        background: {
+          type: Object,
+          value: d3.color('gray'),
+        },
       },
+
+      observers: [
+        'drawMatrix(counts, allItems)',
+      ],
 
       ready: function() {
         // Allows d3-created elements in this Polymer element to be styled by
@@ -88,23 +115,27 @@ limitations under the License.
         this.scopeSubtree(this.$.holder, true);
       },
 
-      drawMatrix: function(counts) {
+      drawMatrix: function(counts, allItems) {
         this.$.holder.innerHTML = '';
         if (!counts) {
           return;
         }
 
-        // Get all labels from the counts dict.
-        let allLabels = {};
-        const outerLabelList = Object.keys(counts);
-        for (let i = 0; i < outerLabelList.length; i++) {
-          allLabels[outerLabelList[i]] = true;
-          const innerLabelList = Object.keys(counts[outerLabelList[i]]);
-          for (let j = 0; j < innerLabelList.length; j++) {
-            allLabels[innerLabelList[j]] = true;
+        // Get all labels from the provided list, or counts dict.
+        let labelsList = allItems;
+        if (labelsList == null || labelsList.length == 0) {
+          const labelsSet = new Set();
+          const outerLabelList = Object.keys(counts);
+          for (let i = 0; i < outerLabelList.length; i++) {
+            labelsSet.add(outerLabelList[i]);
+            const innerLabelList = Object.keys(counts[outerLabelList[i]]);
+            for (let j = 0; j < innerLabelList.length; j++) {
+              labelsSet.add(innerLabelList[j]);
+            }
           }
+          labelsList = Array.from(labelsSet.values());
         }
-        let labelsList = Object.keys(allLabels).sort();
+        labelsList = labelsList.sort();
 
         // For binary classification confusion matrices, we want the 'Yes'
         // column/row to appear before 'No', so we reverse this labels list.
@@ -161,7 +192,7 @@ limitations under the License.
           .append('th')
             .text(column => {
               if (column == 0) {
-                return this.getNText(total);
+                return this.label;
               } else if (column <= countMatrix.length) {
                 return 'Predicted ' + labelsList[column - 1];
               } else {
@@ -171,8 +202,10 @@ limitations under the License.
             .attr('class', column => {
               if (column == 0) {
                 return 'n-label';
-              } else {
+              } else if (column <= countMatrix.length) {
                 return 'pred-label';
+              } else {
+                return 'total-label';
               }
             });
 
@@ -195,20 +228,16 @@ limitations under the License.
           .append('td').attr('class', (d, i) => {
             if (i == 0) {
               return 'actual-label';
-            } else if (d.value == 0) {
-              return '';
-            } else if (i - 1 == d.row) {
-              return 'correct';
             } else if (i <= countMatrix.length) {
-              return 'incorrect';
+              return 'value-cell';
             } else {
-              return '';
+              return 'total-cell';
             }
           }).style('background', (d, i) => {
             if (i == 0 || i > countMatrix.length) {
               return '#FFFFFF';
             } else {
-              let c = d3.color('darkgrey');
+              let c = this.background;
               c.opacity = d.value / total;
               return c + '';
             }
@@ -225,7 +254,8 @@ limitations under the License.
           .selectAll('td')
           .data(indices).enter()
           .append('td');
-        footCells.classed('actual-label', (d, i) => i == 0);
+        footCells.classed('total-label', (d, i) => i == 0);
+        footCells.classed('total-cell', (d, i) => i != 0);
         const footCellDivs = footCells.append('div').classed('flex', true);
         footCellDivs.append('div').classed('parenthetical', (d, i) => !!i).text(
           column => {
@@ -253,10 +283,6 @@ limitations under the License.
        */
       getIndices: function(tableDim) {
         return Array.apply(null, {length: tableDim}).map(Number.call, Number);
-      },
-
-      getNText: function(total) {
-        return 'n=' + total;
       },
     });
 

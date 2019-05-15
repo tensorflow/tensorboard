@@ -1,0 +1,92 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+Essentially looks like a single one row in table-view that can't be expanded.
+Useful to show a selected session group in one of the visualizations.
+
+TODO(erez): Rename this to tf-hparams-session-group-details and rename
+the older tf-hparams-session-group-details to
+tf-hparams-session-group-metric-plots
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-hparams-table-view/tf-hparams-table-view.html">
+
+<dom-module id="tf-hparams-session-group-values">
+  <template>
+    <!-- If sessionGroup or schema are not populated, do not display
+         anything.
+      -->
+    <template is="dom-if"
+              if="[[_propertiesArePopulated(schema, sessionGroup)]]">
+      <!-- Display one row without a "show-metrics" column -->
+      <tf-hparams-table-view
+        schema="[[schema]]"
+        session-groups="[[_singletonSessionGroups(sessionGroup)]]">
+      </tf-hparams-table-view>
+    </template>
+    <template is="dom-if"
+              if="[[!_propertiesArePopulated(schema, sessionGroup)]]">
+      <div>
+        Click or hover over a session group to display its values here.
+      </div>
+    </template>
+
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-session-group-values',
+
+      properties: {
+        // The session group whose values will be displayed.
+        // A JavaScript representation of the tensorboard.hparams.SessionGroup
+        // protocol buffer.
+        sessionGroup: {
+          type: Object,
+          value: null
+        },
+        // The schema defining the columns to use. Only the values of columns
+        // in the schema will be displayed. See tf-hparams-query-pane for
+        // the definition of this object.
+        schema: {
+          type: Object,
+          value: null
+        }
+      },
+
+      _propertiesArePopulated: function(schema, sessionGroup) {
+        return schema !== undefined && schema !== null
+            && sessionGroup !== undefined && sessionGroup !== null;
+      },
+
+      _singletonSessionGroups : function(sessionGroup) {
+        if (sessionGroup === null || sessionGroup === undefined) {
+          return [];
+        }
+        return [sessionGroup];
+      },
+    });
+  </script>
+</dom-module>

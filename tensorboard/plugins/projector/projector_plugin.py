@@ -32,7 +32,7 @@ from google.protobuf import text_format
 
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
-from tensorboard.compat import USING_TF
+from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 from tensorboard.util import tb_logging
@@ -213,6 +213,11 @@ def _rel_to_abs_asset_path(fpath, config_fpath):
   if not os.path.isabs(fpath):
     return os.path.join(os.path.dirname(config_fpath), fpath)
   return fpath
+
+
+def _using_tf():
+  """Return true if we're not using the fake TF API stub implementation."""
+  return tf.__version__ != 'stub'
 
 
 class ProjectorPlugin(base_plugin.TBPlugin):
@@ -401,9 +406,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         if ckpt_path:
           config.model_checkpoint_path = ckpt_path
 
-      # Sanity check for the checkpoint file.
-      if (config.model_checkpoint_path and USING_TF and
-          not tf.compat.v1.train.checkpoint_exists(config.model_checkpoint_path)):
+      # Sanity check for the checkpoint file existing.
+      if (config.model_checkpoint_path and _using_tf() and
+          not tf.io.gfile.glob(config.model_checkpoint_path + '*')):
         logger.warn('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
         continue
@@ -417,10 +422,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     config = self._configs[run]
     reader = None
-    if config.model_checkpoint_path and USING_TF:
+    if config.model_checkpoint_path and _using_tf():
       try:
-        reader = tf.compat.v1.pywrap_tensorflow.NewCheckpointReader(
-            config.model_checkpoint_path)
+        reader = tf.train.load_checkpoint(config.model_checkpoint_path)
       except Exception:  # pylint: disable=broad-except
         logger.warn('Failed reading "%s"', config.model_checkpoint_path)
     self.readers[run] = reader
@@ -650,7 +654,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
 
 def _find_latest_checkpoint(dir_path):
-  if not USING_TF:
+  if not _using_tf():
     return None
   try:
     ckpt_path = tf.train.latest_checkpoint(dir_path)

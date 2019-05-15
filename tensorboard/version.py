@@ -15,4 +15,4 @@
 
 """Contains the version string."""
 
-VERSION = '1.13.0a0'
+VERSION = '1.14.0a0'

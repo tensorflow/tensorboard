@@ -14,59 +14,92 @@
 
 """Compatibility interfaces for TensorBoard.
 
-This module provides logic for importing variations on the TensorFlow APIs.
-
-The alias `tf` is for the main TF API used by TensorBoard. By default this will
-be the result of `import tensorflow as tf`, or undefined if that fails. This
-can be used in combination with //tensorboard/compat:tensorflow (to fall back to
-a stub TF API implementation if the real one is not available) and
-//tensorboard/compat:no_tensorflow (to use the stub TF API unconditionally).
-
-The function `import_tf_v2` provides common logic for importing the TF 2.0 API,
-and returns the root module of the API if found, or else raises ImportError.
-This is a function instead of a direct alias like `tf` in order to provide
-enough indirection to get around circular dependencies.
+This module provides logic for importing variations on the TensorFlow APIs, as
+lazily loaded imports to help avoid circular dependency issues and defer the
+search and loading of the module until necessary.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# First, check if using TF is explicitly disabled by request.
-USING_TF = True
-try:
-  from tensorboard.compat import notf
-  USING_TF = False
-except ImportError:
-  pass
+import importlib as _importlib
 
-# If TF is not disabled, check if it's available.
-if USING_TF:
+import tensorboard.lazy as _lazy
+
+
+@_lazy.lazy_load('tensorboard.compat.tf')
+def tf():
+  """Provide the root module of a TF-like API for use within TensorBoard.
+
+  By default this is equivalent to `import tensorflow as tf`, but it can be used
+  in combination with //tensorboard/compat:tensorflow (to fall back to a stub TF
+  API implementation if the real one is not available) or with
+  //tensorboard/compat:no_tensorflow (to force unconditional use of the stub).
+
+  Returns:
+    The root module of a TF-like API, if available.
+
+  Raises:
+    ImportError: if a TF-like API is not available.
+  """
   try:
-    import tensorflow as tf
+    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
   except ImportError:
-    USING_TF = False
-
-if not USING_TF:
-  # If we can't use TF, try to provide the stub instead.
-  # This will only work if the tensorflow_stub dep is included
-  # in the build, via the `tensorboard/compat:tensorflow` target.
-  try:
-    from tensorboard.compat import tensorflow_stub as tf
-  except ImportError:
-    pass
+    try:
+      import tensorflow  # pylint: disable=g-import-not-at-top
+      return tensorflow
+    except ImportError:
+      pass
+  from tensorboard.compat import tensorflow_stub  # pylint: disable=g-import-not-at-top
+  return tensorflow_stub
 
 
-def import_tf_v2():
-  """Import the TF 2.0 API if possible, or raise an ImportError."""
-  # We must be able to use TF in order to provide the TF 2.0 API.
-  if USING_TF:
-    # Check if this is TF 2.0 by looking for a known 2.0-only tf.summary symbol.
-    # TODO(nickfelt): determine a cleaner way to do this.
-    if hasattr(tf, 'summary') and hasattr(tf.summary, 'write'):
-      return tf
-    else:
-      # As a fallback, try `tensorflow.compat.v2` if it's defined.
-      if hasattr(tf, 'compat') and hasattr(tf.compat, 'v2'):
-        return tf.compat.v2
+@_lazy.lazy_load('tensorboard.compat.tf2')
+def tf2():
+  """Provide the root module of a TF-2.0 API for use within TensorBoard.
+
+  Returns:
+    The root module of a TF-2.0 API, if available.
+
+  Raises:
+    ImportError: if a TF-2.0 API is not available.
+  """
+  # Import the `tf` compat API from this file and check if it's already TF 2.0.
+  if tf.__version__.startswith('2.'):
+    return tf
+  elif hasattr(tf, 'compat') and hasattr(tf.compat, 'v2'):
+    # As a fallback, try `tensorflow.compat.v2` if it's defined.
+    return tf.compat.v2
   raise ImportError('cannot import tensorflow 2.0 API')
+
+
+# TODO(https://github.com/tensorflow/tensorboard/issues/1711): remove this
+@_lazy.lazy_load('tensorboard.compat._pywrap_tensorflow')
+def _pywrap_tensorflow():
+  """Provide pywrap_tensorflow access in TensorBoard.
+
+  pywrap_tensorflow cannot be accessed from tf.python.pywrap_tensorflow
+  and needs to be imported using
+  `from tensorflow.python import pywrap_tensorflow`. Therefore, we provide
+  a separate accessor function for it here.
+
+  NOTE: pywrap_tensorflow is not part of TensorFlow API and this
+  dependency will go away soon.
+
+  Returns:
+    pywrap_tensorflow import, if available.
+
+  Raises:
+    ImportError: if we couldn't import pywrap_tensorflow.
+  """
+  try:
+    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
+  except ImportError:
+    try:
+      from tensorflow.python import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+      return pywrap_tensorflow
+    except ImportError:
+      pass
+  from tensorboard.compat.tensorflow_stub import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+  return pywrap_tensorflow

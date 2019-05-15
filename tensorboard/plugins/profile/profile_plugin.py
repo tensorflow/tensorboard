@@ -21,10 +21,13 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import threading
+
+import six
+import tensorflow as tf
 from werkzeug import wrappers
 
-import tensorflow as tf
-
+from tensorflow.python.eager import profiler_client
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
@@ -38,10 +41,10 @@ logger = tb_logging.get_logger()
 PLUGIN_NAME = 'profile'
 
 # HTTP routes
-LOGDIR_ROUTE = '/logdir'
 DATA_ROUTE = '/data'
 TOOLS_ROUTE = '/tools'
 HOSTS_ROUTE = '/hosts'
+CAPTURE_ROUTE = '/capture_profile'
 
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
@@ -52,6 +55,7 @@ TOOLS = {
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
     'memory_viewer': 'memory_viewer.json',
+    'pod_viewer': 'pod_viewer.json',
     'google_chart_demo': 'google_chart_demo.json',
 }
 
@@ -60,6 +64,7 @@ _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
                              'overview_page',
                              'memory_viewer',
+                             'pod_viewer',
                              'google_chart_demo',])
 
 def process_raw_trace(raw_trace):
@@ -68,25 +73,14 @@ def process_raw_trace(raw_trace):
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
-
-class ProfilePluginLoader(base_plugin.TBLoader):
-  """Loader for Profile Plugin."""
-
-  def define_flags(self, parser):
-    group = parser.add_argument_group('profile plugin')
-    group.add_argument(
-        '--master_tpu_unsecure_channel',
-        metavar='ADDR',
-        type=str,
-        default='',
-        help='''\
-IP address of "master tpu", used for getting streaming trace data
-through tpu profiler analysis grpc. The grpc channel is not secured.\
-''')
-
-  def load(self, context):
-    return ProfilePlugin(context)
-
+def get_workers_list(cluster_resolver):
+  """Parses TPU workers list from the cluster resolver."""
+  cluster_spec = cluster_resolver.cluster_spec()
+  task_indices = cluster_spec.task_indices('worker')
+  workers_list = [
+      cluster_spec.task_address('worker', i).split(':')[0] for i in task_indices
+  ]
+  return ','.join(workers_list)
 
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
@@ -102,19 +96,44 @@ class ProfilePlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self.logdir = context.logdir
+    self.multiplexer = context.multiplexer
     self.plugin_logdir = plugin_asset_util.PluginDirectory(
-        self.logdir, ProfilePlugin.plugin_name)
+        self.logdir, PLUGIN_NAME)
     self.stub = None
     self.master_tpu_unsecure_channel = context.flags.master_tpu_unsecure_channel
 
-  @wrappers.Request.application
-  def logdir_route(self, request):
-    return http_util.Respond(request, {'logdir': self.plugin_logdir},
-                             'application/json')
+    # Whether the plugin is active. This is an expensive computation, so we
+    # compute this asynchronously and cache positive results indefinitely.
+    self._is_active = False
+    # Lock to ensure at most one thread computes _is_active at a time.
+    self._is_active_lock = threading.Lock()
 
-  def _run_dir(self, run):
-    run_dir = os.path.join(self.plugin_logdir, run)
-    return run_dir if tf.io.gfile.isdir(run_dir) else None
+  def is_active(self):
+    """Whether this plugin is active and has any profile data to show.
+
+    Detecting profile data is expensive, so this process runs asynchronously
+    and the value reported by this method is the cached value and may be stale.
+
+    Returns:
+      Whether any run has profile data.
+    """
+    # If we are already active, we remain active and don't recompute this.
+    # Otherwise, try to acquire the lock without blocking; if we get it and
+    # we're still not active, launch a thread to check if we're active and
+    # release the lock once the computation is finished. Either way, this
+    # thread returns the current cached value to avoid blocking.
+    if not self._is_active and self._is_active_lock.acquire(False):
+      if self._is_active:
+        self._is_active_lock.release()
+      else:
+        def compute_is_active():
+          self._is_active = any(self.generate_run_to_tools())
+          self._is_active_lock.release()
+        new_thread = threading.Thread(
+            target=compute_is_active,
+            name='ProfilePluginIsActiveThread')
+        new_thread.start()
+    return self._is_active
 
   def start_grpc_stub_if_necessary(self):
     # We will enable streaming trace viewer on two conditions:
@@ -124,7 +143,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if self.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
       if self.stub is None:
         import grpc
-        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
+        from tensorflow.python.tpu.profiler import profiler_analysis_pb2_grpc # pylint: disable=line-too-long
         # Workaround the grpc's 4MB message limitation.
         gigabyte = 1024 * 1024 * 1024
         options = [('grpc.max_message_length', gigabyte),
@@ -132,83 +151,161 @@ class ProfilePlugin(base_plugin.TBPlugin):
                    ('grpc.max_receive_message_length', gigabyte)]
         tpu_profiler_port = self.master_tpu_unsecure_channel + ':8466'
         channel = grpc.insecure_channel(tpu_profiler_port, options)
-        self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
-            channel)
+        self.stub = profiler_analysis_pb2_grpc.ProfileAnalysisStub(channel)
 
-  def index_impl(self):
-    """Returns available runs and available tool data in the log directory.
+  def _run_dir(self, run):
+    """Helper that maps a frontend run name to a profile "run" directory.
 
-    In the plugin log directory, each directory contains profile data for a
-    single run (identified by the directory name), and files in the run
-    directory contains data for different tools. The file that contains profile
-    for a specific tool "x" will have a suffix name TOOLS["x"].
-    Example:
-      log/
-        run1/
-          plugins/
-            profile/
-              host1.trace
-              host2.trace
-        run2/
-          plugins/
-            profile/
-              host1.trace
-              host2.trace
+    The frontend run name consists of the TensorBoard run name (aka the relative
+    path from the logdir root to the directory containing the data) path-joined
+    to the Profile plugin's "run" concept (which is a subdirectory of the
+    plugins/profile directory representing an individual run of the tool), with
+    the special case that TensorBoard run is the logdir root (which is the run
+    named '.') then only the Profile plugin "run" name is used, for backwards
+    compatibility.
+
+    To convert back to the actual run directory, we apply the following
+    transformation:
+    - If the run name doesn't contain '/', prepend './'
+    - Split on the rightmost instance of '/'
+    - Assume the left side is a TensorBoard run name and map it to a directory
+      path using EventMultiplexer.RunPaths(), then map that to the profile
+      plugin directory via PluginDirectory()
+    - Assume the right side is a Profile plugin "run" and path-join it to
+      the preceding path to get the final directory
+
+    Args:
+      run: the frontend run name, as described above, e.g. train/run1.
 
     Returns:
-      A map from runs to tool names e.g.
-        {"run1": ["trace_viewer"], "run2": ["trace_viewer"]} for the example.
+      The resolved directory path, e.g. /logdir/train/plugins/profile/run1.
     """
-    # TODO(ioeric): use the following structure and use EventMultiplexer so that
-    # the plugin still works when logdir is set to root_logdir/run1/
-    #     root_logdir/
-    #       run1/
-    #         plugins/
-    #           profile/
-    #             host1.trace
-    #       run2/
-    #         plugins/
-    #           profile/
-    #             host2.trace
-    run_to_tools = {}
-    if not tf.io.gfile.isdir(self.plugin_logdir):
-      return run_to_tools
+    run = run.rstrip('/')
+    if '/' not in run:
+      run = './' + run
+    tb_run_name, _, profile_run_name = run.rpartition('/')
+    tb_run_directory = self.multiplexer.RunPaths().get(tb_run_name)
+    if tb_run_directory is None:
+      # Check if logdir is a directory to handle case where it's actually a
+      # multipart directory spec, which this plugin does not support.
+      if tb_run_name == '.' and tf.io.gfile.isdir(self.logdir):
+        tb_run_directory = self.logdir
+      else:
+        raise RuntimeError("No matching run directory for run %s" % run)
+    plugin_directory = plugin_asset_util.PluginDirectory(
+        tb_run_directory, PLUGIN_NAME)
+    return os.path.join(plugin_directory, profile_run_name)
 
+  def generate_run_to_tools(self):
+    """Generator for pairs of "run name" and a list of tools for that run.
+
+    The "run name" here is a "frontend run name" - see _run_dir() for the
+    definition of a "frontend run name" and how it maps to a directory of
+    profile data for a specific profile "run". The profile plugin concept of
+    "run" is different from the normal TensorBoard run; each run in this case
+    represents a single instance of profile data collection, more similar to a
+    "step" of data in typical TensorBoard semantics. These runs reside in
+    subdirectories of the plugins/profile directory within any regular
+    TensorBoard run directory (defined as a subdirectory of the logdir that
+    contains at least one tfevents file) or within the logdir root directory
+    itself (even if it contains no tfevents file and would thus not be
+    considered a normal TensorBoard run, for backwards compatibility).
+
+    Within those "profile run directories", there are files in the directory
+    that correspond to different profiling tools. The file that contains profile
+    for a specific tool "x" will have a suffix name TOOLS["x"].
+
+    Example:
+      logs/
+        plugins/
+          profile/
+            run1/
+              hostA.trace
+        train/
+          events.out.tfevents.foo
+          plugins/
+            profile/
+              run1/
+                hostA.trace
+                hostB.trace
+              run2/
+                hostA.trace
+        validation/
+          events.out.tfevents.foo
+          plugins/
+            profile/
+              run1/
+                hostA.trace
+
+    Yields:
+      A sequence of tuples mapping "frontend run names" to lists of tool names
+      available for those runs. For the above example, this would be:
+
+          ("run1", ["trace_viewer"])
+          ("train/run1", ["trace_viewer"])
+          ("train/run2", ["trace_viewer"])
+          ("validation/run1", ["trace_viewer"])
+    """
     self.start_grpc_stub_if_necessary()
-    for run in tf.io.gfile.listdir(self.plugin_logdir):
-      run_dir = self._run_dir(run)
-      if not run_dir:
-        continue
-      run_to_tools[run] = []
-      for tool in TOOLS:
-        tool_pattern = '*' + TOOLS[tool]
-        path = os.path.join(run_dir, tool_pattern)
-        try:
-          files = tf.io.gfile.glob(path)
-          if len(files) >= 1:
-            run_to_tools[run].append(tool)
-        except tf.errors.OpError as e:
-          logger.warn("Cannot read asset directory: %s, OpError %s",
-                          run_dir, e)
-      if 'trace_viewer@' in run_to_tools[run]:
-        # streaming trace viewer always override normal trace viewer.
-        # the trailing '@' is to inform tf-profile-dashboard.html and
-        # tf-trace-viewer.html that stream trace viewer should be used.
-        removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
-        if removed_tool in run_to_tools[run]:
-          run_to_tools[run].remove(removed_tool)
-      run_to_tools[run].sort()
-      op = 'overview_page'
-      if op in run_to_tools[run]:
-        # keep overview page at the top of the list
-        run_to_tools[run].remove(op)
-        run_to_tools[run].insert(0, op)
-    return run_to_tools
+
+    plugin_assets = self.multiplexer.PluginAssets(PLUGIN_NAME)
+    tb_run_names_to_dirs = self.multiplexer.RunPaths()
+
+    # Ensure that we also check the root logdir, even if it isn't a recognized
+    # TensorBoard run (i.e. has no tfevents file directly under it), to remain
+    # backwards compatible with previously profile plugin behavior. Note that we
+    # check if logdir is a directory to handle case where it's actually a
+    # multipart directory spec, which this plugin does not support.
+    if '.' not in plugin_assets and tf.io.gfile.isdir(self.logdir):
+      tb_run_names_to_dirs['.'] = self.logdir
+      plugin_assets['.'] = plugin_asset_util.ListAssets(
+          self.logdir, PLUGIN_NAME)
+
+    for tb_run_name, profile_runs in six.iteritems(plugin_assets):
+      tb_run_dir = tb_run_names_to_dirs[tb_run_name]
+      tb_plugin_dir = plugin_asset_util.PluginDirectory(
+          tb_run_dir, PLUGIN_NAME)
+      for profile_run in profile_runs:
+        # Remove trailing slash; some filesystem implementations emit this.
+        profile_run = profile_run.rstrip('/')
+        if tb_run_name == '.':
+          frontend_run = profile_run
+        else:
+          frontend_run = '/'.join([tb_run_name, profile_run])
+        profile_run_dir = os.path.join(tb_plugin_dir, profile_run)
+        if tf.io.gfile.isdir(profile_run_dir):
+          yield frontend_run, self._get_active_tools(profile_run_dir)
+
+  def _get_active_tools(self, profile_run_dir):
+    tools = []
+    for tool in TOOLS:
+      tool_pattern = '*' + TOOLS[tool]
+      path = os.path.join(profile_run_dir, tool_pattern)
+      try:
+        files = tf.io.gfile.glob(path)
+        if len(files) >= 1:
+          tools.append(tool)
+      except tf.errors.OpError as e:
+        logger.warn("Cannot read asset directory: %s, OpError %s",
+                    profile_run_dir, e)
+    if 'trace_viewer@' in tools:
+      # streaming trace viewer always override normal trace viewer.
+      # the trailing '@' is to inform tf-profile-dashboard.html and
+      # tf-trace-viewer.html that stream trace viewer should be used.
+      removed_tool = 'trace_viewer@' if self.stub is None else 'trace_viewer'
+      if removed_tool in tools:
+        tools.remove(removed_tool)
+    tools.sort()
+    op = 'overview_page'
+    if op in tools:
+      # keep overview page at the top of the list
+      tools.remove(op)
+      tools.insert(0, op)
+    return tools
 
   @wrappers.Request.application
   def tools_route(self, request):
-    run_to_tools = self.index_impl()
-
+    run_to_tools = dict(self.generate_run_to_tools())
     return http_util.Respond(request, run_to_tools, 'application/json')
 
   def host_impl(self, run, tool):
@@ -237,11 +334,9 @@ class ProfilePlugin(base_plugin.TBPlugin):
         {"host1", "host2", "host3"} for the example.
     """
     hosts = {}
-    if not tf.io.gfile.isdir(self.plugin_logdir):
-      return hosts
     run_dir = self._run_dir(run)
     if not run_dir:
-      logger.warn("Cannot find asset directory: %s", run_dir)
+      logger.warn("Cannot find asset directory for: %s", run)
       return hosts
     tool_pattern = '*' + TOOLS[tool]
     try:
@@ -273,16 +368,19 @@ class ProfilePlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     tool = request.args.get('tag')
     host = request.args.get('host')
+    run_dir = self._run_dir(run)
+    # Profile plugin "run" is the last component of run dir.
+    profile_run = os.path.basename(run_dir)
 
     if tool not in TOOLS:
       return None
 
     self.start_grpc_stub_if_necessary()
     if tool == 'trace_viewer@' and self.stub is not None:
-      from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
-      grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
-      grpc_request.repository_root = self.plugin_logdir
-      grpc_request.session_id = run[:-1]
+      from tensorflow.core.profiler import profiler_analysis_pb2
+      grpc_request = profiler_analysis_pb2.ProfileSessionDataRequest()
+      grpc_request.repository_root = os.path.dirname(run_dir)
+      grpc_request.session_id = profile_run
       grpc_request.tool_name = 'trace_viewer'
       # Remove the trailing dot if present
       grpc_request.host_name = host.rstrip('.')
@@ -299,8 +397,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if tool not in TOOLS:
       return None
     tool_name = str(host) + TOOLS[tool]
-    rel_data_path = os.path.join(run, tool_name)
-    asset_path = os.path.join(self.plugin_logdir, rel_data_path)
+    asset_path = os.path.join(run_dir, tool_name)
     raw_data = None
     try:
       with tf.io.gfile.GFile(asset_path, 'rb') as f:
@@ -327,14 +424,50 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
     return http_util.Respond(request, data, 'application/json')
 
+  @wrappers.Request.application
+  def capture_route(self, request):
+    service_addr = request.args.get('service_addr')
+    try:
+      duration = int(request.args.get('duration'))
+    except TypeError:
+      # Returns code=200 to show error message in UI.
+      return http_util.Respond(request, {'error': 'invalid duration.'},
+                               'application/json', code=200)
+    is_tpu_name = request.args.get('is_tpu_name') == 'true'
+    workers_list = ''
+    if is_tpu_name:
+      try:
+        tpu_cluster_resolver = (
+            tf.distribute.cluster_resolver.TPUClusterResolver([service_addr]))
+        master_grpc_addr = tpu_cluster_resolver.get_master()
+      except (ImportError, RuntimeError) as err:
+        return http_util.Respond(request, {'error': err.message},
+                                 'application/json', code=200)
+      except (ValueError, TypeError):
+        return http_util.Respond(request,
+            {'error': 'no TPUs with the specified names exist.'},
+             'application/json', code=200)
+      workers_list = get_workers_list(tpu_cluster_resolver)
+      # TPU cluster resolver always returns port 8470. Replace it with 8466
+      # on which profiler service is running.
+      master_ip = master_grpc_addr.replace('grpc://', '').replace(':8470', '')
+      service_addr = master_ip + ':8466'
+      # Set the master TPU for streaming trace viewer.
+      self.master_tpu_unsecure_channel = master_ip
+    try:
+      profiler_client.start_tracing(service_addr, self.logdir,
+                                    duration, workers_list);
+      return http_util.Respond(
+          request, {'result': 'Capture profile successfully. Please refresh.'},
+          'application/json')
+    except tf.errors.UnavailableError:
+      return http_util.Respond(request, {'error': 'empty trace result.'},
+                                         'application/json', code=200)
+
   def get_plugin_apps(self):
     return {
-        LOGDIR_ROUTE: self.logdir_route,
         TOOLS_ROUTE: self.tools_route,
         HOSTS_ROUTE: self.hosts_route,
         DATA_ROUTE: self.data_route,
+        CAPTURE_ROUTE: self.capture_route,
     }
-
-  def is_active(self):
-    """The plugin is active iff any run has at least one active tool/tag."""
-    return any(self.index_impl().values())
