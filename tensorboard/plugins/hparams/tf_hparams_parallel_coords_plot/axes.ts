@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* Defines classes that manage the axes in the parallel coordinates plot. */
+
 namespace tf.hparams.parallel_coords_plot {
 
 /**

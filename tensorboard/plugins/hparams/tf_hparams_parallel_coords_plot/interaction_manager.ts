@@ -15,6 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* Defines the InteractionManager class and related classes. 
+   This is the main entry point to the parallel coordinates implementation. 
+*/
+
 namespace tf.hparams.parallel_coords_plot {
   
 /**
