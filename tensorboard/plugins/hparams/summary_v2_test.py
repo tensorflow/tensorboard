@@ -149,6 +149,28 @@ class HParamsTest(test.TestCase):
     if tf is not None:
       self.assertNotIsInstance(result, tf.compat.v1.Summary)
 
+  def assert_hparams_summaries_equal(self, summary_1, summary_2):
+    def canonical(summary):
+      """Return a canonical form for `summary`.
+
+      The result is such that `canonical(a) == canonical(b)` if and only
+      if `a` and `b` are logically equivalent.
+
+      Args:
+        summary: A `summary_pb2.Summary` containing hparams plugin data.
+      """
+      new_summary = summary_pb2.Summary()
+      new_summary.MergeFrom(summary)
+      values = new_summary.value
+      self.assertEqual(len(values), 1, values)
+      value = values[0]
+      raw_content = value.metadata.plugin_data.content
+      value.metadata.plugin_data.content = "<snipped>"
+      content = plugin_data_pb2.HParamsPluginData.FromString(raw_content)
+      return (new_summary, content)
+
+    self.assertEqual(canonical(summary_1), canonical(summary_2))
+
   def test_consistency_across_string_key_and_object_key(self):
     hparams_1 = {
         hp.HParam("optimizer", hp.Discrete(["adam", "sgd"])): "adam",
@@ -158,7 +180,7 @@ class HParamsTest(test.TestCase):
         "optimizer": "adam",
         hp.HParam("learning_rate", hp.RealInterval(1e-2, 1e-1)): 0.02,
     }
-    self.assertEqual(
+    self.assert_hparams_summaries_equal(
         hp.hparams_pb(hparams_1, start_time_secs=self.start_time_secs),
         hp.hparams_pb(hparams_2, start_time_secs=self.start_time_secs),
     )
@@ -191,7 +213,7 @@ class HParamsTest(test.TestCase):
         "learning_rate": 0.02,
         "optimizer": "adam",
     }
-    self.assertEqual(
+    self.assert_hparams_summaries_equal(
         hp.hparams_pb(hparams_1, start_time_secs=self.start_time_secs),
         hp.hparams_pb(hparams_2, start_time_secs=self.start_time_secs),
     )
