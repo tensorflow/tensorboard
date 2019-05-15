@@ -166,8 +166,8 @@ export class InteractionManager {
 
   public onDragEnd() {
     this._axesCollection.dragEnd(/*transitionDuration=*/ 500);
-    this._linesCollection.recomputeControlPoints(LineType.Foreground,
-                                       /* transitionDuration=*/ 500);
+    this._linesCollection.recomputeControlPoints(
+      LineType.Foreground, /* transitionDuration=*/ 500);
     window.setTimeout(() => {
       this._linesCollection.recomputeControlPoints(LineType.Background);
       this._linesCollection.showBackgroundLines();
@@ -190,7 +190,7 @@ export class InteractionManager {
 
   public onMouseLeave() {
     if (!this._linesCollection.peakedSessionGroupHandle().isNull()) {
-      this._linesCollection.clearPeakedSessionGroup()
+      this._linesCollection.clearPeakedSessionGroup();
       this._peakedSessionGroupChangedCB(null);
     }
   }
