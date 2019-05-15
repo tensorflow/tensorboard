@@ -165,7 +165,7 @@ class HParamsTest(test.TestCase):
       self.assertEqual(len(values), 1, values)
       value = values[0]
       raw_content = value.metadata.plugin_data.content
-      value.metadata.plugin_data.content = "<snipped>"
+      value.metadata.plugin_data.content = b"<snipped>"
       content = plugin_data_pb2.HParamsPluginData.FromString(raw_content)
       return (new_summary, content)
 
