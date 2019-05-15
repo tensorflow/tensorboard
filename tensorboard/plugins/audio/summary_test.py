@@ -26,25 +26,28 @@ import numpy as np
 import six
 import tensorflow as tf
 
-# TODO(nickfelt): get encode_wav() exported in the public API.
-from tensorflow.python.ops import gen_audio_ops
-
+from tensorboard.compat import tf2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
+from tensorboard.util import test_util
 
 
 try:
-  from tensorboard import compat
-  tf_v2 = compat.import_tf_v2()
+  tf2.__version__  # Force lazy import to resolve
 except ImportError:
-  tf_v2 = None
+  tf2 = None
 
 try:
   tf.compat.v1.enable_eager_execution()
 except AttributeError:
   # TF 2.0 doesn't have this symbol because eager is the default.
   pass
+
+audio_ops = getattr(tf, 'audio', None)
+if audio_ops is None:
+  # Fallback for older versions of TF without tf.audio.
+  from tensorflow.python.ops import gen_audio_ops as audio_ops
 
 
 class SummaryBaseTest(object):
@@ -85,7 +88,7 @@ class SummaryBaseTest(object):
     audio = self._generate_audio(c=1)
     pb = self.audio('k888', audio, 44100)
     encoded = tensor_util.make_ndarray(pb.value[0].tensor)
-    decoded, sample_rate = gen_audio_ops.decode_wav(encoded.flat[0])
+    decoded, sample_rate = audio_ops.decode_wav(encoded.flat[0])
     # WAV roundtrip goes from float32 to int16 and back, so expect some
     # precision loss, but not more than 2 applications of rounding error from
     # mapping the range [-1.0, 1.0] to 2^16.
@@ -98,7 +101,7 @@ class SummaryBaseTest(object):
     self.assertEqual(1, len(pb.value))
     results = tensor_util.make_ndarray(pb.value[0].tensor)
     for i, (encoded, _) in enumerate(results):
-      decoded, _ = gen_audio_ops.decode_wav(encoded)
+      decoded, _ = audio_ops.decode_wav(encoded)
       self.assertEqual(audio[i].shape, decoded.shape)
 
   def test_dimensions(self):
@@ -146,11 +149,10 @@ class SummaryBaseTest(object):
       self.audio('k488', data, 44100, encoding='pptx')
 
 
+@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1PbTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
     return summary.pb(*args, **kwargs)
@@ -166,11 +168,10 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     self.skipTest('summary V1 pb does not actually enforce this')
 
 
+@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1OpTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
     return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
@@ -198,22 +199,26 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV2OpTest, self).setUp()
-    if tf_v2 is None:
+    if tf2 is None:
       self.skipTest('TF v2 summary API not available')
 
   def audio(self, *args, **kwargs):
+    return self.audio_event(*args, **kwargs).summary
+
+  def audio_event(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
-    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.audio(*args, **kwargs)
     writer.close()
-    return self.read_single_event_from_eventfile().summary
-
-  def read_single_event_from_eventfile(self):
     event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
-    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
+    self.assertEqual(len(event_files), 1)
+    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
+    # Delete the event file to reset to an empty directory for later calls.
+    # TODO(nickfelt): use a unique subdirectory per writer instead.
+    os.remove(event_files[0])
     return events[1]
 
   def test_scoped_tag(self):
@@ -223,9 +228,19 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
   def test_step(self):
     data = np.array(1, np.float32, ndmin=3)
-    self.audio('a', data, 44100, step=333)
-    event = self.read_single_event_from_eventfile()
+    event = self.audio_event('a', data, 44100, step=333)
     self.assertEqual(333, event.step)
+
+  def test_default_step(self):
+    data = np.array(1, np.float32, ndmin=3)
+    try:
+      tf2.summary.experimental.set_step(333)
+      # TODO(nickfelt): change test logic so we can just omit `step` entirely.
+      event = self.audio_event('a', data, 44100, step=None)
+      self.assertEqual(333, event.step)
+    finally:
+      # Reset to default state for other tests.
+      tf2.summary.experimental.set_step(None)
 
 
 if __name__ == '__main__':

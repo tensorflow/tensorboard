@@ -27,13 +27,14 @@ from __future__ import print_function
 
 import functools
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.audio import metadata
 
 
 def audio(name,
           data,
           sample_rate,
-          step,
+          step=None,
           max_outputs=3,
           encoding=None,
           description=None):
@@ -49,7 +50,9 @@ def audio(name,
       be statically unknown (i.e., `None`).
     sample_rate: An `int` or rank-0 `int32` `Tensor` that represents the
       sample rate, in Hz. Must be positive.
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
       many audio clips will be emitted at each step. When more than
       `max_outputs` many clips are provided, the first `max_outputs`
@@ -63,12 +66,15 @@ def audio(name,
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
-  # TODO(nickfelt): get encode_wav() exported in the public API.
-  from tensorflow.python.ops import gen_audio_ops
+  audio_ops = getattr(tf, 'audio', None)
+  if audio_ops is None:
+    # Fallback for older versions of TF without tf.audio.
+    from tensorflow.python.ops import gen_audio_ops as audio_ops
 
   if encoding is None:
     encoding = 'wav'
@@ -79,12 +85,16 @@ def audio(name,
       description=description,
       encoding=metadata.Encoding.Value('WAV'))
   inputs = [data, sample_rate, max_outputs, step]
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'audio_summary', values=inputs) as (tag, _):
     tf.debugging.assert_rank(data, 3)
     tf.debugging.assert_non_negative(max_outputs)
     limited_audio = data[:max_outputs]
-    encode_fn = functools.partial(gen_audio_ops.encode_wav,
+    encode_fn = functools.partial(audio_ops.encode_wav,
                                   sample_rate=sample_rate)
     encoded_audio = tf.map_fn(encode_fn, limited_audio,
                               dtype=tf.string,

@@ -23,6 +23,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":encoder",
+        ":test_util",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
@@ -50,32 +51,6 @@ py_test(
 )
 
 py_library(
-    name = "util",
-    srcs = ["util.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":tb_logging",
-        "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard/compat:tensorflow",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "util_test",
-    size = "small",
-    srcs = ["util_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":test_util",
-        ":util",
-        "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
     name = "platform_util",
     srcs = ["platform_util.py"],
     srcs_version = "PY2AND3",
@@ -86,9 +61,10 @@ py_test(
     size = "small",
     srcs = ["platform_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":platform_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
     ],
 )
 
@@ -115,8 +91,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":tb_logging",
-        ":util",
-        "//tensorboard:db",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",

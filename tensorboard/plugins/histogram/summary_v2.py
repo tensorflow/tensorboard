@@ -31,6 +31,7 @@ from __future__ import print_function
 
 import numpy as np
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import metadata
 from tensorboard.util import tensor_util
@@ -39,14 +40,16 @@ from tensorboard.util import tensor_util
 DEFAULT_BUCKET_COUNT = 30
 
 
-def histogram(name, data, step, buckets=None, description=None):
+def histogram(name, data, step=None, buckets=None, description=None):
   """Write a histogram summary.
 
   Arguments:
     name: A name for this summary. The summary tag used for TensorBoard will
       be this name prefixed by any active name scopes.
     data: A `Tensor` of any shape. Must be castable to `float64`.
-    step: Required `int64`-castable monotonic step value.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
     buckets: Optional positive `int`. The output will have this
       many buckets, except in two edge cases. If there is no data, then
       there are no buckets. If there is data but all points have the
@@ -58,13 +61,18 @@ def histogram(name, data, step, buckets=None, description=None):
   Returns:
     True on success, or false if no summary was emitted because no default
     summary writer was available.
+
+  Raises:
+    ValueError: if a default writer exists, but no step was provided and
+      `tf.summary.experimental.get_step()` is None.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)
-  with tf.summary.summary_scope(
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  with summary_scope(
       name, 'histogram_summary', values=[data, buckets, step]) as (tag, _):
     tensor = _buckets(data, bucket_count=buckets)
     return tf.summary.write(
@@ -82,12 +90,9 @@ def _buckets(data, bucket_count=None):
     a triple `[left_edge, right_edge, count]` for a single bucket.
     The value of `k` is either `bucket_count` or `1` or `0`.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard import compat
-  tf = compat.import_tf_v2()
   if bucket_count is None:
     bucket_count = DEFAULT_BUCKET_COUNT
-  with tf.name_scope('buckets', values=[data, bucket_count]):
+  with tf.name_scope('buckets'):
     tf.debugging.assert_scalar(bucket_count)
     tf.debugging.assert_type(bucket_count, tf.int32)
     data = tf.reshape(data, shape=[-1])  # flatten
@@ -152,8 +157,6 @@ def histogram_pb(tag, data, buckets=None, description=None):
   Returns:
     A `summary_pb2.Summary` protobuf object.
   """
-  # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  from tensorboard.compat import tf
   bucket_count = DEFAULT_BUCKET_COUNT if buckets is None else buckets
   data = np.array(data).flatten().astype(float)
   if data.size == 0:
@@ -179,7 +182,7 @@ def histogram_pb(tag, data, buckets=None, description=None):
       left_edges = edges[:-1]
       right_edges = edges[1:]
       buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
-  tensor = tensor_util.make_tensor_proto(buckets, dtype=tf.float64)
+  tensor = tensor_util.make_tensor_proto(buckets, dtype=np.float64)
 
   summary_metadata = metadata.create_summary_metadata(
       display_name=None, description=description)

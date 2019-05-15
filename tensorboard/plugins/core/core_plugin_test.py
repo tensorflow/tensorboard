@@ -40,19 +40,20 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 
 
 class FakeFlags(object):
   def __init__(
       self,
-      inspect,
+      inspect=False,
+      version_tb=False,
       logdir='',
       event_file='',
       db='',
       path_prefix=''):
     self.inspect = inspect
+    self.version_tb = version_tb
     self.logdir = logdir
     self.event_file = event_file
     self.db = db
@@ -80,6 +81,7 @@ class CorePluginTest(tf.test.TestCase):
 
   def testFlag(self):
     loader = core_plugin.CorePluginLoader()
+    loader.fix_flags(FakeFlags(version_tb=True))
     loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
     loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
     loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp'))
@@ -159,6 +161,7 @@ class CorePluginTest(tf.test.TestCase):
     parsed_object = self._get_json(self.logdir_based_server, '/data/logdir')
     self.assertEqual(parsed_object, {'logdir': self.logdir})
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRuns(self):
     """Test the format of the /data/runs endpoint."""
     self._add_run('run1')
@@ -167,6 +170,7 @@ class CorePluginTest(tf.test.TestCase):
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperiments(self):
     """Test the format of the /data/experiments endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -180,6 +184,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperimentRuns(self):
     """Test the format of the /data/experiment_runs endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -208,7 +213,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
-
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
     fake_wall_times = {

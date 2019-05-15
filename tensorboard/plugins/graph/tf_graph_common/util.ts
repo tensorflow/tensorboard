@@ -24,6 +24,9 @@ module tf.graph.util {
    */
   const ASYNC_TASK_DELAY = 20;
 
+  /**
+   * Measure and log a synchronous task.
+   */
   export function time<T>(msg: string, task: () => T) {
     let start = Date.now();
     let result = task();
@@ -33,6 +36,12 @@ module tf.graph.util {
     return result;
   }
 
+  export type Tracker = {
+    setMessage: (msg: string) => void;
+    updateProgress: (value: number) => void;
+    reportError: (msg: string, error: Error) => void;
+  };
+
   /**
    * Creates a tracker that sets the progress property of the
    * provided polymer component. The provided component must have
@@ -40,7 +49,7 @@ module tf.graph.util {
    * property is an object with a numerical 'value' property and a
    * string 'msg' property.
    */
-  export function getTracker(polymerComponent: any) {
+  export function getTracker(polymerComponent: any): Tracker {
     return {
       setMessage: function(msg) {
         polymerComponent.set(
@@ -95,7 +104,8 @@ module tf.graph.util {
   }
 
   /**
-   * Runs an expensive task and return the result.
+   * Runs a synchronous expensive task and return the result.
+   * Please use runAsyncPromiseTask in case a task returns a Promise.
    */
   export function runTask<T>(
       msg: string, incProgressValue: number, task: () => T,
@@ -192,8 +202,15 @@ module tf.graph.util {
     return querySelector.replace(/([:.\[\],/\\\(\)])/g, '\\$1');
   }
 
+  interface Unit {
+    symbol: string;
+    numUnits?: number;
+  }
+
+  type Units = ReadonlyArray<Unit>;
+
   // For unit conversion.
-  export const MEMORY_UNITS = [
+  export const MEMORY_UNITS: Units = [
     // Atomic unit.
     {symbol: 'B'},
     // numUnits specifies how many previous units this unit contains.
@@ -201,7 +218,8 @@ module tf.graph.util {
     {symbol: 'GB', numUnits: 1024}, {symbol: 'TB', numUnits: 1024},
     {symbol: 'PB', numUnits: 1024}
   ];
-  export const TIME_UNITS = [
+
+  export const TIME_UNITS: Units = [
     // Atomic unit. Finest granularity in TensorFlow stat collection.
     {symbol: 'µs'},
     // numUnits specifies how many previous units this unit contains.
@@ -214,16 +232,21 @@ module tf.graph.util {
    * Returns the human readable version of the unit.
    * (e.g. 1.35 GB, 23 MB, 34 ms, 6.53 min etc).
    */
-  export function convertUnitsToHumanReadable(value, units, unitIndex) {
-    unitIndex = unitIndex == null ? 0 : unitIndex;
+  export function convertUnitsToHumanReadable(
+      value: number, units: Units, unitIndex: number = 0) {
     if (unitIndex + 1 < units.length &&
         value >= units[unitIndex + 1].numUnits) {
       return tf.graph.util.convertUnitsToHumanReadable(
           value / units[unitIndex + 1].numUnits, units, unitIndex + 1);
     }
     // toPrecision() has the tendency to return a number in scientific
-    // notation and (number - 0) brings it back to normal notation.
-    return (value.toPrecision(3) - 0) + ' ' + units[unitIndex].symbol;
+    // notation and casting back to a number brings it back to normal notation.
+    // e.g.,
+    //   > value = 213; value.toPrecision(1)
+    //   < "2e+2"
+    //   > Number(value.toPrecision(1))
+    //   < 200
+    return Number(value.toPrecision(3)) + ' ' + units[unitIndex].symbol;
   }
 
   export function hasDisplayableNodeStats(stats: NodeStats) {

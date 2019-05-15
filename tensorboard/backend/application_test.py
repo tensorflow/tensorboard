@@ -29,7 +29,6 @@ import socket
 import tempfile
 
 import six
-import tensorflow as tf
 
 try:
   # python version >= 3.3
@@ -40,6 +39,7 @@ except ImportError:
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
+from tensorboard import test as tb_test
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -117,7 +117,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
 
-class ApplicationTest(tf.test.TestCase):
+class ApplicationTest(tb_test.TestCase):
   def setUp(self):
     plugins = [
         FakePlugin(
@@ -150,7 +150,7 @@ class ApplicationTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class ApplicationBaseUrlTest(tf.test.TestCase):
+class ApplicationBaseUrlTest(tb_test.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
@@ -190,7 +190,7 @@ class ApplicationBaseUrlTest(tf.test.TestCase):
     self.assertEqual(parsed_object, {'foo': True, 'bar': False})
 
 
-class ApplicationPluginNameTest(tf.test.TestCase):
+class ApplicationPluginNameTest(tb_test.TestCase):
 
   def _test(self, name, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -232,7 +232,7 @@ class ApplicationPluginNameTest(tf.test.TestCase):
     self._test('Scalar-Dashboard_3000.1', True)
 
 
-class ApplicationPluginRouteTest(tf.test.TestCase):
+class ApplicationPluginRouteTest(tb_test.TestCase):
 
   def _test(self, route, should_be_okay):
     temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
@@ -265,7 +265,7 @@ class ApplicationPluginRouteTest(tf.test.TestCase):
     self._test('runaway', False)
 
 
-class ParseEventFilesSpecTest(tf.test.TestCase):
+class ParseEventFilesSpecTest(tb_test.TestCase):
 
   def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
     """
@@ -386,7 +386,7 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
           ntpath, 'A:C:\\foo\\path', {'C:\\foo\\path': 'A'})
 
 
-class TensorBoardPluginsTest(tf.test.TestCase):
+class TensorBoardPluginsTest(tb_test.TestCase):
 
   def setUp(self):
     self.context = None
@@ -435,7 +435,7 @@ class TensorBoardPluginsTest(tf.test.TestCase):
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
 
-class ApplicationConstructionTest(tf.test.TestCase):
+class ApplicationConstructionTest(tb_test.TestCase):
 
   def testExceptions(self):
     logdir = '/fake/foo'
@@ -461,7 +461,7 @@ class ApplicationConstructionTest(tf.test.TestCase):
       application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
 
 
-class DbTest(tf.test.TestCase):
+class DbTest(tb_test.TestCase):
 
   def testSqliteDb(self):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
@@ -526,4 +526,4 @@ class DbTest(tf.test.TestCase):
 
 
 if __name__ == '__main__':
-  tf.test.main()
+  tb_test.main()

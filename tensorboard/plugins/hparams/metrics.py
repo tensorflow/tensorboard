@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Functions for dealing with metrics. """
+"""Functions for dealing with metrics."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+
+import six
 import tensorflow as tf
+
 from tensorboard.plugins.hparams import api_pb2
-from tensorboard.util import tensor_util
+
+
+def run_tag_from_session_and_metric(session_name, metric_name):
+  """Returns a (run,tag) tuple storing the evaluations of the specified metric.
+
+  Args:
+    session_name: str.
+    metric_name: MetricName protobuffer.
+  Returns: (run, tag) tuple.
+  """
+  assert isinstance(session_name, six.string_types)
+  assert isinstance(metric_name, api_pb2.MetricName)
+  # os.path.join() will append a final slash if the group is empty; it seems
+  # like multiplexer.Tensors won't recognize paths that end with a '/' so
+  # we normalize the result of os.path.join() to remove the final '/' in that
+  # case.
+  run = os.path.normpath(os.path.join(session_name, metric_name.group))
+  tag = metric_name.tag
+  return run, tag
 
 
 def last_metric_eval(multiplexer, session_name, metric_name):
   """Returns the last evaluations of the given metric at the given session.
+
   Args:
     multiplexer: The EventMultiplexer instance allowing access to
         the exported summary data.
@@ -42,11 +65,8 @@ def last_metric_eval(multiplexer, session_name, metric_name):
   Raises:
     KeyError if the given session does not have the metric.
   """
-  assert isinstance(session_name, str)
-  assert isinstance(metric_name, api_pb2.MetricName)
-  run = session_name + metric_name.group
-  tag = metric_name.tag
   try:
+    run, tag = run_tag_from_session_and_metric(session_name, metric_name)
     tensor_events = multiplexer.Tensors(run=run, tag=tag)
   except KeyError as e:
     raise KeyError(
@@ -56,4 +76,4 @@ def last_metric_eval(multiplexer, session_name, metric_name):
   # TODO(erez): Raise HParamsError if the tensor is not a 0-D real scalar.
   return (last_event.wall_time,
           last_event.step,
-          tensor_util.make_ndarray(last_event.tensor_proto).item())
+          tf.make_ndarray(last_event.tensor_proto).item())

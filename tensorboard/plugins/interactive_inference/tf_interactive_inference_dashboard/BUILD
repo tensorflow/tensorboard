@@ -6,28 +6,15 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "wit_assets",
-    srcs = [
-        "distance.png",
-        "editedexample.png",
-        "explorecounterfactuals.png",
-        "pdplots.png",
-    ],
-    path = "/tf-interactive-inference-dashboard",
-)
-
-tf_web_library(
     name = "tf_interactive_inference_dashboard",
     srcs = [
         "tf-interactive-inference-dashboard.html",
     ],
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        ":wit_assets",
         ":tf_confusion_matrix",
         ":tf_inference_panel",
         ":tf_inference_viewer",
-        ":tf_regression_table",
         "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_bar_chart",
         "//tensorboard/components/vz_line_chart",
@@ -49,10 +36,12 @@ tf_web_library(
         "@org_polymer_paper_spinner",
         "@org_polymer_paper_styles",
         "@org_polymer_paper_tabs",
+        "@org_polymer_paper_toggle_button",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_tensorboard:plugin_dialog",
         "//tensorboard/components/tf_tensorboard:registry",
     ],
 )
@@ -120,16 +109,5 @@ tf_web_library(
         "@org_polymer_paper_input",
         "@org_polymer_paper_radio_button",
         "@org_polymer_paper_radio_group",
-    ],
-)
-
-tf_web_library(
-    name = "tf_regression_table",
-    srcs = [
-        "tf-regression-table.html",
-    ],
-    path = "/tf-interactive-inference-dashboard",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
     ],
 )

@@ -119,9 +119,10 @@ class Resizer(op_evaluator.PersistentOpEvaluator):
   def initialize_graph(self):
     self._image_placeholder = tf.compat.v1.placeholder(dtype=tf.float32)
     self._size_placeholder = tf.compat.v1.placeholder(dtype=tf.int32)
-    self._resize_op = tf.image.resize(self._image_placeholder,
-                                      self._size_placeholder,
-                                      method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    self._resize_op = tf.compat.v1.image.resize_nearest_neighbor(
+        self._image_placeholder,
+        self._size_placeholder,
+    )
 
   # pylint: disable=arguments-differ
   def run(self, image, height, width):

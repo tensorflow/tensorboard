@@ -6,7 +6,7 @@ The [What-If Tool](https://pair-code.github.io/what-if-tool) (WIT) provides an e
 understanding of a black-box classification or regression ML model.
 With the plugin, you can perform inference on a large set of examples and
 immediately visualize the results in a variety of ways.
-Additionally, examples can be edited manually or programatically and re-run
+Additionally, examples can be edited manually or programmatically and re-run
 through the model in order to see the results of the changes.
 It contains tooling for investigating model performance and fairness over
 subsets of a dataset.
@@ -22,7 +22,10 @@ notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
 
-Fine, here are some demos:
+Check out the large set of web and colab demos in the
+[demo section of the What-If Tool website](https://pair-code.github.io/what-if-tool/index.html#demos).
+
+To build the web demos yourself:
 * [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/uci.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
@@ -57,12 +60,26 @@ You can use the What-If Tool to analyze a classification or regression
 that takes TensorFlow Example or SequenceExample protos
 (data points) as inputs directly in a jupyter or colab notebook.
 
+Additionally, the What-If Tool can analyze
+[AI Platform Prediction-hosted](https://cloud.google.com/ml-engine/) classification
+or regresssion models that take TensorFlow Example protos, SequenceExample protos,
+or raw JSON objects as inputs.
+
+You can also use What-If Tool with a custom prediction function that takes
+Tensorflow examples and produces predictions. In this mode, you can load any model
+(including non-TensorFlow models that don't use Example protos as inputs) as
+long as your custom function's input and output specifications are correct.
+
 If you want to train an ML model from a dataset and explore the dataset and
-model, check out the the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
+model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
 converts the data to tf.Example protos, trains a classifier, and then uses the
 What-If Tool to show the classifier performance on the data.
 
 ## What do I need to use it in TensorBoard?
+
+A walkthrough of using the tool in TensorBoard, including a pretrained model and
+test dataset, can be found on the
+[What-If Tool page on the TensorBoard website](https://www.tensorflow.org/tensorboard/r2/what_if_tool).
 
 To use the tool in TensorBoard, only the following information needs to be provided:
 
@@ -125,16 +142,21 @@ values in a list of feature values for a given feature.
 
 In order to make use of the model understanding features of the tool, you can
 have columns in your dataset that contain the output from an ML model. If your
-file has a column named "probabilities" with a pipe-delimited ("|") list of
+file has a column named "predictions__probabilities" with a pipe-delimited ("|") list of
 probability scores (between 0 and 1), then the tool will treat those as the
 output scores of a classification model. If your file has a numeric column named
-"score" then the tool will treat those as the output of a regression model. In
+"predictions" then the tool will treat those as the output of a regression model. In
 this way, the tool can be used to analyze any dataset and the results of any
 model run offline against the dataset. Note that in this mode, the examples
 aren't editable as there is no way to get new inference results when an example
 changes.
 
 ## What can it do?
+
+Details on the capabilities of the tool, including a guided walkthrough, can be
+found on the [What-If Tool website](https://pair-code.github.io/what-if-tool).
+Here is a basic rundown of what it can do:
+
 * Visualize a dataset of TensorFlow Example protos.
   * The main panel shows the dataset using [Facets Dive](https://pair-code.github.io/facets),
     where the examples can be organized/sliced/positioned/colored by any of the
@@ -152,8 +174,6 @@ changes.
     selected example.
   * Aggregate statistics for all loaded examples can be viewed in the side panel
     using [Facets Overview](https://pair-code.github.io/facets/).
-
-![Faceted examples and their aggregate statistics](/tensorboard/plugins/interactive_inference/img/wit-census-overview.png "Faceted examples and their aggregate statistics")
 
 * Visualize the results of the inference
   * By default, examples in the main panel are colored by their inference
@@ -197,11 +217,6 @@ changes.
     with the provided data on both models and you can compare the results
     between the two models using all the features defined above.
 
-
-![The side panel showing new inference results after the “capital-gain” feature value has been edited.](/tensorboard/plugins/interactive_inference/img/wit-census-edit-rerun.png "The side panel showing new inference results after the “capital-gain” feature value has been edited")
-
-![Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change](/tensorboard/plugins/interactive_inference/img/wit-census-pd.png "Partial dependence plots for 3 features of a selected example (see how the confidence of the positive classification changes as the feature values change")
-
 * If using a binary classification model and your examples include a feature
   that describes the true label, you can do the following:
   * See the ROC curve and numeric confusion matrices in the side panel,
@@ -216,8 +231,6 @@ changes.
   * Set the positive classification thresholds with one click based on concepts
     such as the cost of a false positive vs a false negative and satisfying
     fairness measures such as equality of opportunity or demographic parity.
-
-![ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button.](/tensorboard/plugins/interactive_inference/img/wit-census-roc.png "ROC curves and confusion matrices faceted by the sex feature. The current positive classification thresholds have been set based on the equal opporitunity fairness criteria button")
 
 * If using a multi-class classification model and your examples include a
   feature that describes the true label, you can do the following:
@@ -242,10 +255,50 @@ We imagine WIT to be useful for a wide variety of users.
 * Lay users - Learn about machine learning by interactively playing with
   datasets and models.
 
-## How do I use it in a Jupyter notebook?
+## Notebook mode details
+
+As seen in the [example notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb),
+creating the `WitWidget` object is what causes the What-If Tool to be displayed
+in an output cell. The `WitWidget` object takes a `WitConfigBuilder` object as a
+constructor argument. The `WitConfigBuilder` object specifies the data and model
+information that the What-If Tool will use.
+
+The WitConfigBuilder object takes a list of tf.Example or tf.SequenceExample
+protos as a constructor argument. These protos will be shown in the tool and
+inferred in the specified model.
+
+The model to be used for inference by the tool can be specified in many ways:
+- As a TensorFlow [Estimator](https://www.tensorflow.org/guide/estimators)
+  object that is provided through the `set_estimator_and_feature_spec` method.
+  In this case the inference will be done inside the notebook using the
+  provided estimator.
+- As a model hosted by [AI Platform Prediction](https://cloud.google.com/ml-engine/)
+  through the`set_ai_platform_model` method.
+- As a custom prediction function provided through `set_custom_predict_fn` method.
+  In this case WIT will directly call the function for inference.
+- As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
+  through the `set_inference_address` and `set_model_name` methods. In this case
+  the inference will be done on the model server specified. To query a model served
+  on host "localhost" on port 8888, named "my_model", you would set on your
+  builder
+  `builder.set_inference_address('localhost:8888').set_model_name('my_model')`.
+
+See the documentation of [WitConfigBuilder](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/witwidget/notebook/visualization.py)
+for all options you can provide, including how to specify other model types
+(defaults to binary classification) and how to specify an optional second model
+to compare to the first model.
+
+### How do I enable it for use in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
 ```sh
 pip install witwidget
+jupyter nbextension install --py --symlink --sys-prefix witwidget
+jupyter nbextension enable --py --sys-prefix witwidget
+```
+Note that if you use TensorFlow with GPU support (tensorflow-gpu), then you
+should instead install the GPU-compatible version of witwidget:
+```sh
+pip install widwidget-gpu
 jupyter nbextension install --py --symlink --sys-prefix witwidget
 jupyter nbextension enable --py --sys-prefix witwidget
 ```
@@ -253,12 +306,13 @@ jupyter nbextension enable --py --sys-prefix witwidget
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
 
-## How do I use it in a Colab notebook?
+### How do I enable it for use in a Colab notebook?
 Install the widget into the runtime of the notebook kernel by running a cell
 containing:
 ```
 !pip install witwidget
 ```
+For TensorFlow GPU support, use the widwidget-gpu package instead of witwidget.
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).

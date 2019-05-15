@@ -23,12 +23,14 @@ limitations under the License.
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-beholder-video.html">
 <link rel="import" href="tf-beholder-info.html">
 
 <dom-module id="tf-beholder-dashboard">
   <template>
+    <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <tf-dashboard-layout>
       <div class="sidebar">
         <template is="dom-if" if="[[_controls_disabled]]">
@@ -334,7 +336,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
     "use strict";
     (function() {
 
-    const PLUGIN_NAME = 'beholder'
+    const PLUGIN_NAME = 'beholder';
 
     Polymer({
       is: 'tf-beholder-dashboard',
@@ -345,6 +347,8 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
           type: Object,
           value: () => new tf_backend.RequestManager(10, 0),
         },
+
+        _isAvailable: Boolean,
 
         _values: {
           type: String,
@@ -476,25 +480,45 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         this.$.record_button.classList.toggle('is-recording')
       },
 
+      attached: function() {
+        // Check if the plugin was created
+        this._requestManager
+            .request(tf_backend.getRouter().pluginsListing())
+            .then(plugins => {
+              if (!(PLUGIN_NAME in plugins)) {
+                // The plugin was not created
+                this.$.initialDialog.openNoTensorFlowDialog();
+                this.set('_isAvailable', false);
+              } else {
+                // The plugin was created
+                this.$.initialDialog.closeDialog();
+                this.set('_isAvailable', true);
+              }
+            });
+      },
+
       ready() {
         this.reload()
       },
 
       reload() {
-        const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
+        if (this._isAvailable) {
+          const url = tf_backend.getRouter().pluginRoute(PLUGIN_NAME, '/is-active');
 
-        this._requestManager.request(url).then(response => {
-          this.set('_is_active', response['is_active']);
-          this.set('_controls_disabled', !response['is_config_writable']);
-        })
+          this._requestManager.request(url).then(response => {
+            this.set('_is_active', response['is_active']);
+            this.set('_controls_disabled', !response['is_config_writable']);
+          })
+        }
       },
     });
-    })();
 
     tf_tensorboard.registerDashboard({
-      plugin: 'beholder',
+      plugin: PLUGIN_NAME,
       elementName: 'tf-beholder-dashboard',
       shouldRemoveDom: true,
     });
+
+    })();
   </script>
 </dom-module>

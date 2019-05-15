@@ -92,7 +92,6 @@ tf-graph-controls {
     <div class="side">
       <tf-graph-controls
           color-by-params="[[colorByParams]]"
-          stats="[[stats]]"
           color-by="{{colorBy}}"
           render-hierarchy="[[_renderHierarchy]]"
           selected-node="{{selectedNode}}"
@@ -101,7 +100,6 @@ tf-graph-controls {
       <tf-graph-loader id="loader"
           out-graph-hierarchy="{{graphHierarchy}}"
           out-graph="{{graph}}"
-          out-stats="{{stats}}"
           progress="{{_progress}}"
           selected-file="[[selectedFile]]"
       ></tf-graph-loader>
@@ -110,7 +108,6 @@ tf-graph-controls {
       <tf-graph-board id="graphboard"
           graph-hierarchy="[[graphHierarchy]]"
           graph="[[graph]]"
-          stats="[[stats]]"
           progress="[[_progress]]"
           color-by="[[colorBy]]"
           color-by-params="{{colorByParams}}"
@@ -130,8 +127,6 @@ tf-graph-controls {
 Polymer({
   is: 'tf-graph-app',
   properties: {
-    stats: Object,
-
     // To use tf-graph-app, specify one of these 2 properties. Provide either
     // 1. The path to a pbtxt file to load (pbtxtFileLocation). This option nicely makes the
     //    progress bar include the time it takes to load the file across the network. The path could

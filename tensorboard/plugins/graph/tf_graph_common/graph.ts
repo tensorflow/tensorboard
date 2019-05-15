@@ -1020,9 +1020,33 @@ function addEdgeToGraph(
   });
 }
 
+export const DefaultBuildParams: BuildParams = {
+  enableEmbedding: true,
+  inEmbeddingTypes: ['Const'],
+  outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
+  // This is the whitelist of inputs on op types that are considered
+  // reference edges. "Assign 0" indicates that the first input to
+  // an OpNode with operation type "Assign" is a reference edge.
+  refEdges: {
+    'Assign 0': true,
+    'AssignAdd 0': true,
+    'AssignSub 0': true,
+    'assign 0': true,
+    'assign_add 0': true,
+    'assign_sub 0': true,
+    'count_up_to 0': true,
+    'ScatterAdd 0': true,
+    'ScatterSub 0': true,
+    'ScatterUpdate 0': true,
+    'scatter_add 0': true,
+    'scatter_sub 0': true,
+    'scatter_update 0': true,
+  },
+};
+
 export function build(
     graphDef: tf.graph.proto.GraphDef, params: BuildParams,
-    tracker: ProgressTracker): Promise<SlimGraph|void> {
+    tracker: ProgressTracker): Promise<SlimGraph> {
   /**
    * A dictionary that maps each in-embedding node name to the node
    * object.
@@ -1197,7 +1221,7 @@ export function build(
             'Building the data structure', 70, () => {
               let normalizedNameDict =
                   mapStrictHierarchy(nodeNames, embeddingNodeNames);
-              let graph = new SlimGraph;
+              let graph = new SlimGraph();
 
               // Add the nodes to the graph.
               _.each(opNodes, opNode => {
@@ -1292,7 +1316,9 @@ function getEmbedPredicate(types: string[]) {
     // check types
     for (let i = 0; i < types.length; i++) {
       let regExp = new RegExp(types[i]);
-      if (node.op.match(regExp)) { return true; }
+      if (typeof node.op === 'string' && node.op.match(regExp)) {
+        return true;
+      }
     }
     return false;
   };

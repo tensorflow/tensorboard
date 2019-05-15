@@ -32,22 +32,30 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 import argparse
+import atexit
 from collections import defaultdict
 import errno
 import os
+import signal
 import socket
 import sys
 import threading
+import time
 import inspect
 
+import absl.logging
+import six
+from six.moves import urllib
+from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 
+from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
-from tensorboard.util import util
 
 try:
   from absl import flags as absl_flags
@@ -67,7 +75,7 @@ def setup_environment():
   this function is a good idea, but it can't appropriately be called
   from library routines.
   """
-  util.setup_logging()
+  absl.logging.set_verbosity(absl.logging.WARNING)
 
   # The default is HTTP/1.0 for some strange reason. If we don't use
   # HTTP/1.1 then a new TCP socket and Python thread is created for
@@ -99,6 +107,7 @@ class TensorBoard(object):
     assets_zip_provider: Set by constructor.
     server_class: Set by constructor.
     flags: An argparse.Namespace set by the configure() method.
+    cache_key: As `manager.cache_key`; set by the configure() method.
   """
 
   def __init__(self,
@@ -111,8 +120,9 @@ class TensorBoard(object):
       plugins: A list of TensorBoard plugins to load, as TBLoader instances or
         TBPlugin classes. If not specified, defaults to first-party plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
-      server_class: An optional subclass of TensorBoardServer to use for serving
-        the TensorBoard WSGI app.
+      server_class: An optional factory for a `TensorBoardServer` to use
+        for serving the TensorBoard WSGI app. If provided, its callable
+        signature should match that of `TensorBoardServer.__init__`.
 
     :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
     :type assets_zip_provider: () -> file
@@ -124,7 +134,7 @@ class TensorBoard(object):
     if assets_zip_provider is None:
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
-      server_class = WerkzeugServer
+      server_class = create_port_scanning_werkzeug_server
     def make_loader(plugin):
       if isinstance(plugin, base_plugin.TBLoader):
         return plugin
@@ -140,7 +150,7 @@ class TensorBoard(object):
     """Configures TensorBoard behavior via flags.
 
     This method will populate the "flags" property with an argparse.Namespace
-    representing flag values parsed from the provided argv list, overriden by
+    representing flag values parsed from the provided argv list, overridden by
     explicit flags from remaining keyword arguments.
 
     Args:
@@ -166,6 +176,11 @@ class TensorBoard(object):
       loader.define_flags(parser)
     arg0 = argv[0] if argv else ''
     flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+    self.cache_key = manager.cache_key(
+        working_directory=os.getcwd(),
+        arguments=argv[1:],
+        configure_kwargs=kwargs,
+    )
     if absl_flags and arg0:
       # Only expose main module Abseil flags as TensorBoard native flags.
       # This is the same logic Abseil's ArgumentParser uses for determining
@@ -200,16 +215,21 @@ class TensorBoard(object):
 
     :rtype: int
     """
+    self._install_signal_handler(signal.SIGTERM, "SIGTERM")
     if self.flags.inspect:
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(self.flags.event_file)
       efi.inspect(self.flags.logdir, event_file, self.flags.tag)
+      return 0
+    if self.flags.version_tb:
+      print(version.VERSION)
       return 0
     try:
       server = self._make_server()
       sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
                        (version.VERSION, server.get_url()))
       sys.stderr.flush()
+      self._register_info(server)
       server.serve_forever()
       return 0
     except TensorBoardServerException as e:
@@ -236,6 +256,51 @@ class TensorBoard(object):
     thread.daemon = True
     thread.start()
     return server.get_url()
+
+  def _register_info(self, server):
+    """Write a TensorBoardInfo file and arrange for its cleanup.
+
+    Args:
+      server: The result of `self._make_server()`.
+    """
+    server_url = urllib.parse.urlparse(server.get_url())
+    info = manager.TensorBoardInfo(
+        version=version.VERSION,
+        start_time=int(time.time()),
+        port=server_url.port,
+        pid=os.getpid(),
+        path_prefix=self.flags.path_prefix,
+        logdir=self.flags.logdir,
+        db=self.flags.db,
+        cache_key=self.cache_key,
+    )
+    atexit.register(manager.remove_info_file)
+    manager.write_info_file(info)
+
+  def _install_signal_handler(self, signal_number, signal_name):
+    """Set a signal handler to gracefully exit on the given signal.
+
+    When this process receives the given signal, it will run `atexit`
+    handlers and then exit with `0`.
+
+    Args:
+      signal_number: The numeric code for the signal to handle, like
+        `signal.SIGTERM`.
+      signal_name: The human-readable signal name.
+    """
+    old_signal_handler = None  # set below
+    def handler(handled_signal_number, frame):
+      # In case we catch this signal again while running atexit
+      # handlers, take the hint and actually die.
+      signal.signal(signal_number, signal.SIG_DFL)
+      sys.stderr.write("TensorBoard caught %s; exiting...\n" % signal_name)
+      # The main thread is the only non-daemon thread, so it suffices to
+      # exit hence.
+      if old_signal_handler not in (signal.SIG_IGN, signal.SIG_DFL):
+        old_signal_handler(handled_signal_number, frame)
+      sys.exit(0)
+    old_signal_handler = signal.signal(signal_number, handler)
+
 
   def _make_server(self):
     """Constructs the TensorBoard WSGI app and instantiates the server."""
@@ -280,35 +345,104 @@ class TensorBoardServerException(Exception):
     self.msg = msg
 
 
+class TensorBoardPortInUseError(TensorBoardServerException):
+  """Error raised when attempting to bind to a port that is in use.
+
+  This should be raised when it is expected that binding to another
+  similar port would succeed. It is used as a signal to indicate that
+  automatic port searching should continue rather than abort.
+  """
+  pass
+
+
+def with_port_scanning(cls):
+  """Create a server factory that performs port scanning.
+
+  This function returns a callable whose signature matches the
+  specification of `TensorBoardServer.__init__`, using `cls` as an
+  underlying implementation. It passes through `flags` unchanged except
+  in the case that `flags.port is None`, in which case it repeatedly
+  instantiates the underlying server with new port suggestions.
+
+  Args:
+    cls: A valid implementation of `TensorBoardServer`. This class's
+      initializer should raise a `TensorBoardPortInUseError` upon
+      failing to bind to a port when it is expected that binding to
+      another nearby port might succeed.
+
+      The initializer for `cls` will only ever be invoked with `flags`
+      such that `flags.port is not None`.
+
+  Returns:
+    A function that implements the `__init__` contract of
+    `TensorBoardServer`.
+  """
+
+  def init(wsgi_app, flags):
+    # base_port: what's the first port to which we should try to bind?
+    # should_scan: if that fails, shall we try additional ports?
+    # max_attempts: how many ports shall we try?
+    should_scan = flags.port is None
+    base_port = core_plugin.DEFAULT_PORT if flags.port is None else flags.port
+    max_attempts = 10 if should_scan else 1
+
+    if base_port > 0xFFFF:
+      raise TensorBoardServerException(
+          'TensorBoard cannot bind to port %d > %d' % (base_port, 0xFFFF)
+      )
+    max_attempts = 10 if should_scan else 1
+    base_port = min(base_port + max_attempts, 0x10000) - max_attempts
+
+    for port in xrange(base_port, base_port + max_attempts):
+      subflags = argparse.Namespace(**vars(flags))
+      subflags.port = port
+      try:
+        return cls(wsgi_app=wsgi_app, flags=subflags)
+      except TensorBoardPortInUseError:
+        if not should_scan:
+          raise
+    # All attempts failed to bind.
+    raise TensorBoardServerException(
+        'TensorBoard could not bind to any port around %s '
+        '(tried %d times)'
+        % (base_port, max_attempts))
+
+  return init
+
+
 class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
   """Implementation of TensorBoardServer using the Werkzeug dev server."""
+
   # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
   daemon_threads = True
 
   def __init__(self, wsgi_app, flags):
     self._flags = flags
     host = flags.host
-    self._auto_wildcard = False
-    if not host:
-      # Without an explicit host, we default to serving on all interfaces,
-      # and will attempt to serve both IPv4 and IPv6 traffic through one socket.
-      host = self._get_wildcard_address(flags.port)
-      self._auto_wildcard = True
+    port = flags.port
+
+    # Without an explicit host, we default to serving on all interfaces,
+    # and will attempt to serve both IPv4 and IPv6 traffic through one
+    # socket.
+    self._auto_wildcard = not host
+    if self._auto_wildcard:
+      host = self._get_wildcard_address(port)
+
     try:
-      super(WerkzeugServer, self).__init__(host, flags.port, wsgi_app)
+      super(WerkzeugServer, self).__init__(host, port, wsgi_app)
     except socket.error as e:
       if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
         raise TensorBoardServerException(
             'TensorBoard must be run as superuser to bind to port %d' %
-            flags.port)
+            port)
       elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
-        if flags.port == 0:
+        if port == 0:
           raise TensorBoardServerException(
               'TensorBoard unable to find any open port')
         else:
-          raise TensorBoardServerException(
+          raise TensorBoardPortInUseError(
               'TensorBoard could not bind to port %d, it was already in use' %
-              flags.port)
+              port)
       elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
         raise TensorBoardServerException(
             'TensorBoard could not bind to unavailable address %s' % host)
@@ -392,5 +526,8 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
       host = self._flags.host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
-    return 'http://%s:%d%s' % (display_host, self.server_port,
-                               self._flags.path_prefix)
+    return 'http://%s:%d%s/' % (display_host, self.server_port,
+                               self._flags.path_prefix.rstrip('/'))
+
+
+create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)

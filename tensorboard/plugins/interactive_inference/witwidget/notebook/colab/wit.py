@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import json
 import tensorflow as tf
 from IPython import display
 from google.colab import output
-from google.protobuf import json_format
-from tensorboard.plugins.interactive_inference.utils import inference_utils
+from witwidget.notebook import base
 
 
 # Python functions for requests from javascript.
@@ -57,7 +55,6 @@ WIT_HTML = """
   <tf-interactive-inference-dashboard id="wit" local>
   </tf-interactive-inference-dashboard>
   <script>
-    const examples = {examples};
     const id = {id};
     const wit = document.querySelector("#wit");
     wit.parentElement.style.height = '{height}px';
@@ -149,7 +146,7 @@ WIT_HTML = """
       }}
       wit.updateNumberOfModels();
     }};
-    window.updateExamplesCallback = () => {{
+    window.updateExamplesCallback = examples => {{
       if (!wit.updateExampleContents) {{
         requestAnimationFrame(() => window.updateExamplesCallback(examples));
         return;
@@ -159,11 +156,18 @@ WIT_HTML = """
         window.spriteCallback(wit.localAtlasUrl);
       }}
     }};
+    // BroadcastChannel allows examples to be updated by a call from an
+    // output cell that isn't the cell hosting the WIT widget.
+    const channelName = 'updateExamples' + id;
+    const updateExampleListener = new BroadcastChannel(channelName);
+    updateExampleListener.onmessage = msg => {{
+      window.updateExamplesCallback(msg.data);
+    }};
   </script>
   """
 
 
-class WitWidget(object):
+class WitWidget(base.WitWidgetBase):
   """WIT widget for colab."""
 
   # Static instance list of constructed WitWidgets so python global functions
@@ -175,33 +179,22 @@ class WitWidget(object):
   index = 0
 
   def __init__(self, config_builder, height=1000):
-    tf.logging.set_verbosity(tf.logging.WARN)
-    config = config_builder.build()
-    copied_config = dict(config)
-    self.estimator_and_spec = (
-      dict(config.get('estimator_and_spec'))
-      if 'estimator_and_spec' in config else {})
-    self.compare_estimator_and_spec = (
-      dict(config.get('compare_estimator_and_spec'))
-      if 'compare_estimator_and_spec' in config else {})
-    if 'estimator_and_spec' in copied_config:
-      del copied_config['estimator_and_spec']
-    if 'compare_estimator_and_spec' in copied_config:
-      del copied_config['compare_estimator_and_spec']
+    """Constructor for colab notebook WitWidget.
 
-    self._set_examples(config['examples'])
-    del copied_config['examples']
-
-    self.config = copied_config
-
+    Args:
+      config_builder: WitConfigBuilder object containing settings for WIT.
+      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+    """
+    self._ctor_complete = False
+    self.id = WitWidget.index
+    base.WitWidgetBase.__init__(self, config_builder)
     # Add this instance to the static instance list.
     WitWidget.widgets.append(self)
 
     # Display WIT Polymer element.
     display.display(display.HTML(self._get_element_html()))
     display.display(display.HTML(
-      WIT_HTML.format(
-        examples=json.dumps(self.examples), height=height, id=WitWidget.index)))
+      WIT_HTML.format(height=height, id=self.id)))
 
     # Increment the static instance WitWidget index counter
     WitWidget.index += 1
@@ -209,61 +202,31 @@ class WitWidget(object):
     # Send the provided config and examples to JS
     output.eval_js("""configCallback('{config}')""".format(
       config=json.dumps(self.config)))
-    output.eval_js('updateExamplesCallback()')
+    output.eval_js("""updateExamplesCallback({examples})""".format(
+      examples=json.dumps(self.examples)))
     self._generate_sprite()
+    self._ctor_complete = True
 
   def _get_element_html(self):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
-  def _set_examples(self, examples):
-    self.examples = [json_format.MessageToJson(ex) for ex in examples]
-    self.updated_example_indices = set(range(len(examples)))
-
-  def json_to_proto(self, json):
-    ex = (tf.train.SequenceExample()
-          if self.config.get('are_sequence_examples')
-          else tf.train.Example())
-    json_format.Parse(json, ex)
-    return ex
+  def set_examples(self, examples):
+    base.WitWidgetBase.set_examples(self, examples)
+    # If this is called outside of the ctor, use a BroadcastChannel to send
+    # the updated examples to the visualization. Inside of the ctor, no action
+    # is necessary as the ctor handles all communication.
+    if self._ctor_complete:
+      # Use BroadcastChannel to allow this call to be made in a separate colab
+      # cell from the cell that displays WIT.
+      channel_name = 'updateExamples{}'.format(self.id)
+      output.eval_js("""(new BroadcastChannel('{channel_name}')).postMessage(
+        {examples})""".format(
+          examples=json.dumps(self.examples), channel_name=channel_name))
+      self._generate_sprite()
 
   def infer(self):
-    indices_to_infer = sorted(self.updated_example_indices)
-    examples_to_infer = [
-        self.json_to_proto(self.examples[index]) for index in indices_to_infer]
-    infer_objs = []
-    serving_bundle = inference_utils.ServingBundle(
-      self.config.get('inference_address'),
-      self.config.get('model_name'),
-      self.config.get('model_type'),
-      self.config.get('model_version'),
-      self.config.get('model_signature'),
-      self.config.get('uses_predict_api'),
-      self.config.get('predict_input_tensor'),
-      self.config.get('predict_output_tensor'),
-      self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec'))
-    infer_objs.append(inference_utils.run_inference_for_inference_results(
-        examples_to_infer, serving_bundle))
-    if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator')):
-      serving_bundle = inference_utils.ServingBundle(
-        self.config.get('inference_address_2'),
-        self.config.get('model_name_2'),
-        self.config.get('model_type'),
-        self.config.get('model_version_2'),
-        self.config.get('model_signature_2'),
-        self.config.get('uses_predict_api'),
-        self.config.get('predict_input_tensor'),
-        self.config.get('predict_output_tensor'),
-        self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec'))
-      infer_objs.append(inference_utils.run_inference_for_inference_results(
-          examples_to_infer, serving_bundle))
-    self.updated_example_indices = set()
-    inferences = {
-      'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': self.config.get('label_vocab')}
+    inferences = base.WitWidgetBase.infer_impl(self)
     output.eval_js("""inferenceCallback('{inferences}')""".format(
       inferences=json.dumps(inferences)))
 
@@ -284,67 +247,16 @@ class WitWidget(object):
     self._generate_sprite()
 
   def get_eligible_features(self):
-    examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    features_list = inference_utils.get_eligible_features(
-      examples, 10)
+    features_list = base.WitWidgetBase.get_eligible_features_impl(self)
     output.eval_js("""eligibleFeaturesCallback('{features_list}')""".format(
       features_list=json.dumps(features_list)))
 
   def infer_mutants(self, info):
-    example_index = int(info['example_index'])
-    feature_name = info['feature_name']
-    examples = (self.examples if example_index == -1
-                else [self.examples[example_index]])
-    examples = [self.json_to_proto(ex) for ex in examples]
-    scan_examples = [self.json_to_proto(ex) for ex in self.examples[0:50]]
-    serving_bundles = []
-    serving_bundles.append(inference_utils.ServingBundle(
-      self.config.get('inference_address'),
-      self.config.get('model_name'),
-      self.config.get('model_type'),
-      self.config.get('model_version'),
-      self.config.get('model_signature'),
-      self.config.get('uses_predict_api'),
-      self.config.get('predict_input_tensor'),
-      self.config.get('predict_output_tensor'),
-      self.estimator_and_spec.get('estimator'),
-      self.estimator_and_spec.get('feature_spec')))
-    if ('inference_address_2' in self.config or
-        self.compare_estimator_and_spec.get('estimator')):
-      serving_bundles.append(inference_utils.ServingBundle(
-        self.config.get('inference_address_2'),
-        self.config.get('model_name_2'),
-        self.config.get('model_type'),
-        self.config.get('model_version_2'),
-        self.config.get('model_signature_2'),
-        self.config.get('uses_predict_api'),
-        self.config.get('predict_input_tensor'),
-        self.config.get('predict_output_tensor'),
-        self.compare_estimator_and_spec.get('estimator'),
-        self.compare_estimator_and_spec.get('feature_spec')))
-    viz_params = inference_utils.VizParams(
-      info['x_min'], info['x_max'],
-      scan_examples, 10,
-      info['feature_index_pattern'])
-    json_mapping = inference_utils.mutant_charts_for_feature(
-      examples, feature_name, serving_bundles, viz_params)
+    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
     output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
       json_mapping=json.dumps(json_mapping)))
 
   def _generate_sprite(self):
-    # Generate a sprite image for the examples if the examples contain the
-    # standard encoded image feature.
-    if not self.examples:
-      return
-    example_to_check = self.json_to_proto(self.examples[0])
-    feature_list = (example_to_check.context.feature
-                    if self.config.get('are_sequence_examples')
-                    else example_to_check.features.feature)
-    if 'image/encoded' in feature_list:
-      example_strings = [
-        self.json_to_proto(ex).SerializeToString()
-        for ex in self.examples]
-      encoded = base64.b64encode(
-        inference_utils.create_sprite_image(example_strings))
-      sprite = 'data:image/png;base64,{}'.format(encoded)
+    sprite = base.WitWidgetBase.create_sprite(self)
+    if sprite is not None:
       output.eval_js("""spriteCallback('{sprite}')""".format(sprite=sprite))

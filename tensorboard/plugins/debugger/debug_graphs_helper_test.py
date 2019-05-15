@@ -12,7 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests the debug_graphs_helper module."""
+"""Tests the debug_graphs_helper module.
+
+[1]: Below graph creates different ops
+  a = tf.Variable([1.0], name='a')
+  b = tf.Variable([2.0], name='b')
+  _ = tf.add(a, b, name='c')
+
+In v1:
+  a, a/Assign, a/initial_value, a/read,
+  b, b/Assign, b/initial_value, b/read,
+  c
+In v2:
+  a, a/Assign, a/Initializer/initial_value,
+  a/IsInitialized/VarIsInitializedOp, a/Read/ReadVariableOp
+  b, b/Assign, b/Initializer/initial_value,
+  b/IsInitialized/VarIsInitializedOp, b/Read/ReadVariableOp,
+  c, c/ReadVariableOp,  c/ReadVariableOp_1,
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,8 +42,8 @@ from tensorflow.python.debug.lib import grpc_debug_test_server
 from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.util import tb_logging
+from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -68,6 +85,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
                          debug_urls=self.debug_server_url)
     return z, run_options
 
+  @test_util.run_v1_only('Ops differ. Similar to [1].')
   def testExtractGatedGrpcTensorsFoundGatedGrpcOps(self):
     with tf.compat.v1.Session() as sess:
       z, run_options = self._createTestGraphAndRunOptions(sess, gated_grpc=True)
@@ -133,6 +151,9 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertEqual([], gated_debug_ops)
 
 
+@test_util.run_v1_only((
+    'Graph creates different op structure in v2. See '
+    'debug_graphs_helper_test.py[1].'))
 class BaseExpandedNodeNameTest(tf.test.TestCase):
 
   def testMaybeBaseExpandedNodeName(self):

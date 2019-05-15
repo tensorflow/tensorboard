@@ -20,7 +20,7 @@ limitations under the License.
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
 <link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
-<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
+<link rel="import" href="../tf-graph-loader/tf-graph-dashboard-loader.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-sorting/vz-sorting.html">
@@ -72,26 +72,24 @@ by default. The user can select a different run from a dropdown menu.
         color-by="{{_colorBy}}"
         datasets="[[_datasets]]"
         render-hierarchy="[[_renderHierarchy]]"
-        selected-dataset="{{_selectedDataset}}"
+        selection="{{_selection}}"
         selected-file="{{_selectedFile}}"
-        selected-metadata-tag="{{_selectedMetadataTag}}"
         selected-node="{{_selectedNode}}"
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
   ></tf-graph-controls>
   <div class="center">
-    <tf-graph-loader id="loader"
+    <tf-graph-dashboard-loader id="loader"
           datasets="[[_datasets]]"
-          selected-dataset="[[_selectedDataset]]"
-          selected-metadata-tag="[[_selectedMetadataTag]]"
+          selection="[[_selection]]"
           selected-file="[[_selectedFile]]"
           out-graph-hierarchy="{{_graphHierarchy}}"
           out-graph="{{_graph}}"
           out-stats="{{_stats}}"
           progress="{{_progress}}"
-          out-hierarchy-params="{{_hierarchyParams}}"
+          hierarchy-params="[[_hierarchyParams]]"
           compatibility-provider="[[_compatibilityProvider]]"
-    ></tf-graph-loader>
+    ></tf-graph-dashboard-loader>
     <tf-graph-board id="graphboard"
         devices-for-stats="[[_devicesForStats]]"
         color-by="[[_colorBy]]"
@@ -145,9 +143,33 @@ paper-dialog {
  */
 const RUN_STORAGE_KEY = 'run';
 
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   tag: ?string,
+ *   displayName: string,
+ *   conceptualGraph: boolean,
+ *   opGraph: boolean,
+ *   profile: boolean,
+ * }}
+ */
+ const TagItem = {};
+
+/**
+ * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
+ * @typedef {{
+ *   name: string,
+ *   tags: !Array<!TagItem>,
+ * }}
+ */
+const RunItem = {};
+
 Polymer({
   is: 'tf-graph-dashboard',
   properties: {
+    /**
+     * @type {!Array<!RunItem>}
+     */
     _datasets: Array,
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
@@ -213,11 +235,14 @@ Polymer({
           }),
       observer: '_runObserver',
     },
-    _selectedDataset: {
-      type: Number,
-      notify: true,
+    _selection: {
+      type: Object,
     },
-    _compatibilityProvider: Object
+    _compatibilityProvider: Object,
+    _hierarchyParams: {
+      type: Object,
+      value: () => tf.graph.hierarchy.DefaultHierarchyParams,
+    },
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
@@ -263,13 +288,9 @@ Polymer({
         polymerProperty: 'run',
         useLocalStorage: false,
       }),
-  _fetchGraphRuns() {
+  _fetchDataset() {
     return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('graphs', '/runs'));
-  },
-  _fetchRunMetadataTags() {
-    return this._requestManager.request(
-        tf_backend.getRouter().pluginRoute('graphs', '/run_metadata_tags'));
+        tf_backend.getRouter().pluginRoute('graphs', '/info'));
   },
   /*
    * See also _maybeFetchHealthPills, _initiateNetworkRequestForHealthPills.
@@ -324,25 +345,41 @@ Polymer({
 
     // Set this to true so we only initialize once.
     this._initialized = true;
-    Promise.all([this._fetchGraphRuns(), this._fetchRunMetadataTags()])
-      .then(result => {
-        const runsWithGraph = result[0].sort(vz_sorting.compareTagNames);
-        const runToMetadata = result[1];
-        const datasets = _.map(runsWithGraph, runName => ({
-          name: runName,
-          path: this._graphUrl(
-              runName, tf.graph.LIMIT_ATTR_SIZE, tf.graph.LARGE_ATTRS_KEY),
-          runMetadata: _.map(
-            (runToMetadata[runName] || []).sort(vz_sorting.compareTagNames),
-            tag => ({
-              tag: tag,
-              path: tf_backend.addParams(
-                tf_backend.getRouter().pluginRoute('graphs', '/run_metadata'),
-                {tag: tag, run: runName}),
-            })),
-        }));
-        this.set('_datasets', datasets);
+    this._fetchDataset().then(dataset => {
+      const runNames = Object.keys(dataset);
+      // Transform raw data into UI friendly data.
+      this._datasets = runNames.sort(vz_sorting.compareTagNames).map(runName => {
+        const runData = dataset[runName];
+
+        const tagNames = Object.keys(runData.tags).sort(vz_sorting.compareTagNames);
+        const tags = tagNames
+            .map(name => runData.tags[name])
+            .map(({tag, conceptual_graph, op_graph, profile}) => ({
+              tag,
+              displayName: tag,
+              conceptualGraph: conceptual_graph,
+              opGraph: op_graph,
+              profile,
+            }));
+
+        // Translate a run-wide GraphDef into specially named (without a tag) op graph
+        // to abstract the difference between run_graph vs. op_graph from other
+        // components.
+        const tagsWithV1Graph = runData.run_graph ?
+            [
+                {
+                  tag: null,
+                  displayName: 'Default',
+                  conceptualGraph: false,
+                  opGraph: true,
+                  profile: false,
+                },
+                ...tags,
+            ] : tags;
+
+        return {name: runName, tags: tagsWithV1Graph};
       });
+    });
   },
   _determineSelectedDataset(datasets, run) {
     // By default, load the first dataset.
@@ -367,6 +404,8 @@ Polymer({
     this.set('_selectedDataset', dataset);
   },
   _updateSelectedDatasetName(datasets, selectedDataset) {
+    // Cannot update `run` to update the hash in case datasets for graph is empty.
+    if (datasets.length <= selectedDataset) return;
     this.set('run', datasets[selectedDataset].name);
   },
   _requestHealthPills: function() {

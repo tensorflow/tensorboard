@@ -33,26 +33,27 @@ import os
 #   https://github.com/tensorflow/tensorboard/issues/1225
 # This must be set before the first import of tensorflow.
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
-
-# Use fast C++ implementation of Python protocol buffers. See:
-# https://github.com/protocolbuffers/protobuf/blob/v3.6.0/python/google/protobuf/pyext/README
-os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
-os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION'] = '2'
 # pylint: enable=g-import-not-at-top
 
 import sys
 
-# Import TensorFlow here to fail immediately if it's not present, even though we
-# don't actually use it yet, which results in a clearer error.
-import tensorflow as tf  # pylint: disable=unused-import
-
 from tensorboard import default
 from tensorboard import program
+from tensorboard.compat import tf
+from tensorboard.plugins import base_plugin
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
+
+  if getattr(tf, '__version__', 'stub') == 'stub':
+    print("TensorFlow installation not found - running with reduced feature set.",
+          file=sys.stderr)
+
   tensorboard = program.TensorBoard(default.get_plugins(),
                                     program.get_default_assets_zip_provider())
   try:
@@ -63,6 +64,10 @@ def run_main():
     raise AssertionError("absl.app.run() shouldn't return")
   except ImportError:
     pass
+  except base_plugin.FlagsError as e:
+    print("Error: %s" % e, file=sys.stderr)
+    sys.exit(1)
+
   tensorboard.configure(sys.argv)
   sys.exit(tensorboard.main())
 

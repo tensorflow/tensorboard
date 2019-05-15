@@ -23,58 +23,40 @@ else
   sedi="sed -i"
 fi
 
-run_smoke_test=1
+tf_version="tf-nightly"
+if [ -n "${TF_VERSION}" ]; then
+  tf_version="tensorflow==${TF_VERSION}"
+fi
+smoke="all"
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    "--tf-version")
+      tf_version="$2"
+      shift
+      shift
+      ;;
+    "--smoke")
+      smoke=1
+      shift
+      ;;
+    "--smoke-all")
+      smoke="all"
+      shift
+      ;;
     "--no-smoke")
-      run_smoke_test=0
+      smoke=0
+      shift
       ;;
     *)
       echo >&2 'fatal: unknown argument:' "$1"
       exit 1
       ;;
   esac
-  shift
 done
-
-smoke() {
-  TF_PACKAGE=tf-nightly
-  if [ -n "$TF_VERSION" ]; then
-    TF_PACKAGE="tensorflow==${TF_VERSION}"
-  fi
-  virtualenv -qp python$1 venv$1
-  cd venv$1
-  . bin/activate
-  pip install -qU pip
-  pip install -qU "$TF_PACKAGE"
-  pip install -qU ../dist/*py$1*.whl >/dev/null
-  # Test TensorBoard application
-  [ -x ./bin/tensorboard ]  # Ensure pip package included binary
-  mkfifo pipe
-  tensorboard --port=0 --logdir=smokedir 2>pipe &
-  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
-  curl -fs http://localhost:$(cat port) >index.html
-  grep '<tf-tensorboard' index.html
-  curl -fs http://localhost:$(cat port)/data/logdir >logdir.json
-  grep 'smokedir' logdir.json
-  kill $!
-  # Test TensorBoard APIs
-  python -c "
-import tensorboard as tb
-tb.summary.scalar_pb('test', 42)
-from tensorboard.plugins.projector import visualize_embeddings
-from tensorboard.plugins.beholder import Beholder, BeholderHook
-"
-  deactivate
-  cd ..
-  rm -rf venv$1
-}
 
 set -x
 command -v curl >/dev/null
 command -v perl >/dev/null
-command -v python2 >/dev/null
-command -v python3 >/dev/null
 command -v virtualenv >/dev/null
 [ -d "${RUNFILES}" ]
 
@@ -82,7 +64,11 @@ dest=/tmp/tensorboard
 if [ ! -e $dest ]; then
   mkdir $dest
 else
-  dest="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
+  if [ "$(uname)" == "Darwin" ]; then
+    dest="$(mktemp -d -t tensorboard-pip)"
+  else
+    dest="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
+  fi
 fi
 cd "${dest}"
 
@@ -129,9 +115,113 @@ pip install -qU wheel 'setuptools>=36.2.0'
 python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-if [ "$run_smoke_test" = 1 ]; then
-  smoke 2
-  smoke 3
-fi
+smoke() {
+  py_major_version="$1"
+  if [ -z "${py_major_version}" ]; then
+    py_major_version="$(python -c 'import sys; print(sys.version_info[0])')"
+  fi
+  smoke_python="python$1"
+  smoke_venv="smoke-venv$1"
+  smoke_tf="$2"
+  set +x
+  printf '\n\n%70s\n' | tr ' ' '='
+  if [ -z "${smoke_tf}" ]; then
+    echo "Smoke testing with ${smoke_python} and no tensorflow..."
+    export TENSORBOARD_NO_TF=1
+  else
+    echo "Smoke testing with ${smoke_python} and ${smoke_tf}..."
+  fi
+  printf '\n'
+  set -x
+  command -v "${smoke_python}" >/dev/null
+  virtualenv -qp "${smoke_python}" "${smoke_venv}"
+  cd "${smoke_venv}"
+  . bin/activate
+  pip install -qU pip
 
-ls -hal "$PWD/dist"
+  if [ -n "${smoke_tf}" ]; then
+    pip install -qU "${smoke_tf}"
+  fi
+  pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
+  pip freeze  # Log the results of pip installation
+
+  # Test TensorBoard application
+  [ -x ./bin/tensorboard ]  # Ensure pip package included binary
+  mkfifo pipe
+  tensorboard --port=0 --logdir=smokedir 2>pipe &
+  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
+  curl -fs "http://localhost:$(cat port)" >index.html
+  grep '<tf-tensorboard' index.html
+  curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
+  grep 'smokedir' logdir.json
+  kill $!
+
+  # Test TensorBoard APIs
+  export TF_CPP_MIN_LOG_LEVEL=1  # Suppress spammy TF startup logging.
+  python -c "
+import tensorboard as tb
+assert tb.__version__ == tb.version.VERSION
+from tensorboard.plugins.projector import visualize_embeddings
+tb.notebook.start  # don't invoke; just check existence
+from tensorboard.plugins.hparams import summary_v2 as hp
+hp.hparams_pb({'optimizer': 'adam', 'learning_rate': 0.02})
+"
+  if [ -n "${smoke_tf}" ]; then
+    # Only test summary scalar, beholder, and mesh summary
+    python -c "
+import tensorboard as tb
+tb.summary.scalar_pb('test', 42)
+from tensorboard.plugins.beholder import Beholder, BeholderHook
+from tensorboard.plugins.mesh import summary
+"
+  fi
+
+  if [ -n "${smoke_tf}" ]; then
+    # Exhaustively test various sequences of importing tf.summary.
+    test_tf_summary() {
+      # First argument is subpath to test, e.g. '' or '.compat.v2'.
+      import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
+      import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
+      import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
+      printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
+      printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
+      printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
+      printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
+      printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
+      printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
+    }
+    test_tf_summary '.compat.v2'
+    is_tf_2() {
+      python -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
+        >/dev/null 2>&1
+    }
+    if is_tf_2 ; then
+      test_tf_summary ''
+    fi
+  fi
+
+  deactivate
+  cd ..
+  rm -rf "${smoke_venv}"
+}
+
+case "${smoke}" in
+  "all")
+    smoke 2 "${tf_version}"
+    smoke 3 "${tf_version}"
+    ;;
+  "1")
+    # Empty string indicates to use the default "python".
+    smoke "" "${tf_version}"
+    ;;
+  "0")
+    printf "\nSkipping smoke test\n\n"
+    ;;
+  *)
+    echo >&2 'fatal: unknown smoke value:' "${smoke}"
+    exit 1
+    ;;
+esac
+
+# Print the wheel files we built.
+du -hs "$PWD"/dist/*

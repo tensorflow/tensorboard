@@ -78,7 +78,7 @@ class HierarchyImpl implements Hierarchy {
   /**
    * Constructs a hierarchy.
    * @param graphOptions Options passed to dagre for creating the graph. Note
-   *   that the `compound` argument will be overriden to true.
+   *   that the `compound` argument will be overridden to true.
    */
   constructor(graphOptions: graphlib.GraphOptions) {
     this.graphOptions = graphOptions || {};
@@ -416,12 +416,20 @@ export interface HierarchyParams {
   useGeneralizedSeriesPatterns: boolean;
 }
 
+export const DefaultHierarchyParams = {
+  verifyTemplate: true,
+  seriesNodeMinSize: 5,
+  seriesMap: {},
+  rankDirection: 'BT',
+  useGeneralizedSeriesPatterns: false,
+};
+
 /**
  * @param graph The raw graph.
  * @param params Parameters used when building a hierarchy.
  */
 export function build(graph: tf.graph.SlimGraph, params: HierarchyParams,
-    tracker: ProgressTracker): Promise<Hierarchy|void> {
+    tracker: ProgressTracker): Promise<Hierarchy> {
   let h = new HierarchyImpl({'rankdir': params.rankDirection});
   let seriesNames: { [name: string]: string } = {};
   return tf.graph.util

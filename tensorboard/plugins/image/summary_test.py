@@ -26,14 +26,15 @@ import numpy as np
 import six
 import tensorflow as tf
 
+from tensorboard.compat import tf2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary
 
 try:
-  from tensorboard import compat
-  tf_v2 = compat.import_tf_v2()
+  tf2.__version__  # Force lazy import to resolve
 except ImportError:
-  tf_v2 = None
+  tf2 = None
 
 try:
   tf.compat.v1.enable_eager_execution()
@@ -161,7 +162,7 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     args = list(args)
     # Force first argument to tf.uint8 since the V1 version requires this.
     args[1] = tf.cast(tf.constant(args[1]), tf.uint8)
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     data = np.array(1, np.uint8, ndmin=4)
@@ -181,22 +182,26 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV2OpTest, self).setUp()
-    if tf_v2 is None:
+    if tf2 is None:
       self.skipTest('TF v2 summary API not available')
 
   def image(self, *args, **kwargs):
+    return self.image_event(*args, **kwargs).summary
+
+  def image_event(self, *args, **kwargs):
     kwargs.setdefault('step', 1)
-    writer = tf_v2.summary.create_file_writer(self.get_temp_dir())
+    writer = tf2.summary.create_file_writer(self.get_temp_dir())
     with writer.as_default():
       summary.image(*args, **kwargs)
     writer.close()
-    return self.read_single_event_from_eventfile().summary
-
-  def read_single_event_from_eventfile(self):
     event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), '*')))
-    events = list(tf.compat.v1.train.summary_iterator(event_files[-1]))
+    self.assertEqual(len(event_files), 1)
+    events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
     # Expect a boilerplate event for the file_version, then the summary one.
     self.assertEqual(len(events), 2)
+    # Delete the event file to reset to an empty directory for later calls.
+    # TODO(nickfelt): use a unique subdirectory per writer instead.
+    os.remove(event_files[0])
     return events[1]
 
   def test_scoped_tag(self):
@@ -206,9 +211,19 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
   def test_step(self):
     data = np.array(1, np.uint8, ndmin=4)
-    self.image('a', data, step=333)
-    event = self.read_single_event_from_eventfile()
+    event = self.image_event('a', data, step=333)
     self.assertEqual(333, event.step)
+
+  def test_default_step(self):
+    data = np.array(1, np.uint8, ndmin=4)
+    try:
+      tf2.summary.experimental.set_step(333)
+      # TODO(nickfelt): change test logic so we can just omit `step` entirely.
+      event = self.image_event('a', data, step=None)
+      self.assertEqual(333, event.step)
+    finally:
+      # Reset to default state for other tests.
+      tf2.summary.experimental.set_step(None)
 
   def test_floating_point_data(self):
     data = np.array([-0.01, 0.0, 0.9, 1.0, 1.1]).reshape((1, -1, 1, 1))

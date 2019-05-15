@@ -50,6 +50,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
+        "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_line_chart_data_loader",
         "@org_polymer_paper_dropdown_menu",
