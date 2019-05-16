@@ -206,6 +206,10 @@ limitations under the License.
           const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
               this.$.svg,
               tf.hparams.utils.numColumns(this.schema));
+          // Listen to DOM changes underneath this.$.svg, and apply local CSS
+          // scoping rules so that our rules in the <style> section above
+          // would apply.
+          this.scopeSubtree(this.$.svg, true);
           this._interactionManager =
               new tf.hparams.parallel_coords_plot.InteractionManager(
                   svgProps,

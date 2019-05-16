@@ -35,8 +35,8 @@ namespace tf.hparams.parallel_coords_plot {
  * gray lines and cause parts of them to be gray as well.
  */
 export enum LineType {
-  Foreground,
-  Background,
+  FOREGROUND,
+  BACKGROUND,
 }
 
 /**
@@ -190,12 +190,12 @@ export class LinesCollection {
    *     means no animation.
    */
   public recomputeControlPoints(lineType: LineType, transitionDuration = 0) {
-    const pathSel = (lineType === LineType.Foreground
+    const pathSel = (lineType === LineType.FOREGROUND
                      ? this._fgPathsSel : this._bgPathsSel);
     pathSel
       .transition().duration(transitionDuration)
       .attr("d", sessionGroup => this._pathDAttribute(sessionGroup));
-    if (lineType === LineType.Foreground) {
+    if (lineType === LineType.FOREGROUND) {
       // Update the control points property, if we're updating the foreground
       // lines.
       window.setTimeout(
@@ -259,8 +259,8 @@ export class LinesCollection {
     this._bgPathsSel = this._recomputePathSelection(this._bgPathsSel);
     this._peakedSessionGroupHandle = this.getSessionGroupHandle(peakedSG);
     this._selectedSessionGroupHandle = this.getSessionGroupHandle(selectedSG);
-    this.recomputeControlPoints(LineType.Foreground);
-    this.recomputeControlPoints(LineType.Background);
+    this.recomputeControlPoints(LineType.FOREGROUND);
+    this.recomputeControlPoints(LineType.BACKGROUND);
     this.recomputeForegroundLinesVisibility();
     this.setForegroundLinesColor(colorByColumnIndex, minColor, maxColor);
   }

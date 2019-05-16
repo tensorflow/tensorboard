@@ -164,7 +164,8 @@ export class Axis {
 
   public setBrushSelection(brushSelection: d3.BrushSelection) {
     this._brushSelection = brushSelection;
-    this._brushFilter = this._buildBrushFilter(this._brushSelection);
+    this._brushFilter = this._buildBrushFilter(
+      this.brushSelection(), this.scaleType(), this.yScale());
   }
 
   /** 
@@ -189,7 +190,8 @@ export class Axis {
     // (e.g. every 30 seconds by default in Tensorboard), so we have to make
     // sure not to change the selection if the data hasn't changed, as that
     // would be very annoying to the end user.
-    this._brushFilter = this._buildBrushFilter(this._brushSelection);
+    this._brushFilter = this._buildBrushFilter(
+      this.brushSelection(), this.scaleType(), this.yScale());
   }
 
   public brushFilter(): AxisBrushFilter {
@@ -200,7 +202,7 @@ export class Axis {
    * Renders the axis as child elements of 'axisParent'. Removes any preexisting
    * children of axisParent. 'axisParent' is expected to be a <g> element.
    */
-  public updateDOM(axisParent: any /* HTML Element */) {
+  public updateDOM(axisParent: any /* HTMLElement */) {
     let d3Axis = d3.axisLeft(this.yScale());
     if (this.scaleType() === ScaleType.QUANTILE) {
       // The default tickValues of a quantile scale is just the
@@ -296,21 +298,23 @@ export class Axis {
    * @returns the brush filter for the given selection using the current
    * scale.
    */
-  private _buildBrushFilter(brushSelection: d3.BrushSelection) {
+  private _buildBrushFilter(brushSelection: d3.BrushSelection,
+                            scaleType: ScaleType,
+                            yScale: any /* D3 scale */) {
     if (brushSelection === null) {
       return new AlwaysPassingBrushFilter();
     }
-    if (this._scaleType === null) {
+    if (scaleType === null) {
       console.error("Scale type is null, but brushSelection isn't: ",
                     brushSelection);
       return new AlwaysPassingBrushFilter();
     }
-    switch (this._scaleType) {
+    switch (scaleType) {
       case ScaleType.LINEAR:
       case ScaleType.LOG: { /* Fall Through */
         const [lower, upper] =
           tf.hparams.parallel_coords_plot.continuousScaleInverseImage(
-            this.yScale(), brushSelection[0], brushSelection[1]);
+            yScale, brushSelection[0], brushSelection[1]);
         return new IntervalBrushFilter(lower,
                                        upper,
                                        /*lowerOpen=*/ false,
@@ -319,7 +323,7 @@ export class Axis {
       case ScaleType.QUANTILE: {
         const [lower, upper] =
           tf.hparams.parallel_coords_plot.quantileScaleInverseImage(
-            this.yScale(), brushSelection[0], brushSelection[1]);
+            yScale, brushSelection[0], brushSelection[1]);
         return new IntervalBrushFilter(lower,
                                        upper,
                                        /*lowerOpen=*/ false,
@@ -328,9 +332,9 @@ export class Axis {
       case ScaleType.NON_NUMERIC:
         return new SetBrushFilter(
           tf.hparams.parallel_coords_plot.pointScaleInverseImage(
-            this.yScale(), brushSelection[0], brushSelection[1]));
+            yScale, brushSelection[0], brushSelection[1]));
     }
-    console.error("Unknown scale type: ", this._scaleType);
+    console.error("Unknown scale type: ", scaleType);
     return new AlwaysPassingBrushFilter();
   }
 
@@ -375,14 +379,14 @@ export class AxesCollection {
 
     // Traverse options.columns, and update each corresponding axis.
     const visibleColIndices: Set<number> = new Set<number>();
-    options.columns.forEach(c => {
+    options.columns.forEach(column => {
       const colIndex = tf.hparams.utils.getAbsoluteColumnIndex(
-        this._schema, c.index);
+        this._schema, column.index);
       let axis = this._axes[colIndex];
       axis.setDisplayed(true);
       const domainValues = sessionGroups.map(
         sg => tf.hparams.utils.columnValueByIndex(this._schema, sg, colIndex));
-      axis.setDomainAndScale(domainValues, c.scale);
+      axis.setDomainAndScale(domainValues, column.scale);
       visibleColIndices.add(colIndex);
     });
 
@@ -397,7 +401,7 @@ export class AxesCollection {
     
     // Update the DOM.
     this._parentsSel = this._parentsSel
-      .data(Array.from(visibleColIndices), /*key=*/ (colIndex  => colIndex));
+      .data(Array.from(visibleColIndices), /*key=*/ (colIndex => colIndex));
     this._parentsSel.exit().remove();
     this._parentsSel = this._parentsSel.enter()
       .append("g")
@@ -489,15 +493,18 @@ export class AxesCollection {
   }
 
   /**
-   * Reassigns stationary positions to axes so that the only visible 
-   * axes are the ones with column indices in 'visibleColIndices'.
-   * Sets the domain of 'stationaryAxesPositions' to be the given 
-   * visibleColIndices, by removing indices in the domain that are not
-   * in visibleColIndices and appending indices in visibleColIndices that are
-   * not currently in the domain. 
-   * Indices in visibleColIndices that are already in stationaryAxesPositions
+   * Sets the domain of 'stationaryAxesPositions' to be precisely the given 
+   * visibleColIndices, but preserves the order of the column indices that
+   * are already in the domain. Essentially, this method removes indices in 
+   * the domain that are not in visibleColIndices and then appends indices in 
+   * visibleColIndices that are not currently in the domain. Thus, indices in 
+   * visibleColIndices that are already in stationaryAxesPositions
    * will maintain their order in stationaryAxesPositions and will precede
    * the new elements.
+   *
+   * This reassigns stationary positions to axes so that the only visible 
+   * axes are the ones with column indices in 'visibleColIndices', but preserves
+   * the order of axes indexed by visibleColIndices that are already visible.
    */
   private _updateStationaryAxesPositions(visibleColIndices: Set<number>) {
     // We're going to modify visibleColIndices so make a copy first, since
@@ -509,7 +516,7 @@ export class AxesCollection {
     this._stationaryAxesPositions.domain(
       /* TypeScript doesn't allow spreading a Set, so we convert to an 
          Array first. */
-      newDomain.concat(...Array.from(visibleColIndices)));
+      newDomain.concat(Array.from(visibleColIndices)));
   }
   
   private _updateAxesPositionsInDOM(selectionOrTransition) {
@@ -541,7 +548,7 @@ export class AxesCollection {
 }
 
 function _isInteractiveD3Event(d3Event: any) {
-  return d3.event.sourceEvent !== null;
+  return d3Event.sourceEvent !== null;
 }
 
 }  // namespace tf.hparams.parallel_coords_plot

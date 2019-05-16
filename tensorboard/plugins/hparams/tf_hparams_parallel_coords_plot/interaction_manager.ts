@@ -124,15 +124,15 @@ export class InteractionManager {
   
   public onDrag(newX: number) {
     this._axesCollection.drag(newX);
-    this._linesCollection.recomputeControlPoints(LineType.Foreground);
+    this._linesCollection.recomputeControlPoints(LineType.FOREGROUND);
   }
 
   public onDragEnd() {
     this._axesCollection.dragEnd(/*transitionDuration=*/ 500);
     this._linesCollection.recomputeControlPoints(
-      LineType.Foreground, /* transitionDuration=*/ 500);
+      LineType.FOREGROUND, /* transitionDuration=*/ 500);
     window.setTimeout(() => {
-      this._linesCollection.recomputeControlPoints(LineType.Background);
+      this._linesCollection.recomputeControlPoints(LineType.BACKGROUND);
       this._linesCollection.showBackgroundLines();
     }, 500);
   }
@@ -200,17 +200,8 @@ export class InteractionManager {
       this._selectedSessionGroupChangedCB(
         this._linesCollection.selectedSessionGroupHandle().sessionGroup());
     }
-    
-    // Polymer adds an extra ".tf-hparams-parallel-coords-plot" class to
-    // each rule selector in the <style> section in the element definition. When
-    // polymer stamps a template it adds this class to every element
-    // stamped; since we're injecting our own elements here, we add this
-    // class to each element so that the style rules defined in the element will
-    // apply.
-    this._svgProps.svgG.selectAll("*")
-      .classed("tf-hparams-parallel-coords-plot", true);
   }
-
+  
   private _svgProps: SVGProperties;
   private _schema: tf.hparams.Schema;
   private _peakedSessionGroupChangedCB: SessionGroupCallback;

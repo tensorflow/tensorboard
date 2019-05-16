@@ -223,7 +223,6 @@ var tf;
           result = schema.hparamColumns.length + schema.metricColumns.findIndex(
               c => (c.metricInfo.name === metricName));
         }
-        console.assert(result !== undefined);
         console.assert(result !== -1);
         console.assert(isColumnDisplayed(schema, result));
         return result;
