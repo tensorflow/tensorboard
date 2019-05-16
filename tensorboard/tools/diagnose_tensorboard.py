@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Self-diagnosis script. Run this if your environment is broken."""
+"""Self-diagnosis script for TensorBoard.
+
+Instructions: Save this script to your local machine, then execute it in
+the same environment (virtualenv, Conda, etc.) from which you normally
+run TensorBoard. Read the output and follow the directions.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -54,7 +59,7 @@ Suggestion = collections.namedtuple("Suggestion", ("headline", "description"))
 
 
 def check(fn):
-  """Register a function as a check.
+  """Decorator to register a function as a check.
 
   Checks are run in the order in which they are registered.
 
@@ -119,7 +124,7 @@ def which(name):
 
 @check
 def autoidentify():
-  """Print the Git hash of the current version of `diagnose_me.py`.
+  """Print the Git hash of this version of `diagnose_tensorboard.py`.
 
   Given this hash, use `git cat-file blob HASH` to recover the relevant
   version of the script.
@@ -128,12 +133,12 @@ def autoidentify():
   try:
     source = inspect.getsource(module).encode("utf-8")
   except TypeError:
-    logging.info("diagnose_me.py source unavailable")
+    logging.info("diagnose_tensorboard.py source unavailable")
   else:
     # Git inserts a length-prefix before hashing; cf. `git-hash-object`.
     blob = b"blob %d\0%s" % (len(source), source)
     hash = hashlib.sha1(blob).hexdigest()
-    logging.info("diagnose_me.py version %s", hash)
+    logging.info("diagnose_tensorboard.py version %s", hash)
 
 
 @check
@@ -333,12 +338,12 @@ def main():
   set_up_logging()
 
   print("### Diagnostics")
-  print()
 
   markdown_code_fence = "``````"  # seems likely to be sufficient
   print(markdown_code_fence)
   suggestions = []
   for check in CHECKS:
+    print()
     print("--- check: %s" % check.__name__)
     try:
       suggestions.extend(check())
