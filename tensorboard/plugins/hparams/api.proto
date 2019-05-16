@@ -25,6 +25,9 @@ limitations under the License.
 // in Python, as well as to be more compliant with the API style guide
 // detailed in https://cloud.google.com/apis/design/.
 
+// IMPORTANT: If you change any of the messages here, make sure to also update
+// api.d.ts accordingly.
+
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";

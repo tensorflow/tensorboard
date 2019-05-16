@@ -68,7 +68,7 @@ export class SessionGroupHandle {
    * @returns the sessionGroup object this handle references or null if
    * this is a "null" reference.
    */
-  public sessionGroup(): any {
+  public sessionGroup(): tf.hparams.SessionGroup | null {
     return this._sessionGroupSel.size() === 1
       ? this._sessionGroupSel.datum()
       : null;
@@ -155,7 +155,7 @@ export class LinesCollection {
    * @returns a SessionGroupHandle referencing the given sessionGroup. If the
    * given sessionGroup is null or undefined returns a "null" handle.
    */
-  public getSessionGroupHandle(sessionGroup: any) {
+  public getSessionGroupHandle(sessionGroup: tf.hparams.SessionGroup) {
     if (sessionGroup === null || sessionGroup === undefined) {
       return new SessionGroupHandle();
     }
@@ -248,7 +248,7 @@ export class LinesCollection {
    * Updates the sessionGroups, colorByColumnIndex, minColor and maxColor and
    * redraws the lines.
    */
-  public redraw(sessionGroups: any[],
+  public redraw(sessionGroups: tf.hparams.SessionGroup[],
                 colorByColumnIndex: number | null,
                 minColor: string,
                 maxColor: string) {
@@ -289,8 +289,8 @@ export class LinesCollection {
    * too far away.
    */ 
   public findClosestSessionGroup(x: number, y:number): SessionGroupHandle {
-    const axesPositions =
-      this._axesCollection.mapVisibleAxes<number>((xPosition, axis) => xPosition);
+    const axesPositions = this._axesCollection.mapVisibleAxes<number>(
+      (xPosition, axis) => xPosition);
     const closestFgPath = tf.hparams.parallel_coords_plot.findClosestPath(
       this._visibleFgPathsSel.nodes(),
       axesPositions,
@@ -330,7 +330,8 @@ export class LinesCollection {
    * array of the given sessionGroup with respect to the current state of
    * the axesCollection. 
    */
-  private _setControlPointsProperty(pathElement: any, sessionGroup: any) {
+  private _setControlPointsProperty(pathElement: any,
+                                    sessionGroup: tf.hparams.SessionGroup) {
     pathElement.controlPoints = this._computeControlPoints(sessionGroup);
   }
 
@@ -338,7 +339,8 @@ export class LinesCollection {
    * a line representing the given 'sessionGroup'. The control points are
    * computed with respect to the current state of the axesCollection.
    */
-  private _computeControlPoints(sessionGroup): [number, number][] {
+  private _computeControlPoints(
+    sessionGroup: tf.hparams.SessionGroup): [number, number][] {
     return this._axesCollection.mapVisibleAxes<[number, number]>(
       (xPosition, axis) => [
         xPosition,
@@ -348,7 +350,7 @@ export class LinesCollection {
       ]);
   }
 
-  private _pathDAttribute(sessionGroup): string {
+  private _pathDAttribute(sessionGroup: tf.hparams.SessionGroup): string {
     return this._d3line(this._computeControlPoints(sessionGroup));
   }
 
@@ -360,7 +362,7 @@ export class LinesCollection {
   private readonly _schema: tf.hparams.Schema;
   private readonly _d3line: any;  /* D3 line */
   private readonly _axesCollection: AxesCollection;
-  private _sessionGroups: any[];
+  private _sessionGroups: tf.hparams.SessionGroup[];
   private _fgPathsSel: any;  /* D3 selection */
   private _bgPathsSel: any;  /* D3 selection */
   /**

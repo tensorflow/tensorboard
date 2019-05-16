@@ -374,7 +374,7 @@ export class AxesCollection {
    * are used to update the domain (and thus scale) of the axes. The 'options'
    * object control which axes are visible.
    */
-  public updateAxes(options: any, sessionGroups: any[]) {
+  public updateAxes(options: any, sessionGroups: tf.hparams.SessionGroup[]) {
     console.assert(!this.isAxisDragging());
 
     // Traverse options.columns, and update each corresponding axis.

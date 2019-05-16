@@ -323,3 +323,11 @@ tb_proto_library(
     ],
     visibility = ["//visibility:public"],
 )
+
+tf_web_library(
+    name = "api_d_ts",
+    srcs = [
+        "api.d.ts",
+    ],
+    path = "/tf-hparams",
+)

@@ -28,7 +28,7 @@ namespace tf.hparams.parallel_coords_plot {
  * line closest to the mouse pointer, and the selected session group is the
  * last session group line that was clicked.
  */
-type SessionGroupCallback = (SessionGroup: any) => void;
+type SessionGroupCallback = (SessionGroup: tf.hparams.SessionGroup) => void;
 
 /** 
  * Stores some global properties such as width and height of the SVG element 
