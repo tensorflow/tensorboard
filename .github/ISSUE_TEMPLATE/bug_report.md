@@ -22,33 +22,19 @@ remainder of this template.
 
 ## Environment information (required)
 
-Please complete **ALL** of the following information:
+Please run `diagnose_tensorboard.py` (link below) in the same
+environment from which you normally run TensorFlow/TensorBoard, and
+paste the output here:
 
-  - Version strings for the following Python packages, if installed, as
-    listed by `pip freeze`:
-      - `tensorboard`:
-      - `tb-nightly`:
-      - `tensorflow`:
-      - `tf-nightly`:
-      - `tf-nightly-2.0-preview`:
-  - OS platform and version (e.g., Linux with Ubuntu 16.04):
-  - Mode of installation (e.g., pip inside virtualenv; Conda):
-  - Python version (e.g., 2.7; 3.5):
-  - For browser-related issues:
-      - Browser type and version (e.g., Chrome 64.0.3282.140):
-      - Screenshot, if it’s a visual issue:
+<https://raw.githubusercontent.com/tensorflow/tensorboard/master/tensorboard/tools/diagnose_tensorboard.py>
+
+For browser-related issues, please additionally specify:
+
+  - Browser type and version (e.g., Chrome 64.0.3282.140):
+  - Screenshot, if it’s a visual issue:
 
 ## Issue description
 
-Please describe the bug as clearly as possible. Provide a minimal
-example as a self-contained Python program that reproduces the problem
-without any additional resources (including external data files and
-proprietary Python modules).
-
-Self-contained script to reproduce the problem:
-
-```python
-import tensorflow as tf
-
-# YOUR CODE HERE
-```
+Please describe the bug as clearly as possible. How can we reproduce the
+problem without additional resources (including external data files and
+proprietary Python modules)?
