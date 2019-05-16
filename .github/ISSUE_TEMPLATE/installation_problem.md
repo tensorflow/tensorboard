@@ -14,7 +14,7 @@ problem with TensorBoard itself.
 Consider first reaching out to Stack Overflow for support—they have a
 larger community with better searchability:
 
-<https://stackoverflow.com/questions/tagged/tensorboard>
+https://stackoverflow.com/questions/tagged/tensorboard
 
 ## Environment information (required)
 
@@ -22,7 +22,7 @@ Please run `diagnose_tensorboard.py` (link below) in the same
 environment from which you normally run TensorFlow/TensorBoard, and
 paste the output here:
 
-<https://raw.githubusercontent.com/tensorflow/tensorboard/master/tensorboard/tools/diagnose_tensorboard.py>
+https://raw.githubusercontent.com/tensorflow/tensorboard/master/tensorboard/tools/diagnose_tensorboard.py
 
 ## Steps to reproduce (required)
 
