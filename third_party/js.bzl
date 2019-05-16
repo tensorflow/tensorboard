@@ -516,11 +516,11 @@ def tensorboard_js_workspace():
       sha256_urls = {
           "82bf620fbf10af00a83754b7ebadcbcd41af7181e1aa237cdd72a2881d8004fe": [
               "https://mirror.bazel.build/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
           ],
-          "0380aebf46bb74706b8430446a24239e15e35b6092bac76135dafa8eea082a90": [
-              "https://mirror.bazel.build/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+          "bc7e983aae707e2d8dc0ca6406e3779e4ad73c537a02bed6d3d3d40180f26904": [
+              "https://mirror.bazel.build/raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )
