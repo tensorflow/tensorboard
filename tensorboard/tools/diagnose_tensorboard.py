@@ -338,12 +338,14 @@ def main():
   set_up_logging()
 
   print("### Diagnostics")
+  print()
 
   markdown_code_fence = "``````"  # seems likely to be sufficient
   print(markdown_code_fence)
   suggestions = []
-  for check in CHECKS:
-    print()
+  for (i, check) in enumerate(CHECKS):
+    if i > 0:
+      print()
     print("--- check: %s" % check.__name__)
     try:
       suggestions.extend(check())
