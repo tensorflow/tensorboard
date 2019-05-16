@@ -23,6 +23,8 @@ from __future__ import print_function
 import collections
 import errno
 import functools
+import hashlib
+import inspect
 import logging
 import os
 import pipes
@@ -90,7 +92,7 @@ def pip(args):
       "ignore:DEPRECATION",
       ",%s" % old_pythonwarnings if old_pythonwarnings else "",
   )
-  command = [sys.executable, "-m", "pip"]
+  command = [sys.executable, "-m", "pip", "--disable-pip-version-check"]
   command.extend(args)
   try:
     os.environ[PYTHONWARNINGS_KEY] = new_pythonwarnings
@@ -113,6 +115,25 @@ def which(name):
     return subprocess.check_output([binary, name])
   except subprocess.CalledProcessError:
     return None
+
+
+@check
+def autoidentify():
+  """Print the Git hash of the current version of `diagnose_me.py`.
+
+  Given this hash, use `git cat-file blob HASH` to recover the relevant
+  version of the script.
+  """
+  module = sys.modules[__name__]
+  try:
+    source = inspect.getsource(module).encode("utf-8")
+  except TypeError:
+    logging.info("diagnose_me.py source unavailable")
+  else:
+    # Git inserts a length-prefix before hashing; cf. `git-hash-object`.
+    blob = b"blob %d\0%s" % (len(source), source)
+    hash = hashlib.sha1(blob).hexdigest()
+    logging.info("diagnose_me.py version %s", hash)
 
 
 @check
