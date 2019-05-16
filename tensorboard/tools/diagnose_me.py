@@ -36,21 +36,21 @@ import traceback
 
 
 # A *check* is a function (of no arguments) that performs a diagnostic,
-# writes log messages, and optionally yields suggestions.
+# writes log messages, and optionally yields suggestions. Each check
+# runs in isolation; exceptions will be caught and reported.
 CHECKS = []
 
 
 # A suggestion to the end user.
 #   headline (str): A short description, like "Turn it off and on
 #     again". Should be imperative with no trailing punctuation. May
-#     contain Markdown.
+#     contain inline Markdown.
 #   description (str): A full enumeration of the steps that the user
 #     should take to accept the suggestion. Within this string, prose
 #     should be formatted with `reflow`. May contain Markdown.
 Suggestion = collections.namedtuple("Suggestion", ("headline", "description"))
 
 
-# Register a function as a check.
 def check(fn):
   """Register a function as a check.
 
@@ -166,11 +166,11 @@ def installed_packages():
   for family in expect_unique:
     actual = family & packages_set
     for package in actual:
-      logging.info(u"installed: %s" % (packages[package],))
+      logging.info("installed: %s", packages[package])
     if len(actual) == 0:
-      logging.warn(u"no installation among: %s" % (sorted(family),))
+      logging.warn("no installation among: %s", sorted(family))
     elif len(actual) > 1:
-      logging.warn(u"conflicting installations: %s" % (sorted(actual),))
+      logging.warn("conflicting installations: %s", sorted(actual))
       found_conflict = True
 
   if found_conflict:
@@ -314,8 +314,8 @@ def main():
   print("### Diagnostics")
   print()
 
-  markdown_ticks = "``````"  # seems likely to be sufficient
-  print(markdown_ticks)
+  markdown_code_fence = "``````"  # seems likely to be sufficient
+  print(markdown_code_fence)
   suggestions = []
   for check in CHECKS:
     print("--- check: %s" % check.__name__)
@@ -324,7 +324,7 @@ def main():
     except Exception:
       traceback.print_exc(file=sys.stdout)
       pass
-  print(markdown_ticks)
+  print(markdown_code_fence)
   print()
   print("End of diagnostics.")
 
