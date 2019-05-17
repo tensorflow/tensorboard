@@ -4289,9 +4289,11 @@ limitations under the License.
             // such.
             if (Array.isArray(attribs[keys[j]]) &&
                 attribs[keys[j]].length > 1) {
-              const attribSparseKeyKey = attributionPrefix + keys[j] + attributionSparseKeySuffix;
+              const attribSparseKeyKey = attributionPrefix + keys[j] +
+                attributionSparseKeySuffix;
               datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
-              const attribSparseValueKey = attributionPrefix + keys[j] + attributionSparseValueSuffix;
+              const attribSparseValueKey = attributionPrefix + keys[j] +
+                attributionSparseValueSuffix;
               datapoint[attribSparseValueKey] = attribs[keys[j]][1];
             } else {
               const attribKey = attributionPrefix + keys[j];
