@@ -30,6 +30,7 @@ from __future__ import print_function
 
 import logging
 import os
+import pkg_resources
 
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
@@ -86,4 +87,30 @@ def get_plugins():
 
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
+
   return _PLUGINS[:]
+
+# TODO(stephanwlee): Combine with get_plugins when concept of first-party
+# plugins is undone.
+def get_dynamic_plugins():
+  """Returns a list specifying TensorBoard's dynamically loaded plugins.
+
+	A dynamic TensorBoard plugin is specified using entry_points [1]. This will be
+  the de facto mechanism to load plugins and there no longer will be a concept
+  of the first-party plugins as depicted above in `get_plugins`.
+
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  Returns:
+		a list of base_plugin.TBPlugin
+
+  [1]: https://packaging.python.org/specifications/entry-points/
+  """
+  dynamic_plugins = [
+      entry_point.load()
+      for entry_point
+      in pkg_resources.iter_entry_points('tensorboard_plugins')]
+
+  return [
+      get_plugin()[2]
+      for get_plugin in dynamic_plugins]

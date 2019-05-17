@@ -35,12 +35,29 @@ The `logdir` argument is the path of the directory that contains events files.
 
 ## `data/plugins_listing`
 
-Returns a dict mapping from plugin name to a boolean indicating whether
+Returns a dict mapping from plugin name to an object that describes a plugin.
+
+The object contains a property `enabled`, a boolean indicating whether
 the plugin is active. A plugin might be inactive, for instance, if it
 lacks relevant data. Every plugin has a key. This route allows the
 frontend to hide or deprioritize inactive plugins so that the user can
 focus on the plugins that have data. Note that inactive plugins may
 still be rendered if the user explicitly requests this.
+
+Another property `es_module_path` is an optional one that describes a path to
+the main JavaScript plugin module that will be loaded onto an iframe. For "v1"
+plugins whose JavaScript source is incorporated into webfiles.zip, the field is
+empty.
+
+Example response:
+
+    {
+      "scalars": {
+        "enabled": true,
+        "es_module_path": "/scalars/plugins/main.js"
+      }
+    }
+
 
 ## `data/runs`
 

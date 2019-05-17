@@ -54,8 +54,9 @@ def run_main():
     print("TensorFlow installation not found - running with reduced feature set.",
           file=sys.stderr)
 
-  tensorboard = program.TensorBoard(default.get_plugins(),
-                                    program.get_default_assets_zip_provider())
+  tensorboard = program.TensorBoard(
+			default.get_plugins() + default.get_dynamic_plugins(),
+			program.get_default_assets_zip_provider())
   try:
     from absl import app
     # Import this to check that app.run() will accept the flags_parser argument.

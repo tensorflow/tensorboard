@@ -277,7 +277,10 @@ class TensorBoardWSGI(object):
     response = {}
     for plugin in self._plugins:
       start = time.time()
-      response[plugin.plugin_name] = plugin.is_active()
+      response[plugin.plugin_name] = {
+          'enabled': plugin.is_active(),
+          'es_module_path': plugin.es_module_path() or '',
+      }
       elapsed = time.time() - start
       logger.info(
           'Plugin listing: is_active() for %s took %0.3f seconds',
