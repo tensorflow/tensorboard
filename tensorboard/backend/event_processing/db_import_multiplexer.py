@@ -241,9 +241,9 @@ class _RunLoader(object):
           run_name=self._run_name)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _EventSink(object):
   """Abstract sink for batches of serialized tf.Event data."""
-  __metaclass__ = abc.ABCMeta
 
   @abc.abstractmethod
   def write_batch(self, event_batch):

@@ -22,10 +22,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
+
 from abc import ABCMeta
 from abc import abstractmethod
 
 
+@six.add_metaclass(ABCMeta)
 class TBPlugin(object):
   """TensorBoard plugin interface.
 
@@ -44,7 +47,6 @@ class TBPlugin(object):
       name must only contain characters among [A-Za-z0-9_.-], and must
       be nonempty, or a ValueError will similarly be thrown.
   """
-  __metaclass__ = ABCMeta
 
   plugin_name = None
 
