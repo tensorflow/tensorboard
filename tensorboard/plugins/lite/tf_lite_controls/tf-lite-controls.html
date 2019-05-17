@@ -816,6 +816,7 @@ tf-graph-node-search {
       _fetchRunToco() {
         const inputs = this.inputNodes.map(x => x.value);
         const outputs = this.outputNodes.map(x => x.value);
+        this._conversionResultTabSelectedIndex = 0;
         return this._requestManager.request(
           tf_backend.getRouter().pluginRoute('lite', '/run_toco'), {
             data: JSON.stringify({
