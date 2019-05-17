@@ -143,5 +143,6 @@ py_library(
     deps = [
         ":im_util",
         "//tensorboard/util:tb_logging",
+        "@org_pythonhosted_six",
     ],
 )
