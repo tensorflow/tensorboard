@@ -21,17 +21,18 @@ import tensorflow as tf
 import six
 import json
 import subprocess
-from os import listdir, path, mkdir
+import os
 from werkzeug import wrappers
 import traceback
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_accumulator as pec  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.lite import run_toco_impl
+from tensorboard.plugins.lite import lite_backend
 
 _PLUGIN_PREFIX_ROUTE = 'lite'
+
 
 class LitePlugin(base_plugin.TBPlugin):
   """A plugin that serves PR curves for individual classes."""
@@ -55,50 +56,48 @@ class LitePlugin(base_plugin.TBPlugin):
       A dictionary mapping URL path to route that handles it.
     """
     return {
-        '/tflite_supported_ops': self.tflite_supported_ops,
+        '/supported_ops': self.supported_ops,
         '/checkpoints': self.list_checkpoints,
-        '/run_toco': self.run_toco
+        '/convert': self.convert
     }
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
-    return bool(run_toco_impl.tflite_support and self._multiplexer and [run_name
-            for (run_name, run_data) in self._multiplexer.Runs().items()
-            if run_data.get(event_accumulator.GRAPH)])
+    if not self._multiplexer:
+      return False
+    # Should contains some runs.
+    run_names = [name for (name, data) in self._multiplexer.Runs().items() if data.get(pec.GRAPH)]
+    return any(run_names)
 
   @wrappers.Request.application
-  def run_toco(self, request):
-    graph_def_file = path.join(self._logdir, "graph.pbtxt")
-    try:
-      mkdir(path.join(self._logdir, "tflite_output"))
-    except:
-      pass
+  def convert(self, request):
+    tf.compat.v1.logging.info('run_toco convert, request: %s', request)
+    graph_def_file = os.path.join(self._logdir, "graph.pbtxt")
 
-    try:
-      result = {}
-      tflite_file = path.join(self._logdir, "tflite_output", "model.tflite")
-      script = None
+    tflite_output_dir = os.path.join(self._logdir, "tflite_output")
+    lite_backend.safe_makedirs(tflite_output_dir)
 
-      options = {
-          "input_nodes": ["dnn/input_from_feature_columns/input_layer/concat"],
-          "output_nodes": ["dnn/head/predictions/probabilities"],
-          "batch_size": 1,
-          "checkpoint": ""
-      }
+    result = {}
+    tflite_file = os.path.join(tflite_output_dir, "model.tflite")
+    script = ""
 
-      options = json.loads(request.form['data'])
-      options['checkpoint'] = path.join(self._logdir, options['checkpoint'])
+    # Options has a format of:
+    # {
+    #     "input_nodes": [],
+    #     "output_nodes": [],
+    #     "batch_size": 1,
+    #     "checkpoint": ""
+    # }
+    options = json.loads(request.form['data'])
 
-      # freeze_and_convert is equivalent to get_freeze_and_convert_script and
-      # execute the script. get_freeze_and_convert_script also does initial
-      # error checking. So if get_freeze_and_convert_script throw exception,
-      # it is not needed to execute freeze_and_convert.
+    saved_model_dir = os.path.join(self._logdir, options['checkpoint'] or "")
+    input_arrays = options['input_nodes'] or []
+    output_arrays = options['output_nodes'] or []
 
-      script = run_toco_impl.get_freeze_and_convert_script(graph_def_file,
-                                                           tflite_file, options)
-
-      run_toco_impl.freeze_and_convert(graph_def_file, tflite_file, options)
-
+    script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
+    success, stdout, stderr = lite_backend.execute(script, verbose=True)
+    
+    if success:
       result['result'] = 'success'
       result['tabs'] = [
         {
@@ -106,7 +105,7 @@ class LitePlugin(base_plugin.TBPlugin):
           'content': [
             {
               'type': 'text',
-              'body': 'Succuss: The model has been converted to tflite file.'
+              'body': 'Succuss: The model has been converted to tflite file.\n' + stdout 
             },
             {
               'type': 'code',
@@ -123,9 +122,9 @@ class LitePlugin(base_plugin.TBPlugin):
           ]
         }
       ]
-
-    except Exception as e:
-      error_info = run_toco_impl.get_exception_info(e)
+    else:
+      e = lite_backend.ConvertError(stderr)
+      error_info = lite_backend.get_exception_info(e)
 
       result['result'] = 'failed'
       result['tabs'] = [
@@ -168,7 +167,7 @@ class LitePlugin(base_plugin.TBPlugin):
           ]
         })
 
-      issue_url = 'https://github.com/tensorflow/tensorflow/issues/new?template=40-tflite-op-request.md'
+      issue_url = lite_backend.ISSUE_LINK
       if issue_url in error_info['error']:
         result['addons'] = [{
           'type': 'link',
@@ -176,16 +175,16 @@ class LitePlugin(base_plugin.TBPlugin):
           'body': issue_url
         }]
 
-
     return http_util.Respond(request, json.dumps(result), 'application/json')
 
   @wrappers.Request.application
   def list_checkpoints(self, request):
-    checkpoints = [path.splitext(f)[0] for f in listdir(self._logdir) if '.ckpt' in f and '.meta' in f]
-    print("checkpoints:" + json.dumps(checkpoints))
+    tf.compat.v1.logging.info('list_checkpoints, request: %s', request)
+    checkpoints = lite_backend.get_saved_model_dirs(self._logdir)
     return http_util.Respond(request, json.dumps(checkpoints), 'application/json')
 
   @wrappers.Request.application
-  def tflite_supported_ops(self, request):
-    supported_ops = run_toco_impl.list_supported_ops()
+  def supported_ops(self, request):
+    tf.compat.v1.logging.info('supported_ops, request: %s', request)
+    supported_ops = lite_backend.get_potentially_supported_ops()
     return http_util.Respond(request, supported_ops, 'application/json')

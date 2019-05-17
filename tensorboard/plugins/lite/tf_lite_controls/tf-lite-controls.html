@@ -780,7 +780,7 @@ tf-graph-node-search {
           this.get(e.model.item.type + 'Nodes').length === 0);
       },
       convert: function () {
-        this._fetchRunToco().then(
+        this._fetchRunConvert().then(
           result => {
             this.conversionResult = result
             this.$.result_dialog.open();
@@ -813,12 +813,12 @@ tf-graph-node-search {
         // though, so we reverse the icons.
         return legendOpened ? "expand-more" : "expand-less";
       },
-      _fetchRunToco() {
+      _fetchRunConvert() {
         const inputs = this.inputNodes.map(x => x.value);
         const outputs = this.outputNodes.map(x => x.value);
         this._conversionResultTabSelectedIndex = 0;
         return this._requestManager.request(
-          tf_backend.getRouter().pluginRoute('lite', '/run_toco'), {
+          tf_backend.getRouter().pluginRoute('lite', '/convert'), {
             data: JSON.stringify({
               input_nodes: inputs,
               output_nodes: outputs,

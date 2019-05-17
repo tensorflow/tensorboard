@@ -1,5 +1,5 @@
 # Description:
-# TensorBoard plugin for precision-recall curves.
+# TensorBoard plugin for TF Lite.
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -9,7 +9,7 @@ load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 py_library(
     name = "lite_plugin",
-    srcs = ["lite_plugin.py", "run_toco_impl.py"],
+    srcs = ["lite_plugin.py", "lite_backend.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
@@ -24,6 +24,16 @@ py_library(
     ],
 )
 
+py_library(
+    name = "lite_plugin_loader",
+    srcs = ["lite_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":lite_plugin",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
 py_test(
     name = "lite_plugin_test",
     size = "medium",  # tf integration test
@@ -31,6 +41,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":lite_plugin",
+        ":lite_plugin_loader",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

@@ -46,8 +46,8 @@ from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.interactive_inference import (
     interactive_inference_plugin_loader
 )
+from tensorboard.plugins.lite import lite_plugin_loader
 from tensorboard.plugins.pr_curve import pr_curves_plugin
-from tensorboard.plugins.lite import lite_plugin
 from tensorboard.plugins.profile import profile_plugin_loader
 from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
@@ -70,12 +70,12 @@ _PLUGINS = [
     pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    lite_plugin.LitePlugin,
     interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
     profile_plugin_loader.ProfilePluginLoader(),
     debugger_plugin_loader.DebuggerPluginLoader(),
     hparams_plugin_loader.HParamsPluginLoader(),
     mesh_plugin.MeshPlugin,
+    lite_plugin_loader.LitePluginLoader(),
 ]
 
 def get_plugins():
