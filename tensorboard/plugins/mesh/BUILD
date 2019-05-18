@@ -35,6 +35,7 @@ py_test(
         ":metadata",        
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
