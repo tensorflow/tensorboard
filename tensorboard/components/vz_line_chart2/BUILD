@@ -15,6 +15,7 @@ tf_web_library(
         "panZoomDragLayer.html",
         "panZoomDragLayer.ts",
         "tf-scale.ts",
+        "vz-line-chart-tooltip.ts",
         "vz-line-chart2.html",
         "vz-line-chart2.ts",
     ],
