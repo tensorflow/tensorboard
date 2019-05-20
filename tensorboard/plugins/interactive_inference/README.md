@@ -298,7 +298,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 Note that if you use TensorFlow with GPU support (tensorflow-gpu), then you
 should instead install the GPU-compatible version of witwidget:
 ```sh
-pip install widwidget-gpu
+pip install witwidget-gpu
 jupyter nbextension install --py --symlink --sys-prefix witwidget
 jupyter nbextension enable --py --sys-prefix witwidget
 ```
