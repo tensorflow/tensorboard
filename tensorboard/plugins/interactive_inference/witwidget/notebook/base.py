@@ -110,6 +110,7 @@ class WitWidgetBase(object):
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
     infer_objs = []
+    attribution_objs = []
     serving_bundle = inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
@@ -122,8 +123,11 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    infer_objs.append(inference_utils.run_inference_for_inference_results(
+    (preidctions, attributions) = (
+      inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
+    infer_objs.append(preidctions)
+    attribution_objs.append(attributions)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
         self.compare_custom_predict_fn):
@@ -139,12 +143,16 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      infer_objs.append(inference_utils.run_inference_for_inference_results(
+      (preidctions, attributions) = (
+        inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
+      infer_objs.append(preidctions)
+      attribution_objs.append(attributions)
     self.updated_example_indices = set()
     return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': self.config.get('label_vocab')}
+      'label_vocab': self.config.get('label_vocab'),
+      'attributions': attribution_objs}
 
   def infer_mutants_impl(self, info):
     """Performs mutant inference on specified examples."""
@@ -307,6 +315,8 @@ class WitWidgetBase(object):
 
     # Parse the results from the response and return them.
     results = []
+    attributions = (response['attributions']
+      if 'attributions' in response else None)
     for pred in response['predictions']:
       # If the prediction contains a key to fetch the prediction, use it.
       if isinstance(pred, dict):
@@ -321,4 +331,4 @@ class WitWidgetBase(object):
       if adjust_prediction:
         pred = adjust_prediction(pred)
       results.append(pred)
-    return results
+    return {'predictions': results, 'attributions': attributions}

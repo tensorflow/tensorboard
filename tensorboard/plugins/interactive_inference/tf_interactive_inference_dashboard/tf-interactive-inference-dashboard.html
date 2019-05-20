@@ -4279,16 +4279,19 @@ limitations under the License.
         for (let i = 0; i < attributions.indices.length; i++) {
           const idx = attributions.indices[i];
           const datapoint = this.visdata[idx];
-          const attribs = attributions.attributions[i];
+          // For now, we only display attribution from the first model, if WIT
+          // is loaded with two models.
+          const attribs = attributions.attributions[0][i];
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
-            // If the attributions for a key is an array then treat the first
+            // If the attributions for a key is a 2D array then treat the first
             // entry as sparse keys for attributions and the second entry as
             // the attributions for the sparse keys in the first array.
-            // Otherwise the attribution is a single value and can be used as
-            // such.
+            // Otherwise the attribution is a single value or list and can be
+            // used as such.
             if (Array.isArray(attribs[keys[j]]) &&
-                attribs[keys[j]].length > 1) {
+                attribs[keys[j]].length == 2 &&
+                Array.isArray(attribs[keys[j]][0])) {
               const attribSparseKeyKey = attributionPrefix + keys[j] +
                 attributionSparseKeySuffix;
               datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
