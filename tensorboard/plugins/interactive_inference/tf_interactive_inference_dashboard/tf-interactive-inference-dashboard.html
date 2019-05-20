@@ -190,6 +190,17 @@ limitations under the License.
         }
       }
 
+      .counterfactual-dropdown {
+        display: block;
+        width: 100px;
+        min-width: 100px;
+        padding-right: 10px;
+        --paper-input-container-input: {
+          font-size: 14px;
+          color: #3C4043;
+        }
+      }
+
       .slider-label {
         margin-top: 8px;
       }
@@ -1291,6 +1302,13 @@ limitations under the License.
                               <paper-radio-button name="L1">L1</paper-radio-button>
                               <paper-radio-button name="L2">L2</paper-radio-button>
                             </paper-radio-group>
+                            <paper-dropdown-menu label="Model:" no-label-float class="counterfactual-dropdown">
+                              <paper-listbox class="dropdown-content" selected="{{nearestCounterfactualModel}}">
+                                <template is="dom-repeat" items="[[parsedModelNames]]">
+                                  <paper-item>[[getCounterfactualModelName_(item)]]</paper-item>
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
                             <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
                             </paper-icon-button>
                             <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
@@ -2266,6 +2284,12 @@ limitations under the License.
           value: '',
           observer: 'labelFeatureSelected_',
         },
+        // Choose which model is used for counterfactual computation
+        nearestCounterfactualModel: {
+          type: Number,
+          value: 0,
+          observer: 'nearestCounterfactualModelChanged_',
+        },
         // Calculated statistics from the inference results.
         inferenceStats_: {
           type: Array,
@@ -2667,11 +2691,17 @@ limitations under the License.
         }
       },
 
-      // TODO (tolgab) Update for model comparison
+      nearestCounterfactualModelChanged_: function() {
+        if (this.showNearestCounterfactual) {
+          this.findClosestCounterfactual_();
+        }
+      },
+
       findClosestCounterfactual_: function() {
         const selected = this.selected[0];
         const modelInferenceValueStr =
-            this.strWithModelName_(inferenceValueStr, 0);
+            this.strWithModelName_(inferenceValueStr,
+                                   this.nearestCounterfactualModel);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
@@ -4005,6 +4035,10 @@ limitations under the License.
           return '<none>';
         }
         return feature;
+      },
+
+      getCounterfactualModelName_: function(modelName) {
+        return 'Model: ' + modelName;
       },
 
       getClassName_: function(cls) {
