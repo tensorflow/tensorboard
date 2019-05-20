@@ -74,7 +74,7 @@ flags.DEFINE_string('user_agent',
                        'Chrome/62.0.3202.94 '
                        'Safari/537.36',
                        'HTTP User-Agent header to send to Google Fonts')
-flags.DEFINE_string('mirror', 'https://mirror.tensorflow.org/',
+flags.DEFINE_string('mirror', 'http://mirror.tensorflow.org/',
                        'Mirror URL prefix')
 FLAGS = flags.FLAGS
 
