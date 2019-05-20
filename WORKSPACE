@@ -8,7 +8,7 @@ http_archive(
     strip_prefix = "bazel-skylib-0.7.0",
     urls = [
         # tag 0.7.0 resolves to commit 6741f733227dc68137512161a5ce6fcf283e3f58 (2019-02-08 18:37:26 +0100)
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/archive/0.7.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel-skylib/archive/0.7.0.tar.gz",
         "https://github.com/bazelbuild/bazel-skylib/archive/0.7.0.tar.gz",
     ],
 )
@@ -23,7 +23,7 @@ http_archive(
     sha256 = "f89ca8e91ac53b3c61da356c685bf03e927f23b97b086cc593db8edc088c143f",
     urls = [
         # tag 0.3.1 resolves to commit afa8c4435ed8fd832046dab807ef998a26779ecb (2019-04-03 14:10:32 -0700)
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_webtesting/releases/download/0.3.1/rules_webtesting.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/releases/download/0.3.1/rules_webtesting.tar.gz",
         "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.1/rules_webtesting.tar.gz",
     ],
 )
@@ -41,7 +41,7 @@ http_archive(
     # any release, so we pin to HEAD as of 2019-02-22.
     strip_prefix = "rules_closure-87d24b1df8b62405de8dd059cb604fd9d4b1e395",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",
         "https://github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.tar.gz",  # 2019-02-22
     ],
 )
@@ -57,7 +57,7 @@ http_archive(
     sha256 = "1086f63c2c9fbea6873e137d08b5711a0493a5b699f258774da97f7672ba939a",
     strip_prefix = "tensorflow-2243bd6ba9b36d43dbd5c0ede313853f187f5dce",
     urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/2243bd6ba9b36d43dbd5c0ede313853f187f5dce.tar.gz",  # 2019-03-26
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/2243bd6ba9b36d43dbd5c0ede313853f187f5dce.tar.gz",  # 2019-03-26
         "https://github.com/tensorflow/tensorflow/archive/2243bd6ba9b36d43dbd5c0ede313853f187f5dce.tar.gz",
     ],
 )

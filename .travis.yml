@@ -50,7 +50,7 @@ before_install:
     printf >"${bazel_checksum_file}" \
         '%s  %s\n' "${BAZEL_SHA256SUM}" "${bazel_binary}" &&
     for url in \
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
+        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
         "https://github.com/bazelbuild/bazel/releases/download/${BAZEL}/bazel-${BAZEL}-linux-x86_64" \
     ; do
       if \
