@@ -444,7 +444,7 @@ export class LineChart {
 
   private createTooltipInteraction(pzdl: PanZoomDragLayer):
       Plottable.Interactions.Pointer {
-    const pi = new Plottable.Interactions.Pointer();
+    const pi = new vz_chart_helpers.PointerInteraction();
     // Disable interaction while drag zooming.
     const disableTooltipUpdate = () => {
       pi.enabled(false);
