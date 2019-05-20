@@ -2186,7 +2186,22 @@ limitations under the License.
           observer: 'newInferences_',
           value: () => ({})
         },
-        // Attributions from inference.
+        // Attributions from inference. A dict with two fields: 'indices' and
+        // 'attributions'. Inidicies contains a list of example indices that
+        // these new attributions apply to. Attributions contains a list of
+        // attributions for each of those examples.
+        // The attribution object for each example is a dict of feature name
+        // to attribution value.
+        // The attribution value is one of the following:
+        // - A single number representing the attribution to that entire feature
+        //   value.
+        // - A list of numbers representing the attributions to individual
+        //   values of a multivalent feature - such as pixels in an image or
+        //   numbers in a list of numbers.
+        // - A 2D list for sparse attributions of a multivalent feature. The
+        //   first list contains the feature values for which attributions
+        //   exist. The second list contains the numeric attributions for each
+        //   of those feature values.
         attributions: {
           type: Object,
           observer: 'newAttributions_',
