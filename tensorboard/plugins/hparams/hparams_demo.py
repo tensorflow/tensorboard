@@ -182,7 +182,7 @@ def run(data, base_logdir, session_id, group_id, hparams):
       update_freq=flags.FLAGS.summary_freq,
       profile_batch=0,  # workaround for issue #2084
   )
-  hparams_callback = hp.KerasCallback(logdir, hparams, group_name=group_id)
+  hparams_callback = hp.KerasCallback(logdir, hparams)
   ((x_train, y_train), (x_test, y_test)) = data
   result = model.fit(
       x=x_train,
