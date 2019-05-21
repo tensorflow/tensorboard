@@ -19,12 +19,15 @@ from __future__ import print_function
 
 import abc
 import collections
+import math
 import os
+import random
 import time
 import unittest
 
 from google.protobuf import text_format
 import six
+from six.moves import xrange  # pylint: disable=redefined-builtin
 
 try:
   # python version >= 3.3
@@ -440,6 +443,47 @@ def _get_unique_summary(self, logdir):
   return summaries[0]
 
 
+def assert_uniform(self, range_, samples, delta=0.05, alpha_bound=1e-4):
+  """Assert that `samples` appear to be drawn uniformly from `range_`.
+
+  The range of the random variable must be hashable.
+
+  As long as the inputs are seeded, this test is deterministic. The
+  error bounds are only to protect against changes to the seed or the
+  underlying PRNG implementation.
+
+  Args:
+    self: A `TestCase` object.
+    range_: The range of the random variable under test (an iterable).
+    samples: A sequence of samples from the random variable.
+    delta: The permitted deviation below the expected value for each
+      bucket, as a multiplicative factor.
+    alpha_bound: The maximum permitted probability of Type I error (false
+      test failure when the distribution is actually uniform). If the
+      probability of Type I error cannot be shown to be below this
+      value, the test will always fail.
+  """
+  range_ = frozenset(range_)
+  n_buckets = len(range_)
+  trials = len(samples)
+  counts = collections.Counter(samples)
+  mu = trials / n_buckets
+  # If `sample_uniform` is implemented correctly, each bucket is
+  # distributed Binomial(trials, 1 / n_buckets) with mean $\mu$, which
+  # by a Chernoff bound exceeds $(1 - \delta) \mu$ with probability at
+  # least $1 - \exp(-\delta^2 \mu / 2)$. A union bound then gives the
+  # following bound on test failure:
+  alpha = n_buckets * math.exp(-delta ** 2 * mu / 2)
+  self.assertLess(alpha, alpha_bound)
+  print("Probability of false failure: %0.4g" % alpha)
+
+  threshold = int((1 - delta) * mu)
+  print("Checking counts > %d for %s" % (threshold, counts))
+  self.assertEqual(range_, frozenset(counts))
+  for bucket in counts:
+    self.assertGreater(counts[bucket], threshold)
+
+
 class IntIntervalTest(test.TestCase):
   def test_simple(self):
     domain = hp.IntInterval(3, 7)
@@ -465,6 +509,23 @@ class IntIntervalTest(test.TestCase):
     with six.assertRaisesRegex(
         self, ValueError, "123 > 45"):
       hp.IntInterval(123, 45)
+
+  def test_sample_uniform(self):
+    domain = hp.IntInterval(2, 7)
+    rng = random.Random(0)
+    mu = 10000
+    trials = (domain.max_value - domain.min_value + 1) * mu
+    samples = [domain.sample_uniform() for _ in xrange(trials)]
+    range_ = xrange(domain.min_value, domain.max_value + 1)
+    assert_uniform(self, range_, samples)
+
+  def test_sample_uniform_unseeded(self):
+    domain = hp.IntInterval(2, 7)
+    for _ in xrange(100):
+      sample = domain.sample_uniform()
+      self.assertIsInstance(sample, int)
+      self.assertGreaterEqual(sample, domain.min_value)
+      self.assertLessEqual(sample, domain.max_value)
 
 
 class RealIntervalTest(test.TestCase):
@@ -500,6 +561,30 @@ class RealIntervalTest(test.TestCase):
         self, ValueError, "2.1 > 1.2"):
       hp.RealInterval(2.1, 1.2)
 
+  def test_sample_uniform(self):
+    domain = hp.RealInterval(2.0, 4.0)
+    rng = random.Random(0)
+    n_buckets = 10
+    mu = 10000
+    trials = n_buckets * mu
+    raw_samples = [domain.sample_uniform() for _ in xrange(trials)]
+    buckets = [
+        int(
+            ((x - domain.min_value) / (domain.max_value - domain.min_value))
+            * n_buckets
+        )
+        for x in raw_samples
+    ]
+    assert_uniform(self, xrange(n_buckets), buckets)
+
+  def test_sample_uniform_unseeded(self):
+    domain = hp.RealInterval(2.0, 4.0)
+    for _ in xrange(100):
+      sample = domain.sample_uniform()
+      self.assertIsInstance(sample, float)
+      self.assertGreaterEqual(sample, domain.min_value)
+      self.assertLessEqual(sample, domain.max_value)
+
 
 class DiscreteTest(test.TestCase):
   def test_simple(self):
@@ -526,6 +611,19 @@ class DiscreteTest(test.TestCase):
     with six.assertRaisesRegex(
         self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"):
       hp.Discrete(["one", 2])
+
+  def test_sample_uniform(self):
+    domain = hp.Discrete(["red", "green", "blue"])
+    rng = random.Random(0)
+    mu = 10000
+    trials = len(domain.values) * mu
+    samples = [domain.sample_uniform() for _ in xrange(trials)]
+    assert_uniform(self, domain.values, samples)
+
+  def test_sample_uniform_unseeded(self):
+    domain = hp.Discrete(["red", "green", "blue"])
+    for _ in xrange(100):
+      self.assertIn(domain.sample_uniform(), ("red", "green", "blue"))
 
 
 if __name__ == "__main__":

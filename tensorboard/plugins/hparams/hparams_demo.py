@@ -222,7 +222,7 @@ def run_all(logdir, verbose=False):
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
   session_index = 0  # across all session groups
   for group_index in xrange(flags.FLAGS.num_session_groups):
-    hparams = {h: sample_uniform(h.domain, rng) for h in HPARAMS}
+    hparams = {h: h.domain.sample_uniform(rng) for h in HPARAMS}
     hparams_string = str(hparams)
     group_id = hashlib.sha256(hparams_string.encode("utf-8")).hexdigest()
     for repeat_index in xrange(sessions_per_group):
@@ -242,27 +242,6 @@ def run_all(logdir, verbose=False):
           group_id=group_id,
           hparams=hparams,
       )
-
-
-def sample_uniform(domain, rng):
-  """Sample a value uniformly from a domain.
-
-  Args:
-    domain: An `IntInterval`, `RealInterval`, or `Discrete` domain.
-    rng: A `random.Random` object; defaults to the `random` module.
-
-  Raises:
-    TypeError: If `domain` is not a known kind of domain.
-    IndexError: If the domain is empty.
-  """
-  if isinstance(domain, hp.IntInterval):
-    return rng.randint(domain.min_value, domain.max_value)
-  elif isinstance(domain, hp.RealInterval):
-    return rng.uniform(domain.min_value, domain.max_value)
-  elif isinstance(domain, hp.Discrete):
-    return rng.choice(domain.values)
-  else:
-    raise TypeError("unknown domain type: %r" % (domain,))
 
 
 def main(unused_argv):
