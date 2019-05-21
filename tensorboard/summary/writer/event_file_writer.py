@@ -75,7 +75,6 @@ class EventFileWriter(object):
         self._file_name = os.path.join(logdir, "events.out.tfevents.%010d.%s.%s.%s" %
             (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix  # noqa E128
         self._general_file_writer = tf.io.gfile.GFile(self._file_name, 'wb')
-        # self._general_file_writer = open(self._file_name, 'wb')
         self._async_writer = _AsyncWriter(RecordWriter(self._general_file_writer), max_queue_size, flush_secs)
 
         # Initialize an event instance.
