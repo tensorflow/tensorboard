@@ -5456,7 +5456,7 @@ limitations under the License.
 
       getSectionTitle: function(title, selectedExampleNum, comparedIndices) {
         let name = title;
-        if (selectedExampleNum != null && selectedExampleNum != '') {
+        if (selectedExampleNum != null && selectedExampleNum !== '') {
           if (comparedIndices != null && comparedIndices.length > 0) {
             name += ' - Datapoints ' + selectedExampleNum + ' and ' + comparedIndices[0];
           }
