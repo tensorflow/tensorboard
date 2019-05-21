@@ -191,10 +191,10 @@ limitations under the License.
       }
 
       .counterfactual-dropdown {
-        display: block;
+        display: inline-block;
         width: 100px;
-        min-width: 100px;
-        padding-right: 10px;
+        min-width: 50px;
+        padding-right: 5px;
         --paper-input-container-input: {
           font-size: 14px;
           color: #3C4043;
@@ -1302,7 +1302,7 @@ limitations under the License.
                               <paper-radio-button name="L1">L1</paper-radio-button>
                               <paper-radio-button name="L2">L2</paper-radio-button>
                             </paper-radio-group>
-                            <paper-dropdown-menu label="Model:" no-label-float class="counterfactual-dropdown">
+                            <paper-dropdown-menu label="Model:" no-label-float class="counterfactual-dropdown" hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]">
                               <paper-listbox class="dropdown-content" selected="{{nearestCounterfactualModel}}">
                                 <template is="dom-repeat" items="[[parsedModelNames]]">
                                   <paper-item>[[getCounterfactualModelName_(item)]]</paper-item>
@@ -2896,6 +2896,10 @@ limitations under the License.
 
       shouldShowLabelDropdown_: function(stats) {
         return stats && Object.keys(stats).length > 0;
+      },
+
+      shouldHideCounterfactualModelSelector_: function(modelNames) {
+        return !(modelNames && modelNames.length > 1);
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature,
