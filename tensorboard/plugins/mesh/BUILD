@@ -127,6 +127,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "demo_utils_test",
+    size = "small",
+    srcs = ["demo_utils_test.py"],
+    srcs_version = "PY2AND3",
+    data = [
+        ":test_data",
+    ],
+    deps = [
+        ":demo_utils",
+    ],
+)
+
 py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
@@ -139,4 +152,12 @@ py_binary(
         ":summary",
         "//tensorboard/compat:tensorflow",
     ],
+)
+
+filegroup(
+  name = "test_data",
+  srcs = [
+      "test_data/ShortDance07_a175_00013.ply",
+  ],
+  visibility = ["//visibility:public"],
 )
