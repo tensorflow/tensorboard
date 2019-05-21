@@ -82,6 +82,13 @@ class GFileTest(unittest.TestCase):
             expected_files,
             gfile.listdir(temp_dir))
 
+    def testMakeDirs(self):
+        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        self._CreateDeepDirectoryStructure(temp_dir)
+        new_dir = os.path.join(temp_dir, 'newdir', 'subdir', 'subsubdir')
+        gfile.makedirs(new_dir)
+        self.assertTrue(gfile.isdir(new_dir))
+
     def testWalk(self):
         temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
         self._CreateDeepDirectoryStructure(temp_dir)
@@ -191,6 +198,28 @@ class GFileTest(unittest.TestCase):
         with gfile.GFile(ckpt_path, 'rb') as f:
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
+
+    def testWrite(self):
+        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testWriteBinary(self):
+        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
 
     def _CreateDeepDirectoryStructure(self, top_directory):
         """Creates a reasonable deep structure of subdirectories with files.

@@ -109,6 +109,20 @@ class LocalFileSystem(object):
             else:
                 return f.read()
 
+    def write(self, filename, file_content, binary_mode=False):
+        """Writes string file contents to a file.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        mode = "wb" if binary_mode else "w"
+        if not binary_mode:
+            file_content = compat.as_text(file_content)
+        with io.open(filename, mode) as f:
+            f.write(file_content)
+
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
         if isinstance(filename, six.string_types):
@@ -139,6 +153,10 @@ class LocalFileSystem(object):
         entries = os.listdir(compat.as_str_any(dirname))
         entries = [compat.as_str_any(item) for item in entries]
         return entries
+
+    def makedirs(self, path):
+        """Creates a directory and all parent/intermediate directories."""
+        os.makedirs(path)
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -228,6 +246,20 @@ class S3FileSystem(object):
         else:
             return stream.decode('utf-8')
 
+    def write(self, filename, file_content, binary_mode=False):
+        """Writes string file contents to a file.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        client = boto3.client("s3")
+        bucket, path = self.bucket_and_path(filename)
+        if not binary_mode:
+            file_content = compat.as_text(file_content)
+        client.put_object(Body=file_content, Bucket=bucket, Key=path)
+
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
         # Only support prefix with * at the end and no ? in the string
@@ -282,6 +314,14 @@ class S3FileSystem(object):
                     keys.append(key)
         return keys
 
+    def makedirs(self, dirname):
+        """Creates a directory and all parent/intermediate directories."""
+        client = boto3.client("s3")
+        bucket, path = self.bucket_and_path(dirname)
+        if not path.endswith("/"):
+            path += "/"  # This will make sure we don't override a file
+        client.put_object(Body='', Bucket=bucket, Key=path)
+
     def stat(self, filename):
         """Returns file statistics for a given path."""
         # NOTE: Size of the file is given by ContentLength from S3,
@@ -307,7 +347,7 @@ class GFile(object):
     # Only methods needed for TensorBoard are implemented.
 
     def __init__(self, filename, mode):
-        if mode not in ('r', 'rb', 'br'):
+        if mode not in ('r', 'rb', 'br', 'w', 'wb', 'bw'):
             raise NotImplementedError(
                 "mode {} not supported by compat GFile".format(mode))
         self.filename = compat.as_bytes(filename)
@@ -315,15 +355,20 @@ class GFile(object):
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
-        self.binary_mode = (mode != 'r')
+        self.write_buff = None
+        self.binary_mode = (mode != 'r' and mode != 'w')
+        self.write_mode = (mode == 'w' or mode == 'wb' or mode == 'bw')
+        self.closed = False
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
+        self.close()
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
+        self.write_buff = None
 
     def __iter__(self):
         return self
@@ -366,6 +411,16 @@ class GFile(object):
 
         return result
 
+    def write(self, file_content):
+        if not self.write_mode:
+            raise errors.OpError(None, None, "File not opened in write mode.")
+
+        # add to buffer, but wait for flush to write to filesystem
+        if self.write_buff is None:
+            self.write_buff = file_content
+        else:
+            self.write_buff += file_content
+
     def __next__(self):
         line = None
         while True:
@@ -395,8 +450,14 @@ class GFile(object):
     def next(self):
         return self.__next__()
 
+    def flush(self):
+        if self.write_buff is not None:
+            fs = get_filesystem(self.filename)
+            fs.write(self.filename, self.write_buff, self.binary_mode)
+
     def close(self):
-        pass
+        self.flush()
+        self.closed = True
 
 
 def exists(filename):
@@ -458,6 +519,20 @@ def listdir(dirname):
       errors.NotFoundError if directory doesn't exist
     """
     return get_filesystem(dirname).listdir(dirname)
+
+
+def makedirs(path):
+    """Creates a directory and all parent/intermediate directories.
+
+    It succeeds if path already exists and is writable.
+
+    Args:
+      path: string, name of the directory to be created
+
+    Raises:
+      errors.OpError: If the operation fails.
+    """
+    return get_filesystem(path).makedirs(path)
 
 
 def walk(top, topdown=True, onerror=None):

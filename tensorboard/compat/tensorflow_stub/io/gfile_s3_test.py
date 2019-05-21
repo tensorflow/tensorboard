@@ -92,6 +92,13 @@ class GFileTest(unittest.TestCase):
         six.assertCountEqual(self, expected_files, gotten_files)
 
     @mock_s3
+    def testMakeDirs(self):
+        temp_dir = self._CreateDeepS3Structure()
+        new_dir = self._PathJoin(temp_dir, 'newdir', 'subdir', 'subsubdir')
+        gfile.makedirs(new_dir)
+        self.assertTrue(gfile.isdir(new_dir))
+
+    @mock_s3
     def testWalk(self):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
@@ -194,9 +201,31 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
 
-    def _PathJoin(self, top_directory, sub_path):
+    @mock_s3
+    def testWrite(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteBinary(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def _PathJoin(self, *args):
         """Join directory and path with slash and not local separator"""
-        return top_directory + "/" + sub_path
+        return "/".join(args)
 
     def _CreateDeepS3Structure(self, top_directory='top_dir', ckpt_content='',
                                region_name='us-east-1', bucket_name='test'):
