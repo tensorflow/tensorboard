@@ -463,8 +463,8 @@ Polymer({
    * @return Path in svg format.
    */
   linkToPath: function(link: podviewer.proto.ChannelInfo): string {
-    const src = this.coreIdToPos(link.srcCoreId);
-    const dst = this.coreIdToPos(link.dstCoreId);
+    const src = this.coreIdToPos(link.srcCoreIds[0]);
+    const dst = this.coreIdToPos(link.dstCoreIds[0]);
     const path = 'M ' + src.x + ' ' + src.y + 'L ' + dst.x + ' ' + dst.y;
     return path;
   },

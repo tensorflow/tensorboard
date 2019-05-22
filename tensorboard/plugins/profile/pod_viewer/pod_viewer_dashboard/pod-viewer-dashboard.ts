@@ -66,7 +66,8 @@ Polymer({
         {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
         {key: 'hostInfeedDurationUs', label: 'Infeed'},
         {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-        {key: 'crsDurationUs', label: 'All reduce'},
+        {key: 'allReduceComputeDurationUs', label: 'AllReduce compute'},
+        {key: 'allReduceSyncDurationUs', label: 'AllReduce sync'},
         {key: 'sendDurationUs', label: 'Send'},
         {key: 'recvDurationUs', label: 'Recv'},
       ],
@@ -162,8 +163,10 @@ Polymer({
         if (j == 1) {
           continue;
         }
+        const duration = val[layers[j].key];
+        if (!duration) continue;
         // Skip the lowFlopsComputeUs.
-        val['lowFlopsComputeUs'] -= val[layers[j].key];
+        val['lowFlopsComputeUs'] -= duration;
       }
     }
    return podStatsMap;
