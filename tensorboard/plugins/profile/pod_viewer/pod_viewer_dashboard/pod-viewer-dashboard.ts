@@ -125,6 +125,7 @@ Polymer({
   _computeRunEnvironment(
       data: podviewer.proto.PodViewerInputData|undefined|null):
           podviewer.proto.RunEnvironment {
+    if (!data) return;
     return data.runEnvironment;
   },
   _computeMaxStepId(podStatsMaps: Array<podviewer.proto.PodStatsMap>): number {

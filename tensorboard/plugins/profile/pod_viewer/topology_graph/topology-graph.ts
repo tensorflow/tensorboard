@@ -46,8 +46,8 @@ interface TopoData {
   rid: number,
   /** Host name. */
   host: string,
-  /** Value of the selected metric. */
-  value: number,
+  /** Values of the selected metric. */
+  values: Array<number>,
   /** Step total duration. */
   total: number,
 };
@@ -80,11 +80,11 @@ Polymer({
     selectedMetricIdx: {
       type: Number,
       value: 0,
+      observer: '_selectedMetricIdxChanged',
     },
     _topoData: {
       type: Object,
-      computed:
-          '_computeTopoData(data, runEnvironment, metrics, selectedMetricIdx)',
+      computed: '_computeTopoData(data, runEnvironment, metrics)',
     },
     _xDimension: {
       type: Number,
@@ -118,9 +118,15 @@ Polymer({
     _nodeGridWidth: {
       type: Number,
     },
+    _gSVG: {
+      type: Object,
+    },
     _gLink: {
       type: Object,
     },
+    _colorScale: {
+      type: Object,
+    }
   },
   observers: ['drawTopology(_topoData, runEnvironment)'],
   /**
@@ -129,15 +135,16 @@ Polymer({
   _computeTopoData: function(
       data: podviewer.proto.PodStatsMap|undefined,
       runEnvironment: podviewer.proto.RunEnvironment|undefined,
-      metrics: Array<podviewer.proto.StackLayer>,
-      idx: number): Array<TopoData> {
-    if (!data || !runEnvironment || !runEnvironment.topology || !metrics ||
-        idx >= metrics.length || idx < 0) {
+      metrics: Array<podviewer.proto.StackLayer>): Array<TopoData> {
+    if (!data || !runEnvironment || !runEnvironment.topology || !metrics) {
       return;
     }
     const xdim = parseInt(runEnvironment.topology.xDimension, 10);
     return Object.keys(data.podStatsPerCore).map((core) => {
         const podStats = data.podStatsPerCore[core];
+        let breakdown = metrics.map((item) => {
+          return podStats[item.key] ? podStats[item.key] : 0;
+        });
         return {
             xdim: podStats.chipId % xdim,
             ydim: Math.floor(podStats.chipId / xdim),
@@ -145,7 +152,7 @@ Polymer({
             cid: podStats.chipId,
             rid: data.coreIdToReplicaIdMap[core], // replica id.
             host: podStats.hostName,
-            value: podStats[metrics[idx].key],
+            values: breakdown,
             total: podStats.totalDurationUs,
         };
     });
@@ -181,7 +188,7 @@ Polymer({
     this._nodeGridHeight = CHIP_GRID_SIZE;
     const hostXDim = this._xDimension / this._hostXStride;
     const hostYDim = this._yDimension / HOST_Y_STRIDE;
-    const colorScale =
+    this._colorScale =
         d3.scaleQuantile<string>().domain([0, 1.0]).range(MAIN_COLORS);
     const chipXDims = Array.from(Array(this._xDimension).keys());
     const chipYDims = Array.from(Array(this._yDimension).keys());
@@ -196,7 +203,7 @@ Polymer({
     const hostData = this.createHostData(hostXDim, hostYDim);
     this.drawHostCards(
         svg, hostData, this._hostGridWidth, this._hostGridHeight);
-    this.drawNodeCards(svg, data, colorScale);
+    this.drawNodeCards(svg, data, this._colorScale);
 
     // Creates separate groups, so that the z-index remains in the right order.
     this._gLink = svg.append('svg:g').classed('link', true);
@@ -216,7 +223,7 @@ Polymer({
     const legendYLoc =
         this._hostGridHeight * Math.ceil(this._yDimension / HOST_Y_STRIDE) +
         HOST_TO_HOST_MARGIN;
-    this.drawLegend(svg, legendYLoc, colorScale);
+    this.drawLegend(svg, legendYLoc, this._colorScale);
   },
   /**
    * Returns the size of host grid, including the host card size and the margin
@@ -314,6 +321,7 @@ Polymer({
   drawNodeCards: function(svg: any, data: Array<TopoData>, colorScale: any) {
     let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
     let parent = this;
+    let metricIdx = Math.max(this.selectedMetricIdx, 0);
     cards.enter().append('rect').merge(cards)
         .attr('id', (d) => 'rid' + d.rid)
         .attr('x', (d) => {
@@ -334,7 +342,7 @@ Polymer({
         .attr('border', 1)
         .style('stroke', 'black')
         .style('stroke-width', 1)
-        .style('fill', (d) => colorScale(d.value / d.total))
+        .style('fill', (d) => colorScale(d.values[metricIdx] / d.total))
         .on('mouseover', function(d) {
             // highlight text
             d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
@@ -413,6 +421,8 @@ Polymer({
   _getToolTipText: function(data: TopoData): string {
     const label = this.selectedMetricIdx >= 0 ?
         this.metrics[this.selectedMetricIdx].label : '';
+    const value = this.selectedMetricIdx >= 0 ?
+        data.values[this.selectedMetricIdx] : 0;
     const nf = new Intl.NumberFormat(navigator.language,
         {style: 'percent', minimumFractionDigits: 2});
 
@@ -421,8 +431,8 @@ Polymer({
         chip id: ${data.cid},
         core id: ${data.nid},
         replica id: ${data.rid}
-        ${label ? `${label} spends ${data.value.toFixed(2)}µs in total,
-            taking ${nf.format(data.value / data.total)} of a step.` : ''}`
+        ${label ? `${label} spends ${value.toFixed(2)}µs in total,
+            taking ${nf.format(value / data.total)} of a step.` : ''}`
     return res;
   },
   /**
@@ -460,6 +470,14 @@ Polymer({
   },
   attached: function() {
     this.drawTopology(this._topoData, this.runEnvironment);
+  },
+  /**
+   * Updates the color of the rectangles when selectedMetricIdxChanged.
+   */
+  _selectedMetricIdxChanged: function(newIdx: number) {
+    if (newIdx < 0) return;
+    d3.select(this.$.tpgraph).selectAll('.node').style('fill',
+        (d) => this._colorScale(d['values'][newIdx] / d['total']));
   },
   /**
    * Updates the topology color coding or selected channel id when the
