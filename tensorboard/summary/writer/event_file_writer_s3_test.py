@@ -21,8 +21,10 @@ from __future__ import print_function
 
 import boto3
 import os
+import unittest
 from tensorboard.summary.writer.event_file_writer import EventFileWriter
 from tensorboard.summary.writer.event_file_writer import _AsyncWriter
+from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary
 from tensorboard.compat.tensorflow_stub.io import gfile
@@ -34,6 +36,8 @@ from tensorboard import test as tb_test
 # and moto mock is being called
 os.environ.setdefault("AWS_ACCESS_KEY_ID", "foobar_key")
 os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "foobar_secret")
+
+USING_REAL_TF = tf.__version__ != 'stub'
 
 
 def s3_temp_dir(top_directory='top_dir', bucket_name='test',
@@ -61,6 +65,7 @@ def s3_join(*args):
 
 class EventFileWriterTest(tb_test.TestCase):
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_event_file_writer_roundtrip(self):
     _TAGNAME = 'dummy'
@@ -78,6 +83,7 @@ class EventFileWriterTest(tb_test.TestCase):
     r.GetNext()
     self.assertEqual(fakeevent.SerializeToString(), r.record())
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_setting_filename_suffix_works(self):
     logdir = s3_temp_dir()
@@ -87,6 +93,7 @@ class EventFileWriterTest(tb_test.TestCase):
     event_files = sorted(gfile.glob(s3_join(logdir, '*')))
     self.assertEqual(event_files[0].split('.')[-1], 'event_horizon')
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_async_writer_without_write(self):
     logdir = s3_temp_dir()
@@ -101,6 +108,7 @@ class EventFileWriterTest(tb_test.TestCase):
 
 class AsyncWriterTest(tb_test.TestCase):
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_async_writer_write_once(self):
     filename = s3_join(s3_temp_dir(), "async_writer_write_once")
@@ -111,6 +119,7 @@ class AsyncWriterTest(tb_test.TestCase):
     with gfile.GFile(filename, 'rb') as f:
       self.assertEqual(f.read(), bytes_to_write)
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_async_writer_write_queue_full(self):
     filename = s3_join(s3_temp_dir(), "async_writer_write_queue_full")
@@ -123,6 +132,7 @@ class AsyncWriterTest(tb_test.TestCase):
     with gfile.GFile(filename, 'rb') as f:
       self.assertEqual(f.read(), bytes_to_write * repeat)
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_async_writer_write_one_slot_queue(self):
     filename = s3_join(s3_temp_dir(), "async_writer_write_one_slot_queue")
@@ -135,6 +145,7 @@ class AsyncWriterTest(tb_test.TestCase):
     with gfile.GFile(filename, 'rb') as f:
       self.assertEqual(f.read(), bytes_to_write * repeat)
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_async_writer_close_triggers_flush(self):
     filename = s3_join(s3_temp_dir(), "async_writer_close_triggers_flush")
@@ -145,6 +156,7 @@ class AsyncWriterTest(tb_test.TestCase):
     with gfile.GFile(filename, 'rb') as f:
       self.assertEqual(f.read(), bytes_to_write)
 
+  @unittest.skipIf(USING_REAL_TF, 'Test only passes when using stub TF')
   @mock_s3
   def test_write_after_async_writer_closed(self):
     filename = s3_join(s3_temp_dir(), "write_after_async_writer_closed")
