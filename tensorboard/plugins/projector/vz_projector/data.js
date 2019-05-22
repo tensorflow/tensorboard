@@ -332,7 +332,8 @@ var vz_projector;
                                         return row.map(function (entry) { return entry.dist; });
                                     });
                                     // Initialize UMAP and return the number of epochs.
-                                    return _this.umap.initializeFit(X, knnIndices, knnDistances);
+                                    _this.umap.setPrecomputedKNN(knnIndices, knnDistances);
+                                    return _this.umap.initializeFit(X);
                                 }, UMAP_MSG_ID)];
                         case 2:
                             nEpochs = _a.sent();
