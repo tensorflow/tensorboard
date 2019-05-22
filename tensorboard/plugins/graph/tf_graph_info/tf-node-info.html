@@ -489,7 +489,7 @@ limitations under the License.
           return null;
         },
         _getTotalMicros: function(stats) {
-          return stats.getTotalMicros();
+          return stats ? stats.getTotalMicros() : 0;
         },
         _getHasDisplayableNodeStats: function(stats) {
           return tf.graph.util.hasDisplayableNodeStats(stats);

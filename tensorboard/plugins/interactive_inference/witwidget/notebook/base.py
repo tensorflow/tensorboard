@@ -19,6 +19,7 @@ import tensorflow as tf
 import sys
 from IPython import display
 from google.protobuf import json_format
+from numbers import Number
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
@@ -55,27 +56,44 @@ class WitWidgetBase(object):
     self.compare_custom_predict_fn = (
       config.get('compare_custom_predict_fn')
       if 'compare_custom_predict_fn' in config else None)
+    self.adjust_prediction_fn = (
+      config.get('adjust_prediction')
+      if 'adjust_prediction' in config else None)
+    self.compare_adjust_prediction_fn = (
+      config.get('compare_adjust_prediction')
+      if 'compare_adjust_prediction' in config else None)
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'adjust_prediction' in copied_config:
+      del copied_config['adjust_prediction']
+    if 'compare_adjust_prediction' in copied_config:
+      del copied_config['compare_adjust_prediction']
 
-    self._set_examples(config['examples'])
+    self.set_examples(config['examples'])
     del copied_config['examples']
 
     self.config = copied_config
 
-    # If using CMLE for prediction, set the correct custom prediction functions.
-    if self.config.get('use_cmle'):
-      self.custom_predict_fn = self._predict_cmle_model
-    if self.config.get('use_cmle_2'):
-      self.compare_custom_predict_fn = self._predict_cmle_compare_model
+    # If using AI Platform for prediction, set the correct custom prediction
+    # functions.
+    if self.config.get('use_aip'):
+      self.custom_predict_fn = self._predict_aip_model
+    if self.config.get('compare_use_aip'):
+      self.compare_custom_predict_fn = self._predict_aip_compare_model
 
   def _get_element_html(self):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
-  def _set_examples(self, examples):
+  def set_examples(self, examples):
+    """Sets the examples shown in WIT.
+
+    The examples are initially set by the examples specified in the config
+    builder during construction. This method can change which examples WIT
+    displays.
+    """
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 
@@ -202,38 +220,63 @@ class WitWidgetBase(object):
 
   def _json_from_tf_examples(self, tf_examples):
     json_exs = []
+    feature_names = self.config.get('feature_names')
     for ex in tf_examples:
-      json_ex = {}
+      # Create a JSON list or dict for each example depending on settings.
       # Strip out any explicitly-labeled target feature from the example.
-      # This is needed because CMLE models that accept JSON cannot handle when
-      # non-input features are provided as part of the object to run prediction
-      # on.
-      for feat in ex.features.feature:
-        if feat == self.config.get('target_feature'):
-          continue
-        if ex.features.feature[feat].HasField('int64_list'):
-          json_ex[feat] = ex.features.feature[feat].int64_list.value[0]
-        elif ex.features.feature[feat].HasField('float_list'):
-          json_ex[feat] = ex.features.feature[feat].float_list.value[0]
-        else:
-          json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
+      # This is needed because AI Platform models that accept JSON cannot handle
+      # when non-input features are provided as part of the object to run
+      # prediction on.
+      if self.config.get('uses_json_list'):
+        json_ex = []
+        for feat in ex.features.feature:
+          if feature_names and feat in feature_names:
+            feat_idx = feature_names.index(feat)
+          else:
+            feat_idx = int(feat)
+          if (feat == self.config.get('target_feature') or
+              feat_idx == self.config.get('target_feature')):
+            continue
+          # Ensure the example value list is long enough to add the next feature
+          # from the tf.Example.
+          if feat_idx >= len(json_ex):
+            json_ex.extend([None] * (feat_idx - len(json_ex) + 1))
+          if ex.features.feature[feat].HasField('int64_list'):
+            json_ex[feat_idx] = ex.features.feature[feat].int64_list.value[0]
+          elif ex.features.feature[feat].HasField('float_list'):
+            json_ex[feat_idx] = ex.features.feature[feat].float_list.value[0]
+          else:
+            json_ex[feat_idx] = ex.features.feature[feat].bytes_list.value[0]
+      else:
+        json_ex = {}
+        for feat in ex.features.feature:
+          if feat == self.config.get('target_feature'):
+            continue
+          if ex.features.feature[feat].HasField('int64_list'):
+            json_ex[feat] = ex.features.feature[feat].int64_list.value[0]
+          elif ex.features.feature[feat].HasField('float_list'):
+            json_ex[feat] = ex.features.feature[feat].float_list.value[0]
+          else:
+            json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
       json_exs.append(json_ex)
     return json_exs
 
-  def _predict_cmle_model(self, examples):
-    return self._predict_cmle_impl(
+  def _predict_aip_model(self, examples):
+    return self._predict_aip_impl(
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
-      self.config.get('force_json_input'))
+      self.config.get('force_json_input'), self.adjust_prediction_fn)
 
-  def _predict_cmle_compare_model(self, examples):
-    return self._predict_cmle_impl(
+  def _predict_aip_compare_model(self, examples):
+    return self._predict_aip_impl(
       examples, self.config.get('inference_address_2'),
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
-      self.config.get('force_json_input_2'))
+      self.config.get('compare_force_json_input'),
+      self.compare_adjust_prediction_fn)
 
-  def _predict_cmle_impl(self, examples, project, model, version, force_json):
-    """Custom prediction function for running inference through CMLE."""
+  def _predict_aip_impl(self, examples, project, model, version, force_json,
+                        adjust_prediction):
+    """Custom prediction function for running inference through AI Platform."""
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
@@ -263,9 +306,19 @@ class WitWidgetBase(object):
         results_key = 'outputs'
 
     # Parse the results from the response and return them.
-    if self.config.get('model_type') == 'classification':
-      return [pred[results_key] for pred in response['predictions']]
-    else:
-      # For regression models, flatten the final dimension as WIT expects
-      # a 1-D list of numbers for results from all predicted examples.
-      return [pred[results_key][0] for pred in response['predictions']]
+    results = []
+    for pred in response['predictions']:
+      # If the prediction contains a key to fetch the prediction, use it.
+      if isinstance(pred, dict):
+        pred = pred[results_key]
+      # If the model is regression and the response is a list, extract the
+      # score by taking the first element.
+      if (self.config.get('model_type') == 'regression' and
+          isinstance(pred, list)):
+        pred = pred[0]
+      # If an prediction adjustment function was provided, use it to adjust
+      # the prediction.
+      if adjust_prediction:
+        pred = adjust_prediction(pred)
+      results.append(pred)
+    return results

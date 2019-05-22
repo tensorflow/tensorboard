@@ -141,6 +141,7 @@ smoke() {
 
   if [ -n "${smoke_tf}" ]; then
     pip install -qU "${smoke_tf}"
+    pip uninstall -qy tensorboard tb-nightly  # Drop any conflicting packages
   fi
   pip install -qU ../dist/*"py${py_major_version}"*.whl >/dev/null
   pip freeze  # Log the results of pip installation
@@ -163,13 +164,16 @@ import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
 from tensorboard.plugins.projector import visualize_embeddings
 tb.notebook.start  # don't invoke; just check existence
+from tensorboard.plugins.hparams import summary_v2 as hp
+hp.hparams_pb({'optimizer': 'adam', 'learning_rate': 0.02})
 "
   if [ -n "${smoke_tf}" ]; then
-    # Only test summary scalar and beholder with TF
+    # Only test summary scalar, beholder, and mesh summary
     python -c "
 import tensorboard as tb
 tb.summary.scalar_pb('test', 42)
 from tensorboard.plugins.beholder import Beholder, BeholderHook
+from tensorboard.plugins.mesh import summary
 "
   fi
 
