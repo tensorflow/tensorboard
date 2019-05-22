@@ -155,7 +155,7 @@ class MutantFeatureValue(object):
           'unexpected type: {}'.format(type(original_feature)))
     self.original_feature = original_feature
 
-    if index is not None and not isinstance(index, int):
+    if index is not None and not isinstance(index, integer_types):
       raise ValueError(
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
