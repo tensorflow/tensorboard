@@ -94,10 +94,10 @@ a static attribute) and is fixed at summary-creation time.
 
 ## Example
 
-Please refer to the demo application `demo_utils.py` as an example of how to 
-use the plugin and display a mesh with colors in TensorBoard. Note, that demo 
-application will read PLY file in ASCII format and doesn't support all 
-the variations of PLY format. You can find a sample mesh in PLY format [stored 
+Please refer to the demo application `demo_utils.py` as an example of how to
+use the plugin and display a mesh with colors in TensorBoard. Note, that demo
+application will read PLY file in ASCII format and doesn't support all
+the variations of PLY format. You can find a sample mesh in PLY format [stored
 in the cloud](https://storage.googleapis.com/tensorflow-graphics/tensorboard/test_data/ShortDance07_a175_00013_2.ply).
 Here is a snippet of how to build and run the demo application:
 
