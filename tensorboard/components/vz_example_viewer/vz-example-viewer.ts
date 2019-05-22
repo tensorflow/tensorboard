@@ -924,7 +924,7 @@ Polymer({
       const valueList: number[] = [];
       const ints = new Int64List();
       ints.setValueList(valueList);
-      feat.setInt64List(ints as any);  // TODO(#2266): Preserves behavior.
+      feat.setInt64List(ints);
       jsonFeat = {int64List: {value: valueList}};
     } else if (this.newFeatureType === FLOAT_FEATURE_NAME) {
       const valueList: number[] = [];
