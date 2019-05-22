@@ -128,11 +128,11 @@ def tensorboard_js_workspace():
   http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
-      sha256 = "7a5c785dbcc3ae0daa1fcf4507de6a23bbecdb2bf80460651e4c2b88c1ad7582",
-      strip_prefix = "clutz-7f1a3ee9ad9f85a9056084dc039496bbd35e11f6",
+      sha256 = "632c33e8c1e4ba4b26954edb5a0d4d64edcff774bd57dd4ab4b590d3bbb43612",
+      strip_prefix = "clutz-6c8a2bd68dec3f2bbacae288e42d82ca4567b93f",
       urls = [
-          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",  # 2017-11-02
-          "https://github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",
+          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/6c8a2bd68dec3f2bbacae288e42d82ca4567b93f.tar.gz",  # 2019-05-17
+          "https://github.com/angular/clutz/archive/6c8a2bd68dec3f2bbacae288e42d82ca4567b93f.tar.gz",
       ],
   )
 
@@ -140,12 +140,13 @@ def tensorboard_js_workspace():
       name = "com_google_javascript_closure_compiler_externs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls_extract = {
-          "55bdf8dc5d74534b63edbce5f510557a18a2b7aa578938ba300eb65f2da48092": [
-              "http://mirror.tensorflow.org/github.com/google/closure-compiler/archive/v20180402.tar.gz",
-              "https://github.com/google/closure-compiler/archive/v20180402.tar.gz",
+          "4f0cc3cf9928905993072bdd1f81a4444bd8b7fff0a12f119e2dd2a9a68cdd82": [
+              # tag v20190513 resolves to commit 938e347e4f79f4d7b124e160145b6ea3418b4c56 (2019-05-13 16:28:32 -0700)
+              "http://mirror.tensorflow.org/github.com/google/closure-compiler/archive/v20190513.tar.gz",
+              "https://github.com/google/closure-compiler/archive/v20190513.tar.gz",
           ],
       },
-      strip_prefix = {"v20180402.tar.gz": "closure-compiler-20180402/externs"},
+      strip_prefix = {"v20190513.tar.gz": "closure-compiler-20190513/externs"},
   )
 
   filegroup_external(

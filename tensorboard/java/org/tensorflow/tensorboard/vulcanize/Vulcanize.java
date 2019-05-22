@@ -450,7 +450,7 @@ public final class Vulcanize {
     // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
     // we could ensure that the input order to the compiler is correct and all inputs are used, and
     // turn off both sorting and pruning.
-    options.getDependencyOptions().setDependencySorting(true);
+    options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
 
     // Polymer pass.
     options.setPolymerVersion(1);
