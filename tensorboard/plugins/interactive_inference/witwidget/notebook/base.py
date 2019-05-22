@@ -123,10 +123,10 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    (preidctions, attributions) = (
+    (predictions, attributions) = (
       inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
-    infer_objs.append(preidctions)
+    infer_objs.append(predictions)
     attribution_objs.append(attributions)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
@@ -143,10 +143,10 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      (preidctions, attributions) = (
+      (predictions, attributions) = (
         inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
-      infer_objs.append(preidctions)
+      infer_objs.append(predictions)
       attribution_objs.append(attributions)
     self.updated_example_indices = set()
     return {

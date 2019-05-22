@@ -396,8 +396,7 @@ Polymer({
       const colorFn = Array.isArray(val) ?
           (d: {}, i: number) => this.getColorForSaliency(val[i]) :
           () => this.getColorForSaliency(val);
-      this.selectAll(
-            `iron-autogrow-textarea.${this.sanitizeFeature(feat.name)}.value-pill`)
+      this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`)
           .style('background',
               this.showSaliency ? colorFn : () => neutralSaliencyColor);
 

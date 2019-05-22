@@ -415,7 +415,7 @@ class WitConfigBuilder(object):
 
     Optionally, if attributions can be returned by the model with each
     prediction, then this method can return a dict with the key 'predictions'
-    containing the preidctions result list described above, and with the key
+    containing the predictions result list described above, and with the key
     'attributions' containing a list of attributions for each example that was
     predicted.
 
@@ -465,7 +465,7 @@ class WitConfigBuilder(object):
 
     Optionally, if attributions can be returned by the model with each
     prediction, then this method can return a dict with the key 'predictions'
-    containing the preidctions result list described above, and with the key
+    containing the predictions result list described above, and with the key
     'attributions' containing a list of attributions for each example that was
     predicted.
 

@@ -2187,7 +2187,7 @@ limitations under the License.
           value: () => ({})
         },
         // Attributions from inference. A dict with two fields: 'indices' and
-        // 'attributions'. Inidicies contains a list of example indices that
+        // 'attributions'. Indicies contains a list of example indices that
         // these new attributions apply to. Attributions contains a list of
         // attributions for each of those examples.
         // The attribution object for each example is a dict of feature name
@@ -4294,6 +4294,7 @@ limitations under the License.
         for (let i = 0; i < attributions.indices.length; i++) {
           const idx = attributions.indices[i];
           const datapoint = this.visdata[idx];
+          // TODO(jwexler): Support attributions from multiple models.
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
           const attribs = attributions.attributions[0][i];
