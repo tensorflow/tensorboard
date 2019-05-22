@@ -29,16 +29,17 @@ def _parse_vertex(vertex_row):
     vertex_row: string with vertex coordinates and color.
 
   Returns:
-    `[3,]` array of vertex coordinates and `[3,]` array with RGB color.
+    2-tuple containing a length-3 array of vertex coordinates (as
+    floats) and a length-3 array of RGB color values (as ints between 0
+    and 255, inclusive).
   """
-  vertex = map(float, vertex_row.strip().split(' '))
-  # The row will contain either just coordinates or RGB/RGBA color in addition
-  # to that.
-  assert len(vertex) == 3 or len(vertex) == 6 or len(vertex) == 7
+  vertex = vertex_row.strip().split()
+  # The row must contain coordinates with RGB/RGBA color in addition to that.
   if len(vertex) >= 6:
     # Supports only RGB colors now, alpha channel will be ignored.
     # TODO(b/129298103): add support of RGBA in .ply files.
-    return vertex[:3], vertex[3:6]
+    return ([float(coord) for coord in vertex[:3]],
+            [int(channel) for channel in vertex[3:6]])    
   raise ValueError('PLY file must contain vertices with colors.')
 
 
@@ -66,26 +67,20 @@ def read_ascii_ply(filename):
     numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors and 
     `[dim_1, 3]` array of faces of the mesh.
   """
-  header_size = 0
-  vertices = []
-  colors = []
-  faces = []
-  with tf.gfile.Open(filename) as ply_file:
-    lines = ply_file.readlines()
-    while not lines[header_size].startswith('end_header'):
-      if lines[header_size].startswith('element vertex'):
-        vert_count = int(lines[header_size].split(' ')[-1])
-      if lines[header_size].startswith('element face'):
-        face_count = int(lines[header_size].split(' ')[-1])
-      header_size += 1
-    header_size += 1
+  with tf.compat.v1.io.gfile.GFile(filename) as ply_file:
+    for line in ply_file:
+      if line.startswith('end_header'):
+        break
+      elif line.startswith('element vertex'):
+        vert_count = int(line.split()[-1])
+      elif line.startswith('element face'):
+        face_count = int(line.split()[-1])
     # Read vertices and their colors.
-    for i in range(header_size, header_size + vert_count):
-      vertex, color = _parse_vertex(lines[i])
-      vertices.append(vertex)      
-      colors.append(color)
+    vertex_data = [_parse_vertex(next(ply_file)) for _ in range(vert_count)]
+    vertices = [datum[0] for datum in vertex_data]
+    colors = [datum[1] for datum in vertex_data]
     # Read faces.
-    for i in range(
-      header_size + vert_count, header_size + vert_count + face_count):
-      faces.append(_parse_face(lines[i]))
-    return np.array(vertices), np.array(colors), np.array(faces)    
+    faces = [_parse_face(next(ply_file)) for _ in range(face_count)]
+    return (np.array(vertices).astype(np.float32),
+            np.array(colors).astype(np.uint8),
+            np.array(faces).astype(np.int32))

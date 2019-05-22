@@ -36,10 +36,15 @@ FLAGS = flags.FLAGS
 
 tf.compat.v1.disable_v2_behavior()
 
+# Max number of steps to run training with.
+_MAX_STEPS = 10
+
 
 def run():
   """Runs session with a mesh summary."""
-  
+  if FLAGS.mesh_path is None:
+    raise ValueError(
+      'Flag --mesh_path is required and must contain path to PLY file.')
   # Camera and scene configuration.
   config_dict = {
       'camera': {'cls': 'PerspectiveCamera', 'fov': 75}
@@ -69,15 +74,17 @@ def run():
   writer = tf.summary.FileWriter(FLAGS.logdir)
   sess = tf.Session()
 
-  for i in range(10):
+  for i in range(_MAX_STEPS):
+    t = i / _MAX_STEPS
+    transformed_colors = t * (255 - colors) + (1 - t) * colors
     summaries = sess.run([meshes_summary], feed_dict={
         vertices_tensor: vertices,
         faces_tensor: faces,
-        colors_tensor: colors,
+        colors_tensor: transformed_colors.astype(np.uint8),
     })
     # Save summaries.
     for summary in summaries:
-      writer.add_summary(summary)
+      writer.add_summary(summary, global_step=i)
 
 
 def main(unused_argv):

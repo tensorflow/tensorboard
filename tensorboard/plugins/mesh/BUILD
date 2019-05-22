@@ -169,7 +169,7 @@ py_binary(
 filegroup(
   name = "test_data",
   srcs = [
-      "test_data/ShortDance07_a175_00013.ply",
+      "test_data/icosphere.ply",
   ],
   visibility = ["//visibility:public"],
 )

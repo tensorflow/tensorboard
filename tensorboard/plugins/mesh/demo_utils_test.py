@@ -48,11 +48,11 @@ class TestPLYReader(unittest.TestCase):
     """Tests end-to-end PLY file reading and parsing."""
     test_ply = os.path.join(
       os.path.dirname(os.environ["TEST_BINARY"]),
-       'test_data', 'ShortDance07_a175_00013.ply')
+       'test_data', 'icosphere.ply')
     vertices, colors, faces = demo_utils.read_ascii_ply(test_ply)
-    self.assertEqual(len(vertices), 9771)
+    self.assertEqual(len(vertices), 82)
     self.assertEqual(len(vertices), len(colors))
-    self.assertEqual(len(faces), 17192)
+    self.assertEqual(len(faces), 80)
 
 if __name__ == '__main__':
   unittest.main()
