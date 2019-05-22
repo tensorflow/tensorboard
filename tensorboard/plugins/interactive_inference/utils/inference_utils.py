@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
 from six import iteritems
-from six import string_types
+from six import string_types, integer_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
