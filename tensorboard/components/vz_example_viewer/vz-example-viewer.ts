@@ -922,7 +922,7 @@ Polymer({
     let jsonFeat: any;
     if (this.newFeatureType === INT_FEATURE_NAME) {
       const valueList: number[] = [];
-      const ints = new FloatList();
+      const ints = new Int64List();
       ints.setValueList(valueList);
       feat.setInt64List(ints);
       jsonFeat = {int64List: {value: valueList}};
