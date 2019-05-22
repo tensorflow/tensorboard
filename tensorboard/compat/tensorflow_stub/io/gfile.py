@@ -118,7 +118,9 @@ class LocalFileSystem(object):
             binary_mode: bool, write as binary if True, otherwise text
         """
         mode = "wb" if binary_mode else "w"
-        if not binary_mode:
+        if binary_mode:
+            file_content = compat.as_bytes(file_content)
+        else:
             file_content = compat.as_text(file_content)
         with io.open(filename, mode) as f:
             f.write(file_content)
@@ -256,7 +258,9 @@ class S3FileSystem(object):
         """
         client = boto3.client("s3")
         bucket, path = self.bucket_and_path(filename)
-        if not binary_mode:
+        if binary_mode:
+            file_content = compat.as_bytes(file_content)
+        else:
             file_content = compat.as_text(file_content)
         client.put_object(Body=file_content, Bucket=bucket, Key=path)
 

@@ -205,7 +205,7 @@ class GFileTest(unittest.TestCase):
     def testWrite(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
-        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
         with gfile.GFile(ckpt_path, 'w') as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, 'r') as f:
@@ -216,7 +216,7 @@ class GFileTest(unittest.TestCase):
     def testWriteBinary(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
-        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        ckpt_content = b'asdfasdfasdffoobarbuzz'
         with gfile.GFile(ckpt_path, 'wb') as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, 'rb') as f:

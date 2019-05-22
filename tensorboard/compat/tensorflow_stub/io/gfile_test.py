@@ -203,7 +203,7 @@ class GFileTest(unittest.TestCase):
         temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
-        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
         with gfile.GFile(ckpt_path, 'w') as f:
             f.write(ckpt_content)
         with open(ckpt_path, 'r') as f:
@@ -214,7 +214,7 @@ class GFileTest(unittest.TestCase):
         temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
-        ckpt_content = 'asdfasdfasdffoobarbuzz'
+        ckpt_content = b'asdfasdfasdffoobarbuzz'
         with gfile.GFile(ckpt_path, 'wb') as f:
             f.write(ckpt_content)
         with open(ckpt_path, 'rb') as f:
