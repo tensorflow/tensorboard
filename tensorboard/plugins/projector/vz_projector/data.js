@@ -303,19 +303,18 @@ var vz_projector;
             var sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
             var knnComputation = this.computeKnn(sampledData, k);
             knnComputation.then(function (nearest) {
-                _this.nearest = nearest;
                 vz_projector.util.runAsyncTask('Initializing T-SNE...', function () {
-                    _this.tsne.initDataDist(_this.nearest);
+                    _this.tsne.initDataDist(nearest);
                 }).then(step);
             });
         };
         /** Runs UMAP on the data. */
         DataSet.prototype.projectUmap = function (nComponents, nNeighbors, stepCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var currentEpoch, epochStepSize, sampledIndices, sampledData, X, _a, nEpochs;
+                var currentEpoch, epochStepSize, sampledIndices, sampledData, X, nearest, nEpochs;
                 var _this = this;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
                         case 0:
                             this.hasUmapRun = true;
                             this.umap = new UMAP({ nComponents: nComponents, nNeighbors: nNeighbors });
@@ -324,20 +323,19 @@ var vz_projector;
                             sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.UMAP_SAMPLE_SIZE);
                             sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
                             X = sampledData.map(function (x) { return Array.from(x.vector); });
-                            _a = this;
                             return [4 /*yield*/, this.computeKnn(sampledData, nNeighbors)];
                         case 1:
-                            _a.nearest = _b.sent();
+                            nearest = _a.sent();
                             return [4 /*yield*/, vz_projector.util.runAsyncTask('Initializing UMAP...', function () {
-                                    var knnIndices = _this.nearest.map(function (row) { return row.map(function (entry) { return entry.index; }); });
-                                    var knnDistances = _this.nearest.map(function (row) {
+                                    var knnIndices = nearest.map(function (row) { return row.map(function (entry) { return entry.index; }); });
+                                    var knnDistances = nearest.map(function (row) {
                                         return row.map(function (entry) { return entry.dist; });
                                     });
                                     // Initialize UMAP and return the number of epochs.
                                     return _this.umap.initializeFit(X, knnIndices, knnDistances);
                                 }, UMAP_MSG_ID)];
                         case 2:
-                            nEpochs = _b.sent();
+                            nEpochs = _a.sent();
                             // Now, iterate through all epoch batches of the UMAP optimization, updating
                             // the modal window with the progress rather than animating each step since
                             // the UMAP animation is not nearly as informative as t-SNE.
@@ -386,13 +384,16 @@ var vz_projector;
         /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
         DataSet.prototype.computeKnn = function (data, nNeighbors) {
             return __awaiter(this, void 0, void 0, function () {
-                var result;
+                var previouslyComputedNNeighbors, result;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!(this.nearest != null && nNeighbors <= this.nearest.length)) return [3 /*break*/, 1];
-                            // We found the nearest neighbors before and will reuse them.
-                            return [2 /*return*/, Promise.resolve(this.nearest)];
+                            previouslyComputedNNeighbors = this.nearest && this.nearest.length ?
+                                this.nearest[0].length : 0;
+                            if (!(this.nearest != null && previouslyComputedNNeighbors >= nNeighbors)) return [3 /*break*/, 1];
+                            return [2 /*return*/, Promise.resolve(this.nearest.map(function (neighbors) {
+                                    return neighbors.slice(0, nNeighbors);
+                                }))];
                         case 1: return [4 /*yield*/, (KNN_GPU_ENABLED ?
                                 vz_projector.knn.findKNNGPUCosine(data, nNeighbors, (function (d) { return d.vector; })) :
                                 vz_projector.knn.findKNN(data, nNeighbors, (function (d) { return d.vector; }), function (a, b) { return vz_projector.vector.cosDistNorm(a, b); }))];
