@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 """Simple demo which displays constant 3D mesh."""
+=======
+>>>>>>> f8056b597e7cd913381fda54de2ca437656cd6a8
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +16,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+<<<<<<< HEAD
+=======
+"""Simple demo which displays constant 3D mesh."""
+>>>>>>> f8056b597e7cd913381fda54de2ca437656cd6a8
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
