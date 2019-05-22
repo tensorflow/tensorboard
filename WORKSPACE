@@ -42,7 +42,7 @@ http_archive(
     strip_prefix = "rules_closure-87b9b7cefe57f9dea04c5e8518862af17cdfba2e",
     urls = [
         "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/87b9b7cefe57f9dea04c5e8518862af17cdfba2e.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/87b9b7cefe57f9dea04c5e8518862af17cdfba2e.tar.gz",  # 2019-02-22
+        "https://github.com/bazelbuild/rules_closure/archive/87b9b7cefe57f9dea04c5e8518862af17cdfba2e.tar.gz",  # 2019-05-16
     ],
 )
 
