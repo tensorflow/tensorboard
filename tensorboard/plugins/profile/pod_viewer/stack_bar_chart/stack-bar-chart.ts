@@ -161,6 +161,7 @@ Polymer({
 
     let legendEnter = legend.enter().append('g');
     legendEnter.append('rect')
+        .attr('x', YAXIS_TO_LEGEND)
         .attr('width', ICON_SIZE)
         .attr('height', ICON_SIZE);
     legendEnter.append('text')
@@ -175,8 +176,8 @@ Polymer({
                 LABELS_PER_LANE) + ',' +
                     Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT + ')'
         );
-    legend.selectAll('rect').attr('fill', (d, i) => colorScale(i));
-    legend.selectAll('text').text((d) => d);
+    legend.select('rect').attr('fill', (d, i) => colorScale(i));
+    legend.select('text').text((d) => d);
   },
   /**
    * Redraw the stack bar chart.

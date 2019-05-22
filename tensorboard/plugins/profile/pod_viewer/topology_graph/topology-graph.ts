@@ -16,6 +16,8 @@ const MAIN_COLORS = [
   '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0',
   '#225ea8', '#253494', '#081d58'
 ];
+const COLOR_SCALE =
+    d3.scaleQuantile<string>().domain([0, 1.0]).range(MAIN_COLORS);
 const SVG_WIDTH = 1620;
 const SVG_MARGIN = {top: 50, right: 0, bottom: 100, left: 30};
 
@@ -26,6 +28,8 @@ const HOST_TO_HOST_MARGIN = 10;
 
 const HOST_Y_STRIDE = 2;
 const NODES_PER_CHIP = 2;
+
+const TRANSITION_DURATION = 1000;
 
 interface Position {
   x: number,
@@ -46,7 +50,7 @@ interface TopoData {
   rid: number,
   /** Host name. */
   host: string,
-  /** Values of the selected metric. */
+  /** Values of the node. */
   values: Array<number>,
   /** Step total duration. */
   total: number,
@@ -59,6 +63,9 @@ interface HostData {
   /** Index on y-dimension. */
   ydim: number,
 };
+
+/** Src and dest ids of a link. */
+type SrcDestIds = [number, number];
 
 Polymer({
   is: 'topology-graph',
@@ -121,12 +128,6 @@ Polymer({
     _gSVG: {
       type: Object,
     },
-    _gLink: {
-      type: Object,
-    },
-    _colorScale: {
-      type: Object,
-    }
   },
   observers: ['drawTopology(_topoData, runEnvironment)'],
   /**
@@ -179,51 +180,51 @@ Polymer({
    * Main function to draw topology graph based on TPU topology.
    */
   topologyGraph: function(data: Array<TopoData>) {
-    d3.select(this.$.tpgraph).selectAll('g > *').remove();
-    d3.select(this.$.tpgraph).select('svg').remove();
-    d3.select(this.$.tpgraph).select('.svg-container').remove();
     this._hostGridWidth = this.getHostGridSize(this._hostXStride);
     this._hostGridHeight = this.getHostGridSize(HOST_Y_STRIDE);
     this._nodeGridWidth = CHIP_GRID_SIZE / NODES_PER_CHIP;
     this._nodeGridHeight = CHIP_GRID_SIZE;
     const hostXDim = this._xDimension / this._hostXStride;
     const hostYDim = this._yDimension / HOST_Y_STRIDE;
-    this._colorScale =
-        d3.scaleQuantile<string>().domain([0, 1.0]).range(MAIN_COLORS);
     const chipXDims = Array.from(Array(this._xDimension).keys());
     const chipYDims = Array.from(Array(this._yDimension).keys());
-    let svg = d3.select(this.$.tpgraph)
-        .append('svg')
-        .attr('width', SVG_WIDTH)
-        .attr('height', hostYDim * this._hostGridHeight
-            + SVG_MARGIN.bottom + SVG_MARGIN.top)
-        .append('g')
-        .attr('transform',
-            'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+    if (!this._gSVG) {
+      this._gSVG = d3.select(this.$.tpgraph)
+          .append('svg')
+          .attr('width', SVG_WIDTH)
+          .attr('height', hostYDim * this._hostGridHeight
+              + SVG_MARGIN.bottom + SVG_MARGIN.top)
+          .append('g')
+          .attr('transform',
+              'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+
+      // Creates a group for all rects.
+      this._gSVG.append('svg:g').classed('graph', true);
+      // Creates separate group for links, so that the z-index remains in the right order.
+      this._gSVG.append('svg:g').classed('link', true);
+
+      // Add a svg:defs for the arrow head.
+      this._gSVG.append('svg:defs').append('svg:marker')
+          .attr('id', 'arrow')
+          .attr('viewBox', '0 -5 10 10')
+          .attr('markerWidth', 5)
+          .attr('markerHeight', 5)
+          .attr('orient', 'auto')
+          .append('svg:path')
+          .style('stroke', 'red')
+          .style('fill', 'red')
+          .attr('d', 'M0,-5L10,0L0,5');
+    }
+    let svg = this._gSVG.select('.graph');
     const hostData = this.createHostData(hostXDim, hostYDim);
     this.drawHostCards(
         svg, hostData, this._hostGridWidth, this._hostGridHeight);
-    this.drawNodeCards(svg, data, this._colorScale);
-
-    // Creates separate groups, so that the z-index remains in the right order.
-    this._gLink = svg.append('svg:g').classed('link', true);
-
-    // Add a svg:defs for the arrow head.
-    svg.append('svg:defs').append('svg:marker')
-        .attr('id', 'arrow')
-        .attr('viewBox', '0 -5 10 10')
-        .attr('markerWidth', 5)
-        .attr('markerHeight', 5)
-        .attr('orient', 'auto')
-        .append('svg:path')
-        .style('stroke', 'red')
-        .style('fill', 'red')
-        .attr('d', 'M0,-5L10,0L0,5');
+    this.drawNodeCards(svg, data, COLOR_SCALE);
     this.drawLabels(svg, chipXDims, chipYDims);
     const legendYLoc =
         this._hostGridHeight * Math.ceil(this._yDimension / HOST_Y_STRIDE) +
         HOST_TO_HOST_MARGIN;
-    this.drawLegend(svg, legendYLoc, this._colorScale);
+    this.drawLegend(svg, legendYLoc, COLOR_SCALE);
   },
   /**
    * Returns the size of host grid, including the host card size and the margin
@@ -272,7 +273,7 @@ Polymer({
    */
   drawLabels: function(svg: any, xdims: number[], ydims: number[]) {
     // Draw label on x axis.
-    let xLabel = svg.selectAll('.xLabel').data(xdims);
+    let xLabel = svg.selectAll('.x-label').data(xdims);
     xLabel.enter().append('text').merge(xLabel)
         .text((d) => d)
         .attr('x', (d, i) => this.getChipXLoc(
@@ -281,10 +282,13 @@ Polymer({
         .attr('y', 0)
         .style('text-anchor', 'middle')
         .attr('transform', 'translate(' + CHIP_GRID_SIZE / 2 + ', -6)')
-        .attr('class', 'axis');
+        .attr('class', 'x-label')
+        .transition()
+        .duration(TRANSITION_DURATION);
+    xLabel.exit().remove();
 
     // Draw label on y axis.
-    let yLabel = svg.selectAll('.yLabel').data(ydims);
+    let yLabel = svg.selectAll('.y-label').data(ydims);
     yLabel.enter().append('text').merge(yLabel)
         .text((d) => d)
         .attr('x', 0)
@@ -292,19 +296,22 @@ Polymer({
                        Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
         .style('text-anchor', 'middle')
         .attr('transform', 'translate(-12,' + CHIP_GRID_SIZE / 2 + ')')
-        .attr('class', 'axis');
+        .attr('class', 'y-label')
+        .transition()
+        .duration(TRANSITION_DURATION);
+    yLabel.exit().remove();
   },
   /**
    * Draw the UI of host cards.
    */
   drawHostCards: function(svg, data, gridWidth: number, gridHeight: number) {
-    let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
+    let cards = svg.selectAll('.host').data(data);
     cards.enter().append('rect').merge(cards)
         .attr('x', (d) => d.xdim * gridWidth)
         .attr('y', (d) => d.ydim * gridHeight)
         .attr('rx', 4 * gridWidth / gridHeight)
         .attr('ry', 4)
-        .attr('class', 'hour bordered')
+        .attr('class', 'host bordered')
         .attr('width', gridWidth - HOST_TO_HOST_MARGIN)
         .attr('height', gridHeight - HOST_TO_HOST_MARGIN)
         .attr('border', 1)
@@ -312,14 +319,14 @@ Polymer({
         .style('stroke', 'black')
         .style('stroke-width', 1)
         .transition()
-        .duration(1000);
+        .duration(TRANSITION_DURATION);
     cards.exit().remove();
   },
   /**
    * Draw the UI of node cards.
    */
   drawNodeCards: function(svg: any, data: Array<TopoData>, colorScale: any) {
-    let cards = svg.selectAll('.xdim').data(data, (d) => d.xdim);
+    let cards = svg.selectAll('.node').data(data);
     let parent = this;
     let metricIdx = Math.max(this.selectedMetricIdx, 0);
     cards.enter().append('rect').merge(cards)
@@ -336,7 +343,7 @@ Polymer({
         })
         .attr('rx', 4 / NODES_PER_CHIP)
         .attr('ry', 4)
-        .attr('class', 'hour bordered')
+        .attr('class', 'node bordered')
         .attr('width', this._nodeGridWidth)
         .attr('height', this._nodeGridHeight)
         .attr('border', 1)
@@ -358,29 +365,28 @@ Polymer({
         .on('mouseout', function() {
             d3.select(this).classed('cell-hover', false).style('opacity', 1.0);
             d3.select(parent.$.tooltip).classed('hidden', true);
-        });
+        })
+        .transition()
+        .duration(TRANSITION_DURATION)
     cards.exit().remove();
   },
   /**
    * Draw the UI of chip to chip links.
    */
-  drawLinks: function(linkData: Array<podviewer.proto.ChannelInfo>) {
-    if (!linkData || linkData.length == 0 || !this._gLink) {
+  drawLinks: function(svg: any, linkData: Array<SrcDestIds>) {
+    if (!linkData || !linkData.length || !svg) {
       return;
     }
-
-    // Handle links;
-    let links = this._gLink.selectAll('.link').data(linkData);
-
-    // attach the arrow from defs
+    let links = svg.select('.link').selectAll('path').data(linkData);
+    
+    // Draw a link from each srcCoreId to each dstCoreId,
+    // with an arrow from defs attached.
     links.enter().append('svg:path').merge(links)
-        .attr('id', (d) => 'cid' + d.channelId)
         .attr('stroke-width', 2)
         .attr('stroke', 'red')
         .attr('fill', 'none')
         .attr('marker-end', 'url(#arrow)')
-        .style('visibility', 'hidden')
-        .attr('d', (d) => this.linkToPath(d));
+        .attr('d', (d) => this.linkToPath(d[0], d[1]));
 
     // Handle deleted links.
     links.exit().remove();
@@ -408,9 +414,10 @@ Polymer({
    * Returns the svg path given the src and dst core and node id.
    * @return Path in svg format.
    */
-  linkToPath: function(link: podviewer.proto.ChannelInfo): string {
-    const src = this.coreIdToPos(link.srcCoreIds[0]);
-    const dst = this.coreIdToPos(link.dstCoreIds[0]);
+  linkToPath: function(srcCoreId: number|undefined,
+                       dstCoreId: number|undefined): string {
+    const src = this.coreIdToPos(srcCoreId ? srcCoreId : 0);
+    const dst = this.coreIdToPos(dstCoreId ? dstCoreId : 0);
     const path = 'M ' + src.x + ' ' + src.y + 'L ' + dst.x + ' ' + dst.y;
     return path;
   },
@@ -442,19 +449,22 @@ Polymer({
     const legendElementWidth = CHIP_GRID_SIZE * 2;
     let legend = svg.selectAll('.legend').data(
         [0].concat(colorScale.quantiles()), (d) => d);
-    let legendG = legend.enter().append('g').merge(legend)
-                      .attr('class', 'legend');
-    legendG.append('rect')
-        .attr('x', (d, i) => legendElementWidth * i)
-        .attr('y', height)
+    legend.exit().remove();
+
+    let legendEnter = legend.enter().append('g').attr('class', 'legend');
+    legendEnter.append('rect')
         .attr('width', legendElementWidth)
         .attr('height', CHIP_GRID_SIZE)
+        .merge(legend.select('rect'))
+        .attr('x', (d, i) => legendElementWidth * i)
+        .attr('y', height)
         .style('fill', (d, i) => MAIN_COLORS[i]);
-    legendG.append('text')
+
+    legendEnter.append('text')
+        .merge(legend.select('text'))
         .text((d) => '\u2265 0.' + Math.round(d * 10))
         .attr('x', (d, i) => legendElementWidth * i)
         .attr('y', height + CHIP_GRID_SIZE * 2);
-    legend.exit().remove();
   },
   /**
    * Redraws the graph when the data to be rendered changed.
@@ -466,7 +476,6 @@ Polymer({
       return;
     }
     this.topologyGraph(topoData);
-    this.drawLinks(this.data.channelDb);
   },
   attached: function() {
     this.drawTopology(this._topoData, this.runEnvironment);
@@ -477,7 +486,7 @@ Polymer({
   _selectedMetricIdxChanged: function(newIdx: number) {
     if (newIdx < 0) return;
     d3.select(this.$.tpgraph).selectAll('.node').style('fill',
-        (d) => this._colorScale(d['values'][newIdx] / d['total']));
+        (d) => COLOR_SCALE(d['values'][newIdx] / d['total']));
   },
   /**
    * Updates the topology color coding or selected channel id when the
@@ -497,8 +506,10 @@ Polymer({
         }
       }
       this.selectedMetricIdx = -1;
-    } else if (newData.channelId) {
-      this.selectedChannelId = newData.channelId;
+    } else if (newData.srcCoreIds) {
+      const links = newData.srcCoreIds.map(
+          (src, i) => [src, newData.dstCoreIds[i]]);
+      this.drawLinks(this._gSVG, links);
     }
   },
   /**
