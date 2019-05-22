@@ -431,7 +431,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
     worker_list = request.args.get('worker_list')
     include_dataset_ops = request.args.get('include_dataset_ops') == 'true'
-    num_tracing_attempts = int(request.args.get('num_tracing_attempts'))
+    num_tracing_attempts = int(request.args.get('num_retry')) + 1
 
     if is_tpu_name:
       try:
