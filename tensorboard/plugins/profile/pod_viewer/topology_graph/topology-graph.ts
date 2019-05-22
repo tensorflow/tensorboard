@@ -60,11 +60,6 @@ interface HostData {
   ydim: number,
 };
 
-/** Links grouped by channel id. */
-interface LinkData {
-  [key: number]: Array<podviewer.proto.ChannelInfo>
-};
-
 Polymer({
   is: 'topology-graph',
   properties: {
@@ -82,36 +77,14 @@ Polymer({
       type: Object,
       observer: '_activeBarChanged',
     },
-    selectedChannel: {
-      type: Array,
-      notify: true,
-    },
     selectedMetricIdx: {
       type: Number,
       value: 0,
-    },
-    selectedChannelId: {
-      type: Number,
-      value: 0,
-      observer: '_selectedChannelIdChanged',
     },
     _topoData: {
       type: Object,
       computed:
           '_computeTopoData(data, runEnvironment, metrics, selectedMetricIdx)',
-    },
-    _linkData: {
-      type: Object,
-      computed: '_computeLinkData(data)',
-    },
-    _minChannelId: {
-      type: Number,
-      computed: '_computeMinChannelId(data)',
-    },
-    _maxChannelId: {
-      type: Number,
-      value: 0,
-      computed: '_computeMaxChannelId(data)',
     },
     _xDimension: {
       type: Number,
@@ -176,40 +149,6 @@ Polymer({
             total: podStats.totalDurationUs,
         };
     });
-  },
-  /**
-   * Compute the data to be rendered as links.
-   */
-  _computeLinkData: function(
-      data: podviewer.proto.PodStatsMap): LinkData {
-    if (!data || !data.channelDb || data.channelDb.length == 0) return {};
-    let links = {};
-    data.channelDb.forEach(function(channel) {
-      if (!links[channel.channelId]) {
-        links[channel.channelId] = [channel];
-      } else {
-        links[channel.channelId].push(channel);
-      }
-    });
-    return links;
-  },
-  /** Compute the min channel id.*/
-  _computeMinChannelId: function(
-    data: podviewer.proto.PodStatsMap): number {
-    if (!data || !data.channelDb || data.channelDb.length == 0) {
-      return;
-    }
-    return data.channelDb.reduce(
-        (min, p) => Math.min(min, p.channelId), data.channelDb[0].channelId);
-  },
-  /** Compute the max channel id.*/
-  _computeMaxChannelId: function(
-    data: podviewer.proto.PodStatsMap): number {
-    if (!data || !data.channelDb || data.channelDb.length == 0) {
-      return;
-    }
-    return data.channelDb.reduce(
-        (max, p) => Math.max(max, p.channelId), data.channelDb[0].channelId);
   },
   _computeTpuType: function(env: podviewer.proto.RunEnvironment): string {
     if (!env) return;
@@ -437,7 +376,6 @@ Polymer({
 
     // Handle deleted links.
     links.exit().remove();
-    this._selectedChannelIdChanged(this.selectedChannelId);
   },
   /**
    * Given the global core id, returns the (x, y) coordinates in the topology
@@ -522,21 +460,6 @@ Polymer({
   },
   attached: function() {
     this.drawTopology(this._topoData, this.runEnvironment);
-  },
-  /**
-   * Updates the visible links when the selectedChannelIdChanged.
-   */
-  _selectedChannelIdChanged: function(newData: number, oldData: number) {
-    if (!this._linkData) return;
-    if (this._linkData[oldData]) {
-      d3.select(this.$.tpgraph)
-          .selectAll('#cid' + oldData).style('visibility', 'hidden');
-    }
-    if (this._linkData[newData]) {
-      d3.select(this.$.tpgraph)
-          .selectAll('#cid' + newData).style('visibility', 'visible');
-      this.selectedChannel = this._linkData[newData];
-    }
   },
   /**
    * Updates the topology color coding or selected channel id when the

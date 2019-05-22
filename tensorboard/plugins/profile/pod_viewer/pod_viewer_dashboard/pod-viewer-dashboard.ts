@@ -29,11 +29,6 @@ Polymer({
       type: Array,
       notify: true,
     },
-    selectedChannel: {
-      type: Array,
-      notify: true,
-      observer: '_selectedChannelChanged',
-    },
     activeBar: {
       type: Object,
       notify: true,
@@ -206,14 +201,6 @@ Polymer({
   _dataChanged(newData: podviewer.proto.PodViewerInputData) {
     if (!newData) return;
     this.curStepId = 0;
-  },
-  /**
-   * Updates the input of the details card when selected channel changed.
-   */
-  _selectedChannelChanged(newChannel: Array<podviewer.proto.ChannelInfo>) {
-    if (newChannel) {
-      this.activeDetails = newChannel;
-    }
   },
   /**
    * The active bar could be one of the PodStatsRecord, ChannelInfo or
