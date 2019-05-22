@@ -98,8 +98,12 @@ Polymer({
         .selectAll('rect').data((d) => d)
         .enter().append('rect')
         .attr('width', xScale.bandwidth())
-        .attr('y', (d) => yScale(d[1]))
-        .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
+        .attr('y', (d) => yScale(d[1]) ? yScale(d[1]) : 0)
+        .attr('height',
+            (d) => {
+              const h = yScale(d[0]) - yScale(d[1]);
+              return h ? h : 0;
+            })
         .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
         .on('mouseover',
             function(d) {
