@@ -3176,8 +3176,8 @@ limitations under the License.
                 const modelInferenceValueStr =
                   this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
-                allLabels.add(item[modelInferenceValueStr]);
-                allLabels.add(item[modelInferenceValueStr]);
+                allLabels.add(String(item[modelInferenceValueStr]));
+                allLabels.add(String(item[this.selectedLabelFeature]));
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
