@@ -497,7 +497,7 @@ class WitConfigBuilder(object):
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None):
+    adjust_prediction=None, adjust_example=None):
     """Sets the model information for a model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -513,6 +513,10 @@ class WitConfigBuilder(object):
       prediction output from the model for a single example and converts it to
       the appopriate format - a regression score or a list of class scores. Only
       necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
 
     Returns:
       self, in order to enabled method chaining.
@@ -526,11 +530,13 @@ class WitConfigBuilder(object):
       self.store('force_json_input', True)
     if adjust_prediction:
       self.store('adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('adjust_example', adjust_example)
     return self
 
   def set_compare_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None):
+    adjust_prediction=None, adjust_example=None):
     """Sets the model information for a second model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -546,6 +552,10 @@ class WitConfigBuilder(object):
       prediction output from the model for a single example and converts it to
       the appopriate format - a regression score or a list of class scores. Only
       necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
 
     Returns:
       self, in order to enabled method chaining.
@@ -559,6 +569,8 @@ class WitConfigBuilder(object):
       self.store('compare_force_json_input', True)
     if adjust_prediction:
       self.store('compare_adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('compare_adjust_example', adjust_example)
     return self
 
   def set_target_feature(self, target):
