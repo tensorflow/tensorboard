@@ -12,6 +12,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+/**
+The MIT License (MIT)
+
+Copyright (c) 2014-2017 Palantir Technologies, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/**
+ * Reason for the fork: Plottable interactions are not compatible with the Web
+ * Componenets due to the changes in
+ * 1. how events work
+ * 2. DOM traversal has changed.
+ * Please refer to https://github.com/palantir/plottable/issues/3350 for more
+ * detail.
+ */
+/**
+ * To override few quick private/protected methods, we had to use JavaScript to
+ * bypass TypeScript typechecks.
+ */
 var vz_chart_helpers;
 (function(vz_chart_helpers) {
   // HACK: parentElement does not work for webcomponents.
@@ -93,6 +129,8 @@ var vz_chart_helpers;
       super(component);
       // eventTarget is `document` by default. Change it to the root of chart.
       this._eventTarget = component.root().rootElement().node();
+      // Requires custom translator that uses correct DOM traversal (with
+      // WebComponents) to change pointer position to relative to the root node.
       this._translator = new CustomTranslator(component.root().rootElement().node());
     }
 
@@ -113,7 +151,10 @@ var vz_chart_helpers;
       super(component);
       // eventTarget is `document` by default. Change it to the root of chart.
       this._eventTarget = component.root().rootElement().node();
-      this._translator = new CustomTranslator(component.root().rootElement().node());
+      // Requires custom translator that uses correct DOM traversal (with
+      // WebComponents) to change pointer position to relative to the root node.
+      this._translator = new CustomTranslator(
+          component.root().rootElement().node());
     }
 
     static getDispatcher(component) {
@@ -131,10 +172,12 @@ var vz_chart_helpers;
   class PointerInteraction extends Plottable.Interactions.Pointer {
     _anchor(component) {
       this._isAnchored = true;
-      this._mouseDispatcher = MouseDispatcher.getDispatcher(this._componentAttachedTo);
+      this._mouseDispatcher = MouseDispatcher.getDispatcher(
+          this._componentAttachedTo);
       this._mouseDispatcher.onMouseMove(this._mouseMoveCallback);
 
-      this._touchDispatcher = TouchDispatcher.getDispatcher(this._componentAttachedTo);
+      this._touchDispatcher = TouchDispatcher.getDispatcher(
+          this._componentAttachedTo);
       this._touchDispatcher.onTouchStart(this._touchStartCallback);
     }
   }
