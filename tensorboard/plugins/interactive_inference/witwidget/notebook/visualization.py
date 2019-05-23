@@ -16,6 +16,7 @@
 import sys
 import tensorflow as tf
 from numbers import Number
+from six import integer_types
 
 
 def _is_colab():
@@ -488,7 +489,7 @@ class WitConfigBuilder(object):
     return tf_examples
 
   def _add_single_feature(self, feat, value, ex):
-    if isinstance(value, (int, long)):
+    if isinstance(value, integer_types):
       ex.features.feature[feat].int64_list.value.append(value)
     elif isinstance(value, Number):
       ex.features.feature[feat].float_list.value.append(value)
