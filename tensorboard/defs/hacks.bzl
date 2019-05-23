@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Compatibility hacks."""
 
 # TODO(@jart): Merge this file into defs.bzl once that file is sync unified.
 
@@ -20,7 +21,7 @@ def tensorboard_typescript_bundle(
     namespace_srcs,
     namespace_symbol_aliases={},
     namespace_symbol_aliases_public={},
-    **kwargs):
+):
   """Rolls TypeScript ES6 modules into one vanilla source file without imports.
 
   This is a genrule wrapper that concatenates TypeScripts sources inside
@@ -73,8 +74,7 @@ def tensorboard_typescript_bundle(
   cmd.append(") >$@")
   native.genrule(
       name = name,
-      srcs = list(depset(transitive=inputs_depsets)),
+      srcs = depset(transitive=inputs_depsets).to_list(),
       outs = [out],
       cmd = "\n".join(cmd),
-      **kwargs
   )

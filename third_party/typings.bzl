@@ -17,6 +17,7 @@
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 
 def tensorboard_typings_workspace():
+  """Add repositories for TypeScript type definitions (`.d.ts` files)."""
   filegroup_external(
       name = "org_definitelytyped",
       licenses = ["notice"],  # MIT
