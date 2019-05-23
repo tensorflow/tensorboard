@@ -37,12 +37,12 @@ def _tensorboard_html_binary(ctx):
     ignore_regexs_file_set = depset([ctx.file.path_regexs_for_noinline])
     ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
   ctx.action(
-      inputs=list(depset(transitive=[
+      inputs=depset(transitive=[
           manifests,
           files,
           jslibs,
           ignore_regexs_file_set,
-      ])),
+      ]).to_list(),
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,

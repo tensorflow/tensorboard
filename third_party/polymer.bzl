@@ -17,6 +17,7 @@
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
 def tensorboard_polymer_workspace():
+  """Add repositories for Polymer and its standard component library."""
   web_library_external(
       name = "org_polymer",
       licenses = ["notice"],  # BSD-3-Clause
