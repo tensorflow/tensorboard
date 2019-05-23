@@ -2205,7 +2205,6 @@ limitations under the License.
         attributions: {
           type: Object,
           observer: 'newAttributions_',
-          value: () => ({})
         },
         // Examples and their inferences merged into a single list.
         // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
@@ -4293,7 +4292,7 @@ limitations under the License.
         }
         for (let i = 0; i < attributions.indices.length; i++) {
           const idx = attributions.indices[i];
-          const datapoint = this.visdata[idx];
+          const datapoint = Object.assign({}, this.visdata[idx]);
           // TODO(jwexler): Support attributions from multiple models.
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
@@ -4319,6 +4318,7 @@ limitations under the License.
               datapoint[attribKey] = attribs[keys[j]];
             }
           }
+          this.set(`visdata.${idx}`, datapoint);
         }
         this.setAttributions();
         this.refreshDive_();
