@@ -227,7 +227,13 @@ def _tf_web_library(ctx):
     ts_typings_paths = depset()
     ts_typings_execroots = depset()
 
-  # export data to parent rules
+  # Export data to parent rules. This uses the legacy, string-based
+  # provider mechanism for compatibility with the base `web_library`
+  # rule from rules_closure: because `tf_web_library`s may depend on
+  # either other `tf_web_library`s or base `web_library`s, the
+  # interfaces ~must be the same.
+  #
+  # buildozer: disable=rule-impl-return
   return struct(
       files=depset(web_srcs + [dummy]),
       exports=unfurl(ctx.attr.exports),

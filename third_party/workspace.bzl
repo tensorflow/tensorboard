@@ -26,6 +26,7 @@ load("//third_party:js.bzl", "tensorboard_js_workspace")
 load("//third_party:typings.bzl", "tensorboard_typings_workspace")
 
 def tensorboard_workspace():
+  """Add repositories needed to build TensorBoard."""
   tensorboard_fonts_workspace()
   tensorboard_polymer_workspace()
   tensorboard_python_workspace()
