@@ -3896,17 +3896,18 @@ limitations under the License.
         if (Object.keys(confCounts).length == 0) {
           return 0;
         }
-        if (confCounts['Yes']['Yes'] == 0) {
-          if (confCounts['No']['Yes'] != 0 || confCounts['Yes']['No'] != 0) {
+        const truePositives = confCounts['Yes']['Yes'];
+        const falsePositives = confCounts['No']['Yes'];
+        const falseNegatives = confCounts['Yes']['No'];
+        if (truePositives == 0) {
+          if (falsePositives != 0 || falseNegatives != 0) {
             return formatter(0);
           } else {
             return formatter(1);
           }
         }
-        const precision = confCounts['Yes']['Yes'] /
-          (confCounts['Yes']['Yes'] + confCounts['No']['Yes']);
-        const recall = confCounts['Yes']['Yes'] /
-          (confCounts['Yes']['Yes'] + confCounts['Yes']['No']);
+        const precision = truePositives / (truePositives + falsePositives);
+        const recall = truePositives / (truePositives + falseNegatives);
         return formatter(
           2 * (precision * recall) / (precision + recall));
       },
