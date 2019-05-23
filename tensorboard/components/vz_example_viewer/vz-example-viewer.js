@@ -800,9 +800,9 @@ var vz_example_viewer;
             var jsonFeat;
             if (this.newFeatureType === INT_FEATURE_NAME) {
                 var valueList = [];
-                var ints = new FloatList();
+                var ints = new Int64List();
                 ints.setValueList(valueList);
-                feat.setInt64List(ints); // TODO(#2266): Preserves behavior.
+                feat.setInt64List(ints);
                 jsonFeat = { int64List: { value: valueList } };
             }
             else if (this.newFeatureType === FLOAT_FEATURE_NAME) {
