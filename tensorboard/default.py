@@ -95,22 +95,19 @@ def get_plugins():
 def get_dynamic_plugins():
   """Returns a list specifying TensorBoard's dynamically loaded plugins.
 
-	A dynamic TensorBoard plugin is specified using entry_points [1]. This will be
-  the de facto mechanism to load plugins and there no longer will be a concept
-  of the first-party plugins as depicted above in `get_plugins`.
+  A dynamic TensorBoard plugin is specified using entry_points [1] and it is
+  the primary way to integrate plugin whose code does not reside in TensorBoard
+  repository.
 
   This list can be passed to the `tensorboard.program.TensorBoard` API.
 
   Returns:
-		a list of base_plugin.TBPlugin
+    list of base_plugin.TBLoader or base_plugin.TBPlugin.
 
   [1]: https://packaging.python.org/specifications/entry-points/
   """
-  dynamic_plugins = [
-      entry_point.load()
-      for entry_point
-      in pkg_resources.iter_entry_points('tensorboard_plugins')]
-
   return [
-      get_plugin()[2]
-      for get_plugin in dynamic_plugins]
+      entry_point.load()
+      for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins')
+  ]
+

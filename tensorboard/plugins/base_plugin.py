@@ -78,12 +78,15 @@ class TBPlugin(object):
   def es_module_path(self):
     """Returns one of the keys in get_plugin_apps that is an entry ES module.
 
-    For a plugin that is loaded onto an iframe, a frontend entry point has to be
+    For a plugin that is loaded into an iframe, a frontend entry point has to be
     specified. For a plugin that is bundled with TensorBoard as part of
     webfiles.zip, return None.
 
+    TODO(tensorboard-team): describe the contract/API for the ES module when
+    it is better defined.
+
     Returns:
-      A key in the get_plugins_apps.
+      A key in the result of `get_plugin_apps()`, or None.
     """
     return None
 
