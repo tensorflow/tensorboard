@@ -1303,7 +1303,7 @@ limitations under the License.
                               <paper-radio-button name="L2">L2</paper-radio-button>
                             </paper-radio-group>
                             <paper-dropdown-menu label="Model:" no-label-float class="counterfactual-dropdown" hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]">
-                              <paper-listbox class="dropdown-content" selected="{{nearestCounterfactualModel}}">
+                              <paper-listbox class="dropdown-content" selected="{{nearestCounterfactualModelIndex}}">
                                 <template is="dom-repeat" items="[[parsedModelNames]]">
                                   <paper-item>[[getCounterfactualModelName_(item)]]</paper-item>
                                 </template>
@@ -2285,10 +2285,9 @@ limitations under the License.
           observer: 'labelFeatureSelected_',
         },
         // Choose which model is used for counterfactual computation
-        nearestCounterfactualModel: {
+        nearestCounterfactualModelIndex: {
           type: Number,
           value: 0,
-          observer: 'nearestCounterfactualModelChanged_',
         },
         // Calculated statistics from the inference results.
         inferenceStats_: {
@@ -2452,7 +2451,6 @@ limitations under the License.
         nearestCounterfactualDist: {
           type: String,
           value: "L1",
-          observer: 'nearestCounterfactualDistChanged_',
         },
         visMode: {
           type: String,
@@ -2490,7 +2488,6 @@ limitations under the License.
         showNearestCounterfactual: {
           type: Boolean,
           value: false,
-          observer: 'showNearestCounterfactualChanged_',
         },
         selectedFeatureSort: {
           type: String,
@@ -2553,6 +2550,7 @@ limitations under the License.
 
       observers: [
         'setFacetDistFeatureName(facetDistSwitch, selected)',
+        'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)'
       ],
 
       // Required function.
@@ -2673,7 +2671,7 @@ limitations under the License.
             ' distance to datapoint ' + selected[0];
       },
 
-      showNearestCounterfactualChanged_: function(show) {
+      nearestCounterfactualStatusChanged_: function(show) {
         if (show) {
           this.findClosestCounterfactual_();
         } else {
@@ -2685,23 +2683,23 @@ limitations under the License.
         }
       },
 
-      nearestCounterfactualDistChanged_: function() {
-        if (this.showNearestCounterfactual) {
-          this.findClosestCounterfactual_();
-        }
-      },
+      // nearestCounterfactualDistChanged_: function() {
+      //   if (this.showNearestCounterfactual) {
+      //     this.findClosestCounterfactual_();
+      //   }
+      // },
 
-      nearestCounterfactualModelChanged_: function() {
-        if (this.showNearestCounterfactual) {
-          this.findClosestCounterfactual_();
-        }
-      },
+      // nearestCounterfactualModelChanged_: function() {
+      //   if (this.showNearestCounterfactual) {
+      //     this.findClosestCounterfactual_();
+      //   }
+      // },
 
       findClosestCounterfactual_: function() {
         const selected = this.selected[0];
         const modelInferenceValueStr =
             this.strWithModelName_(inferenceValueStr,
-                                   this.nearestCounterfactualModel);
+                                   this.nearestCounterfactualModelIndex);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
