@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
 from six import iteritems
-from six import string_types
+from six import string_types, integer_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -155,7 +155,7 @@ class MutantFeatureValue(object):
           'unexpected type: {}'.format(type(original_feature)))
     self.original_feature = original_feature
 
-    if index is not None and not isinstance(index, int):
+    if index is not None and not isinstance(index, integer_types):
       raise ValueError(
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
