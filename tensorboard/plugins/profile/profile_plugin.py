@@ -73,14 +73,14 @@ def process_raw_trace(raw_trace):
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
-def get_workers_list(cluster_resolver):
+def get_worker_list(cluster_resolver):
   """Parses TPU workers list from the cluster resolver."""
   cluster_spec = cluster_resolver.cluster_spec()
   task_indices = cluster_spec.task_indices('worker')
-  workers_list = [
+  worker_list = [
       cluster_spec.task_address('worker', i).split(':')[0] for i in task_indices
   ]
-  return ','.join(workers_list)
+  return ','.join(worker_list)
 
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
@@ -427,18 +427,16 @@ class ProfilePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def capture_route(self, request):
     service_addr = request.args.get('service_addr')
-    try:
-      duration = int(request.args.get('duration'))
-    except TypeError:
-      # Returns code=200 to show error message in UI.
-      return http_util.Respond(request, {'error': 'invalid duration.'},
-                               'application/json', code=200)
+    duration = int(request.args.get('duration', '1000'))
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
-    workers_list = ''
+    worker_list = request.args.get('worker_list')
+    include_dataset_ops = request.args.get('include_dataset_ops') == 'true'
+    num_tracing_attempts = int(request.args.get('num_retry', '0')) + 1
+
     if is_tpu_name:
       try:
         tpu_cluster_resolver = (
-            tf.distribute.cluster_resolver.TPUClusterResolver([service_addr]))
+            tf.distribute.cluster_resolver.TPUClusterResolver(service_addr))
         master_grpc_addr = tpu_cluster_resolver.get_master()
       except (ImportError, RuntimeError) as err:
         return http_util.Respond(request, {'error': err.message},
@@ -447,7 +445,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
         return http_util.Respond(request,
             {'error': 'no TPUs with the specified names exist.'},
              'application/json', code=200)
-      workers_list = get_workers_list(tpu_cluster_resolver)
+      if not worker_list:
+        worker_list = get_worker_list(tpu_cluster_resolver)
       # TPU cluster resolver always returns port 8470. Replace it with 8466
       # on which profiler service is running.
       master_ip = master_grpc_addr.replace('grpc://', '').replace(':8470', '')
@@ -455,8 +454,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
       # Set the master TPU for streaming trace viewer.
       self.master_tpu_unsecure_channel = master_ip
     try:
-      profiler_client.start_tracing(service_addr, self.logdir,
-                                    duration, workers_list);
+      profiler_client.start_tracing(service_addr, self.logdir, duration,
+          worker_list, include_dataset_ops, num_tracing_attempts)
       return http_util.Respond(
           request, {'result': 'Capture profile successfully. Please refresh.'},
           'application/json')
