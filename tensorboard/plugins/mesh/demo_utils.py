@@ -39,7 +39,7 @@ def _parse_vertex(vertex_row):
     # Supports only RGB colors now, alpha channel will be ignored.
     # TODO(b/129298103): add support of RGBA in .ply files.
     return ([float(coord) for coord in vertex[:3]],
-            [int(channel) for channel in vertex[3:6]])    
+            [int(channel) for channel in vertex[3:6]])
   raise ValueError('PLY file must contain vertices with colors.')
 
 
@@ -67,7 +67,7 @@ def read_ascii_ply(filename):
     numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors and 
     `[dim_1, 3]` array of faces of the mesh.
   """
-  with tf.compat.v1.io.gfile.GFile(filename) as ply_file:
+  with tf.io.gfile.GFile(filename) as ply_file:
     for line in ply_file:
       if line.startswith('end_header'):
         break

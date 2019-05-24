@@ -134,7 +134,7 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-        "//tensorboard:expect_numpy_installed",        
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat:tensorflow",
     ],
 )
@@ -142,11 +142,11 @@ py_library(
 py_test(
     name = "demo_utils_test",
     size = "small",
-    srcs = ["demo_utils_test.py"],
-    srcs_version = "PY2AND3",
+    srcs = ["demo_utils_test.py"],    
     data = [
         ":test_data",
     ],
+    srcs_version = "PY2AND3",
     deps = [
         ":demo_utils",
     ],
@@ -167,9 +167,9 @@ py_binary(
 )
 
 filegroup(
-  name = "test_data",
-  srcs = [
-      "test_data/icosphere.ply",
-  ],
-  visibility = ["//visibility:public"],
+    name = "test_data",
+    srcs = [
+        "test_data/icosphere.ply",
+    ],
+    visibility = ["//visibility:public"],
 )

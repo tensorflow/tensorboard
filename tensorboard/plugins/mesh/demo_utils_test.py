@@ -35,7 +35,7 @@ class TestPLYReader(unittest.TestCase):
   def test_prase_vertex_expects_colors(self):
     """Tests that method will throw error if color is not poresent."""
     with self.assertRaisesRegexp(ValueError,
-     'PLY file must contain vertices with colors'):
+        'PLY file must contain vertices with colors'):
       demo_utils._parse_vertex('1 2 3')
 
   def test_parse_face(self):
@@ -47,12 +47,13 @@ class TestPLYReader(unittest.TestCase):
   def test_read_ascii_ply(self):
     """Tests end-to-end PLY file reading and parsing."""
     test_ply = os.path.join(
-      os.path.dirname(os.environ["TEST_BINARY"]),
-       'test_data', 'icosphere.ply')
+        os.path.dirname(os.environ['TEST_BINARY']),
+        'test_data', 'icosphere.ply')
     vertices, colors, faces = demo_utils.read_ascii_ply(test_ply)
     self.assertEqual(len(vertices), 82)
     self.assertEqual(len(vertices), len(colors))
     self.assertEqual(len(faces), 80)
+
 
 if __name__ == '__main__':
   unittest.main()
