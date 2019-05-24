@@ -38,13 +38,14 @@ THE SOFTWARE.
 
 /**
  * Reason for the fork: Plottable interactions are not compatible with the Web
- * Componenets due to the changes in
- * 1. how events work
- * 2. DOM traversal has changed.
+ * Componenets due to the changes in:
+ * 1. how events work: i.e., parent components cannot introspect into DOM
+ *    where an event originates from. Instead, they see originating
+ *    WebComponents.
+ * 2. DOM traversal: parentElement on shadowRoot is null.
  * Please refer to https://github.com/palantir/plottable/issues/3350 for more
  * detail.
- */
-/**
+ *
  * To override few quick private/protected methods, we had to use JavaScript to
  * bypass TypeScript typechecks.
  */
