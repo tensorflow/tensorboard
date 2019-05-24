@@ -90,14 +90,12 @@ def get_plugins():
 
   return _PLUGINS[:]
 
-# TODO(stephanwlee): Combine with get_plugins when concept of first-party
-# plugins is undone.
+
 def get_dynamic_plugins():
   """Returns a list specifying TensorBoard's dynamically loaded plugins.
 
   A dynamic TensorBoard plugin is specified using entry_points [1] and it is
-  the primary way to integrate plugin whose code does not reside in TensorBoard
-  repository.
+  the robust way to integrate plugins into TensorBoard.
 
   This list can be passed to the `tensorboard.program.TensorBoard` API.
 

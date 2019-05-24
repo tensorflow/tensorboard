@@ -192,6 +192,19 @@ py_library(
     ],
 )
 
+py_test(
+    name = "default_test",
+    size = "small",
+    srcs = ["default_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":default",
+        ":test",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+    ],
+)
+
 py_library(
     name = "version",
     srcs = ["version.py"],
