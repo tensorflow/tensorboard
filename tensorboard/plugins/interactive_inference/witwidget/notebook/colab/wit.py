@@ -93,6 +93,8 @@ WIT_HTML = """
       const parsedInferences = JSON.parse(inferences);
       wit.labelVocab = parsedInferences.label_vocab;
       wit.inferences = parsedInferences.inferences;
+      wit.attributions = {{indices: wit.inferences.indices,
+                           attributions: parsedInferences.attributions}}
     }};
     window.spriteCallback = spriteUrl => {{
       if (!wit.updateSprite) {{

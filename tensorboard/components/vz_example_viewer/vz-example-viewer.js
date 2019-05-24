@@ -31,9 +31,9 @@ var vz_example_viewer;
     var CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
     var clipSaliencyRatio = .95;
     // Colors for the saliency color scale.
-    var posSaliencyColor = '#0f0';
-    var negSaliencyColor = '#f00';
-    var neutralSaliencyColor = '#e8eaed';
+    var posSaliencyColor = '#007B83';
+    var negSaliencyColor = '#FF847C';
+    var neutralSaliencyColor = '#fff';
     var COLOR_INTERPOLATOR = d3.interpolateRgb;
     // Regex to find bytes features that are encoded images. Follows the guide at
     // go/tf-example.
@@ -211,15 +211,14 @@ var vz_example_viewer;
             var _this = this;
             var filtered = featureList;
             var checkSal = saliency && Object.keys(saliency).length > 0;
-            // Create a dict of feature names to the total absolute saliency of all
-            // its feature values, to sort features with the most salienct features at
-            // the top.
+            // Create a dict of feature names to the total saliency of all
+            // its feature values, to sort salient features at the top.
             var saliencyTotals = checkSal ? Object.assign.apply(Object, [{}].concat(Object.keys(saliency).map(function (name) {
                 var _a;
                 return (_a = {}, _a[name] = typeof saliency[name] == 'number' ?
-                    Math.abs(saliency[name]) :
+                    saliency[name] :
                     saliency[name].reduce(function (total, cur) {
-                        return Math.abs(total) + Math.abs(cur);
+                        return total + cur;
                     }, 0), _a);
             }))) :
                 {};
@@ -296,12 +295,12 @@ var vz_example_viewer;
         },
         _haveSaliencyImpl: function () {
             var _this = this;
+            // Reset all backgrounds to the neutral color.
+            this.selectAll('.value-pill').style('background', neutralSaliencyColor);
             if (!this.filteredFeaturesList || !this.saliency ||
                 Object.keys(this.saliency).length === 0 || !this.colors) {
                 return;
             }
-            // Reset all backgrounds to the neutral color.
-            this.selectAll('.value-pill').style('background', neutralSaliencyColor);
             var _loop_1 = function (feat) {
                 var val = this_1.saliency[feat.name];
                 // If there is no saliency information for the feature, do not color it.
@@ -311,7 +310,7 @@ var vz_example_viewer;
                 var colorFn = Array.isArray(val) ?
                     function (d, i) { return _this.getColorForSaliency(val[i]); } :
                     function () { return _this.getColorForSaliency(val); };
-                this_1.selectAll("input." + this_1.sanitizeFeature(feat.name) + ".value-pill")
+                this_1.selectAll("." + this_1.sanitizeFeature(feat.name) + ".value-pill")
                     .style('background', this_1.showSaliency ? colorFn : function () { return neutralSaliencyColor; });
                 // Color the "more feature values" button with the most extreme saliency
                 // of any of the feature values hidden behind the button.

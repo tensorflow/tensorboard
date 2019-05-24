@@ -2268,6 +2268,26 @@ limitations under the License.
           observer: 'newInferences_',
           value: () => ({})
         },
+        // Attributions from inference. A dict with two fields: 'indices' and
+        // 'attributions'. Indicies contains a list of example indices that
+        // these new attributions apply to. Attributions contains a list of
+        // attributions for each of those examples.
+        // The attribution object for each example is a dict of feature name
+        // to attribution value.
+        // The attribution value is one of the following:
+        // - A single number representing the attribution to that entire feature
+        //   value.
+        // - A list of numbers representing the attributions to individual
+        //   values of a multivalent feature - such as pixels in an image or
+        //   numbers in a list of numbers.
+        // - A 2D list for sparse attributions of a multivalent feature. The
+        //   first list contains the feature values for which attributions
+        //   exist. The second list contains the numeric attributions for each
+        //   of those feature values.
+        attributions: {
+          type: Object,
+          observer: 'newAttributions_',
+        },
         // Examples and their inferences merged into a single list.
         // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
         examplesAndInferences : {
@@ -4196,8 +4216,8 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 attrib[featToTest] = selectedData[key];
@@ -4216,8 +4236,8 @@ limitations under the License.
           // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 const attribKeys = selectedData[key];
@@ -4401,6 +4421,44 @@ limitations under the License.
           }
         }
         this.updatedExample = false;
+      },
+
+      newAttributions_: function(attributions) {
+        if (Object.keys(attributions).length == 0) {
+          return;
+        }
+        for (let i = 0; i < attributions.indices.length; i++) {
+          const idx = attributions.indices[i];
+          const datapoint = Object.assign({}, this.visdata[idx]);
+          // TODO(jwexler): Support attributions from multiple models.
+          // For now, we only display attribution from the first model, if WIT
+          // is loaded with two models.
+          const attribs = attributions.attributions[0][i];
+          const keys = Object.keys(attribs);
+          for (let j = 0; j < keys.length; j++) {
+            // If the attributions for a key is a 2D array then treat the first
+            // entry as sparse keys for attributions and the second entry as
+            // the attributions for the sparse keys in the first array.
+            // Otherwise the attribution is a single value or list and can be
+            // used as such.
+            if (Array.isArray(attribs[keys[j]]) &&
+                attribs[keys[j]].length == 2 &&
+                Array.isArray(attribs[keys[j]][0])) {
+              const attribSparseKeyKey = attributionPrefix + keys[j] +
+                attributionSparseKeySuffix;
+              datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
+              const attribSparseValueKey = attributionPrefix + keys[j] +
+                attributionSparseValueSuffix;
+              datapoint[attribSparseValueKey] = attribs[keys[j]][1];
+            } else {
+              const attribKey = attributionPrefix + keys[j];
+              datapoint[attribKey] = attribs[keys[j]];
+            }
+          }
+          this.set(`visdata.${idx}`, datapoint);
+        }
+        this.setAttributions();
+        this.refreshDive_();
       },
 
       /**
