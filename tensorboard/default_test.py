@@ -12,17 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Collection of first-party plugins.
-
-This module exists to isolate tensorboard.program from the potentially
-heavyweight build dependencies for first-party plugins. This way people
-doing custom builds of TensorBoard have the option to only pay for the
-dependencies they want.
-
-This module also grants the flexibility to those doing custom builds, to
-automatically inherit the centrally-maintained list of standard plugins,
-for less repetition.
-"""
+"""Unit tests for `tensorboard.default`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -52,13 +42,12 @@ class FakeEntryPoint(pkg_resources.EntryPoint):
 
   @staticmethod
   def create():
-    """Creates an instance off FakeEntryPoint.
+    """Creates an instance of FakeEntryPoint.
 
     Returns:
       instance of FakeEntryPoint
     """
     return FakeEntryPoint('foo', 'bar')
-
 
   def load(self):
     """Returns FakePlugin instead of resolving module.
@@ -67,7 +56,6 @@ class FakeEntryPoint(pkg_resources.EntryPoint):
       FakePlugin
     """
     return FakePlugin
-
 
 
 class DefaultTest(test.TestCase):
@@ -79,9 +67,8 @@ class DefaultTest(test.TestCase):
     actual_plugins = default.get_dynamic_plugins()
 
     mock_iter_entry_points.assert_called_with('tensorboard_plugins')
-    self.assertEquals(actual_plugins, [FakePlugin])
+    self.assertEqual(actual_plugins, [FakePlugin])
 
 
 if __name__ == "__main__":
   test.main()
-
