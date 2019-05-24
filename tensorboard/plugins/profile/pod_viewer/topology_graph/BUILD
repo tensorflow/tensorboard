@@ -21,6 +21,5 @@ tf_web_library(
         "@org_polymer_paper_listbox",
         "@org_polymer_paper_menu",
         "@org_polymer_paper_menu_button",
-        "@org_polymer_paper_slider",
     ],
 )

@@ -25,6 +25,7 @@ var pod_viewer_stack_bar_chart;
     var LEGEND_TEXT_HEIGHT = 9.5;
     var LEGEND_TEXT_SIZE = '0.32em';
     var FONT_SIZE = 14;
+    var TRANSITION_DURATION = 1000;
     Polymer({
         is: 'stack-bar-chart',
         properties: {
@@ -53,9 +54,6 @@ var pod_viewer_stack_bar_chart;
             if (!data.length || !this.isAttached || this.stackLayers.length == 0) {
                 return;
             }
-            d3.select(this.$.chart).selectAll('g > *').remove();
-            d3.select(this.$.chart).select('svg').remove();
-            d3.select(this.$.chart).select('.svg-container').remove();
             var stackKey = this.stackLayers.map(function (d) { return d.key; });
             var stackLabel = this.stackLayers.map(function (d) { return d.label; });
             var height = SVG_HEIGHT - SVG_MARGIN.top - SVG_MARGIN.bottom;
@@ -64,11 +62,24 @@ var pod_viewer_stack_bar_chart;
             var yScale = d3.scaleLinear().range([height, 0]);
             var colorScale = d3.scaleOrdinal(d3.schemeCategory10)
                 .domain([0, 19]);
-            var svg = d3.select(this.$.chart).append('svg')
-                .attr('width', Math.max(SVG_MIN_WIDTH, xScaleRange + SVG_MARGIN.left + SVG_MARGIN.right))
-                .attr('height', SVG_HEIGHT)
-                .append('g')
-                .attr('transform', 'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+            var svg = d3.select(this.$.chart).select('svg');
+            if (svg.empty()) {
+                svg = d3.select(this.$.chart).append('svg')
+                    .attr('width', Math.max(SVG_MIN_WIDTH, xScaleRange + SVG_MARGIN.left + SVG_MARGIN.right))
+                    .attr('height', SVG_HEIGHT)
+                    .append('g')
+                    .attr('transform', 'translate(' + SVG_MARGIN.left + ',' + SVG_MARGIN.top + ')');
+                // Draw x-axis.
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .style('font-size', FONT_SIZE)
+                    .attr('transform', 'translate(0,' + (height + 5) + ')');
+                // Draw y-axis.
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .style('font-size', FONT_SIZE)
+                    .attr('transform', 'translate(0,0)');
+            }
             var stack = d3.stack().keys(stackKey).order(d3.stackOrderNone)
                 .offset(d3.stackOffsetNone);
             var layers = stack(data);
@@ -77,19 +88,27 @@ var pod_viewer_stack_bar_chart;
                 .nice();
             this.drawLayers(svg, layers, xScale, yScale, colorScale);
             this.drawAxes(svg, xScale, yScale, height);
-            this.drawLegend(svg, stackLabel, colorScale);
+            var legend = d3.select(this.$.chart).select('.legend');
+            if (legend.empty()) {
+                legend = svg.append('g')
+                    .attr('class', 'legend')
+                    .attr('font-family', 'sans-serif')
+                    .attr('font-size', FONT_SIZE)
+                    .attr('text-anchor', 'start');
+            }
+            this.drawLegend(legend, stackLabel, colorScale);
         },
         /**
          * Draw the layers for all the bars.
          */
         drawLayers: function (svg, layers, xScale, yScale, colorScale) {
             var parent = this;
+            // Update layer for each metric across all cores, and rect for each core.
             var layer = svg.selectAll('.layer').data(layers);
-            layer.enter().append('g').merge(layer)
-                .attr('class', 'layer')
+            var rects = layer.enter().append('g').attr('class', 'layer').merge(layer)
                 .style('fill', function (d, i) { return colorScale(i); })
-                .selectAll('rect').data(function (d) { return d; })
-                .enter().append('rect')
+                .selectAll('rect').data(function (d) { return d; });
+            rects.enter().append('rect').merge(rects)
                 .attr('width', xScale.bandwidth())
                 .attr('y', function (d) { return yScale(d[1]); })
                 .attr('height', function (d) { return yScale(d[0]) - yScale(d[1]); })
@@ -101,50 +120,48 @@ var pod_viewer_stack_bar_chart;
                 .on('mouseout', function (d) {
                 d3.select(this).style('opacity', 1.0);
                 parent.activeBar = null;
-            });
+            })
+                .transition()
+                .duration(TRANSITION_DURATION);
+            layer.exit().remove();
         },
         /**
          * Draw the axes of the chart.
          */
         drawAxes: function (svg, xScale, yScale, height) {
-            svg.append('g')
-                .attr('class', 'axis axis--x')
-                .style('font-size', FONT_SIZE)
-                .attr('transform', 'translate(0,' + (height + 5) + ')')
+            svg.select('.x.axis')
+                .transition()
+                .duration(TRANSITION_DURATION)
                 .call(d3.axisBottom(xScale));
-            svg.append('g')
-                .attr('class', 'axis axis--y')
-                .style('font-size', FONT_SIZE)
-                .attr('transform', 'translate(0,0)')
+            svg.select('.y.axis')
+                .transition()
+                .duration(TRANSITION_DURATION)
                 .call(d3.axisLeft(yScale));
         },
         /**
          * Draw the legends of the chart.
          */
-        drawLegend: function (svg, labels, colorScale) {
-            var legend = svg.append('g')
-                .attr('font-family', 'sans-serif')
-                .attr('font-size', FONT_SIZE)
-                .attr('text-anchor', 'start')
-                .selectAll('g')
-                .data(labels.slice());
-            var legendG = legend.enter().append('g').merge(legend)
-                .attr('transform', function (d, i) { return 'translate(' +
-                (i * LEGEND_WIDTH -
-                    Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
-                        LABELS_PER_LANE) + ',' +
-                Math.floor(i / LABELS_PER_LANE) *
-                    LEGEND_HEIGHT + ')'; });
-            legendG.append('rect')
+        drawLegend: function (selection, labels, colorScale) {
+            var legend = selection.selectAll('g').data(labels.slice());
+            legend.exit().remove();
+            var legendEnter = legend.enter().append('g');
+            legendEnter.append('rect')
                 .attr('x', YAXIS_TO_LEGEND)
                 .attr('width', ICON_SIZE)
-                .attr('height', ICON_SIZE)
-                .attr('fill', function (d, i) { return colorScale(i); });
-            legendG.append('text')
+                .attr('height', ICON_SIZE);
+            legendEnter.append('text')
                 .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
                 .attr('y', LEGEND_TEXT_HEIGHT)
-                .attr('dy', LEGEND_TEXT_SIZE)
-                .text(function (d) { return d; });
+                .attr('dy', LEGEND_TEXT_SIZE);
+            legend = legendEnter.merge(legend);
+            legend.attr('transform', function (d, i) {
+                var x = i * LEGEND_WIDTH - Math.floor(i / LABELS_PER_LANE) *
+                    LEGEND_WIDTH * LABELS_PER_LANE;
+                var y = Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT;
+                return "translate(" + x + ", " + y + ")";
+            });
+            legend.select('rect').attr('fill', function (d, i) { return colorScale(i); });
+            legend.select('text').text(function (d) { return d; });
         },
         /**
          * Redraw the stack bar chart.

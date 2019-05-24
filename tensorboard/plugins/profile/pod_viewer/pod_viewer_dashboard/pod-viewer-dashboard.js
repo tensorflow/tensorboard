@@ -28,11 +28,6 @@ var pod_viewer_dashboard;
                 type: Array,
                 notify: true,
             },
-            selectedChannel: {
-                type: Array,
-                notify: true,
-                observer: '_selectedChannelChanged',
-            },
             activeBar: {
                 type: Object,
                 notify: true,
@@ -65,7 +60,8 @@ var pod_viewer_dashboard;
                     { key: 'lowFlopsComputeUs', label: 'Low flops compute' },
                     { key: 'hostInfeedDurationUs', label: 'Infeed' },
                     { key: 'hostOutfeedDurationUs', label: 'Outfeed' },
-                    { key: 'crsDurationUs', label: 'All reduce' },
+                    { key: 'allReduceComputeDurationUs', label: 'AllReduce compute' },
+                    { key: 'allReduceSyncDurationUs', label: 'AllReduce sync' },
                     { key: 'sendDurationUs', label: 'Send' },
                     { key: 'recvDurationUs', label: 'Recv' },
                 ]; },
@@ -125,6 +121,8 @@ var pod_viewer_dashboard;
             return data.podStatsSequence.podStatsMap;
         },
         _computeRunEnvironment: function (data) {
+            if (!data)
+                return;
             return data.runEnvironment;
         },
         _computeMaxStepId: function (podStatsMaps) {
@@ -157,6 +155,10 @@ var pod_viewer_dashboard;
                 for (var j = 0; j < layers.length; j++) {
                     if (j == 1) {
                         continue;
+                    }
+                    // Input missing a field, set it to 0.
+                    if (!val[layers[j].key]) {
+                        val[layers[j].key] = 0;
                     }
                     // Skip the lowFlopsComputeUs.
                     val['lowFlopsComputeUs'] -= val[layers[j].key];
@@ -196,14 +198,6 @@ var pod_viewer_dashboard;
             if (!newData)
                 return;
             this.curStepId = 0;
-        },
-        /**
-         * Updates the input of the details card when selected channel changed.
-         */
-        _selectedChannelChanged: function (newChannel) {
-            if (newChannel) {
-                this.activeDetails = newChannel;
-            }
         },
         /**
          * The active bar could be one of the PodStatsRecord, ChannelInfo or

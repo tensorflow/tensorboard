@@ -28,7 +28,8 @@ var pod_viewer_details_card;
                     { key: 'lowFlopsComputeUs', label: 'Low flops compute' },
                     { key: 'hostInfeedDurationUs', label: 'Infeed' },
                     { key: 'hostOutfeedDurationUs', label: 'Outfeed' },
-                    { key: 'crsDurationUs', label: 'All reduce' },
+                    { key: 'allReduceComputeDurationUs', label: 'AllReduce compute' },
+                    { key: 'allReduceSyncDurationUs', label: 'AllReduce sync' },
                     { key: 'sendDurationUs', label: 'Send' },
                     { key: 'recvDurationUs', label: 'Recv' },
                 ]; },
@@ -112,13 +113,13 @@ var pod_viewer_details_card;
         _getStepBreakdownValue: function (node, key) {
             if (!key || !node)
                 return;
-            return this._format(node[key]);
+            return this._format(node[key] ? node[key] : 0);
         },
         /**
          * Return a the percentage of a specific breakdown.
          */
         _getStepBreakdownPct: function (node, key) {
-            if (!key || !node || !node.totalDurationUs)
+            if (!key || !node || !node.totalDurationUs || !node[key])
                 return;
             return (node[key] / node.totalDurationUs * 100).toFixed(2) + '%';
         },
