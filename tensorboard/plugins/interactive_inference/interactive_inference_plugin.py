@@ -282,8 +282,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
             request.args.get('use_predict') == 'true',
             request.args.get('predict_input_tensor'),
             request.args.get('predict_output_tensor'))
-        infer_objs.append(inference_utils.run_inference_for_inference_results(
-          examples_to_infer, serving_bundle))
+        (predictions, _) = inference_utils.run_inference_for_inference_results(
+            examples_to_infer, serving_bundle)
+        infer_objs.append(predictions)
 
       resp = {'indices': indices_to_infer, 'results': infer_objs}
       self.updated_example_indices = set()

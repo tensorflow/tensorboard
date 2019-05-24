@@ -414,6 +414,24 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
+    Optionally, if attributions can be returned by the model with each
+    prediction, then this method can return a dict with the key 'predictions'
+    containing the predictions result list described above, and with the key
+    'attributions' containing a list of attributions for each example that was
+    predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
+
     Args:
       predict_fn: The custom python function which will be used for model
       inference.
@@ -445,6 +463,24 @@ class WitConfigBuilder(object):
         for each class ID in the prediction.
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
+
+    Optionally, if attributions can be returned by the model with each
+    prediction, then this method can return a dict with the key 'predictions'
+    containing the predictions result list described above, and with the key
+    'attributions' containing a list of attributions for each example that was
+    predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
 
     Args:
       predict_fn: The custom python function which will be used for model
