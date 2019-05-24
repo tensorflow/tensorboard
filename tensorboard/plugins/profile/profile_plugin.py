@@ -427,11 +427,11 @@ class ProfilePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def capture_route(self, request):
     service_addr = request.args.get('service_addr')
-    duration = int(request.args.get('duration'))
+    duration = int(request.args.get('duration', '1000'))
     is_tpu_name = request.args.get('is_tpu_name') == 'true'
     worker_list = request.args.get('worker_list')
     include_dataset_ops = request.args.get('include_dataset_ops') == 'true'
-    num_tracing_attempts = int(request.args.get('num_retry')) + 1
+    num_tracing_attempts = int(request.args.get('num_retry', '0')) + 1
 
     if is_tpu_name:
       try:
@@ -455,7 +455,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
       self.master_tpu_unsecure_channel = master_ip
     try:
       profiler_client.start_tracing(service_addr, self.logdir, duration,
-          worker_list, include_dataset_ops, num_tracing_attempts);
+          worker_list, include_dataset_ops, num_tracing_attempts)
       return http_util.Respond(
           request, {'result': 'Capture profile successfully. Please refresh.'},
           'application/json')

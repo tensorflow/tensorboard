@@ -412,11 +412,11 @@ profile run can have multiple tools that present the performance profile as diff
         value: "ip-address",
       },
       _profileDuration: {
-        type: Number,
+        type: String,
         value: 1000,
       },
       _profileNumRetry: {
-        type: Number,
+        type: String,
         value: 3,
       },
       _profileWorkerList: {
@@ -518,7 +518,7 @@ profile run can have multiple tools that present the performance profile as diff
     },
     _shouldDisableCaptureProfileButton: function(
         profilerServiceAddress, profileDuration, numRetry) {
-      return !profilerServiceAddress || profileDuration <= 0
+      return !profilerServiceAddress || profileDuration === ""
           || numRetry === "";
     },
     _shouldShowTpuOptions: function(profilerServiceAddressType) {
