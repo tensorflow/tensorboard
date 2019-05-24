@@ -159,10 +159,12 @@ Polymer({
         if (j == 1) {
           continue;
         }
-        const duration = val[layers[j].key];
-        if (!duration) continue;
+        // Input missing a field, set it to 0.
+        if (!val[layers[j].key]) {
+           val[layers[j].key] = 0;
+        }
         // Skip the lowFlopsComputeUs.
-        val['lowFlopsComputeUs'] -= duration;
+        val['lowFlopsComputeUs'] -= val[layers[j].key];
       }
     }
    return podStatsMap;

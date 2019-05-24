@@ -117,13 +117,8 @@ Polymer({
         .selectAll('rect').data((d) => d);
     rects.enter().append('rect').merge(rects)
         .attr('width', xScale.bandwidth())
-        .attr('y', (d) => yScale(d[1]) ? yScale(d[1]) : 0)
-        .attr('height',
-            (d) => {
-              // For backward compatibility, old traces may have h undefeind.
-              const h = yScale(d[0]) - yScale(d[1]);
-              return h ? h : 0;
-            })
+        .attr('y', (d) => yScale(d[1]))
+        .attr('height', (d) => yScale(d[0]) - yScale(d[1]))
         .attr('x', (d, i) => xScale(parent.xDomainFunc(d.data)))
         .on('mouseover',
             function(d) {
@@ -170,12 +165,12 @@ Polymer({
         .attr('dy', LEGEND_TEXT_SIZE)
    
     legend = legendEnter.merge(legend);
-    legend.attr('transform',
-        (d, i) => 'translate(' + (i * LEGEND_WIDTH -
-            Math.floor(i / LABELS_PER_LANE) * LEGEND_WIDTH *
-                LABELS_PER_LANE) + ',' +
-                    Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT + ')'
-        );
+    legend.attr('transform', (d, i) => {
+      const x = i * LEGEND_WIDTH - Math.floor(i / LABELS_PER_LANE) *
+                      LEGEND_WIDTH * LABELS_PER_LANE;
+      const y = Math.floor(i / LABELS_PER_LANE) * LEGEND_HEIGHT;
+      return `translate(${x}, ${y})`;
+    });
     legend.select('rect').attr('fill', (d, i) => colorScale(i));
     legend.select('text').text((d) => d);
   },
