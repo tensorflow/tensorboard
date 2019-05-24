@@ -45,7 +45,7 @@ def _parse_vertex(vertex_row):
 
 def _parse_face(face_row):
   """Parses a line in a PLY file which encodes a face of the mesh."""
-  face = map(int, face_row.strip().split(' '))
+  face = [int(index) for index in face_row.strip().split()]
   # Assert that number of vertices in a face is 3, i.e. it is a triangle
   if len(face) != 4 or face[0] != 3:
     raise ValueError(
