@@ -58,7 +58,8 @@ class LitePlugin(base_plugin.TBPlugin):
     return {
         '/supported_ops': self.supported_ops,
         '/checkpoints': self.list_checkpoints,
-        '/convert': self.convert
+        '/convert': self.convert,
+        '/script': self.script
     }
 
   def is_active(self):
@@ -68,6 +69,36 @@ class LitePlugin(base_plugin.TBPlugin):
     # Should contains some runs.
     run_names = [name for (name, data) in self._multiplexer.Runs().items() if data.get(pec.GRAPH)]
     return any(run_names)
+
+
+  @wrappers.Request.application
+  def script(self, request):
+    tf.compat.v1.logging.info('run_toco preview, request: %s', request)
+    graph_def_file = os.path.join(self._logdir, "graph.pbtxt")
+
+    tflite_output_dir = os.path.join(self._logdir, "tflite_output")
+    lite_backend.safe_makedirs(tflite_output_dir)
+
+    result = {}
+    tflite_file = os.path.join(tflite_output_dir, "model.tflite")
+    script = ""
+
+    # Options has a format of:
+    # {
+    #     "input_nodes": [],
+    #     "output_nodes": [],
+    #     "batch_size": 1,
+    #     "checkpoint": ""
+    # }
+    options = json.loads(request.form['data'])
+
+    saved_model_dir = os.path.join(self._logdir, options['checkpoint'] or "")
+    input_arrays = options['input_nodes'] or []
+    output_arrays = options['output_nodes'] or []
+
+    script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
+
+    return http_util.Respond(request, json.dumps(script), 'application/json')
 
   @wrappers.Request.application
   def convert(self, request):
@@ -96,7 +127,7 @@ class LitePlugin(base_plugin.TBPlugin):
 
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
     success, stdout, stderr = lite_backend.execute(script, verbose=True)
-    
+
     if success:
       result['result'] = 'success'
       result['tabs'] = [
@@ -105,7 +136,7 @@ class LitePlugin(base_plugin.TBPlugin):
           'content': [
             {
               'type': 'text',
-              'body': 'Succuss: The model has been converted to tflite file.\n' + stdout 
+              'body': 'Succuss: The model has been converted to tflite file.\n' + stdout
             },
             {
               'type': 'code',

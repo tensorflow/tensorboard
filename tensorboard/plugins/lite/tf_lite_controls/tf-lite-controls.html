@@ -434,9 +434,9 @@ tf-graph-node-search {
   </div>
   <h2>Step 4</h2>
   <div class="control-holder">
-    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="convert" alt="Convert to TF Lite model">
+    <paper-icon-button icon="aspect-ratio" class="iconbutton" on-click="preview" alt="Preview to TF Lite convert script">
     </paper-icon-button>
-    <paper-button class="button-text" on-click="convert">Convert to TF Lite model
+    <paper-button class="button-text" on-click="preview">Preview to TF Lite convert script
     </paper-button>
   </div>
   <div class="legend-holder">
@@ -616,6 +616,14 @@ tf-graph-node-search {
     </iron-collapse>
   </div>
 </div>
+<paper-dialog id="script_dialog" with-backdrop>
+  <h2>TF Lite Convert Script</h2>
+  <pre>{{conversionScript}}</pre>
+  <div class="buttons">
+    <paper-button on-click="convert">Convert to TF Lite model</paper-button>
+  </div>
+</paper-dialog>
+
 <paper-dialog id="result_dialog" with-backdrop>
   <h2>TF Lite Convert Result: <span class="result">{{conversionResult.result}}</span></h2>
   <template is="dom-if" if="[[conversionResult.addons]]">
@@ -694,6 +702,10 @@ tf-graph-node-search {
         batchSize: {
           type: Number,
           value: 1
+        },
+        conversionScript: {
+          type: String,
+          value: ''
         },
         conversionResult: {
           type: Object,
@@ -779,7 +791,16 @@ tf-graph-node-search {
         this.set('_' + e.model.item.type + 'NodesEmpty',
           this.get(e.model.item.type + 'Nodes').length === 0);
       },
+      preview: function() {
+        this._fetchScript().then(
+          result => {
+            this.conversionScript = result
+            this.$.script_dialog.open()
+          }
+        )
+      },
       convert: function () {
+        this.$.script_dialog.close()
         this._fetchRunConvert().then(
           result => {
             this.conversionResult = result
@@ -819,6 +840,20 @@ tf-graph-node-search {
         this._conversionResultTabSelectedIndex = 0;
         return this._requestManager.request(
           tf_backend.getRouter().pluginRoute('lite', '/convert'), {
+            data: JSON.stringify({
+              input_nodes: inputs,
+              output_nodes: outputs,
+              batch_size: this.batchSize,
+              checkpoint: this.selectedCheckpoint
+            })
+          });
+      },
+      _fetchScript() {
+        const inputs = this.inputNodes.map(x => x.value);
+        const outputs = this.outputNodes.map(x => x.value);
+        this._conversionResultTabSelectedIndex = 0;
+        return this._requestManager.request(
+          tf_backend.getRouter().pluginRoute('lite', '/script'), {
             data: JSON.stringify({
               input_nodes: inputs,
               output_nodes: outputs,
