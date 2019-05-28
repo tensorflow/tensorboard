@@ -153,6 +153,11 @@ Polymer({
         this.appendChild(this._meshViewer.getRenderer().domElement);
         this._meshViewerAttached = true;
       }
+    }).catch(function (error) {
+      if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
+        error = error || 'Response processing failed.';
+        throw error;
+      }
     });
   },
 
