@@ -55,7 +55,11 @@ Example response:
     {
       "scalars": {
         "enabled": true,
-        "es_module_path": "/data/plugin/scalars/plugins/main.js"
+        "es_module_path": null
+      },
+      "my_shiny_plugin": {
+        "enabled": true,
+        "es_module_path": "/data/plugin/my_shiny_plugin/main.js"
       }
     }
 

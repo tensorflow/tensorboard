@@ -40,14 +40,14 @@ class FakePlugin(base_plugin.TBPlugin):
 class FakeEntryPoint(pkg_resources.EntryPoint):
   """EntryPoint class that fake loads FakePlugin."""
 
-  @staticmethod
-  def create():
+  @classmethod
+  def create(cls):
     """Creates an instance of FakeEntryPoint.
 
     Returns:
       instance of FakeEntryPoint
     """
-    return FakeEntryPoint('foo', 'bar')
+    return cls('foo', 'bar')
 
   def load(self):
     """Returns FakePlugin instead of resolving module.
