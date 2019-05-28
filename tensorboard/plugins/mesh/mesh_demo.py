@@ -55,12 +55,12 @@ def run():
 
   # Read sample PLY file.
   vertices, colors, faces = demo_utils.read_ascii_ply(FLAGS.mesh_path)
-  
+
   # Add batch dimension.
   vertices = np.expand_dims(vertices, 0)
   faces = np.expand_dims(faces, 0)
   colors = np.expand_dims(colors, 0)
-  
+
   # Create placeholders for tensors representing the mesh.
   step = tf.placeholder(tf.int32, ())
   vertices_tensor = tf.placeholder(
@@ -81,7 +81,7 @@ def run():
   # Create summary writer and session.
   writer = tf.summary.FileWriter(FLAGS.logdir)
   sess = tf.Session()
-  
+
   for i in range(_MAX_STEPS):
     summary = sess.run(meshes_summary, feed_dict={
         vertices_tensor: vertices,

@@ -142,7 +142,7 @@ py_library(
 py_test(
     name = "demo_utils_test",
     size = "small",
-    srcs = ["demo_utils_test.py"],    
+    srcs = ["demo_utils_test.py"],
     data = [
         ":test_data",
     ],

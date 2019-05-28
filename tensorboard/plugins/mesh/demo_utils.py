@@ -64,7 +64,7 @@ def read_ascii_ply(filename):
     filename: path to a PLY file to read.
 
   Returns:
-    numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors and 
+    numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors and
     `[dim_1, 3]` array of faces of the mesh.
   """
   with tf.io.gfile.GFile(filename) as ply_file:
