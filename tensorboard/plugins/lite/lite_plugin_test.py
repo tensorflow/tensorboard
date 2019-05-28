@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Integration tests for the pr_curves plugin."""
+"""Integration tests for the lite plugin."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,39 +23,14 @@ import functools
 import shutil
 import os.path
 
-import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.lite import lite_backend
+from tensorboard.plugins.lite import lite_demo_model
 from tensorboard.plugins.lite import lite_plugin
 from tensorboard.plugins.lite import lite_plugin_loader
-from tensorboard.plugins.lite import lite_backend
-
-
-def _generate_run(logdir, run_name, write_graph=True):
-  x, y = np.ones((10, 10)), np.ones((10, 1))
-  val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
-
-  model = tf.keras.Sequential([
-      tf.keras.layers.Input((10,), name="model_input"),
-      tf.keras.layers.Dense(10, activation='relu'),
-      tf.keras.layers.Dense(1, activation='sigmoid')])
-  model.compile('adam', 'binary_crossentropy')
-
-  run_dir = os.path.join(logdir, run_name)
-  model.fit(
-      x,
-      y,
-      validation_data=(val_x, val_y),
-      batch_size=2,
-      epochs=1,
-      callbacks=[tf.keras.callbacks.TensorBoard(
-          log_dir=run_dir,
-          write_graph=write_graph)])
-  tf.keras.experimental.export_saved_model(model, os.path.join(logdir, 'exported_saved_model'))
-  return model
 
 
 class LiteBackendTest(tf.test.TestCase):
@@ -73,7 +48,10 @@ class LiteBackendTest(tf.test.TestCase):
 
   def test_get_saved_model_dirs(self):
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
-    model = _generate_run(logdir, "0", True)
+    run_logdir = os.path.join(logdir, "0")
+    model = lite_demo_model.generate_run(run_logdir)
+
+    tf.keras.experimental.export_saved_model(model, os.path.join(logdir, 'exported_saved_model'))
     lite_backend.safe_makedirs(os.path.join(logdir, '1'))
     lite_backend.safe_makedirs(os.path.join(logdir, '2', 'a'))
     tf.keras.experimental.export_saved_model(model, os.path.join(logdir, '1', 'saved'))
@@ -105,9 +83,10 @@ class LiteBackendTest(tf.test.TestCase):
       return  # Test conditionally.
 
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
-    model = _generate_run(logdir, "0", True)
+    run_logdir = os.path.join(logdir, "0")
+    saved_model_dir = os.path.join(logdir, "0", "exported_saved_model")
+    model = lite_demo_model.generate_run(logdir, saved_model_dir)
 
-    saved_model_dir = os.path.join(logdir, "exported_saved_model")
     tflite_file = os.path.join(self.get_temp_dir(), 'test.tflite')
     input_arrays = [i.op.name for i in model.inputs]
     output_arrays = [o.op.name for o in model.outputs]
@@ -119,7 +98,7 @@ class LiteBackendTest(tf.test.TestCase):
     self.assertTrue(stdout)
 
     # Failed case:
-    output_arrays = ["not_exited_tensor"]
+    output_arrays = ["non_exited_tensor"]
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
     success, stdout, stderr = lite_backend.execute(script, verbose=True)
     self.assertFalse(success)
@@ -156,7 +135,9 @@ class LitePluginTest(tf.test.TestCase):
   def setUp(self):
     super(LitePluginTest, self).setUp()
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
-    _generate_run(logdir, "0", True)
+    run_logdir = os.path.join(logdir, "0")
+    saved_model_dir = os.path.join(logdir, "0", "exported_saved_model")
+    lite_demo_model.generate_run(run_logdir, saved_model_dir)
 
     # Create a multiplexer for reading the data we just wrote.
     multiplexer = event_multiplexer.EventMultiplexer()

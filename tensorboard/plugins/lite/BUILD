@@ -40,13 +40,35 @@ py_test(
     srcs = ["lite_plugin_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":lite_demo_model",
         ":lite_plugin",
         ":lite_plugin_loader",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
+    ],
+)
+
+
+py_binary(
+    name = "lite_demo",
+    srcs = ["lite_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":lite_demo_model",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "lite_demo_model",
+    srcs = ["lite_demo_model.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )

@@ -618,7 +618,7 @@ tf-graph-node-search {
 </div>
 <paper-dialog id="script_dialog" with-backdrop>
   <h2>TF Lite Convert Script</h2>
-  <pre>{{conversionScript}}</pre>
+  <pre><code>{{conversionScript}}</code></pre>
   <div class="buttons">
     <paper-button on-click="convert">Convert to TF Lite model</paper-button>
   </div>
@@ -650,16 +650,14 @@ tf-graph-node-search {
             <template is="dom-if" if="[[_equals(item.type, 'code')]]">
               <h4 class="result-title">[[ item.title ]]</h4>
               <div class="result-code-field">
-                <pre class="result-code">
-                  [[ item.body ]]
-                </pre>
+                <pre><code>[[ item.body ]]</code></pre>
                 <a class="copy-button" on-click="copyContent" title="Click to copy the code"><iron-icon icon="content-copy"></iron-icon></a>
               </div>
             </template>
             <template is="dom-if" if="[[_equals(item.type, 'text')]]">
               <h4 class="result-title">[[ item.title ]]</h4>
               <div class="result-text">
-                [[ item.body ]]
+                <pre><code>[[ item.body ]]</code></pre>
               </div>
             </template>
           </template>
