@@ -48,7 +48,7 @@ still be rendered if the user explicitly requests this.
 Another property `es_module_path` is an optional one that describes a
 path to the main JavaScript plugin module that will be loaded onto an
 iframe. For "v1" plugins whose JavaScript source is incorporated into
-webfiles.zip, the field is empty.
+webfiles.zip, the field is null.
 
 Example response:
 
