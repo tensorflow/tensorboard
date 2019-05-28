@@ -24,16 +24,6 @@ py_library(
     ],
 )
 
-py_library(
-    name = "lite_plugin_loader",
-    srcs = ["lite_plugin_loader.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":lite_plugin",
-        "//tensorboard/plugins:base_plugin",
-    ],
-)
-
 py_test(
     name = "lite_plugin_test",
     size = "medium",  # tf integration test
@@ -47,6 +37,30 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "lite_plugin_loader",
+    srcs = ["lite_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":lite_plugin",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
+py_test(
+    name = "lite_plugin_loader_test",
+    size = "medium",  # tf integration test
+    srcs = ["lite_plugin_loader_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":lite_plugin",
+        ":lite_plugin_loader",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/plugins:base_plugin",
     ],
 )
 

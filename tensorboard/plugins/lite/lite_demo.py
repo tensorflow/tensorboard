@@ -40,15 +40,15 @@ def main(_):
   export_dir = os.path.join(logdir, run_name, "exported_saved_model")
   model = lite_demo_model.generate_run(run_logdir, export_dir)
 
-  input_array = [i.op.name for i in model.inputs]
-  output_array = [i.op.name for i in model.outputs]
+  input_arrays = [i.op.name for i in model.inputs]
+  output_arrays = [i.op.name for i in model.outputs]
   print("-------------------------------------")
   print("Generated model. Please run demo with command:")
   print("  tensorboard --logdir=\"%s\"" % logdir)
   print("")
   print("Then, convert to TFLite model with:")
-  print("  input_array=%s" % input_array)
-  print("  output_array=%s" % output_array)
+  print("  input_arrays=%s" % input_arrays)
+  print("  output_arrays=%s" % output_arrays)
   print("-------------------------------------")
 
 

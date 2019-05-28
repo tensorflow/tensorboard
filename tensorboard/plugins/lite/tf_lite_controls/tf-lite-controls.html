@@ -419,14 +419,10 @@ tf-graph-node-search {
   </div>
   <h2>Step 3</h2>
   <div class="control-holder">
-      <div class="title">Batch size: </div>
-      <paper-input type="number" min="1" auto-validate value="[[batchSize]]" error-message="Positive numbers only!" no-label-float>
-  </div>
-  <div class="control-holder">
-      <div class="title">Checkpoint: </div>
-      <paper-dropdown-menu label="Dinosaurs" no-label-float selected-item-label="{{selectedCheckpoint}}">
+      <div class="title">Saved Models: </div>
+      <paper-dropdown-menu label="Dinosaurs" no-label-float selected-item-label="{{selectedSavedModel}}">
         <paper-menu class="dropdown-content" selected="0" slot="dropdown-content">
-          <template is="dom-repeat" items="[[checkpoints]]">
+          <template is="dom-repeat" items="[[saved_models]]">
           <paper-item>[[item.value]]</paper-item>
           </template>
         </paper-menu>
@@ -697,10 +693,6 @@ tf-graph-node-search {
           type: Array,
           value: []
         },
-        batchSize: {
-          type: Number,
-          value: 1
-        },
         conversionScript: {
           type: String,
           value: ''
@@ -725,11 +717,11 @@ tf-graph-node-search {
           type: String,
           notify: true
         },
-        selectedCheckpoint: {
+        selectedSavedModel: {
           type: String,
           value: ''
         },
-        checkpoints: {
+        saved_models: {
           type: Array,
           value: []
         },
@@ -755,7 +747,7 @@ tf-graph-node-search {
         }
       },
       ready() {
-        this.getCheckpoints();
+        this.getSavedModels();
       },
       copyContent: function(e) {
         this._copyHtml(e.currentTarget.previousElementSibling);
@@ -806,9 +798,9 @@ tf-graph-node-search {
           }
         )
       },
-      getCheckpoints: function() {
-        this._fetchCheckpoints().then(result=> {
-          this.checkpoints = result.map(x => { return { value: x } });
+      getSavedModels: function() {
+        this._fetchSavedModels().then(result=> {
+          this.saved_models = result.map(x => { return { value: x } });
         });
       },
       changeSelectedNode: function(e) {
@@ -839,10 +831,9 @@ tf-graph-node-search {
         return this._requestManager.request(
           tf_backend.getRouter().pluginRoute('lite', '/convert'), {
             data: JSON.stringify({
-              input_nodes: inputs,
-              output_nodes: outputs,
-              batch_size: this.batchSize,
-              checkpoint: this.selectedCheckpoint
+              input_arrays: inputs,
+              output_arrays: outputs,
+              saved_model: this.selectedSavedModel
             })
           });
       },
@@ -853,16 +844,15 @@ tf-graph-node-search {
         return this._requestManager.request(
           tf_backend.getRouter().pluginRoute('lite', '/script'), {
             data: JSON.stringify({
-              input_nodes: inputs,
-              output_nodes: outputs,
-              batch_size: this.batchSize,
-              checkpoint: this.selectedCheckpoint
+              input_arrays: inputs,
+              output_arrays: outputs,
+              saved_model: this.selectedSavedModel
             })
           });
       },
-      _fetchCheckpoints() {
+      _fetchSavedModels() {
         return this._requestManager.request(
-          tf_backend.getRouter().pluginRoute('lite', '/checkpoints')
+          tf_backend.getRouter().pluginRoute('lite', '/list_saved_models')
         )
       },
       _showToast(text) {

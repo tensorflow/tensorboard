@@ -56,8 +56,8 @@ class LitePlugin(base_plugin.TBPlugin):
       A dictionary mapping URL path to route that handles it.
     """
     return {
-        '/supported_ops': self.supported_ops,
-        '/checkpoints': self.list_checkpoints,
+        '/list_supported_ops': self.list_supported_ops,
+        '/list_saved_models': self.list_saved_models,
         '/convert': self.convert,
         '/script': self.script
     }
@@ -73,8 +73,7 @@ class LitePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def script(self, request):
-    tf.compat.v1.logging.info('run_toco preview, request: %s', request)
-    graph_def_file = os.path.join(self._logdir, "graph.pbtxt")
+    tf.compat.v1.logging.info('run script preview, request: %s', request)
 
     tflite_output_dir = os.path.join(self._logdir, "tflite_output")
     lite_backend.safe_makedirs(tflite_output_dir)
@@ -85,16 +84,16 @@ class LitePlugin(base_plugin.TBPlugin):
 
     # Options has a format of:
     # {
-    #     "input_nodes": [],
-    #     "output_nodes": [],
+    #     "input_arrays": [],
+    #     "output_arrays": [],
     #     "batch_size": 1,
     #     "checkpoint": ""
     # }
     options = json.loads(request.form['data'])
 
-    saved_model_dir = os.path.join(self._logdir, options['checkpoint'] or "")
-    input_arrays = options['input_nodes'] or []
-    output_arrays = options['output_nodes'] or []
+    saved_model_dir = os.path.join(self._logdir, options['saved_model'] or "")
+    input_arrays = options['input_arrays'] or []
+    output_arrays = options['output_arrays'] or []
 
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
 
@@ -102,8 +101,7 @@ class LitePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def convert(self, request):
-    tf.compat.v1.logging.info('run_toco convert, request: %s', request)
-    graph_def_file = os.path.join(self._logdir, "graph.pbtxt")
+    tf.compat.v1.logging.info('run convert, request: %s', request)
 
     tflite_output_dir = os.path.join(self._logdir, "tflite_output")
     lite_backend.safe_makedirs(tflite_output_dir)
@@ -112,18 +110,11 @@ class LitePlugin(base_plugin.TBPlugin):
     tflite_file = os.path.join(tflite_output_dir, "model.tflite")
     script = ""
 
-    # Options has a format of:
-    # {
-    #     "input_nodes": [],
-    #     "output_nodes": [],
-    #     "batch_size": 1,
-    #     "checkpoint": ""
-    # }
     options = json.loads(request.form['data'])
 
-    saved_model_dir = os.path.join(self._logdir, options['checkpoint'] or "")
-    input_arrays = options['input_nodes'] or []
-    output_arrays = options['output_nodes'] or []
+    saved_model_dir = os.path.join(self._logdir, options['saved_model'] or "")
+    input_arrays = options['input_arrays'] or []
+    output_arrays = options['output_arrays'] or []
 
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
     success, stdout, stderr = lite_backend.execute(script, verbose=True)
@@ -209,13 +200,13 @@ class LitePlugin(base_plugin.TBPlugin):
     return http_util.Respond(request, json.dumps(result), 'application/json')
 
   @wrappers.Request.application
-  def list_checkpoints(self, request):
-    tf.compat.v1.logging.info('list_checkpoints, request: %s', request)
-    checkpoints = lite_backend.get_saved_model_dirs(self._logdir)
-    return http_util.Respond(request, json.dumps(checkpoints), 'application/json')
+  def list_saved_models(self, request):
+    tf.compat.v1.logging.info('list_saved_models, request: %s', request)
+    saved_models = lite_backend.get_saved_model_dirs(self._logdir)
+    return http_util.Respond(request, json.dumps(saved_models), 'application/json')
 
   @wrappers.Request.application
-  def supported_ops(self, request):
-    tf.compat.v1.logging.info('supported_ops, request: %s', request)
+  def list_supported_ops(self, request):
+    tf.compat.v1.logging.info('list_supported_ops, request: %s', request)
     supported_ops = lite_backend.get_potentially_supported_ops()
     return http_util.Respond(request, supported_ops, 'application/json')

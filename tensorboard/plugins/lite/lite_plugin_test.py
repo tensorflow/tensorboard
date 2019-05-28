@@ -19,12 +19,15 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import functools
-import shutil
-import os.path
+import json
+import os
 
 import tensorflow as tf
 
+from werkzeug import test as werkzeug_test
+from werkzeug import wrappers
+
+from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.lite import lite_backend
@@ -105,31 +108,6 @@ class LiteBackendTest(tf.test.TestCase):
     self.assertTrue(stderr)
 
 
-class LitePluginLoaderTest(tf.test.TestCase):
-
-  def setUp(self):
-    super(LitePluginLoaderTest, self).setUp()
-    multiplexer = event_multiplexer.EventMultiplexer()
-    self.context = base_plugin.TBContext(multiplexer=multiplexer)
-    # Keep state.
-    self.old_is_supported = lite_backend.is_supported
-
-  def tearDown(self):
-    # Resume state.
-    lite_backend.is_supported = self.old_is_supported
-
-  def test_load_if_supported(self):
-    lite_backend.is_supported = True
-    plugin = lite_plugin_loader.LitePluginLoader().load(self.context)
-    self.assertIsNotNone(plugin)
-    self.assertIsInstance(plugin, lite_plugin.LitePlugin)
-
-  def test_load_if_not_supported(self):
-    lite_backend.is_supported = False
-    plugin = lite_plugin_loader.LitePluginLoader().load(self.context)
-    self.assertIsNone(plugin)
-
-
 class LitePluginTest(tf.test.TestCase):
 
   def setUp(self):
@@ -137,18 +115,30 @@ class LitePluginTest(tf.test.TestCase):
     logdir = os.path.join(self.get_temp_dir(), 'logdir')
     run_logdir = os.path.join(logdir, "0")
     saved_model_dir = os.path.join(logdir, "0", "exported_saved_model")
-    lite_demo_model.generate_run(run_logdir, saved_model_dir)
+    model = lite_demo_model.generate_run(run_logdir, saved_model_dir)
+
+    self.input_arrays = [i.op.name for i in model.inputs]
+    self.output_arrays = [o.op.name for o in model.outputs]
 
     # Create a multiplexer for reading the data we just wrote.
     multiplexer = event_multiplexer.EventMultiplexer()
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
     context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+
     self.plugin = lite_plugin.LitePlugin(context)
+    wsgi_app = application.TensorBoardWSGIApp(
+        logdir, [self.plugin], multiplexer, reload_interval=-1, path_prefix='')
+    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+    multiplexer.Reload()
+    self.routes = self.plugin.get_plugin_apps()
 
+  def _DeserializeResponse(self, byte_content):
+    return json.loads(byte_content.decode('utf-8'))
 
-  def testPluginIsNotActive(self):
-    """Tests that the plugin is inactive when no relevant data exists."""
+  def test_plugin_is_not_active(self):
+    if not lite_backend.is_supported:
+      return  # Test conditionally.
     empty_logdir = os.path.join(self.get_temp_dir(), 'empty_logdir')
     multiplexer = event_multiplexer.EventMultiplexer()
     multiplexer.AddRunsFromDirectory(empty_logdir)
@@ -158,11 +148,61 @@ class LitePluginTest(tf.test.TestCase):
     plugin = lite_plugin.LitePlugin(context)
     self.assertFalse(plugin.is_active())
 
-  def testPluginIsActive(self):
-    """Tests that the plugin is active when relevant data exists."""
+  def test_plugin_is_active(self):
+    if not lite_backend.is_supported:
+      return  # Test conditionally.
     # The set up for this test generates relevant data.
     self.assertTrue(self.plugin.is_active())
+    
+  def test_routes_provided(self):
+    self.assertIsInstance(self.routes['/list_supported_ops'], collections.Callable)
+    self.assertIsInstance(self.routes['/list_saved_models'], collections.Callable)
+    self.assertIsInstance(self.routes['/convert'], collections.Callable)
+    self.assertIsInstance(self.routes['/script'], collections.Callable)
 
+  def test_convert_pass(self):
+    if not lite_backend.is_supported:
+      return  # Test conditionally.
+    json_data = json.dumps({
+      'input_arrays': self.input_arrays,
+      'output_arrays': self.output_arrays,
+      'saved_model': os.path.join('0', 'exported_saved_model'),
+    })
+    response = self.server.post(
+      '/data/plugin/lite/convert', data={'data': json_data})
+    self.assertEqual(200, response.status_code)
+    result = self._DeserializeResponse(response.get_data())
+    import pprint
+    pprint.pprint(result)
+    self.assertEqual(result.get('result'), 'success')
+    self.assertIsNotNone(result.get('tabs'))
+
+  def test_convert_failed(self):
+    if not lite_backend.is_supported:
+      return  # Test conditionally.
+    json_data = json.dumps({
+      'input_arrays': self.input_arrays,
+      'output_arrays': self.output_arrays,
+      'saved_model': 'wrong_saved_model',
+    })
+    response = self.server.post(
+      '/data/plugin/lite/convert', data={'data': json_data})
+    self.assertEqual(200, response.status_code)
+    result = self._DeserializeResponse(response.get_data())
+    self.assertEqual(result.get('result'), 'failed')
+    self.assertIsNotNone(result.get('tabs'))
+
+    json_data = json.dumps({
+      'input_arrays': ['wrong_input'],
+      'output_arrays': self.output_arrays,
+      'saved_model': 'exported_saved_model',
+    })
+    response = self.server.post(
+      '/data/plugin/lite/convert', data={'data': json_data})
+    self.assertEqual(200, response.status_code)
+    result = self._DeserializeResponse(response.get_data())
+    self.assertEqual(result.get('result'), 'failed')
+    self.assertIsNotNone(result.get('tabs'))
 
 if __name__ == '__main__':
   tf.test.main()
