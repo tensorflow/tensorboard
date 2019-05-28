@@ -768,8 +768,8 @@ def run_inference(examples, serving_bundle):
     attributions = None
     # If the custom prediction function returned a dict, then parse out the
     # prediction scores and the attributions. If it is just a list, then the
-    # results are just the prediction results without attributions.
-    if not isinstance(values, list):
+    # results are the prediction results without attributions.
+    if isinstance(values, dict):
       attributions = values['attributions']
       values = values['predictions']
     return (common_utils.convert_prediction_values(values, serving_bundle),
