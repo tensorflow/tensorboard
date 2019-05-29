@@ -730,18 +730,19 @@ limitations under the License.
           return;
         }
         const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
+        const useDataSelector = tf_globals.getEnableDataSelector() && dashboard.useDataSelector;
         // Use .children, not .childNodes, to avoid counting comment nodes.
         if (container.children.length === 0) {
           const component = document.createElement(dashboard.elementName);
           component.id = 'dashboard';  // used in `_selectedDashboardComponent`
-          if (dashboard.useDataSelector) {
+          if (useDataSelector) {
             this.cancelDebouncer('updateDataSelection');
             component.dataSelection = this._dataSelection;
           }
           container.appendChild(component);
         }
         this.set('_isReloadDisabled', dashboard.isReloadDisabled);
-        this.set('_isDataSelectorEnabled', dashboard.useDataSelector);
+        this.set('_isDataSelectorEnabled', useDataSelector);
       },
 
       /**
@@ -777,7 +778,7 @@ limitations under the License.
 
         const selectedDashboard = this._selectedDashboard;
         const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
-        if (dashboard.useDataSelector) {
+        if (tf_globals.getEnableDataSelector() && dashboard.useDataSelector) {
           this.debounce('updateDataSelection', () => {
             component.dataSelection = this._dataSelection;
           }, DATA_SELECTION_CHANGE_DEBOUNCE_MS);

@@ -271,7 +271,7 @@ limitations under the License.
 
         useDataSelector: {
           type: Boolean,
-          value: USE_DATA_SELECTOR,
+          computed: '_computeUseDataSelector(dataSelection)',
         },
       },
       behaviors: [
@@ -289,6 +289,9 @@ limitations under the License.
           '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
+      },
+      _computeUseDataSelector(dataSelection) {
+        return dataSelection != null;
       },
 
       _getCategoryKey(category) {
@@ -363,7 +366,7 @@ limitations under the License.
       _updateCategories(
           runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
         let categories;
-        const usesDataSelection = this.useDataSelector && this.dataSelection;
+        const usesDataSelection = this.dataSelection != null;
         if (usesDataSelection && this.dataSelection.selections.length == 0) {
           categories = [];
         } else if (usesDataSelection &&
@@ -425,7 +428,7 @@ limitations under the License.
     tf_tensorboard.registerDashboard({
       plugin: PLUGIN_NAME,
       elementName: 'tf-scalar-dashboard',
-      useDataSelector: USE_DATA_SELECTOR,
+      useDataSelector: true,
     });
 
   </script>
