@@ -182,7 +182,6 @@ class ApplicationTest(tb_test.TestCase):
                 'remove_dom': False,
                 'tab_name': 'foo',
                 'disable_reload': False,
-                'use_data_selector': False,
             },
             'bar': {
                 'enabled': False,
@@ -193,7 +192,6 @@ class ApplicationTest(tb_test.TestCase):
                 'tab_name': 'bar',
                 'remove_dom': False,
                 'disable_reload': False,
-                'use_data_selector': False,
             },
             'baz': {
                 'enabled': True,
@@ -204,7 +202,6 @@ class ApplicationTest(tb_test.TestCase):
                 'tab_name': 'baz',
                 'remove_dom': False,
                 'disable_reload': False,
-                'use_data_selector': False,
             },
         }
     )
@@ -269,7 +266,6 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
                 'remove_dom': False,
                 'tab_name': 'foo',
                 'disable_reload': False,
-                'use_data_selector': False,
             },
             'bar': {
                 'enabled': False,
@@ -280,7 +276,6 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
                 'tab_name': 'bar',
                 'remove_dom': False,
                 'disable_reload': False,
-                'use_data_selector': False,
             },
             'baz': {
                 'enabled': True,
@@ -291,7 +286,6 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
                 'tab_name': 'baz',
                 'remove_dom': False,
                 'disable_reload': False,
-                'use_data_selector': False,
             },
         }
     )
