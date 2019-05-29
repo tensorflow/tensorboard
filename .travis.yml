@@ -81,6 +81,15 @@ before_script:
   - tensorboard/tools/license_test.sh
   # Make sure that IPython notebooks have valid Markdown.
   - tensorboard/tools/docs_list_format_test.sh
+  - |
+    # Specify subset of tests to run depending on TF installation config.
+    # We condition the value of --test_tag_filters so that we can run the
+    # bazel test command unconditionally which produces nicer log output.
+    if [ -z "${TF_VERSION_ID}" ]; then
+      test_tag_filters=support_notf
+    else
+      test_tag_filters=
+    fi
   - elapsed "before_script (done)"
 
 # Commands in this section should only fail if it's our fault. Travis will
@@ -90,13 +99,7 @@ script:
   # Note: bazel test implies fetch+build, but this gives us timing.
   - elapsed && bazel fetch //tensorboard/...
   - elapsed && bazel build //tensorboard/...
-  - |
-    # Run tests (only a restricted subset if TensorFlow is not installed).
-    elapsed && if [ -n "${TF_VERSION_ID}" ]; then
-      bazel test //tensorboard/...
-    else
-      bazel test //tensorboard/... --test_tag_filters=support_notf
-    fi
+  - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
   - elapsed && bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
   # Run manual S3 test
   - elapsed && bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
