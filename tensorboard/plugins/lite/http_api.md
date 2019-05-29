@@ -3,7 +3,7 @@
 The plugin name is `lite`, so all its routes are under
 `/data/plugin/lite`.
 
-## `/data/plugin/lite/tflite_supported_ops`
+## `/data/plugin/lite/list_supported_ops`
 
 Retrieves a JSON string array of tflite supported ops.
 Here is an example.
@@ -33,51 +33,64 @@ Here is an example.
 ]
 ```
 
-## `/data/plugin/lite/checkpoints`
+## `/data/plugin/lite/list_saved_models`
 
-Retrieves a JSON string array of current model checkpoints.
+Retrieves a JSON string array of current saved model directories.
 Here is an example.
 
 ```json
 [
-  "model.ckpt-1",
-  "model.ckpt-400",
-  "model.ckpt-800",
-  "model.ckpt-401"
+  "exported_saved_model_1",
+  "exported_saved_model_2",
+  ...
 ]
 ```
 
-Used by the Lite Controls to render checkpoint select.
+Each directory contains a valid TF saved model.
 
-## `/data/plugin/lite/run_toco`
+Used by the Lite Controls to render a list of saved model.
 
-Posts parameters to backend to build a tflite model, and return the result of
-building details.
+## `/data/plugin/lite/script`
+
+Posts parameters to backend, and returns model conversion script.
 
 The request body contains three properties:
-  * input_nodes: string array, input nodes name
-  * output_nodes: string array, output nodes name
-  * batch_size: integer, size of batch
-  * checkpoint: string, the selected checkpoint name
-
-The response is a json object of toco execution result, it contains two major
-properties: `result` and `tabs`, `result` is a string that indicates whether
-the execution is successful or not. `tabs` is a list of data to show in the
-result dialog.
-
+  * input_arrays: string array, a list of input node names
+  * output_arrays: string array, a list output nodes names
+  * saved_model: string, the selected saved model directory
 Here is an example.
 
 request:
 
 ```json
 {
-    "input_nodes":[“input”, “...”],
-    "output_nodes":[”MobilenetV1/Predictions/Reshape_1“, “...”],
-    "batch_size":1,
-    "checkpoint": "checkpoint_name"
+    "input_arrays":["input", "..."],
+    "output_arrays":["MobilenetV1/Predictions/Reshape_1", "..."],
+    "saved_model": "saved_model_dir"
 }
 
 ```
+
+response:
+```
+# Python script.
+
+import tensorflow as tf
+...
+```
+which contains the generated script for model conversion.
+
+
+## `/data/plugin/lite/convert`
+
+Posts parameters to backend to build a TF Lite model, and returns the result.
+
+The request body is same as `/data/plugin/lite/script`.
+
+The response is a json object of TF Lite Converter result, it contains two major
+properties: `result` and `tabs`, `result` is a string that indicates whether
+the execution is successful or not. `tabs` is a list of data to show in the
+result dialog.
 
 response:
 

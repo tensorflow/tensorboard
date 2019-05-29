@@ -30,6 +30,7 @@ OUTPUT_NAME = 'prob'
 
 
 def generate_run(logdir, export_dir=None):
+  """Generates a test model in logdir, and (optionally) exports saved model."""
   x, y = np.ones((10,) + INPUT_SHAPE), np.ones((10, 1))
   val_x, val_y = np.ones((4,) + INPUT_SHAPE), np.ones((4, 1))
 
