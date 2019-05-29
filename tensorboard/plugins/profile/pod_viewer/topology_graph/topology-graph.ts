@@ -356,8 +356,8 @@ Polymer({
 
             // Update the tooltip position and value
             d3.select(parent.$.tooltip)
-                .style('left', d3.select(this).attr('x') + 'px')
-                .style('top', d3.select(this).attr('y') + 'px')
+                .style('left', (~~d3.select(this).attr('x') + 50) + 'px')
+                .style('top', (~~d3.select(this).attr('y') + 200) + 'px')
                 .select('#value')
                 .text(parent._getToolTipText(d));
             d3.select(parent.$.tooltip).classed('hidden', false);
