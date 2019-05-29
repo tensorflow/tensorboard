@@ -77,7 +77,7 @@ class LitePlugin(base_plugin.TBPlugin):
   def _tflite_output_file(self):
     return os.path.join(self._tflite_output_dir, "model.tflite")
 
-  def _parse_to_get_script(self, request, tflite_file):
+  def _generate_script(self, request, tflite_file):
     script = ""
     options = json.loads(request.form['data'])
 
@@ -90,13 +90,13 @@ class LitePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def script(self, request):
     tflite_file = self._tflite_output_file
-    script = self._parse_to_get_script(request, tflite_file)
+    script = self._generate_script(request, tflite_file)
     return http_util.Respond(request, json.dumps(script), 'application/json')
 
   @wrappers.Request.application
   def convert(self, request):
     tflite_file = self._tflite_output_file
-    script = self._parse_to_get_script(request, tflite_file)
+    script = self._generate_script(request, tflite_file)
     lite_backend.safe_makedirs(self._tflite_output_dir)
 
     success, stdout, stderr = lite_backend.execute(script)
