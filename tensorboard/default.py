@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from __future__ import print_function
 
 import logging
 import os
+
 import pkg_resources
 
 from tensorboard.compat import tf
@@ -108,4 +109,3 @@ def get_dynamic_plugins():
       entry_point.load()
       for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins')
   ]
-

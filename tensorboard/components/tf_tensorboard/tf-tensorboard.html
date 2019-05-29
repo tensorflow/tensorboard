@@ -817,8 +817,11 @@ limitations under the License.
         return this._dashboardData
             .map((d) => d.plugin)
             .filter((dashboardName) => {
-                return this._pluginsListing[dashboardName] &&
-                    this._pluginsListing[dashboardName].enabled;
+                const maybeMetadata = this._pluginsListing[dashboardName];
+                if (typeof maybeMetadata === 'boolean') {
+                  return maybeMetadata;
+                }
+                return this._pluginsListing[dashboardName].enabled;
             });
       },
 
