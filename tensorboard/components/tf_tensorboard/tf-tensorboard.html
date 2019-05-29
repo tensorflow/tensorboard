@@ -465,17 +465,18 @@ limitations under the License.
           value: _.values(tf_tensorboard.dashboardRegistry),
         },
 
+        _pluginsListing: {
+          type: Object,
+          value: () => ({}),
+        },
+
         /**
-         * The set of currently active dashboards. `null` if not yet fetched.
-         *
-         * TODO(@wchargin): Consider templating in an initial value for
-         * this property.
-         *
+         * The set of currently active dashboards.
          * @type {Array<string>?}
          */
         _activeDashboards: {
           type: Array,
-          value: null,
+          computed: '_computeActiveDashboard(_dashboardData, _pluginsListing)'
         },
 
         /** @type {tf_tensorboard.ActiveDashboardsLoadState} */
@@ -812,15 +813,29 @@ limitations under the License.
         this._lastReloadTime = new Date().toString();
       },
 
-      _fetchActiveDashboards() {
+      _computeActiveDashboard() {
+        return this._dashboardData
+            .map((d) => d.plugin)
+            .filter((dashboardName) => {
+                // TODO(stephanwlee): Remove boolean code path when releasing
+                // 2.0.
+                // PluginsListing can be an object whose key is name of the
+                // plugin and value is a boolean indicating whether if it is
+                // enabled. This is deprecated but we will maintain backwards
+                // compatibility for some time.
+                const maybeMetadata = this._pluginsListing[dashboardName];
+                if (typeof maybeMetadata === 'boolean') return maybeMetadata;
+                return maybeMetadata && maybeMetadata.enabled;
+            });
+      },
+
+      _fetchPluginsListing() {
         this._canceller.cancelAll();
-        const updateActiveDashboards = this._canceller.cancellable(result => {
+        const updatePluginsListing = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
-          const activePlugins = result.value;
-          this._activeDashboards = this._dashboardData.map(
-              d => d.plugin).filter(p => activePlugins[p]);
+          this._pluginsListing = result.value;
           this._activeDashboardsLoadState = tf_tensorboard.ActiveDashboardsLoadState.LOADED;
         });
         const onFailure = () => {
@@ -834,7 +849,7 @@ limitations under the License.
         };
         return this._requestManager
           .request(tf_backend.getRouter().pluginsListing())
-          .then(updateActiveDashboards, onFailure);
+          .then(updatePluginsListing, onFailure);
       },
 
       _computeActiveDashboardsNotLoaded(state) {
@@ -878,7 +893,7 @@ limitations under the License.
       _reloadData() {
         this._refreshing = true;
         return Promise.all([
-          this._fetchActiveDashboards(),
+          this._fetchPluginsListing(),
           tf_backend.environmentStore.refresh(),
           tf_backend.runsStore.refresh(),
           tf_backend.experimentsStore.refresh(),

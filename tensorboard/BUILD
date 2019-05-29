@@ -171,6 +171,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin_loader",
@@ -189,6 +190,21 @@ py_library(
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
+    ],
+)
+
+py_test(
+    name = "default_test",
+    size = "small",
+    srcs = ["default_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":default",
+        ":test",
+        "//tensorboard:expect_pkg_resources_installed",
+        "//tensorboard/plugins:base_plugin",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -269,6 +285,14 @@ py_library(
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
     # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_pkg_resources_installed",
+    # This is a dummy rule used as a pkg-resources dependency in open-source.
+    # We expect pkg-resources to already be installed on the system, e.g., via
+    # `pip install setuptools`.
     visibility = ["//visibility:public"],
 )
 
