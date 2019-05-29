@@ -24,7 +24,9 @@ env:
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
+  # Reuse the pip cache directory across build machines.
   pip: true
+  # Cache directories for Bazel. See ci/bazelrc for details.
   directories:
     - $HOME/.cache/tb-bazel-repo
     - $HOME/.cache/tb-bazel-disk
@@ -35,7 +37,7 @@ cache:
 # If inline scripts get too long, Travis surprisingly prints them twice.
 
 before_install:
-  - elapsed() { TZ=UTC printf "Time %(%T)T %s\n" "$SECONDS" "$@"; }
+  - elapsed() { TZ=UTC printf "Time %(%T)T %s\n" "$SECONDS" "$1"; }
   - elapsed "before_install"
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
@@ -49,7 +51,7 @@ install:
   - pip install yamllint==1.5.0
   # TensorBoard deps.
   - pip install futures==3.1.1
-  - pip install grpcio==1.0
+  - pip install grpcio==1.6.3
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
   - |

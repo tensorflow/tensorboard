@@ -24,7 +24,7 @@ die() {
 }
 
 if [ "$#" -ne 3 ]; then
-  die "Usage: ${0} <version> <sha256sum> <destination-file>"
+  die "Usage: $0 <version> <sha256sum> <destination-file>"
 fi
 
 version="$1"
@@ -33,7 +33,7 @@ dest="$3"
 
 temp_dest="$(mktemp)"
 
-mirror_url="https://mirror.bazel.build/github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
+mirror_url="http://mirror.tensorflow.org/github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
 github_url="https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
 
 for url in "${mirror_url}" "${github_url}"; do
