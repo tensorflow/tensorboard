@@ -80,6 +80,7 @@ class FakePlugin(base_plugin.TBPlugin):
                plugin_name,
                is_active_value,
                routes_mapping,
+               es_module_path_value=None,
                construction_callback=None):
     """Constructs a fake plugin.
 
@@ -90,12 +91,15 @@ class FakePlugin(base_plugin.TBPlugin):
       is_active_value: Whether the plugin is active.
       routes_mapping: A dictionary mapping from route (string URL path) to the
         method called when a user issues a request to that route.
+      es_module_path_value: An optional string value that indicates a frontend
+        module entry to the plugin. Must be one of the keys of routes_mapping.
       construction_callback: An optional callback called when the plugin is
         constructed. The callback is passed the TBContext.
     """
     self.plugin_name = plugin_name
     self._is_active_value = is_active_value
     self._routes_mapping = routes_mapping
+    self._es_module_path_value = es_module_path_value
 
     if construction_callback:
       construction_callback(context)
@@ -116,6 +120,15 @@ class FakePlugin(base_plugin.TBPlugin):
     """
     return self._is_active_value
 
+  def es_module_path(self):
+    """Returns a path to plugin frontend entry.
+
+    Returns:
+      A string that corresponds to a key of routes_mapping. For non-dynamic
+      plugins, it returns None.
+    """
+    return self._es_module_path_value
+
 
 class ApplicationTest(tb_test.TestCase):
   def setUp(self):
@@ -124,6 +137,15 @@ class ApplicationTest(tb_test.TestCase):
             None, plugin_name='foo', is_active_value=True, routes_mapping={}),
         FakePlugin(
             None, plugin_name='bar', is_active_value=False, routes_mapping={}),
+        FakePlugin(
+            None,
+            plugin_name='baz',
+            is_active_value=True,
+            routes_mapping={
+                '/esmodule': lambda req: None,
+            },
+            es_module_path_value='/esmodule'
+        ),
     ]
     app = application.TensorBoardWSGI(plugins)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
@@ -146,8 +168,23 @@ class ApplicationTest(tb_test.TestCase):
   def testPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
     parsed_object = self._get_json('/data/plugins_listing')
-    # Plugin foo is active. Plugin bar is not.
-    self.assertEqual(parsed_object, {'foo': True, 'bar': False})
+    self.assertEqual(
+        parsed_object,
+        {
+            'foo': {
+                'enabled': True,
+                'es_module_path': None,
+            },
+            'bar': {
+                'enabled': False,
+                'es_module_path': None,
+            },
+            'baz': {
+                'enabled': True,
+                'es_module_path': '/data/plugin/baz/esmodule',
+            },
+        }
+    )
 
 
 class ApplicationBaseUrlTest(tb_test.TestCase):
@@ -158,6 +195,15 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
             None, plugin_name='foo', is_active_value=True, routes_mapping={}),
         FakePlugin(
             None, plugin_name='bar', is_active_value=False, routes_mapping={}),
+        FakePlugin(
+            None,
+            plugin_name='baz',
+            is_active_value=True,
+            routes_mapping={
+                '/esmodule': lambda req: None,
+            },
+            es_module_path_value='/esmodule'
+        ),
     ]
     app = application.TensorBoardWSGI(plugins, path_prefix=self.path_prefix)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
@@ -186,8 +232,23 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
   def testPluginsListing(self):
     """Test the format of the data/plugins_listing endpoint."""
     parsed_object = self._get_json(self.path_prefix + '/data/plugins_listing')
-    # Plugin foo is active. Plugin bar is not.
-    self.assertEqual(parsed_object, {'foo': True, 'bar': False})
+    self.assertEqual(
+        parsed_object,
+        {
+            'foo': {
+                'enabled': True,
+                'es_module_path': None,
+            },
+            'bar': {
+                'enabled': False,
+                'es_module_path': None,
+            },
+            'baz': {
+                'enabled': True,
+                'es_module_path': '/test/data/plugin/baz/esmodule',
+            },
+        }
+    )
 
 
 class ApplicationPluginNameTest(tb_test.TestCase):

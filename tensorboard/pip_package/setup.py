@@ -30,6 +30,7 @@ REQUIRED_PACKAGES = [
     'markdown >= 2.6.8',
     'numpy >= 1.12.0',
     'protobuf >= 3.6.0',
+    'setuptools >= 41.0.0',
     'six >= 1.10.0',
     'werkzeug >= 0.11.15',
     # python3 specifically requires wheel 0.26
