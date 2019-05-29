@@ -16,14 +16,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
-import tensorflow as tf
-import six
 import json
-import subprocess
 import os
+
+import six
 from werkzeug import wrappers
-import traceback
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
@@ -64,61 +61,46 @@ class LitePlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
+    if not lite_backend.is_supported:
+      return False
     if not self._multiplexer:
       return False
     # Should contains some runs.
     run_names = [name for (name, data) in self._multiplexer.Runs().items() if data.get(pec.GRAPH)]
     return any(run_names)
 
+  @property
+  def _tflite_output_dir(self):
+    return os.path.join(self._logdir, "tflite_output")
 
-  @wrappers.Request.application
-  def script(self, request):
-    tf.compat.v1.logging.info('run script preview, request: %s', request)
+  @property
+  def _tflite_output_file(self):
+    return os.path.join(self._tflite_output_dir, "model.tflite")
 
-    tflite_output_dir = os.path.join(self._logdir, "tflite_output")
-    lite_backend.safe_makedirs(tflite_output_dir)
-
-    result = {}
-    tflite_file = os.path.join(tflite_output_dir, "model.tflite")
+  def _parse_to_get_script(self, request, tflite_file):
     script = ""
-
-    # Options has a format of:
-    # {
-    #     "input_arrays": [],
-    #     "output_arrays": [],
-    #     "batch_size": 1,
-    #     "checkpoint": ""
-    # }
     options = json.loads(request.form['data'])
 
     saved_model_dir = os.path.join(self._logdir, options['saved_model'] or "")
     input_arrays = options['input_arrays'] or []
     output_arrays = options['output_arrays'] or []
-
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
+    return script
 
+  @wrappers.Request.application
+  def script(self, request):
+    tflite_file = self._tflite_output_file
+    script = self._parse_to_get_script(request, tflite_file)
     return http_util.Respond(request, json.dumps(script), 'application/json')
 
   @wrappers.Request.application
   def convert(self, request):
-    tf.compat.v1.logging.info('run convert, request: %s', request)
+    tflite_file = self._tflite_output_file
+    script = self._parse_to_get_script(request, tflite_file)
+    lite_backend.safe_makedirs(self._tflite_output_dir)
 
-    tflite_output_dir = os.path.join(self._logdir, "tflite_output")
-    lite_backend.safe_makedirs(tflite_output_dir)
-
+    success, stdout, stderr = lite_backend.execute(script)
     result = {}
-    tflite_file = os.path.join(tflite_output_dir, "model.tflite")
-    script = ""
-
-    options = json.loads(request.form['data'])
-
-    saved_model_dir = os.path.join(self._logdir, options['saved_model'] or "")
-    input_arrays = options['input_arrays'] or []
-    output_arrays = options['output_arrays'] or []
-
-    script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)
-    success, stdout, stderr = lite_backend.execute(script, verbose=True)
-
     if success:
       result['result'] = 'success'
       result['tabs'] = [
@@ -145,8 +127,7 @@ class LitePlugin(base_plugin.TBPlugin):
         }
       ]
     else:
-      e = lite_backend.ConvertError(stderr)
-      error_info = lite_backend.get_exception_info(e)
+      suggestion, tips_link = lite_backend.get_suggestion(stderr)
 
       result['result'] = 'failed'
       result['tabs'] = [
@@ -156,57 +137,44 @@ class LitePlugin(base_plugin.TBPlugin):
             {
               'type': 'code',
               'title': 'error',
-              'body': '%s: %s' % (error_info['type'], error_info['error'])
+              'body': '%s' % stderr
             },
           ]
         },
-        {
-          'name': 'stack trace',
-          'content': [
-            {
-              'type': 'code',
-              'body': error_info['stack_trace']
-            }
-          ]
-        }
       ]
 
-      if error_info['suggestion'] is not None:
+      if suggestion:
         result['tabs'][0]['content'].append({
-            'type': 'text',
-            'title': 'Suggestion',
-            'body': '%s' % error_info['suggestion']
-          })
-
-      if script is not None:
-        result['tabs'].append({
-          "name": "command",
-          "content": [
-            {
-              "type": "code",
-              "body": script
-            }
-          ]
+          'type': 'text',
+          'title': 'Suggestion',
+          'body': '%s' % suggestion
         })
 
-      issue_url = lite_backend.ISSUE_LINK
-      if issue_url in error_info['error']:
+      result['tabs'].append({
+        "name": "command",
+        "content": [
+          {
+            "type": "code",
+            "body": script
+          }
+        ]
+      })
+
+      if tips_link:
         result['addons'] = [{
           'type': 'link',
           'title': 'Create a github issue',
-          'body': issue_url
+          'body': tips_link
         }]
 
     return http_util.Respond(request, json.dumps(result), 'application/json')
 
   @wrappers.Request.application
   def list_saved_models(self, request):
-    tf.compat.v1.logging.info('list_saved_models, request: %s', request)
     saved_models = lite_backend.get_saved_model_dirs(self._logdir)
     return http_util.Respond(request, json.dumps(saved_models), 'application/json')
 
   @wrappers.Request.application
   def list_supported_ops(self, request):
-    tf.compat.v1.logging.info('list_supported_ops, request: %s', request)
     supported_ops = lite_backend.get_potentially_supported_ops()
     return http_util.Respond(request, supported_ops, 'application/json')
