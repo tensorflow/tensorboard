@@ -43,7 +43,7 @@ check_urls_resolve() {
     check_cmd='curl -sfL "$1" >/dev/null || printf "%s\n" "$1"'
     # shellcheck disable=SC2016
     git grep -Pho '(?<=")https?://mirror\.tensorflow\.org/[^"]*' \
-        | grep -vF '${BAZEL}' \
+        | grep -vF '${version}' \
         | sort \
         | uniq \
         | xargs -n 1 -P 32 -- sh -c "${check_cmd}" unused \
