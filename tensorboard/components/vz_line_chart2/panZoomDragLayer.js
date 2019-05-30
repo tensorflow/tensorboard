@@ -37,7 +37,8 @@ var vz_line_chart2;
          * When not pressing alt-key, it behaves like DragZoomLayer -- dragging a
          * region zooms the area under the gray box and double clicking resets the
          * zoom. When pressing alt-key, it lets user pan around while having mousedown
-         * on the chart and let user zoom-in/out of cursor when scroll.
+         * on the chart and let user zoom-in/out of cursor when scroll with alt key
+         * pressed.
          */
         function PanZoomDragLayer(xScale, yScale, unzoomMethod) {
             var _this = _super.call(this) || this;
@@ -48,6 +49,7 @@ var vz_line_chart2;
             _this.panZoom.dragInteraction().mouseFilter(function (event) {
                 return PanZoomDragLayer.isPanKey(event) && event.button === 0;
             });
+            _this.panZoom.wheelFilter(function (event) { return event.altKey; });
             _this.panZoom.attachTo(_this);
             _this.dragZoomLayer = new vz_line_chart.DragZoomLayer(xScale, yScale, unzoomMethod);
             _this.dragZoomLayer.dragInteraction().mouseFilter(function (event) {
