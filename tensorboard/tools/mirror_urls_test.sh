@@ -42,8 +42,13 @@ check_urls_resolve() {
     # shellcheck disable=SC2016
     check_cmd='curl -sfL "$1" >/dev/null || printf "%s\n" "$1"'
     # shellcheck disable=SC2016
-    git grep -Pho '(?<=")https?://mirror\.tensorflow\.org/[^"]*' \
-        | grep -vF '${version}' \
+    exclude='${version}'  # as in `ci/download_bazel.sh`
+    # We use `git-grep` to efficiently get an initial result set, then
+    # filter it down with GNU `grep` separately, because `git-grep` only
+    # learned `-o` in Git v2.19; Travis uses v2.15.1.
+    git grep -Ph '(?<=")https?://mirror\.tensorflow\.org/[^"]*' \
+        | grep -o 'https\?://mirror\.tensorflow\.org/[^"]*' \
+        | grep -vF -- "${exclude}" \
         | sort \
         | uniq \
         | xargs -n 1 -P 32 -- sh -c "${check_cmd}" unused \
