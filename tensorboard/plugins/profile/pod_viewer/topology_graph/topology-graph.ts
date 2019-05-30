@@ -29,6 +29,8 @@ const HOST_TO_HOST_MARGIN = 10;
 const HOST_Y_STRIDE = 2;
 const NODES_PER_CHIP = 2;
 
+const TOOLTIP_HORIZONTAL_MARGIN = 5;
+
 const TRANSITION_DURATION = 1000;
 
 interface Position {
@@ -354,10 +356,19 @@ Polymer({
             // highlight text
             d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
 
+            const tpuRect = this.getBoundingClientRect();
+            const containerRect = parent.$.container.getBoundingClientRect();
+            // Tooltip should appear to right of the TPU rect.
+            const x = tpuRect.x + tpuRect.width + TOOLTIP_HORIZONTAL_MARGIN;
+            const y = tpuRect.y;
+            // Tooltip should position w.r.t. the container.
+            const relativeX = x - containerRect.x;
+            const relativeY = y - containerRect.y;
+
             // Update the tooltip position and value
             d3.select(parent.$.tooltip)
-                .style('left', d3.event.pageX + 10 + 'px')
-                .style('top', d3.event.pageY - 10 + 'px')
+                .style('left', relativeX + 'px')
+                .style('top', relativeY + 'px')
                 .select('#value')
                 .text(parent._getToolTipText(d));
             d3.select(parent.$.tooltip).classed('hidden', false);
@@ -378,7 +389,7 @@ Polymer({
       return;
     }
     let links = svg.select('.link').selectAll('path').data(linkData);
-    
+
     // Draw a link from each srcCoreId to each dstCoreId,
     // with an arrow from defs attached.
     links.enter().append('svg:path').merge(links)
