@@ -173,15 +173,30 @@ class ApplicationTest(tb_test.TestCase):
         {
             'foo': {
                 'enabled': True,
-                'es_module_path': None,
+                'loading_mechanism': {'type': 'NONE'},
+                'remove_dom': False,
+                'tab_name': 'foo',
+                'disable_reload': False,
+                'use_data_selector': False,
             },
             'bar': {
                 'enabled': False,
-                'es_module_path': None,
+                'loading_mechanism': {'type': 'NONE'},
+                'tab_name': 'bar',
+                'remove_dom': False,
+                'disable_reload': False,
+                'use_data_selector': False,
             },
             'baz': {
                 'enabled': True,
-                'es_module_path': '/data/plugin/baz/esmodule',
+                'loading_mechanism': {
+                    'type': 'IFRAME',
+                    'module_path': '/data/plugin/baz/esmodule',
+                },
+                'tab_name': 'baz',
+                'remove_dom': False,
+                'disable_reload': False,
+                'use_data_selector': False,
             },
         }
     )
@@ -237,15 +252,30 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
         {
             'foo': {
                 'enabled': True,
-                'es_module_path': None,
+                'loading_mechanism': {'type': 'NONE'},
+                'remove_dom': False,
+                'tab_name': 'foo',
+                'disable_reload': False,
+                'use_data_selector': False,
             },
             'bar': {
                 'enabled': False,
-                'es_module_path': None,
+                'loading_mechanism': {'type': 'NONE'},
+                'tab_name': 'bar',
+                'remove_dom': False,
+                'disable_reload': False,
+                'use_data_selector': False,
             },
             'baz': {
                 'enabled': True,
-                'es_module_path': '/test/data/plugin/baz/esmodule',
+                'loading_mechanism': {
+                    'type': 'IFRAME',
+                    'module_path': '/test/data/plugin/baz/esmodule',
+                },
+                'tab_name': 'baz',
+                'remove_dom': False,
+                'disable_reload': False,
+                'use_data_selector': False,
             },
         }
     )
