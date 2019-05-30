@@ -128,6 +128,8 @@ before_script:
   - tensorboard/tools/license_test.sh
   # Make sure that IPython notebooks have valid Markdown.
   - tensorboard/tools/docs_list_format_test.sh
+  # Make sure that build URLs are valid.
+  - tensorboard/tools/mirror_urls_test.sh
 
 # Commands in this section should only fail if it's our fault. Travis will
 # categorize them as 'failed', rather than 'error' for other sections.
