@@ -2269,7 +2269,7 @@ limitations under the License.
           value: () => ({})
         },
         // Attributions from inference. A dict with two fields: 'indices' and
-        // 'attributions'. Indicies contains a list of example indices that
+        // 'attributions'. Indices contains a list of example indices that
         // these new attributions apply to. Attributions contains a list of
         // attributions for each of those examples.
         // The attribution object for each example is a dict of feature name
@@ -4316,7 +4316,7 @@ limitations under the License.
               const result =
                 this.inferences.results[modelNum].classificationResult;
               // For models that don't return any labels for the classes, fill
-              // them out with class indicies.
+              // them out with class indices.
               for (let j = 0; j < result.classifications[i].classes.length;
                   j++) {
                 if (result.classifications[i].classes[j].label == '') {
