@@ -49,7 +49,6 @@ class LiteBackendTest(tf.test.TestCase):
     tf.keras.experimental.export_saved_model(model, os.path.join(logdir, '2', 'a', 'saved'))
 
     saved_model_dirs = lite_backend.get_saved_model_dirs(logdir)
-    print('saved_model_dirs %s' % saved_model_dirs)
     expected = set([
       'exported_saved_model',
       os.path.join('1', 'saved'),
