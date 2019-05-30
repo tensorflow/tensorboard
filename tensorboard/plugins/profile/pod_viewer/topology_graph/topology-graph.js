@@ -24,6 +24,7 @@ var pod_viewer_topology_graph;
     var HOST_TO_HOST_MARGIN = 10;
     var HOST_Y_STRIDE = 2;
     var NODES_PER_CHIP = 2;
+    var TOOLTIP_HORIZONTAL_MARGIN = 5;
     var TRANSITION_DURATION = 1000;
     ;
     ;
@@ -302,10 +303,18 @@ var pod_viewer_topology_graph;
                 .on('mouseover', function (d) {
                 // highlight text
                 d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
+                var tpuRect = this.getBoundingClientRect();
+                var containerRect = parent.$.container.getBoundingClientRect();
+                // Tooltip should appear to right of the TPU rect.
+                var x = tpuRect.x + tpuRect.width + TOOLTIP_HORIZONTAL_MARGIN;
+                var y = tpuRect.y;
+                // Tooltip should position w.r.t. the container.
+                var relativeX = x - containerRect.x;
+                var relativeY = y - containerRect.y;
                 // Update the tooltip position and value
                 d3.select(parent.$.tooltip)
-                    .style('left', d3.event.pageX + 10 + 'px')
-                    .style('top', d3.event.pageY - 10 + 'px')
+                    .style('left', relativeX + 'px')
+                    .style('top', relativeY + 'px')
                     .select('#value')
                     .text(parent._getToolTipText(d));
                 d3.select(parent.$.tooltip).classed('hidden', false);

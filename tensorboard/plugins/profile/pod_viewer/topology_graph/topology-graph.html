@@ -153,6 +153,11 @@ paper-slider {
   text-align: bottom;
   vertical-align: bottom;
 }
+
+#container {
+  /* Tooltip should position relative to the container. */
+  position: relative;
+}
 </style>
     <div class="topology-graph">
       <div class="topo-header container flex-horizontal">
@@ -170,9 +175,11 @@ paper-slider {
           </paper-listbox>
         </paper-menu-button>
       </div>
-      <div id="tpgraph"></div>
-      <div id="tooltip" class="hidden">
-        <p><span id="value"></span></p>
+      <div id="container">
+        <div id="tpgraph"></div>
+        <div id="tooltip" class="hidden">
+          <p><span id="value"></span></p>
+        </div>
       </div>
     </div>
   </template>
