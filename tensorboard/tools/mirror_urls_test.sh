@@ -70,7 +70,7 @@ check_urls_resolve() {
 
 check_no_bazel_urls() {
     bazel_urls_file="$(mktemp)"
-    git grep -Hn 'https\?://mirror\.bazel\.build\S*' \
+    git grep -Hn 'https\?://mirror\.bazel\.build' \
         | sort \
         >"${bazel_urls_file}"
     if ! [ -s "${bazel_urls_file}" ]; then
