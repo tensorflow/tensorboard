@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.0",
-    "@jupyter-widgets/jupyterlab-manager": "0.38.1",
+    "@jupyter-widgets/jupyterlab-manager": "^0.38.1",
     "file-loader": "^3.0.1"
   },
   "jupyterlab": {
