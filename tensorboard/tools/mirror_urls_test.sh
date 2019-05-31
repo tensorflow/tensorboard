@@ -41,12 +41,12 @@ check_urls_resolve() {
     unresolved_urls_file="$(mktemp)"
     # shellcheck disable=SC2016
     check_cmd='curl -sfL "$1" >/dev/null || printf "%s\n" "$1"'
-    # shellcheck disable=SC2016
-    exclude='${version}'  # as in `ci/download_bazel.sh`
+    url_pcre='(?<=")https?://mirror\.tensorflow\.org/[^"]*'
+    exclude=':!ci/download_bazel.sh'  # uses a '${version}' format string
     # We use `git-grep` to efficiently get an initial result set, then
     # filter it down with GNU `grep` separately, because `git-grep` only
     # learned `-o` in Git v2.19; Travis uses v2.15.1.
-    git grep -Ph '(?<=")https?://mirror\.tensorflow\.org/[^"]*' \
+    git grep -Ph "${url_pcre}" "${exclude}" \
         | grep -o 'https\?://mirror\.tensorflow\.org/[^"]*' \
         | grep -vF -- "${exclude}" \
         | sort \
@@ -65,9 +65,10 @@ check_urls_resolve() {
     fi
 
     printf '%s\n' 'The following URLs are not properly mirrored:'
-    cat "${unresolved_urls_file}"
+    sed -e 's/^/  - /' "${unresolved_urls_file}"
     printf '%s\n' \
-        'Googlers, see http://b/133880558 for further instructions.' \
+        'Please comment on your PR asking a TensorBoard core team member ' \
+        'to mirror these URLs per instructions in http://b/133880558.' \
         '' \
         ;
     return 1
