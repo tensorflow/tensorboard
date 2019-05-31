@@ -91,28 +91,22 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane
+            <tf-category-paginated-view
               category="[[category]]"
-              opened="[[_shouldOpen(index)]]"
-              restamp="[[_restamp]]"
+              initial-opened="[[_shouldOpen(index)]]"
             >
-              <tf-category-paginated-view
-                items="[[category.items]]"
-                get-item-key="[[_getItemKey]]"
-                pages="{{category._pages}}"
-              >
-                <template>
-                  <tf-histogram-loader
-                    run="[[item.run]]"
-                    tag="[[item.tag]]"
-                    tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                    time-property="[[_timeProperty]]"
-                    histogram-mode="[[_histogramMode]]"
-                    request-manager="[[_requestManager]]"
-                  ></tf-histogram-loader>
-                </template>
-              </tf-category-paginated-view>
-            </tf-category-pane>
+              <template>
+                <tf-histogram-loader
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  active="[[active]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  time-property="[[_timeProperty]]"
+                  histogram-mode="[[_histogramMode]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-histogram-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -165,13 +159,6 @@ limitations under the License.
         _requestManager: {
           type: Object,
           value: () => new tf_backend.RequestManager(),
-        },
-
-        _getItemKey: {
-          type: Function,
-          value: function() {
-            return item => JSON.stringify([item.run, item.tag]);
-          },
         },
       },
 
