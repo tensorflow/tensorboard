@@ -83,6 +83,8 @@ before_script:
   - tensorboard/tools/license_test.sh
   # Make sure that IPython notebooks have valid Markdown.
   - tensorboard/tools/docs_list_format_test.sh
+  # Make sure that build URLs are valid.
+  - tensorboard/tools/mirror_urls_test.sh
   - |
     # Specify subset of tests to run depending on TF installation config.
     # We condition the value of --test_tag_filters so that we can run the
