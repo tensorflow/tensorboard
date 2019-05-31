@@ -109,8 +109,8 @@ class SetBrushFilter implements AxisBrushFilter {
 /**
  * Represents a single Axis. An axis does not know its horizontal location in
  * the SVG; instead the axes locations are managed by the AxesCollection class.
- * An axis represents a single column (metric or haparam).It stores a scale type
- * and a D3 scale that maps values in the axis domain (column values) 
+ * An axis represents a single column (metric or haparam). It stores a scale 
+ * type and a D3 scale that maps values in the axis domain (column values) 
  * to y-coordinates in the SVG. Additionally, an axis stores a 
  * D3-brush-selection which is a 2-element numeric array of the form 
  * [lower, upper] containing the upper and lower y-coordinates of the current
