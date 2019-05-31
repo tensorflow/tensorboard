@@ -3,12 +3,9 @@
   "description": "What-If Tool jupyter widget",
   "author": "Google LLC",
   "main": "dist/index.js",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license" : "Apache 2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tensorflow/tensorboard.git"
-  },
+  "homepage": "https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference",
   "keywords": [
     "jupyter",
     "widgets",
