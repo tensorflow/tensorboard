@@ -49,18 +49,25 @@ var vz_line_chart2;
             _this.panZoom.dragInteraction().mouseFilter(function (event) {
                 return PanZoomDragLayer.isPanKey(event) && event.button === 0;
             });
-            _this.panZoom.wheelFilter(function (event) { return event.altKey; });
-            _this.panZoom.attachTo(_this);
+            _this.panZoom.wheelFilter(_this.canScrollZoom);
             _this.dragZoomLayer = new vz_line_chart.DragZoomLayer(xScale, yScale, unzoomMethod);
             _this.dragZoomLayer.dragInteraction().mouseFilter(function (event) {
                 return !PanZoomDragLayer.isPanKey(event) && event.button === 0;
             });
             _this.append(_this.dragZoomLayer);
+            var onWheel = _this.onWheel.bind(_this);
             _this.onAnchor(function () {
+                _this._mouseDispatcher = Plottable.Dispatchers.Mouse.getDispatcher(_this);
+                _this._mouseDispatcher.onWheel(onWheel);
                 _this.panZoom.attachTo(_this);
             });
             _this.onDetach(function () {
                 _this.panZoom.detachFrom(_this);
+                // onDetach can be invoked before onAnchor
+                if (_this._mouseDispatcher) {
+                    _this._mouseDispatcher.offWheel(onWheel);
+                    _this._mouseDispatcher = null;
+                }
             });
             _this.panZoom.dragInteraction().onDragStart(function () {
                 if (_this.state == State.NONE)
@@ -80,8 +87,42 @@ var vz_line_chart2;
             });
             return _this;
         }
+        PanZoomDragLayer.prototype.onWheel = function (_, event) {
+            if (this.canScrollZoom(event))
+                return;
+            var helpContainer = this.element();
+            if (!helpContainer.select('.help').empty())
+                return;
+            // If the style gets crazy, use CSS and custom-dom API.
+            var help = helpContainer
+                .append('div')
+                .classed('help', true)
+                .style('background', 'rgba(30, 30, 30, .6)')
+                .style('color', '#fff')
+                .style('pointer-events', 'none')
+                .style('opacity', 1)
+                .style('position', 'absolute')
+                .style('top', 0)
+                .style('bottom', 0)
+                .style('left', 0)
+                .style('right', 0)
+                .style('display', 'flex')
+                .style('justify-content', 'center')
+                .style('padding', '20px')
+                .style('align-items', 'center');
+            var fade = d3.transition().duration(2500);
+            help.transition(fade)
+                .style('opacity', 0)
+                .remove();
+            help.append('span')
+                .text('Alt + Scroll to Zoom')
+                .style('white-space', 'normal');
+        };
         PanZoomDragLayer.isPanKey = function (event) {
-            return Boolean(event.shiftKey);
+            return Boolean(event.altKey) || Boolean(event.shiftKey);
+        };
+        PanZoomDragLayer.prototype.canScrollZoom = function (event) {
+            return event.altKey;
         };
         PanZoomDragLayer.prototype.setState = function (nextState) {
             if (this.state == nextState)

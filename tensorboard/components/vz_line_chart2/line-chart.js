@@ -86,7 +86,7 @@ var vz_line_chart2;
             yZeroLine.scale(this.xScale).value(0);
             this.center = new Plottable.Components.Group([
                 this.gridlines, xZeroLine, yZeroLine, plot,
-                panZoomLayer, this.tooltipPointsComponent
+                this.tooltipPointsComponent, panZoomLayer
             ]);
             this.center.addClass('main');
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
