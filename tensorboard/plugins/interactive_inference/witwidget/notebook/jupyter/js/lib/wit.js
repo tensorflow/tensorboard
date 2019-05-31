@@ -41,6 +41,13 @@ var WITView = widgets.DOMWidgetView.extend({
     const height = parseInt(
       this.model.attributes.layout.attributes.height, 10) - 20;
     const iframe = document.createElement('iframe');
+
+    // Adjust WIT html location if running in a jupyter notebook
+    // and not in jupyterlab.
+    if (document.querySelector('body').getAttribute('data-base-url') != null) {
+      witHtmlLocation = window.__webpack_public_path__ + 'wit_jupyter.html';
+    }
+
     const src = `<link rel="import" href="${witHtmlLocation}">
     <tf-interactive-inference-dashboard local id="wit"></tf-interactive-inference-dashboard>
     <script>

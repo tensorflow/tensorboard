@@ -3,7 +3,7 @@
   "description": "What-If Tool jupyter widget",
   "author": "Google LLC",
   "main": "dist/index.js",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license" : "Apache 2.0",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.0",
-    "@jupyter-widgets/jupyterlab-manager": "^0.40.0",
+    "@jupyter-widgets/jupyterlab-manager": "0.38.1",
     "file-loader": "^3.0.1"
   },
   "jupyterlab": {
