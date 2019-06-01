@@ -795,7 +795,7 @@ var vz_example_viewer;
                 return;
             }
             var feat = new Feature();
-            // tslint:disable-next-line:no-any Using arbitary json.
+            // tslint:disable-next-line:no-any Using arbitrary json.
             var jsonFeat;
             if (this.newFeatureType === INT_FEATURE_NAME) {
                 var valueList = [];
@@ -828,7 +828,7 @@ var vz_example_viewer;
          * Helper method to add a feature to the JSON version of the example,
          * if the example was provided as JSON.
          */
-        // tslint:disable-next-line:no-any Using arbitary json.
+        // tslint:disable-next-line:no-any Using arbitrary json.
         addJsonFeature: function (feature, jsonFeat) {
             if (this.json && this.json.features && this.json.features.feature) {
                 this.json.features.feature[feature] = jsonFeat;
@@ -1155,7 +1155,7 @@ var vz_example_viewer;
                 return new Example();
             }
         },
-        // tslint:disable-next-line:no-any Parsing arbitary json.
+        // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeatures: function (features) {
             var feats = new Features();
             for (var fname in features.feature) {
@@ -1166,7 +1166,7 @@ var vz_example_viewer;
             }
             return feats;
         },
-        // tslint:disable-next-line:no-any Parsing arbitary json.
+        // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeatureLists: function (features) {
             var feats = new FeatureLists();
             for (var fname in features.featureList) {
@@ -1186,7 +1186,7 @@ var vz_example_viewer;
             }
             return feats;
         },
-        // tslint:disable-next-line:no-any Parsing arbitary json.
+        // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeature: function (featentry, isImage) {
             var feat = new Feature();
             if (featentry.floatList) {
