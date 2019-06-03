@@ -75,6 +75,21 @@ class TBPlugin(object):
     """
     raise NotImplementedError()
 
+  def es_module_path(self):
+    """Returns one of the keys in get_plugin_apps that is an entry ES module.
+
+    For a plugin that is loaded into an iframe, a frontend entry point has to be
+    specified. For a plugin that is bundled with TensorBoard as part of
+    webfiles.zip, return None.
+
+    TODO(tensorboard-team): describe the contract/API for the ES module when
+    it is better defined.
+
+    Returns:
+      A key in the result of `get_plugin_apps()`, or None.
+    """
+    return None
+
 
 class TBContext(object):
   """Magic container of information passed from TensorBoard core to plugins.

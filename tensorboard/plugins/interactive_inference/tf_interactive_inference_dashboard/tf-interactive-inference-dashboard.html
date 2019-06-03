@@ -221,9 +221,9 @@ limitations under the License.
       }
 
       .pr-line-chart {
-        margin: 6px;
+        margin: 0;
         height: 200px;
-        width: 300px;
+        width: 280px;
         display: inline-block;
       }
 
@@ -536,16 +536,41 @@ limitations under the License.
         font-weight: 500;
       }
 
-      .roc-holder {
+      .curves-holder {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        position: relative;
+      }
+
+      .curve-holder {
         width: 300px;
         height: 235px;
-        margin-top: 20px;
         margin-bottom: 20px;
-        margin-right: 50px;
+        margin-right: 20px;
         position: relative;
       }
 
       .roc-x-label {
+        position: absolute;
+        bottom: 0;
+        left: 120px;
+        font-size: 12px;
+        color: #5f6368;
+        padding: 0px;
+      }
+
+      .roc-y-label {
+        position: absolute;
+        left: -36px;
+        bottom: 110px;
+        transform: rotate(270deg);
+        font-size: 12px;
+        color: #5f6368;
+        padding: 0px;
+      }
+
+      .pr-x-label {
         position: absolute;
         bottom: 0;
         left: 140px;
@@ -554,9 +579,9 @@ limitations under the License.
         padding: 0px;
       }
 
-      .roc-y-label {
+      .pr-y-label {
         position: absolute;
-        left: -30px;
+        left: -14px;
         bottom: 110px;
         transform: rotate(270deg);
         font-size: 12px;
@@ -876,6 +901,7 @@ limitations under the License.
       .roc-text {
         color: #3C4043;
         font-size: 16px;
+        margin-left: 44px;
       }
 
       .conf-text {
@@ -1109,6 +1135,11 @@ limitations under the License.
       }
       .perf-table-acc {
         width: 15%;
+        text-align: right;
+        margin-right: 20px;
+      }
+      .perf-table-f1 {
+        width: 10%;
         text-align: right;
         margin-right: 20px;
       }
@@ -1771,6 +1802,7 @@ limitations under the License.
                       <div class="perf-table-fp">False Positives (%)</div>
                       <div class="perf-table-fn">False Negatives (%)</div>
                       <div class="perf-table-acc">Accuracy (%)</div>
+                      <div class="perf-table-f1">F1</div>
                     </div>
                     <div class="perf-table-entries-holder">
                       <template is="dom-repeat" items="[[featureValueThresholds]]" as="featureValueThreshold">
@@ -1808,6 +1840,11 @@ limitations under the License.
                                   <div class="perf-table-num-entry">[[getAccuracyModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
                                 </template>
                               </div>
+                              <div class="perf-table-f1 perf-table-clickable" on-tap="togglePerfRow">
+                                <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
+                                  <div class="perf-table-num-entry">[[getF1ModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]</div>
+                                </template>
+                              </div>
                             </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
@@ -1824,23 +1861,43 @@ limitations under the License.
                                   </tf-confusion-matrix>
                                 </template>
                               </div>
-                              <div class="roc-holder">
-                                <div class="roc-text">ROC curve
-                                  <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                  </paper-icon-button>
-                                  <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
-                                    <div class="dialog-title">ROC curve</div>
-                                    <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                      false positive rate (FPR) at various classification thresholds.
-                                    </div>
-                                  </paper-dialog>
+                              <div class="curves-holder">
+                                <div class="curve-holder">
+                                  <div class="roc-text">ROC curve
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
+                                      <div class="dialog-title">ROC curve</div>
+                                      <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                        false positive rate (FPR) at various classification thresholds.
+                                      </div>
+                                    </paper-dialog>
+                                  </div>
+                                  <div class="roc-x-label">False positive rate</div>
+                                  <div class="roc-y-label">True positive rate</div>
+                                  <vz-line-chart id="[[getRocChartId(index)]]" class="pr-line-chart"
+                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                  </vz-line-chart>
                                 </div>
-                                <div class="roc-x-label">False positive rate</div>
-                                <div class="roc-y-label">True positive rate</div>
-                                <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
-                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
+                                <div class="curve-holder">
+                                  <div class="roc-text">PR curve
+                                    <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                    </paper-icon-button>
+                                    <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
+                                      <div class="dialog-title">PR curve</div>
+                                      <div>A precision-recall (PR) curve plots precision against
+                                        recall at various classification thresholds.
+                                      </div>
+                                    </paper-dialog>
+                                  </div>
+                                  <div class="pr-x-label">Recall</div>
+                                  <div class="pr-y-label">Precision</div>
+                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                  </vz-line-chart>
+                                </div>
                               </div>
                             </template>
                           </div>
@@ -1881,6 +1938,11 @@ limitations under the License.
                                 <div class="perf-table-num-entry">[[getAccuracyModelIndex(inferenceStats_, overallThresholds, index)]]</div>
                               </template>
                             </div>
+                            <div class="perf-table-f1">
+                              <template is="dom-repeat" items="{{overallThresholds}}">
+                                <div class="perf-table-num-entry">[[getF1ModelIndex(inferenceStats_, overallThresholds, index)]]</div>
+                              </template>
+                            </div>
                           </div>
                         </div>
                         <div class="perf-table-entry-expanded flex-row-reverse">
@@ -1896,23 +1958,43 @@ limitations under the License.
                                 </tf-confusion-matrix>
                               </template>
                             </div>
-                            <div class="roc-holder">
-                              <div class="roc-text">ROC curve
-                                <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
-                                </paper-icon-button>
-                                <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
-                                  <div class="dialog-title">ROC curve</div>
-                                  <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
-                                    false positive rate (FPR) at various classification thresholds.
-                                  </div>
-                                </paper-dialog>
+                            <div class="curves-holder">
+                              <div class="curve-holder">
+                                <div class="roc-text">ROC curve
+                                  <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                  </paper-icon-button>
+                                  <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
+                                    <div class="dialog-title">ROC curve</div>
+                                    <div>A receiver operating characteristic (ROC) curve plots the true positive rate (TPR) against the
+                                      false positive rate (FPR) at various classification thresholds.
+                                    </div>
+                                  </paper-dialog>
+                                </div>
+                                <div class="roc-x-label">False positive rate</div>
+                                <div class="roc-y-label">True positive rate</div>
+                                <vz-line-chart id="rocchart" class="pr-line-chart"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                </vz-line-chart>
                               </div>
-                              <div class="roc-x-label">False positive rate</div>
-                              <div class="roc-y-label">True positive rate</div>
-                              <vz-line-chart id="prchart" class="pr-line-chart"
-                                  x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                  y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                              </vz-line-chart>
+                              <div class="curve-holder">
+                                <div class="roc-text">PR curve
+                                  <paper-icon-button icon="info-outline" class="info-icon threshold-info-icon no-padding" on-tap="openDialog">
+                                  </paper-icon-button>
+                                  <paper-dialog class="dialog-text" horizontal-align="right" vertical-align="bottom">
+                                    <div class="dialog-title">PR curve</div>
+                                    <div>A precision-recall (PR) curve plots precision against
+                                      recall at various classification thresholds.
+                                    </div>
+                                  </paper-dialog>
+                                </div>
+                                <div class="pr-x-label">Recall</div>
+                                <div class="pr-y-label">Precision</div>
+                                <vz-line-chart id="prchart" class="pr-line-chart"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
+                                </vz-line-chart>
+                              </div>
                             </div>
                           </template>
                         </div>
@@ -2185,6 +2267,26 @@ limitations under the License.
           type: Object,
           observer: 'newInferences_',
           value: () => ({})
+        },
+        // Attributions from inference. A dict with two fields: 'indices' and
+        // 'attributions'. Indices contains a list of example indices that
+        // these new attributions apply to. Attributions contains a list of
+        // attributions for each of those examples.
+        // The attribution object for each example is a dict of feature name
+        // to attribution value.
+        // The attribution value is one of the following:
+        // - A single number representing the attribution to that entire feature
+        //   value.
+        // - A list of numbers representing the attributions to individual
+        //   values of a multivalent feature - such as pixels in an image or
+        //   numbers in a list of numbers.
+        // - A 2D list for sparse attributions of a multivalent feature. The
+        //   first list contains the feature values for which attributions
+        //   exist. The second list contains the numeric attributions for each
+        //   of those feature values.
+        attributions: {
+          type: Object,
+          observer: 'newAttributions_',
         },
         // Examples and their inferences merged into a single list.
         // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
@@ -3176,8 +3278,8 @@ limitations under the License.
                 const modelInferenceValueStr =
                   this.strWithModelName_(inferenceValueStr, modelInd);
                 let count = statsActual[item[modelInferenceValueStr]];
-                allLabels.add(item[modelInferenceValueStr]);
-                allLabels.add(item[modelInferenceValueStr]);
+                allLabels.add(String(item[modelInferenceValueStr]));
+                allLabels.add(String(item[this.selectedLabelFeature]));
                 if (count == null) {
                   statsActual[item[modelInferenceValueStr]] = 1;
                 } else {
@@ -3262,11 +3364,18 @@ limitations under the License.
               plotStats.push(inferenceStats.faceted[key]);
               plotThresholds.push(modelThresholds[modelInd].threshold)
             }
-            this.plotPr(
+            this.plotChart(
+              this.$$('#' + this.getRocChartId(i)),
+              plotStats,
+              plotThresholds,
+              regenInferenceStats,
+              true);
+            this.plotChart(
               this.$$('#' + this.getPrChartId(i)),
               plotStats,
               plotThresholds,
-              regenInferenceStats);
+              regenInferenceStats,
+              false);
           }
           const plotStats = [];
           const plotThresholds = [];
@@ -3275,9 +3384,12 @@ limitations under the License.
             plotStats.push(this.inferenceStats_[modelInd].thresholds);
             plotThresholds.push(this.overallThresholds[modelInd].threshold);
           }
-          this.plotPr(
+          this.plotChart(
+            this.$$('#rocchart'), plotStats,
+            plotThresholds, regenInferenceStats, true);
+          this.plotChart(
             this.$$('#prchart'), plotStats,
-            plotThresholds, regenInferenceStats);
+            plotThresholds, regenInferenceStats, false);
         }
         this.updateCorrectness_();
       },
@@ -3377,16 +3489,20 @@ limitations under the License.
       },
 
       /**
-       * Plots a PR purve given data to plot.
+       * Plots a PR or ROC purve given data to plot.
        * thresholdstats and thresholds are arrays, indexed by model number
        */
-      plotPr: function(chart, thresholdStats, thresholds,
-                       regenInferenceStats) {
+      plotChart: function(chart, thresholdStats, thresholds,
+                       regenInferenceStats, isRoc) {
         if (!thresholdStats || !thresholdStats[0] || !chart) {
           return;
         }
         const visibleCharts = [];
         const seriesColors = [];
+        const xAxis = isRoc ? 'FPR' : 'TPR';
+        const yAxis = isRoc ? 'TPR' : 'PPV';
+        const xAxisLabel = isRoc ? 'FPR' : 'Recall';
+        const yAxisLabel = isRoc ? 'TPR' : 'Precision';
         for (let modelInd = 0; modelInd < thresholdStats.length; modelInd++) {
           let currentThresholdData = null;
           const data = thresholdStats[modelInd].map((thresh, i) => {
@@ -3394,14 +3510,14 @@ limitations under the License.
             // current threshold
             if (i - thresholds[modelInd] * 100 < 0.5) {
               currentThresholdData = {
-                'step': thresh['FPR'],
-                'scalar': thresh['TPR'],
+                'step': thresh[xAxis],
+                'scalar': thresh[yAxis],
                 'threshold': i / 100
               };
             }
             return {
-              'step': thresh['FPR'],
-              'scalar': thresh['TPR'],
+              'step': thresh[xAxis],
+              'scalar': thresh[yAxis],
               'threshold': i / 100
             };
           }).reverse();
@@ -3429,15 +3545,17 @@ limitations under the License.
                 },
             },
             {
-                title: 'TPR',
+                title: yAxisLabel,
                 evaluate: function (d) {
-                  return percentageFormatter(d.datum.scalar);
+                  return isRoc ? percentageFormatter(d.datum.scalar) :
+                    valueFormatter(d.datum.scalar);
                 },
             },
             {
-                title: 'FPR',
+                title: xAxisLabel,
                 evaluate: function (d) {
-                  return percentageFormatter(d.datum.step);
+                  return isRoc ? percentageFormatter(d.datum.step) :
+                    valueFormatter(d.datum.step);
                 },
             },
           ];
@@ -3462,7 +3580,7 @@ limitations under the License.
       },
 
       /**
-       * Calculates TPR and FPR given binary confusion matrix counts.
+       * Calculates TPR, FPR, and PPV given binary confusion matrix counts.
        */
       calcThresholdStats: function(stats) {
         for (let i = 0; i < stats.length; i++) {
@@ -3477,6 +3595,12 @@ limitations under the License.
               stats[i]['FP'] / (stats[i]['FP'] + stats[i]['TN']);
           } else {
             stats[i]['FPR'] = 0;
+          }
+          if (stats[i]['TP'] + stats[i]['FP'] > 0) {
+            stats[i]['PPV'] =
+              stats[i]['TP'] / (stats[i]['TP'] + stats[i]['FP']);
+          } else {
+            stats[i]['PPV'] = 0;
           }
         }
       },
@@ -3780,6 +3904,35 @@ limitations under the License.
       },
 
       /**
+       * Returns the F1 score for a given confusion matrix
+       * from the threshold selected, model index, and facet to view.
+       */
+       getF1ModelIndex: function(inferenceStats, thresholds, modelInd, item) {
+        // TODO(jameswex): This unnecessarily recalculates confusion matrix.
+        // Can speed this up.
+        const formatter = d3.format(",.2f");
+        const confCounts = this.getConfusionCountsModelIndex(
+          inferenceStats, thresholds, modelInd, item);
+        if (Object.keys(confCounts).length == 0) {
+          return 0;
+        }
+        const truePositives = confCounts['Yes']['Yes'];
+        const falsePositives = confCounts['No']['Yes'];
+        const falseNegatives = confCounts['Yes']['No'];
+        if (truePositives == 0) {
+          if (falsePositives != 0 || falseNegatives != 0) {
+            return formatter(0);
+          } else {
+            return formatter(1);
+          }
+        }
+        const precision = truePositives / (truePositives + falsePositives);
+        const recall = truePositives / (truePositives + falseNegatives);
+        return formatter(
+          2 * (precision * recall) / (precision + recall));
+      },
+
+      /**
        * Returns the number of examples in a given facet.
        */
       getFeatureValueCount: function(inferenceStats, thresholds, item) {
@@ -3971,6 +4124,10 @@ limitations under the License.
             }, 0), null);
       },
 
+      getRocChartId: function(index) {
+        return 'rocchart' + index;
+      },
+
       getPrChartId: function(index) {
         return 'prchart' + index;
       },
@@ -4059,8 +4216,8 @@ limitations under the License.
           // "{attributionPrefix}{featureName}".
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 attrib[featToTest] = selectedData[key];
@@ -4079,8 +4236,8 @@ limitations under the License.
           // feature values.
           if (featureWithAttribution) {
             const featFinder = new RegExp(
-              '^' + featureForAttributionPrefix + featureWithAttribution[1] +
-              '$');
+              '^(' + featureForAttributionPrefix + ')?' +
+              featureWithAttribution[1] + '$');
             for (let featToTest in selectedData) {
               if (featFinder.test(featToTest)) {
                 const attribKeys = selectedData[key];
@@ -4159,7 +4316,7 @@ limitations under the License.
               const result =
                 this.inferences.results[modelNum].classificationResult;
               // For models that don't return any labels for the classes, fill
-              // them out with class indicies.
+              // them out with class indices.
               for (let j = 0; j < result.classifications[i].classes.length;
                   j++) {
                 if (result.classifications[i].classes[j].label == '') {
@@ -4264,6 +4421,44 @@ limitations under the License.
           }
         }
         this.updatedExample = false;
+      },
+
+      newAttributions_: function(attributions) {
+        if (Object.keys(attributions).length == 0) {
+          return;
+        }
+        for (let i = 0; i < attributions.indices.length; i++) {
+          const idx = attributions.indices[i];
+          const datapoint = Object.assign({}, this.visdata[idx]);
+          // TODO(jwexler): Support attributions from multiple models.
+          // For now, we only display attribution from the first model, if WIT
+          // is loaded with two models.
+          const attribs = attributions.attributions[0][i];
+          const keys = Object.keys(attribs);
+          for (let j = 0; j < keys.length; j++) {
+            // If the attributions for a key is a 2D array then treat the first
+            // entry as sparse keys for attributions and the second entry as
+            // the attributions for the sparse keys in the first array.
+            // Otherwise the attribution is a single value or list and can be
+            // used as such.
+            if (Array.isArray(attribs[keys[j]]) &&
+                attribs[keys[j]].length == 2 &&
+                Array.isArray(attribs[keys[j]][0])) {
+              const attribSparseKeyKey = attributionPrefix + keys[j] +
+                attributionSparseKeySuffix;
+              datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
+              const attribSparseValueKey = attributionPrefix + keys[j] +
+                attributionSparseValueSuffix;
+              datapoint[attribSparseValueKey] = attribs[keys[j]][1];
+            } else {
+              const attribKey = attributionPrefix + keys[j];
+              datapoint[attribKey] = attribs[keys[j]];
+            }
+          }
+          this.set(`visdata.${idx}`, datapoint);
+        }
+        this.setAttributions();
+        this.refreshDive_();
       },
 
       /**

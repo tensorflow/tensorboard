@@ -31,7 +31,8 @@ interface UMAP {
     new(params?: UMAPParameters): UMAP;
     fit(X: Vectors): number[][];
     fitAsync(X: Vectors, callback?: (epochNumber: number) => void | boolean): Promise<number[][]>;
-    initializeFit(X: Vectors, knnIndices?: number[][], knnDistances?: number[][]): number;
+    initializeFit(X: Vectors): number;
+    setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]): void;
     step(): number;
     getEmbedding(): number[][];
 }

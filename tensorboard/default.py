@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ from __future__ import print_function
 
 import logging
 import os
+
+import pkg_resources
 
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
@@ -86,4 +88,24 @@ def get_plugins():
 
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
+
   return _PLUGINS[:]
+
+
+def get_dynamic_plugins():
+  """Returns a list specifying TensorBoard's dynamically loaded plugins.
+
+  A dynamic TensorBoard plugin is specified using entry_points [1] and it is
+  the robust way to integrate plugins into TensorBoard.
+
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  Returns:
+    list of base_plugin.TBLoader or base_plugin.TBPlugin.
+
+  [1]: https://packaging.python.org/specifications/entry-points/
+  """
+  return [
+      entry_point.load()
+      for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins')
+  ]

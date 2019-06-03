@@ -21,15 +21,15 @@ def _tensorboard_html_binary(ctx):
   files = depset()
   webpaths = depset()
   for dep in deps:
-    manifests += dep.webfiles.manifests
-    webpaths += dep.webfiles.webpaths
-    files += dep.data_runfiles.files
-  webpaths += [ctx.attr.output_path]
+    manifests = depset(transitive=[manifests, dep.webfiles.manifests])
+    webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
+    files = depset(transitive=[files, dep.data_runfiles.files])
+  webpaths = depset([ctx.attr.output_path], transitive=[webpaths])
   closure_js_library=collect_js(
       unfurl(ctx.attr.deps, provider="closure_js_library"))
 
   # vulcanize
-  jslibs = depset(ctx.files._jslibs) + closure_js_library.srcs
+  jslibs = depset(ctx.files._jslibs, transitive=[closure_js_library.srcs])
   if ctx.file.path_regexs_for_noinline == None:
     ignore_regexs_file_set = depset()
     ignore_regexs_file_path = "NO_REGEXS"
@@ -37,7 +37,12 @@ def _tensorboard_html_binary(ctx):
     ignore_regexs_file_set = depset([ctx.file.path_regexs_for_noinline])
     ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
   ctx.action(
-      inputs=list(manifests | files | jslibs | ignore_regexs_file_set),
+      inputs=depset(transitive=[
+          manifests,
+          files,
+          jslibs,
+          ignore_regexs_file_set,
+      ]).to_list(),
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
@@ -62,7 +67,7 @@ def _tensorboard_html_binary(ctx):
       content=struct(
           label=str(ctx.label),
           src=manifest_srcs).to_proto())
-  manifests += [manifest]
+  manifests = depset([manifest], transitive=[manifests])
 
   # webfiles server
   params = struct(
@@ -82,9 +87,15 @@ def _tensorboard_html_binary(ctx):
           long_path(ctx, params_file)))
 
   transitive_runfiles = depset()
-  transitive_runfiles += ctx.attr._WebfilesServer.data_runfiles.files
+  transitive_runfiles = depset(transitive=[
+      transitive_runfiles,
+      ctx.attr._WebfilesServer.data_runfiles.files,
+  ])
   for dep in deps:
-    transitive_runfiles += dep.data_runfiles.files
+    transitive_runfiles = depset(transitive=[
+        transitive_runfiles,
+        dep.data_runfiles.files,
+    ])
   return struct(
       files=depset([ctx.outputs.html]),
       webfiles=struct(
