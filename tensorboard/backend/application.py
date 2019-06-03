@@ -277,19 +277,48 @@ class TensorBoardWSGI(object):
     response = {}
     for plugin in self._plugins:
       start = time.time()
-      module_path = None
-      if plugin.es_module_path() is not None:
-        module_path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
-                       plugin.plugin_name + plugin.es_module_path())
-
-      response[plugin.plugin_name] = {
-          'enabled': plugin.is_active(),
-          'es_module_path': module_path,
-      }
+      is_active = plugin.is_active()
       elapsed = time.time() - start
       logger.info(
           'Plugin listing: is_active() for %s took %0.3f seconds',
           plugin.plugin_name, elapsed)
+
+      plugin_metadata = plugin.frontend_metadata()._asdict()
+      if plugin_metadata['tab_name'] is None:
+        plugin_metadata['tab_name'] = plugin.plugin_name
+      plugin_metadata['enabled'] = is_active
+
+      es_module_handler = plugin.es_module_path()
+      element_name = plugin_metadata.pop('element_name')
+      if element_name is not None and es_module_handler is not None:
+        logger.error(
+            'Plugin %r declared as both legacy and iframed; skipping',
+            plugin.plugin_name,
+        )
+        continue
+      elif element_name is not None and es_module_handler is None:
+        loading_mechanism = {
+            'type': 'CUSTOM_ELEMENT',
+            'element_name': element_name,
+        }
+      elif element_name is None and es_module_handler is not None:
+        loading_mechanism = {
+            'type': 'IFRAME',
+            'module_path': ''.join([
+                self._path_prefix, DATA_PREFIX, PLUGIN_PREFIX, '/',
+                plugin.plugin_name, es_module_handler,
+            ]),
+        }
+      else:
+        # As a compatibility measure (for plugins that we don't control,
+        # and for incremental migration of core plugins), we'll pull it
+        # from the frontend registry for now.
+        loading_mechanism = {
+            'type': 'NONE',
+        }
+      plugin_metadata['loading_mechanism'] = loading_mechanism
+
+      response[plugin.plugin_name] = plugin_metadata
     return http_util.Respond(request, response, 'application/json')
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
