@@ -64,7 +64,7 @@ setup(
   description='What-If Tool jupyter widget',
   long_description=get_readme(),
   author='Google Inc.',
-  author_email='opensource@google.com',
+  author_email='packages@tensorflow.org',
   url='https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference',
   include_package_data=True,
   data_files=[
