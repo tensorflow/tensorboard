@@ -27,8 +27,6 @@ tf_web_library(
         "tf-multi-checkbox.js",
         "tf-no-data-warning.html",
         "tf-option-selector.html",
-        "tf-regex-group.html",
-        "tf-regex-group.js",
     ],
     path = "/tf-dashboard-common",
     visibility = ["//visibility:public"],
@@ -66,7 +64,6 @@ tf_web_library(
     name = "demo",
     srcs = [
         "tf-multi-checkbox-demo.html",
-        "tf-regex-group-demo.html",
     ],
     path = "/tf-dashboard-common",
     deps = [
