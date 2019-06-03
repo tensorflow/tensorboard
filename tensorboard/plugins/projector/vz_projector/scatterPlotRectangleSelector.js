@@ -45,7 +45,7 @@ var vz_projector;
         }
         ScatterPlotRectangleSelector.prototype.onMouseDown = function (offsetX, offsetY) {
             this.isMouseDown = true;
-            this.rectElement.style.display = 'block';
+            this.svgElement.style.display = 'block';
             this.startCoordinates = [offsetX, offsetY];
             this.lastBoundingBox = {
                 x: this.startCoordinates[0],
@@ -71,7 +71,7 @@ var vz_projector;
         };
         ScatterPlotRectangleSelector.prototype.onMouseUp = function () {
             this.isMouseDown = false;
-            this.rectElement.style.display = 'none';
+            this.svgElement.style.display = 'none';
             this.rectElement.setAttribute('width', '0');
             this.rectElement.setAttribute('height', '0');
             this.selectionCallback(this.lastBoundingBox);
