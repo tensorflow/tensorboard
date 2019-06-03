@@ -80,6 +80,7 @@ class FakePlugin(base_plugin.TBPlugin):
                plugin_name,
                is_active_value,
                routes_mapping,
+               element_name_value=None,
                es_module_path_value=None,
                construction_callback=None):
     """Constructs a fake plugin.
@@ -99,6 +100,7 @@ class FakePlugin(base_plugin.TBPlugin):
     self.plugin_name = plugin_name
     self._is_active_value = is_active_value
     self._routes_mapping = routes_mapping
+    self._element_name_value = element_name_value
     self._es_module_path_value = es_module_path_value
 
     if construction_callback:
@@ -120,6 +122,10 @@ class FakePlugin(base_plugin.TBPlugin):
     """
     return self._is_active_value
 
+  def frontend_metadata(self):
+    base = super(FakePlugin, self).frontend_metadata()
+    return base._replace(element_name=self._element_name_value)
+
   def es_module_path(self):
     """Returns a path to plugin frontend entry.
 
@@ -136,7 +142,12 @@ class ApplicationTest(tb_test.TestCase):
         FakePlugin(
             None, plugin_name='foo', is_active_value=True, routes_mapping={}),
         FakePlugin(
-            None, plugin_name='bar', is_active_value=False, routes_mapping={}),
+            None,
+            plugin_name='bar',
+            is_active_value=False,
+            routes_mapping={},
+            element_name_value='tf-bar-dashboard',
+        ),
         FakePlugin(
             None,
             plugin_name='baz',
@@ -181,7 +192,10 @@ class ApplicationTest(tb_test.TestCase):
             },
             'bar': {
                 'enabled': False,
-                'loading_mechanism': {'type': 'NONE'},
+                'loading_mechanism': {
+                    'type': 'CUSTOM_ELEMENT',
+                    'element_name': 'tf-bar-dashboard',
+                },
                 'tab_name': 'bar',
                 'remove_dom': False,
                 'disable_reload': False,
@@ -209,7 +223,12 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
         FakePlugin(
             None, plugin_name='foo', is_active_value=True, routes_mapping={}),
         FakePlugin(
-            None, plugin_name='bar', is_active_value=False, routes_mapping={}),
+            None,
+            plugin_name='bar',
+            is_active_value=False,
+            routes_mapping={},
+            element_name_value='tf-bar-dashboard',
+        ),
         FakePlugin(
             None,
             plugin_name='baz',
@@ -260,7 +279,10 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
             },
             'bar': {
                 'enabled': False,
-                'loading_mechanism': {'type': 'NONE'},
+                'loading_mechanism': {
+                    'type': 'CUSTOM_ELEMENT',
+                    'element_name': 'tf-bar-dashboard',
+                },
                 'tab_name': 'bar',
                 'remove_dom': False,
                 'disable_reload': False,

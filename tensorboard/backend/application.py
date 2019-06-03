@@ -310,8 +310,9 @@ class TensorBoardWSGI(object):
             ]),
         }
       else:
-        # As a compatibility measure, we'll pull it from the frontend
-        # registry for now.
+        # As a compatibility measure (for plugins that we don't control,
+        # and for incremental migration of core plugins), we'll pull it
+        # from the frontend registry for now.
         loading_mechanism = {
             'type': 'NONE',
         }
