@@ -128,11 +128,11 @@ def tensorboard_js_workspace():
   http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
-      sha256 = "632c33e8c1e4ba4b26954edb5a0d4d64edcff774bd57dd4ab4b590d3bbb43612",
-      strip_prefix = "clutz-6c8a2bd68dec3f2bbacae288e42d82ca4567b93f",
+      sha256 = "7a5c785dbcc3ae0daa1fcf4507de6a23bbecdb2bf80460651e4c2b88c1ad7582",
+      strip_prefix = "clutz-7f1a3ee9ad9f85a9056084dc039496bbd35e11f6",
       urls = [
-          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/6c8a2bd68dec3f2bbacae288e42d82ca4567b93f.tar.gz",  # 2019-05-17
-          "https://github.com/angular/clutz/archive/6c8a2bd68dec3f2bbacae288e42d82ca4567b93f.tar.gz",
+          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",  # 2019-05-17
+          "https://github.com/angular/clutz/archive/7f1a3ee9ad9f85a9056084dc039496bbd35e11f6.tar.gz",
       ],
   )
 
