@@ -17,7 +17,14 @@ namespace tf_paginated_view {
 const LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
 const DEFAULT_LIMIT = 12;  // reasonably small and has lots of factors
 
-let _limit: number = null;  // cached localStorage value
+let _limit: number = DEFAULT_LIMIT;  // cached localStorage value
+tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, {useLocalStorage: true})
+  .then((limit) => {
+    // Do not update limit from storage if it was changed with `set` while
+    // fetching the initial value from storage.
+    if (limit == undefined || _limit !== DEFAULT_LIMIT) return;
+    setLimit(limit);
+  });
 
 export type Listener = () => void;
 
@@ -39,13 +46,6 @@ export function removeLimitListener(listener: Listener): void {
 }
 
 export function getLimit() {
-  if (_limit == null) {
-    _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY,
-        {useLocalStorage: true});
-    if (_limit == null || !isFinite(_limit) || _limit <= 0) {
-      _limit = DEFAULT_LIMIT;
-    }
-  }
   return _limit;
 }
 

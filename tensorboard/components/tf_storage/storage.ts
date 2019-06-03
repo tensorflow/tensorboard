@@ -103,8 +103,8 @@ export interface SetterOptions<T> extends StorageOptions<T> {
 }
 
 export function makeBindings<T>(fromString: (string) => T, toString: (T) => string): {
-    get: (key: string, option?: StorageOptions<T>) => T,
-    set: (key: string, value: T, option?: SetterOptions<T>) => void,
+    get: (key: string, option?: StorageOptions<T>) => Promise<T>,
+    set: (key: string, value: T, option?: SetterOptions<T>) => Promise<void>,
     getInitializer: (key: string, options: AutoStorageOptions<T>) => Function,
     getObserver: (key: string, options: AutoStorageOptions<T>) => Function,
     disposeBinding: () => void,
@@ -112,7 +112,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
   const hashListeners = [];
   const storageListeners = [];
 
-  function get(key: string, options: StorageOptions<T> = {}): T {
+  async function get(key: string, options: StorageOptions<T> = {}): Promise<T> {
     const {
       defaultValue,
       useLocalStorage = false,
@@ -120,10 +120,16 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     const value = useLocalStorage ?
       window.localStorage.getItem(key) :
       componentToDict(readComponent())[key];
-    return value == undefined ? _.cloneDeep(defaultValue) : fromString(value);
+    return Promise.resolve(
+      value == undefined ?
+      _.cloneDeep(defaultValue) :
+      fromString(value)
+    );
   }
 
-  function set(key: string, value: T, options: SetterOptions<T> = {}): void {
+  async function set(
+      key: string, value: T, options: SetterOptions<T> = {}): Promise<void> {
+
     const {
       defaultValue,
       useLocalStorage = false,
@@ -135,7 +141,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       // Because of listeners.ts:[1], we need to manually notify all UI elements
       // listening to storage within the tab of a change.
       fireStorageChanged();
-    } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
+    } else if (!_.isEqual(value, binding.get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
       } else {
@@ -148,9 +154,10 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
 
   /**
    * Returns a function that can be used on a `value` declaration to a Polymer
-   * property. It updates the `polymerProperty` when storage changes -- i.e.,
-   * when `useLocalStorage`, it listens to storage change from another tab and
-   * when `useLocalStorage=false`, it listens to hashchange.
+   * property. It sets the value to `options.defaultValue` then syncs it to
+   * the storage. It also updates the `polymerProperty` when storage changes --
+   * i.e., when `useLocalStorage`, it listens to storage change from another tab
+   * and when `useLocalStorage=false`, it listens to window.hashchange.
    */
   function getInitializer(key: string, options: StorageOptions<T>): Function {
     const fullOptions = {
@@ -166,8 +173,8 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       // to the component with specified property. It is important that this
       // function does not re-assign needlessly, to avoid Polymer observer
       // churn.
-      const setComponentValue = () => {
-        const storedValue = get(uriStorageName, fullOptions);
+      const setComponentValue = async () => {
+        const storedValue = await binding.get(uriStorageName, fullOptions);
         const currentValue = this[fullOptions.polymerProperty];
         if (!_.isEqual(storedValue, currentValue)) {
           this[fullOptions.polymerProperty] = storedValue;
@@ -187,9 +194,8 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
         hashListeners.push(listenKey);
       }
 
-      // Set the value on the property.
       setComponentValue();
-      return this[fullOptions.polymerProperty];
+      return fullOptions.defaultValue;
     };
   }
 
@@ -212,7 +218,8 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     };
   }
 
-  return {get, set, getInitializer, getObserver, disposeBinding};
+  const binding = {get, set, getInitializer, getObserver, disposeBinding};
+  return binding;
 }
 
 /**

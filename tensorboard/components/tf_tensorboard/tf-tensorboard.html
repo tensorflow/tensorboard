@@ -541,8 +541,17 @@ limitations under the License.
          */
         _selectedDashboard: {
           type: String,
-          value: tf_storage.getString(tf_storage.TAB) || null,
-          observer: '_selectedDashboardChanged'
+          value: tf_storage.getStringInitializer(tf_storage.TAB, {
+            defaultValue: '',
+            polymerProperty: '_selectedDashboard',
+          }),
+        },
+        /**
+         * True when `_selectedDashboard` is set based on the tf_storage value.
+         */
+        _selectedDashboardInitialized: {
+          type: Boolean,
+          value: false,
         },
         _dashboardToMaybeRemove: String,
 
@@ -584,12 +593,29 @@ limitations under the License.
         }
       },
       observers: [
-        ('_updateSelectedDashboardFromActive(' +
-         '_selectedDashboard, _activeDashboards)'),
+        ('_setDefaultSelectedDashboardFromActive(' +
+         '_selectedDashboard, _selectedDashboardInitialized, _activeDashboards)'),
+        ('_persistSelectedDashboard(' +
+         '_selectedDashboard, _selectedDashboardInitialized)'),
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardRegistry, _dashboardContainersStamped, ' +
          '_activeDashboards, _selectedDashboard)'),
       ],
+
+      async attached() {
+        const tabValue = await tf_storage.getString(tf_storage.TAB);
+        this._selectedDashboard = tabValue;
+        this._selectedDashboardInitialized = true;
+      },
+
+      _persistSelectedDashboard() {
+        if (!this._selectedDashboardInitialized) return;
+        const pluginString = this._selectedDashboard || '';
+        tf_storage.setString(tf_storage.TAB, pluginString);
+        // Record this dashboard selection as a page view.
+        ga('set', 'page', '/' + pluginString);
+        ga('send', 'pageview');
+      },
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
       },
@@ -679,25 +705,24 @@ limitations under the License.
        * If no dashboard is selected but dashboards are available,
        * set the selected dashboard to the first active one.
        */
-      _updateSelectedDashboardFromActive(selectedDashboard, activeDashboards) {
-        if (activeDashboards && selectedDashboard == null) {
-          selectedDashboard = activeDashboards[0] || null;
-          if (selectedDashboard != null) {
-            // Use location.replace for this call to avoid breaking back-button navigation.
-            // Note that this will precede the update to tf_storage triggered by updating
-            // _selectedDashboard and make it a no-op.
-            tf_storage.setString(tf_storage.TAB, selectedDashboard,
-                {useLocationReplace: true});
-            // Note: the following line will re-trigger this handler, but it
-            // will be a no-op since selectedDashboard is no longer null.
-            this._selectedDashboard = selectedDashboard;
-          }
+      async _setDefaultSelectedDashboardFromActive(
+          selectedDashboard, selectedDashboardInitialized, activeDashboards) {
+        if (!selectedDashboardInitialized ||
+            !activeDashboards ||
+            selectedDashboard) {
+          return;
         }
-      },
-
-      _updateSelectedDashboardFromHash() {
-        const dashboardName = tf_storage.getString(tf_storage.TAB);
-        this.set('_selectedDashboard', dashboardName || null);
+        selectedDashboard = activeDashboards[0] || '';
+        if (selectedDashboard) {
+          // Use location.replace for this call to avoid breaking back-button navigation.
+          // Note that this will precede the update to tf_storage triggered by updating
+          // _selectedDashboard and make it a no-op.
+          await tf_storage.setString(tf_storage.TAB, selectedDashboard,
+              {useLocationReplace: true});
+          // Note: the following line will re-trigger this handler, but it
+          // will be a no-op since selectedDashboard is no longer null.
+          this._selectedDashboard = selectedDashboard;
+        }
       },
 
       /**
@@ -800,6 +825,7 @@ limitations under the License.
        */
       _selectedDashboardComponent() {
         const selectedDashboard = this._selectedDashboard;
+        if (!selectedDashboard) return null;
         var dashboard = this.$$(
           `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
         return dashboard;
@@ -807,10 +833,6 @@ limitations under the License.
 
       ready() {
         tf_globals.setUseHash(this.useHash);
-        this._updateSelectedDashboardFromHash();
-        window.addEventListener('hashchange', () => {
-          this._updateSelectedDashboardFromHash();
-        }, /*useCapture=*/false);
 
         tf_backend.environmentStore.addListener(() => {
           this._dataLocation = tf_backend.environmentStore.getDataLocation();
@@ -978,7 +1000,7 @@ limitations under the License.
       _computeShowNoDashboardsMessage(loaded, activeDashboards, selectedDashboard) {
         return (loaded
           && activeDashboards.length === 0
-          && selectedDashboard == null);
+          && !selectedDashboard);
       },
       _computeShowNoSuchDashboardMessage(loaded, registry, selectedDashboard) {
         return loaded && !!selectedDashboard && registry[selectedDashboard] == null;
