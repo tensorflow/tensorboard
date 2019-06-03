@@ -83,6 +83,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(ScalarsPlugin, self).frontend_metadata()._replace(
+        use_data_selector=True,
+        element_name='tf-scalar-dashboard',
+    )
+
   def index_impl(self):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
     if self._db_connection_provider:
