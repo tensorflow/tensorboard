@@ -29,6 +29,7 @@ import io
 import os
 import shutil
 import six
+import tempfile
 import uuid
 try:
     import botocore.exceptions
@@ -117,8 +118,20 @@ class LocalFileSystem(object):
             file_content: string, the contents
             binary_mode: bool, write as binary if True, otherwise text
         """
-        mode = "wb" if binary_mode else "w"
-        if binary_mode:
+        self._write(filename, file_content, "wb" if binary_mode else "w")
+
+    def append(self, filename, file_content, binary_mode=False):
+        """Append string file contents to a file.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents to append
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        self._write(filename, file_content, "ab" if binary_mode else "a")
+
+    def _write(self, filename, file_content, mode):
+        if "b" in mode:
             file_content = compat.as_bytes(file_content)
         else:
             file_content = compat.as_text(file_content)
@@ -223,7 +236,9 @@ class S3FileSystem(object):
             if offset is None:
                 offset = 0
             endpoint = '' if size is None else (offset + size)
-            args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
+            if offset != 0 or endpoint != '':
+                # Asked for a range, so modify the request
+                args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
         try:
             stream = s3.Object(bucket, path).get(**args)['Body'].read()
         except botocore.exceptions.ClientError as exc:
@@ -359,9 +374,10 @@ class GFile(object):
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
-        self.write_buff = None
-        self.binary_mode = (mode != 'r' and mode != 'w')
-        self.write_mode = (mode == 'w' or mode == 'wb' or mode == 'bw')
+        self.write_temp = None
+        self.write_started = False
+        self.binary_mode = 'b' in mode
+        self.write_mode = 'w' in mode
         self.closed = False
 
     def __enter__(self):
@@ -372,7 +388,6 @@ class GFile(object):
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
-        self.write_buff = None
 
     def __iter__(self):
         return self
@@ -419,11 +434,11 @@ class GFile(object):
         if not self.write_mode:
             raise errors.OpError(None, None, "File not opened in write mode.")
 
-        # add to buffer, but wait for flush to write to filesystem
-        if self.write_buff is None:
-            self.write_buff = file_content
-        else:
-            self.write_buff += file_content
+        # add to temp file, but wait for flush to write to final filesystem
+        if self.write_temp is None:
+            mode = "w+b" if self.binary_mode else "w+"
+            self.write_temp = tempfile.TemporaryFile(mode)
+        self.write_temp.write(file_content)
 
     def __next__(self):
         line = None
@@ -455,12 +470,35 @@ class GFile(object):
         return self.__next__()
 
     def flush(self):
-        if self.write_buff is not None:
+        if self.write_temp is not None:
+            # read temp file from the beginning
+            self.write_temp.flush()
+            self.write_temp.seek(0)
+            chunk = self.write_temp.read()
             fs = get_filesystem(self.filename)
-            fs.write(self.filename, self.write_buff, self.binary_mode)
+            # some filesystems (local, for example) support append
+            if hasattr(fs, 'append'):
+                if not self.write_started:
+                    # write the first chunk
+                    fs.write(self.filename, chunk, self.binary_mode)
+                    self.write_started = True
+                else:
+                    # append the later chunks
+                    fs.append(self.filename, chunk, self.binary_mode)
+                # remove temp file, since we are appending
+                self.write_temp.close()
+                self.write_temp = None
+            else:
+                # write full contents and keep in temp file
+                fs.write(self.filename, chunk, self.binary_mode)
+                self.write_temp.seek(len(chunk))
 
     def close(self):
         self.flush()
+        if  self.write_temp is not None:
+            self.write_temp.close()
+            self.write_temp = None
+            self.write_started = False
         self.closed = True
 
 

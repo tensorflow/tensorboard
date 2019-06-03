@@ -204,8 +204,47 @@ class GFileTest(unittest.TestCase):
     @mock_s3
     def testWrite(self):
         temp_dir = self._CreateDeepS3Structure()
-        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
         ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testOverwrite(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(u'original')
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteMultiple(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'w') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteEmpty(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u''
         with gfile.GFile(ckpt_path, 'w') as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, 'r') as f:
@@ -219,6 +258,21 @@ class GFileTest(unittest.TestCase):
         ckpt_content = b'asdfasdfasdffoobarbuzz'
         with gfile.GFile(ckpt_path, 'wb') as f:
             f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteMultipleBinary(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = b'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
         with gfile.GFile(ckpt_path, 'rb') as f:
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
