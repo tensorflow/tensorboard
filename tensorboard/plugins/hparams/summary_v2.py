@@ -24,6 +24,7 @@ from __future__ import print_function
 import abc
 import hashlib
 import json
+import random
 import time
 
 import six
@@ -314,6 +315,19 @@ class Domain(object):
     pass
 
   @abc.abstractmethod
+  def sample_uniform(self, rng=random):
+    """Sample a value from this domain uniformly at random.
+
+    Args:
+      rng: A `random.Random` interface; defaults to the `random` module
+        itself.
+
+    Raises:
+      IndexError: If the domain is empty.
+    """
+    pass
+
+  @abc.abstractmethod
   def update_hparam_info(self, hparam_info):
     """Update an `HParamInfo` proto to include this domain.
 
@@ -367,6 +381,9 @@ class IntInterval(Domain):
   def max_value(self):
     return self._max_value
 
+  def sample_uniform(self, rng=random):
+    return rng.randint(self._min_value, self._max_value)
+
   def update_hparam_info(self, hparam_info):
     hparam_info.type = api_pb2.DATA_TYPE_FLOAT64  # TODO(#1998): Add int dtype.
     hparam_info.domain_interval.min_value = self._min_value
@@ -413,6 +430,9 @@ class RealInterval(Domain):
   @property
   def max_value(self):
     return self._max_value
+
+  def sample_uniform(self, rng=random):
+    return rng.uniform(self._min_value, self._max_value)
 
   def update_hparam_info(self, hparam_info):
     hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
@@ -473,6 +493,9 @@ class Discrete(Domain):
   @property
   def values(self):
     return list(self._values)
+
+  def sample_uniform(self, rng=random):
+    return rng.choice(self._values)
 
   def update_hparam_info(self, hparam_info):
     hparam_info.type = {
