@@ -484,7 +484,7 @@ class IntIntervalTest(test.TestCase):
     domain = hp.IntInterval(2, 7)
     # Note: `randint` samples from a closed interval, which is what we
     # want (as opposed to `randrange`).
-    with mock.patch("random.randint") as m:
+    with mock.patch.object(random, "randint") as m:
       sentinel = object()
       m.return_value = sentinel
       result = domain.sample_uniform()
@@ -536,7 +536,7 @@ class RealIntervalTest(test.TestCase):
 
   def test_sample_uniform_unseeded(self):
     domain = hp.RealInterval(2.0, 4.0)
-    with mock.patch("random.uniform") as m:
+    with mock.patch.object(random, "uniform") as m:
       sentinel = object()
       m.return_value = sentinel
       result = domain.sample_uniform()
@@ -582,7 +582,7 @@ class DiscreteTest(test.TestCase):
 
   def test_sample_uniform_unseeded(self):
     domain = hp.Discrete(["red", "green", "blue"])
-    with mock.patch("random.choice") as m:
+    with mock.patch.object(random, "choice") as m:
       sentinel = object()
       m.return_value = sentinel
       result = domain.sample_uniform()
