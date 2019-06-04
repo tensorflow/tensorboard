@@ -36,33 +36,55 @@ The `logdir` argument is the path of the directory that contains events files.
 ## `data/plugins_listing`
 
 Returns a dict mapping from plugin name to an object that describes a
-plugin.
+plugin, with the following keys:
 
-The object contains a property `enabled`, a boolean indicating whether
-the plugin is active. A plugin might be inactive, for instance, if it
-lacks relevant data. Every plugin has a key. This route allows the
-frontend to hide or deprioritize inactive plugins so that the user can
-focus on the plugins that have data. Note that inactive plugins may
-still be rendered if the user explicitly requests this.
-
-Another property `es_module_path` is an optional one that describes a
-path to the main JavaScript plugin module that will be loaded onto an
-iframe. For "v1" plugins whose JavaScript source is incorporated into
-webfiles.zip, the field is null.
+  - `enabled`: Boolean. Indicates whether the plugin is active. A plugin
+    might be inactive, for instance, if it lacks relevant data.
+  - `loading_mechanism`: One of:
+      - `{type: "NONE"}`: Indicates that the plugin is bundled into the
+        TensorBoard binary and registered with the `registry.ts`
+        interface.
+      - `{type: "CUSTOM_ELEMENT", element_name: string}`: Indicates that
+        the plugin’s entry point is a custom element with the given
+        element name (e.g., `tf-widgets-dashboard`).
+      - `{type: "IFRAME", module_path: string}`: Indicates that the
+        plugin can be loaded by dynamically importing the provided
+        module path, which is a URL that begins with a slash. This
+        functionality is experimental and subject to change.
+  - `tab_name`: String, or `null`. Name to show in the navbar. Defaults
+    to the plugin name.
+  - `remove_dom`: Boolean. Whether to remove the plugin DOM when
+    switching to a different plugin, to trigger the Polymer 'detached'
+    event.
+  - `use_data_selector`: Boolean. Whether to show a system-level data
+    selector above the plugin. Experimental.
 
 Example response:
 
     {
       "scalars": {
+        "disable_reload": false,
         "enabled": true,
-        "es_module_path": null
+        "loading_mechanism": {
+          "element_name": "tf-scalars-dashboard",
+          "type": "CUSTOM_ELEMENT"
+        },
+        "remove_dom": false,
+        "tab_name": "scalars",
+        "use_data_selector": true
       },
       "my_shiny_plugin": {
-        "enabled": true,
-        "es_module_path": "/data/plugin/my_shiny_plugin/main.js"
-      }
+        "disable_reload": true,
+        "enabled": false,
+        "loading_mechanism": {
+          "module_path": "/data/plugin/my_shiny_plugin/main.js",
+          "type": "IFRAME"
+        },
+        "remove_dom": true,
+        "tab_name": "magic",
+        "use_data_selector": false
+      },
     }
-
 
 ## `data/runs`
 
