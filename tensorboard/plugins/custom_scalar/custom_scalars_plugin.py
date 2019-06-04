@@ -107,6 +107,12 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     # This plugin is active if any run has a layout.
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(CustomScalarsPlugin, self).frontend_metadata()._replace(
+        element_name='tf-custom-scalar-dashboard',
+        tab_name='Custom Scalars',
+    )
+
   @wrappers.Request.application
   def download_data_route(self, request):
     run = request.args.get('run')

@@ -249,6 +249,11 @@ class TextPlugin(base_plugin.TBPlugin):
 
     return False
 
+  def frontend_metadata(self):
+    return super(TextPlugin, self).frontend_metadata()._replace(
+        element_name='tf-text-dashboard',
+    )
+
   def _maybe_launch_index_impl_thread(self):
     """Attempts to launch a thread to compute index_impl().
 
