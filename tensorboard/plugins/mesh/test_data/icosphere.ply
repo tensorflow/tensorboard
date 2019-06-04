@@ -15,7 +15,6 @@ comment # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implie
 comment # See the License for the specific language governing permissions and
 comment # limitations under the License.
 comment # ==============================================================================
-
 element vertex 82
 property float x
 property float y
