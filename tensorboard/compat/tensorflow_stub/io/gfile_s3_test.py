@@ -99,6 +99,13 @@ class GFileTest(unittest.TestCase):
         self.assertTrue(gfile.isdir(new_dir))
 
     @mock_s3
+    def testMakeDirsAlreadyExists(self):
+        temp_dir = self._CreateDeepS3Structure()
+        new_dir = self._PathJoin(temp_dir, 'bar', 'baz')
+        with self.assertRaises(errors.AlreadyExistsError):
+            gfile.makedirs(new_dir)
+
+    @mock_s3
     def testWalk(self):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)

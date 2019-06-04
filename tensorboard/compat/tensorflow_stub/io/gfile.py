@@ -102,7 +102,8 @@ class LocalFileSystem(object):
             Subset of the contents of the file as a string or bytes.
         """
         mode = "rb" if binary_mode else "r"
-        with io.open(filename, mode) as f:
+        encoding = None if binary_mode else "utf8"
+        with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
             if size is not None:
@@ -132,10 +133,12 @@ class LocalFileSystem(object):
 
     def _write(self, filename, file_content, mode):
         if "b" in mode:
+            encoding = None
             file_content = compat.as_bytes(file_content)
         else:
+            encoding = "utf8"
             file_content = compat.as_text(file_content)
-        with io.open(filename, mode) as f:
+        with io.open(filename, mode, encoding=encoding) as f:
             f.write(file_content)
 
     def glob(self, filename):
@@ -171,7 +174,10 @@ class LocalFileSystem(object):
 
     def makedirs(self, path):
         """Creates a directory and all parent/intermediate directories."""
-        os.makedirs(path)
+        try:
+            os.makedirs(path)
+        except FileExistsError:
+            raise errors.AlreadyExistsError(None, None, "Directory already exists")
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -335,6 +341,8 @@ class S3FileSystem(object):
 
     def makedirs(self, dirname):
         """Creates a directory and all parent/intermediate directories."""
+        if self.exists(dirname):
+            raise errors.AlreadyExistsError(None, None, "Directory already exists")
         client = boto3.client("s3")
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
@@ -370,6 +378,8 @@ class GFile(object):
             raise NotImplementedError(
                 "mode {} not supported by compat GFile".format(mode))
         self.filename = compat.as_bytes(filename)
+        self.fs = get_filesystem(self.filename)
+        self.fs_supports_append = hasattr(self.fs, 'append')
         self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
         self.buff = None
         self.buff_offset = 0
@@ -414,10 +424,9 @@ class GFile(object):
                 result = self._read_buffer_to_offset(len(self.buff))
 
         # read from filesystem
-        fs = get_filesystem(self.filename)
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        self.buff = fs.read(self.filename, self.binary_mode,
-                            read_size, self.offset)
+        self.buff = self.fs.read(self.filename, self.binary_mode,
+                                 read_size, self.offset)
         self.buff_offset = 0
 
         # add from filesystem
@@ -432,12 +441,13 @@ class GFile(object):
 
     def write(self, file_content):
         if not self.write_mode:
-            raise errors.OpError(None, None, "File not opened in write mode.")
+            raise errors.OpError(None, None, "File not opened in write mode")
 
         # add to temp file, but wait for flush to write to final filesystem
         if self.write_temp is None:
             mode = "w+b" if self.binary_mode else "w+"
-            self.write_temp = tempfile.TemporaryFile(mode)
+            encoding = None if self.binary_mode else "utf8"
+            self.write_temp = tempfile.TemporaryFile(mode, encoding=encoding)
         self.write_temp.write(file_content)
 
     def __next__(self):
@@ -475,22 +485,21 @@ class GFile(object):
             self.write_temp.flush()
             self.write_temp.seek(0)
             chunk = self.write_temp.read()
-            fs = get_filesystem(self.filename)
-            # some filesystems (local, for example) support append
-            if hasattr(fs, 'append'):
+            # use append if filesystem supports it
+            if self.fs_supports_append:
                 if not self.write_started:
                     # write the first chunk
-                    fs.write(self.filename, chunk, self.binary_mode)
+                    self.fs.write(self.filename, chunk, self.binary_mode)
                     self.write_started = True
                 else:
                     # append the later chunks
-                    fs.append(self.filename, chunk, self.binary_mode)
+                    self.fs.append(self.filename, chunk, self.binary_mode)
                 # remove temp file, since we are appending
                 self.write_temp.close()
                 self.write_temp = None
             else:
                 # write full contents and keep in temp file
-                fs.write(self.filename, chunk, self.binary_mode)
+                self.fs.write(self.filename, chunk, self.binary_mode)
                 self.write_temp.seek(len(chunk))
 
     def close(self):
@@ -572,7 +581,8 @@ def makedirs(path):
       path: string, name of the directory to be created
 
     Raises:
-      errors.OpError: If the operation fails.
+      errors.AlreadyExistsError: If leaf directory already exists or
+        cannot be created.
     """
     return get_filesystem(path).makedirs(path)
 

@@ -83,6 +83,13 @@ class GFileTest(tb_test.TestCase):
         gfile.makedirs(new_dir)
         self.assertTrue(gfile.isdir(new_dir))
 
+    def testMakeDirsAlreadyExists(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        new_dir = os.path.join(temp_dir, 'bar', 'baz')
+        with self.assertRaises(errors.AlreadyExistsError):
+            gfile.makedirs(new_dir)
+
     def testWalk(self):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
