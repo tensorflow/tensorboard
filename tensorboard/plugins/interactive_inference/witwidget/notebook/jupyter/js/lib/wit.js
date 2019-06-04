@@ -45,7 +45,7 @@ var WITView = widgets.DOMWidgetView.extend({
     // Adjust WIT html location if running in a jupyter notebook
     // and not in jupyterlab.
     if (document.querySelector('body').getAttribute('data-base-url') != null) {
-      witHtmlLocation = window.__webpack_public_path__ + 'wit_jupyter.html';
+      witHtmlLocation = window.__nbextension_path__ + 'wit_jupyter.html';
     }
 
     const src = `<link rel="import" href="${witHtmlLocation}">
