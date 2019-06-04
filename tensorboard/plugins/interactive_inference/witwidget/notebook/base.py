@@ -348,4 +348,16 @@ class WitWidgetBase(object):
       if adjust_prediction:
         pred = adjust_prediction(pred)
       results.append(pred)
+
+    # If examples are lists, not dicts, and there is a feature name mapping,
+    # then map the attribution values to their feature names.
+    feature_names = self.config.get('feature_names')
+    if self.config.get('uses_json_list') and feature_names is not None:
+      mapped_attributions = []
+      for attrib in attributions:
+        mapped_attrib = {}
+        for i, attrib_value in enumerate(attrib):
+          mapped_attrib[feature_names[i]] = attrib_value
+        mapped_attributions.append(mapped_attrib)
+      attributions = mapped_attributions
     return {'predictions': results, 'attributions': attributions}
