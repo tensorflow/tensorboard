@@ -29,6 +29,7 @@ import io
 import os
 import shutil
 import six
+import sys
 import tempfile
 import uuid
 try:
@@ -37,6 +38,11 @@ try:
     S3_ENABLED = True
 except ImportError:
     S3_ENABLED = False
+
+if sys.version_info < (3, 0):
+    # In Python 2 FileExistsError is not defined and the
+    # error manifests it as OSError.
+    FileExistsError = OSError
 
 from tensorboard.compat.tensorflow_stub import compat, errors
 
@@ -445,10 +451,8 @@ class GFile(object):
 
         # add to temp file, but wait for flush to write to final filesystem
         if self.write_temp is None:
-            mode = "w+b" if self.binary_mode else "w+"
-            encoding = None if self.binary_mode else "utf8"
-            self.write_temp = tempfile.TemporaryFile(mode, encoding=encoding)
-        self.write_temp.write(file_content)
+            self.write_temp = tempfile.TemporaryFile("w+b")
+        self.write_temp.write(compat.as_bytes(file_content))
 
     def __next__(self):
         line = None
