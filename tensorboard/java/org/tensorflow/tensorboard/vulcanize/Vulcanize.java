@@ -673,6 +673,7 @@ public final class Vulcanize {
         || uri.contains("//")
         || uri.startsWith("data:")
         || uri.startsWith("javascript:")
+        || uri.startsWith("mailto:")
         // The following are intended to filter out URLs with Polymer variables.
         || (uri.contains("[[") && uri.contains("]]"))
         || (uri.contains("{{") && uri.contains("}}"));
