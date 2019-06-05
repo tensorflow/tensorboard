@@ -14,7 +14,8 @@
     "jupyterlab-extension"
   ],
   "files": [
-    "dist/*"
+    "dist/*",
+    "lib/*"
   ],
   "scripts": {
     "build": "webpack",
