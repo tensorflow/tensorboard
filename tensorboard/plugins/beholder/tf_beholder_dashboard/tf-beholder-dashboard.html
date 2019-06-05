@@ -513,12 +513,6 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
       },
     });
 
-    tf_tensorboard.registerDashboard({
-      plugin: PLUGIN_NAME,
-      elementName: 'tf-beholder-dashboard',
-      shouldRemoveDom: true,
-    });
-
     })();
   </script>
 </dom-module>

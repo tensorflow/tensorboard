@@ -23,6 +23,7 @@ from __future__ import division
 from __future__ import print_function
 
 import atexit
+import collections
 import json
 import os
 import re
@@ -274,7 +275,7 @@ class TensorBoardWSGI(object):
     Returns:
       A werkzeug.Response object.
     """
-    response = {}
+    response = collections.OrderedDict()
     for plugin in self._plugins:
       start = time.time()
       is_active = plugin.is_active()
@@ -310,9 +311,8 @@ class TensorBoardWSGI(object):
             ]),
         }
       else:
-        # As a compatibility measure (for plugins that we don't control,
-        # and for incremental migration of core plugins), we'll pull it
-        # from the frontend registry for now.
+        # As a compatibility measure (for plugins that we don't
+        # control), we'll pull it from the frontend registry for now.
         loading_mechanism = {
             'type': 'NONE',
         }

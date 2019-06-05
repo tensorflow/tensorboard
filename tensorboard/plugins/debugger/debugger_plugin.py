@@ -151,6 +151,11 @@ class DebuggerPlugin(base_plugin.TBPlugin):
         self._event_multiplexer.PluginRunToTagToContent(
             constants.DEBUGGER_PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(DebuggerPlugin, self).frontend_metadata()._replace(
+        element_name='tf-debugger-dashboard',
+    )
+
   @wrappers.Request.application
   def _serve_health_pills_handler(self, request):
     """A (wrapped) werkzeug handler for serving health pills.

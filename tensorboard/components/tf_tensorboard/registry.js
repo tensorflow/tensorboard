@@ -27,7 +27,12 @@ var tf_tensorboard;
      */
     tf_tensorboard.dashboardRegistry = {};
     /**
-     * Registers Dashboard for plugin into TensorBoard frontend.
+     * For legacy plugins, registers Dashboard for plugin into TensorBoard frontend.
+     *
+     * New plugins should implement the `frontend_metadata` method on the
+     * corresponding Python plugin to provide this information instead.
+     *
+     * For legacy plugins:
      *
      * This function should be called after the Polymer custom element is defined.
      * It's what allows the tf-tensorboard component to dynamically load it as a
