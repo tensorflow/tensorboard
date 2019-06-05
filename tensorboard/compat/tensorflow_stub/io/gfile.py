@@ -489,22 +489,23 @@ class GFile(object):
             self.write_temp.flush()
             self.write_temp.seek(0)
             chunk = self.write_temp.read()
-            # use append if filesystem supports it
-            if self.fs_supports_append:
-                if not self.write_started:
-                    # write the first chunk
-                    self.fs.write(self.filename, chunk, self.binary_mode)
-                    self.write_started = True
+            if chunk is not None:
+                # use append if filesystem supports it
+                if self.fs_supports_append:
+                    if not self.write_started:
+                        # write the first chunk
+                        self.fs.write(self.filename, chunk, self.binary_mode)
+                        self.write_started = True
+                    else:
+                        # append the later chunks
+                        self.fs.append(self.filename, chunk, self.binary_mode)
+                    # remove temp file, since we are appending
+                    self.write_temp.close()
+                    self.write_temp = None
                 else:
-                    # append the later chunks
-                    self.fs.append(self.filename, chunk, self.binary_mode)
-                # remove temp file, since we are appending
-                self.write_temp.close()
-                self.write_temp = None
-            else:
-                # write full contents and keep in temp file
-                self.fs.write(self.filename, chunk, self.binary_mode)
-                self.write_temp.seek(len(chunk))
+                    # write full contents and keep in temp file
+                    self.fs.write(self.filename, chunk, self.binary_mode)
+                    self.write_temp.seek(len(chunk))
 
     def close(self):
         self.flush()
