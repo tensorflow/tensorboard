@@ -124,16 +124,10 @@ class FakePlugin(base_plugin.TBPlugin):
 
   def frontend_metadata(self):
     base = super(FakePlugin, self).frontend_metadata()
-    return base._replace(element_name=self._element_name_value)
-
-  def es_module_path(self):
-    """Returns a path to plugin frontend entry.
-
-    Returns:
-      A string that corresponds to a key of routes_mapping. For non-dynamic
-      plugins, it returns None.
-    """
-    return self._es_module_path_value
+    return base._replace(
+        element_name=self._element_name_value,
+        es_module_path=self._es_module_path_value,
+    )
 
 
 class ApplicationTest(tb_test.TestCase):
