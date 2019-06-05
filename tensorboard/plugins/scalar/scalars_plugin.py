@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import collections
 import csv
+import textwrap
 
 import six
 from six import StringIO
@@ -62,6 +63,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return {
         '/scalars': self.scalars_route,
         '/tags': self.tags_route,
+        '/scalars.js': self._serve_module,
     }
 
   def is_active(self):
@@ -85,9 +87,27 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def frontend_metadata(self):
     return super(ScalarsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-scalar-dashboard',
+        es_module_path='/scalars.js',  # DO NOT SUBMIT, obviously
         use_data_selector=True,
     )
+
+  @wrappers.Request.application
+  def _serve_module(self, request):
+    module = textwrap.dedent("""
+        console.log("scalars.js: loaded module under origin:", window.origin);
+        export function render() {
+          console.log("scalars.js: rendering");
+          document.body.innerHTML = `
+            <h1>meet the new scalars plugin</h1>
+            <ul>
+              <li>loss: &#x1F4C9;</li>
+              <li>accuracy: &#x1F4C8;</li>
+            </ul>
+            <p>nice job, keep it up</p>
+          `;
+        }
+    """).strip()
+    return http_util.Respond(request, module, "application/javascript")
 
   def index_impl(self):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""

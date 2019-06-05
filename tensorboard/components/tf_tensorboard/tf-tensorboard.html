@@ -358,6 +358,12 @@ limitations under the License.
         visibility: hidden;
       }
 
+      .dashboard-container iframe {
+        border: none;
+        height: 100%;
+        width: 100%;
+      }
+
       .warning-message {
         max-width: 540px;
         margin: 80px auto 0 auto;
@@ -795,7 +801,16 @@ limitations under the License.
               break;
             }
             case 'IFRAME': {
-              container.innerText = 'iframe plugin loading not yet supported.';
+              const iframe = document.createElement('iframe');
+              iframe.id = 'dashboard';  // used in `_selectedDashboardComponent`
+              this.scopeSubtree(iframe);
+              container.appendChild(iframe);
+              const subdocument = iframe.contentDocument;
+              const script = subdocument.createElement('script');
+              const moduleString = JSON.stringify(loadingMechanism.modulePath);
+              script.textContent =
+                `import(${moduleString}).then((m) => void m.render());`;
+              subdocument.body.appendChild(script);
               break;
             }
             default: {
@@ -1036,7 +1051,7 @@ limitations under the License.
         if (this._isReloadDisabled) return;
         this._reloadData().then(() => {
           const dashboard = this._selectedDashboardComponent();
-          if (dashboard) dashboard.reload();
+          if (dashboard && dashboard.reload) dashboard.reload();
         });
         this._lastReloadTime = new Date().toString();
       },
