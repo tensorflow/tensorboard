@@ -36,13 +36,13 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "075c898cb535437e821c00e6d104060213fc02464876f9f8e088d798caa1e19c",
+    sha256 = "b6936ecc0b5a1ef616b9d7e76694d414aa5605265c11322257a610fb256b1bf7",
     # The changes that we need for Bazel 0.26 compatibility are not in
-    # any release, so we pin to HEAD as of 2019-05-22.
-    strip_prefix = "rules_closure-87b9b7cefe57f9dea04c5e8518862af17cdfba2e",
+    # any release, so we pin to HEAD as of 2019-06-04.
+    strip_prefix = "rules_closure-7434c41542ca9e1b05166d897b90073d1b8b2cf8",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/87b9b7cefe57f9dea04c5e8518862af17cdfba2e.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/87b9b7cefe57f9dea04c5e8518862af17cdfba2e.tar.gz",  # 2019-05-16
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/7434c41542ca9e1b05166d897b90073d1b8b2cf8.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/7434c41542ca9e1b05166d897b90073d1b8b2cf8.tar.gz",  # 2019-06-04
     ],
 )
 
