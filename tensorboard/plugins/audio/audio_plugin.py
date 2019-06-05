@@ -62,6 +62,11 @@ class AudioPlugin(base_plugin.TBPlugin):
       return False
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(AudioPlugin, self).frontend_metadata()._replace(
+        element_name='tf-audio-dashboard',
+    )
+
   def _index_impl(self):
     """Return information about the tags in each run.
 

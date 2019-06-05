@@ -340,6 +340,12 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     # The plugin is active if any of the runs has a tag relevant to the plugin.
     return any(six.itervalues(all_runs))
 
+  def frontend_metadata(self):
+    return super(PrCurvesPlugin, self).frontend_metadata()._replace(
+        element_name='tf-pr-curve-dashboard',
+        tab_name='PR Curves',
+    )
+
   def _process_tensor_event(self, event, thresholds):
     """Converts a TensorEvent into a dict that encapsulates information on it.
 
