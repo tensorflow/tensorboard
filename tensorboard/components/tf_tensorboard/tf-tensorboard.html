@@ -387,9 +387,44 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
-      throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
-    }
+    /**
+     * @typedef {{
+     *   plugin: string,
+     *   loadingMechanism: !LoadingMechanism,
+     *   tabName: string,
+     *   disableReload: boolean,
+     *   removeDom: boolean,
+     *   useDataSelector: boolean,
+     * }}
+     */
+    const DashboardDatum = {};
+
+    /**
+     * @typedef {(LoadingMechanism$CUSTOM_ELEMENT | LoadingMechanism$IFRAME)}
+     */
+    const LoadingMechanism = {};
+
+    /**
+     * @typedef {{
+     *   type: LoadingMechanism$CUSTOM_ELEMENT$Type,
+     *   elementName: string,
+     * }}
+     */
+    const LoadingMechanism$CUSTOM_ELEMENT = {};
+
+    /**
+     * @typedef {{
+     *   type: LoadingMechanism$IFRAME$Type,
+     *   modulePath: string,
+     * }}
+     */
+    const LoadingMechanism$IFRAME = {};
+
+    // Closure's type system doesn't have string literal types.
+    /** @enum {string} */
+    const LoadingMechanism$CUSTOM_ELEMENT$Type = {_: 'CUSTOM_ELEMENT'};
+    /** @enum {string} */
+    const LoadingMechanism$IFRAME$Type = {_: 'IFRAME'};
 
     const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
@@ -457,12 +492,21 @@ limitations under the License.
          * The set of all dashboards. Each object within this array is a
          * DashboardDatum object.
          *
-         * @type {Array<!Dashboard>}
+         * (This is just the range of `_dashboardRegistry`.)
+         *
+         * @type {Array<!DashboardDatum>}
          */
         _dashboardData: {
           type: Array,
-          readOnly: true,
-          value: _.values(tf_tensorboard.dashboardRegistry),
+          computed: '_computeDashboardData(_dashboardRegistry)',
+        },
+
+        /**
+         * @type {Object<string, !DashboardDatum>}
+         */
+        _dashboardRegistry: {
+          type: Object,
+          computed: '_computeDashboardRegistry(_pluginsListing)',
         },
 
         _pluginsListing: {
@@ -507,7 +551,7 @@ limitations under the License.
         _showNoSuchDashboardMessage: {
           type: Boolean,
           computed:
-            '_computeShowNoSuchDashboardMessage(_dashboardData, _selectedDashboard)',
+            '_computeShowNoSuchDashboardMessage(_activeDashboardsLoaded, _dashboardRegistry, _selectedDashboard)',
         },
 
         /**
@@ -523,13 +567,12 @@ limitations under the License.
         _dashboardToMaybeRemove: String,
 
         /*
-         * Will be set to `true` once our DOM is ready: in particular,
-         * once each dashboard has a `<div>` into which we can render its
-         * Polymer component root.
+         * Once the dashboard container for dashboard `d` is stamped,
+         * key `d` of this object will be set to `true`.
          */
         _dashboardContainersStamped: {
-          type: Boolean,
-          value: false,
+          type: Object,
+          value: () => ({}),
         },
         _isReloadDisabled: {
           type: Boolean,
@@ -575,10 +618,10 @@ limitations under the License.
         ('_updateSelectedDashboardFromActive(' +
          '_selectedDashboard, _activeDashboards)'),
         ('_ensureSelectedDashboardStamped(' +
-         '_dashboardContainersStamped, _activeDashboards, ' +
-         '_selectedDashboard)'),
-        ('_updateDataSelection(_dataSelection, _activeDashboards,' +
-         '_selectedDashboard)'),
+         '_dashboardRegistry, _dashboardContainersStamped, ' +
+         '_activeDashboards, _selectedDashboard)'),
+        ('_updateDataSelection(_dashboardRegistry, _dataSelection,' +
+         '_activeDashboards, _selectedDashboard)'),
       ],
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {
@@ -707,16 +750,22 @@ limitations under the License.
        *
        * If the currently selected dashboard is not a real dashboard,
        * this does nothing.
+       *
+       * @param {!Object<string, !DashboardDatum>} dashboardRegistry
        */
-      _ensureSelectedDashboardStamped(containersStamped, activeDashboards,
-                                      selectedDashboard) {
-        if (!containersStamped || !activeDashboards || !selectedDashboard) {
+      _ensureSelectedDashboardStamped(
+          dashboardRegistry,
+          containersStamped,
+          activeDashboards,
+          selectedDashboard,
+      ) {
+        if (!activeDashboards || !selectedDashboard || !containersStamped[selectedDashboard]) {
           return;
         }
         const previous = this._dashboardToMaybeRemove;
         this._dashboardToMaybeRemove = selectedDashboard;
         if (previous && previous != selectedDashboard) {
-          if (tf_tensorboard.dashboardRegistry[previous].shouldRemoveDom) {
+          if (dashboardRegistry[previous].removeDom) {
             const div = this.$$(`.dashboard-container[data-dashboard=${previous}]`);
             if (div.firstChild) {
               div.firstChild.remove();
@@ -729,19 +778,33 @@ limitations under the License.
           // This dashboard doesn't exist. Nothing to do here.
           return;
         }
-        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
+        const dashboard = dashboardRegistry[selectedDashboard];
         const useDataSelector = tf_globals.getEnableDataSelector() && dashboard.useDataSelector;
         // Use .children, not .childNodes, to avoid counting comment nodes.
         if (container.children.length === 0) {
-          const component = document.createElement(dashboard.elementName);
-          component.id = 'dashboard';  // used in `_selectedDashboardComponent`
-          if (useDataSelector) {
-            this.cancelDebouncer('updateDataSelection');
-            component.dataSelection = this._dataSelection;
+          const loadingMechanism = dashboard.loadingMechanism;
+          switch (loadingMechanism.type) {
+            case 'CUSTOM_ELEMENT': {
+              const component = document.createElement(loadingMechanism.elementName);
+              component.id = 'dashboard';  // used in `_selectedDashboardComponent`
+              if (useDataSelector) {
+                this.cancelDebouncer('updateDataSelection');
+                component.dataSelection = this._dataSelection;
+              }
+              container.appendChild(component);
+              break;
+            }
+            case 'IFRAME': {
+              container.innerText = 'iframe plugin loading not yet supported.';
+              break;
+            }
+            default: {
+              console.warn('Invariant violation:', loadingMechanism);
+              break;
+            }
           }
-          container.appendChild(component);
         }
-        this.set('_isReloadDisabled', dashboard.isReloadDisabled);
+        this.set('_isReloadDisabled', dashboard.disableReload);
         this.set('_isDataSelectorEnabled', useDataSelector);
       },
 
@@ -756,20 +819,13 @@ limitations under the License.
        * `null` is returned.
        */
       _selectedDashboardComponent() {
-        if (!this._dashboardContainersStamped) {
-          throw new Error(
-            'There is no "selected dashboard" before containers are stamped.');
-        }
         const selectedDashboard = this._selectedDashboard;
         var dashboard = this.$$(
           `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
         return dashboard;
       },
 
-      _updateDataSelection() {
-        // The dashboard is not ready yet until it stamped the containers.
-        if (!this._dashboardContainersStamped) return;
-
+      _updateDataSelection(dashboardRegistry) {
         this.cancelDebouncer('updateDataSelection');
 
         const component = this._selectedDashboardComponent();
@@ -777,7 +833,7 @@ limitations under the License.
         if (!component) return;
 
         const selectedDashboard = this._selectedDashboard;
-        const dashboard = tf_tensorboard.dashboardRegistry[selectedDashboard];
+        const dashboard = dashboardRegistry[selectedDashboard];
         if (tf_globals.getEnableDataSelector() && dashboard.useDataSelector) {
           this.debounce('updateDataSelection', () => {
             component.dataSelection = this._dataSelection;
@@ -805,7 +861,11 @@ limitations under the License.
         const dashboardsTemplate = this.$$('#dashboards-template');
         const onDomChange = () => {
           // This will trigger an observer that kicks off everything.
-          this._dashboardContainersStamped = true;
+          const dashboardContainersStamped = {};
+          for (const container of this.querySelectorAll('.dashboard-container')) {
+            dashboardContainersStamped[container.dataset.dashboard] = true;
+          }
+          this._dashboardContainersStamped = dashboardContainersStamped;
         };
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
@@ -828,6 +888,97 @@ limitations under the License.
                 if (typeof maybeMetadata === 'boolean') return maybeMetadata;
                 return maybeMetadata && maybeMetadata.enabled;
             });
+      },
+
+      /**
+       * @return {!Object<string, !DashboardDatum>}
+       */
+      _computeDashboardRegistry(pluginsListing) {
+        const registry = {};
+        for (const [name, legacyMetadata] of Object.entries(
+          tf_tensorboard.dashboardRegistry,
+        )) {
+          registry[name] = {
+            plugin: legacyMetadata.plugin,
+            loadingMechanism: {
+              type: 'CUSTOM_ELEMENT',
+              elementName: legacyMetadata.elementName,
+            },
+            tabName: legacyMetadata.tabName,
+            disableReload: legacyMetadata.isReloadDisabled || false,
+            removeDom: legacyMetadata.removeDom || false,
+            useDataSelector: legacyMetadata.useDataSelector || false,
+          };
+        }
+        if (pluginsListing != null) {
+          for (const [name, backendMetadata] of Object.entries(pluginsListing)) {
+            if (typeof backendMetadata === 'boolean') {
+              // Legacy backend (prior to #2257). No metadata to speak of.
+              continue;
+            }
+            let loadingMechanism;
+            switch (backendMetadata.loading_mechanism.type) {
+              case 'NONE':
+                // Legacy backend plugin.
+                if (registry[name] == null) {
+                  console.warn(
+                    'Plugin has no loading mechanism and no baked-in registry entry: %s',
+                    name,
+                  );
+                }
+                continue;
+              case 'CUSTOM_ELEMENT':
+                loadingMechanism = {
+                  type: 'CUSTOM_ELEMENT',
+                  elementName: backendMetadata.loading_mechanism.element_name,
+                };
+                break;
+              case 'IFRAME':
+                loadingMechanism = {
+                  type: 'IFRAME',
+                  modulePath: backendMetadata.loading_mechanism.module_path,
+                };
+                break;
+              default:
+                console.warn(
+                  'Unknown loading mechanism for plugin %s: %s',
+                  name,
+                  backendMetadata.loading_mechanism,
+                );
+                continue;
+            }
+            if (loadingMechanism == null) {
+              console.error(
+                'Invariant violation: loadingMechanism is %s for %s',
+                loadingMechanism,
+                name,
+              );
+            }
+            registry[name] = {
+              plugin: name,
+              loadingMechanism: loadingMechanism,
+              tabName: backendMetadata.tab_name,
+              disableReload: backendMetadata.disable_reload,
+              removeDom: backendMetadata.remove_dom,
+              useDataSelector: backendMetadata.use_data_selector,
+            };
+          }
+        }
+
+        // Reorder to list all values from the `/data/plugins_listing`
+        // response first and in their listed order.
+        const orderedRegistry = {};
+        for (const plugin of Object.keys(pluginsListing)) {
+          if (registry[plugin]) {
+            orderedRegistry[plugin] = registry[plugin];
+          }
+        }
+        Object.assign(orderedRegistry, registry);
+        return orderedRegistry;
+      },
+
+      _computeDashboardData(dashboardRegistry) {
+        return Object.values(dashboardRegistry);
       },
 
       _fetchPluginsListing() {
@@ -867,9 +1018,8 @@ limitations under the License.
           && activeDashboards.length === 0
           && selectedDashboard == null);
       },
-      _computeShowNoSuchDashboardMessage(dashboards, selectedDashboard) {
-        return !!selectedDashboard &&
-               !dashboards.some(d => d.plugin === selectedDashboard);
+      _computeShowNoSuchDashboardMessage(loaded, registry, selectedDashboard) {
+        return loaded && !!selectedDashboard && registry[selectedDashboard] == null;
       },
 
       _updateRouter(router) {

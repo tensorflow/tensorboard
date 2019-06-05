@@ -83,6 +83,11 @@ class HParamsPlugin(base_plugin.TBPlugin):
     return bool(self._context.multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(HParamsPlugin, self).frontend_metadata()._replace(
+        element_name='tf-hparams-dashboard',
+    )
+
   # ---- /experiment -----------------------------------------------------------
   @wrappers.Request.application
   def get_experiment_route(self, request):

@@ -142,6 +142,11 @@ class MeshPlugin(base_plugin.TBPlugin):
     # to the plugin.
     return bool(self._multiplexer and any(six.itervalues(all_runs)))
 
+  def frontend_metadata(self):
+    return super(MeshPlugin, self).frontend_metadata()._replace(
+        element_name='mesh-dashboard',
+    )
+
   def _get_sample(self, tensor_event, sample):
     """Returns a single sample from a batch of samples."""
     data = tensor_util.make_ndarray(tensor_event.tensor_proto)
