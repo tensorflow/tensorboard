@@ -206,6 +206,9 @@ var WITView = widgets.DOMWidgetView.extend({
       this.view_.multiClass = config['multiclass'];
     }
     this.view_.updateNumberOfModels();
+    if ('target_feature' in config) {
+      this.view_.selectedLabelFeature = config['target_feature'];
+    }
   },
   spriteChanged: function() {
     if (!this.setupComplete) {
