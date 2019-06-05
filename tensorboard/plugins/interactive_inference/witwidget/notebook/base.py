@@ -284,7 +284,7 @@ class WitWidgetBase(object):
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
       self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn)
+      self.adjust_prediction_fn, self.config.get('signature_name'))
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
@@ -292,10 +292,11 @@ class WitWidgetBase(object):
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
-      self.compare_adjust_prediction_fn)
+      self.compare_adjust_prediction_fn,
+      self.config.get('compare_signature_name'))
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_example, adjust_prediction):
+                        adjust_example, adjust_prediction, signature_name):
     """Custom prediction function for running inference through AI Platform."""
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
@@ -315,10 +316,11 @@ class WitWidgetBase(object):
       examples_for_predict = [
         adjust_example(ex) for ex in examples_for_predict]
 
-    response = service.projects().predict(
-        name=name,
-        body={'instances': examples_for_predict}
-    ).execute()
+    body = {'instances': examples_for_predict}
+    if signature_name:
+      body['signature_name'] = signature_name
+
+    response = service.projects().predict(name=name, body=body).execute()
     if 'error' in response:
       raise RuntimeError(response['error'])
 
