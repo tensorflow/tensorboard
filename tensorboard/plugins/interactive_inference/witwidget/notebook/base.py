@@ -228,13 +228,15 @@ class WitWidgetBase(object):
       example_strings = [
         self.json_to_proto(ex).SerializeToString()
         for ex in self.examples]
-      encoded = base64.b64encode(
-        inference_utils.create_sprite_image(example_strings))
-      if sys.version_info >= (3, 0):
-        encoded = encoded.decode('utf-8')
+      encoded = self._ensure_string(base64.b64encode(
+        inference_utils.create_sprite_image(example_strings)))
       return 'data:image/png;base64,{}'.format(encoded)
     else:
       return None
+
+  def _ensure_string(self, str_or_bytes):
+    return (str_or_bytes.decode('utf-8')
+            if sys.version_info >= (3, 0) else str_or_bytes)
 
   def _json_from_tf_examples(self, tf_examples):
     json_exs = []
@@ -264,7 +266,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat_idx] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat_idx] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat_idx] = self._ensure_string(
+              ex.features.feature[feat].bytes_list.value[0])
       else:
         json_ex = {}
         for feat in ex.features.feature:
@@ -275,7 +278,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat] = self._ensure_string(
+              ex.features.feature[feat].bytes_list.value[0])
       json_exs.append(json_ex)
     return json_exs
 
