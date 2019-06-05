@@ -125,3 +125,51 @@ tb_proto_library(
     srcs = ["plugin_data.proto"],
     visibility = ["//visibility:public"],
 )
+
+py_library(
+    name = "demo_utils",
+    srcs = ["demo_utils.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_test(
+    name = "demo_utils_test",
+    size = "small",
+    srcs = ["demo_utils_test.py"],
+    data = [
+        ":test_data",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":demo_utils",
+    ],
+)
+
+py_binary(
+    name = "mesh_demo",
+    srcs = ["mesh_demo.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":demo_utils",
+        ":summary",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
+filegroup(
+    name = "test_data",
+    srcs = [
+        "test_data/icosphere.ply",
+    ],
+    visibility = ["//visibility:public"],
+)

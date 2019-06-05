@@ -55,116 +55,118 @@ WIT_HTML = """
   <tf-interactive-inference-dashboard id="wit" local>
   </tf-interactive-inference-dashboard>
   <script>
-    const id = {id};
-    const wit = document.querySelector("#wit");
-    wit.parentElement.style.height = '{height}px';
-    let mutantFeature = null;
+    (function() {{
+      const id = {id};
+      const wit = document.querySelector("#wit");
+      wit.parentElement.style.height = '{height}px';
+      let mutantFeature = null;
 
-    // Listeners from WIT element events which pass requests to python.
-    wit.addEventListener("infer-examples", e => {{
-      google.colab.kernel.invokeFunction(
-        'notebook.InferExamples', [id], {{}});
-    }});
-    wit.addEventListener("delete-example", e => {{
-      google.colab.kernel.invokeFunction(
-        'notebook.DeleteExample', [id, e.detail.index], {{}});
-    }});
-    wit.addEventListener("duplicate-example", e => {{
-      google.colab.kernel.invokeFunction(
-        'notebook.DuplicateExample', [id, e.detail.index], {{}});
-    }});
-    wit.addEventListener("update-example", e => {{
-      google.colab.kernel.invokeFunction(
-        'notebook.UpdateExample', [id, e.detail.index, e.detail.example], {{}});
-    }});
-    wit.addEventListener('get-eligible-features', e => {{
-      google.colab.kernel.invokeFunction(
-        'notebook.GetEligibleFeatures', [id], {{}});
-    }});
-    wit.addEventListener('infer-mutants', e => {{
-      mutantFeature = e.detail.feature_name;
-      google.colab.kernel.invokeFunction(
-        'notebook.InferMutants', [id, e.detail], {{}});
-    }});
+      // Listeners from WIT element events which pass requests to python.
+      wit.addEventListener("infer-examples", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.InferExamples', [id], {{}});
+      }});
+      wit.addEventListener("delete-example", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.DeleteExample', [id, e.detail.index], {{}});
+      }});
+      wit.addEventListener("duplicate-example", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.DuplicateExample', [id, e.detail.index], {{}});
+      }});
+      wit.addEventListener("update-example", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.UpdateExample', [id, e.detail.index, e.detail.example], {{}});
+      }});
+      wit.addEventListener('get-eligible-features', e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.GetEligibleFeatures', [id], {{}});
+      }});
+      wit.addEventListener('infer-mutants', e => {{
+        mutantFeature = e.detail.feature_name;
+        google.colab.kernel.invokeFunction(
+          'notebook.InferMutants', [id, e.detail], {{}});
+      }});
 
-    // Javascript callbacks called by python code to communicate with WIT
-    // Polymer element.
-    window.inferenceCallback = inferences => {{
-      const parsedInferences = JSON.parse(inferences);
-      wit.labelVocab = parsedInferences.label_vocab;
-      wit.inferences = parsedInferences.inferences;
-      wit.attributions = {{indices: wit.inferences.indices,
-                           attributions: parsedInferences.attributions}}
-    }};
-    window.spriteCallback = spriteUrl => {{
-      if (!wit.updateSprite) {{
-        requestAnimationFrame(() => window.spriteCallback(spriteUrl));
-        return;
-      }}
-      wit.hasSprite = true;
-      wit.localAtlasUrl = spriteUrl;
-      wit.updateSprite();
-    }};
-    window.eligibleFeaturesCallback = features => {{
-      const parsedFeatures = JSON.parse(features);
-      wit.partialDepPlotEligibleFeatures = parsedFeatures;
-    }};
-    window.inferMutantsCallback = jsonMapping => {{
-      const chartInfo = JSON.parse(jsonMapping);
-      wit.makeChartForFeature(chartInfo.chartType, mutantFeature,
-        chartInfo.data);
-    }};
-    window.configCallback = jsonConfig => {{
-      if (!wit.updateNumberOfModels) {{
-        requestAnimationFrame(() => window.configCallback(jsonConfig));
-        return;
-      }}
-      const config = JSON.parse(jsonConfig);
-      if ('inference_address' in config) {{
-        let addresses = config['inference_address'];
-        if ('inference_address_2' in config) {{
-          addresses += ',' + config['inference_address_2'];
+      // Javascript callbacks called by python code to communicate with WIT
+      // Polymer element.
+      window.inferenceCallback = inferences => {{
+        const parsedInferences = JSON.parse(inferences);
+        wit.labelVocab = parsedInferences.label_vocab;
+        wit.inferences = parsedInferences.inferences;
+        wit.attributions = {{indices: wit.inferences.indices,
+                            attributions: parsedInferences.attributions}}
+      }};
+      window.spriteCallback = spriteUrl => {{
+        if (!wit.updateSprite) {{
+          requestAnimationFrame(() => window.spriteCallback(spriteUrl));
+          return;
         }}
-        wit.inferenceAddress = addresses;
-      }}
-      if ('model_name' in config) {{
-        let names = config['model_name'];
-        if ('model_name_2' in config) {{
-          names += ',' + config['model_name_2'];
+        wit.hasSprite = true;
+        wit.localAtlasUrl = spriteUrl;
+        wit.updateSprite();
+      }};
+      window.eligibleFeaturesCallback = features => {{
+        const parsedFeatures = JSON.parse(features);
+        wit.partialDepPlotEligibleFeatures = parsedFeatures;
+      }};
+      window.inferMutantsCallback = jsonMapping => {{
+        const chartInfo = JSON.parse(jsonMapping);
+        wit.makeChartForFeature(chartInfo.chartType, mutantFeature,
+          chartInfo.data);
+      }};
+      window.configCallback = jsonConfig => {{
+        if (!wit.updateNumberOfModels) {{
+          requestAnimationFrame(() => window.configCallback(jsonConfig));
+          return;
         }}
-        wit.modelName = names;
-      }}
-      if ('model_type' in config) {{
-        wit.modelType = config['model_type'];
-      }}
-      if ('are_sequence_examples' in config) {{
-        wit.sequenceExamples = config['are_sequence_examples'];
-      }}
-      if ('max_classes' in config) {{
-        wit.maxInferenceEntriesPerRun = config['max_classes'];
-      }}
-      if ('multiclass' in config) {{
-        wit.multiClass = config['multiclass'];
-      }}
-      wit.updateNumberOfModels();
-    }};
-    window.updateExamplesCallback = examples => {{
-      if (!wit.updateExampleContents) {{
-        requestAnimationFrame(() => window.updateExamplesCallback(examples));
-        return;
-      }}
-      wit.updateExampleContents(examples, false);
-      if (wit.localAtlasUrl) {{
-        window.spriteCallback(wit.localAtlasUrl);
-      }}
-    }};
-    // BroadcastChannel allows examples to be updated by a call from an
-    // output cell that isn't the cell hosting the WIT widget.
-    const channelName = 'updateExamples' + id;
-    const updateExampleListener = new BroadcastChannel(channelName);
-    updateExampleListener.onmessage = msg => {{
-      window.updateExamplesCallback(msg.data);
-    }};
+        const config = JSON.parse(jsonConfig);
+        if ('inference_address' in config) {{
+          let addresses = config['inference_address'];
+          if ('inference_address_2' in config) {{
+            addresses += ',' + config['inference_address_2'];
+          }}
+          wit.inferenceAddress = addresses;
+        }}
+        if ('model_name' in config) {{
+          let names = config['model_name'];
+          if ('model_name_2' in config) {{
+            names += ',' + config['model_name_2'];
+          }}
+          wit.modelName = names;
+        }}
+        if ('model_type' in config) {{
+          wit.modelType = config['model_type'];
+        }}
+        if ('are_sequence_examples' in config) {{
+          wit.sequenceExamples = config['are_sequence_examples'];
+        }}
+        if ('max_classes' in config) {{
+          wit.maxInferenceEntriesPerRun = config['max_classes'];
+        }}
+        if ('multiclass' in config) {{
+          wit.multiClass = config['multiclass'];
+        }}
+        wit.updateNumberOfModels();
+      }};
+      window.updateExamplesCallback = examples => {{
+        if (!wit.updateExampleContents) {{
+          requestAnimationFrame(() => window.updateExamplesCallback(examples));
+          return;
+        }}
+        wit.updateExampleContents(examples, false);
+        if (wit.localAtlasUrl) {{
+          window.spriteCallback(wit.localAtlasUrl);
+        }}
+      }};
+      // BroadcastChannel allows examples to be updated by a call from an
+      // output cell that isn't the cell hosting the WIT widget.
+      const channelName = 'updateExamples' + id;
+      const updateExampleListener = new BroadcastChannel(channelName);
+      updateExampleListener.onmessage = msg => {{
+        window.updateExamplesCallback(msg.data);
+      }};
+    }})();
   </script>
   """
 
