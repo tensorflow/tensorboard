@@ -146,6 +146,7 @@ tf_web_library(
         ":chai_typings",
         ":mocha_typings",
         ":sinon_typings",
+        ":sinon_chai_typings",
         "@org_npmjs_registry_web_component_tester",
     ],
 )
@@ -171,6 +172,14 @@ tf_web_library(
     testonly = 1,
     srcs = ["@org_definitelytyped//:sinon.d.ts"],
     path = "/sinonjs",
+    visibility = ["//visibility:private"],
+)
+
+tf_web_library(
+    name = "sinon_chai_typings",
+    testonly = 1,
+    srcs = ["@org_definitelytyped_types_sinon_chai//:index.d.ts"],
+    path = "/sinon_chai",
     visibility = ["//visibility:private"],
 )
 

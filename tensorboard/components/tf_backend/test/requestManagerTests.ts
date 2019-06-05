@@ -426,8 +426,7 @@ describe('backend', () => {
 
         const response = await rm.fetch('foo');
 
-        // TODO(stephanwlee): Make sure to use sinon-chai when typing is proper.
-        expect(this.stubbedFetch.callCount).to.equal(3);
+        expect(this.stubbedFetch).to.have.been.calledThrice;
         expect(response).to.have.property('ok', false);
         expect(response).to.have.property('status', 500);
         const body = await response.text();
