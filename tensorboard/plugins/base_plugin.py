@@ -42,6 +42,9 @@ FrontendMetadata = collections.namedtuple(
         # `None` for legacy plugins bundled with TensorBoard as part of
         # `webfiles.zip`. Mutually exclusive with legacy `element_name`
         # below.
+        #
+        # TODO(tensorboard-team): Describe the contract/API for the ES
+        # module when it is better defined.
         "es_module_path",
         # Whether to disable the reload button and auto-reload timer.
         # Boolean.
