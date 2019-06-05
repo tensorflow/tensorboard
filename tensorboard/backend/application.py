@@ -277,6 +277,9 @@ class TensorBoardWSGI(object):
     """
     response = collections.OrderedDict()
     for plugin in self._plugins:
+      if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
+        # This plugin's existence is a backend implementation detail.
+        continue
       start = time.time()
       is_active = plugin.is_active()
       elapsed = time.time() - start
