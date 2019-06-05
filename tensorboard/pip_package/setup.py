@@ -30,6 +30,7 @@ REQUIRED_PACKAGES = [
     'markdown >= 2.6.8',
     'numpy >= 1.12.0',
     'protobuf >= 3.6.0',
+    'setuptools >= 41.0.0',
     'six >= 1.10.0',
     'werkzeug >= 0.11.15',
     # python3 specifically requires wheel 0.26
@@ -52,7 +53,7 @@ setup(
     long_description=get_readme(),
     url='https://github.com/tensorflow/tensorboard',
     author='Google Inc.',
-    author_email='opensource@google.com',
+    author_email='packages@tensorflow.org',
     # Contained modules and scripts.
     packages=find_packages(),
     entry_points={

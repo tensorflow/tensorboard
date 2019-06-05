@@ -22,10 +22,38 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import six
 
 from abc import ABCMeta
 from abc import abstractmethod
+
+
+FrontendMetadata = collections.namedtuple(
+    "FrontendMetadata",
+    (
+        # Name to show in the menu item for this dashboard within the
+        # navigation bar. May differ from the plugin name. For instance,
+        # the tab name should not use underscores to separate words.
+        # Should be a `str` or `None` (defaulting to the `plugin_name`).
+        "tab_name",
+        # Whether to disable the reload button and auto-reload timer.
+        # Boolean.
+        "disable_reload",
+        # Whether to remove the plugin DOM when switching to a different
+        # plugin, to trigger the Polymer 'detached' event. Boolean.
+        "remove_dom",
+        # Whether to show a system-level data selector above the plugin.
+        # The data selector enables users to select experiments, runs,
+        # and tags. The selection is injected as a `dataSelection`
+        # property to the plugin web component. Boolean.
+        "use_data_selector",
+        # For legacy plugins, name of the custom element defining the
+        # plugin frontend: e.g., `"tf-scalar-dashboard"`. Should be a
+        # `str` or `None` (for iframed plugins).
+        "element_name",
+    ),
+)
 
 
 @six.add_metaclass(ABCMeta)
@@ -74,6 +102,36 @@ class TBPlugin(object):
       A boolean value. Whether this plugin is active.
     """
     raise NotImplementedError()
+
+  def frontend_metadata(self):
+    """Defines how the plugin will be displayed on the frontend.
+
+    The base implementation returns a default value. Subclasses are
+    encouraged to override this method and replace any attributes on the
+    result.
+    """
+    return FrontendMetadata(
+        tab_name=None,
+        disable_reload=False,
+        remove_dom=False,
+        use_data_selector=False,
+        element_name=None,
+    )
+
+  def es_module_path(self):
+    """Returns one of the keys in get_plugin_apps that is an entry ES module.
+
+    For a plugin that is loaded into an iframe, a frontend entry point has to be
+    specified. For a plugin that is bundled with TensorBoard as part of
+    webfiles.zip, return None.
+
+    TODO(tensorboard-team): describe the contract/API for the ES module when
+    it is better defined.
+
+    Returns:
+      A key in the result of `get_plugin_apps()`, or None.
+    """
+    return None
 
 
 class TBContext(object):
