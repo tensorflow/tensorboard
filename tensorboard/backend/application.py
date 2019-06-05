@@ -292,7 +292,7 @@ class TensorBoardWSGI(object):
         plugin_metadata['tab_name'] = plugin.plugin_name
       plugin_metadata['enabled'] = is_active
 
-      es_module_handler = plugin.es_module_path()
+      es_module_handler = plugin_metadata.pop('es_module_path')
       element_name = plugin_metadata.pop('element_name')
       if element_name is not None and es_module_handler is not None:
         logger.error(
