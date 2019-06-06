@@ -16,10 +16,10 @@ import base64
 import json
 import googleapiclient.discovery
 import tensorflow as tf
-import sys
 from IPython import display
 from google.protobuf import json_format
 from numbers import Number
+from six import ensure_str
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
@@ -228,20 +228,11 @@ class WitWidgetBase(object):
       example_strings = [
         self.json_to_proto(ex).SerializeToString()
         for ex in self.examples]
-      encoded = self._ensure_string(base64.b64encode(
+      encoded = ensure_str(base64.b64encode(
         inference_utils.create_sprite_image(example_strings)))
       return 'data:image/png;base64,{}'.format(encoded)
     else:
       return None
-
-  def _ensure_string(self, str_or_bytes):
-    """Returns the provided string or bytes object as string.
-
-    This is needed as the some TF objects (such as bytes_list) have different
-    types depending on it being py2 or py3 and WIT expects them as strings.
-    """
-    return (str_or_bytes.decode('utf-8')
-            if sys.version_info >= (3, 0) else str_or_bytes)
 
   def _json_from_tf_examples(self, tf_examples):
     json_exs = []
@@ -271,7 +262,7 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat_idx] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat_idx] = self._ensure_string(
+            json_ex[feat_idx] = ensure_str(
               ex.features.feature[feat].bytes_list.value[0])
       else:
         json_ex = {}
@@ -283,7 +274,7 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat] = self._ensure_string(
+            json_ex[feat] = ensure_str(
               ex.features.feature[feat].bytes_list.value[0])
       json_exs.append(json_ex)
     return json_exs
