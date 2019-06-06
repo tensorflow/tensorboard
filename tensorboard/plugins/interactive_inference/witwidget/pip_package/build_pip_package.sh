@@ -40,6 +40,7 @@ mkdir -p js
 pushd js
 
 cp -LR "$plugin_runfile_dir"/witwidget/notebook/jupyter/js/* .
+cp "$plugin_runfile_dir/tf_interactive_inference_dashboard/wit_jupyter.html" lib/
 
 # Install Node dependencies
 npm install

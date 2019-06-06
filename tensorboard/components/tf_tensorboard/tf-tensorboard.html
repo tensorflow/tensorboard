@@ -358,6 +358,12 @@ limitations under the License.
         visibility: hidden;
       }
 
+      .dashboard-container iframe {
+        border: none;
+        height: 100%;
+        width: 100%;
+      }
+
       .warning-message {
         max-width: 540px;
         margin: 80px auto 0 auto;
@@ -387,10 +393,6 @@ limitations under the License.
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
-    if (_.isEmpty(tf_tensorboard.dashboardRegistry)) {
-      throw new Error('HTML import plugin dashboards *before* tf-tensorboard');
-    }
-
     /**
      * @typedef {{
      *   plugin: string,
@@ -555,7 +557,7 @@ limitations under the License.
         _showNoSuchDashboardMessage: {
           type: Boolean,
           computed:
-            '_computeShowNoSuchDashboardMessage(_dashboardData, _selectedDashboard)',
+            '_computeShowNoSuchDashboardMessage(_activeDashboardsLoaded, _dashboardRegistry, _selectedDashboard)',
         },
 
         /**
@@ -571,13 +573,12 @@ limitations under the License.
         _dashboardToMaybeRemove: String,
 
         /*
-         * Will be set to `true` once our DOM is ready: in particular,
-         * once each dashboard has a `<div>` into which we can render its
-         * Polymer component root.
+         * Once the dashboard container for dashboard `d` is stamped,
+         * key `d` of this object will be set to `true`.
          */
         _dashboardContainersStamped: {
-          type: Boolean,
-          value: false,
+          type: Object,
+          value: () => ({}),
         },
         _isReloadDisabled: {
           type: Boolean,
@@ -764,7 +765,7 @@ limitations under the License.
           activeDashboards,
           selectedDashboard,
       ) {
-        if (!containersStamped || !activeDashboards || !selectedDashboard) {
+        if (!activeDashboards || !selectedDashboard || !containersStamped[selectedDashboard]) {
           return;
         }
         const previous = this._dashboardToMaybeRemove;
@@ -800,7 +801,16 @@ limitations under the License.
               break;
             }
             case 'IFRAME': {
-              container.innerText = 'iframe plugin loading not yet supported.';
+              const iframe = document.createElement('iframe');
+              iframe.id = 'dashboard';  // used in `_selectedDashboardComponent`
+              this.scopeSubtree(iframe);
+              container.appendChild(iframe);
+              const subdocument = iframe.contentDocument;
+              const script = subdocument.createElement('script');
+              const moduleString = JSON.stringify(loadingMechanism.modulePath);
+              script.textContent =
+                `import(${moduleString}).then((m) => void m.render());`;
+              subdocument.body.appendChild(script);
               break;
             }
             default: {
@@ -824,10 +834,6 @@ limitations under the License.
        * `null` is returned.
        */
       _selectedDashboardComponent() {
-        if (!this._dashboardContainersStamped) {
-          throw new Error(
-            'There is no "selected dashboard" before containers are stamped.');
-        }
         const selectedDashboard = this._selectedDashboard;
         var dashboard = this.$$(
           `.dashboard-container[data-dashboard=${selectedDashboard}] #dashboard`);
@@ -835,9 +841,6 @@ limitations under the License.
       },
 
       _updateDataSelection(dashboardRegistry) {
-        // The dashboard is not ready yet until it stamped the containers.
-        if (!this._dashboardContainersStamped) return;
-
         this.cancelDebouncer('updateDataSelection');
 
         const component = this._selectedDashboardComponent();
@@ -873,7 +876,11 @@ limitations under the License.
         const dashboardsTemplate = this.$$('#dashboards-template');
         const onDomChange = () => {
           // This will trigger an observer that kicks off everything.
-          this._dashboardContainersStamped = true;
+          const dashboardContainersStamped = {};
+          for (const container of this.querySelectorAll('.dashboard-container')) {
+            dashboardContainersStamped[container.dataset.dashboard] = true;
+          }
+          this._dashboardContainersStamped = dashboardContainersStamped;
         };
         dashboardsTemplate.addEventListener(
           'dom-change', onDomChange, /*useCapture=*/false);
@@ -972,7 +979,17 @@ limitations under the License.
             };
           }
         }
-        return registry;
+
+        // Reorder to list all values from the `/data/plugins_listing`
+        // response first and in their listed order.
+        const orderedRegistry = {};
+        for (const plugin of Object.keys(pluginsListing)) {
+          if (registry[plugin]) {
+            orderedRegistry[plugin] = registry[plugin];
+          }
+        }
+        Object.assign(orderedRegistry, registry);
+        return orderedRegistry;
       },
 
       _computeDashboardData(dashboardRegistry) {
@@ -1016,9 +1033,8 @@ limitations under the License.
           && activeDashboards.length === 0
           && selectedDashboard == null);
       },
-      _computeShowNoSuchDashboardMessage(dashboards, selectedDashboard) {
-        return !!selectedDashboard &&
-               !dashboards.some(d => d.plugin === selectedDashboard);
+      _computeShowNoSuchDashboardMessage(loaded, registry, selectedDashboard) {
+        return loaded && !!selectedDashboard && registry[selectedDashboard] == null;
       },
 
       _updateRouter(router) {
@@ -1035,7 +1051,7 @@ limitations under the License.
         if (this._isReloadDisabled) return;
         this._reloadData().then(() => {
           const dashboard = this._selectedDashboardComponent();
-          if (dashboard) dashboard.reload();
+          if (dashboard && dashboard.reload) dashboard.reload();
         });
         this._lastReloadTime = new Date().toString();
       },

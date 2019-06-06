@@ -296,6 +296,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     new_thread.start()
     return False
 
+  def frontend_metadata(self):
+    return super(ProjectorPlugin, self).frontend_metadata()._replace(
+        element_name='vz-projector-dashboard',
+        disable_reload=True,
+    )
+
   def _determine_is_active(self):
     """Determines whether the plugin is active.
 

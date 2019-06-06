@@ -135,6 +135,12 @@ class ProfilePlugin(base_plugin.TBPlugin):
         new_thread.start()
     return self._is_active
 
+  def frontend_metadata(self):
+    return super(ProfilePlugin, self).frontend_metadata()._replace(
+        element_name='tf-profile-dashboard',
+        disable_reload=True,
+    )
+
   def start_grpc_stub_if_necessary(self):
     # We will enable streaming trace viewer on two conditions:
     # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
