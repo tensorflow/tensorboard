@@ -20,10 +20,13 @@ from __future__ import print_function
 
 import os
 import unittest
+
+import tensorflow as tf
+
 from tensorboard.plugins.mesh import demo_utils
 
 
-class TestPLYReader(unittest.TestCase):
+class TestPLYReader(tf.test.TestCase):
   def test_parse_vertex(self):
     """Tests vertex coordinate and color parsing."""
     # Vertex 3D coordinates with RGBA color.
@@ -56,4 +59,4 @@ class TestPLYReader(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  tf.test.main()
