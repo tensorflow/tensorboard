@@ -12,3 +12,4 @@ Features:
   * Calculate the coverage of compatible ops.
   * List incompatible operations. Click on an operation to zoom in on the selected
     op.
+  * Select nodes and convert TensorFlow model into TF Lite.
