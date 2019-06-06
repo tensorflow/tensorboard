@@ -373,3 +373,15 @@ def tensorboard_typings_workspace():
           ],
       },
   )
+
+  filegroup_external(
+      name = "org_definitelytyped_types_sinon_chai",
+      licenses = ["notice"],  # MIT
+      sha256_urls = {
+          "ec72d630fc807ae2cc25d0cf707ed77cca55e08d058f591a9eb4257cd6229d98": [
+              # Version of sinon-chai is tied to that of web-component-tester.
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b4715b48d6a64a288f4ca6d0d2efcbffb36dd1cf/types/sinon-chai/v2/index.d.ts",
+              "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/b4715b48d6a64a288f4ca6d0d2efcbffb36dd1cf/types/sinon-chai/v2/index.d.ts",  # 2019-06-05
+          ],
+      },
+  )
