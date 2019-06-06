@@ -40,7 +40,7 @@ from tensorboard.util import test_util
 @test_util.run_v1_only('Requires contrib for db writer or uses op.Placeholder')
 class ScalarsPluginTest(tf.test.TestCase):
 
-  _STEPS = 99
+  _STEPS = 9
 
   _LEGACY_SCALAR_TAG = 'ancient-values'
   _SCALAR_TAG = 'simple-values'
@@ -101,9 +101,10 @@ class ScalarsPluginTest(tf.test.TestCase):
 
     with tf.compat.v1.Session() as sess:
       sess.run(tf.contrib.summary.summary_writer_initializer_op())
+      summaries = tf.contrib.summary.all_summary_ops()
       for step in xrange(self._STEPS):
         feed_dict = {global_step: step}
-        sess.run(tf.contrib.summary.all_summary_ops(), feed_dict=feed_dict)
+        sess.run(summaries, feed_dict=feed_dict)
       sess.run(flush_op)
 
   def testRoutesProvided(self):
