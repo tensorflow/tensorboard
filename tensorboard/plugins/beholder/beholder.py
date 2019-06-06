@@ -196,7 +196,7 @@ class Beholder(object):
     return grads, optimizer.apply_gradients(grads_and_vars)
 
 
-class BeholderHook(tf.train.SessionRunHook):
+class BeholderHook(tf.estimator.SessionRunHook):
   """SessionRunHook implementation that runs Beholder every step.
 
   Convenient when using tf.train.MonitoredSession:

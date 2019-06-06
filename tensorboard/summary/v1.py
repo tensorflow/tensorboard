@@ -26,7 +26,6 @@ from tensorboard.plugins.custom_scalar import summary as _custom_scalar_summary
 from tensorboard.plugins.histogram import summary as _histogram_summary
 from tensorboard.plugins.image import summary as _image_summary
 from tensorboard.plugins.pr_curve import summary as _pr_curve_summary
-from tensorboard.plugins.lite import summary as _lite_summary
 from tensorboard.plugins.scalar import summary as _scalar_summary
 from tensorboard.plugins.text import summary as _text_summary
 
@@ -48,12 +47,6 @@ pr_curve_pb = _pr_curve_summary.pb
 pr_curve_streaming_op = _pr_curve_summary.streaming_op
 pr_curve_raw_data_op = _pr_curve_summary.raw_data_op
 pr_curve_raw_data_pb = _pr_curve_summary.raw_data_pb
-
-lite = _lite_summary.op
-lite_pb = _lite_summary.pb
-lite_streaming_op = _lite_summary.streaming_op
-lite_raw_data_op = _lite_summary.raw_data_op
-lite_raw_data_pb = _lite_summary.raw_data_pb
 
 scalar = _scalar_summary.op
 scalar_pb = _scalar_summary.pb
