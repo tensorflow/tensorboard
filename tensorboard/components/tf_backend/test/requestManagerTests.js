@@ -426,8 +426,7 @@ var tf_backend;
                                     return [4 /*yield*/, rm.fetch('foo')];
                                 case 1:
                                     response = _a.sent();
-                                    // TODO(stephanwlee): Make sure to use sinon-chai when typing is proper.
-                                    expect(this.stubbedFetch.callCount).to.equal(3);
+                                    expect(this.stubbedFetch).to.have.been.calledThrice;
                                     expect(response).to.have.property('ok', false);
                                     expect(response).to.have.property('status', 500);
                                     return [4 /*yield*/, response.text()];
