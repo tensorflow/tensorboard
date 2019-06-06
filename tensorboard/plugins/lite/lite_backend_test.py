@@ -79,8 +79,8 @@ class LiteBackendTest(tf.test.TestCase):
     model = lite_demo_model.generate_run(logdir, saved_model_dir)
 
     tflite_file = os.path.join(self.get_temp_dir(), 'test.tflite')
-    input_arrays = [i.op.name for i in model.inputs]
-    output_arrays = [o.op.name for o in model.outputs]
+    input_arrays = lite_demo_model.INPUT_TENSOR_ARRAYS
+    output_arrays = lite_demo_model.OUTPUT_TENSOR_ARRAYS
 
     # OK case:
     script = lite_backend.script_from_saved_model(saved_model_dir, tflite_file, input_arrays, output_arrays)

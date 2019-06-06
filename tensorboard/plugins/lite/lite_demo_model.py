@@ -28,18 +28,24 @@ INPUT_SHAPE = (224, 224, 3)
 INPUT_NAME = 'input_image'
 OUTPUT_NAME = 'prob'
 
+# Tensor name used for TF Lite conversion.
+INPUT_TENSOR_ARRAYS = ['input_image']
+OUTPUT_TENSOR_ARRAYS = ['prob/Sigmoid']
+
 
 def generate_run(logdir, export_dir=None):
   """Generates a test model in logdir, and (optionally) exports saved model."""
+  tf.keras.backend.clear_session()
+
   x, y = np.ones((10,) + INPUT_SHAPE), np.ones((10, 1))
   val_x, val_y = np.ones((4,) + INPUT_SHAPE), np.ones((4, 1))
 
   model = tf.keras.Sequential([
       tf.keras.layers.InputLayer(INPUT_SHAPE, name=INPUT_NAME),
-      tf.keras.layers.Conv2D(128, 1),
-      tf.keras.layers.GlobalMaxPooling2D(),
+      tf.keras.layers.Conv2D(128, 1, name="conv_2d"),
+      tf.keras.layers.GlobalMaxPooling2D(name="max_pool"),
       tf.keras.layers.Dense(1, activation='sigmoid', name=OUTPUT_NAME),
-  ])
+  ], name="image_classification_model")
   model.compile('adam', 'binary_crossentropy')
 
   callbacks = [tf.keras.callbacks.TensorBoard(logdir,write_graph=True)]

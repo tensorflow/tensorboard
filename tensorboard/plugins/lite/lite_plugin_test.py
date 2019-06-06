@@ -45,9 +45,9 @@ class LitePluginTest(tf.test.TestCase):
     saved_model_dir = os.path.join(logdir, "0", "exported_saved_model")
     model = lite_demo_model.generate_run(run_logdir, saved_model_dir)
 
-    self.input_arrays = [i.op.name for i in model.inputs]
-    self.output_arrays = [o.op.name for o in model.outputs]
-
+    self.input_arrays = lite_demo_model.INPUT_TENSOR_ARRAYS
+    self.output_arrays = lite_demo_model.OUTPUT_TENSOR_ARRAYS
+    
     # Create a multiplexer for reading the data we just wrote.
     multiplexer = event_multiplexer.EventMultiplexer()
     multiplexer.AddRunsFromDirectory(logdir)
