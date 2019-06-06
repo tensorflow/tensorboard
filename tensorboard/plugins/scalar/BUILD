@@ -29,7 +29,7 @@ py_library(
 
 py_test(
     name = "scalars_plugin_test",
-    size = "small",
+    size = "medium",
     srcs = ["scalars_plugin_test.py"],
     main = "scalars_plugin_test.py",
     srcs_version = "PY2AND3",
