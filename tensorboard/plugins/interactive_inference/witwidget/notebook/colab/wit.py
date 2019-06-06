@@ -148,6 +148,9 @@ WIT_HTML = """
           wit.multiClass = config['multiclass'];
         }}
         wit.updateNumberOfModels();
+        if ('target_feature' in config) {{
+          wit.selectedLabelFeature = config['target_feature'];
+        }}
       }};
       window.updateExamplesCallback = examples => {{
         if (!wit.updateExampleContents) {{
