@@ -15,8 +15,8 @@
 """TensorBoard test module.
 
 This module provides a TensorBoard base test class and main function
-with some of the niceties of tf.test, while only requiring standard
-unittest be installed.
+with some of the niceties of tf.test, while only requiring that Abseil
+be installed (`pip install absl-py`).
 """
 
 from __future__ import absolute_import
@@ -27,69 +27,19 @@ import atexit
 import os
 import shutil
 import six
-import tempfile
-import unittest
 
-from tensorboard.util import tb_logging
+from absl.testing import absltest
 
 
-logger = tb_logging.get_logger()
-
-_temp_dir = None
-
-
-def get_temp_dir():
-  """Return a temporary directory for tests to use."""
-  global _temp_dir
-  if not _temp_dir:
-    if os.environ.get('TEST_TMPDIR'):
-      temp_dir = tempfile.mkdtemp(prefix=os.environ['TEST_TMPDIR'])
-    else:
-      temp_dir = tempfile.mkdtemp()
-
-    def delete_temp_dir(dirname=temp_dir):
-      try:
-        shutil.rmtree(dirname)
-      except OSError as e:
-        logger.error('Error removing %s: %s', dirname, e)
-
-    atexit.register(delete_temp_dir)
-    _temp_dir = temp_dir
-
-  return _temp_dir
-
-
-class TestCase(unittest.TestCase):
+class TestCase(absltest.TestCase):
   """TensorBoard base test class.
 
   This class can lazily create a temporary directory for tests to use.
   """
 
-  def __init__(self, methodName='runTest'):
-    super(TestCase, self).__init__(methodName)
+  def __init__(self, *args, **kwargs):
+    super(TestCase, self).__init__(*args, **kwargs)
     self._tempdir = None
-
-  def assertItemsEqual(self, actual, expected, msg=None):
-    """Test that sequence actual contains the same elements as expected,
-    regardless of their order.
-
-    Same as assertCountEqual in Python 3 with unittest.TestCase.
-    """
-    return six.assertCountEqual(super(TestCase, self), actual, expected, msg)
-
-  def assertStartsWith(self, actual, expected_start, msg=None):
-    """Test that string actual starts with string expected_start."""
-    if not actual.startswith(expected_start):
-      fail_msg = '%r does not start with %r' % (actual, expected_start)
-      fail_msg += ' : %r' % (msg) if msg else ''
-      self.fail(fail_msg)
-  
-  def assertEndsWith(self, actual, expected_end, msg=None):
-    """Test that string actual ends with string expected_end."""
-    if not actual.endswith(expected_end):
-      fail_msg = '%r does not end with %r' % (actual, expected_end)
-      fail_msg += ' : %r' % (msg) if msg else ''
-      self.fail(fail_msg)
 
   def get_temp_dir(self):
     """Returns a unique temporary directory for the test to use.
@@ -99,17 +49,17 @@ class TestCase(unittest.TestCase):
     different. This will ensure that across different runs tests will not be
     able to pollute each others environment.
     If you need multiple unique directories within a single test, you should
-    use tempfile.mkdtemp as follows:
+    use `self.create_tempdir()`, provided by `absltest.TestCase`.
       tempfile.mkdtemp(dir=self.get_temp_dir()):
 
     Returns:
       string, the path to the unique temporary directory created for this test.
     """
     if not self._tempdir:
-      self._tempdir = tempfile.mkdtemp(dir=get_temp_dir())
+      self._tempdir = self.create_tempdir().full_path
     return self._tempdir
 
 
 def main(*args, **kwargs):
-  """Pass args and kwargs through to unittest main"""
-  return unittest.main(*args, **kwargs)
+  """Pass args and kwargs through to absltest main."""
+  return absltest.main(*args, **kwargs)
