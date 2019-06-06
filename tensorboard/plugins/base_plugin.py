@@ -22,10 +22,51 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
+import six
+
 from abc import ABCMeta
 from abc import abstractmethod
 
 
+FrontendMetadata = collections.namedtuple(
+    "FrontendMetadata",
+    (
+        # Name to show in the menu item for this dashboard within the
+        # navigation bar. May differ from the plugin name. For instance,
+        # the tab name should not use underscores to separate words.
+        # Should be a `str` or `None` (defaulting to the `plugin_name`).
+        "tab_name",
+        # ES module to use as an entry point to this plugin. Should be a
+        # `str` that is a key in the result of `get_plugin_apps()`, or
+        # `None` for legacy plugins bundled with TensorBoard as part of
+        # `webfiles.zip`. Mutually exclusive with legacy `element_name`
+        # below.
+        #
+        # TODO(tensorboard-team): Describe the contract/API for the ES
+        # module when it is better defined.
+        "es_module_path",
+        # Whether to disable the reload button and auto-reload timer.
+        # Boolean.
+        "disable_reload",
+        # Whether to remove the plugin DOM when switching to a different
+        # plugin, to trigger the Polymer 'detached' event. Boolean.
+        "remove_dom",
+        # Whether to show a system-level data selector above the plugin.
+        # The data selector enables users to select experiments, runs,
+        # and tags. The selection is injected as a `dataSelection`
+        # property to the plugin web component. Boolean.
+        "use_data_selector",
+        # For legacy plugins, name of the custom element defining the
+        # plugin frontend: e.g., `"tf-scalar-dashboard"`. Should be a
+        # `str` or `None` (for iframed plugins). Mutually exclusive with
+        # `es_module_path`.
+        "element_name",
+    ),
+)
+
+
+@six.add_metaclass(ABCMeta)
 class TBPlugin(object):
   """TensorBoard plugin interface.
 
@@ -44,7 +85,6 @@ class TBPlugin(object):
       name must only contain characters among [A-Za-z0-9_.-], and must
       be nonempty, or a ValueError will similarly be thrown.
   """
-  __metaclass__ = ABCMeta
 
   plugin_name = None
 
@@ -72,6 +112,23 @@ class TBPlugin(object):
       A boolean value. Whether this plugin is active.
     """
     raise NotImplementedError()
+
+  def frontend_metadata(self):
+    """Defines how the plugin will be displayed on the frontend.
+
+    The base implementation returns a default value. Subclasses should
+    override this and specify either an `es_module_path` or (for legacy
+    plugins) an `element_name`, and are encouraged to replace any other
+    relevant attributes.
+    """
+    return FrontendMetadata(
+        tab_name=None,
+        es_module_path=None,
+        disable_reload=False,
+        remove_dom=False,
+        use_data_selector=False,
+        element_name=None,
+    )
 
 
 class TBContext(object):

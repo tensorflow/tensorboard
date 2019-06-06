@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+var witHtmlLocation = require('file-loader!./wit_jupyter.html');
 var widgets = require('@jupyter-widgets/base');
 
 // What-If Tool View. Renders the tool and provides communication with the
@@ -40,9 +41,14 @@ var WITView = widgets.DOMWidgetView.extend({
     const height = parseInt(
       this.model.attributes.layout.attributes.height, 10) - 20;
     const iframe = document.createElement('iframe');
-    const templateLocation =
-      window.__webpack_public_path__ + 'wit_jupyter.html';
-    const src = `<link rel="import" href="${templateLocation}">
+
+    // Adjust WIT html location if running in a jupyter notebook
+    // and not in jupyterlab.
+    if (document.body.getAttribute('data-base-url') != null) {
+      witHtmlLocation = window.__nbextension_path__ + 'wit_jupyter.html';
+    }
+
+    const src = `<link rel="import" href="${witHtmlLocation}">
     <tf-interactive-inference-dashboard local id="wit"></tf-interactive-inference-dashboard>
     <script>
       const wit = document.getElementById('wit');
@@ -141,6 +147,8 @@ var WITView = widgets.DOMWidgetView.extend({
     const inferences = this.model.get('inferences');
     this.view_.labelVocab = inferences['label_vocab'];
     this.view_.inferences = inferences['inferences'];
+    this.view_.attributions = {indices: this.view_.inferences.indices,
+      attributions: inferences['attributions']}
   },
   eligibleFeaturesChanged: function() {
     if (!this.setupComplete) {

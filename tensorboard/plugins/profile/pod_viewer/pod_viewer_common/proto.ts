@@ -98,11 +98,10 @@ module podviewer.proto {
     sendDurationUs: number;
     /** The time spent on recv operations. */
     recvDurationUs: number;
-    /**
-     * The time spent on all-reduce in micro-seconds
-     * (used to be cross-replica-sum).
-     */
-    crsDurationUs: number;
+    /** The time spent on actual all-reduce compute in micro-seconds. */
+    allReduceComputeDurationUs: number;
+    /** The time spent on all-reduce synchronization in micro-seconds. */
+    allReduceSyncDurationUs: number;
     /** bottleneck out of the above mentioned metrics. */
     bottleneck: string;
   }
@@ -135,10 +134,10 @@ module podviewer.proto {
   export interface ChannelInfo {
     /** Id of the channel. */
     channelId: number;
-    /** Core id of the send op. */
-    srcCoreId: number;
-    /** Core id of the recv op. */
-    dstCoreId: number;
+    /** Core ids of the send ops. */
+    srcCoreIds: Array<number>;
+    /** Core ids of the recv ops. */
+    dstCoreIds: Array<number>;
     /** Byte size of the data transferred. */
     dataSize: number;
     /**
@@ -158,8 +157,6 @@ module podviewer.proto {
      * op, the delay is zero.
      */
     sendDelayUs: number;
-    /** The replica_id of the program executing the send and recv ops. */
-    replicaId: number;
   }
 
   /** Data input to the pod viewer tool. */

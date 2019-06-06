@@ -298,7 +298,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 Note that if you use TensorFlow with GPU support (tensorflow-gpu), then you
 should instead install the GPU-compatible version of witwidget:
 ```sh
-pip install widwidget-gpu
+pip install witwidget-gpu
 jupyter nbextension install --py --symlink --sys-prefix witwidget
 jupyter nbextension enable --py --sys-prefix witwidget
 ```
@@ -312,7 +312,19 @@ containing:
 ```
 !pip install witwidget
 ```
-For TensorFlow GPU support, use the widwidget-gpu package instead of witwidget.
+For TensorFlow GPU support, use the `witwidget-gpu` package instead of `witwidget`.
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).
+
+### How do I enable it for use in a JupyterLab or Cloud AI Platform notebook?
+Install and enable WIT for JupyterLab by running a cell containing:
+```
+!pip install witwidget
+!jupyter labextension install wit-widget
+!jupyter labextension install @jupyter-widgets/jupyterlab-manager
+```
+For TensorFlow GPU support, use the `witwidget-gpu` package instead of `witwidget`.
+Note that you may need to run `!sudo jupyter labextension ...` commands depending on your notebook setup.
+
+Use of WIT after installation is the same as with the other notebook installations.

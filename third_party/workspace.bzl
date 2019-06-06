@@ -26,6 +26,7 @@ load("//third_party:js.bzl", "tensorboard_js_workspace")
 load("//third_party:typings.bzl", "tensorboard_typings_workspace")
 
 def tensorboard_workspace():
+  """Add repositories needed to build TensorBoard."""
   tensorboard_fonts_workspace()
   tensorboard_polymer_workspace()
   tensorboard_python_workspace()
@@ -37,7 +38,7 @@ def tensorboard_workspace():
       strip_prefix = "protobuf-3.6.0/js",
       sha256 = "50a5753995b3142627ac55cfd496cebc418a2e575ca0236e29033c67bd5665f4",
       urls = [
-          "https://mirror.bazel.build/github.com/google/protobuf/archive/v3.6.0.tar.gz",
+          "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.6.0.tar.gz",
           "https://github.com/google/protobuf/archive/v3.6.0.tar.gz",
       ],
       build_file = "@io_bazel_rules_closure//closure/protobuf:protobuf_js.BUILD",
@@ -87,4 +88,24 @@ def tensorboard_workspace():
       windows_urls = [
           "https://chromedriver.storage.googleapis.com/2.38/chromedriver_win32.zip",
       ],
+  )
+
+  java_import_external(
+      name = "org_apache_commons_lang3",
+      jar_sha256 = "de2e1dcdcf3ef917a8ce858661a06726a9a944f28e33ad7f9e08bea44dc3c230",
+      jar_urls = [
+          "http://mirror.tensorflow.org/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
+          "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
+      ],
+      licenses = ["notice"],  # Apache 2.0
+  )
+
+  java_import_external(
+      name = "org_apache_commons_text",
+      jar_sha256 = "df45e56549b63e0fe716953c9d43cc158f8bf008baf60498e7c17f3faa00a70b",
+      jar_urls = [
+          "http://mirror.tensorflow.org/repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+          "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+      ],
+      licenses = ["notice"],  # Apache 2.0
   )

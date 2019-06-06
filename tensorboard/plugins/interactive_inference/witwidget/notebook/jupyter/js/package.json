@@ -2,12 +2,10 @@
   "name": "wit-widget",
   "description": "What-If Tool jupyter widget",
   "author": "Google LLC",
-  "main": "lib/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tensorflow/tensorboard.git"
-  },
-  "private": true,
+  "main": "dist/index.js",
+  "version": "1.1.0",
+  "license" : "Apache 2.0",
+  "homepage": "https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference",
   "keywords": [
     "jupyter",
     "widgets",
@@ -16,19 +14,21 @@
     "jupyterlab-extension"
   ],
   "files": [
-    "lib/**/*.js",
-    "dist/*.js"
+    "dist/*",
+    "lib/*"
   ],
   "scripts": {
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "webpack": "^3.5.5",
-    "rimraf": "^2.6.1"
+    "file-loader": "^3.0.1",
+    "rimraf": "^2.6.1",
+    "webpack": "^3.5.5"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^1.0.0"
+    "@jupyter-widgets/base": "^1.0.0",
+    "@jupyter-widgets/jupyterlab-manager": "^0.38.1"
   },
   "jupyterlab": {
     "extension": "lib/labplugin"

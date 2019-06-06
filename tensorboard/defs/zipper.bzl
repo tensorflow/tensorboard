@@ -20,11 +20,11 @@ def _tensorboard_zip_file(ctx):
   files = depset()
   webpaths = depset()
   for dep in deps:
-    manifests += dep.webfiles.manifests
-    webpaths += dep.webfiles.webpaths
-    files += dep.data_runfiles.files
+    manifests = depset(transitive=[manifests, dep.webfiles.manifests])
+    webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
+    files = depset(transitive=[files, dep.data_runfiles.files])
   ctx.action(
-      inputs=list(manifests + files),
+      inputs=depset(transitive=[manifests, files]).to_list(),
       outputs=[ctx.outputs.zip],
       executable=ctx.executable._Zipper,
       arguments=([ctx.outputs.zip.path] +
@@ -32,7 +32,10 @@ def _tensorboard_zip_file(ctx):
       progress_message="Zipping %d files" % len(webpaths))
   transitive_runfiles = depset()
   for dep in deps:
-    transitive_runfiles += dep.data_runfiles.files
+    transitive_runfiles = depset(transitive=[
+        transitive_runfiles,
+        dep.data_runfiles.files,
+    ])
   return struct(
       files=depset([ctx.outputs.zip]),
       runfiles=ctx.runfiles(

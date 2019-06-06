@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ from __future__ import print_function
 import logging
 import os
 
+import pkg_resources
+
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
@@ -57,22 +59,24 @@ from tensorboard.plugins.mesh import mesh_plugin
 
 logger = logging.getLogger(__name__)
 
+# Ordering matters. The order in which these lines appear determines the
+# ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin_loader.BeholderPluginLoader(),
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
     audio_plugin.AudioPlugin,
+    debugger_plugin_loader.DebuggerPluginLoader(),
     graphs_plugin.GraphsPlugin,
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
-    pr_curves_plugin.PrCurvesPlugin,
     projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
+    pr_curves_plugin.PrCurvesPlugin,
     profile_plugin_loader.ProfilePluginLoader(),
-    debugger_plugin_loader.DebuggerPluginLoader(),
+    beholder_plugin_loader.BeholderPluginLoader(),
+    interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
     hparams_plugin_loader.HParamsPluginLoader(),
     mesh_plugin.MeshPlugin,
     lite_plugin_loader.LitePluginLoader(),
@@ -88,4 +92,24 @@ def get_plugins():
 
   :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
   """
+
   return _PLUGINS[:]
+
+
+def get_dynamic_plugins():
+  """Returns a list specifying TensorBoard's dynamically loaded plugins.
+
+  A dynamic TensorBoard plugin is specified using entry_points [1] and it is
+  the robust way to integrate plugins into TensorBoard.
+
+  This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+  Returns:
+    list of base_plugin.TBLoader or base_plugin.TBPlugin.
+
+  [1]: https://packaging.python.org/specifications/entry-points/
+  """
+  return [
+      entry_point.load()
+      for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins')
+  ]
