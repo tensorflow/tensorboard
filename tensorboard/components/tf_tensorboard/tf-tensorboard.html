@@ -809,6 +809,9 @@ limitations under the License.
               const pluginBasePath = tf_backend.getRouter()
                   .pluginRoute(selectedDashboard, '/')
               const base = subdocument.createElement('base');
+              // TODO(stephanwlee): Use sanitized URL when setting the href.
+              // setAttribute is a bypass for the security conformance which we
+              // have no way to address.
               base.setAttribute(
                   'href',
                   String(new URL(pluginBasePath, window.location.href)));
