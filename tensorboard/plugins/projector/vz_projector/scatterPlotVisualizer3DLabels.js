@@ -211,7 +211,7 @@ var vz_projector;
                 return;
             }
             var colors = this.geometry.getAttribute('color');
-            colors.array = this.renderColors;
+            colors.setArray(this.renderColors);
             var n = pointColors.length / XYZ_ELEMENTS_PER_ENTRY;
             var src = 0;
             for (var i = 0; i < n; ++i) {
@@ -253,7 +253,7 @@ var vz_projector;
             this.material.uniforms.texture.value = this.glyphTexture.texture;
             this.material.uniforms.picking.value = true;
             var colors = this.geometry.getAttribute('color');
-            colors.array = this.pickingColors;
+            colors.setArray(this.pickingColors);
             colors.needsUpdate = true;
         };
         ScatterPlotVisualizer3DLabels.prototype.onRender = function (rc) {
@@ -267,7 +267,7 @@ var vz_projector;
             this.material.uniforms.texture.value = this.glyphTexture.texture;
             this.material.uniforms.picking.value = false;
             var colors = this.geometry.getAttribute('color');
-            colors.array = this.renderColors;
+            colors.setArray(this.renderColors);
             colors.needsUpdate = true;
         };
         ScatterPlotVisualizer3DLabels.prototype.onPointPositionsChanged = function (newPositions) {

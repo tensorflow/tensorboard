@@ -117,7 +117,8 @@ var vz_projector;
                 this.polylines[i].material.opacity = renderContext.polylineOpacities[i];
                 this.polylines[i].material.linewidth =
                     renderContext.polylineWidths[i];
-                this.polylineColorBuffer[i].array = renderContext.polylineColors[i];
+                this.polylineColorBuffer[i]
+                    .setArray(renderContext.polylineColors[i]);
                 this.polylineColorBuffer[i].needsUpdate = true;
             }
         };

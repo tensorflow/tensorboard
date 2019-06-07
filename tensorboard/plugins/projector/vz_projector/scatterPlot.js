@@ -366,7 +366,7 @@ var vz_projector;
             return axes;
         };
         ScatterPlot.prototype.add3dAxis = function () {
-            var axes = new THREE.AxisHelper();
+            var axes = new THREE.AxesHelper();
             axes.name = 'axes';
             this.scene.add(axes);
         };
@@ -486,7 +486,16 @@ var vz_projector;
             this.visualizers.forEach(function (v) { return v.onPickingRender(rc); });
             {
                 var axes = this.remove3dAxisFromScene();
-                this.renderer.render(this.scene, this.camera, this.pickingTexture);
+                // Render to the pickingTexture when existing.
+                if (this.pickingTexture) {
+                    this.renderer.setRenderTarget(this.pickingTexture);
+                }
+                else {
+                    this.renderer.setRenderTarget(null);
+                }
+                this.renderer.render(this.scene, this.camera);
+                // Set the renderTarget back to the default.
+                this.renderer.setRenderTarget(null);
                 if (axes != null) {
                     this.scene.add(axes);
                 }
@@ -570,7 +579,10 @@ var vz_projector;
             this.renderer.setSize(newW, newH);
             // the picking texture needs to be exactly the same as the render texture.
             {
-                var renderCanvasSize = this.renderer.getSize();
+                var renderCanvasSize = new THREE.Vector2();
+                // TODO(stephanwlee): Remove casting to any after three.js typing is
+                // proper.
+                this.renderer.getSize(renderCanvasSize);
                 var pixelRatio = this.renderer.getPixelRatio();
                 this.pickingTexture = new THREE.WebGLRenderTarget(renderCanvasSize.width * pixelRatio, renderCanvasSize.height * pixelRatio);
                 this.pickingTexture.texture.minFilter = THREE.LinearFilter;
