@@ -36,7 +36,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    tf.logging.set_verbosity(tf.logging.WARN)
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
