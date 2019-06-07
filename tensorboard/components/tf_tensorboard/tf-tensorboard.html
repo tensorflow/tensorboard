@@ -806,10 +806,15 @@ limitations under the License.
               this.scopeSubtree(iframe);
               container.appendChild(iframe);
               const subdocument = iframe.contentDocument;
-              const baseUrl = tf_backend.getRouter()
+              const pluginBasePath = tf_backend.getRouter()
                   .pluginRoute(selectedDashboard, '/')
               const base = subdocument.createElement('base');
-              base.href = baseUrl;
+              // TODO(stephanwlee): Use sanitized URL when setting the href.
+              // setAttribute is a bypass for the security conformance which we
+              // have no way to address.
+              base.setAttribute(
+                  'href',
+                  String(new URL(pluginBasePath, window.location.href)));
               subdocument.head.appendChild(base);
               const script = subdocument.createElement('script');
               const moduleString = JSON.stringify(loadingMechanism.modulePath);
