@@ -655,7 +655,7 @@ def get_label_vocab(vocab_path):
       with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
-      tf.logging.error('error reading vocab file: %s', err)
+      tf.compat.v1.logging.error('error reading vocab file: %s', err)
   return []
 
 def create_sprite_image(examples):
@@ -670,7 +670,7 @@ def create_sprite_image(examples):
 
     def generate_image_from_thubnails(thumbnails, thumbnail_dims):
       """Generates a sprite atlas image from a set of thumbnails."""
-      num_thumbnails = tf.shape(thumbnails)[0].eval()
+      num_thumbnails = tf.shape(input=thumbnails)[0].eval()
       images_per_row = int(math.ceil(math.sqrt(num_thumbnails)))
       thumb_height = thumbnail_dims[0]
       thumb_width = thumbnail_dims[1]
@@ -693,9 +693,9 @@ def create_sprite_image(examples):
     with tf.compat.v1.Session():
       keys_to_features = {
           image_feature_name:
-              tf.FixedLenFeature((), tf.string, default_value=''),
+              tf.compat.v1.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.parse_example(examples, keys_to_features)
+      parsed = tf.compat.v1.parse_example(examples, keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (sprite_thumbnail_dim_px,
@@ -711,13 +711,13 @@ def create_sprite_image(examples):
         resized_image = tf.image.resize(image, thumbnail_dims)
         expanded_image = tf.expand_dims(resized_image, 0)
         images = tf.cond(
-            tf.equal(i, 0), lambda: expanded_image,
-            lambda: tf.concat([images, expanded_image], 0))
+            pred=tf.equal(i, 0), true_fn=lambda: expanded_image,
+            false_fn=lambda: tf.concat([images, expanded_image], 0))
         return i + 1, encoded_images, images
 
       loop_out = tf.while_loop(
-          lambda i, encoded_images, images: tf.less(i, num_examples),
-          loop_body, [i, encoded_images, images],
+          cond=lambda i, encoded_images, images: tf.less(i, num_examples),
+          body=loop_body, loop_vars=[i, encoded_images, images],
           shape_invariants=[
               i.get_shape(),
               encoded_images.get_shape(),
@@ -746,8 +746,8 @@ def run_inference(examples, serving_bundle):
     # If provided an estimator and feature spec then run inference locally.
     preds = serving_bundle.estimator.predict(
       lambda: tf.data.Dataset.from_tensor_slices(
-        tf.parse_example([ex.SerializeToString() for ex in examples],
-        serving_bundle.feature_spec)).batch(batch_size))
+        tf.io.parse_example(serialized=[ex.SerializeToString() for ex in examples],
+        features=serving_bundle.feature_spec)).batch(batch_size))
 
     if serving_bundle.use_predict:
       preds_key = serving_bundle.predict_output_tensor
