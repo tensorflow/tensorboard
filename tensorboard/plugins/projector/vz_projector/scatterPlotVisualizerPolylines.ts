@@ -135,7 +135,8 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
       this.polylines[i].material.opacity = renderContext.polylineOpacities[i];
       (this.polylines[i].material as THREE.LineBasicMaterial).linewidth =
           renderContext.polylineWidths[i];
-      this.polylineColorBuffer[i].array = renderContext.polylineColors[i];
+      (this.polylineColorBuffer[i] as any)
+          .setArray(renderContext.polylineColors[i]);
       this.polylineColorBuffer[i].needsUpdate = true;
     }
   }
