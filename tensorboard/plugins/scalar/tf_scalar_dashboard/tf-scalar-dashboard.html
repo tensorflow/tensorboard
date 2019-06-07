@@ -353,7 +353,7 @@ limitations under the License.
           category.items = category.items.map(item => ({
             tag: item.tag,
             series: item.runs.map(run => ({run, tag: item.tag})),
-         }));
+          }));
         });
         this.updateArrayProp('_categories', categories, this._getCategoryKey);
       },
