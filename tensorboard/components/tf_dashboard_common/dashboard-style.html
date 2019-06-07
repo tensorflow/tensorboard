@@ -23,6 +23,10 @@ limitations under the License.
   <template>
     <style include="iron-flex"></style>
     <style>
+      :host {
+        --sidebar-vertical-padding: 15px;
+      }
+
       .sidebar {
         box-sizing: border-box;
         display: flex;
@@ -35,8 +39,11 @@ limitations under the License.
       }
 
       tf-runs-selector {
-        flex-shrink: 1;
         flex-grow: 1;
+        flex-shrink: 1;
+        max-height: calc(100% - var(--sidebar-vertical-padding) * 2);
+        overflow: hidden;
+        position: absolute;
       }
 
       .search-input {
@@ -45,7 +52,8 @@ limitations under the License.
 
       .sidebar-section {
         border-top: solid 1px rgba(0, 0, 0, .12);
-        padding: 15px 0 15px 30px;
+        padding: var(--sidebar-vertical-padding) 0 var(--sidebar-vertical-padding) 30px;
+        position: relative;
       }
 
       .sidebar-section:first-of-type {
