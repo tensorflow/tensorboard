@@ -515,13 +515,13 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_graphics_lib",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "82bf620fbf10af00a83754b7ebadcbcd41af7181e1aa237cdd72a2881d8004fe": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+          "5a9cd221f6727b7524ba6b63bdc0355843c42a238d3f83df980005c7cb270a92": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/cd8c42f9ca260f77c6acfecd42e66ef01d1a3766/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/cd8c42f9ca260f77c6acfecd42e66ef01d1a3766/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
           ],
           "bc7e983aae707e2d8dc0ca6406e3779e4ad73c537a02bed6d3d3d40180f26904": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/cd8c42f9ca260f77c6acfecd42e66ef01d1a3766/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/cd8c42f9ca260f77c6acfecd42e66ef01d1a3766/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )
