@@ -118,7 +118,8 @@ class LocalFileSystem(object):
                 return f.read()
 
     def write(self, filename, file_content, binary_mode=False):
-        """Writes string file contents to a file.
+        """Writes string file contents to a file, overwriting any
+        existing contents.
 
         Args:
             filename: string, a path
@@ -138,12 +139,7 @@ class LocalFileSystem(object):
         self._write(filename, file_content, "ab" if binary_mode else "a")
 
     def _write(self, filename, file_content, mode):
-        if "b" in mode:
-            encoding = None
-            file_content = compat.as_bytes(file_content)
-        else:
-            encoding = "utf8"
-            file_content = compat.as_text(file_content)
+        encoding = None if "b" in mode else "utf8"
         with io.open(filename, mode, encoding=encoding) as f:
             f.write(file_content)
 
@@ -416,6 +412,15 @@ class GFile(object):
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
     def read(self, n=None):
+        """Reads contents of file to a string.
+
+        Args:
+            n: int, number of bytes or characters to read, otherwise
+                read all the contents of the file
+
+        Returns:
+            Subset of the contents of the file as a string or bytes.
+        """
         result = None
         if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
@@ -446,13 +451,31 @@ class GFile(object):
         return result
 
     def write(self, file_content):
+        """Writes string file contents to file, clearing contents of the
+        file on first write and then appending on subsequent calls.
+
+        Args:
+            file_content: string, the contents
+        """
         if not self.write_mode:
             raise errors.OpError(None, None, "File not opened in write mode")
+        if self.closed:
+            raise errors.OpError(None, None, "File already closed")
 
-        # add to temp file, but wait for flush to write to final filesystem
-        if self.write_temp is None:
-            self.write_temp = tempfile.TemporaryFile("w+b")
-        self.write_temp.write(compat.as_bytes(file_content))
+        if self.fs_supports_append:
+            if not self.write_started:
+                # write the first chunk
+                self.fs.write(self.filename, file_content, self.binary_mode)
+                self.write_started = True
+            else:
+                # append the later chunks
+                self.fs.append(self.filename, file_content, self.binary_mode)
+        else:
+            # add to temp file, but wait for flush to write to final filesystem
+            if self.write_temp is None:
+                mode = "w+b" if self.binary_mode else "w+"
+                self.write_temp = tempfile.TemporaryFile(mode)
+            self.write_temp.write(file_content)
 
     def __next__(self):
         line = None
@@ -484,25 +507,16 @@ class GFile(object):
         return self.__next__()
 
     def flush(self):
-        if self.write_temp is not None:
-            # read temp file from the beginning
-            self.write_temp.flush()
-            self.write_temp.seek(0)
-            chunk = self.write_temp.read()
-            if chunk is not None:
-                # use append if filesystem supports it
-                if self.fs_supports_append:
-                    if not self.write_started:
-                        # write the first chunk
-                        self.fs.write(self.filename, chunk, self.binary_mode)
-                        self.write_started = True
-                    else:
-                        # append the later chunks
-                        self.fs.append(self.filename, chunk, self.binary_mode)
-                    # remove temp file, since we are appending
-                    self.write_temp.close()
-                    self.write_temp = None
-                else:
+        if self.closed:
+            raise errors.OpError(None, None, "File already closed")
+
+        if not self.fs_supports_append:
+            if self.write_temp is not None:
+                # read temp file from the beginning
+                self.write_temp.flush()
+                self.write_temp.seek(0)
+                chunk = self.write_temp.read()
+                if chunk is not None:
                     # write full contents and keep in temp file
                     self.fs.write(self.filename, chunk, self.binary_mode)
                     self.write_temp.seek(len(chunk))
