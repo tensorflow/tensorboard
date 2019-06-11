@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from absl import logging
 import base64
 import json
 import googleapiclient.discovery
@@ -36,7 +37,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.WARN)
+    logging.set_verbosity(logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (

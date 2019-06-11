@@ -18,6 +18,8 @@ import collections
 import copy
 import json
 import math
+
+from absl import logging
 import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
@@ -655,7 +657,7 @@ def get_label_vocab(vocab_path):
       with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
-      tf.compat.v1.logging.error('error reading vocab file: %s', err)
+      logging.error('error reading vocab file: %s', err)
   return []
 
 def create_sprite_image(examples):
@@ -693,9 +695,9 @@ def create_sprite_image(examples):
     with tf.compat.v1.Session():
       keys_to_features = {
           image_feature_name:
-              tf.compat.v1.FixedLenFeature((), tf.string, default_value=''),
+              tf.io.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.compat.v1.parse_example(examples, keys_to_features)
+      parsed = tf.io.parse_example(examples, keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (sprite_thumbnail_dim_px,
