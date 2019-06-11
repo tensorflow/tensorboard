@@ -162,5 +162,11 @@ such as different X scales (linear and temporal), tooltips and smoothing.
     }
     </style>
   </template>
-  <script src="vz-line-chart-tooltip.js"></script>
+  <script>
+    // The component is for creating the DOM structure and styling the DOMs
+    // using shadow CSS.
+    Polymer({
+      is: 'vz-line-chart-tooltip',
+    });
+  </script>
 </dom-module>
