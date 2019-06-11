@@ -45,7 +45,7 @@ limitations under the License.
         <tf-hparams-scale-and-color-controls
           id="controls"
           class="section"
-          schema="[[schema.visibleSchema]]"
+          configuration="[[configuration]]"
           session-groups="[[sessionGroups]]"
           options="{{_options}}">
         </tf-hparams-scale-and-color-controls>
@@ -54,7 +54,6 @@ limitations under the License.
           <tf-hparams-parallel-coords-plot
             id="plot"
             class="section"
-            schema="[[schema]]"
             session-groups="[[sessionGroups]]"
             selected-session-group="{{_selectedGroup}}"
             closest-session-group="{{_closestGroup}}"
@@ -64,7 +63,7 @@ limitations under the License.
             <tf-hparams-session-group-values
               id="values"
               class="section"
-              schema="[[schema.visibleSchema]]"
+              visible-schema="[[configuration.visibleSchema]]"
               session-group="[[_closestOrSelected(
                              _closestGroup, _selectedGroup)]]">
             </tf-hparams-session-group-values>
@@ -74,7 +73,7 @@ limitations under the License.
               backend="[[backend]]"
               experiment-name="[[experimentName]]"
               session-group="[[_selectedGroup]]"
-              schema="[[schema.visibleSchema]]">
+              visible-schema="[[configuration.visibleSchema]]">
             </tf-hparams-session-group-details>
           </vaadin-split-layout>
         </vaadin-split-layout>
@@ -138,7 +137,7 @@ limitations under the License.
         // See the property description in tf-hparams-query-pane.html
         experimentName: String,
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
+        configuration: Object,
         // See the property description in tf-hparams-query-pane.html
         sessionGroups: Array,
       },

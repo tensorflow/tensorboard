@@ -53,7 +53,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       <div class="columns-container">
         <!-- Scale options for each numeric feature -->
         <template is="dom-repeat"
-                  items="[[options.columns]]"
+                  items="{{options.columns}}"
                   as="column">
           <template is="dom-if"
                     if="[[_isNumericColumn(column.index)]]">
@@ -63,8 +63,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
               </div>
               <div>
                 <paper-radio-group class="scale-radio-group"
-                                   selected="{{column.scale}}"
-                                   on-selected-changed="_scaleChanged">
+                                   selected="{{column.scale}}">
                   <paper-radio-button name="LINEAR">
                     Linear
                   </paper-radio-button>
@@ -125,7 +124,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       properties: {
         /* Public properties */
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
+        configuration: Object,
         // See the property description in tf-hparams-query-pane.html
         // We need this here to determine when log-scale needs to be grayed
         // out.
@@ -133,7 +132,8 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
 
         // An object describing the current options set in this element
         // It has the following format:
-        // {  /* An array of elements--each representing the options for a
+        // {
+        //   /* An array of elements--each representing the options for a
         //       given column.
         //
         //       The order of elements here corresponds to the order of columns
@@ -142,7 +142,10 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         //
         //       Possible values for scale are:
         //
-        //       index: The column's index in the array.
+        //       absoluteIndex: The column index in configuration.schema
+        //
+        //       [DEPRECATED]. Use absoluteIndex instead.
+        //       index: Number. The column's index in the array.
         //    */
         //    columns: Array of {
         //      scale: enum of {LINEAR, LOG, QUANTILE, NON_NUMERIC}
@@ -155,13 +158,17 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         //                 (a hyperparameter whose HParamInfo.type is not
         //                  DATA_TYPE_FLOAT64).
         //      name: string.
-        //      index: number. The index of the column in the array.
+        //      absoluteIndex: The column index in configuration.schema
+        //
+        //      [DEPRECATED]. Use absoluteIndex instead.
+        //      index: Number. The index of the column in the array.
         //    }
         //    /* Parameters that determine how to color each object representing
         //       a session group (e.g. a curve in parallel coordinates or a
         //       marker in scatter plot matrix). The color of each object will
         //       depend on the value of the column indexed by
         //       'colorByColumnIndex' which must be a numeric column.
+        //       This is the index in the options.columns array.
         //       Objects representing session groups whose corresponding value
         //       is the minimum (resp. maximum) among all session groups will
         //       be colored by 'minColor' (resp. maxColor). The color of
@@ -170,8 +177,13 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         //       CSS RGB coordinate lattice: [0,255]^3.
         //    */
         //    colorByColumnIndex: Number
+        //
         //    minColor: String
         //    maxColor: String
+        //
+        //    /* The tf-hparam-query configuration property that resulted in
+        //       object. */
+        //    configuration: Object
         // }
         options: {
           type: Object,
@@ -181,36 +193,45 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       },
 
       observers: [
-        '_schemaChanged(schema.*)',
+        '_configurationChanged(configuration.*)',
         '_unselectDisabledLogScales(sessionGroups.*)',
       ],
 
       /* Private methods */
-      // Called when the schema property changes.
-      _schemaChanged() {
+      _configurationChanged() {
         // Populate options.columns with a linear scale for each column (
         // hparam or metric).
-        const schema = this.schema;
+        const visibleSchema = this.configuration.visibleSchema;
+        const schema = this.configuration.schema;
         const newHParamColumn = (info, index) => {
           return {
             name: tf.hparams.utils.hparamName(info),
             index: index,
+            absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+                schema,
+                visibleSchema,
+                index),
             scale: this._isNumericColumn(index) ? "LINEAR" : "NON_NUMERIC",
           };
         };
         const newMetricColumn = (info, index) => {
-          const colIndex = index + schema.hparamInfos.length;
+          const colIndex = index + visibleSchema.hparamInfos.length;
           return {
             scale: "LINEAR",
             name: tf.hparams.utils.metricName(info),
             index: colIndex,
+            absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+                schema,
+                visibleSchema,
+                colIndex),
           };
         };
         const options = {
-          columns: schema.hparamInfos.map(newHParamColumn).concat(
-              schema.metricInfos.map(newMetricColumn)),
+          columns: visibleSchema.hparamInfos.map(newHParamColumn).concat(
+              visibleSchema.metricInfos.map(newMetricColumn)),
           minColor: "#0000FF",
           maxColor: "#FF0000",
+          configuration: this.configuration,
         };
 
         // Set the colorByColumnIndex property.
@@ -234,8 +255,8 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       _unselectDisabledLogScales() {
         if (this.options === null) {
           // We may be called before the options are constructed by
-          // _schemaChanged(). In this case we need not worry about selected
-          // disabled log scales.
+          // _configurationChanged(). In this case we need not worry
+          // about selected disabled log scales.
           return;
         }
         this.options.columns.forEach(col => {
@@ -252,34 +273,28 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           return false;
         }
         const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(
-            this.schema, this.sessionGroups, column.index);
+            this.configuration.visibleSchema, this.sessionGroups, column.index);
         // Log scale is only defined when the domain does not include 0.
         return min > 0 || max < 0;
-      },
-
-      _scaleChanged(event) {
-        // Notify polymer that the column changed so that other elements
-        // that depend on it will see the change.
-        const model = event.model;
-        this.notifyPath(`options.columns.${model.column.index}.scale`);
       },
 
       // Returns true if the scale is numeric.
       // Used to prevent non-numeric columns from having a scale-selection
       // radio group.
       _isNumericColumn(colIndex) {
-        return colIndex >= this.schema.hparamInfos.length ||
-            this.schema.hparamInfos[colIndex].type === "DATA_TYPE_FLOAT64";
+        return colIndex >= this.configuration.visibleSchema.hparamInfos.length
+            || this.configuration.visibleSchema.hparamInfos[colIndex].type ===
+            "DATA_TYPE_FLOAT64";
       },
 
       // Use the first metric if there are metrics, or otherwise the first
       // numeric hparam if there are hparams. If there are no numeric columns
       // return undefined.
       _defaultColorByColumnIndex() {
-        if (this.schema.metricInfos.length > 0) {
-          return this.schema.hparamInfos.length;
+        if (this.configuration.visibleSchema.metricInfos.length > 0) {
+          return this.configuration.visibleSchema.hparamInfos.length;
         }
-        const i = this.schema.hparamInfos.findIndex(
+        const i = this.configuration.visibleSchema.hparamInfos.findIndex(
             info => info.type === "DATA_TYPE_FLOAT64"
         );
         if (i !== -1) {

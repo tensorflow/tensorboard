@@ -39,7 +39,7 @@ var tf;
       //     'tf-hparams-query-pane.html'.
       // visibleSchema: The object storing metadata on just the visible metrics
       //     and hparams in 'schema'. This is the object stored in the property
-      //     'visibleSchema' of 'schema' (see the documentation in
+      //     'visibleSchema' of 'configuration' (see the documentation in
       //     tf-hparams-query-pane.html' for more details). This object and the
       //     utility functions below that accept it are deprecated and the
       //     intention is to eventually remove them.
@@ -102,24 +102,6 @@ var tf;
         return metricName(schema.metricColumns[metricIndex].metricInfo);
       }
       utils.schemaColumnName = schemaColumnName;
-
-      // Returns the number of hparams in schema having 'displayed' true.
-      function numDisplayedHParams(schema) {
-        return schema.hparamColumns.filter(c=>c.displayed).length;
-      }
-      utils.numDisplayedHParams = numDisplayedHParams;
-
-      // Returns the number of metrics in schema having 'displayed' true.
-      function numDisplayedMetrics(schema) {
-        return schema.metricColumns.filter(c=>c.displayed).length;
-      }
-      utils.numDisplayedMetrics = numDisplayedMetrics;
-
-      // Returns the number of columns in schema having 'displayed' true.
-      function numDisplayedColumns(schema) {
-        return numDisplayedHParams(schema) + numDisplayedMetrics(schema);
-      }
-      utils.numDisplayedColumns = numDisplayedColumns;
 
       // Returns the number of hparams in schema (visible and invisible).
       function numHParams(schema) {
@@ -196,35 +178,24 @@ var tf;
       }
       utils.numericColumnExtent = numericColumnExtent;
 
-      // Returns true if the column indexed by 'columnIndex' is currently
-      // displayed (has 'displayed' in its {hparam, metric}Columns entry).
-      function isColumnDisplayed(schema, columnIndex) {
-        if (columnIndex < schema.hparamColumns.length) {
-          return schema.hparamColumns[columnIndex].displayed;
-        }
-        return schema.metricColumns[columnIndex - schema.hparamColumns.length]
-            .displayed;
-      }
-      utils.isColumnDisplayed = isColumnDisplayed;
-
       // Converts a visibleSchema columnIndex to a schema columnIndex.
       // Returns the schema-relative columnIndex for the visible column with
-      // schema.visible-releative columnIndex given by 'visibleColumnIndex'.
-      function getAbsoluteColumnIndex(schema, visibleColumnIndex) {
+      // visibleSchema-releative columnIndex given by 'visibleColumnIndex'.
+      function getAbsoluteColumnIndex(
+          schema, visibleSchema, visibleColumnIndex) {
         let result;
-        if (visibleColumnIndex < schema.visibleSchema.hparamInfos.length) {
+        if (visibleColumnIndex < visibleSchema.hparamInfos.length) {
           result = schema.hparamColumns.findIndex(
               c => (c.hparamInfo.name ===
-                    schema.visibleSchema.hparamInfos[visibleColumnIndex].name));
+                    visibleSchema.hparamInfos[visibleColumnIndex].name));
         } else {
           const metricIndex =
-                visibleColumnIndex - schema.visibleSchema.hparamInfos.length;
-          const metricName = schema.visibleSchema.metricInfos[metricIndex].name;
+                visibleColumnIndex - visibleSchema.hparamInfos.length;
+          const metricName = visibleSchema.metricInfos[metricIndex].name;
           result = schema.hparamColumns.length + schema.metricColumns.findIndex(
               c => (c.metricInfo.name === metricName));
         }
         console.assert(result !== -1);
-        console.assert(isColumnDisplayed(schema, result));
         return result;
       }
       utils.getAbsoluteColumnIndex = getAbsoluteColumnIndex;

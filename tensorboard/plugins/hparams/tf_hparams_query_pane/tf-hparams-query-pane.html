@@ -42,7 +42,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
             <div class="section hyperparameters">
               <div class="section-title">Hyperparameters</div>
               <template is="dom-repeat"
-                        items="[[_hparams]]"
+                        items="{{_hparams}}"
                         as="hparam">
                 <div class="hparam">
                   <paper-checkbox
@@ -320,72 +320,61 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // the /experiment HTTP endpoint.
         experimentName: String,
 
-        // Defines the type and id of each metric and hparam in the
-        // session groups.
-        // See the closure type definition below. Some explanations on the
-        // various fields follow:
-        // * hparamColumn[].hparamInfo stores the HParamInfo Protocol buffer
-        //   associated with the hparam.
-        // * metricColumn[].metricInfo stores the MetricInfo protocol buffer
-        //   associated with the metric.
-        // * hparamColumn[].displayed and metricColumn[].displayed stores
-        //   whether the hparam or metric is currently displayed (checkbox next
-        //   to it is checked).
-        // * visibleSchema.hparamInfos: Array consisting of
-        //   HParamInfos protocol buffers for each of the displayed hparams.
-        // * visibleSchema.metricInfos: Array consisting of MetricInfos
-        //   protocol buffers for each of the displayed metrics.
+        // Contains the schema and columns visibility status.
+        // We use a single object we call 'configuration' to hold both of
+        // these properties, since Polymer (v1) doesn't allow atomic
+        // changes to multiple properties (that is, sending the notification
+        // to downstream consumers only after all properties have been updated).
         //
-        // Note that the 'visibleSchema' field is deprecated and is included
-        // only to support the old-style schema that only contained the
-        // columns (metrics or hparams) that were displayed. It should be
-        // removed when all consumers are migrated to use the hparamColumns and
-        // metricColumns fields.
+        // Properties:
+        // -----------
+        // schema.hparamColumns[i].hparamInfo contains the HParamInfo protocol
+        // buffer representing the ith hparam.
+        // schema.metricColumns[i].metricInfo contains the MetricInfo protocol
+        // buffer representing the ith metric.
         //
-        // The 'Schema' object is initialized to an 'empty' object here and then
-        // replaced once after the getExperiment() RPC
-        // returns. After that, the schema object's will remain the
-        // same object throughout the lifetime of the page. Of course, its
-        // properties may change as a result of the user interacting with the
-        // plugin, but the "identity" of the object will remain the same.
+        // columnsVisibility[].
+        // A boolean array whose ith entry is true if
+        // the ith column is visible (selected to be displayed by the user).
+        // Columns are indexed by listing the hyperparameters first in
+        // the order they are represented by schema.hparamColumns, followed
+        // by the metrics in the order they are represented by
+        // schema.metricColumns.
         //
-        // The 'loaded' property allows consuming elements to find out whether
-        // the schema object has been computed yet or not. It is 'false' for
-        // the 'empty' object, and then set to 'true' after the getExperiment()
-        // RPC returns and the schema is computed.
-        // TODO(erez): We could have set this to a null value initially, but
-        // some consuming elements rely on visibleSchema always being not null.
+        // visibleSchema.
+        // DEPRECATED. New code should use the schema and columnVisibile
+        // properties instead.
+        // TODO(): Remove when all consumers are migrated to use the
+        // schema and columnVisibile fields.
+        // Contains arrays of HParamInfo and MetricInfo protocol buffers
+        // consisting of only the visible hyperparameters and metrics,
+        // respectively.
         /**
          * @type {{
-         *    hparamColumn: Array<{
-         *      hparamInfo: Object,
-         *      displayed: boolean
-         *    }>,
-         *    metricColumn: Array<{
-         *      metricInfo: Object,
-         *      displayed: boolean
-         *    }>,
+         *    schema: {
+         *      hparamColumns: Array<{hparamInfo: HParamInfo}>,
+         *      metricColumn: Array<{metricInfo: MetricInfo>}>,
+         *    }
+         *    columnsVisibility: Array<Boolean>,
          *    visibleSchema: {
-         *      hparamInfos: Array<Object>,
-         *      metricInfos: Array<Object>
-         *    }>,
-         *    loaded: boolean
+         *      hparamInfos: Array<HParamInfo>,
+         *      metricInfos: Array<MetricInfo>,
+         *    }
          * }}
          */
-         schema: {
+        configuration: {
           type: Object,
           value: () => {
             return {
-              hparamColumns: [],
-              metricColumns: [],
-
-              // DEPRECATED. New code should use only hparamColumns, and
-              // metricColumns fields. See documenation above.
+              schema: {
+                hparamColumns: [],
+                metricColumns: [],
+              },
+              columnsVisibility: [],
               visibleSchema: {
                 hparamInfos: [],
                 metricInfos: [],
-              },
-              loaded: false,
+              }
             };
           },
           readOnly: true,
@@ -559,7 +548,11 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this.set("_experiment", experiment);
           this._computeHParams();
           this._computeMetrics();
-          this._setSchema(this._computeSchema());
+          this._setConfiguration({
+            schema: this._computeSchema(),
+            columnsVisibility: this._computeColumnsVisibility(),
+            visibleSchema: this._computeVisibleSchema(),
+          });
           this._queryServer();
           this._resolveGetExperiment();
         });
@@ -638,48 +631,31 @@ TODO(erez): Add aggregation controls for repeated sessions.
       _computeSchema() {
         return {
           hparamColumns: this._hparams.map(
-              hparam => ({hparamInfo: hparam.info,
-                          displayed: hparam.displayed})),
+              hparam => ({hparamInfo: hparam.info})),
           metricColumns: this._metrics.map(
-              metric => ({metricInfo: metric.info,
-                          displayed: metric.displayed})),
-          visibleSchema: this._computeVisibleSchema(),
-          loaded: true,
+              metric => ({metricInfo: metric.info})),
         };
       },
 
-      _hparamVisibilityChanged(event) {
-        const hparamIndex = event.model.index;
-        // We'd like the notifications for the changed schema to be sent to
-        // consuming elements after both this.schema.hparamColumns and
-        // schema.visibleSchema are changed so that the schema is in a coherent
-        // state. Thus we first silently modify hparamColumns,
-        // then visibleSchema--which will also send the notification for the
-        // visibileSchema change--and then call notifyPath to send the
-        // notification for the hparamColumns change.
-        this.schema.hparamColumns[hparamIndex].displayed =
-            this._hparams[hparamIndex].displayed;
-        this._updateVisibleSchema();
-        this.notifyPath(`schema.hparamColumns.${hparamIndex}.displayed`);
+      _hparamVisibilityChanged() {
+        this._setConfiguration({
+          schema: this.configuration.schema,
+          columnsVisibility: this._computeColumnsVisibility(),
+          visibleSchema: this._computeVisibleSchema()
+        });
       },
 
-      _metricVisibilityChanged(event) {
-        const metricIndex = event.model.index;
-        // We'd like the notifications for the changed schema to be sent to
-        // consuming elements after both this.schema.metricColumns and
-        // schema.visibleSchema are changed so that the schema is in a coherent
-        // state. Thus we first silently modify metricColumns,
-        // then visibleSchema--which will also send the notification for the
-        // visibileSchema change--and then call notifyPath to send the
-        // notification for the metricColumns change.
-        this.schema.metricColumns[metricIndex].displayed =
-            this._metrics[metricIndex].displayed;
-        this._updateVisibleSchema();
-        this.notifyPath(`schema.metricColumns.${metricIndex}.displayed`);
+      _metricVisibilityChanged() {
+        this._setConfiguration({
+          schema: this.configuration.schema,
+          columnsVisibility: this._computeColumnsVisibility(),
+          visibleSchema: this._computeVisibleSchema()
+        });
       },
 
-      _updateVisibleSchema() {
-        this.set("schema.visibleSchema", this._computeVisibleSchema());
+      _computeColumnsVisibility() {
+        return this._hparams.map(hparam => hparam.displayed)
+            .concat(this._metrics.map(metric => metric.displayed));
       },
 
       _computeVisibleSchema() {

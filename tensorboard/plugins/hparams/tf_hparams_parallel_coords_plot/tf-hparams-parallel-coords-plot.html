@@ -142,8 +142,6 @@ limitations under the License.
       properties: {
         // Public properties
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
-        // See the property description in tf-hparams-query-pane.html
         sessionGroups: Array,
         // See the description in tf-hparams-scale-and-color-controls.html
         options: Object,
@@ -194,18 +192,24 @@ limitations under the License.
       },
 
       observers: [
-        '_schemaChanged(schema)',
-        '_optionsChanged(options.*)',
-        '_sessionGroupsChanged(sessionGroups.*)',
+        '_optionsOrSessionGroupsChanged(options.*, sessionGroups.*)',
       ],
 
-      // Called when entries are added or deleted from the schema.metricColumns
-      // or schema.hparamColumns arrays.
-      _schemaChanged() {
-        if (this.schema.loaded === true) {
+      _optionsOrSessionGroupsChanged() {
+        if (this.options === null) {
+          return;
+        }
+        const configuration = this.options.configuration;
+        // See if we need to redraw from scratch. We redraw from scratch if
+        // this is initialization or if configuration.schema has changed. 
+        if (this._interactionManager === undefined ||
+            !_.isEqual(this._interactionManager.schema(),
+                       configuration.schema)) {
+          // Remove any pre-existing DOM children of our SVG.
+          d3.select(this.$.svg).selectAll('*').remove();
           const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
               this.$.svg,
-              tf.hparams.utils.numColumns(this.schema));
+              tf.hparams.utils.numColumns(configuration.schema));
           // Listen to DOM changes underneath this.$.svg, and apply local CSS
           // scoping rules so that our rules in the <style> section above
           // would apply.
@@ -213,33 +217,16 @@ limitations under the License.
           this._interactionManager =
               new tf.hparams.parallel_coords_plot.InteractionManager(
                   svgProps,
-                  this.schema,
+                  configuration.schema,
                   sessionGroup => this.closestSessionGroupChanged(sessionGroup),
                   sessionGroup =>
                     this.selectedSessionGroupChanged(sessionGroup));
         }
-      },
-
-      _optionsChanged() {
-        // Ignore events happening before the schema was initialized.
-        if (this._interactionManager !== undefined) {
-          this._computeValidSessionGroups();
-          this._interactionManager.onOptionsOrSessionGroupsChanged(
-              this.options,
-              this._validSessionGroups);
-          this.redrawCount++;
-        }
-      },
-
-      _sessionGroupsChanged() {
         this._computeValidSessionGroups();
-        // Ignore events happening before the schema was initialized.
-        if (this._interactionManager !== undefined) {
-          this._interactionManager.onOptionsOrSessionGroupsChanged(
-              this.options,
-              this._validSessionGroups);
-          this.redrawCount++;
-        }
+        this._interactionManager.onOptionsOrSessionGroupsChanged(
+            this.options,
+            this._validSessionGroups);
+        this.redrawCount++;
       },
 
       closestSessionGroupChanged(sessionGroup) {
@@ -261,14 +248,15 @@ limitations under the License.
           this._validSessionGroups = undefined;
           return;
         }
+        const schema = this.options.configuration.schema;
         this._validSessionGroups = this.sessionGroups.filter((sg) => {
           for (let colIndex = 0;
-               colIndex < utils.numColumns(this.schema);
+               colIndex < utils.numColumns(schema);
                ++colIndex) {
-                 if (!utils.isColumnDisplayed(this.schema, colIndex)) {
+                 if (!this.configuration.columnsVisibility[colIndex]) {
                    continue;
                  }
-                 if (utils.columnValueByIndex(this.schema, sg, colIndex) ===
+                 if (utils.columnValueByIndex(schema, sg, colIndex) ===
                      undefined) {
                    return false;
                  }

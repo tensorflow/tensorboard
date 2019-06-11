@@ -100,7 +100,7 @@ class SetBrushFilter implements AxisBrushFilter {
   }
 
   public isPassing(value: any): boolean {
-    return this._domainSet.findIndex(value) !== -1;
+    return this._domainSet.findIndex(element => (element === value)) !== -1;
   }
 
   private _domainSet: any[];
@@ -378,8 +378,7 @@ export class AxesCollection {
     // Traverse options.columns, and update each corresponding axis.
     const visibleColIndices: Set<number> = new Set<number>();
     options.columns.forEach(column => {
-      const colIndex = tf.hparams.utils.getAbsoluteColumnIndex(
-        this._schema, column.index);
+      const colIndex = column.absoluteIndex;
       let axis = this._axes[colIndex];
       axis.setDisplayed(true);
       const domainValues = sessionGroups.map(

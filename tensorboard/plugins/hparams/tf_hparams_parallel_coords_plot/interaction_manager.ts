@@ -181,8 +181,7 @@ export class InteractionManager {
     this._linesCollection.redraw(
       newSessionGroups,
       newOptions.colorByColumnIndex !== undefined
-        ? tf.hparams.utils.getAbsoluteColumnIndex(
-          this._schema, newOptions.colorByColumnIndex)
+        ? newOptions.columns[newOptions.colorByColumnIndex].absoluteIndex
         : null,
       newOptions.minColor,
       newOptions.maxColor);
@@ -198,6 +197,10 @@ export class InteractionManager {
       this._selectedSessionGroupChangedCB(
         this._linesCollection.selectedSessionGroupHandle().sessionGroup());
     }
+  }
+
+  public schema() : tf.hparams.Schema {
+    return this._schema;
   }
   
   private _svgProps: SVGProperties;

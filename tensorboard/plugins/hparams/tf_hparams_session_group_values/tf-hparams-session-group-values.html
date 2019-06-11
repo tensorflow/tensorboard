@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <!--
-Essentially looks like a single one row in table-view that can't be expanded.
+Essentially looks like a single one row in table-view that cannot be expanded.
 Useful to show a selected session group in one of the visualizations.
 
 TODO(erez): Rename this to tf-hparams-session-group-details and rename
@@ -30,19 +30,19 @@ tf-hparams-session-group-metric-plots
 
 <dom-module id="tf-hparams-session-group-values">
   <template>
-    <!-- If sessionGroup or schema are not populated, do not display
+    <!-- If sessionGroup or visibleSchema are not populated, do not display
          anything.
       -->
     <template is="dom-if"
-              if="[[_propertiesArePopulated(schema, sessionGroup)]]">
+              if="[[_propertiesArePopulated(visibleSchema, sessionGroup)]]">
       <!-- Display one row without a "show-metrics" column -->
       <tf-hparams-table-view
-        schema="[[schema]]"
+        visible-schema="[[visibleSchema]]"
         session-groups="[[_singletonSessionGroups(sessionGroup)]]">
       </tf-hparams-table-view>
     </template>
     <template is="dom-if"
-              if="[[!_propertiesArePopulated(schema, sessionGroup)]]">
+              if="[[!_propertiesArePopulated(visibleSchema, sessionGroup)]]">
       <div>
         Click or hover over a session group to display its values here.
       </div>
@@ -67,17 +67,18 @@ tf-hparams-session-group-metric-plots
           type: Object,
           value: null
         },
-        // The schema defining the columns to use. Only the values of columns
-        // in the schema will be displayed. See tf-hparams-query-pane for
-        // the definition of this object.
-        schema: {
+        // The visibleSchema defining the columns to use.
+        // Only the values of columns
+        // in the visibleSchema will be displayed. See tf-hparams-query-pane
+        // for the definition of this object.
+        visibleSchema: {
           type: Object,
           value: null
         }
       },
 
-      _propertiesArePopulated: function(schema, sessionGroup) {
-        return schema !== undefined && schema !== null
+      _propertiesArePopulated: function(visibleSchema, sessionGroup) {
+        return visibleSchema !== undefined && visibleSchema !== null
             && sessionGroup !== undefined && sessionGroup !== null;
       },
 
