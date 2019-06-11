@@ -136,6 +136,8 @@ class ProfilePlugin(base_plugin.TBPlugin):
     return self._is_active
 
   def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
     return super(ProfilePlugin, self).frontend_metadata()._replace(
         element_name='tf-profile-dashboard',
         disable_reload=True,

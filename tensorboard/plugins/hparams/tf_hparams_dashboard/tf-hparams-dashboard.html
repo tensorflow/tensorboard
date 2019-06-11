@@ -83,6 +83,14 @@ limitations under the License.
       }
     });
 
+    // TODO(#2338): Remove this, and set up a "no TF" message properly.
+    // Keep this in sync with `frontend_metadata` in
+    // `hparams_plugin.py`.
+    tf_tensorboard.registerDashboard({
+      plugin: PLUGIN_NAME,
+      elementName: 'tf-hparams-dashboard'
+    });
+
     })();
   </script>
 </dom-module>

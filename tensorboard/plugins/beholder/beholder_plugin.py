@@ -75,6 +75,8 @@ class BeholderPlugin(base_plugin.TBPlugin):
            tf.io.gfile.exists(info_filename)
 
   def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
     return super(BeholderPlugin, self).frontend_metadata()._replace(
         element_name='tf-beholder-dashboard',
         remove_dom=True,
