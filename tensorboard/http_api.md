@@ -56,8 +56,6 @@ plugin, with the following keys:
   - `remove_dom`: Boolean. Whether to remove the plugin DOM when
     switching to a different plugin, to trigger the Polymer 'detached'
     event.
-  - `use_data_selector`: Boolean. Whether to show a system-level data
-    selector above the plugin. Experimental.
 
 Example response:
 
@@ -70,8 +68,7 @@ Example response:
           "type": "CUSTOM_ELEMENT"
         },
         "remove_dom": false,
-        "tab_name": "scalars",
-        "use_data_selector": true
+        "tab_name": "scalars"
       },
       "my_shiny_plugin": {
         "disable_reload": true,
@@ -81,8 +78,7 @@ Example response:
           "type": "IFRAME"
         },
         "remove_dom": true,
-        "tab_name": "magic",
-        "use_data_selector": false
+        "tab_name": "magic"
       },
     }
 

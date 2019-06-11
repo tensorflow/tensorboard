@@ -52,11 +52,6 @@ FrontendMetadata = collections.namedtuple(
         # Whether to remove the plugin DOM when switching to a different
         # plugin, to trigger the Polymer 'detached' event. Boolean.
         "remove_dom",
-        # Whether to show a system-level data selector above the plugin.
-        # The data selector enables users to select experiments, runs,
-        # and tags. The selection is injected as a `dataSelection`
-        # property to the plugin web component. Boolean.
-        "use_data_selector",
         # For legacy plugins, name of the custom element defining the
         # plugin frontend: e.g., `"tf-scalar-dashboard"`. Should be a
         # `str` or `None` (for iframed plugins). Mutually exclusive with
@@ -126,7 +121,6 @@ class TBPlugin(object):
         es_module_path=None,
         disable_reload=False,
         remove_dom=False,
-        use_data_selector=False,
         element_name=None,
     )
 
