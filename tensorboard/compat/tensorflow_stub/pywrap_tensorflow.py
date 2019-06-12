@@ -164,13 +164,8 @@ def crc32c(data):
 
 
 class PyRecordReader_New:
-    def __init__(
-      self,
-      filename=None,
-      start_offset=0,
-      compression_type=None,
-      status=None
-    ):
+    def __init__(self, filename=None, start_offset=0, compression_type=None,
+                 status=None):
         self.filename = filename
         self.file_handle = None
         self.start_offset = start_offset
