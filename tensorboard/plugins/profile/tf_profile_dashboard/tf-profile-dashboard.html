@@ -496,6 +496,8 @@ profile run can have multiple tools that present the performance profile as diff
       this.set('_isAttached', true);
       // Check if the plugin was created
       this._requestManager
+          // TODO(#2338): The plugins listing is probably not the right
+          // source of truth.
           .request(tf_backend.getRouter().pluginsListing())
           .then(plugins => {
             if (!(PLUGIN_NAME in plugins)) {
@@ -772,6 +774,14 @@ profile run can have multiple tools that present the performance profile as diff
     _isState: function(actualState, candidateState) {
       return actualState === candidateState;
     },
+  });
+
+  // TODO(#2338): Remove this, and set up the "no TF" message properly.
+  // Keep this in sync with `frontend_metadata` in `profile_plugin.py`.
+  tf_tensorboard.registerDashboard({
+    plugin: PLUGIN_NAME,
+    elementName: 'tf-profile-dashboard',
+    isReloadDisabled: true,
   });
 
   })();

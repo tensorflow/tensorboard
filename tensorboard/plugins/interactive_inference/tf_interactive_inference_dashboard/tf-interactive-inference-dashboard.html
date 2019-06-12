@@ -5819,6 +5819,15 @@ limitations under the License.
        },
     });
 
+    // TODO(#2338): Remove this, and set up a "no TF" message properly.
+    // Keep this in sync with `frontend_metadata` in
+    // `interactive_inference_plugin.py`.
+    tf_tensorboard.registerDashboard({
+      plugin: PLUGIN_NAME,
+      elementName: 'tf-interactive-inference-dashboard',
+      tabName: 'What-If Tool',
+    });
+
     })();
   </script>
 </dom-module>
