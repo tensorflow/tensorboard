@@ -15,6 +15,7 @@
 import os
 import subprocess
 
+import six
 import tensorflow as tf
 
 
@@ -30,22 +31,39 @@ except AttributeError:
   pass
 
 
-ISSUE_LINK = "https://github.com/tensorflow/tensorflow/issues/new?template=40-tflite-op-request.md"
-SELECT_TF_OPS_LINK = "https://www.tensorflow.org/lite/using_select_tf_ops"
+ISSUE_LINK = u"https://github.com/tensorflow/tensorflow/issues/new?template=40-tflite-op-request.md"
+SELECT_TF_OPS_LINK = u"https://www.tensorflow.org/lite/using_select_tf_ops"
+
+
+def to_unicode(str_bytes_or_unicode):
+  """Converts string types (str, bytes, or unicode) to unicode."""
+  if six.PY2:
+    if isinstance(str_bytes_or_unicode, unicode):  # Only PY2 has unicode type.
+      return str_bytes_or_unicode
+    elif isinstance(str_bytes_or_unicode, (str, bytes)):
+      return str_bytes_or_unicode.decode("utf-8")
+  else:
+    if isinstance(str_bytes_or_unicode, str):  # PY3 str is unicode.
+      return str_bytes_or_unicode
+    elif isinstance(str_bytes_or_unicode, bytes):  # Convert bytes to unicode.
+      return str_bytes_or_unicode.decode("utf-8")
+  raise ValueError("Not supported: %s" % str_bytes_or_unicode)
 
 
 def get_suggestion(error_message):
   """Gets suggestion by identifying error message."""
   suggestion, tips_link = None, None
-  error_unicode = unicode(error_message)
+  error_unicode = to_unicode(error_message)
   suggestion_map = {
-      "both shapes must be equal":
-          "Please input your input_shapes",
+      u"ValueError: Invalid tensors":
+          u"Please select valid tensors in graph (some nodes may be pruned).",
+      u"both shapes must be equal":
+          u"Please input your input_shapes",
       ISSUE_LINK:
-          "Please report the error log to {}, or try select TensorFlow ops: {}."
+          u"Please report the error to {}, or try select Tensorflow ops: {}."
           .format(ISSUE_LINK, SELECT_TF_OPS_LINK),
-      "a Tensor which does not exist": 
-          "please check your input_arrays and output_arrays argument."
+      u"a Tensor which does not exist": 
+          u"please check your input_arrays and output_arrays argument."
   }
   for k in suggestion_map:
     if k in error_unicode:
@@ -59,7 +77,7 @@ def get_suggestion(error_message):
 def script_from_saved_model(saved_model_dir, output_file, input_arrays,
                             output_arrays):
   """Generates a script for saved model to convert from TF to TF Lite."""
-  return r"""# --- Python code ---
+  return u"""# --- Python code ---
 import tensorflow as tf
 lite = tf.compat.v1.lite
 

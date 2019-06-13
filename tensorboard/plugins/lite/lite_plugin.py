@@ -20,7 +20,6 @@ from __future__ import print_function
 import json
 import os
 
-import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
@@ -110,7 +109,7 @@ class LitePlugin(base_plugin.TBPlugin):
           'content': [
             {
               'type': 'text',
-              'body': 'Succuss: The model has been converted to tflite file.\n' + stdout
+              'body': u'Succuss: The model has been converted to tflite file.\n%s' % lite_backend.to_unicode(stdout)
             },
             {
               'type': 'code',
@@ -138,7 +137,7 @@ class LitePlugin(base_plugin.TBPlugin):
             {
               'type': 'code',
               'title': 'error',
-              'body': '%s' % stderr
+              'body': u'%s' % lite_backend.to_unicode(stderr)
             },
           ]
         },
@@ -148,7 +147,7 @@ class LitePlugin(base_plugin.TBPlugin):
         result['tabs'][0]['content'].append({
           'type': 'text',
           'title': 'Suggestion',
-          'body': '%s' % suggestion
+          'body': u'%s' % suggestion
         })
 
       result['tabs'].append({
