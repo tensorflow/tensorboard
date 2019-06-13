@@ -22,14 +22,26 @@ from __future__ import print_function
 import os
 import shutil
 
+import google3
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import directory_watcher
-from tensorboard.backend.event_processing import io_wrapper
+from google3.third_party.tensorboard.backend.event_processing import directory_watcher
+from google3.third_party.tensorboard.backend.event_processing import io_wrapper
+
+
+class _TimedByte(object):
+
+  def __init__(self, byte, step, wall_time):
+    self.byte = byte
+    self.step = step
+    self.wall_time = wall_time
 
 
 class _ByteLoader(object):
-  """A loader that loads individual bytes from a file."""
+  """A loader that loads individual byte, step, and wall_time from a file.
+
+  Expects a csv separated [byte,number,number].
+  """
 
   def __init__(self, path):
     self._f = open(path)
@@ -38,10 +50,15 @@ class _ByteLoader(object):
   def Load(self):
     while True:
       self._f.seek(self.bytes_read)
-      byte = self._f.read(1)
-      if byte:
-        self.bytes_read += 1
-        yield byte
+      line = next(self._f, None)
+      if line:
+        print(line)
+        print(len(line))
+        self.bytes_read += len(line)
+        byte, step, wall_time = line.split(',')
+        step = int(step)
+        wall_time = int(wall_time)
+        yield _TimedByte(byte, step, wall_time)
       else:
         return
 
@@ -75,7 +92,10 @@ class DirectoryWatcherTest(tf.test.TestCase):
       pass
 
   def assertWatcherYields(self, values):
-    self.assertEqual(list(self._watcher.Load()), values)
+    read_bytes = []
+    for timed_byte in self._watcher.Load():
+      read_bytes.append(timed_byte.byte)
+    self.assertEqual(read_bytes, values)
 
   def testRaisesWithBadArguments(self):
     with self.assertRaises(ValueError):
@@ -87,44 +107,44 @@ class DirectoryWatcherTest(tf.test.TestCase):
     self.assertWatcherYields([])
 
   def testSingleWrite(self):
-    self._WriteToFile('a', 'abc')
+    self._WriteToFile('a', 'a,1,1\nb,2,2\nc,3,3\n')
     self.assertWatcherYields(['a', 'b', 'c'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testMultipleWrites(self):
-    self._WriteToFile('a', 'abc')
+    self._WriteToFile('a', 'a,1,1\nb,2,2\nc,3,3\n')
     self.assertWatcherYields(['a', 'b', 'c'])
-    self._WriteToFile('a', 'xyz')
+    self._WriteToFile('a', 'x,4,4\ny,5,5\nz,6,6\n')
     self.assertWatcherYields(['x', 'y', 'z'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testMultipleLoads(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._watcher.Load()
     self._watcher.Load()
     self.assertWatcherYields(['a'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testMultipleFilesAtOnce(self):
-    self._WriteToFile('b', 'b')
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('b', 'b,2,2\n')
+    self._WriteToFile('a', 'a,1,1\n')
     self.assertWatcherYields(['a', 'b'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testFinishesLoadingFileWhenSwitchingToNewFile(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     # Empty the iterator.
-    self.assertEqual(['a'], list(self._watcher.Load()))
-    self._WriteToFile('a', 'b')
-    self._WriteToFile('b', 'c')
+    self.assertEqual(['a'], list(next(self._watcher.Load()).byte))
+    self._WriteToFile('a', 'b,2,2\n')
+    self._WriteToFile('b', 'c,3,3\n')
     # The watcher should finish its current file before starting a new one.
     self.assertWatcherYields(['b', 'c'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testIntermediateEmptyFiles(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._WriteToFile('b', '')
-    self._WriteToFile('c', 'c')
+    self._WriteToFile('c', 'c,2,2\n')
     self.assertWatcherYields(['a', 'c'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
@@ -133,50 +153,50 @@ class DirectoryWatcherTest(tf.test.TestCase):
         self._directory, _ByteLoader,
         lambda path: 'do_not_watch_me' not in path)
 
-    self._WriteToFile('a', 'a')
-    self._WriteToFile('do_not_watch_me', 'b')
-    self._WriteToFile('c', 'c')
+    self._WriteToFile('a', 'a,1,1\n')
+    self._WriteToFile('do_not_watch_me', 'b,2,2\n')
+    self._WriteToFile('c', 'c,3,3\n')
     self.assertWatcherYields(['a', 'c'])
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testDetectsNewOldFiles(self):
-    self._WriteToFile('b', 'a')
+    self._WriteToFile('b', 'a,2,2\n')
     self._LoadAllEvents()
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._LoadAllEvents()
     self.assertTrue(self._watcher.OutOfOrderWritesDetected())
 
   def testIgnoresNewerFiles(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._LoadAllEvents()
-    self._WriteToFile('q', 'a')
+    self._WriteToFile('q', 'a,2,2\n')
     self._LoadAllEvents()
     self.assertFalse(self._watcher.OutOfOrderWritesDetected())
 
   def testDetectsChangingOldFiles(self):
-    self._WriteToFile('a', 'a')
-    self._WriteToFile('b', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
+    self._WriteToFile('b', 'a,3,3\n')
     self._LoadAllEvents()
-    self._WriteToFile('a', 'c')
+    self._WriteToFile('a', 'c,2,2\n')
     self._LoadAllEvents()
     self.assertTrue(self._watcher.OutOfOrderWritesDetected())
 
   def testDoesntCrashWhenFileIsDeleted(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._LoadAllEvents()
     os.remove(os.path.join(self._directory, 'a'))
-    self._WriteToFile('b', 'b')
+    self._WriteToFile('b', 'b,2,2\n')
     self.assertWatcherYields(['b'])
 
   def testRaisesRightErrorWhenDirectoryIsDeleted(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._LoadAllEvents()
     shutil.rmtree(self._directory)
     with self.assertRaises(directory_watcher.DirectoryDeletedError):
       self._LoadAllEvents()
 
   def testDoesntRaiseDirectoryDeletedErrorIfOutageIsTransient(self):
-    self._WriteToFile('a', 'a')
+    self._WriteToFile('a', 'a,1,1\n')
     self._LoadAllEvents()
     shutil.rmtree(self._directory)
 
