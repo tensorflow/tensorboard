@@ -12,6 +12,7 @@ import "tensorboard/compat/proto/graph.proto";
 import "tensorboard/compat/proto/op_def.proto";
 import "tensorboard/compat/proto/tensor_shape.proto";
 import "tensorboard/compat/proto/types.proto";
+import "tensorboard/compat/proto/saved_object_graph.proto";
 import "tensorboard/compat/proto/saver.proto";
 
 // NOTE: This protocol buffer is evolving, and will go through revisions in the
@@ -84,6 +85,9 @@ message MetaGraphDef {
 
   // Asset file def to be used with the defined graph.
   repeated AssetFileDef asset_file_def = 6;
+
+  // Extra information about the structure of functions and stateful objects.
+  SavedObjectGraph object_graph_def = 7;
 }
 
 // CollectionDef should cover most collections.
