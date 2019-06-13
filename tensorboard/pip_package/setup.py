@@ -58,6 +58,9 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': CONSOLE_SCRIPTS,
+        'tensorboard_plugins': [
+            'projector_plugin=tensorboard.plugins.projector.projector_plugin:ProjectorPlugin',
+        ],
     },
     package_data={
         'tensorboard': [
@@ -65,6 +68,10 @@ setup(
         ],
         'tensorboard.plugins.beholder': [
             'resources/*',
+        ],
+        'tensorboard.plugins.projector': [
+            'tf_projector_plugin/index.js',
+            'tf_projector_plugin/projector_binary.html',
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
