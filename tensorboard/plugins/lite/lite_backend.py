@@ -37,16 +37,10 @@ SELECT_TF_OPS_LINK = u"https://www.tensorflow.org/lite/using_select_tf_ops"
 
 def to_unicode(str_bytes_or_unicode):
   """Converts string types (str, bytes, or unicode) to unicode."""
-  if six.PY2:
-    if isinstance(str_bytes_or_unicode, unicode):  # Only PY2 has unicode type.
-      return str_bytes_or_unicode
-    elif isinstance(str_bytes_or_unicode, (str, bytes)):
-      return str_bytes_or_unicode.decode("utf-8")
-  else:
-    if isinstance(str_bytes_or_unicode, str):  # PY3 str is unicode.
-      return str_bytes_or_unicode
-    elif isinstance(str_bytes_or_unicode, bytes):  # Convert bytes to unicode.
-      return str_bytes_or_unicode.decode("utf-8")
+  if isinstance(str_bytes_or_unicode, six.text_type):  # Remain unicode type.
+    return str_bytes_or_unicode
+  elif isinstance(str_bytes_or_unicode, six.binary_type):  # Binarny to unicode.
+    return str_bytes_or_unicode.decode("utf-8")
   raise ValueError("Not supported: %s" % str_bytes_or_unicode)
 
 
