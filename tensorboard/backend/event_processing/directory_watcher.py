@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google3.third_party.tensorboard.backend.event_processing import io_wrapper
-from google3.third_party.tensorboard.compat import tf
-from google3.third_party.tensorboard.util import tb_logging
+from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
