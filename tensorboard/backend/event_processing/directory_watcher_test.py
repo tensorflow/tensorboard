@@ -22,11 +22,10 @@ from __future__ import print_function
 import os
 import shutil
 
-import google3
 import tensorflow as tf
 
-from google3.third_party.tensorboard.backend.event_processing import directory_watcher
-from google3.third_party.tensorboard.backend.event_processing import io_wrapper
+from tensorboard.backend.event_processing import directory_watcher
+from tensorboard.backend.event_processing import io_wrapper
 
 
 class _TimedByte(object):
