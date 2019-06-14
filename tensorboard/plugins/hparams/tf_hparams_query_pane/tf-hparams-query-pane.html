@@ -47,7 +47,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
                 <div class="hparam">
                   <paper-checkbox
                     checked="{{hparam.displayed}}"
-                    on-change="_hparamVisibilityChanged"
                     class="hparam-checkbox">
                     [[_hparamName(hparam.info)]]
                   </paper-checkbox>
@@ -115,7 +114,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
                        scalars.-->
                   <paper-checkbox
                     checked="{{metric.displayed}}"
-                    on-change="_metricVisibilityChanged"
                     class="metric-checkbox">
                     [[_metricName(metric.info)]]
                   </paper-checkbox>
@@ -352,13 +350,13 @@ TODO(erez): Add aggregation controls for repeated sessions.
         /**
          * @type {{
          *    schema: {
-         *      hparamColumns: Array<{hparamInfo: HParamInfo}>,
-         *      metricColumn: Array<{metricInfo: MetricInfo>}>,
-         *    }
+         *      hparamColumns: Array<{hparamInfo: Object}>,
+         *      metricColumns: Array<{metricInfo: Object}>,
+         *    },
          *    columnsVisibility: Array<Boolean>,
          *    visibleSchema: {
-         *      hparamInfos: Array<HParamInfo>,
-         *      metricInfos: Array<MetricInfo>,
+         *      hparamInfos: Array<Object>,
+         *      metricInfos: Array<Object>,
          *    }
          * }}
          */
@@ -521,7 +519,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
       }  /* properties */,
 
       observers: [
-        '_computeExperimentAndRelatedProps(backend, experimentName)'
+        '_computeExperimentAndRelatedProps(backend, experimentName)',
+        '_updateConfiguration(_hparams.*, _metrics.*)'
       ],
 
       reload() {
@@ -548,11 +547,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this.set("_experiment", experiment);
           this._computeHParams();
           this._computeMetrics();
-          this._setConfiguration({
-            schema: this._computeSchema(),
-            columnsVisibility: this._computeColumnsVisibility(),
-            visibleSchema: this._computeVisibleSchema(),
-          });
           this._queryServer();
           this._resolveGetExperiment();
         });
@@ -637,19 +631,13 @@ TODO(erez): Add aggregation controls for repeated sessions.
         };
       },
 
-      _hparamVisibilityChanged() {
-        this._setConfiguration({
-          schema: this.configuration.schema,
-          columnsVisibility: this._computeColumnsVisibility(),
-          visibleSchema: this._computeVisibleSchema()
-        });
-      },
-
-      _metricVisibilityChanged() {
-        this._setConfiguration({
-          schema: this.configuration.schema,
-          columnsVisibility: this._computeColumnsVisibility(),
-          visibleSchema: this._computeVisibleSchema()
+      _updateConfiguration() {
+        this.debounce('_updateConfiguration', () => {
+          this._setConfiguration({
+            schema: this._computeSchema(),
+            columnsVisibility: this._computeColumnsVisibility(),
+            visibleSchema: this._computeVisibleSchema()
+          });
         });
       },
 

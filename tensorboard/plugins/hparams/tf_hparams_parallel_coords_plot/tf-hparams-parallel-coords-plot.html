@@ -253,7 +253,7 @@ limitations under the License.
           for (let colIndex = 0;
                colIndex < utils.numColumns(schema);
                ++colIndex) {
-                 if (!this.configuration.columnsVisibility[colIndex]) {
+                 if (!this.options.configuration.columnsVisibility[colIndex]) {
                    continue;
                  }
                  if (utils.columnValueByIndex(schema, sg, colIndex) ===

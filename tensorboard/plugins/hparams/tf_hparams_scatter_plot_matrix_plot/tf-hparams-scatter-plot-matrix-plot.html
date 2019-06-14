@@ -646,7 +646,9 @@ the vulcanization build step. Figure out why.
         // Updates the internal state in response to a brush event in
         // the cell whose <g> element (in 'cells') is given by cellGNode
         function brushChanged(cellGNode) {
-          const brushSelection = d3.brushSelection(cellGNode);
+          // For some reason the closure compiler drops the argument when we
+          // write the call below as 'd3.brushSelection(cellGNode)'.
+          const brushSelection = d3["brushSelection"](cellGNode);
           if ((!isBrushActive() && brushSelection === null) ||
               (isBrushActive() &&
                cellGNode === brushedCellG.node() &&
