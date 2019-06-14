@@ -187,7 +187,9 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
 
       // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
       //                    window.hashchange.
-      const listenKey = addListener(() => setComponentValue());
+      const listenKey = addListener(() => {
+        setComponentValue();
+      });
       if (fullOptions.useLocalStorage) {
         storageListeners.push(listenKey);
       } else {

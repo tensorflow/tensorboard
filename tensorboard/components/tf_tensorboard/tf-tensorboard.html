@@ -690,18 +690,6 @@ limitations under the License.
       },
 
       /**
-       * Handle a change in the selected dashboard by persisting the current
-       * selection to the hash and logging a pageview if analytics are enabled.
-       */
-      _selectedDashboardChanged(selectedDashboard) {
-        const pluginString = selectedDashboard || '';
-        tf_storage.setString(tf_storage.TAB, pluginString);
-        // Record this dashboard selection as a page view.
-        ga('set', 'page', '/' + pluginString);
-        ga('send', 'pageview');
-      },
-
-      /**
        * If no dashboard is selected but dashboards are available,
        * set the selected dashboard to the first active one.
        */

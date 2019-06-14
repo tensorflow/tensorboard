@@ -19,11 +19,11 @@ const DEFAULT_LIMIT = 12;  // reasonably small and has lots of factors
 
 let _limit: number = DEFAULT_LIMIT;  // cached localStorage value
 tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, {useLocalStorage: true})
-  .then((limit) => {
+  .then((newLimit) => {
     // Do not update limit from storage if it was changed with `set` while
     // fetching the initial value from storage.
-    if (limit == undefined || _limit !== DEFAULT_LIMIT) return;
-    setLimit(limit);
+    if (newLimit == undefined || _limit !== DEFAULT_LIMIT) return;
+    setLimit(newLimit);
   });
 
 export type Listener = () => void;
