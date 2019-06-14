@@ -21,7 +21,7 @@ from tensorboard.plugins import base_plugin
 
 
 class LitePluginLoader(base_plugin.TBLoader):
-  """InteractiveInferencePlugin factory.
+  """LitePlugin factory.
 
   This class checks for `tensorflow` install and dependency.
   """
@@ -33,7 +33,7 @@ class LitePluginLoader(base_plugin.TBLoader):
       context: The TBContext flags.
 
     Returns:
-      A InteractiveInferencePlugin instance or None if it couldn't be loaded.
+      A LitePlugin instance or None if it couldn't be loaded.
     """
     try:
       # pylint: disable=g-import-not-at-top,unused-import
