@@ -176,6 +176,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       const setComponentValue = async () => {
         const storedValue = await binding.get(uriStorageName, fullOptions);
         const currentValue = this[fullOptions.polymerProperty];
+        console.debug('setComponentValue', key, storedValue, currentValue);
         if (!_.isEqual(storedValue, currentValue)) {
           this[fullOptions.polymerProperty] = storedValue;
         }
@@ -216,6 +217,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     return function() {
       const uriStorageName = getURIStorageName(this, key);
       const newVal = this[fullOptions.polymerProperty];
+      console.debug('observer', key, newVal);
       set(uriStorageName, newVal, fullOptions);
     };
   }
