@@ -49,6 +49,8 @@ export const TAB = '__tab__';
  */
 export const DISAMBIGUATOR = 'disambiguator';
 
+const PROP_INITIALIZATION_SUFFIX = 'Initialized';
+
 export const {
   get: getString,
   set: setString,
@@ -120,6 +122,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     const value = useLocalStorage ?
       window.localStorage.getItem(key) :
       componentToDict(readComponent())[key];
+
     return Promise.resolve(
       value == undefined ?
       _.cloneDeep(defaultValue) :
@@ -140,7 +143,8 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       window.localStorage.setItem(key, stringValue);
       // Because of listeners.ts:[1], we need to manually notify all UI elements
       // listening to storage within the tab of a change.
-      fireStorageChanged();
+      // Must invoke after a tick for other enqueued microtasks to be executed.
+      setTimeout(fireStorageChanged, 0);
     } else if (!_.isEqual(value, binding.get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
@@ -159,7 +163,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
    * i.e., when `useLocalStorage`, it listens to storage change from another tab
    * and when `useLocalStorage=false`, it listens to window.hashchange.
    */
-  function getInitializer(key: string, options: StorageOptions<T>): Function {
+  function getInitializer(key: string, options: AutoStorageOptions<T>): Function {
     const fullOptions = {
       defaultValue: options.defaultValue,
       polymerProperty: key,
@@ -176,7 +180,6 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       const setComponentValue = async () => {
         const storedValue = await binding.get(uriStorageName, fullOptions);
         const currentValue = this[fullOptions.polymerProperty];
-        console.debug('setComponentValue', key, storedValue, currentValue);
         if (!_.isEqual(storedValue, currentValue)) {
           this[fullOptions.polymerProperty] = storedValue;
         }
@@ -197,7 +200,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
         hashListeners.push(listenKey);
       }
 
-      setComponentValue();
+      setComponentValue()
       return fullOptions.defaultValue;
     };
   }
@@ -207,7 +210,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     storageListeners.forEach(key => removeStorageListenerByKey(key));
   }
 
-  function getObserver(key: string, options: StorageOptions<T>): Function {
+  function getObserver(key: string, options: AutoStorageOptions<T>): Function {
     const fullOptions = {
       defaultValue: options.defaultValue,
       polymerProperty: key,
@@ -217,7 +220,6 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
     return function() {
       const uriStorageName = getURIStorageName(this, key);
       const newVal = this[fullOptions.polymerProperty];
-      console.debug('observer', key, newVal);
       set(uriStorageName, newVal, fullOptions);
     };
   }

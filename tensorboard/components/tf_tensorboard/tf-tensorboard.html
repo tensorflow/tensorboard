@@ -541,10 +541,10 @@ limitations under the License.
          */
         _selectedDashboard: {
           type: String,
-          value: tf_storage.getStringInitializer(tf_storage.TAB, {
-            defaultValue: '',
-            polymerProperty: '_selectedDashboard',
-          }),
+          // Cannot use tf_storage initializer as storage mechanism is decided
+          // later at `ready`.
+          value: '',
+          observer: '_selectedDashboardObserver',
         },
         /**
          * True when `_selectedDashboard` is set based on the tf_storage value.
@@ -595,25 +595,20 @@ limitations under the License.
       observers: [
         ('_setDefaultSelectedDashboardFromActive(' +
          '_selectedDashboard, _selectedDashboardInitialized, _activeDashboards)'),
-        ('_persistSelectedDashboard(' +
-         '_selectedDashboard, _selectedDashboardInitialized)'),
+        '_logDashboardChange(_selectedDashboard)',
         ('_ensureSelectedDashboardStamped(' +
          '_dashboardRegistry, _dashboardContainersStamped, ' +
          '_activeDashboards, _selectedDashboard)'),
       ],
 
-      async attached() {
-        const tabValue = await tf_storage.getString(tf_storage.TAB);
-        this._selectedDashboard = tabValue;
-        this._selectedDashboardInitialized = true;
-      },
+      _selectedDashboardObserver: tf_storage.getStringObserver(tf_storage.TAB, {
+        defaultValue: '',
+        polymerProperty: '_selectedDashboard',
+      }),
 
-      _persistSelectedDashboard() {
-        if (!this._selectedDashboardInitialized) return;
-        const pluginString = this._selectedDashboard || '';
-        tf_storage.setString(tf_storage.TAB, pluginString);
-        // Record this dashboard selection as a page view.
-        ga('set', 'page', '/' + pluginString);
+      // Record this dashboard selection as a page view.
+      _logDashboardChange() {
+        ga('set', 'page', '/' + this._selectedDashboard);
         ga('send', 'pageview');
       },
 
@@ -819,8 +814,21 @@ limitations under the License.
         return dashboard;
       },
 
-      ready() {
+      async ready() {
         tf_globals.setUseHash(this.useHash);
+
+        // Binds to storage change events.
+        tf_storage.getStringInitializer(tf_storage.TAB, {
+          defaultValue: '',
+          polymerProperty: '_selectedDashboard',
+        }).call(this);
+        tf_storage.getString(tf_storage.TAB, {
+          defaultValue: '',
+          polymerProperty: '_selectedDashboard',
+        }).then((selectedDashboard) => {
+          this._selectedDashboard = selectedDashboard;
+          this._selectedDashboardInitialized = true;
+        });
 
         tf_backend.environmentStore.addListener(() => {
           this._dataLocation = tf_backend.environmentStore.getDataLocation();
