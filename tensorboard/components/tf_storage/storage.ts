@@ -49,8 +49,6 @@ export const TAB = '__tab__';
  */
 export const DISAMBIGUATOR = 'disambiguator';
 
-const PROP_INITIALIZATION_SUFFIX = 'Initialized';
-
 export const {
   get: getString,
   set: setString,
@@ -143,7 +141,8 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       window.localStorage.setItem(key, stringValue);
       // Because of listeners.ts:[1], we need to manually notify all UI elements
       // listening to storage within the tab of a change.
-      // Must invoke after a tick for other enqueued microtasks to be executed.
+      // Must invoke after a tick for other enqueued microtasks (e.g., for
+      // initializer) to be executed.
       setTimeout(fireStorageChanged, 0);
     } else if (!_.isEqual(value, binding.get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
