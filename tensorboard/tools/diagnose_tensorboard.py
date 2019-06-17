@@ -319,12 +319,12 @@ def stat_tensorboardinfo():
 
 @check
 def source_trees_without_genfiles():
-  effective_roots = sys.path
-  if "" not in effective_roots:
+  roots = list(sys.path)
+  if "" not in roots:
     # Catch problems that would occur in a Python interactive shell
     # (where `""` is prepended to `sys.path`) but not when
     # `diagnose_tensorboard.py` is run as a standalone script.
-    effective_roots.insert(0, "")
+    roots.insert(0, "")
 
   def has_tensorboard(root):
     return os.path.isfile(os.path.join(root, "tensorboard", "__init__.py"))
@@ -334,8 +334,8 @@ def source_trees_without_genfiles():
   def is_bad(root):
     return has_tensorboard(root) and not has_genfiles(root)
 
-  tensorboard_roots = [root for root in sys.path if has_tensorboard(root)]
-  bad_roots = [root for root in sys.path if is_bad(root)]
+  tensorboard_roots = [root for root in roots if has_tensorboard(root)]
+  bad_roots = [root for root in roots if is_bad(root)]
 
   logging.info(
       "tensorboard_roots (%d): %r; bad_roots (%d): %r",
