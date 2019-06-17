@@ -624,7 +624,7 @@ the vulcanization build step. Figure out why.
               .extent([[-frameMargin + 1, -frameMargin + 1],
                        [cellWidth - 1 + frameMargin - 1,
                         cellHeight - 1 + frameMargin - 1]])
-              .on("start", function ([col, metric]) {
+              .on("start", function () {
                 if (isBrushActive() && brushedCellG.node() != this) {
                   // The brush is active in a different cell.
                   // Clear the selection first.
@@ -636,10 +636,10 @@ the vulcanization build step. Figure out why.
                 }
                 brushChanged(this);
               })
-              .on("brush", function([col, metric]) {
+              .on("brush", function() {
                 brushChanged(this);
               })
-              .on("end", function([col, metric]) {
+              .on("end", function() {
                 brushChanged(this);
               });
 
