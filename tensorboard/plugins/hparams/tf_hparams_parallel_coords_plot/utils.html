@@ -26,7 +26,7 @@ var tf;
     (function (parallel_coords_plot) {
       // Finds the "closest" path to a given 'target' point from a given array
       // of 'paths'.
-      // Each element in 'paths' represent a path and should be an object with
+      // Each element in 'paths' represents a path and should be an object with
       // a 'controlPoints' property containing a d-element array of the form
       // [[x1,y1],...,[x_d,y_d]] containing the path's control points
       // in ascending 'x' coordinate order, where d is the number of axes.
@@ -162,9 +162,9 @@ var tf;
           quantileScaleInverseImage;
 
       // Computes the inverse image (in the mathematical sense) of the
-      // real-line interval [a,b] under the given quantile scale mapping;
+      // real-line interval [a,b] under the given continuous scale mapping;
       // precisely: {x : scale(x) in [a,b]}
-      // Note that for a D3 continiuous scale this set is a real-line closed
+      // Note that for a D3 continuous scale this set is a real-line closed
       // interval. This function returns that interval as a 2-element array.
       function continuousScaleInverseImage(scale, a, b) {
         // D3 continuous scales are monotonic continuous functions; hence to
@@ -180,13 +180,40 @@ var tf;
       // and height and scale-type. This function may permute the given
       // 'domainValues' array.
       function createAxisScale(domainValues, axisHeight, scaleType) {
+        function computeNumericExtent() {
+          if (domainValues.length === 0) {
+            // If there are no values, there won't be any session groups.
+            // We choose an arbitrary numeric domain that doesn't contain 0
+            // (to allow a log scale).
+            return [1, 2];
+          }
+          const [min, max] = d3.extent(domainValues);
+          if (min !== max) {
+            return [min, max];
+          }
+          // We shift the min and max of the extent here since
+          // d3.scaleLinear() and d3.scaleLog() both expect the domain
+          // to be an interval with more than one point. Since in this case
+          // all session groups would pass through a single point in the axis,
+          // the axis resolution doesn't matter much so the amount we shift by
+          // doesn't matter much as well. Since for log scales we don't allow
+          // the domain to contain 0, we need to be careful not to make the
+          // domain contain 0 if it hadn't before.
+          if (min > 0) {
+            return [min*0.5, min*1.5];
+          }
+          if (min < 0) {
+            return [min*1.5, min*0.5];
+          }
+          return [-1, 1];
+        }
         if (scaleType === "LINEAR") {
           return d3.scaleLinear()
-              .domain(d3.extent(domainValues))
+              .domain(computeNumericExtent())
               .range([axisHeight, 0]);
         }
         else if (scaleType === "LOG") {
-          const extent = d3.extent(domainValues);
+          const extent = computeNumericExtent();
           if (extent[0] <= 0 && extent[1] >= 0) {
             // We can't have a log scale for data whose extent contains 0.
             // Use a linear scale instead.
@@ -215,6 +242,11 @@ var tf;
           // different procedure:
           const scaleRange = d3.range(kNumQuantiles).map(
               i => axisHeight - i * axisHeight / (kNumQuantiles - 1));
+          if (domainValues.length === 0) {
+            // No session groups in this case. We use a dummy value since
+            // d3.scaleQuantile() requires a non-empty domain.
+            domainValues = [1];
+          }
           return d3.scaleQuantile()
               .domain(_.uniq(domainValues))
               .range(scaleRange);
