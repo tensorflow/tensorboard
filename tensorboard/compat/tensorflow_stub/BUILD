@@ -34,6 +34,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":tensorflow_stub",
+        "//tensorboard:test",
     ],
 )
 
@@ -48,5 +49,6 @@ py_test(
     ],
     deps = [
         ":tensorflow_stub",
+        "//tensorboard:test",
     ],
 )

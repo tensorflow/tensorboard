@@ -22,28 +22,22 @@ import os
 import shutil
 import six
 import tempfile
-import unittest
 
+from tensorboard import test as tb_test
 from tensorboard.compat.tensorflow_stub import errors
 from tensorboard.compat.tensorflow_stub.io import gfile
 
 
-class GFileTest(unittest.TestCase):
-    def setUp(self):
-        self.base_temp_dir = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.base_temp_dir)
-
+class GFileTest(tb_test.TestCase):
     def testExists(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         self.assertTrue(gfile.exists(temp_dir))
         self.assertTrue(gfile.exists(ckpt_path))
 
     def testGlob(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         expected = [
             'foo',
@@ -63,11 +57,11 @@ class GFileTest(unittest.TestCase):
                 expected_listing, gotten_listing))
 
     def testIsdir(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self.assertTrue(gfile.isdir(temp_dir))
 
     def testListdir(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         expected_files = (
             'foo',
@@ -82,8 +76,22 @@ class GFileTest(unittest.TestCase):
             expected_files,
             gfile.listdir(temp_dir))
 
+    def testMakeDirs(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        new_dir = os.path.join(temp_dir, 'newdir', 'subdir', 'subsubdir')
+        gfile.makedirs(new_dir)
+        self.assertTrue(gfile.isdir(new_dir))
+
+    def testMakeDirsAlreadyExists(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        new_dir = os.path.join(temp_dir, 'bar', 'baz')
+        with self.assertRaises(errors.AlreadyExistsError):
+            gfile.makedirs(new_dir)
+
     def testWalk(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         expected = [
             ['', [
@@ -129,7 +137,7 @@ class GFileTest(unittest.TestCase):
         self._CompareFilesPerSubdirectory(expected, gotten)
 
     def testStat(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         ckpt_content = 'asdfasdfasdffoobarbuzz'
@@ -142,7 +150,7 @@ class GFileTest(unittest.TestCase):
             gfile.stat(bad_ckpt_path)
 
     def testRead(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         ckpt_content = 'asdfasdfasdffoobarbuzz'
@@ -154,7 +162,7 @@ class GFileTest(unittest.TestCase):
             self.assertEqual(ckpt_content, ckpt_read)
 
     def testReadLines(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         ckpt_lines = (
@@ -169,7 +177,7 @@ class GFileTest(unittest.TestCase):
             self.assertEqual(ckpt_lines, ckpt_read_lines)
 
     def testReadWithOffset(self):
-        temp_dir = tempfile.mkdtemp(prefix=self.base_temp_dir)
+        temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
         ckpt_content = 'asdfasdfasdffoobarbuzz'
@@ -191,6 +199,82 @@ class GFileTest(unittest.TestCase):
         with gfile.GFile(ckpt_path, 'rb') as f:
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
+
+    def testWrite(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testOverwrite(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(u'original')
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testWriteMultiple(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'w') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
+        with open(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testWriteEmpty(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u''
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testWriteBinary(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = b'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            f.write(ckpt_content)
+        with open(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def testWriteMultipleBinary(self):
+        temp_dir = self.get_temp_dir()
+        self._CreateDeepDirectoryStructure(temp_dir)
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = b'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
+        with open(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
 
     def _CreateDeepDirectoryStructure(self, top_directory):
         """Creates a reasonable deep structure of subdirectories with files.
@@ -271,4 +355,4 @@ class GFileTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    tb_test.main()

@@ -25,6 +25,7 @@ import time
 
 import six
 
+from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.summary.writer.record_writer import RecordWriter
 
@@ -69,11 +70,11 @@ class EventFileWriter(object):
             pending events and summaries to disk.
         """
         self._logdir = logdir
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
+        if not tf.io.gfile.exists(logdir):
+            tf.io.gfile.makedirs(logdir)
         self._file_name = os.path.join(logdir, "events.out.tfevents.%010d.%s.%s.%s" %
             (time.time(), socket.gethostname(), os.getpid(), _global_uid.get())) + filename_suffix  # noqa E128
-        self._general_file_writer = open(self._file_name, 'wb')
+        self._general_file_writer = tf.io.gfile.GFile(self._file_name, 'wb')
         self._async_writer = _AsyncWriter(RecordWriter(self._general_file_writer), max_queue_size, flush_secs)
 
         # Initialize an event instance.
