@@ -281,10 +281,12 @@ class S3FileSystem(object):
         """
         client = boto3.client("s3")
         bucket, path = self.bucket_and_path(filename)
+        # Always convert to bytes for writing
         if binary_mode:
-            file_content = compat.as_bytes(file_content)
+            if not isinstance(file_content, six.binary_type):
+                raise TypeError('File content type must be bytes')
         else:
-            file_content = compat.as_text(file_content)
+            file_content = compat.as_bytes(file_content)
         client.put_object(Body=file_content, Bucket=bucket, Key=path)
 
     def glob(self, filename):
@@ -464,7 +466,7 @@ class GFile(object):
 
         if self.fs_supports_append:
             if not self.write_started:
-                # write the first chunk
+                # write the first chunk to truncate file if it already exists
                 self.fs.write(self.filename, file_content, self.binary_mode)
                 self.write_started = True
             else:
