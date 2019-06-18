@@ -67,7 +67,7 @@ class TBPlugin(object):
 
   Every plugin must extend from this class.
 
-  Subclasses must have a trivial constructor that takes a TBContext
+  Subclasses should have a trivial constructor that takes a TBContext
   argument. Any operation that might throw an exception should either be
   done lazily or made safe with a TBLoader subclass, so the plugin won't
   negatively impact the rest of TensorBoard.
@@ -82,6 +82,17 @@ class TBPlugin(object):
   """
 
   plugin_name = None
+
+  def __init__(self, context):
+    """Initializes this plugin.
+
+    The default implementation does nothing. Subclasses are encouraged
+    to override this and save any necessary fields from the `context`.
+
+    Args:
+      context: A `base_plugin.TBContext` object.
+    """
+    pass
 
   @abstractmethod
   def get_plugin_apps(self):
