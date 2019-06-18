@@ -335,11 +335,6 @@ class GFile(object):
         self.buff_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
-    def seek(self, offset=None):
-        self.buff = None
-        self.buff_offset = offset
-        self.offset = offset
-
     def read(self, n=None):
         result = None
         if self.buff and len(self.buff) > self.buff_offset:

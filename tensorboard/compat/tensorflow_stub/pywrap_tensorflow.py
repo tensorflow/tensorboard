@@ -166,29 +166,28 @@ def crc32c(data):
 class PyRecordReader_New:
     def __init__(self, filename=None, start_offset=0, compression_type=None,
                  status=None):
+        if filename is None:
+            raise errors.NotFoundError(
+                None, None, 'No filename provided, cannot read Events')
+        if not gfile.exists(filename):
+            raise errors.NotFoundError(
+                None, None,
+                '{} does not point to valid Events file'.format(filename))
+        if start_offset:
+            raise errors.UnimplementedError(
+                None, None, 'start offset not supported by compat reader')
+        if compression_type:
+            # TODO: Handle gzip and zlib compressed files
+            raise errors.UnimplementedError(
+                None, None, 'compression not supported by compat reader')
         self.filename = filename
-        self.file_handle = None
         self.start_offset = start_offset
         self.compression_type = compression_type
         self.status = status
         self.curr_event = None
+        self.file_handle = gfile.GFile(self.filename, 'rb')
 
     def GetNext(self):
-        if self.file_handle is None:
-            if self.filename is None:
-                raise errors.NotFoundError(
-                    None, None, 'No filename provided, cannot read Events')
-            if not gfile.exists(self.filename):
-                raise errors.NotFoundError(
-                    None, None,
-                    '{} does not point to valid Events file'.format(self.filename))
-            if self.compression_type:
-                # TODO: Handle gzip and zlib compressed files
-                raise errors.UnimplementedError(
-                    None, None, 'compression not supported by compat reader')
-            self.file_handle = gfile.GFile(self.filename, 'rb')
-            self.file_handle.seek(self.start_offset)
-
         # Read the header
         self.curr_event = None
         header_str = self.file_handle.read(8)
