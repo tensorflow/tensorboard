@@ -143,7 +143,10 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       // listening to storage within the tab of a change.
       // Must invoke after a tick for other enqueued microtasks (e.g., for
       // initializer) to be executed.
-      setTimeout(fireStorageChanged, 0);
+      return new Promise<void>((resolve) => {
+        fireStorageChanged();
+        resolve();
+      });
     } else if (!_.isEqual(value, binding.get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
         unsetFromURI(key);
@@ -179,6 +182,7 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       const setComponentValue = async () => {
         const storedValue = await binding.get(uriStorageName, fullOptions);
         const currentValue = this[fullOptions.polymerProperty];
+
         if (!_.isEqual(storedValue, currentValue)) {
           this[fullOptions.polymerProperty] = storedValue;
         }

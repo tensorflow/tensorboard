@@ -176,7 +176,7 @@ describe('Storage', () => {
         if (useLocalStorage) {
           it(`reacts to change and sets the new value (real)`, async () => {
             await customBinding.set('foo', '', options);
-            // We do not need the `get` stub.
+            // use the real `get` method.
             getStringStub.restore();
 
             const initializer = customBinding.getInitializer('foo', options);
@@ -184,12 +184,12 @@ describe('Storage', () => {
             initializer.call(fakeScope1);
             const fakeScope2 = {prop: 'bar'};
             initializer.call(fakeScope2);
-            await tick();
+            await customBinding.get('foo');
 
             await customBinding.set('foo', 'changed', options);
             // `set` triggers event that makes initializer re-fetch the value
             // in asynchronous fashion. tick for that.
-            await tick();
+            await customBinding.get('foo');
 
             assert.equal(fakeScope1.prop, 'changed');
             assert.equal(fakeScope2.prop, 'changed');
