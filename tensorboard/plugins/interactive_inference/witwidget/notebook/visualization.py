@@ -534,7 +534,7 @@ class WitConfigBuilder(object):
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None, adjust_example=None):
+    adjust_prediction=None, adjust_example=None, signature_name=None):
     """Sets the model information for a model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -554,6 +554,9 @@ class WitConfigBuilder(object):
       to run prediction on and converts it to the format expected by the model.
       Necessary for example if the served model expects a single data value to
       run inference on instead of a list or dict of values.
+      signature_name: Optional, only used for TensorFlow models. The name of the
+      signature defined in the model to use for prediction. If not specified
+      then the default signature is used.
 
     Returns:
       self, in order to enabled method chaining.
@@ -569,11 +572,13 @@ class WitConfigBuilder(object):
       self.store('adjust_prediction', adjust_prediction)
     if adjust_example:
       self.store('adjust_example', adjust_example)
+    if signature_name:
+      self.store('signature_name', signature_name)
     return self
 
   def set_compare_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None, adjust_example=None):
+    adjust_prediction=None, adjust_example=None, signature_name=None):
     """Sets the model information for a second model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -593,6 +598,9 @@ class WitConfigBuilder(object):
       to run prediction on and converts it to the format expected by the model.
       Necessary for example if the served model expects a single data value to
       run inference on instead of a list or dict of values.
+      signature_name: Optional, only used for TensorFlow models. The name of the
+      signature defined in the model to use for prediction. If not specified
+      then the default signature is used.
 
     Returns:
       self, in order to enabled method chaining.
@@ -608,6 +616,8 @@ class WitConfigBuilder(object):
       self.store('compare_adjust_prediction', adjust_prediction)
     if adjust_example:
       self.store('compare_adjust_example', adjust_example)
+    if signature_name:
+      self.store('compare_signature_name', signature_name)
     return self
 
   def set_target_feature(self, target):

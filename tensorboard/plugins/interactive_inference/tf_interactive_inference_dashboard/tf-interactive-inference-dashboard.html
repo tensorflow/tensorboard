@@ -4454,10 +4454,17 @@ limitations under the License.
         for (let i = 0; i < attributions.indices.length; i++) {
           const idx = attributions.indices[i];
           const datapoint = Object.assign({}, this.visdata[idx]);
-          // TODO(jwexler): Support attributions from multiple models.
+          // TODO(jwexler): Handle attributions from multiple models and classes
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
-          const attribs = attributions.attributions[0][i];
+          // We also can only handle a single set of feature attributions per
+          // example. So we cannot parse different attributions for different
+          // possible predicted classes.
+          let attribs = attributions.attributions[0][i];
+          if (Array.isArray(attribs) && attribs.length == 1 &&
+              typeof attribs[0] === "object") {
+            attribs = attribs[0];
+          }
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
             // If the attributions for a key is a 2D array then treat the first
