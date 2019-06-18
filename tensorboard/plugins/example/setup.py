@@ -25,6 +25,9 @@ setuptools.setup(
     version="0.1.0",
     description="Sample TensorBoard plugin.",
     packages=["tensorboard_plugin_example"],
+    package_data={
+        "tensorboard_plugin_example": ["static/**"],
+    },
     entry_points={
         "tensorboard_plugins": [
             "example = tensorboard_plugin_example:ExamplePlugin",

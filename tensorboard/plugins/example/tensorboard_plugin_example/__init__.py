@@ -48,7 +48,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def _serve_js(self, request):
     del request  # unused
-    filepath = os.path.join(os.path.dirname(__file__), "example.js")
+    filepath = os.path.join(os.path.dirname(__file__), "static", "example.js")
     with open(filepath) as infile:
       contents = infile.read()
     return werkzeug.Response(
