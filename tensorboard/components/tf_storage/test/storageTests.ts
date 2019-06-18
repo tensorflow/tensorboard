@@ -25,6 +25,13 @@ function getHash(): string {
   return tf_globals.getFakeHash();
 }
 
+class TestStorage extends HTMLElement {
+  public propObserver: string;
+  public propInit: string;
+  public propInitAndObserver: string;
+  _onPropObserver() {}
+  _onPropInitObserver() {}
+}
 
 /* tslint:disable:no-namespace */
 describe('Storage', () => {
@@ -83,118 +90,174 @@ describe('Storage', () => {
     assert.equal('scalars', await getString(TAB, option));
   });
 
-  describe('getInitializer', () => {
-    [
-      {useLocalStorage: true, name: 'local storage', eventName: 'storage'},
-      {useLocalStorage: false, name: 'hash storage', eventName: 'hashchange'}
-    ].forEach(({useLocalStorage, name, eventName}) => {
-      describe(name, () => {
-        const options = {
-          useLocalStorage,
-          defaultValue: 'baz',
-          polymerProperty: 'prop',
-        };
+  describe('Polymer usage', () => {
+    function getComponent(): TestStorage {
+      return document.createElement('test-storage') as TestStorage;
+    }
 
-        let sandbox = null;
-        let customBinding = null;
-        let getStringStub = null;
+    const OPTIONS = {defaultValue: '', useLocalStorage: true};
 
-        function setValue(key: string, value: string): void {
-          if (useLocalStorage) window.localStorage.setItem(key, value);
-          else setHash(`${key}=${value}`);
-          getStringStub.withArgs(key, sinon.match.any).returns(value);
-        }
+    describe('getInitializer', () => {
+      [
+        {useLocalStorage: true, name: 'local storage', eventName: 'storage'},
+        {useLocalStorage: false, name: 'hash storage', eventName: 'hashchange'},
+      ].forEach(({useLocalStorage, name, eventName}) => {
+        describe(name, () => {
+          const options = {
+            useLocalStorage,
+            defaultValue: 'baz',
+            polymerProperty: 'prop',
+          };
 
-        /**
-         * HACK: because `get` and `set` are asynchronous, it, with above stub,
-         * takes a microtask to get the value. Since we cannot effectively
-         * control that and make it synchronous, we fake a tick by enqueuing
-         * another microtask that, in a test, we await.
-         */
-        function tick() {
-          return getStringStub('foo');
-        }
+          let sandbox = null;
+          let customBinding = null;
+          let getStringStub = null;
 
-        beforeEach(() => {
-          sandbox = sinon.sandbox.create();
-          customBinding = makeBindings(x => x, x => x);
-          getStringStub = sandbox.stub(customBinding, 'get');
-        });
+          function setValue(key: string, value: string): void {
+            if (useLocalStorage) window.localStorage.setItem(key, value);
+            else setHash(`${key}=${value}`);
+            getStringStub.withArgs(key, sinon.match.any).returns(value);
+          }
 
-        afterEach(() => {
-          sandbox.restore();
-          sandbox = null;
-          customBinding = null;
-          getStringStub = null;
-        });
+          /**
+           * HACK: because `get` and `set` are asynchronous, it, with above
+           * stub, takes a microtask to get the value. Since we cannot
+           * effectively control that and make it synchronous, we fake a tick by
+           * enqueuing another microtask that, in a test, we await.
+           */
+          function tick() {
+            return getStringStub('foo');
+          }
 
-        it('sets the polymerProperty with the defaultValue', async () => {
-          setValue('foo', 'bar');
-          const initializer = customBinding.getInitializer('foo', options);
-          const fakeScope = {prop: 'meow'};
-          assert.equal(initializer.call(fakeScope), 'baz');
-        });
+          beforeEach(() => {
+            sandbox = sinon.sandbox.create();
+            customBinding = makeBindings(x => x, x => x);
+            getStringStub = sandbox.stub(customBinding, 'get');
+          });
 
-        it('sets the polymerProperty with the value async', async () => {
-          setValue('foo', 'bar');
-          const initializer = customBinding.getInitializer('foo', options);
-          const fakeScope = {prop: null};
-          initializer.call(fakeScope);
-          await tick();
+          afterEach(() => {
+            sandbox.restore();
+            sandbox = null;
+            customBinding = null;
+            getStringStub = null;
+          });
 
-          assert.equal(fakeScope.prop, 'bar');
-        });
+          it('sets the polymerProperty with the defaultValue', async () => {
+            setValue('foo', 'bar');
+            const initializer = customBinding.getInitializer('foo', options);
+            const fakeScope = {prop: 'meow'};
+            assert.equal(initializer.call(fakeScope), 'baz');
+          });
 
-        it('sets the prop with defaultValue when value is missing', async () => {
-          getStringStub.withArgs('foo', sinon.match.any).returns('baz');
-          const initializer = customBinding.getInitializer('foo', options);
-          const fakeScope = {prop: null};
-          initializer.call(fakeScope);
-          await tick();
+          it('sets the polymerProperty with the value async', async () => {
+            setValue('foo', 'bar');
+            const initializer = customBinding.getInitializer('foo', options);
+            const fakeScope = {prop: null};
+            initializer.call(fakeScope);
+            await tick();
 
-          assert.equal(fakeScope.prop, 'baz');
-        });
+            assert.equal(fakeScope.prop, 'bar');
+          });
 
-        it(`reacts to '${eventName}' and sets the new value (simulated)`, async () => {
-          setValue('foo', '');
+          it('sets the prop with defaultValue when value is missing',
+              async () => {
+            getStringStub.withArgs('foo', sinon.match.any).returns('baz');
+            const initializer = customBinding.getInitializer('foo', options);
+            const fakeScope = {prop: null};
+            initializer.call(fakeScope);
+            await tick();
 
-          const initializer = customBinding.getInitializer('foo', options);
-          const fakeScope = {prop: null};
-          initializer.call(fakeScope);
-          await tick();
+            assert.equal(fakeScope.prop, 'baz');
+          });
 
-          // Simulate the hashchange.
-          setValue('foo', 'changed');
-          window.dispatchEvent(new Event(eventName));
-          await tick();
-
-          assert.equal(fakeScope.prop, 'changed');
-        });
-
-        // It is hard to test against real URL hash and we use fakeHash for
-        // testing and fakeHash does not emit any event for a change.
-        if (useLocalStorage) {
-          it(`reacts to change and sets the new value (real)`, async () => {
-            await customBinding.set('foo', '', options);
-            // use the real `get` method.
-            getStringStub.restore();
+          it(`reacts to '${eventName}' and sets new value (simulated)`,
+              async () => {
+            setValue('foo', '');
 
             const initializer = customBinding.getInitializer('foo', options);
-            const fakeScope1 = {prop: null};
-            initializer.call(fakeScope1);
-            const fakeScope2 = {prop: 'bar'};
-            initializer.call(fakeScope2);
-            await customBinding.get('foo');
+            const fakeScope = {prop: null};
+            initializer.call(fakeScope);
+            await tick();
 
-            await customBinding.set('foo', 'changed', options);
-            // `set` triggers event that makes initializer re-fetch the value
-            // in asynchronous fashion. tick for that.
-            await customBinding.get('foo');
+            // Simulate the hashchange.
+            setValue('foo', 'changed');
+            window.dispatchEvent(new Event(eventName));
+            await tick();
 
-            assert.equal(fakeScope1.prop, 'changed');
-            assert.equal(fakeScope2.prop, 'changed');
+            assert.equal(fakeScope.prop, 'changed');
           });
-        }
+
+          // It is hard to test against real URL hash and we use fakeHash for
+          // testing and fakeHash does not emit any event for a change.
+          if (useLocalStorage) {
+            it(`reacts to change and sets the new value (real)`, async () => {
+              await customBinding.set('foo', '', options);
+              // use the real `get` method.
+              getStringStub.restore();
+
+              const initializer = customBinding.getInitializer('foo', options);
+              const fakeScope1 = {prop: null};
+              initializer.call(fakeScope1);
+              const fakeScope2 = {prop: 'bar'};
+              initializer.call(fakeScope2);
+              await customBinding.get('foo');
+
+              await customBinding.set('foo', 'changed', options);
+              // `set` triggers event that makes initializer re-fetch the value
+              // in asynchronous fashion. tick for that.
+              await customBinding.get('foo');
+
+              assert.equal(fakeScope1.prop, 'changed');
+              assert.equal(fakeScope2.prop, 'changed');
+            });
+          }
+        });
+      });
+    });
+
+    describe('observer', () => {
+      it('updates storage when Polymer property changes', async () => {
+        const el = getComponent();
+        assert.equal(await getString('foo-obs', OPTIONS), '');
+
+        el.propObserver = 'changed';
+
+        assert.equal(await getString('foo-obs', OPTIONS), 'changed');
+      });
+    });
+
+    describe('initializer and observer', () => {
+      async function tick() {
+        // a tick to set the value.
+        await getString('foo');
+        // a tick to propagate the change to others.
+        await new Promise((resolve) => {
+          setTimeout(resolve)
+        });
+        // a tick to get the new value and set it on a component.
+        await getString('foo');
+      }
+
+      it('sets the initial value based on storage value', async () => {
+        await setString('foo-init-obs', 'initial value', OPTIONS);
+        const el = getComponent();
+
+        await tick();
+
+        assert.equal(el.propInitAndObserver, 'initial value');
+      });
+
+      it('updates all components when one component changes', async () => {
+        const el1 = getComponent();
+        const el2 = getComponent();
+        assert.equal(await getString('foo-init-obs', OPTIONS), '');
+        assert.equal(el2.propInitAndObserver, '');
+
+        el1.propInitAndObserver = 'changed';
+
+        await tick();
+
+        assert.equal(el2.propInitAndObserver, 'changed');
       });
     });
   });

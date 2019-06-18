@@ -144,8 +144,10 @@ export function makeBindings<T>(fromString: (string) => T, toString: (T) => stri
       // Must invoke after a tick for other enqueued microtasks (e.g., for
       // initializer) to be executed.
       return new Promise<void>((resolve) => {
-        fireStorageChanged();
-        resolve();
+        setTimeout(() => {
+          fireStorageChanged();
+          resolve();
+        });
       });
     } else if (!_.isEqual(value, binding.get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {

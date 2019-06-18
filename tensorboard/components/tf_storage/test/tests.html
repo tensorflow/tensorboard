@@ -17,9 +17,54 @@ limitations under the License.
 -->
 
 <meta charset="utf-8">
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 <script src="../../web-component-tester/browser.js"></script>
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../tf-storage.html">
 <body>
-<script src="storageTests.js"></script>
+  <dom-module id="test-storage">
+    <template>
+    </template>
+    <script>
+      Polymer({
+        is: 'test-storage',
+        properties: {
+          propInit: {
+            type: String,
+            value: tf_storage.getStringInitializer('foo-init', {
+              polymerProperty: 'propInit',
+              defaultValue: '',
+              useLocalStorage: true,
+            }),
+          },
+          propObserver: {
+            type: String,
+            value: '',
+            observer: '_onPropObserver',
+          },
+          propInitAndObserver: {
+            type: String,
+            value: tf_storage.getStringInitializer('foo-init-obs', {
+              polymerProperty: 'propInitAndObserver',
+              defaultValue: '',
+              useLocalStorage: true,
+            }),
+            observer: '_onPropInitAndObserver',
+          },
+        },
+        _onPropObserver: tf_storage.getStringObserver('foo-obs', {
+          polymerProperty: 'propObserver',
+          defaultValue: '',
+          useLocalStorage: true,
+        }),
+        _onPropInitAndObserver: tf_storage.getStringObserver('foo-init-obs', {
+          polymerProperty: 'propInitAndObserver',
+          defaultValue: '',
+          useLocalStorage: true,
+        }),
+      });
+    </script>
+  </dom-module>
+
+  <script src="storageTests.js"></script>
+</body>
