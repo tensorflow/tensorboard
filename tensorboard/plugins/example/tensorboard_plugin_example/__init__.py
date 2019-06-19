@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import textwrap
 
 from tensorboard.plugins import base_plugin
 import werkzeug
@@ -30,6 +29,9 @@ class ExamplePlugin(base_plugin.TBPlugin):
   plugin_name = 'example'
 
   def __init__(self, context):
+    # A real plugin would likely save the `context.multiplexer` and/or
+    # `context.db_connection_provider` attributes for later use, but we
+    # don't actually need any of that.
     pass
 
   def is_active(self):
@@ -37,18 +39,18 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     return {
-        "/plugin.js": self._serve_js,
+        "/index.js": self._serve_js,
     }
 
   def frontend_metadata(self):
     return super(ExamplePlugin, self).frontend_metadata()._replace(
-        es_module_path="/plugin.js",
+        es_module_path="/index.js",
     )
 
   @wrappers.Request.application
   def _serve_js(self, request):
     del request  # unused
-    filepath = os.path.join(os.path.dirname(__file__), "static", "example.js")
+    filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
     with open(filepath) as infile:
       contents = infile.read()
     return werkzeug.Response(
