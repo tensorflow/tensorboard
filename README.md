@@ -20,7 +20,7 @@ through setting up and using TensorBoard. There's an associated
 
 [this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
 
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/decentralion/tf-dev-summit-tensorboard-tutorial
+[tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/martinwicke/tf-dev-summit-tensorboard-tutorial
 
 # Usage
 
