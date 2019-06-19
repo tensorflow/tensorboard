@@ -14,7 +14,6 @@ package_group(
     name = "internal",
     packages = [
         "//tensorboard/...",
-        "//visibility:public",
     ],
 )
 

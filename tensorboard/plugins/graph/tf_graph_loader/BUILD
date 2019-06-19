@@ -12,6 +12,7 @@ tf_web_library(
         "tf-graph-loader.ts",
     ],
     path = "/tf-graph-loader",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
