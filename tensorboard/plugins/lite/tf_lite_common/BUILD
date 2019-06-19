@@ -13,17 +13,6 @@ tf_web_library(
     ],
     path = "/tf-lite-common",
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_lite_common"],
-    destdir = "/tf-lite-common",
-    deps = [
-        "//third_party/javascript/polymer/v1/polymer:lib",
         "//tensorboard/plugins/graph/tf_graph_common",
     ],
 )

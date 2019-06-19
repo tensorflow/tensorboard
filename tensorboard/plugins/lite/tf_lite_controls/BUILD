@@ -10,12 +10,8 @@ tf_web_library(
     srcs = ["tf-lite-controls.html"],
     path = "/tf-lite-controls",
     deps = [
-        "//tensorboard/components/tf_backend:tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/lite/tf_lite_common",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "//tensorboard/plugins/graph/tf_graph_node_search",
         "@org_polymer_iron_pages",
         "@org_polymer_paper_button",
         "@org_polymer_paper_icon_button",
@@ -26,26 +22,5 @@ tf_web_library(
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_tooltip",
         "@org_polymer_paper_tabs"
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_lite_controls"],
-    destdir = "tf-lite-controls",
-    deps = [
-        "//tensorboard/components/tf_backend:tf_backend",
-        "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_node_search:legacy",
-        "//third_party/javascript/polymer/v1/paper-button:lib",
-        "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
-        "//third_party/javascript/polymer/v1/paper-icon-button:lib",
-        "//third_party/javascript/polymer/v1/paper-item:lib",
-        "//third_party/javascript/polymer/v1/paper-menu:lib",
-        "//third_party/javascript/polymer/v1/paper-radio-group:lib",
-        "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
-        "//third_party/javascript/polymer/v1/paper-tooltip:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
