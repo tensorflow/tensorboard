@@ -158,6 +158,8 @@ smoke() {
   curl -fs "http://localhost:$(cat port)/data/plugin/projector/runs" >projector_runs.json
   # logdir does not contain any checkpoints and thus an empty runs.
   grep '\[\]' projector_runs.json
+  curl -fs "http://localhost:$(cat port)/data/plugin/projector/projector_binary.html" >projector_binary.html
+  grep '<vz-projector-dashboard' projector_binary.html
   kill $!
 
   # Test TensorBoard APIs
