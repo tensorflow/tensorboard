@@ -52,11 +52,6 @@ FrontendMetadata = collections.namedtuple(
         # Whether to remove the plugin DOM when switching to a different
         # plugin, to trigger the Polymer 'detached' event. Boolean.
         "remove_dom",
-        # Whether to show a system-level data selector above the plugin.
-        # The data selector enables users to select experiments, runs,
-        # and tags. The selection is injected as a `dataSelection`
-        # property to the plugin web component. Boolean.
-        "use_data_selector",
         # For legacy plugins, name of the custom element defining the
         # plugin frontend: e.g., `"tf-scalar-dashboard"`. Should be a
         # `str` or `None` (for iframed plugins). Mutually exclusive with
@@ -72,7 +67,7 @@ class TBPlugin(object):
 
   Every plugin must extend from this class.
 
-  Subclasses must have a trivial constructor that takes a TBContext
+  Subclasses should have a trivial constructor that takes a TBContext
   argument. Any operation that might throw an exception should either be
   done lazily or made safe with a TBLoader subclass, so the plugin won't
   negatively impact the rest of TensorBoard.
@@ -87,6 +82,17 @@ class TBPlugin(object):
   """
 
   plugin_name = None
+
+  def __init__(self, context):
+    """Initializes this plugin.
+
+    The default implementation does nothing. Subclasses are encouraged
+    to override this and save any necessary fields from the `context`.
+
+    Args:
+      context: A `base_plugin.TBContext` object.
+    """
+    pass
 
   @abstractmethod
   def get_plugin_apps(self):
@@ -126,7 +132,6 @@ class TBPlugin(object):
         es_module_path=None,
         disable_reload=False,
         remove_dom=False,
-        use_data_selector=False,
         element_name=None,
     )
 

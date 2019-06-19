@@ -86,7 +86,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     return super(ScalarsPlugin, self).frontend_metadata()._replace(
         element_name='tf-scalar-dashboard',
-        use_data_selector=True,
     )
 
   def index_impl(self):

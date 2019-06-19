@@ -16,10 +16,10 @@ import base64
 import json
 import googleapiclient.discovery
 import tensorflow as tf
-import sys
 from IPython import display
 from google.protobuf import json_format
 from numbers import Number
+from six import ensure_str
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
@@ -228,10 +228,8 @@ class WitWidgetBase(object):
       example_strings = [
         self.json_to_proto(ex).SerializeToString()
         for ex in self.examples]
-      encoded = base64.b64encode(
-        inference_utils.create_sprite_image(example_strings))
-      if sys.version_info >= (3, 0):
-        encoded = encoded.decode('utf-8')
+      encoded = ensure_str(base64.b64encode(
+        inference_utils.create_sprite_image(example_strings)))
       return 'data:image/png;base64,{}'.format(encoded)
     else:
       return None
@@ -264,7 +262,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat_idx] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat_idx] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat_idx] = ensure_str(
+              ex.features.feature[feat].bytes_list.value[0])
       else:
         json_ex = {}
         for feat in ex.features.feature:
@@ -275,7 +274,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat] = ensure_str(
+              ex.features.feature[feat].bytes_list.value[0])
       json_exs.append(json_ex)
     return json_exs
 

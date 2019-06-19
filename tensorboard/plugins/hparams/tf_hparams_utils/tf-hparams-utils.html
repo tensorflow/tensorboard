@@ -19,7 +19,9 @@ limitations under the License.
 <link rel="import" href="../tf-imports/d3.html">
 
 <script>
-/* Common utilities used in the hparams plugin. */
+/* Common utilities used in the hparams plugin.
+ * TODO(erez): Convert to TypeScript.
+ */
 var tf;
 (function (tf) {
   (function (hparams) {
@@ -35,16 +37,30 @@ var tf;
       // schema: The object storing metadata on the metrics and hparams used
       //     in the experiment. See the documentation in
       //     'tf-hparams-query-pane.html'.
+      // visibleSchema: The object storing metadata on just the visible metrics
+      //     and hparams in 'schema'. This is the object stored in the property
+      //     'visibleSchema' of 'configuration' (see the documentation in
+      //     tf-hparams-query-pane.html' for more details). This object and the
+      //     utility functions below that accept it are deprecated and the
+      //     intention is to eventually remove them.
+      //     New code should instead filter the entries in the schema object
+      //     directly to find all the visible columns and only use the functions
+      //     below that take a 'schema' object.
       // sessionGroup: A JavaScript object representation of the SessionGroup
       //     proto defined in api.proto.
       // sessionGroups: An array of 'sessionGroup' objects.
-      // columnIndex: An index to a 'column' of a sessionGroup. We regard a
+      // columnIndex: An index of a 'column' of a sessionGroup with respect
+      //     to a schema or visibleSchema object. We regard a
       //     sessionGroup as a row in a table where the columns represent
       //     hparams and metric values for the session group. The columns are
       //     ordered by listing the hparam columns first in the same order as
-      //     the corresponding elements of schema.hparamInfos, followed by the
+      //     the corresponding elements of schema.hparamColumns or
+      //     visibleSchema.hparamInfos, followed by the
       //     metric columns in the same order as the corresponding elements of
-      //     schema.metricInfos. Columns are indexed in this list from 0.
+      //     schema.metricColumns or visibleSchema.metricInfos. Whether the
+      //     index is given with respect to a schema or a visibleScheme depends
+      //     on the type of schema parameter the utility function below accepts
+      //     in addition to the columnIndex parameter.
       // -----------------------------------------------------------------------
 
       // Computes the name to display for the given 'hparamInfo' object.
@@ -78,29 +94,28 @@ var tf;
       }
       utils.metricName = metricName;
 
-      // Computes the name to display for the given column index.
       function schemaColumnName(schema, columnIndex) {
-        if (columnIndex < schema.hparamInfos.length) {
-          return hparamName(schema.hparamInfos[columnIndex]);
+        if (columnIndex < schema.hparamColumns.length) {
+          return hparamName(schema.hparamColumns[columnIndex].hparamInfo);
         }
-        const metricIndex = columnIndex - schema.hparamInfos.length;
-        return metricName(schema.metricInfos[metricIndex]);
+        const metricIndex = columnIndex - schema.hparamColumns.length;
+        return metricName(schema.metricColumns[metricIndex].metricInfo);
       }
       utils.schemaColumnName = schemaColumnName;
 
-      // Returns the number of hparams.
+      // Returns the number of hparams in schema (visible and invisible).
       function numHParams(schema) {
-        return schema.hparamInfos.length;
+        return schema.hparamColumns.length;
       }
       utils.numHParams = numHParams;
 
-      // Returns the number of metrics.
+      // Returns the number of metrics in schema (visible and invisible).
       function numMetrics(schema) {
-        return schema.metricInfos.length;
+        return schema.metricColumns.length;
       }
       utils.numMetrics = numMetrics;
 
-      // Returns the number of columns.
+      // Returns the number of columns in schema (visible and invisible).
       function numColumns(schema) {
         return numHParams(schema) + numMetrics(schema);
       }
@@ -124,30 +139,32 @@ var tf;
       utils.metricValueByName = metricValueByName;
 
       // Returns sessionGroup's metric value of the metric with index
-      // 'metricIndex' in schema.metricInfos.
+      // 'metricIndex' in schema.metricColumns.
+      function hparamValueByIndex(schema, sessionGroup, hparamIndex) {
+        return sessionGroup.hparams[
+          schema.hparamColumns[hparamIndex].hparamInfo.name];
+      }
+      utils.hparamValueByIndex = hparamValueByIndex;
+
+      // Returns sessionGroup's metric value of the metric with index
+      // 'metricIndex' in schema.metricColumns.
       function metricValueByIndex(schema, sessionGroup, metricIndex) {
-        const metricName = schema.metricInfos[metricIndex].name;
-        const metricValue = metricValueByName(sessionGroup.metricValues,
-                                              metricName);
+        const metricName = schema.metricColumns[metricIndex].metricInfo.name;
+        const metricValue = metricValueByName(
+            sessionGroup.metricValues, metricName);
         return metricValue === undefined ? undefined : metricValue.value;
       }
       utils.metricValueByIndex = metricValueByIndex;
 
-      // Returns sessionGroup's hparam value of the hparam with index
-      // 'hparamIndex' in schema.hparamInfos.
-      function hparamValueByIndex(schema, sessionGroup, hparamIndex) {
-        return sessionGroup.hparams[schema.hparamInfos[hparamIndex].name];
-      }
-      utils.hparamValueByIndex = hparamValueByIndex;
-
-      // Returns sessionGroup's column  value of the column with index
-      // 'columnIndex'.
+      // Returns sessionGroup's column value of the column with index
+      // 'columnIndex' in schema.
       function columnValueByIndex(schema, sessionGroup, columnIndex) {
-        if (columnIndex < schema.hparamInfos.length) {
+        if (columnIndex < schema.hparamColumns.length) {
           return hparamValueByIndex(schema, sessionGroup, columnIndex);
         }
-        return metricValueByIndex(schema, sessionGroup,
-                                  columnIndex - schema.hparamInfos.length);
+        return metricValueByIndex(
+            schema, sessionGroup,
+            columnIndex - schema.hparamColumns.length);
       }
       utils.columnValueByIndex = columnValueByIndex;
 
@@ -155,10 +172,85 @@ var tf;
       // value of the given column in the sessionGroups array.
       // Ignores session groups with missing values for the column.
       function numericColumnExtent(schema, sessionGroups, columnIndex) {
-        return d3.extent(sessionGroups,
-                         sg=>columnValueByIndex(schema, sg, columnIndex));
+        return d3.extent(
+            sessionGroups,
+            sg=>columnValueByIndex(schema, sg, columnIndex));
       }
       utils.numericColumnExtent = numericColumnExtent;
+
+      // Converts a visibleSchema columnIndex to a schema columnIndex.
+      // Returns the schema-relative columnIndex for the visible column with
+      // visibleSchema-releative columnIndex given by 'visibleColumnIndex'.
+      function getAbsoluteColumnIndex(
+          schema, visibleSchema, visibleColumnIndex) {
+        let result;
+        if (visibleColumnIndex < visibleSchema.hparamInfos.length) {
+          result = schema.hparamColumns.findIndex(
+              c => (c.hparamInfo.name ===
+                    visibleSchema.hparamInfos[visibleColumnIndex].name));
+        } else {
+          const metricIndex =
+                visibleColumnIndex - visibleSchema.hparamInfos.length;
+          const metricName = visibleSchema.metricInfos[metricIndex].name;
+          result = schema.hparamColumns.length + schema.metricColumns.findIndex(
+              c => (c.metricInfo.name === metricName));
+        }
+        console.assert(result !== -1);
+        return result;
+      }
+      utils.getAbsoluteColumnIndex = getAbsoluteColumnIndex;
+
+      // DEPRECATED. Use schemaColumnName instead (with an "absolute"
+      // columnIndex).
+      // Computes the name to display for the given visible column index.
+      function schemaVisibleColumnName(visibleSchema, columnIndex) {
+        if (columnIndex < visibleSchema.hparamInfos.length) {
+          return hparamName(visibleSchema.hparamInfos[columnIndex]);
+        }
+        const metricIndex = columnIndex - visibleSchema.hparamInfos.length;
+        return metricName(visibleSchema.metricInfos[metricIndex]);
+      }
+      utils.schemaVisibleColumnName = schemaVisibleColumnName;
+
+      // DEPRECATED. Use numDisplayedHParams instead.
+      // Returns the number of hparams in visibleSchema. This is the same
+      // value as numDisplayedHParams(schema) with schema being the "containing"
+      // schema of visibleSchema.
+      function numVisibleHParams(visibleSchema) {
+        return visibleSchema.hparamInfos.length;
+      }
+      utils.numVisibleHParams = numVisibleHParams;
+
+      // DEPRECATED. Use numDisplayedMetrics instead.
+      // Returns the number of hparams in visibleSchema. This is the same
+      // value as numDisplayedMetrics(schema) with schema being the "containing"
+      // schema of visibleSchema.
+      function numVisibleMetrics(visibleSchema) {
+        return visibleSchema.metricInfos.length;
+      }
+      utils.numVisibleMetrics = numVisibleMetrics;
+
+      // DEPRECATED.
+      // Returns the number of visible columns (having 'displayed' true).
+      // This is the same value as numDisplayedColumns(schema) with schema
+      // being the "containing" schema of visibleSchema.
+      function numVisibleColumns(visibleSchema) {
+        return numVisibleHParams(visibleSchema) +
+            numVisibleMetrics(visibleSchema);
+      }
+      utils.numVisibleColumns = numVisibleColumns;
+
+      // DEPRECATED. Use numericColumnExtent with a schema columnIndex instead.
+      // Returns an array [min, max] representing the minimum and maximum
+      // value of the given visible column in the sessionGroups array.
+      // Ignores session groups with missing values for the column.
+      function visibleNumericColumnExtent(
+          visibleSchema, sessionGroups, columnIndex) {
+        return d3.extent(
+            sessionGroups,
+            sg=>columnValueByVisibleIndex(visibleSchema, sg, columnIndex));
+      }
+      utils.visibleNumericColumnExtent = visibleNumericColumnExtent;
 
       // Returns a string representation of hparamValues[hparamName] suitable
       // for display.
@@ -181,6 +273,43 @@ var tf;
         return sessionGroups.find(sg => sg.name === name);
       }
       utils.sessionGroupWithName = sessionGroupWithName;
+
+      // DEPRECATED. Use hparamValueByIndex with a schema hparamIndex instead.
+      // Returns sessionGroup's hparam value of the visible hparam with index
+      // 'hparamIndex' in visibleSchema.hparamInfos.
+      function hparamValueByVisibleIndex(
+          visibleSchema, sessionGroup, hparamIndex) {
+        return sessionGroup.hparams[
+          visibleSchema.hparamInfos[hparamIndex].name];
+      }
+      utils.hparamValueByVisibleIndex = hparamValueByVisibleIndex;
+
+      // DEPRECATED. Use metricValueByIndex with a schema metricIndex instead.
+      // Returns sessionGroup's metric value of the visible metric with index
+      // 'metricIndex' in visibleSchema.metricInfos.
+      function metricValueByVisibleIndex(
+          visibleSchema, sessionGroup, visibleMetricIndex) {
+        const metricName = visibleSchema.metricInfos[visibleMetricIndex].name;
+        const metricValue = metricValueByName(sessionGroup.metricValues,
+                                              metricName);
+        return metricValue === undefined ? undefined : metricValue.value;
+      }
+      utils.metricValueByVisibleIndex = metricValueByVisibleIndex;
+
+      // DEPRECATED. Use columnValueByIndex with a schema columnIndex instead.
+      // Returns sessionGroup's column value of the visible column with index
+      // 'columnIndex' in visibleSchema.
+      function columnValueByVisibleIndex(
+          visibleSchema, sessionGroup, columnIndex) {
+        if (columnIndex < visibleSchema.hparamInfos.length) {
+          return hparamValueByVisibleIndex(
+              visibleSchema, sessionGroup, columnIndex);
+        }
+        return metricValueByVisibleIndex(
+            visibleSchema, sessionGroup,
+            columnIndex - visibleSchema.hparamInfos.length);
+      }
+      utils.columnValueByVisibleIndex = columnValueByVisibleIndex;
 
       // ---- Misc functions ---------------------------------------------------
       // Returns a string representation of 'value' suitable for display.

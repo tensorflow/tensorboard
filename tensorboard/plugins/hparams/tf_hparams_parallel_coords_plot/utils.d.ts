@@ -1,4 +1,4 @@
-/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
@@ -12,23 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_data_selector {
 
-export enum Type {
-  WITHOUT_EXPERIMENT,
-  SINGLE,
-  COMPARISON,
+declare namespace tf.hparams.parallel_coords_plot {
+  export var findClosestPath: any;
+  export var createAxisScale: any;
+  export var continuousScaleInverseImage: any;
+  export var quantileScaleInverseImage: any;
+  export var pointScaleInverseImage: any;
 }
-
-export type Selection = {
-  experiment?: tf_backend.Experiment,
-  runs: Array<tf_backend.Run>,
-  tagRegex: string,
-}
-
-export type DataSelection = {
-  type: Type,
-  selections: Array<Selection>
-}
-
-}  // namespace tf_data_selector
