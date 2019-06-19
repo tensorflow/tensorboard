@@ -155,6 +155,9 @@ smoke() {
   grep '<tf-tensorboard' index.html
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
   grep 'smokedir' logdir.json
+  curl -fs "http://localhost:$(cat port)/data/plugin/projector/runs" >projector_runs.json
+  # logdir does not contain any checkpoints and thus an empty runs.
+  grep '\[\]' projector_runs.json
   kill $!
 
   # Test TensorBoard APIs
