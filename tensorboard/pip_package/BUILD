@@ -32,6 +32,7 @@ genrule(
         ":build_pip_package",
         ":deterministic_tar_gz",
     ],
+    visibility = ["//tensorboard:internal"],
 )
 
 sh_binary(
