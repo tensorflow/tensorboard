@@ -112,10 +112,8 @@ def git_grep(pattern):
     getattr(sys.stderr, "buffer", sys.stderr).write(stderr)  # Python 2 compat
     sys.exit(1)
   result = []
-  while stdout:
-    (filename_raw, _unused_nul, rest) = stdout.partition(b"\0")
-    (line_number_raw, _unused_nul, rest) = rest.partition(b"\0")
-    (line_raw, _unused_lf, stdout) = rest.partition(b"\n")
+  for line in stdout.splitlines():  # assumes no newline characters in filenames
+    (filename_raw, line_number_raw, line_raw) = line.split(b"\0", 2)
     match = Match(
         filename=filename_raw.decode("utf-8", errors="replace"),
         line_number=int(line_number_raw),
