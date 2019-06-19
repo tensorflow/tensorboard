@@ -104,9 +104,10 @@ script:
   - elapsed && bazel fetch //tensorboard/...
   - elapsed && bazel build //tensorboard/...
   - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
-  - elapsed && bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
+  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${TF_VERSION_ID}"
   # Run manual S3 test
   - elapsed && bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
+  - elapsed && bazel test //tensorboard/summary/writer:event_file_writer_s3_test
   - elapsed "script (done)"
 
 after_script:

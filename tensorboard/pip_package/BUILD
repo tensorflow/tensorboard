@@ -5,9 +5,36 @@ package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])  # Apache 2.0
 
-# rm -rf /tmp/tensorboard
-# bazel run //tensorboard/pip_package:build_pip_package
-# pip install -U /tmp/tensorboard/*py2*.pip
+genrule(
+    name = "pip_package",
+    # Pip packages are provided in a tarball because we can't statically
+    # know the file names: they must contain the TensorBoard version,
+    # which is only defined in a Python module. Dependents of this
+    # target can extract the tarball and glob its contents.
+    outs = ["pip_packages.tar.gz"],
+    cmd = "\n".join([
+        "tmpdir=\"$$(mktemp -d)\" &&",
+        "mkdir \"$${tmpdir}/wheels\" &&",
+        "exit_code=0 &&",
+        "if $(location :build_pip_package) \"$${tmpdir}/wheels\" \\",
+        "    >\"$${tmpdir}/stdout\" 2>\"$${tmpdir}/stderr\"; then",
+        "  $(location :deterministic_tar_gz) $@ \"$${tmpdir}/wheels\"",
+        "else",
+        "  exit_code=$$? &&",
+        "  cat \"$${tmpdir}/stdout\" &&",
+        "  cat \"$${tmpdir}/stderr\" >&2 &&",
+        "  printf ':build_pip_package exited with %d\\n' \"$${exit_code}\" >&2",
+        "fi &&",
+        "rm -rf \"$${tmpdir}\" &&",
+        "exit \"$${exit_code}\"",
+    ]),
+    tools = [
+        ":build_pip_package",
+        ":deterministic_tar_gz",
+    ],
+    visibility = ["//tensorboard:internal"],
+)
+
 sh_binary(
     name = "build_pip_package",
     srcs = ["build_pip_package.sh"],
@@ -26,9 +53,35 @@ sh_binary(
         "//tensorboard/plugins/projector",  # User-facing projector API
         "//tensorboard/summary:tf_summary",  #  tf.summary API for TF 2.0
     ],
-    tags = [
-        "local",
-        "manual",
+)
+
+# Not an `sh_test`: accepts command-line flags to select Python and
+# TensorFlow versions against which to test. Pass `--help` for details.
+sh_binary(
+    name = "test_pip_package",
+    srcs = ["test_pip_package.sh"],
+    data = [
+        ":pip_package",
+    ],
+)
+
+py_binary(
+    name = "deterministic_tar_gz",
+    srcs = ["deterministic_tar_gz.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "deterministic_tar_gz_test",
+    size = "medium",
+    timeout = "short",
+    srcs = ["deterministic_tar_gz_test.py"],
+    data = [
+        ":deterministic_tar_gz",  # invoked as subprocess
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:test",
     ],
 )
 
