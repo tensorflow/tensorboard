@@ -8,8 +8,9 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "projector_assets",
     srcs = [
+        # Keep this in sync with pip_package/setup.py
         ":projector_binary.html",
-        "index.js"
+        "index.js",
     ],
     path = "/tf-projector",
 )

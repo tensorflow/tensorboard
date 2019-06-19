@@ -59,7 +59,7 @@ setup(
     entry_points={
         'console_scripts': CONSOLE_SCRIPTS,
         'tensorboard_plugins': [
-            'projector_plugin=tensorboard.plugins.projector.projector_plugin:ProjectorPlugin',
+            'projector = tensorboard.plugins.projector.projector_plugin:ProjectorPlugin',
         ],
     },
     package_data={
@@ -69,6 +69,7 @@ setup(
         'tensorboard.plugins.beholder': [
             'resources/*',
         ],
+        # Must keep this in sync with tf_projector_plugin:projector_assets
         'tensorboard.plugins.projector': [
             'tf_projector_plugin/index.js',
             'tf_projector_plugin/projector_binary.html',
