@@ -250,7 +250,7 @@ var tf;
                     this._isDisplayed = value;
                 };
                 /**
-                 * @returns the brush filter for the given selection using the current
+                 * @return the brush filter for the given selection using the current
                  * scale.
                  */
                 Axis.prototype._buildBrushFilter = function (brushSelection, scaleType, yScale /* D3 scale */) {
@@ -354,7 +354,7 @@ var tf;
                     return this._stationaryAxesPositions.domain().map(function (colIndex) { return mapFunction(_this_1.getAxisPosition(colIndex), _this_1._axes[colIndex]); });
                 };
                 /**
-                 * @returns true if the given predicate returns true on every visible axis,
+                 * @return true if the given predicate returns true on every visible axis,
                  *     false otherwise. Note that the predicate will only be evaluated until
                  *     the first time it returns false.
                  */

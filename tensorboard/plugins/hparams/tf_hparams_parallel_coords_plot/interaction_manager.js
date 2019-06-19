@@ -39,9 +39,8 @@ var tf;
                     // to "100%" so that it takes up the full area of its parent, but use
                     // "min-width" and "min-height", so that if the parent is too small
                     // the svg won't shrink down (it will overflow with scroll bars).
-                    // If the parent is larger than the minimum size, we use the its
-                    // preserveAspectRatio attr to scale the contents to fit the larger
-                    // size.
+                    // If the parent is larger than the minimum size, we use its
+                    // preserveAspectRatio attr to scale the contents to fit the larger size.
                     this.svg = d3.select(svg);
                     var margin = { top: 30, right: 10, bottom: 10, left: 10 };
                     var COL_WIDTH = 100;
@@ -149,7 +148,7 @@ var tf;
                         ? newOptions.columns[newOptions.colorByColumnIndex].absoluteIndex
                         : null, newOptions.minColor, newOptions.maxColor);
                     // A redraw may change the selected / peaked session group. So call the
-                    // apropriate callbacks if needed.
+                    // appropriate callbacks if needed.
                     if (!oldPeakedSessionGroupHandle.equalsTo(this._linesCollection.peakedSessionGroupHandle())) {
                         this._peakedSessionGroupChangedCB(this._linesCollection.peakedSessionGroupHandle().sessionGroup());
                     }

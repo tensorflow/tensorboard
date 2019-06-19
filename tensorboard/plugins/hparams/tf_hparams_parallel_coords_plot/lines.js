@@ -64,7 +64,7 @@ var tf;
                     this._sessionGroupSel = sessionGroupSel;
                 }
                 /**
-                 * @returns the sessionGroup object this handle references or null if
+                 * @return the sessionGroup object this handle references or null if
                  * this is a "null" reference.
                  */
                 SessionGroupHandle.prototype.sessionGroup = function () {
@@ -77,7 +77,7 @@ var tf;
                 };
                 /**
                  * Should only be called by the 'LinesCollection' class below.
-                 * @returns the d3-selection given on construction.
+                 * @return the d3-selection given on construction.
                  */
                 SessionGroupHandle.prototype.selection = function () {
                     return this._sessionGroupSel;
@@ -145,7 +145,7 @@ var tf;
                     this._d3line = d3.line().curve(d3.curveLinear);
                 }
                 /**
-                 * @returns a SessionGroupHandle referencing the given sessionGroup. If the
+                 * @return a SessionGroupHandle referencing the given sessionGroup. If the
                  * given sessionGroup is null or undefined returns a "null" handle.
                  */
                 LinesCollection.prototype.getSessionGroupHandle = function (sessionGroup) {
@@ -289,7 +289,8 @@ var tf;
                 LinesCollection.prototype._setControlPointsProperty = function (pathElement, sessionGroup) {
                     pathElement.controlPoints = this._computeControlPoints(sessionGroup);
                 };
-                /** @returns an array of 2-tuples--each representing a control point for
+                /**
+                 * @return an array of 2-tuples--each representing a control point for
                  * a line representing the given 'sessionGroup'. The control points are
                  * computed with respect to the current state of the axesCollection.
                  */
