@@ -16,17 +16,17 @@ limitations under the License.
 /* Defines classes for managing the collection of lines in the parallel
    coordinates plot.
  */
-   
+
 namespace tf.hparams.parallel_coords_plot {
 
-/** 
+/**
  * Represents the line 'type'. Either a foreground or a background line.
  * Each session group is drawn as two identical piecewise linear curves (which
  * we call "lines" here) drawn one on top of the other.
- * The background line is gray, and the foreground line drawn on top is 
- * typically colored according to the color-by column. Foreground lines are 
+ * The background line is gray, and the foreground line drawn on top is
+ * typically colored according to the color-by column. Foreground lines are
  * only displayed for the lines that satisfy the brush filter of each axis.
- * 
+ *
  * Note that we could have used just one line and set its color according to
  * whether it satisfies the brush filters of the axes. However, with this
  * strategy, if the line density is large, gray lines may overlap non
@@ -38,9 +38,9 @@ export enum LineType {
 }
 
 /**
- * A handle to a representation of a session group in the 'LinesCollection' 
- * class below. The handle can also be "null" -- meaning it references no 
- * session group (similar to a "null pointer"), in which case the 
+ * A handle to a representation of a session group in the 'LinesCollection'
+ * class below. The handle can also be "null" -- meaning it references no
+ * session group (similar to a "null pointer"), in which case the
  * 'sessionGroup()' method returns null.
  *
  * Note: we use this class rather than a simple SessionGroup object so that we
@@ -48,10 +48,10 @@ export enum LineType {
  * instead the (foreground) <path> element is stored in the handle.
  */
 export class SessionGroupHandle {
-  /** 
+  /**
    * Constructs a session group handle from a D3 selection of the path
    * element representing the sessionGroup. This should only be called by the
-   * 'LinesCollection' class below. If sessionGroupSel is empty or undefined, a 
+   * 'LinesCollection' class below. If sessionGroupSel is empty or undefined, a
    * "null" handle will be constructed.
    */
   public constructor(sessionGroupSel?: any) {
@@ -62,8 +62,8 @@ export class SessionGroupHandle {
     this._sessionGroupSel = sessionGroupSel;
   }
 
-  /** 
-   * @returns the sessionGroup object this handle references or null if
+  /**
+   * @return the sessionGroup object this handle references or null if
    * this is a "null" reference.
    */
   public sessionGroup(): tf.hparams.SessionGroup | null {
@@ -76,9 +76,9 @@ export class SessionGroupHandle {
     return this.sessionGroup() === null;
   }
 
-  /** 
+  /**
    * Should only be called by the 'LinesCollection' class below.
-   * @returns the d3-selection given on construction.
+   * @return the d3-selection given on construction.
    */
   public selection(): any {
     return this._sessionGroupSel;
@@ -86,7 +86,7 @@ export class SessionGroupHandle {
 
   /**
    * Compares this handle to 'otherHandle' and returns true if both are null
-   * or both are not null and they reference equal session groups. 
+   * or both are not null and they reference equal session groups.
    * Session group equality is determined by their names.
    */
   public equalsTo(otherHandle: SessionGroupHandle): boolean {
@@ -101,7 +101,7 @@ export class SessionGroupHandle {
 
   private _sessionGroupSel: any /* D3 selection */
 };
-  
+
 /**
  * Manages the lines representing the session groups. Each session group is
  * represented by two <path> elements with the same control points: a foreground
@@ -109,15 +109,15 @@ export class SessionGroupHandle {
  * background line (it succeeds it in document order). The foreground line is
  * colored based on the value  of the 'color-by' column (specified in options),
  * whereas the background line is gray. The foreground line is displayed only
- * if the session group passes the current axes brush filters. This way, only 
- * session groups that pass the current brush filters will be represented by 
- * colored lines, and the other session groups will be represented by gray 
- * lines. 
+ * if the session group passes the current axes brush filters. This way, only
+ * session groups that pass the current brush filters will be represented by
+ * colored lines, and the other session groups will be represented by gray
+ * lines.
  *
- * Note that we could have represented each session group with a single line 
- * with a color that depends on whether the session group passed the brush 
- * filters. However, this would have required us to re-order the DOM to avoid 
- * rendering gray lines on top of colored lines (which would look bad, 
+ * Note that we could have represented each session group with a single line
+ * with a color that depends on whether the session group passed the brush
+ * filters. However, this would have required us to re-order the DOM to avoid
+ * rendering gray lines on top of colored lines (which would look bad,
  * especially if the density of lines is large).
  *
  * This class also stores two SessionGroupHandles: peakedSessionGroupHandle and
@@ -150,7 +150,7 @@ export class LinesCollection {
   }
 
   /**
-   * @returns a SessionGroupHandle referencing the given sessionGroup. If the
+   * @return a SessionGroupHandle referencing the given sessionGroup. If the
    * given sessionGroup is null or undefined returns a "null" handle.
    */
   public getSessionGroupHandle(sessionGroup: tf.hparams.SessionGroup) {
@@ -160,7 +160,7 @@ export class LinesCollection {
     return new SessionGroupHandle(
       this._fgPathsSel.filter(sg => sg.name === sessionGroup.name));
   }
-  
+
   public hideBackgroundLines() {
     this._bgPathsSel.attr("visibility", "hidden");
   }
@@ -178,13 +178,13 @@ export class LinesCollection {
   }
 
   /**
-   * Recomputes the control points of the lines with the given 'type' 
-   * (foreground or background) to correspond to the current state of the 
+   * Recomputes the control points of the lines with the given 'type'
+   * (foreground or background) to correspond to the current state of the
    * axesCollection.
    *
    * @param lineType - The type of lines to update.
-   * @param transitionDuration - The lines will be transitioned (animated) to 
-   *     their new state. This specifies the duration of that transition. 0 
+   * @param transitionDuration - The lines will be transitioned (animated) to
+   *     their new state. This specifies the duration of that transition. 0
    *     means no animation.
    */
   public recomputeControlPoints(lineType: LineType, transitionDuration = 0) {
@@ -209,13 +209,13 @@ export class LinesCollection {
   }
 erez
   /**
-   * Rerenders the foreground lines so that their visibility matches the 
+   * Rerenders the foreground lines so that their visibility matches the
    * current brush filters.
    */
   public recomputeForegroundLinesVisibility() {
     this._fgPathsSel.classed(
       "invisible-path",
-      sessionGroup => 
+      sessionGroup =>
         !this._axesCollection.allVisibleAxesSatisfy(
           (xPosition, axis)=>
             axis.brushFilter().isPassing(
@@ -228,7 +228,7 @@ erez
   /**
    * Sets the coloring scheme of the (visible) foreground lines.
    * A foreground line will be colored by a color corresponding to the value
-   * of the column indexed by colorByColumnIndex in the session group 
+   * of the column indexed by colorByColumnIndex in the session group
    * represented by the line. The color corresponding to a value is
    * interpolated between minColor and maxColor.
    */
@@ -282,9 +282,9 @@ erez
 
   /**
    * Returns a handle referencing the closest session group to a given point
-   * in the SVG or a null handle if the closest session group is 
+   * in the SVG or a null handle if the closest session group is
    * too far away.
-   */ 
+   */
   public findClosestSessionGroup(x: number, y:number): SessionGroupHandle {
     const axesPositions = this._axesCollection.mapVisibleAxes<number>(
       (xPosition, axis) => xPosition);
@@ -298,7 +298,7 @@ erez
     }
     return new SessionGroupHandle(d3.select(closestFgPath));
   }
-  
+
   private _createLineColorFunction(
     colorByColumnIndex: number | null,
     minColor: string,
@@ -315,24 +315,25 @@ erez
     return sessionGroup => colorScale(tf.hparams.utils.columnValueByIndex(
       this._schema, sessionGroup, colorByColumnIndex));
   }
-  
+
   private _recomputePathSelection(currentPathSel: any /* d3 selection */) {
     currentPathSel = currentPathSel
       .data(this._sessionGroups, /*key=*/ (sessionGroup=>sessionGroup.name));
     currentPathSel.exit().remove();
     return currentPathSel.enter().append("path").merge(currentPathSel);
   }
-  
+
   /** Sets the controlPoints property of 'pathElement' to the control-points
    * array of the given sessionGroup with respect to the current state of
-   * the axesCollection. 
+   * the axesCollection.
    */
   private _setControlPointsProperty(pathElement: any,
                                     sessionGroup: tf.hparams.SessionGroup) {
     pathElement.controlPoints = this._computeControlPoints(sessionGroup);
   }
 
-  /** @returns an array of 2-tuples--each representing a control point for
+  /**
+   * @return an array of 2-tuples--each representing a control point for
    * a line representing the given 'sessionGroup'. The control points are
    * computed with respect to the current state of the axesCollection.
    */

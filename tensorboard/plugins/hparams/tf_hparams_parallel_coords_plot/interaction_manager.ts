@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-/* Defines the InteractionManager class and related classes. 
-   This is the main entry point to the parallel coordinates implementation. 
+/* Defines the InteractionManager class and related classes.
+   This is the main entry point to the parallel coordinates implementation.
 */
 
 namespace tf.hparams.parallel_coords_plot {
-  
+
 /**
  * Denotes the callback function type that InteractionManager uses to
  * notify a consumer that either the peaked or selected session group has
@@ -28,8 +28,8 @@ namespace tf.hparams.parallel_coords_plot {
  */
 type SessionGroupCallback = (SessionGroup: tf.hparams.SessionGroup) => void;
 
-/** 
- * Stores some global properties such as width and height of the SVG element 
+/**
+ * Stores some global properties such as width and height of the SVG element
  * used for rendering the parallel coordinates plot. Also contains the top-level
  * DOM <g> element underwhich the plot will be rendered.
  */
@@ -46,9 +46,8 @@ export class SVGProperties {
     // to "100%" so that it takes up the full area of its parent, but use
     // "min-width" and "min-height", so that if the parent is too small
     // the svg won't shrink down (it will overflow with scroll bars).
-    // If the parent is larger than the minimum size, we use the its
-    // preserveAspectRatio attr to scale the contents to fit the larger
-    // size.
+    // If the parent is larger than the minimum size, we use its
+    // preserveAspectRatio attr to scale the contents to fit the larger size.
     this.svg = d3.select(svg);
     const margin = {top: 30, right: 10, bottom: 10, left: 10};
     const COL_WIDTH = 100;
@@ -85,7 +84,7 @@ export class SVGProperties {
  *    manager = new InteractionManager(svgProps, schema, peakedSessionChangedCB,
  *                                     selectedSessionChangedCB);
  *    ...
- *    // Notify manager of new options or session groups: 
+ *    // Notify manager of new options or session groups:
  *    manager.onOptionsOrSessionGroupsChanged(newOptions, newSessionGroups)
  *    ...
  *    // This will be called when peaked session changed:
@@ -114,12 +113,12 @@ export class InteractionManager {
       })
       .on("mouseleave", () => this.onMouseLeave());
   }
- 
+
   public onDragStart(colIndex: number) {
     this._axesCollection.dragStart(colIndex);
     this._linesCollection.hideBackgroundLines();
   }
-  
+
   public onDrag(newX: number) {
     this._axesCollection.drag(newX);
     this._linesCollection.recomputeControlPoints(LineType.FOREGROUND);
@@ -141,7 +140,7 @@ export class InteractionManager {
       newBrushSelection);
     this._linesCollection.recomputeForegroundLinesVisibility();
   }
-  
+
   public onMouseMoved(newX:number, newY:number) {
     this._linesCollection.updatePeakedSessionGroup(
       this._linesCollection.findClosestSessionGroup(newX, newY));
@@ -177,7 +176,7 @@ export class InteractionManager {
     const oldPeakedSessionGroupHandle =
       this._linesCollection.peakedSessionGroupHandle();
     const oldSelectedSessionGroupHandle =
-      this._linesCollection.selectedSessionGroupHandle();  
+      this._linesCollection.selectedSessionGroupHandle();
     this._linesCollection.redraw(
       newSessionGroups,
       newOptions.colorByColumnIndex !== undefined
@@ -186,7 +185,7 @@ export class InteractionManager {
       newOptions.minColor,
       newOptions.maxColor);
     // A redraw may change the selected / peaked session group. So call the
-    // apropriate callbacks if needed.
+    // appropriate callbacks if needed.
     if (!oldPeakedSessionGroupHandle.equalsTo(
       this._linesCollection.peakedSessionGroupHandle())) {
       this._peakedSessionGroupChangedCB(
@@ -202,7 +201,7 @@ export class InteractionManager {
   public schema() : tf.hparams.Schema {
     return this._schema;
   }
-  
+
   private _svgProps: SVGProperties;
   private _schema: tf.hparams.Schema;
   private _peakedSessionGroupChangedCB: SessionGroupCallback;
