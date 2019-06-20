@@ -22,6 +22,9 @@ py_library(
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
+    data = [
+        "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
+    ],
 )
 
 py_library(

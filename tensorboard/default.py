@@ -50,7 +50,6 @@ from tensorboard.plugins.interactive_inference import (
 )
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin_loader
-from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
@@ -70,7 +69,6 @@ _PLUGINS = [
     graphs_plugin.GraphsPlugin,
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
-    projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
     pr_curves_plugin.PrCurvesPlugin,
     profile_plugin_loader.ProfilePluginLoader(),
