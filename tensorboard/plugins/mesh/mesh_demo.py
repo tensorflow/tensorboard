@@ -55,22 +55,20 @@ def run():
 
   # Read sample PLY file.
   vertices, colors, faces = demo_utils.read_ascii_ply(FLAGS.mesh_path)
-  vertices_2 = np.concatenate((vertices, [[1, 2, 3]]))  
 
   # Add batch dimension.
   vertices = np.expand_dims(vertices, 0)
-  vertices_2 = np.expand_dims(vertices_2, 0)
   faces = np.expand_dims(faces, 0)
-  colors = np.expand_dims(colors, 0)  
+  colors = np.expand_dims(colors, 0)
 
   # Create placeholders for tensors representing the mesh.
   step = tf.placeholder(tf.int32, ())
   vertices_tensor = tf.placeholder(
-      tf.float32, [1, None, 3])
+      tf.float32, vertices.shape)
   faces_tensor = tf.placeholder(
-      tf.int32, [1, None, 3])
+      tf.int32, faces.shape)
   colors_tensor = tf.placeholder(
-      tf.int32, [1, None, 3])
+      tf.int32, colors.shape)
 
   # Change colors over time.
   t = tf.cast(step, tf.float32) / _MAX_STEPS
@@ -85,10 +83,8 @@ def run():
   sess = tf.Session()
 
   for i in range(_MAX_STEPS):
-    ver = vertices if i % 2 == 0 else vertices_2
-    print('run with ------', ver.shape)
     summary = sess.run(meshes_summary, feed_dict={
-        vertices_tensor: ver,
+        vertices_tensor: vertices,
         faces_tensor: faces,
         colors_tensor: colors,
         step: i,
