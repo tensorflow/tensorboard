@@ -170,12 +170,18 @@ def _tf_web_library(ctx):
         [ts_config, er_config],
         transitive=[
             ts_inputs,
+            # TODO(@wchargin): Because `_tsc` is passed as `tools`
+            # below, collecting its runfiles should in principle be
+            # unnecessary, but without this line the two deps of `_tsc`
+            # (`tsc.js` and `@org_nodejs//:bin/node`) are in fact not
+            # included, and so execrooter fails at runtime.
             collect_runfiles([ctx.attr._tsc]),
             ts_typings,
             ts_typings_execroots,
         ],
     )
     ctx.actions.run(
+        tools=ctx.files._tsc,
         inputs=ts_inputs,
         outputs=ts_outputs,
         executable=ctx.executable._execrooter,
