@@ -55,19 +55,19 @@ def deprecated_extract_dts_from_closure_libraries(ctx):
                       if '.%s' % f.extension in JS_FILE_TYPE]
   srcs = depset(transitive=[depset(clutz_js_externs), js.srcs])
   args = ["-o", js_typings.path]
-  for src in srcs:
+  for src in srcs.to_list():
     args.append(src.path)
   if getattr(ctx.attr, "clutz_entry_points", None):
     args.append("--closure_entry_points")
     args.extend(ctx.attr.clutz_entry_points)
   ctx.action(
-      inputs=list(srcs),
+      inputs=srcs,
       outputs=[js_typings],
       executable=ctx.executable._clutz,
       arguments=args,
       mnemonic="Clutz",
       progress_message="Running Clutz on %d JS files %s" % (
-          len(srcs), ctx.label))
+          len(srcs.to_list()), ctx.label))
   return js_typings
 
 ################################################################################
