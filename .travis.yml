@@ -77,14 +77,16 @@ before_script:
   - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
   - yamllint -c docs/.yamllint docs docs/.yamllint
+  # Make sure that IPython notebooks have valid Markdown.
+  - tensorboard/tools/docs_list_format_test.sh
   # Make sure we aren't accidentally including work-in-progress code.
   - tensorboard/tools/do_not_submit_test.sh
   # Make sure all necessary files have the license information.
   - tensorboard/tools/license_test.sh
-  # Make sure that IPython notebooks have valid Markdown.
-  - tensorboard/tools/docs_list_format_test.sh
   # Make sure that build URLs are valid.
   - tensorboard/tools/mirror_urls_test.sh
+  # Make sure that files have no trailing whitespace.
+  - tensorboard/tools/whitespace_hygiene_test.py
   - |
     # Specify subset of tests to run depending on TF installation config.
     # We condition the value of --test_tag_filters so that we can run the
