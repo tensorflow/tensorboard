@@ -97,7 +97,6 @@ Polymer({
   },
 
   hide() {
-    console.log('hiding the tooltip');
     window.cancelAnimationFrame(this._raf);
     this._styleCache = null;
     this._tunnel.style.opacity = 0;
