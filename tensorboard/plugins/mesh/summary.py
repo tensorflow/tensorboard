@@ -27,8 +27,8 @@ PLUGIN_NAME = 'mesh'
 
 
 def _get_tensor_summary(
-    name, display_name, description, tensor, content_type, json_config,
-    collections):
+    name, display_name, description, tensor, content_type, components,
+    json_config, collections):
   """Creates a tensor summary with summary metadata.
 
   Args:
@@ -41,6 +41,8 @@ def _get_tensor_summary(
       is supported.
     tensor: Tensor to display in summary.
     content_type: Type of content inside the Tensor.
+    components: Bitmap representing present parts (vertices, colors, etc.) that
+      belong to the summary.
     json_config: A string, JSON-serialized dictionary of ThreeJS classes
       configuration.
     collections: List of collections to add this summary to.
@@ -49,11 +51,14 @@ def _get_tensor_summary(
     Tensor summary with metadata.
   """
   tensor = tf.convert_to_tensor(value=tensor)
+  shape = tensor.shape.as_list()
+  shape = [dim if dim is not None else -1 for dim in shape]
   tensor_metadata = metadata.create_summary_metadata(
       name,
       display_name,
       content_type,
-      tensor.shape.as_list(),
+      components,
+      shape,
       description,
       json_config=json_config)
   tensor_summary = tf.summary.tensor_summary(
@@ -77,6 +82,16 @@ def _get_json_config(config_dict):
   if config_dict is not None:
     json_config = json.dumps(config_dict, sort_keys=True)
   return json_config
+
+
+def _get_components_bitmap(tensors):
+  """Creats bitmap for all existing components for the summary."""
+  components = 0
+  for tensor, content_type in tensors:
+    if tensor is None:
+      continue
+    components = components | (1 << content_type)
+  return components
 
 
 def op(name, vertices, faces=None, colors=None, display_name=None,
@@ -115,12 +130,14 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
       (colors, plugin_data_pb2.MeshPluginData.COLOR)
   ]
 
+  components = _get_components_bitmap(tensors)
+
   for tensor, content_type in tensors:
     if tensor is None:
       continue
     summaries.append(
         _get_tensor_summary(name, display_name, description, tensor,
-                            content_type, json_config, collections))
+                            content_type, components, json_config, collections))
 
   all_summaries = tf.summary.merge(
       summaries, collections=collections, name=name)
@@ -157,19 +174,23 @@ def pb(name,
   json_config = _get_json_config(config_dict)
 
   summaries = []
-  tensors = [(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
-             (faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
-             (colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)]
-  for tensor, content_type, data_type in tensors:
+  tensors = [(vertices, plugin_data_pb2.MeshPluginData.VERTEX),
+             (faces, plugin_data_pb2.MeshPluginData.FACE),
+             (colors, plugin_data_pb2.MeshPluginData.COLOR)]
+  content_types = [tf.float32, tf.int32, tf.uint8]
+  components = _get_components_bitmap(tensors)
+  for (tensor, content_type), data_type in zip(tensors, content_types):
     if tensor is None:
       continue
-    tensor_shape = tensor.shape
+    shape = tensor.shape
+    shape = [dim if dim is not None else -1 for dim in shape]
     tensor = tf.compat.v1.make_tensor_proto(tensor, dtype=data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
         display_name,
         content_type,
-        tensor_shape,
+        components,
+        shape,
         description,
         json_config=json_config)
     tag = metadata.get_instance_name(name, content_type)

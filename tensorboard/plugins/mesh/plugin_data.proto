@@ -12,7 +12,7 @@ message MeshPluginData {
     COLOR = 3;
   }
 
-  // Version `0` is the only supported version.
+  // Version `1` is the only supported version.
   int32 version = 1;
 
   // The name of the mesh summary this particular summary belongs to.
@@ -26,4 +26,7 @@ message MeshPluginData {
 
   // Shape of underlying data. Cache it here for performance reasons.
   repeated int32 shape = 6;
+
+  // Bitmap of all existing components in addition to this one.
+  int32 components = 7;
 }

@@ -147,13 +147,8 @@ Polymer({
       if (!steps) return;  // Happens when request was cancelled at some point.
       this.set('_steps', steps);
       this.set('_stepIndex', steps.length - 1);
-      this.set('_isMeshLoading', false);
-      if (!this._meshViewerAttached) {
-        // Mesh viewer should be added to the dom once.
-        this.appendChild(this._meshViewer.getRenderer().domElement);
-        this._meshViewerAttached = true;
-      }
-    }).catch((error) => {
+    })
+    .catch((error) => {
       if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
         error = error || 'Response processing failed.';
         throw new Error(error);
@@ -167,11 +162,34 @@ Polymer({
    * @private
    */
   _updateScene: function(currentStep) {
-    this._meshViewer.updateScene(currentStep, this);
-    if (!this._cameraPositionInitialized) {
-      this._meshViewer.resetView();
-      this._cameraPositionInitialized = true;
+    let dataPromise = Promise.resolve();
+    if (!currentStep.mesh) {  // Lazy-load actual mesh data.
+      dataPromise = this._dataProvider.fetchData(
+        currentStep, this.run, this.tag, this.sample, this._stepIndex)
+      .then(function (meshData) {
+        currentStep.mesh = meshData[0];
+      })
+      .catch((error) => {
+        if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
+          error = error || 'Response processing failed.';
+          throw new Error(error);
+        }
+      });;
     }
+
+    return dataPromise.then(function () {
+      this._meshViewer.updateScene(currentStep, this);
+      if (!this._cameraPositionInitialized) {
+        this._meshViewer.resetView();
+        this._cameraPositionInitialized = true;
+      }
+      this.set('_isMeshLoading', false);
+      if (!this._meshViewerAttached) {
+        // Mesh viewer should be added to the dom once.
+        this.appendChild(this._meshViewer.getRenderer().domElement);
+        this._meshViewerAttached = true;
+      }
+    }.bind(this));
   },
 
   /**

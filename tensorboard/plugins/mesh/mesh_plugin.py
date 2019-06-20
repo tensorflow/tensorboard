@@ -106,6 +106,8 @@ class MeshPlugin(base_plugin.TBPlugin):
         # Make sure we only operate on user-defined tags here.
         tag = self._instance_tag_to_tag[instance_tag]
         meta = self._instance_tag_to_metadata[instance_tag]
+        # Batch size must be defined, otherwise we don't know how many
+        # samples were there.
         response[run][tag] = {'samples': meta.shape[0]}
     return http_util.Respond(request, response, 'application/json')
 
@@ -152,13 +154,16 @@ class MeshPlugin(base_plugin.TBPlugin):
     data = tensor_util.make_ndarray(tensor_event.tensor_proto)
     return data[sample].tolist()
 
-  def _get_tensor_metadata(self, event, content_type, data_shape, config):
+  def _get_tensor_metadata(
+    self, event, content_type, components, data_shape, config):
     """Converts a TensorEvent into a JSON-compatible response.
 
     Args:
       event: TensorEvent object containing data in proto format.
       content_type: enum plugin_data_pb2.MeshPluginData.ContentType value,
         representing content type in TensorEvent.
+      components: Bitmap representing all parts (vertices, colors, etc.) that
+        belong to the summary.
       data_shape: list of dimensions sizes of the tensor.
       config: rendering scene configuration as dictionary.
 
@@ -169,6 +174,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         'wall_time': event.wall_time,
         'step': event.step,
         'content_type': content_type,
+        'components': components,
         'config': config,
         'data_shape': list(data_shape),
     }
@@ -178,7 +184,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     data = self._get_sample(event, sample)
     return data
 
-  def _collect_tensor_events(self, request):
+  def _collect_tensor_events(self, request, timestamp=None):
     """Collects list of tensor events based on request."""
     run = request.args.get('run')
     tag = request.args.get('tag')
@@ -194,8 +200,12 @@ class MeshPlugin(base_plugin.TBPlugin):
       meta = self._instance_tag_to_metadata[instance_tag]
       tensor_events += [(meta, tensor) for tensor in tensors]
 
-    # Make sure tensors sorted by timestamp in ascending order.
-    tensor_events = sorted(
+    if timestamp is not None:
+      tensor_events = [
+        event for event in tensor_events if event[1].wall_time == timestamp]
+    else:
+      # Make sure tensors sorted by timestamp in ascending order.
+      tensor_events = sorted(
         tensor_events, key=lambda tensor_data: tensor_data[1].wall_time)
 
     return tensor_events
@@ -216,7 +226,8 @@ class MeshPlugin(base_plugin.TBPlugin):
     Returns:
       werkzeug.Response either float32 or int32 data in binary format.
     """
-    tensor_events = self._collect_tensor_events(request)
+    timestamp = float(request.args.get('timestamp', 0.))
+    tensor_events = self._collect_tensor_events(request, timestamp)
     content_type = request.args['content_type']
     content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(
         content_type)
@@ -258,8 +269,9 @@ class MeshPlugin(base_plugin.TBPlugin):
 
     # We convert the tensor data to text.
     response = [
-        self._get_tensor_metadata(tensor, meta.content_type, meta.shape,
-                                  meta.json_config)
+        self._get_tensor_metadata(
+          tensor, meta.content_type, meta.components, meta.shape,
+          meta.json_config)
         for meta, tensor in tensor_events
     ]
     return http_util.Respond(request, response, 'application/json')

@@ -26,7 +26,7 @@ PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
 # `MeshPluginData` proto.
-_PROTO_VERSION = 0
+_PROTO_VERSION = 1
 
 
 def get_current_version():
@@ -44,6 +44,7 @@ def get_instance_name(name, content_type):
 def create_summary_metadata(name,
                             display_name,
                             content_type,
+                            components,
                             shape,
                             description=None,
                             json_config=None):
@@ -53,6 +54,8 @@ def create_summary_metadata(name,
     name: Original merged (summaries of different types) summary name.
     display_name: The display name used in TensorBoard.
     content_type: Value from MeshPluginData.ContentType enum describing data.
+    components: Bitmap representing present parts (vertices, colors, etc.) that
+      belong to the summary.
     shape: list of dimensions sizes of the tensor.
     description: The description to show in TensorBoard.
     json_config: A string, JSON-serialized dictionary of ThreeJS classes
@@ -69,6 +72,7 @@ def create_summary_metadata(name,
       version=get_current_version(),
       name=name,
       content_type=content_type,
+      components=components,
       shape=shape,
       json_config=json_config)
   content = mesh_plugin_data.SerializeToString()

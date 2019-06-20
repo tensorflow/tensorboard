@@ -26,7 +26,7 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
-@test_util.run_v1_only('requires tf.Session') 
+@test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
   def _create_metadata(self, shape=None):
@@ -37,10 +37,12 @@ class MetadataTest(tf.test.TestCase):
     if shape is None:
       shape = [1, 100, 3]
     self.shape = shape
+    self.components = 14
     self.summary_metadata = metadata.create_summary_metadata(
         self.name,
         self.display_name,
         plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'),
+        self.components,
         self.shape,
         json_config=self.json_config)
 
@@ -69,6 +71,7 @@ class MetadataTest(tf.test.TestCase):
                      parsed_metadata.content_type)
     self.assertEqual(self.shape, parsed_metadata.shape)
     self.assertEqual(self.json_config, parsed_metadata.json_config)
+    self.assertEqual(self.components, parsed_metadata.components)
 
   def test_metadata_version(self):
     """Tests that only the latest version of metadata is supported."""
@@ -81,7 +84,7 @@ class MetadataTest(tf.test.TestCase):
             self.summary_metadata.plugin_data.content)
 
   def test_tensor_shape(self):
-    """Tests that target tensor should be of particular shape."""    
+    """Tests that target tensor should be of particular shape."""
     with six.assertRaisesRegex(self, ValueError, r'Tensor shape should be of shape BxNx3.*'):
       self._create_metadata([1])
 
@@ -93,4 +96,4 @@ class MetadataTest(tf.test.TestCase):
 
 if __name__ == '__main__':
   tf.test.main()
-  
+
