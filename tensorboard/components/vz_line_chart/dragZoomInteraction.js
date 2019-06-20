@@ -36,7 +36,7 @@ var vz_line_chart;
          * Usage: Construct the selection box layer and attach x and y scales,
          * and then add the layer over the plot you are zooming on using a
          * Component Group.
-         * TODO(@dandelionmane) - merge this into Plottable
+         * TODO(@decentralion) - merge this into Plottable
          */
         function DragZoomLayer(xScale, yScale, unzoomMethod) {
             var _this = _super.call(this) || this;
