@@ -81,7 +81,7 @@ def _tf_web_library(ctx):
   new_webpaths = []
   ts_inputs = depset()
   ts_outputs = []
-  ts_files = list(ts_typings_paths)
+  ts_files = ts_typings_paths.to_list()
   new_typings = []
   new_typings_paths = []
   new_typings_execroot = struct(inputs=[])
@@ -172,10 +172,13 @@ def _tf_web_library(ctx):
         ],
     )
     ctx.action(
-        inputs=list(ts_inputs),
+        inputs=ts_inputs,
         outputs=ts_outputs,
         executable=ctx.executable._execrooter,
-        arguments=[er_config.path] + [f.path for f in ts_typings_execroots],
+        arguments=(
+            [er_config.path] +
+            [f.path for f in ts_typings_execroots.to_list()]
+        ),
         progress_message="Compiling %d TypeScript files %s" % (
             len(ts_files), ctx.label))
 
@@ -201,7 +204,7 @@ def _tf_web_library(ctx):
   params = struct(
       label=str(ctx.label),
       bind="localhost:6006",
-      manifest=[long_path(ctx, man) for man in devserver_manifests],
+      manifest=[long_path(ctx, man) for man in devserver_manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
@@ -286,29 +289,28 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
       for category in ctx.attr.suppress:
         args.append("--suppress")
         args.append(category)
-    inputs = [manifest]
-    inputs.extend(srcs)
+    inputs = []  # list of depsets
+    inputs.append(depset([manifest] + srcs))
     direct_manifests = depset()
     for dep in deps:
-      inputs.append(dep.webfiles.dummy)
-      for f in dep.files:
-        inputs.append(f)
+      inputs.append(depset([dep.webfiles.dummy]))
+      inputs.append(dep.files)
       direct_manifests = depset(
           [dep.webfiles.manifest],
           transitive=[direct_manifests],
       )
-      inputs.append(dep.webfiles.manifest)
+      inputs.append(depset([dep.webfiles.manifest]))
       args.append("--direct_dep")
       args.append(dep.webfiles.manifest.path)
     for man in difference(manifests, direct_manifests):
-      inputs.append(man)
+      inputs.append(depset([man]))
       args.append("--transitive_dep")
       args.append(man.path)
     argfile = _new_file(ctx, "-webfiles-checker-args.txt")
     ctx.file_action(output=argfile, content="\n".join(args))
-    inputs.append(argfile)
+    inputs.append(depset([argfile]))
     ctx.action(
-        inputs=inputs,
+        inputs=depset(transitive=inputs),
         outputs=[dummy],
         executable=(getattr(ctx.executable, "_ClosureWorker", None) or
                     getattr(ctx.executable, "_ClosureWorkerAspect", None)),
@@ -328,7 +330,7 @@ def _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs):
   if webpath in new_webpaths:
     _fail(ctx, "multiple srcs within %s define the webpath %s " % (
         ctx.label, webpath))
-  if webpath in webpaths:
+  if webpath in webpaths.to_list():
     _fail(ctx, "webpath %s was defined by %s when already defined by deps" % (
         webpath, ctx.label))
   new_webpaths.append(webpath)
