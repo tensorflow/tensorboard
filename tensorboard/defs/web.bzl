@@ -14,6 +14,8 @@
 
 """Same as web_library but supports TypeScript."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 load("//third_party:clutz.bzl",
      "DEPRECATED_CLUTZ_ATTRIBUTES",
      "DEPRECATED_CLUTZ_OUTPUTS",
@@ -111,8 +113,10 @@ def _tf_web_library(ctx):
       execroot.inputs.append(entry)
     elif suffix.endswith(".ts"):
       noext = suffix[:-3]
-      js = ctx.new_file(ctx.genfiles_dir, "%s.js" % noext)
-      dts = ctx.new_file(ctx.genfiles_dir, "%s.d.ts" % noext)
+      js = ctx.actions.declare_file(paths.join(
+          ctx.genfiles_dir.path, "%s.js" % noext))
+      dts = ctx.actions.declare_file(paths.join(
+          ctx.genfiles_dir.path, "%s.d.ts" % noext))
       webpath_js = webpath[:-3] + ".js"
       webpath_dts = webpath[:-3] + ".d.ts"
       _add_webpath(ctx, js, webpath_js, webpaths, new_webpaths, manifest_srcs)
@@ -144,7 +148,7 @@ def _tf_web_library(ctx):
   if execroot.outputs:
     ts_config = _new_file(ctx, "-tsc.json")
     execroot.inputs.append(("tsconfig.json", ts_config.path))
-    ctx.file_action(
+    ctx.actions.write(
         output=ts_config,
         content=struct(
             compilerOptions=struct(
@@ -161,7 +165,7 @@ def _tf_web_library(ctx):
             files=ts_files,
         ).to_json())
     er_config = _new_file(ctx, "-tsc-execroot.json")
-    ctx.file_action(output=er_config, content=execroot.to_json())
+    ctx.actions.write(output=er_config, content=execroot.to_json())
     ts_inputs = depset(
         [ts_config, er_config],
         transitive=[
@@ -171,7 +175,7 @@ def _tf_web_library(ctx):
             ts_typings_execroots,
         ],
     )
-    ctx.action(
+    ctx.actions.run(
         inputs=ts_inputs,
         outputs=ts_outputs,
         executable=ctx.executable._execrooter,
@@ -208,9 +212,9 @@ def _tf_web_library(ctx):
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
-  ctx.file_action(output=params_file, content=params.to_proto())
-  ctx.file_action(
-      executable=True,
+  ctx.actions.write(output=params_file, content=params.to_proto())
+  ctx.actions.write(
+      is_executable=True,
       output=ctx.outputs.executable,
       content="#!/bin/sh\nexec %s %s" % (
           ctx.executable._WebfilesServer.short_path,
@@ -218,7 +222,7 @@ def _tf_web_library(ctx):
 
   if new_typings:
     er_config = _new_file(ctx, "-typings-execroot.json")
-    ctx.file_action(output=er_config, content=new_typings_execroot.to_json())
+    ctx.actions.write(output=er_config, content=new_typings_execroot.to_json())
     ts_typings = depset(new_typings, transitive=[ts_typings])
     ts_typings_paths = depset(new_typings_paths, transitive=[ts_typings_paths])
     ts_typings_execroots = depset(
@@ -269,7 +273,7 @@ def _tf_web_library(ctx):
 
 def _make_manifest(ctx, src_list):
   manifest = _new_file(ctx, "-webfiles.pbtxt")
-  ctx.file_action(
+  ctx.actions.write(
       output=manifest,
       content=struct(
           label=str(ctx.label),
@@ -307,9 +311,9 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
       args.append("--transitive_dep")
       args.append(man.path)
     argfile = _new_file(ctx, "-webfiles-checker-args.txt")
-    ctx.file_action(output=argfile, content="\n".join(args))
+    ctx.actions.write(output=argfile, content="\n".join(args))
     inputs.append(depset([argfile]))
-    ctx.action(
+    ctx.actions.run(
         inputs=depset(transitive=inputs),
         outputs=[dummy],
         executable=(getattr(ctx.executable, "_ClosureWorker", None) or
@@ -319,12 +323,13 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
         execution_requirements={"supports-workers": "1"},
         progress_message="Checking webfiles %s" % ctx.label)
   else:
-    ctx.file_action(output=dummy, content="BOO!")
+    ctx.actions.write(output=dummy, content="BOO!")
   manifests = depset([manifest], transitive=[manifests])
   return dummy, manifests
 
 def _new_file(ctx, suffix):
-  return ctx.new_file(ctx.bin_dir, "%s%s" % (ctx.label.name, suffix))
+  return ctx.actions.declare_file(paths.join(
+      ctx.bin_dir.path, "%s%s" % (ctx.label.name, suffix)))
 
 def _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs):
   if webpath in new_webpaths:
