@@ -18,7 +18,7 @@ limitations under the License.
 namespace tf.hparams.parallel_coords_plot {
 
 /**
- * The scale types a column can have. These correspond to the values of 
+ * The scale types a column can have. These correspond to the values of
  * options.columns[].scale. See the comments in
  * tf-hparam-scale-and-color-controls.html for more details on the various
  * scale types.
@@ -30,18 +30,18 @@ export enum ScaleType {
   NON_NUMERIC = "NON_NUMERIC"
 }
 
-/** 
+/**
  * An AxisBrushFilter is essentially a function indicating whether a given
  * value in the domain of the axis is inside the current axis brush selection.
  */
 interface AxisBrushFilter {
-  /** The function represented by the filter. Should return true if 
-   * 'value' is in the current brush selection for the axis. 
+  /** The function represented by the filter. Should return true if
+   * 'value' is in the current brush selection for the axis.
    */
   isPassing(value: any): boolean;
 }
 
-/** 
+/**
  * An AlwaysPassingBrushFilter returns 'true' for any value. It is used
  * to represent the case when an Axis does not have an active brush selection.
  */
@@ -51,14 +51,14 @@ class AlwaysPassingBrushFilter implements AxisBrushFilter {
   }
 }
 
-/** 
+/**
  * An IntervalBrushFilter returns 'true' if the given (numeric) value lies
  * in a given interval specified on construction . It's used to represent
  * brush filters for Axis with linear, logarithmic or quantile scales.
  */
 class IntervalBrushFilter implements AxisBrushFilter {
   /** Constructs the filter. The interval used is defined by lower, and upper.
-   * If lowerOpen (resp. upperOpen) is true, the interval will be open in 
+   * If lowerOpen (resp. upperOpen) is true, the interval will be open in
    * its lower (resp. upper) end, otherwise it will be closed.
    */
   public constructor(lower: number,
@@ -109,20 +109,20 @@ class SetBrushFilter implements AxisBrushFilter {
 /**
  * Represents a single Axis. An axis does not know its horizontal location in
  * the SVG; instead the axes locations are managed by the AxesCollection class.
- * An axis represents a single column (metric or haparam). It stores a scale 
- * type and a D3 scale that maps values in the axis domain (column values) 
- * to y-coordinates in the SVG. Additionally, an axis stores a 
- * D3-brush-selection which is a 2-element numeric array of the form 
+ * An axis represents a single column (metric or haparam). It stores a scale
+ * type and a D3 scale that maps values in the axis domain (column values)
+ * to y-coordinates in the SVG. Additionally, an axis stores a
+ * D3-brush-selection which is a 2-element numeric array of the form
  * [lower, upper] containing the upper and lower y-coordinates of the current
  * brush selection. If no brush selection exists, the brush selection stored is
  * null.
- * Finally, an axis can be visible (displayed) or invisible (which will be 
+ * Finally, an axis can be visible (displayed) or invisible (which will be
  * set based on the user's settings for the corresponding column). An invisible
- * axis need not have its scale or scale-type populated. 
+ * axis need not have its scale or scale-type populated.
  */
 export class Axis {
   /**
-   * Constructs an axis representing the column indexed by 'colIndex' with 
+   * Constructs an axis representing the column indexed by 'colIndex' with
    * respect to 'schema'. Needs an InteractionManager instance so that it can
    * call its event handlers upon receiving events from the DOM.
    */
@@ -147,7 +147,7 @@ export class Axis {
   public yScale(): any {
     return this._yScale;
   }
-  
+
   public scaleType(): ScaleType | null {
     return this._scaleType;
   }
@@ -166,9 +166,9 @@ export class Axis {
       this.brushSelection(), this.scaleType(), this.yScale());
   }
 
-  /** 
+  /**
    * Sets the domain and scale type for the axis. The current brush selection
-   * is preserved. 
+   * is preserved.
    */
   public setDomainAndScale(domainValues: any[], scaleType: ScaleType) {
     this._scaleType = scaleType;
@@ -246,10 +246,10 @@ export class Axis {
       .extent([[-8, 0], [8, this._svgProps.height + 1]])
       /* Define the brush event handlers. D3 will call these both when
          the user moves the brush selection and when we change the brush
-         selection programmatically using d3Brush.move(). We'd like to 
+         selection programmatically using d3Brush.move(). We'd like to
          avoid calling the interactionManager in the latter case; thus,
-         we call _isInteractiveD3Event() to find out if the event was fired 
-         due to a programmetic change of the brush selection , and if so, 
+         we call _isInteractiveD3Event() to find out if the event was fired
+         due to a programmetic change of the brush selection , and if so,
          ignore the event. */
       .on("start", () => {
         if (!_isInteractiveD3Event(d3.event)) {
@@ -281,7 +281,7 @@ export class Axis {
       .append("g")
       .classed("brush", true);
     brushG.call(d3Brush);
-    
+
     // Set the brush selection programmatically.
     // We need to cast brushG to 'any' here since TypeScript doesn't realize
     // the brushG is a <g> selection and complains.
@@ -293,7 +293,7 @@ export class Axis {
   }
 
   /**
-   * @returns the brush filter for the given selection using the current
+   * @return the brush filter for the given selection using the current
    * scale.
    */
   private _buildBrushFilter(brushSelection: d3.BrushSelection,
@@ -349,8 +349,8 @@ export class Axis {
 
 /**
  * Manages the collection of axes shown in the plot. Has methods that handle
- * dragging an axis and contains the logic for re-ordering the axes 
- * during dragging. 
+ * dragging an axis and contains the logic for re-ordering the axes
+ * during dragging.
  */
 export class AxesCollection {
   public constructor(svgProps: SVGProperties, schema: tf.hparams.Schema,
@@ -367,7 +367,7 @@ export class AxesCollection {
   }
 
   /**
-   * Updates all axes based on the given 'options' (see the comments in 
+   * Updates all axes based on the given 'options' (see the comments in
    * tf-hparams-scale-and-color-controls.html) and sessionGroups. SessionGroups
    * are used to update the domain (and thus scale) of the axes. The 'options'
    * object control which axes are visible.
@@ -392,10 +392,10 @@ export class AxesCollection {
       if (!visibleColIndices.has(axis.colIndex())) {
         axis.setDisplayed(false);
       }
-    });  
+    });
 
     this._updateStationaryAxesPositions(visibleColIndices);
-    
+
     // Update the DOM.
     this._parentsSel = this._parentsSel
       .data(Array.from(visibleColIndices), /*key=*/ (colIndex => colIndex));
@@ -414,19 +414,19 @@ export class AxesCollection {
       });
   }
 
-  /** 
+  /**
    * Executes mapFunction on each visible axis. Returns an array containing the
    * result from each invocation. The function is invoked on the axes ordered
-   * by their increasing xPosition. 
+   * by their increasing xPosition.
    */
   public mapVisibleAxes<T>(mapFunction: (xPosition, axis)=>T): T[] {
     return this._stationaryAxesPositions.domain().map(
       colIndex => mapFunction(this.getAxisPosition(colIndex),
                               this._axes[colIndex]));
   }
-  
+
   /**
-   * @returns true if the given predicate returns true on every visible axis,
+   * @return true if the given predicate returns true on every visible axis,
    *     false otherwise. Note that the predicate will only be evaluated until
    *     the first time it returns false.
    */
@@ -443,11 +443,11 @@ export class AxesCollection {
 
   /* Axis dragging.
    * To drag an axis, call: dragStart(), followed by one or more drag() calls
-   * followed by a single call to dragEnd(). 
+   * followed by a single call to dragEnd().
    * At most one axis can be dragged at any given time.
-   * Each axis (whether dragged or not) has an associated "stationary" 
+   * Each axis (whether dragged or not) has an associated "stationary"
    * position which is its (x-coordinate) position when it is not being dragged.
-   * The actual position of an axis is either its associated stationary 
+   * The actual position of an axis is either its associated stationary
    * position if its not dragged or its currently dragged position. This class
    * maintains the invariant that the axes' stationary positions match the order
    * of their actual position by re-assigning stationary positions to axes when
@@ -490,16 +490,16 @@ export class AxesCollection {
   }
 
   /**
-   * Sets the domain of 'stationaryAxesPositions' to be precisely the given 
+   * Sets the domain of 'stationaryAxesPositions' to be precisely the given
    * visibleColIndices, but preserves the order of the column indices that
-   * are already in the domain. Essentially, this method removes indices in 
-   * the domain that are not in visibleColIndices and then appends indices in 
-   * visibleColIndices that are not currently in the domain. Thus, indices in 
+   * are already in the domain. Essentially, this method removes indices in
+   * the domain that are not in visibleColIndices and then appends indices in
+   * visibleColIndices that are not currently in the domain. Thus, indices in
    * visibleColIndices that are already in stationaryAxesPositions
    * will maintain their order in stationaryAxesPositions and will precede
    * the new elements.
    *
-   * This reassigns stationary positions to axes so that the only visible 
+   * This reassigns stationary positions to axes so that the only visible
    * axes are the ones with column indices in 'visibleColIndices', but preserves
    * the order of axes indexed by visibleColIndices that are already visible.
    */
@@ -510,14 +510,14 @@ export class AxesCollection {
       ...visibleDomain, ...Array.from(visibleColIndices)]));
     this._stationaryAxesPositions.domain(newDomain);
   }
-  
+
   private _updateAxesPositionsInDOM(selectionOrTransition) {
     selectionOrTransition.attr("transform",
                                colIndex =>
                                tf.hparams.utils.translateStr(
                                  this.getAxisPosition(colIndex)));
   }
-  
+
   private _createAxes(interactionManager: InteractionManager): Axis[] {
     return d3.range(tf.hparams.utils.numColumns(this._schema)).map(
       colIndex => new Axis(
@@ -528,15 +528,15 @@ export class AxesCollection {
   private _svgProps: SVGProperties;
   private _schema: tf.hparams.Schema;
   private _axes: Axis[];
-  /** 
-   * The current assignment of stationary positions to axes. 
+  /**
+   * The current assignment of stationary positions to axes.
    * The axis representing column i has an associated stationary position
    * _stationaryAxesPositions(i).
    */
   private _stationaryAxesPositions: any /* D3 point scale */;
   private _draggedAxis: Axis | null;
   private _draggedAxisPosition: number | null;
-  private _parentsSel: any;  
+  private _parentsSel: any;
 }
 
 function _isInteractiveD3Event(d3Event: any) {

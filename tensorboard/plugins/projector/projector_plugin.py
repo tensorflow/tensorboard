@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import functools
 import imghdr
 import math
+import mimetypes
 import os
 import threading
 
@@ -44,7 +46,7 @@ _PLUGIN_PREFIX_ROUTE = 'projector'
 
 # FYI - the PROJECTOR_FILENAME is hardcoded in the visualize_embeddings
 # method in tf.contrib.tensorboard.plugins.projector module.
-# TODO(@dandelionmane): Fix duplication when we find a permanent home for the
+# TODO(@decentralion): Fix duplication when we find a permanent home for the
 # projector module.
 PROJECTOR_FILENAME = 'projector_config.pbtxt'
 _PLUGIN_NAME = 'org_tensorflow_tensorboard_projector'
@@ -260,7 +262,15 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         TENSOR_ROUTE: self._serve_tensor,
         METADATA_ROUTE: self._serve_metadata,
         BOOKMARKS_ROUTE: self._serve_bookmarks,
-        SPRITE_IMAGE_ROUTE: self._serve_sprite_image
+        SPRITE_IMAGE_ROUTE: self._serve_sprite_image,
+        '/index.js':
+            functools.partial(
+                self._serve_file,
+                os.path.join('tf_projector_plugin', 'index.js')),
+        '/projector_binary.html':
+            functools.partial(
+                self._serve_file,
+                os.path.join('tf_projector_plugin', 'projector_binary.html')),
     }
     return self._handlers
 
@@ -298,7 +308,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
   def frontend_metadata(self):
     return super(ProjectorPlugin, self).frontend_metadata()._replace(
-        element_name='vz-projector-dashboard',
+        es_module_path='/index.js',
         disable_reload=True,
     )
 
@@ -470,6 +480,14 @@ class ProjectorPlugin(base_plugin.TBPlugin):
       assets_dir = os.path.join(self.run_paths[run], _PLUGINS_DIR, _PLUGIN_NAME)
       assets_path_pair = (run, os.path.abspath(assets_dir))
       run_path_pairs.append(assets_path_pair)
+
+  @wrappers.Request.application
+  def _serve_file(self, file_path, request):
+    """Returns a resource file."""
+    res_path = os.path.join(os.path.dirname(__file__), file_path)
+    with open(res_path, 'rb') as read_file:
+      mimetype = mimetypes.guess_type(file_path)[0]
+      return Respond(request, read_file.read(), content_type=mimetype)
 
   @wrappers.Request.application
   def _serve_runs(self, request):
