@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
 
@@ -36,7 +38,7 @@ def _tensorboard_html_binary(ctx):
   else:
     ignore_regexs_file_set = depset([ctx.file.path_regexs_for_noinline])
     ignore_regexs_file_path = ctx.file.path_regexs_for_noinline.path
-  ctx.action(
+  ctx.actions.run(
       inputs=depset(transitive=[
           manifests,
           files,
@@ -60,9 +62,9 @@ def _tensorboard_html_binary(ctx):
   manifest_srcs = [struct(path=ctx.outputs.html.path,
                           longpath=long_path(ctx, ctx.outputs.html),
                           webpath=ctx.attr.output_path)]
-  manifest = ctx.new_file(ctx.configuration.bin_dir,
-                          "%s.pbtxt" % ctx.label.name)
-  ctx.file_action(
+  manifest = ctx.actions.declare_file(paths.join(
+      ctx.configuration.bin_dir.path, "%s.pbtxt" % ctx.label.name))
+  ctx.actions.write(
       output=manifest,
       content=struct(
           label=str(ctx.label),
@@ -76,11 +78,12 @@ def _tensorboard_html_binary(ctx):
       manifest=[long_path(ctx, man) for man in manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
-  params_file = ctx.new_file(ctx.configuration.bin_dir,
-                             "%s_server_params.pbtxt" % ctx.label.name)
-  ctx.file_action(output=params_file, content=params.to_proto())
-  ctx.file_action(
-      executable=True,
+  params_file = ctx.actions.declare_file(paths.join(
+      ctx.configuration.bin_dir.path,
+      "%s_server_params.pbtxt" % ctx.label.name))
+  ctx.actions.write(output=params_file, content=params.to_proto())
+  ctx.actions.write(
+      is_executable=True,
       output=ctx.outputs.executable,
       content="#!/bin/sh\nexec %s %s" % (
           ctx.executable._WebfilesServer.short_path,
