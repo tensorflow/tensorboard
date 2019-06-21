@@ -64,7 +64,6 @@ def main():
   if len(frozenset(os.path.basename(f) for f in files)) != len(files):
     sys.stderr.write("Input basenames must be distinct; got: %r\n" % files)
     sys.exit(1)
-  files.sort(key=os.path.basename)
 
   # (`fd` will be closed by `fdopen` context manager below)
   fd = os.open(archive, os.O_WRONLY | os.O_CREAT, 0o644)
