@@ -52,7 +52,7 @@ class RecordWriterTest(tb_test.TestCase):
   def test_record_writer_roundtrip(self):
     filename = os.path.join(self.get_temp_dir(), "record_writer_roundtrip")
     w = RecordWriter(open(filename, 'wb'))
-    chunks_to_write = [ "hello world{}".format(i).encode() for i in range(10) ]
+    chunks_to_write = ["hello world{}".format(i).encode() for i in range(10)]
     for bytes in chunks_to_write:
       w.write(bytes)
     w.close()
@@ -64,7 +64,7 @@ class RecordWriterTest(tb_test.TestCase):
 
   def test_record_immediate_read(self):
     filename = os.path.join(self.get_temp_dir(), "record_immediate_read")
-    chunks_to_write = [ "hello world{}".format(i).encode() for i in range(10) ]
+    chunks_to_write = ["hello world{}".format(i).encode() for i in range(10)]
     w = RecordWriter(open(filename, 'wb'))
     r = PyRecordReader_New(filename)
     with self.assertRaises(errors.OutOfRangeError):
