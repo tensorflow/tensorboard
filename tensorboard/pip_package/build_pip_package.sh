@@ -45,7 +45,6 @@ else
   sedi="sed -i"
 fi
 
-set -x
 command -v virtualenv >/dev/null
 [ -d "${RUNFILES}" ]
 
@@ -92,13 +91,14 @@ find tensorboard -name \*.py -exec $sedi -e '
     s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
   ' {} +
 
-virtualenv venv
+virtualenv -q venv
 export VIRTUAL_ENV=venv
 export PATH="${PWD}/venv/bin:${PATH}"
 unset PYTHON_HOME
 
 # Require wheel for bdist_wheel command, and setuptools 36.2.0+ so that
 # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
+export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
 pip install -qU wheel 'setuptools>=36.2.0'
 
 python setup.py bdist_wheel --python-tag py2 >/dev/null
