@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <script src="../web-animations-js/web-animations-next-lite.min.js"></script>
-<script src="../webcomponentsjs/webcomponents-lite.min.js"></script>
+<script src="../webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="tf-interactive-inference-dashboard.html">
 <script src="tf.min.js"></script>
@@ -47,8 +47,8 @@ limitations under the License.
         labelVocab: {type: Array, value: ['<=50k', '>50k']},
       },
       ready: async function() {
-	this.$.dash.modelName = "1, 2";
-	this.$.dash.inferenceAddress = "demo1, demo2";
+        this.$.dash.modelName = "1, 2";
+        this.$.dash.inferenceAddress = "demo1, demo2";
         this.$.dash.updateNumberOfModels();
         this.means = {
           'age': 38.64358543876172,
