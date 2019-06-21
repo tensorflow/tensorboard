@@ -22,6 +22,7 @@ from __future__ import print_function
 import six
 import os
 from tensorboard.summary.writer.record_writer import RecordWriter
+from tensorboard.compat.tensorflow_stub import errors
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import PyRecordReader_New
 from tensorboard import test as tb_test
 
@@ -51,16 +52,29 @@ class RecordWriterTest(tb_test.TestCase):
   def test_record_writer_roundtrip(self):
     filename = os.path.join(self.get_temp_dir(), "record_writer_roundtrip")
     w = RecordWriter(open(filename, 'wb'))
-    bytes_to_write = b"hello world"
-    times_to_test = 50
-    for _ in range(times_to_test):
-      w.write(bytes_to_write)
+    chunks_to_write = ["hello world{}".format(i).encode() for i in range(10)]
+    for bytes in chunks_to_write:
+      w.write(bytes)
     w.close()
 
     r = PyRecordReader_New(filename)
-    for i in range(times_to_test):
+    for bytes in chunks_to_write:
       r.GetNext()
-      self.assertEqual(r.record(), bytes_to_write)
+      self.assertEqual(r.record(), bytes)
+
+  def test_record_immediate_read(self):
+    filename = os.path.join(self.get_temp_dir(), "record_immediate_read")
+    chunks_to_write = ["hello world{}".format(i).encode() for i in range(10)]
+    w = RecordWriter(open(filename, 'wb'))
+    r = PyRecordReader_New(filename)
+    with self.assertRaises(errors.OutOfRangeError):
+      r.GetNext()
+    for bytes in chunks_to_write:
+      w.write(bytes)
+      w.flush()
+      r.GetNext()
+      self.assertEqual(r.record(), bytes)
+    w.close()
 
   def test_expect_bytes_written_bytes_IO(self):
     byte_len = 64
