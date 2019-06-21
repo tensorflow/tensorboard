@@ -109,7 +109,8 @@ Polymer({
 
   observers: [
     'reload(run, tag, active, _dataProvider)',
-    '_updateScene(_currentStep)',
+    '_updateScene(_currentStep.*)',
+    '_debouncedFetchMesh(_currentStep)',
     '_updateView(selectedView)'
   ],
 
@@ -158,38 +159,54 @@ Polymer({
 
   /**
    * Updates the scene.
-   * @param {!Object} currentStep Step datum.
    * @private
    */
-  _updateScene: function(currentStep) {
-    let dataPromise = Promise.resolve();
-    if (!currentStep.mesh) {  // Lazy-load actual mesh data.
-      dataPromise = this._dataProvider.fetchData(
-        currentStep, this.run, this.tag, this.sample, this._stepIndex)
-      .then(function (meshData) {
-        currentStep.mesh = meshData[0];
-      })
-      .catch((error) => {
-        if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
-          error = error || 'Response processing failed.';
-          throw new Error(error);
-        }
-      });
-    }
+  _updateScene: function() {
+    const currentStep = this._currentStep;
+    // Mesh data is not fetched yet. Please see `_maybeFetchMesh`.
+    if (!currentStep.mesh) return;
 
-    dataPromise.then(() => {
-      this._meshViewer.updateScene(currentStep, this);
-      if (!this._cameraPositionInitialized) {
-        this._meshViewer.resetView();
-        this._cameraPositionInitialized = true;
+    this._meshViewer.updateScene(currentStep, this);
+    if (!this._cameraPositionInitialized) {
+      this._meshViewer.resetView();
+      this._cameraPositionInitialized = true;
+    }
+    if (!this._meshViewerAttached) {
+      // Mesh viewer should be added to the dom once.
+      this.appendChild(this._meshViewer.getRenderer().domElement);
+      this._meshViewerAttached = true;
+    }
+  },
+
+  _debouncedFetchMesh() {
+    this.debounce('fetchMesh', () => this._maybeFetchMesh(), 100);
+  },
+
+  async _maybeFetchMesh() {
+    const currentStep = this._currentStep;
+    if (currentStep.mesh || currentStep.meshFetching) return;
+    currentStep.meshFetching = true;
+    this._isMeshLoading = true;
+
+    try {
+      const meshData = await this._dataProvider.fetchData(
+        currentStep,
+        this.run,
+        this.tag,
+        this.sample,
+        this._stepIndex,
+      );
+      currentStep.mesh = meshData[0];
+      this.notifyPath('currentStep.mesh');
+    } catch (error) {
+      if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
+        error = error || 'Response processing failed.';
+        throw new Error(error);
       }
-      this.set('_isMeshLoading', false);
-      if (!this._meshViewerAttached) {
-        // Mesh viewer should be added to the dom once.
-        this.appendChild(this._meshViewer.getRenderer().domElement);
-        this._meshViewerAttached = true;
-      }
-    });
+    } finally {
+      this._isMeshLoading = false;
+      currentStep.meshFetching = false;
+    }
   },
 
   /**
