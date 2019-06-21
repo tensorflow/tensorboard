@@ -39,6 +39,7 @@ from __future__ import print_function
 import argparse
 import gzip
 import os
+import sys
 import tarfile
 
 
