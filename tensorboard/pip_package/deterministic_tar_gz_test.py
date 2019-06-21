@@ -67,8 +67,8 @@ class DeterministicTarGzTest(tb_test.TestCase):
     os.mkdir(directory)
     self._run_tool([
         archive,
-        self._write_file(directory, "2.txt", "two"),
         self._write_file(directory, "1.txt", "one"),
+        self._write_file(directory, "2.txt", "two"),
     ])
     with gzip.open(archive) as gzip_file:
       with tarfile.open(fileobj=gzip_file, mode="r:") as tar_file:
@@ -93,8 +93,8 @@ class DeterministicTarGzTest(tb_test.TestCase):
     os.mkdir(directory_2)
     self._run_tool([
         archive_2,
-        self._write_file(directory_2, "2.txt", "two", utime=(5, 6)),
         self._write_file(directory_2, "1.txt", "one", utime=(7, 8)),
+        self._write_file(directory_2, "2.txt", "two", utime=(5, 6)),
     ])
 
     with open(archive_1, "rb") as infile:
