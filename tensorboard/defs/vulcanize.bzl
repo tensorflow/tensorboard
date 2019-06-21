@@ -42,9 +42,9 @@ def _tensorboard_html_binary(ctx):
       inputs=depset(transitive=[
           manifests,
           files,
-          jslibs,
           ignore_regexs_file_set,
       ]).to_list(),
+      tools=jslibs,
       outputs=[ctx.outputs.html],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
