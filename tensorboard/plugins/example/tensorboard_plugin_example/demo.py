@@ -12,25 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Demo code."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import setuptools
+from absl import app
+import tensorflow as tf
+
+from tensorboard_plugin_example import summary_v2
 
 
-setuptools.setup(
-    name="tensorboard_plugin_example",
-    version="0.1.0",
-    description="Sample TensorBoard plugin.",
-    packages=["tensorboard_plugin_example"],
-    package_data={
-        "tensorboard_plugin_example": ["static/**"],
-    },
-    entry_points={
-        "tensorboard_plugins": [
-            "example = tensorboard_plugin_example.plugin:ExamplePlugin",
-        ],
-    },
-)
+tf.compat.v1.enable_eager_execution()
+tf = tf.compat.v2
+
+
+def main(unused_argv):
+  writer = tf.summary.create_file_writer("demo_logs")
+  with writer.as_default():
+    summary_v2.greeting(
+        "guestbook",
+        "Alice",
+        step=0,
+        description="Sign your name!",
+    )
+    summary_v2.greeting("guestbook", "Bob", step=1)  # no need for `description`
+    raw_pb = summary_v2.greeting_pb("guestbook", "Cheryl")
+    tf.summary.experimental.write_raw_pb(
+        raw_pb.SerializeToString(),
+        step=2,
+    )
+
+    summary_v2.greeting("more_names", "David", step=4)
+
+
+if __name__ == "__main__":
+  app.run(main)
