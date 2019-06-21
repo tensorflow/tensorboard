@@ -20,10 +20,10 @@ usage() {
 usage: build_pip_package OUTPUT_DIR
 
 Build TensorBoard Pip packages and store the resulting wheel files
-into OUTPUT (a \`.tar.gz\` path or directory).
+into OUTPUT (a directory or "tar.gz" path).
 
 Arguments:
-  OUTPUT: A path ending in \`.tar.gz\` for the output archive, or else a
+  OUTPUT: A path ending in ".tar.gz" for the output archive, or else a
     path to an existing directory into which to store the wheel files
     directly.
 EOF
