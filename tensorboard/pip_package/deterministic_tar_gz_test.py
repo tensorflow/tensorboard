@@ -48,6 +48,9 @@ class DeterministicTarGzTest(tb_test.TestCase):
         representing seconds since epoch for `atime` and `mtime`,
         respectively, as in the second argument to `os.utime`. Defaults
         to a fixed value; the file's timestamps will always be set.
+
+    Returns:
+      The new file path.
     """
     filepath = os.path.join(directory, filename)
     with open(filepath, "w") as outfile:
@@ -55,15 +58,18 @@ class DeterministicTarGzTest(tb_test.TestCase):
     if utime is None:
       utime = (123, 456)
     os.utime(filepath, utime)
+    return filepath
 
   def test_correct_contents(self):
     tempdir = self.get_temp_dir()
     archive = os.path.join(tempdir, "out.tar.gz")
     directory = os.path.join(tempdir, "src")
     os.mkdir(directory)
-    self._write_file(directory, "2.txt", "two")
-    self._write_file(directory, "1.txt", "one")
-    self._run_tool([archive, directory])
+    self._run_tool([
+        archive,
+        self._write_file(directory, "2.txt", "two"),
+        self._write_file(directory, "1.txt", "one"),
+    ])
     with gzip.open(archive) as gzip_file:
       with tarfile.open(fileobj=gzip_file, mode="r:") as tar_file:
         self.assertEqual(tar_file.getnames(), ["1.txt", "2.txt"])  # in order
@@ -76,16 +82,20 @@ class DeterministicTarGzTest(tb_test.TestCase):
     archive_1 = os.path.join(tempdir, "out_1.tar.gz")
     directory_1 = os.path.join(tempdir, "src_1")
     os.mkdir(directory_1)
-    self._write_file(directory_1, "1.txt", "one", utime=(1, 2))
-    self._write_file(directory_1, "2.txt", "two", utime=(3, 4))
-    self._run_tool([archive_1, directory_1])
+    self._run_tool([
+        archive_1,
+        self._write_file(directory_1, "1.txt", "one", utime=(1, 2)),
+        self._write_file(directory_1, "2.txt", "two", utime=(3, 4)),
+    ])
 
     archive_2 = os.path.join(tempdir, "out_2.tar.gz")
     directory_2 = os.path.join(tempdir, "src_2")
     os.mkdir(directory_2)
-    self._write_file(directory_2, "2.txt", "two", utime=(5, 6))
-    self._write_file(directory_2, "1.txt", "one", utime=(7, 8))
-    self._run_tool([archive_2, directory_2])
+    self._run_tool([
+        archive_2,
+        self._write_file(directory_2, "2.txt", "two", utime=(5, 6)),
+        self._write_file(directory_2, "1.txt", "one", utime=(7, 8)),
+    ])
 
     with open(archive_1, "rb") as infile:
       archive_1_contents = infile.read()
