@@ -20,10 +20,12 @@ from __future__ import print_function
 import json
 import tensorflow as tf
 
+from collections import namedtuple
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 
 PLUGIN_NAME = 'mesh'
+MeshTensor = namedtuple('MeshTensor', 'data content_type data_type')
 
 
 def _get_tensor_summary(
@@ -87,10 +89,10 @@ def _get_json_config(config_dict):
 def _get_components_bitmap(tensors):
   """Creates bitmap for all existing components of the summary."""
   components = 0
-  for tensor, content_type in tensors:
-    if tensor is None:
+  for tensor in tensors:
+    if tensor.data is None:
       continue
-    components = components | (1 << content_type)
+    components = components | (1 << tensor.content_type)
   return components
 
 
@@ -125,19 +127,18 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
   # rendering.
   summaries = []
   tensors = [
-      (vertices, plugin_data_pb2.MeshPluginData.VERTEX),
-      (faces, plugin_data_pb2.MeshPluginData.FACE),
-      (colors, plugin_data_pb2.MeshPluginData.COLOR)
+      MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+      MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
+      MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
-
   components = _get_components_bitmap(tensors)
 
-  for tensor, content_type in tensors:
-    if tensor is None:
+  for tensor in tensors:
+    if tensor.data is None:
       continue
     summaries.append(
-        _get_tensor_summary(name, display_name, description, tensor,
-                            content_type, components, json_config,
+        _get_tensor_summary(name, display_name, description, tensor.data,
+                            tensor.content_type, components, json_config,
                             collections))
 
   all_summaries = tf.summary.merge(
@@ -175,31 +176,32 @@ def pb(name,
   json_config = _get_json_config(config_dict)
 
   summaries = []
-  tensors = [(vertices, plugin_data_pb2.MeshPluginData.VERTEX),
-             (faces, plugin_data_pb2.MeshPluginData.FACE),
-             (colors, plugin_data_pb2.MeshPluginData.COLOR)]
-  content_types = [tf.float32, tf.int32, tf.uint8]
+  tensors = [
+      MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+      MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
+      MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
+  ]
   components = _get_components_bitmap(tensors)
-  for (tensor, content_type), data_type in zip(tensors, content_types):
-    if tensor is None:
+  for tensor in tensors:
+    if tensor.data is None:
       continue
-    shape = tensor.shape
+    shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
-    tensor = tf.compat.v1.make_tensor_proto(tensor, dtype=data_type)
+    tensor_proto = tf.compat.v1.make_tensor_proto(tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
         display_name,
-        content_type,
+        tensor.content_type,
         components,
         shape,
         description,
         json_config=json_config)
-    tag = metadata.get_instance_name(name, content_type)
-    summaries.append((tag, summary_metadata, tensor))
+    tag = metadata.get_instance_name(name, tensor.content_type)
+    summaries.append((tag, summary_metadata, tensor_proto))
 
   summary = tf.Summary()
-  for tag, summary_metadata, tensor in summaries:
+  for tag, summary_metadata, tensor_proto in summaries:
     tf_summary_metadata = tf.SummaryMetadata.FromString(
         summary_metadata.SerializeToString())
-    summary.value.add(tag=tag, metadata=tf_summary_metadata, tensor=tensor)
+    summary.value.add(tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
   return summary

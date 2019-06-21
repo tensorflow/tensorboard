@@ -64,7 +64,7 @@ class MeshPluginTest(tf.test.TestCase):
                                                     point_cloud.vertices.shape)
 
     mesh_no_color = test_utils.get_random_mesh(2000, add_faces=True)
-    mesh_no_color_upd = test_utils.get_random_mesh(2500, add_faces=True)
+    mesh_no_color_extended = test_utils.get_random_mesh(2500, add_faces=True)
     mesh_no_color_vertices = tf.compat.v1.placeholder(
         tf.float32, [1, None, 3])
     mesh_no_color_faces = tf.compat.v1.placeholder(tf.int32,
@@ -78,7 +78,8 @@ class MeshPluginTest(tf.test.TestCase):
                                                 mesh_color.faces.shape)
     mesh_color_colors = tf.compat.v1.placeholder(tf.uint8,
                                                  mesh_color.colors.shape)
-    self.data = [point_cloud, mesh_no_color, mesh_no_color_upd,  mesh_color]
+    self.data = [
+      point_cloud, mesh_no_color, mesh_no_color_extended, mesh_color]
 
     # In case when name is present and display_name is not, we will reuse name
     # as display_name. Summaries below intended to test both cases.
@@ -109,7 +110,7 @@ class MeshPluginTest(tf.test.TestCase):
       for step in range(self.steps):
         # Alternate between two random meshes with different number of
         # vertices.
-        no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_upd
+        no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_extended
         with patch.object(time, 'time', return_value=step):
           writer.add_summary(
               sess.run(
@@ -159,8 +160,8 @@ class MeshPluginTest(tf.test.TestCase):
       self.assertIn(name, tags[self.runs[0]])
 
   def validate_data_response(
-    self, run, tag, sample, content_type, dtype, ground_truth_data,
-    timestamp=0.0):
+      self, run, tag, sample, content_type, dtype, ground_truth_data,
+      timestamp=0.0):
     """Makes request and checks that response has expected data."""
     response = self.server.get(
         "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type="

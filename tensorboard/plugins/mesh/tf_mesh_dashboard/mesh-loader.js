@@ -174,10 +174,10 @@ Polymer({
           error = error || 'Response processing failed.';
           throw new Error(error);
         }
-      });;
+      });
     }
 
-    return dataPromise.then(function () {
+    dataPromise.then(() => {
       this._meshViewer.updateScene(currentStep, this);
       if (!this._cameraPositionInitialized) {
         this._meshViewer.resetView();
@@ -189,7 +189,7 @@ Polymer({
         this.appendChild(this._meshViewer.getRenderer().domElement);
         this._meshViewerAttached = true;
       }
-    }.bind(this));
+    });
   },
 
   /**
