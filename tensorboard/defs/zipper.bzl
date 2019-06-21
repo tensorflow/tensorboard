@@ -28,8 +28,8 @@ def _tensorboard_zip_file(ctx):
       outputs=[ctx.outputs.zip],
       executable=ctx.executable._Zipper,
       arguments=([ctx.outputs.zip.path] +
-                 [m.path for m in manifests]),
-      progress_message="Zipping %d files" % len(webpaths))
+                 [m.path for m in manifests.to_list()]),
+      progress_message="Zipping %d files" % len(webpaths.to_list()))
   transitive_runfiles = depset()
   for dep in deps:
     transitive_runfiles = depset(transitive=[
