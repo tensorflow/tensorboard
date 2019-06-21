@@ -20,10 +20,12 @@ usage() {
 usage: build_pip_package OUTPUT_DIR
 
 Build TensorBoard Pip packages and store the resulting wheel files
-into OUTPUT_DIR.
+into OUTPUT (a \`.tar.gz\` path or directory).
 
 Arguments:
-  OUTPUT_DIR: Existing directory into which to store *.whl files.
+  OUTPUT: A path ending in \`.tar.gz\` for the output archive, or else a
+    path to an existing directory into which to store the wheel files
+    directly.
 EOF
 }
 
@@ -31,7 +33,7 @@ if [ $# -ne 1 ]; then
   usage 2>&1
   exit 1
 fi
-output_dir="$1"
+output="$1"
 
 if [ -z "${RUNFILES+set}" ]; then
   RUNFILES="$(CDPATH="" cd -- "$0.runfiles" && pwd)"
@@ -52,6 +54,7 @@ if [ "$(uname)" = "Darwin" ]; then
 else
   workdir="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
 fi
+original_wd="${PWD}"
 cd "${workdir}"
 
 cleanup() {
@@ -101,4 +104,18 @@ pip install -qU wheel 'setuptools>=36.2.0'
 python setup.py bdist_wheel --python-tag py2 >/dev/null
 python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-cp ./dist/*.whl "${output_dir}"
+cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>
+case "${output}" in
+  *.tar.gz)
+    mkdir -p "$(dirname "${output}")"
+    "${RUNFILES}/org_tensorflow_tensorboard/tensorboard/pip_package/deterministic_tar_gz" \
+        "${output}" "${workdir}"/dist/*.whl
+    ;;
+  *)
+    if ! [ -d "${output}" ]; then
+      printf >&2 'fatal: no such output directory: %s\n' "${output}"
+      exit 1
+    fi
+    mv "${workdir}"/dist/*.whl "${output}"
+    ;;
+esac
