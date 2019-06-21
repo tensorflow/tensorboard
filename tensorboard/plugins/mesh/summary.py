@@ -85,7 +85,7 @@ def _get_json_config(config_dict):
 
 
 def _get_components_bitmap(tensors):
-  """Creats bitmap for all existing components for the summary."""
+  """Creates bitmap for all existing components of the summary."""
   components = 0
   for tensor, content_type in tensors:
     if tensor is None:
@@ -137,7 +137,8 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
       continue
     summaries.append(
         _get_tensor_summary(name, display_name, description, tensor,
-                            content_type, components, json_config, collections))
+                            content_type, components, json_config,
+                            collections))
 
   all_summaries = tf.summary.merge(
       summaries, collections=collections, name=name)

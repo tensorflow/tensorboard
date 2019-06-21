@@ -107,7 +107,8 @@ class MeshPluginTest(tf.test.TestCase):
     with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)
       for step in range(self.steps):
-        # Alternate between two random meshes with different number of vertices.
+        # Alternate between two random meshes with different number of
+        # vertices.
         no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_upd
         with patch.object(time, 'time', return_value=step):
           writer.add_summary(
@@ -160,8 +161,10 @@ class MeshPluginTest(tf.test.TestCase):
   def validate_data_response(
     self, run, tag, sample, content_type, dtype, ground_truth_data,
     timestamp=0.0):
+    """Makes request and checks that response has expected data."""
     response = self.server.get(
-        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type=%s&timestamp=%.f" %
+        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type="
+        "%s&timestamp=%.f" %
         (run, tag, sample, content_type, timestamp))
     self.assertEqual(200, response.status_code)
     data = test_utils.deserialize_array_buffer_response(
@@ -216,11 +219,7 @@ class MeshPluginTest(tf.test.TestCase):
       "PluginRunToTagToContent",
       return_value={"bar": {"foo": "".encode("utf-8")}},
   )
-  @mock.patch.object(
-      metadata,
-      "get_current_version",
-      return_value=0,
-  )
+  @mock.patch.object(metadata, "get_current_version", return_value=0)
   def testMetadataComputedOnce(
     self, run_to_tag_mock, get_current_version_mock):
     """Tests that metadata mapping computed once."""
