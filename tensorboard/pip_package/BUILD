@@ -85,6 +85,26 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "deterministic_tar_gz",
+    srcs = ["deterministic_tar_gz.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "deterministic_tar_gz_test",
+    size = "medium",
+    timeout = "short",
+    srcs = ["deterministic_tar_gz_test.py"],
+    data = [
+        ":deterministic_tar_gz",  # invoked as subprocess
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:test",
+    ],
+)
+
 genrule(
     name = "license",
     srcs = [
