@@ -47,6 +47,15 @@ function flushAllP(): Promise<[void, void]> {
 describe('tf-paginated-view tests', () => {
   let view: any;
 
+  /**
+   * Returns stamped template item.
+   */
+  function getItem(id: string): HTMLElement {
+    return view.$.view.querySelector(`#${id}`);
+  }
+  /**
+   * Returns element inside shadowRoot of tf-category-paginated-view.
+   */
   function querySelector(cssSelector: string): HTMLElement {
     return view.$.view.root.querySelector(cssSelector);
   }
@@ -66,49 +75,49 @@ describe('tf-paginated-view tests', () => {
   });
 
   it('renders a page', () => {
-    expect(querySelector('#id0')).to.be.not.null;
-    expect(querySelector('#id1')).to.be.not.null;
+    expect(getItem('id0')).to.be.not.null;
+    expect(getItem('id1')).to.be.not.null;
 
     // 2-4 should be in another page.
-    expect(querySelector('#id2')).to.be.null;
+    expect(getItem('id2')).to.be.null;
   });
 
   it('responds to ancestor prop change that is bound on template', () => {
-    expect(querySelector('#id0').getAttribute('number')).to.equal('42');
+    expect(getItem('id0').getAttribute('number')).to.equal('42');
 
     view.randomNumber = 7;
-    expect(querySelector('#id0').getAttribute('number')).to.equal('7');
+    expect(getItem('id0').getAttribute('number')).to.equal('7');
   });
 
   it('navigates to next page when clicked on a button', async () => {
     // Sanity check
-    expect(querySelector('#id2')).to.be.null;
-    expect(querySelector('#id4')).to.be.null;
+    expect(getItem('id2')).to.be.null;
+    expect(getItem('id4')).to.be.null;
     expect(querySelector('paper-input')).to.have.property('value', '1');
 
     await goNext();
 
-    expect(querySelector('#id1')).to.be.null;
-    expect(querySelector('#id2')).to.be.not.null;
-    expect(querySelector('#id3')).to.be.not.null;
-    expect(querySelector('#id4')).to.be.null;
+    expect(getItem('id1')).to.be.null;
+    expect(getItem('id2')).to.be.not.null;
+    expect(getItem('id3')).to.be.not.null;
+    expect(getItem('id4')).to.be.null;
     expect(querySelector('paper-input')).to.have.property('value', '2');
 
     await goNext();
 
-    expect(querySelector('#id3')).to.be.null;
-    expect(querySelector('#id4')).to.be.not.null;
+    expect(getItem('id3')).to.be.null;
+    expect(getItem('id4')).to.be.not.null;
     expect(querySelector('paper-input')).to.have.property('value', '3');
   });
 
   it('reacts to limit change', () => {
     // 2-4 should be in another page, initially.
-    expect(querySelector('#id2')).to.be.null;
+    expect(getItem('id2')).to.be.null;
 
     view._limit = 4;
-    expect(querySelector('#id2')).to.be.not.null;
-    expect(querySelector('#id3')).to.be.not.null;
-    expect(querySelector('#id4')).to.be.null;
+    expect(getItem('id2')).to.be.not.null;
+    expect(getItem('id3')).to.be.not.null;
+    expect(getItem('id4')).to.be.null;
   });
 
   it('reacts to category update', async () => {
@@ -118,24 +127,24 @@ describe('tf-paginated-view tests', () => {
       {items: view.category.items.slice().reverse()},
     );
     await flushAllP();
-    expect(querySelector('#id4')).to.be.not.null;
-    expect(querySelector('#id3')).to.be.not.null;
+    expect(getItem('id4')).to.be.not.null;
+    expect(getItem('id3')).to.be.not.null;
   });
 
   it('reacts to items update', async () => {
     // Mutate the property of category in Polymeric way.
     view.set('category.items', view.category.items.slice().reverse());
     await flushAllP();
-    expect(querySelector('#id4')).to.be.not.null;
-    expect(querySelector('#id3')).to.be.not.null;
+    expect(getItem('id4')).to.be.not.null;
+    expect(getItem('id3')).to.be.not.null;
   });
 
   it('handles shrinking the number of pages', async () => {
     view.category = createCategory(1);
     await flushAllP();
 
-    expect(querySelector('#id0')).to.be.not.null;
-    expect(querySelector('#id1')).to.be.null;
+    expect(getItem('id0')).to.be.not.null;
+    expect(getItem('id1')).to.be.null;
     expect(_getPageCount()).to.equal(1);
   });
 
