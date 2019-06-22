@@ -235,7 +235,10 @@ Polymer({
       type: String,
       notify: true,
     },
-    compatNodeTitle: String,
+    compatNodeTitle: {
+      type: String,
+      value: 'TPU Compatibility',
+    },
     // A function with signature EdgeThicknessFunction that computes the
     // thickness of a given edge.
     edgeWidthFunction: Object,
