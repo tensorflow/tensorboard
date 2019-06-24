@@ -29,6 +29,7 @@ py_library(
     deps = [
         ":common_utils",
         ":platform_utils",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
         "@org_tensorflow_serving_api",
     ],
