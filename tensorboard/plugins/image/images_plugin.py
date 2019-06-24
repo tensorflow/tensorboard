@@ -92,6 +92,11 @@ class ImagesPlugin(base_plugin.TBPlugin):
       return False
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    return super(ImagesPlugin, self).frontend_metadata()._replace(
+        element_name='tf-image-dashboard',
+    )
+
   def _index_impl(self):
     if self._db_connection_provider:
       db = self._db_connection_provider()

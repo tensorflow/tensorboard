@@ -1436,6 +1436,9 @@ limitations under the License.
           {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}),
     });
 
+    // TODO(#2338): Remove this, and set up the "no debugger enabled"
+    // message properly. Keep this in sync with `frontend_metadata` in
+    // both `debugger_plugin.py` and `interactive_debugger_plugin.py`.
     tf_tensorboard.registerDashboard({
       plugin: 'debugger',
       elementName: 'tf-debugger-dashboard',

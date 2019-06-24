@@ -310,9 +310,9 @@ class TensorBoard(object):
     return self.server_class(app, self.flags)
 
 
+@six.add_metaclass(ABCMeta)
 class TensorBoardServer(object):
   """Class for customizing TensorBoard WSGI app serving."""
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def __init__(self, wsgi_app, flags):

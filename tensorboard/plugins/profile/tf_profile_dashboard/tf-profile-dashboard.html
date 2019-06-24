@@ -71,7 +71,9 @@ profile run can have multiple tools that present the performance profile as diff
   <paper-input label="Profiler Service URL or TPU name"
                always-float-label
                placeholder="localhost:6009"
-               value="{{_profilerServiceAddress}}"></paper-input>
+               value="{{_profilerServiceAddress}}"
+               auto-validate
+               required></paper-input>
   <label id="profiler-address-type-label">Address Type:</label>
   <paper-radio-group selected="{{_profilerServiceAddressType}}"
                      aria-labelledby="profiler-address-type-label">
@@ -82,11 +84,36 @@ profile run can have multiple tools that present the performance profile as diff
                always-float-label
                type="number"
                min=1
+               max=600000
+               auto-validate
+               pattern="[0-9]+"
+               error-message="Input is not an integer between 1 to 600000"
+               required
                value="{{_profileDuration}}"></paper-input>
+
+  <paper-input label="Automatically retry N times when no trace event is collected"
+               always-float-label
+               type="number"
+               min=0
+               max=100
+               auto-validate
+               pattern="[0-9]+"
+               error-message="Input is not an integer between 0 to 100"
+               required
+               value="{{_profileNumRetry}}"></paper-input>
+
+  <div hidden="{{!_shouldShowTpuOptions(_profilerServiceAddressType)}}">
+    <paper-checkbox checked="{{_profileIncludeDatasetOps}}">Trace dataset ops</paper-checkbox>
+    <paper-input label="Subset of worker TPUs to profile (optional)"
+                 always-float-label
+                 placeholder="List of IPs, e.g. 10.4.1.2,10.4.1.3"
+                 value="{{_profileWorkerList}}"></paper-input>
+  </div>
   <div class="buttons">
     <paper-button dialog-confirm raised
                   on-tap="_captureProfile"
-                  disabled$="[[_shouldDisableCaptureProfileButton(profilerServiceAddress, _profileDuration)]]">Capture</paper-button>
+                  disabled$="[[_shouldDisableCaptureProfileButton(_profilerServiceAddress, _profileDuration, _profileNumRetry)]]">
+        Capture</paper-button>
     <paper-button dialog-confirm>Close</paper-button>
   </div>
 </paper-dialog>
@@ -378,7 +405,7 @@ profile run can have multiple tools that present the performance profile as diff
       // The endpoint that serves trace viewer app.
       traceViewerBaseUrl: {
         type: String,
-        value: "/trace_viewer_index.html",
+        value: "trace_viewer_index.html",
       },
       _profilerServiceAddress: String,
       _profilerServiceAddressType: {
@@ -386,8 +413,19 @@ profile run can have multiple tools that present the performance profile as diff
         value: "ip-address",
       },
       _profileDuration: {
-        type: Number,
-        value: 1000,
+        type: String,
+        value: "1000",
+      },
+      _profileNumRetry: {
+        type: String,
+        value: "3",
+      },
+      _profileWorkerList: {
+        type: String,
+      },
+      _profileIncludeDatasetOps: {
+        type: Boolean,
+        value: true,
       },
       // The URL for the trace data being display.
       _traceDataUrl: {
@@ -459,6 +497,8 @@ profile run can have multiple tools that present the performance profile as diff
       this.set('_isAttached', true);
       // Check if the plugin was created
       this._requestManager
+          // TODO(#2338): The plugins listing is probably not the right
+          // source of truth.
           .request(tf_backend.getRouter().pluginsListing())
           .then(plugins => {
             if (!(PLUGIN_NAME in plugins)) {
@@ -479,17 +519,25 @@ profile run can have multiple tools that present the performance profile as diff
     _openCaptureProfileDialog: function() {
       this.$.captureProfileDialog.open();
     },
-    _shouldDisableCaptureProfileButton: function(profilerServiceAddress, profileDuration) {
-      return !profilerServiceAddress || profileDuration <= 0;
+    _shouldDisableCaptureProfileButton: function(
+        profilerServiceAddress, profileDuration, numRetry) {
+      return !profilerServiceAddress || profileDuration === ""
+          || numRetry === "";
+    },
+    _shouldShowTpuOptions: function(profilerServiceAddressType) {
+      return profilerServiceAddressType == 'tpu-name';
     },
     _captureProfile: function() {
       this._capturingProfile = true;
       const captureProfileUrl = tf_backend.addParams(
           tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
           {
-            service_addr: this._profilerServiceAddress,
+            service_addr: this._profilerServiceAddress.trim(),
             is_tpu_name: this._profilerServiceAddressType == 'tpu-name',
             duration: this._profileDuration,
+            worker_list: this._profileWorkerList,
+            include_dataset_ops: this._profileIncludeDatasetOps,
+            num_retry: this._profileNumRetry,
           });
       this._requestManager.request(captureProfileUrl).then((json) => {
 	this._capturingProfile = false;
@@ -596,10 +644,6 @@ profile run can have multiple tools that present the performance profile as diff
             {tag: toolName,
              run: datasetName,
              host: hostName});
-        // Make the trace data url relative to the root.
-        if (trace_data_url[0] != '/') {
-          trace_data_url = '/' + trace_data_url;
-        }
         // Pass the URL of trace data via GET parameter to the iframed trace
         // viewer app.
         var is_streaming = toolName.endsWith('@');
@@ -732,6 +776,8 @@ profile run can have multiple tools that present the performance profile as diff
     },
   });
 
+  // TODO(#2338): Remove this, and set up the "no TF" message properly.
+  // Keep this in sync with `frontend_metadata` in `profile_plugin.py`.
   tf_tensorboard.registerDashboard({
     plugin: PLUGIN_NAME,
     elementName: 'tf-profile-dashboard',

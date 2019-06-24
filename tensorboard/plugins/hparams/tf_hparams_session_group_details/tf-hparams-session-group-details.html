@@ -38,7 +38,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
         <p>Please select a session group to see its metric-graphs here.</p>
       </div>
     </template>
-    <template is="dom-if" if="[[!_haveMetrics(schema.*)]]">
+    <template is="dom-if" if="[[!_haveMetrics(visibleSchema.*)]]">
       <div>
         <h3>No metrics are enabled</h3>
         <p>Please enable some metrics to see content here.</p>
@@ -46,8 +46,9 @@ clicks on a row in table-view or a curve in parallel-coords view.
     </template>
     <div class="layout horizontal wrap session-group-details">
       <template is="dom-if"
-                if="[[_haveMetricsAndSessionGroup(schema.*, sessionGroup)]]">
-        <template is="dom-repeat" items="[[schema.metricInfos]]"
+                if="[[_haveMetricsAndSessionGroup(visibleSchema.*,
+                                                  sessionGroup)]]">
+        <template is="dom-repeat" items="[[visibleSchema.metricInfos]]"
                   as="metricInfo">
           <!-- Note that we do not provide a request-manager attribute since
                we provide a function in request-data for calling the backend
@@ -88,7 +89,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
         experimentName: String,
 
         // See the definition of this property in tf-hparams-query-pane.html
-        schema: Object,
+        visibleSchema: Object,
 
         // The session group object to display. Matches the SessionGroup
         // protocol buffer defined in api.proto.
@@ -212,9 +213,9 @@ clicks on a row in table-view or a curve in parallel-coords view.
       },
 
       _haveMetrics() {
-        return this.schema
-            && Array.isArray(this.schema.metricInfos)
-            && (this.schema.metricInfos.length > 0);
+        return this.visibleSchema
+            && Array.isArray(this.visibleSchema.metricInfos)
+            && (this.visibleSchema.metricInfos.length > 0);
       },
 
       _haveMetricsAndSessionGroup() {

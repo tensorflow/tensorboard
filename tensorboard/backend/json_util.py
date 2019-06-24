@@ -27,6 +27,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import math
 
 from tensorboard.compat import tf
@@ -69,6 +70,9 @@ def Cleanse(obj, encoding='utf-8'):
   elif isinstance(obj, set):
     return [Cleanse(i, encoding) for i in sorted(obj)]
   elif isinstance(obj, dict):
-    return {Cleanse(k, encoding): Cleanse(v, encoding) for k, v in obj.items()}
+    return collections.OrderedDict(
+        (Cleanse(k, encoding), Cleanse(v, encoding))
+        for k, v in obj.items()
+    )
   else:
     return obj

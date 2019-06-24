@@ -108,6 +108,14 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     # TODO(jameswex): Maybe enable if config flags were specified?
     return False
 
+  def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
+    return super(InteractiveInferencePlugin, self).frontend_metadata()._replace(
+        element_name='tf-interactive-inference-dashboard',
+        tab_name='What-If Tool',
+    )
+
   def generate_sprite(self, example_strings):
     # Generate a sprite image for the examples if the examples contain the
     # standard encoded image feature.
@@ -282,8 +290,9 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
             request.args.get('use_predict') == 'true',
             request.args.get('predict_input_tensor'),
             request.args.get('predict_output_tensor'))
-        infer_objs.append(inference_utils.run_inference_for_inference_results(
-          examples_to_infer, serving_bundle))
+        (predictions, _) = inference_utils.run_inference_for_inference_results(
+            examples_to_infer, serving_bundle)
+        infer_objs.append(predictions)
 
       resp = {'indices': indices_to_infer, 'results': infer_objs}
       self.updated_example_indices = set()

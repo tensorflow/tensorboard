@@ -29,11 +29,6 @@ Polymer({
       type: Array,
       notify: true,
     },
-    selectedChannel: {
-      type: Array,
-      notify: true,
-      observer: '_selectedChannelChanged',
-    },
     activeBar: {
       type: Object,
       notify: true,
@@ -66,7 +61,8 @@ Polymer({
         {key: 'lowFlopsComputeUs', label: 'Low flops compute'},
         {key: 'hostInfeedDurationUs', label: 'Infeed'},
         {key: 'hostOutfeedDurationUs', label: 'Outfeed'},
-        {key: 'crsDurationUs', label: 'All reduce'},
+        {key: 'allReduceComputeDurationUs', label: 'AllReduce compute'},
+        {key: 'allReduceSyncDurationUs', label: 'AllReduce sync'},
         {key: 'sendDurationUs', label: 'Send'},
         {key: 'recvDurationUs', label: 'Recv'},
       ],
@@ -129,6 +125,7 @@ Polymer({
   _computeRunEnvironment(
       data: podviewer.proto.PodViewerInputData|undefined|null):
           podviewer.proto.RunEnvironment {
+    if (!data) return;
     return data.runEnvironment;
   },
   _computeMaxStepId(podStatsMaps: Array<podviewer.proto.PodStatsMap>): number {
@@ -161,6 +158,10 @@ Polymer({
       for (let j = 0; j < layers.length; j++) {
         if (j == 1) {
           continue;
+        }
+        // Input missing a field, set it to 0.
+        if (!val[layers[j].key]) {
+           val[layers[j].key] = 0;
         }
         // Skip the lowFlopsComputeUs.
         val['lowFlopsComputeUs'] -= val[layers[j].key];
@@ -207,14 +208,6 @@ Polymer({
   _dataChanged(newData: podviewer.proto.PodViewerInputData) {
     if (!newData) return;
     this.curStepId = 0;
-  },
-  /**
-   * Updates the input of the details card when selected channel changed.
-   */
-  _selectedChannelChanged(newChannel: Array<podviewer.proto.ChannelInfo>) {
-    if (newChannel) {
-      this.activeDetails = newChannel;
-    }
   },
   /**
    * The active bar could be one of the PodStatsRecord, ChannelInfo or

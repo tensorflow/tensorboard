@@ -43,6 +43,7 @@ if 'witwidget-gpu' in project_name:
   ]
 
 REQUIRED_PACKAGES = [
+    'absl-py >= 0.4',
     'google-api-python-client>=1.7.8',
     'ipywidgets>=7.0.0',
     'jupyter>=1.0,<2',
@@ -64,7 +65,7 @@ setup(
   description='What-If Tool jupyter widget',
   long_description=get_readme(),
   author='Google Inc.',
-  author_email='opensource@google.com',
+  author_email='packages@tensorflow.org',
   url='https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference',
   include_package_data=True,
   data_files=[

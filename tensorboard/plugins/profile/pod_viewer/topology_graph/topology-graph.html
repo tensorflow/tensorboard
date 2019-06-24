@@ -23,7 +23,6 @@ limitations under the License.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="pod-viewer-common.html">
 
 <dom-module id='topology-graph'>
@@ -153,6 +152,11 @@ paper-slider {
   text-align: bottom;
   vertical-align: bottom;
 }
+
+#container {
+  /* Tooltip should position relative to the container. */
+  position: relative;
+}
 </style>
     <div class="topology-graph">
       <div class="topo-header container flex-horizontal">
@@ -169,17 +173,12 @@ paper-slider {
             </template>
           </paper-listbox>
         </paper-menu-button>
-        <div hidden="[[!_maxChannelId]]">
-          <span class="control-row-left metrics-label">Please select a channel id
-            <paper-slider min=[[_minChannelId]] max=[[_maxChannelId]]
-                snaps step="1" value="{{selectedChannelId}}" editable>
-            </paper-slider>
-          </span>
-        </div>
       </div>
-      <div id="tpgraph"></div>
-      <div id="tooltip" class="hidden">
-        <p><span id="value"></span></p>
+      <div id="container">
+        <div id="tpgraph"></div>
+        <div id="tooltip" class="hidden">
+          <p><span id="value"></span></p>
+        </div>
       </div>
     </div>
   </template>

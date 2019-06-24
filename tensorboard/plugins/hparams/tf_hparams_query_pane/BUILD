@@ -7,6 +7,14 @@ package(default_visibility =
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
+    name = "schema_d_ts",
+    srcs = [
+        "schema.d.ts",
+    ],
+    path = "/tf-hparams-query-pane",
+)
+
+tf_web_library(
     name = "tf_hparams_query_pane",
     srcs = [
         "tf-hparams-query-pane.html",

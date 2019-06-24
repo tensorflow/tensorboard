@@ -111,7 +111,6 @@ by default. The user can select a different run from a dropdown menu.
         render-hierarchy="{{_renderHierarchy}}"
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
-        compat-node-title="TPU Compatibility"
         trace-inputs="[[_traceInputs]]"
     ></tf-graph-board>
   </div>
@@ -517,13 +516,6 @@ Polymer({
 
     this._requestHealthPills();
   },
-});
-
-tf_tensorboard.registerDashboard({
-  plugin: 'graphs',
-  elementName: 'tf-graph-dashboard',
-  // TODO(@chihuahua): Reconcile this setting with Health Pills.
-  isReloadDisabled: true,
 });
 
 </script>

@@ -83,7 +83,9 @@ limitations under the License.
       }
     });
 
-    // Register the plugin main element with Tensorboard.
+    // TODO(#2338): Remove this, and set up a "no TF" message properly.
+    // Keep this in sync with `frontend_metadata` in
+    // `hparams_plugin.py`.
     tf_tensorboard.registerDashboard({
       plugin: PLUGIN_NAME,
       elementName: 'tf-hparams-dashboard'
