@@ -43,7 +43,7 @@ def _get_tensor_summary(
       is supported.
     tensor: Tensor to display in summary.
     content_type: Type of content inside the Tensor.
-    components: Bitmap representing present parts (vertices, colors, etc.) that
+    components: Bitmask representing present parts (vertices, colors, etc.) that
       belong to the summary.
     json_config: A string, JSON-serialized dictionary of ThreeJS classes
       configuration.
@@ -86,8 +86,14 @@ def _get_json_config(config_dict):
   return json_config
 
 
-def _get_components_bitmap(tensors):
-  """Creates bitmap for all existing components of the summary."""
+def _get_components_bitmask(tensors):
+  """Creates bitmask for all existing components of the summary.
+
+  Args:
+    tensors: list of MeshTensor tuples, representing all components
+      related to the summary.
+  Returns: bitmask based on passed tensors.
+  """
   components = 0
   for tensor in tensors:
     if tensor.data is None:
@@ -131,7 +137,7 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
       MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
       MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
-  components = _get_components_bitmap(tensors)
+  components = _get_components_bitmask(tensors)
 
   for tensor in tensors:
     if tensor.data is None:
@@ -181,7 +187,7 @@ def pb(name,
       MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
       MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
-  components = _get_components_bitmap(tensors)
+  components = _get_components_bitmask(tensors)
   for tensor in tensors:
     if tensor.data is None:
       continue

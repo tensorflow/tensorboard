@@ -155,14 +155,14 @@ class MeshPlugin(base_plugin.TBPlugin):
     return data[sample].tolist()
 
   def _get_tensor_metadata(
-    self, event, content_type, components, data_shape, config):
+      self, event, content_type, components, data_shape, config):
     """Converts a TensorEvent into a JSON-compatible response.
 
     Args:
       event: TensorEvent object containing data in proto format.
       content_type: enum plugin_data_pb2.MeshPluginData.ContentType value,
         representing content type in TensorEvent.
-      components: Bitmap representing all parts (vertices, colors, etc.) that
+      components: Bitmask representing all parts (vertices, colors, etc.) that
         belong to the summary.
       data_shape: list of dimensions sizes of the tensor.
       config: rendering scene configuration as dictionary.
@@ -226,7 +226,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     Returns:
       werkzeug.Response either float32 or int32 data in binary format.
     """
-    timestamp = float(request.args.get('timestamp', 0.))
+    timestamp = float(request.args.get('timestamp', 0.0))
     tensor_events = self._collect_tensor_events(request, timestamp)
     content_type = request.args['content_type']
     content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(

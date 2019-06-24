@@ -54,7 +54,7 @@ def create_summary_metadata(name,
     name: Original merged (summaries of different types) summary name.
     display_name: The display name used in TensorBoard.
     content_type: Value from MeshPluginData.ContentType enum describing data.
-    components: Bitmap representing present parts (vertices, colors, etc.) that
+    components: Bitmask representing present parts (vertices, colors, etc.) that
       belong to the summary.
     shape: list of dimensions sizes of the tensor.
     description: The description to show in TensorBoard.
