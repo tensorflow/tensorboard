@@ -34,4 +34,4 @@ xargs -0 awk '
     }
     { last_blank = /"\\n",/; last_list = is_list }
     END { exit status }
-' 
+'
