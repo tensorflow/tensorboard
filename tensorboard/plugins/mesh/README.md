@@ -2,8 +2,8 @@
 
 ## Overview
 
-Meshes and point clouds are important and powerful types of data to represent 
-3D shapes and widely studied in the field of computer vision and computer 
+Meshes and point clouds are important and powerful types of data to represent
+3D shapes and widely studied in the field of computer vision and computer
 graphics.
 
 3D data is becoming more ubiquitous and researchers attack new problems like
@@ -22,8 +22,8 @@ interact with the rendered objects.
 ## Summary API
 
 Meshes and point clouds can be represented by a set of tensors. For
-example, one can view a point cloud as a set of 3D coordinates of the points 
-and some colors associated with each point. Check out a simple example with 
+example, one can view a point cloud as a set of 3D coordinates of the points
+and some colors associated with each point. Check out a simple example with
 static mesh:
 
 ```python
@@ -36,7 +36,7 @@ point_colors = tf.constant([[[128, 104, 227], ...]], shape=[1, 1064, 3])
 summary = mesh_summary.op('point_cloud', vertices=point_cloud, colors=point_colors)
 ```
 
-**NOTE:** The `colors` tensor is optional in this case but can be useful to 
+**NOTE:** The `colors` tensor is optional in this case but can be useful to
 show different semantics of the points.
 
 A mesh can be represented by a point cloud together with a set of faces,
@@ -89,7 +89,7 @@ camera_config = {
 ...
 ```
 
-Keep in mind that scene configuration is not a trainable variable (i.e., it is 
+Keep in mind that scene configuration is not a trainable variable (i.e., it is
 a static attribute) and is fixed at summary-creation time.
 
 ## Example
@@ -107,7 +107,7 @@ bazel run tensorboard/plugins/mesh:mesh_demo -- --mesh_path=path/to/ply/file
 
 ## How to install
 
-The mesh plugin isn’t yet part of stable TensorBoard, so you’ll need to 
+The mesh plugin isn’t yet part of stable TensorBoard, so you’ll need to
 install the latest TensorBoard nightly build to use it.
 
 ### Colab

@@ -27,7 +27,7 @@ export let ProjectionsPanelPolymer = PolymerElement({
     superviseFactor: {type: Number, value: 0},
     // UMAP parameters
     umapIs3d:
-        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},     
+        {type: Boolean, value: true, observer: '_umapDimensionToggleObserver'},
     umapNeighbors: { type: Number, value: 15 },
     // PCA projection.
     pcaComponents: Array,
@@ -563,7 +563,7 @@ export class ProjectionsPanel extends ProjectionsPanelPolymer {
             this.projector.onProjectionChanged();
           }
         });
-  }  
+  }
 
   // tslint:disable-next-line:no-unused-variable
   private showPCAIfEnabled() {
