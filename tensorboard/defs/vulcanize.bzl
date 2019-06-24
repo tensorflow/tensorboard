@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Rule for building the HTML binary using Closure Compiler """
+
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
