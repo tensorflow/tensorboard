@@ -41,7 +41,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 
-@tensorboard_test_util.run_v1_only('requires tf.Session') 
+@tensorboard_test_util.run_v1_only('requires tf.Session')
 class MeshPluginTest(tf.test.TestCase):
   """Tests for mesh plugin server."""
 

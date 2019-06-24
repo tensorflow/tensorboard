@@ -291,7 +291,7 @@ export function appendEdge(edgeGroup, d: EdgeData,
   // Give the path a unique id, which will be used to link
   // the textPath (edge label) to this path.
   let pathId = 'path_' + getEdgeKey(d);
-  
+
   let strokeWidth;
   if (sceneElement.renderHierarchy.edgeWidthFunction) {
     // Compute edge thickness based on the user-specified method.

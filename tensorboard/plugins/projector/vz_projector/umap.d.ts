@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// TODO(@andycoenen): Figure out a way to properly import the .d.ts file 
+// TODO(@andycoenen): Figure out a way to properly import the .d.ts file
 // generated in the umap-js build into the tensorboard build system
 // https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts
 

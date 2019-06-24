@@ -26,7 +26,7 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
-@test_util.run_v1_only('requires tf.Session') 
+@test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
   def _create_metadata(self, shape=None):
@@ -81,7 +81,7 @@ class MetadataTest(tf.test.TestCase):
             self.summary_metadata.plugin_data.content)
 
   def test_tensor_shape(self):
-    """Tests that target tensor should be of particular shape."""    
+    """Tests that target tensor should be of particular shape."""
     with six.assertRaisesRegex(self, ValueError, r'Tensor shape should be of shape BxNx3.*'):
       self._create_metadata([1])
 
@@ -93,4 +93,3 @@ class MetadataTest(tf.test.TestCase):
 
 if __name__ == '__main__':
   tf.test.main()
-  
