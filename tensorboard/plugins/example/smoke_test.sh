@@ -44,6 +44,7 @@ pip install -qU wheel 'setuptools>=36.2.0'
 (cd ./example-plugin && python setup.py bdist_wheel)
 [ -f ./example-plugin/dist/*.whl ]  # just one wheel
 
+<<<<<<< HEAD
 py_major_version="$(python -c 'import sys; print(sys.version_info[0])')"
 pip install tf-nightly-2.0-preview  # TODO(@wchargin): Other versions, too?
 pip uninstall -y tensorboard tb-nightly  # drop conflicting packages
@@ -91,4 +92,20 @@ curl -fs "http://localhost:${port}/data/plugin/example/tags" >tags
 {"demo_logs": {"guestbook": {"description": "Sign your name!"}, "more_names": {"description": ""}}}
 EOF
 
+=======
+# This plugin doesn't require TensorFlow, so we don't install it.
+py_major_version="$(python -c 'import sys; print(sys.version_info[0])')"
+pip install ./tensorboard-wheels/*py"${py_major_version}"*.whl
+pip install ./example-plugin/dist/*.whl
+
+# Test tensorboard + tensorboard_plugin_example integration.
+mkfifo pipe
+tensorboard --port=0 --logdir=smokedir 2>pipe &
+perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
+curl -fs "http://localhost:$(cat port)/data/plugins_listing" >plugins_listing
+grep -F '"example":' plugins_listing
+grep -F '"/data/plugin/example/index.js"' plugins_listing
+curl -fs "http://localhost:$(cat port)/data/plugin/example/index.js" >index.js
+diff -u example-plugin/tensorboard_plugin_example/static/index.js index.js
+>>>>>>> afecb68b556b96e8262966208e39bb69ad9bf964
 kill $!

@@ -30,7 +30,11 @@ setuptools.setup(
     },
     entry_points={
         "tensorboard_plugins": [
+<<<<<<< HEAD
             "example = tensorboard_plugin_example.plugin:ExamplePlugin",
+=======
+            "example = tensorboard_plugin_example:ExamplePlugin",
+>>>>>>> afecb68b556b96e8262966208e39bb69ad9bf964
         ],
     },
 )
