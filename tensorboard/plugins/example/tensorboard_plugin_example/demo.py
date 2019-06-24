@@ -38,12 +38,7 @@ def main(unused_argv):
         description="Sign your name!",
     )
     summary_v2.greeting("guestbook", "Bob", step=1)  # no need for `description`
-    raw_pb = summary_v2.greeting_pb("guestbook", "Cheryl")
-    tf.summary.experimental.write_raw_pb(
-        raw_pb.SerializeToString(),
-        step=2,
-    )
-
+    summary_v2.greeting("guestbook", "Cheryl", step=2)
     summary_v2.greeting("more_names", "David", step=4)
 
 

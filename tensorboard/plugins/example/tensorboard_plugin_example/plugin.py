@@ -52,7 +52,17 @@ class ExamplePlugin(base_plugin.TBPlugin):
         es_module_path="/index.js",
     )
 
-  def _tags_impl(self):
+  @wrappers.Request.application
+  def _serve_js(self, request):
+    del request  # unused
+    filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
+    with open(filepath) as infile:
+      contents = infile.read()
+    return werkzeug.Response(contents, content_type="application/javascript")
+
+  @wrappers.Request.application
+  def _serve_tags(self, request):
+    del request  # unused
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     result = {run: {} for run in self._multiplexer.Runs()}
     for (run, tag_to_content) in six.iteritems(mapping):
@@ -61,32 +71,17 @@ class ExamplePlugin(base_plugin.TBPlugin):
         result[run][tag] = {
             u"description": summary_metadata.summary_description,
         }
-    return result
-
-  def _greetings_impl(self, run, tag):
-    return [
-        np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
-            .decode("utf-8")
-        for event in self._multiplexer.Tensors(run, tag)
-    ]
-
-  @wrappers.Request.application
-  def _serve_tags(self, request):
-    del request  # unused
-    contents = json.dumps(self._tags_impl(), sort_keys=True)
+    contents = json.dumps(result, sort_keys=True)
     return werkzeug.Response(contents, content_type="application/json")
 
   @wrappers.Request.application
   def _serve_greetings(self, request):
     run = request.args["run"]
     tag = request.args["tag"]
-    contents = json.dumps(self._greetings_impl(run, tag), sort_keys=True)
+    data = [
+        np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
+            .decode("utf-8")
+        for event in self._multiplexer.Tensors(run, tag)
+    ]
+    contents = json.dumps(data, sort_keys=True)
     return werkzeug.Response(contents, content_type="application/json")
-
-  @wrappers.Request.application
-  def _serve_js(self, request):
-    del request  # unused
-    filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
-    with open(filepath) as infile:
-      contents = infile.read()
-    return werkzeug.Response(contents, content_type="application/javascript")

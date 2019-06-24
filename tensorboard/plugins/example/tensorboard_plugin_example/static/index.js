@@ -13,7 +13,6 @@
 // limitations under the License.
 // ==============================================================================
 
-<<<<<<< HEAD
 export async function render() {
   const msg = createElement("p", "Fetching data…");
   document.body.appendChild(msg);
@@ -95,10 +94,4 @@ function createElement(tag, children) {
     }
   }
   return result;
-=======
-export function render() {
-  const msg = document.createElement("span");
-  msg.innerText = "Hello TensorBoard!";
-  document.body.appendChild(msg);
->>>>>>> afecb68b556b96e8262966208e39bb69ad9bf964
 }
