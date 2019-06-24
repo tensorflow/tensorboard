@@ -141,9 +141,7 @@ limitations under the License.
       if (isNaN(val)) {
         delete newRunToStepIndex[run];
       } else {
-        Object.assign(newRunToStepIndex, {
-          [run]: event.target.immediateValue,
-        });
+        newRunToStepIndex[run] = event.target.immediateValue;
       }
       this._runToStepIndex = newRunToStepIndex;
     },
@@ -158,9 +156,7 @@ limitations under the License.
         if (!_.isNumber(newRunToStepIndex[run])) {
           // This run had previously lacked a slider. Initially set the slider
           // for the run to point to the last step.
-          Object.assign(newRunToStepIndex, {
-            [run]: entries.length - 1,
-          });
+          newRunToStepIndex[run] = entries.length - 1;
         }
       });
       this._runToStepIndex = newRunToStepIndex;
