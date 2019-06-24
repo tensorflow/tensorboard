@@ -18,15 +18,35 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from collections import namedtuple
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
 
+MeshTensor = namedtuple('MeshTensor', 'data content_type data_type')
 PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
 # `MeshPluginData` proto.
-_PROTO_VERSION = 1
+_PROTO_VERSION = 0
+
+
+def get_components_bitmask(tensors):
+  """Creates bitmask for all existing components of the summary.
+
+  Args:
+    tensors: list of MeshTensor tuples, representing all components
+      related to the summary.
+  Returns: bitmask based on passed tensors.
+  """
+  components = 0
+  for tensor in tensors:
+    if tensor.data is None:
+      continue
+    if tensor.content_type == plugin_data_pb2.MeshPluginData.ContentType.UNDEFINED:
+      raise ValueError('Cannot include UNDEFINED content type in mask.')
+    components = components | (1 << tensor.content_type)
+  return components
 
 
 def get_current_version():
@@ -98,8 +118,16 @@ def parse_plugin_metadata(content):
   if not isinstance(content, bytes):
     raise TypeError('Content type must be bytes.')
   result = plugin_data_pb2.MeshPluginData.FromString(content)
-  if result.version == get_current_version():
-    return result
-  raise ValueError('Unknown metadata version: %s. The latest version known to '
-                   'this build of TensorBoard is %s; perhaps a newer build is '
-                   'available?' % (result.version, get_current_version()))
+  if not 0 <= result.version <= get_current_version():
+    raise ValueError('Unknown metadata version: %s. The latest version known to '
+                     'this build of TensorBoard is %s; perhaps a newer build is '
+                     'available?' % (result.version, get_current_version()))
+  # Add components field to older version of the proto.
+  if result.components == 0:
+    result.components = get_components_bitmask([
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.VERTEX),
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.FACE),
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.COLOR),
+    ])
+  result.version = get_current_version()
+  return result

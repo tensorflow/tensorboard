@@ -20,12 +20,10 @@ from __future__ import print_function
 import json
 import tensorflow as tf
 
-from collections import namedtuple
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 
 PLUGIN_NAME = 'mesh'
-MeshTensor = namedtuple('MeshTensor', 'data content_type data_type')
 
 
 def _get_tensor_summary(
@@ -86,22 +84,6 @@ def _get_json_config(config_dict):
   return json_config
 
 
-def _get_components_bitmask(tensors):
-  """Creates bitmask for all existing components of the summary.
-
-  Args:
-    tensors: list of MeshTensor tuples, representing all components
-      related to the summary.
-  Returns: bitmask based on passed tensors.
-  """
-  components = 0
-  for tensor in tensors:
-    if tensor.data is None:
-      continue
-    components = components | (1 << tensor.content_type)
-  return components
-
-
 def op(name, vertices, faces=None, colors=None, display_name=None,
        description=None, collections=None, config_dict=None):
   """Creates a TensorFlow summary op for mesh rendering.
@@ -133,11 +115,13 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
   # rendering.
   summaries = []
   tensors = [
-      MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
-      MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
-      MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
+      metadata.MeshTensor(
+        vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+      metadata.MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
+      metadata.MeshTensor(
+        colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
-  components = _get_components_bitmask(tensors)
+  components = metadata.get_components_bitmask(tensors)
 
   for tensor in tensors:
     if tensor.data is None:
