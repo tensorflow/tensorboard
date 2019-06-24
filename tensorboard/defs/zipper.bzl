@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rule for zipping Webfiles. """
+"""Rule for zipping Webfiles."""
 
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
 
