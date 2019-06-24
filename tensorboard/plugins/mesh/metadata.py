@@ -43,7 +43,7 @@ def get_components_bitmask(tensors):
   for tensor in tensors:
     if tensor.data is None:
       continue
-    if tensor.content_type == plugin_data_pb2.MeshPluginData.ContentType.UNDEFINED:
+    if tensor.content_type == plugin_data_pb2.MeshPluginData.UNDEFINED:
       raise ValueError('Cannot include UNDEFINED content type in mask.')
     components = components | (1 << tensor.content_type)
   return components
@@ -125,9 +125,10 @@ def parse_plugin_metadata(content):
   # Add components field to older version of the proto.
   if result.components == 0:
     result.components = get_components_bitmask([
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.VERTEX),
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.FACE),
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.ContentType.COLOR),
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.VERTEX, None),
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.FACE, None),
+        MeshTensor({}, plugin_data_pb2.MeshPluginData.COLOR, None),
     ])
-  result.version = get_current_version()
+    # Upgrade version to the most current one, since data is compliant.
+    result.version = get_current_version()
   return result

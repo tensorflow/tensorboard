@@ -26,6 +26,13 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
+class FakeResult(object):
+  """Class to represent parsed metadata."""
+  def __init__(self, version, components):
+    self.version = version
+    self.components = components
+
+
 @test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
@@ -75,9 +82,10 @@ class MetadataTest(tf.test.TestCase):
 
   def test_metadata_version(self):
     """Tests that only the latest version of metadata is supported."""
-    self._create_metadata()
-    # Change the version.
     with patch.object(metadata, 'get_current_version', return_value=100):
+      self._create_metadata()
+    # Change the version.
+    with patch.object(metadata, 'get_current_version', return_value=1):
       # Try to parse metadata from a prior version.
       with self.assertRaises(ValueError):
         metadata.parse_plugin_metadata(
@@ -92,6 +100,16 @@ class MetadataTest(tf.test.TestCase):
     """Tests that metadata content must be passed as a serialized string."""
     with six.assertRaisesRegex(self, TypeError, r'Content type must be bytes.'):
       metadata.parse_plugin_metadata(123)
+
+  def test_default_components(self):
+    """Tests that defult components are added when necessary."""
+    self._create_metadata()
+    result = FakeResult(metadata.get_current_version(), 0)
+    with patch.object(
+        plugin_data_pb2.MeshPluginData, 'FromString',
+        return_value=result):
+      metadata.parse_plugin_metadata(self.summary_metadata.plugin_data.content)
+      self.assertGreater(result.components, 0)
 
 
 if __name__ == '__main__':

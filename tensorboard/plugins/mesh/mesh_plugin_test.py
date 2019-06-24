@@ -220,9 +220,7 @@ class MeshPluginTest(tf.test.TestCase):
       "PluginRunToTagToContent",
       return_value={"bar": {"foo": "".encode("utf-8")}},
   )
-  @mock.patch.object(metadata, "get_current_version", return_value=0)
-  def testMetadataComputedOnce(
-    self, run_to_tag_mock, get_current_version_mock):
+  def testMetadataComputedOnce(self, run_to_tag_mock):
     """Tests that metadata mapping computed once."""
     self.plugin.prepare_metadata()
     self.plugin.prepare_metadata()

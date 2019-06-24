@@ -27,7 +27,7 @@ import tensorflow as tf
 from tensorboard.plugins.mesh import summary as mesh_summary
 from tensorboard.plugins.mesh import demo_utils
 
-flags.DEFINE_string('logdir', '/tmp/mesh_demo',
+flags.DEFINE_string('logdir', '/tmp/mesh_demo2',
                     'Directory to write event logs to.')
 flags.DEFINE_string('mesh_path', None, 'Path to PLY file to visualize.')
 

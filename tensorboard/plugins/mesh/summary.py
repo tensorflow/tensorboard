@@ -167,11 +167,11 @@ def pb(name,
 
   summaries = []
   tensors = [
-      MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
-      MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
-      MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
+      metadata.MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+      metadata.MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
+      metadata.MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
-  components = _get_components_bitmask(tensors)
+  components = metadata.get_components_bitmask(tensors)
   for tensor in tensors:
     if tensor.data is None:
       continue
