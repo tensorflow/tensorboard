@@ -14,5 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
+<!--
+  mesh-viewer.js has dependency on threejs. Because TensorFlow graphics do not
+  have an entry html, we have to define library dependency here.
+-->
+<link rel="import" href="threejs.html">
+
 <script src="array-buffer-data-provider.js"></script>
 <script src="mesh-viewer.js"></script>
