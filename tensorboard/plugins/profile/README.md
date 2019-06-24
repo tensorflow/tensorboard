@@ -63,7 +63,7 @@ The Timeline pane contains the following elements:
   executed or the duration of meta-events, such as training steps.
   1. A vertical tab bar. This does not have a useful purpose for TPUs. It exists
   because Trace Viewer is a general purpose tool provided by Chrome that is used
-  for a variety of performance analysis tasks. 
+  for a variety of performance analysis tasks.
 
 ## Op Profile
 

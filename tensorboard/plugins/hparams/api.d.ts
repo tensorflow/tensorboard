@@ -17,21 +17,21 @@ limitations under the License.
  * Contains TypeScript type definitions for the JSON-representation of the
  * protocol buffers defined in api.proto
  *
- * TODO(erez): Add the rest of the definitions once these are needed. 
+ * TODO(erez): Add the rest of the definitions once these are needed.
  */
 declare namespace tf.hparams {
   export interface MetricName {
     group: string,
     tag: string,
   }
-  
+
   export interface MetricValue {
     name: MetricName,
     value: number,
     trainingStep: number,
     wallTimeSecs: number,
   }
-  
+
   export interface SessionGroup {
     name: string,
     hparams: {
