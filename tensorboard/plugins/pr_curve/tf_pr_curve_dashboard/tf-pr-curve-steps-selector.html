@@ -136,8 +136,8 @@ limitations under the License.
       const run = event.target.dataset.run;
       const val = event.target.immediateValue;
       const newRunToStepIndex = Object.assign({}, this._runToStepIndex);
-      // slider emits changed event before it goes away with a immediateValue
-      // of NaN.
+      // Slider emits a changed event before it goes away with an
+      // immediateValue of NaN.
       if (isNaN(val)) {
         delete newRunToStepIndex[run];
       } else {
