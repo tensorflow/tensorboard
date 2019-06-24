@@ -69,7 +69,8 @@ limitations under the License.
 }
     
 .metadata-value {
-  overflow-wrap: break-word;
+  word-wrap: anywhere; /* Firefox only -- word-wrap DNE in Chrome. anywhere DNE in Chrome */
+  word-break: break-word; /* break-word DNE in Firefox */
 }
 </style>
 
