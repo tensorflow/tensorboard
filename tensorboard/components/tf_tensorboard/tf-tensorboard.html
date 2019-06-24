@@ -118,12 +118,6 @@ limitations under the License.
             </template>
           </template>
           <div class="global-actions">
-              <paper-icon-button
-              id="rescale-all-button"
-              icon="settings-overscan"
-              on-tap="rescale_all"
-              title="Rescale all plots"
-            ></paper-icon-button>
             <paper-icon-button
               id="reload-button"
               class$="[[_getDataRefreshingClass(_refreshing)]]"
@@ -1007,11 +1001,6 @@ limitations under the License.
           if (dashboard && dashboard.reload) dashboard.reload();
         });
         this._lastReloadTime = new Date().toString();
-      },
-
-      rescale_all() {
-        let rescale_buttons = document.querySelectorAll('paper-icon-button[icon="settings-overscan"]');
-        rescale_buttons.forEach((button) => { button.click() });
       },
 
       _reloadData() {
