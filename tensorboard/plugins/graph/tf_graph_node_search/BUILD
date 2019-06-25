@@ -16,6 +16,7 @@ tf_web_library(
         "@org_polymer_paper_input",
         "@org_polymer_paper_styles",
     ],
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
