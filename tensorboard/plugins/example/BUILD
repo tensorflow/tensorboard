@@ -19,7 +19,9 @@ sh_test(
     # and we want to make sure that those don't interfere with the test.
     data = [
         "setup.py",
-        "tensorboard_plugin_example/__init__.py",
         "//tensorboard/pip_package",
-    ] + glob(["tensorboard_plugin_example/static/**"]),
+    ] + glob([
+        "tensorboard_plugin_example/*.py",
+        "tensorboard_plugin_example/static/**",
+    ]),
 )

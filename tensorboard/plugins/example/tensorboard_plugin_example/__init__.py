@@ -12,49 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A sample plugin to demonstrate dynamic loading."""
+"""Entry point for the example plugin package.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+Public submodules:
+  summary: Summary-writing ops.
 
-import os
-
-from tensorboard.plugins import base_plugin
-import werkzeug
-from werkzeug import wrappers
-
-
-class ExamplePlugin(base_plugin.TBPlugin):
-  plugin_name = 'example'
-
-  def __init__(self, context):
-    # A real plugin would likely save the `context.multiplexer` and/or
-    # `context.db_connection_provider` attributes for later use, but we
-    # don't actually need any of that.
-    pass
-
-  def is_active(self):
-    return True
-
-  def get_plugin_apps(self):
-    return {
-        "/index.js": self._serve_js,
-    }
-
-  def frontend_metadata(self):
-    return super(ExamplePlugin, self).frontend_metadata()._replace(
-        es_module_path="/index.js",
-    )
-
-  @wrappers.Request.application
-  def _serve_js(self, request):
-    del request  # unused
-    filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
-    with open(filepath) as infile:
-      contents = infile.read()
-    return werkzeug.Response(
-        contents,
-        status=200,
-        content_type="application/javascript",
-    )
+Private submodules:
+  metadata: Global constants and the like.
+  plugin: TensorBoard backend plugin.
+"""
