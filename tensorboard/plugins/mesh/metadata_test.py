@@ -26,7 +26,6 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
-<<<<<<< HEAD
 class FakeResult(object):
   """Class to represent parsed metadata."""
   def __init__(self, version, components):
@@ -34,8 +33,6 @@ class FakeResult(object):
     self.components = components
 
 
-=======
->>>>>>> master
 @test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
