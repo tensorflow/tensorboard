@@ -98,6 +98,14 @@ limitations under the License.
           </tf-option-selector>
         </div>
         <div class="sidebar-section">
+          <h3 class="title">Fit Domains</h3>
+          <paper-button
+            id="reset-domains-button"
+            on-tap="resetAllDomains"
+            title="Fit domains for all scalar plots"
+          >Fit All Domains</paper-button>
+        </div>
+        <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
@@ -174,6 +182,12 @@ limitations under the License.
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
+      }
+      #reset-domains-button {
+        font-size: 13px;
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+        padding-bottom: 0.7em;
       }
       .line-item {
         display: block;
@@ -340,6 +354,11 @@ limitations under the License.
         this.querySelectorAll('tf-scalar-card').forEach(chart => {
           chart.reload();
         });
+      },
+
+      resetAllDomains() {
+        const charts = this.querySelectorAll('tf-line-chart-data-loader');
+        charts.forEach((chart) => {chart.resetDomain()});
       },
 
       _updateCategories(
