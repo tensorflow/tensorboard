@@ -319,6 +319,40 @@ class ManagerEndToEndTest(tf.test.TestCase):
     self.assertEqual(start_result, manager.StartTimedOut(pid=expected_pid))
     self.assertEqual(manager.get_all(), [])
 
+  def test_tensorboard_binary_environment_variable(self):
+    if os.name == "nt":
+      # TODO(@wchargin): This could in principle work on Windows.
+      self.skipTest("Requires a POSIX shell for the stub script.")
+    tempdir = tempfile.mkdtemp()
+    filepath = os.path.join(tempdir, "tensorbad")
+    program = textwrap.dedent(
+        r"""
+        #!/bin/sh
+        printf >&2 'tensorbad: fatal: something bad happened\n'
+        printf 'tensorbad: also some stdout\n'
+        exit 77
+        """.lstrip()
+    )
+    with open(filepath, "w") as outfile:
+      outfile.write(program)
+    os.chmod(filepath, 0o777)
+    environ = {"TENSORBOARD_BINARY": filepath}
+    environ_patcher = mock.patch.dict(os.environ, environ)
+    environ_patcher.start()
+    self.addCleanup(environ_patcher.stop)
+
+    start_result = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(start_result, manager.StartFailed)
+    self.assertEqual(
+        start_result,
+        manager.StartFailed(
+            exit_code=77,
+            stderr="tensorbad: fatal: something bad happened\n",
+            stdout="tensorbad: also some stdout\n",
+        ),
+    )
+    self.assertEqual(manager.get_all(), [])
+
 
 if __name__ == "__main__":
   tf.test.main()
