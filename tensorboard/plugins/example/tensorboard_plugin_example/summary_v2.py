@@ -53,27 +53,15 @@ def greeting(name, guest, step=None, description=None):
         tag=tag,
         tensor=tf.strings.join(["Hello, ", guest, "!"]),
         step=step,
-        metadata=metadata.create_summary_metadata(description),
+        metadata=_create_summary_metadata(description),
     )
 
 
-def greeting_pb(tag, guest, description=None):
-  """Create a "greeting" summary_pb2.Summary protobuf.
-
-  Arguments:
-    tag: String tag for the summary.
-    guest: A `str`.
-    description: Optional long-form description for this summary, as a
-      constant `str`. Markdown is supported. Defaults to empty.
-
-  Returns:
-    A `summary_pb2.Summary` protobuf object.
-  """
-  tensor_proto = tensor_util.make_tensor_proto("Hello, %s!" % (guest,))
-  result = summary_pb2.Summary()
-  result.value.add(
-      tag=tag,
-      metadata=metadata.create_summary_metadata(description),
-      tensor=tensor_proto,
+def _create_summary_metadata(description):
+  return summary_pb2.SummaryMetadata(
+      summary_description=description,
+      plugin_data=summary_pb2.SummaryMetadata.PluginData(
+          plugin_name=metadata.PLUGIN_NAME,
+          content=b"",  # no need for summary-specific metadata
+      ),
   )
-  return result
