@@ -69,10 +69,11 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pocoo_werkzeug",
         urls = [
-            "https://files.pythonhosted.org/packages/fe/7f/6d70f765ce5484e07576313897793cb49333dd34e462488ee818d17244af/Werkzeug-0.11.15.tar.gz",
+            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/59/2d/b24bab64b409e22f026fee6705b035cb0698399a7b69449c49442b30af47/Werkzeug-0.15.4.tar.gz",
+            "https://files.pythonhosted.org/packages/59/2d/b24bab64b409e22f026fee6705b035cb0698399a7b69449c49442b30af47/Werkzeug-0.15.4.tar.gz",
         ],
-        strip_prefix = "Werkzeug-0.11.15",
-        sha256 = "455d7798ac263266dbd38d4841f7534dd35ca9c3da4a8df303f8488f38f3bcc0",
+        strip_prefix = "Werkzeug-0.15.4",
+        sha256 = "a0b915f0815982fb2a09161cb8f31708052d0951c3ba433ccc5e1aa276507ca6",
         build_file = str(Label("//third_party:werkzeug.BUILD")),
     )
 
