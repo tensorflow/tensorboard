@@ -1017,6 +1017,10 @@ limitations under the License.
         margin-left: 30px;
       }
 
+      .scroll-x {
+        overflow-x: auto;
+      }
+
       .perf-table-clickable {
         cursor: pointer;
       }
@@ -2081,7 +2085,7 @@ limitations under the License.
                           </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
-                          <div class="perf-table-entry-expanded flex-row-reverse">
+                          <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                             <div>
                               <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                                 <div class="conf-matrix-holder">
@@ -2124,7 +2128,7 @@ limitations under the License.
                             </div>
                           </div>
                         </div>
-                        <div class="perf-table-entry-expanded flex-row-reverse">
+                        <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                           <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="conf-matrix-holder">
                               <div class="conf-text">Confusion matrix</div>
@@ -5032,10 +5036,39 @@ limitations under the License.
        */
       addChart: function(chartType, featureName, data){
         let chart;
+        let dataToChart = data;
+
+        // If multiclass and there are more inferred classes than the set
+        // number of classes to display, then filter the classes to display
+        // in the chart down to the top scoring classes.
+        if (this.isMultiClass_(this.modelType, this.multiClass)) {
+          dataToChart = [];
+          for (let modelIdx = 0; modelIdx < data.length; modelIdx++) {
+            let modelDataToChart = {};
+            if (Object.keys(data[modelIdx]).length >
+                parseInt(this.maxInferenceEntriesPerRun)) {
+              const exampleId = this.selected &&
+                this.selected.length > 0 ? this.selected[0] : 0;
+              // Get the class labels of the top scoring classes from the most
+              // recent inference.
+              const labels = this.examplesAndInferences[exampleId].inferences[
+                this.examplesAndInferences[exampleId].inferences.length - 1][
+                  modelIdx].slice(0, this.maxInferenceEntriesPerRun);
+              for (let labelIdx = 0; labelIdx < labels.length; labelIdx++) {
+                const label = labels[labelIdx].label;
+                modelDataToChart[label] = data[modelIdx][label];
+              }
+            } else {
+              modelDataToChart = data[modelIdx];
+            }
+            dataToChart.push(modelDataToChart);
+          }
+        }
+
         if (chartType == 'numeric'){
-          chart = this.makeLineChart(featureName, data);
+          chart = this.makeLineChart(featureName, dataToChart);
         } else if (chartType == 'categorical'){
-          chart = this.makeBarChart(featureName, data);
+          chart = this.makeBarChart(featureName, dataToChart);
         } else {
           console.error('Unknown chartType: ' + chartType);
         }
