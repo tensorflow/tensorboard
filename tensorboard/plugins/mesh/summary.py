@@ -121,15 +121,14 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
       metadata.MeshTensor(
         colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
+  tensors = [tensor for tensor in tensors if tensor.data is not None]
   components = metadata.get_components_bitmask(tensors)
 
   for tensor in tensors:
-    if tensor.data is None:
-      continue
     summaries.append(
-        _get_tensor_summary(name, display_name, description, tensor.data,
-                            tensor.content_type, components, json_config,
-                            collections))
+      _get_tensor_summary(name, display_name, description, tensor.data,
+                          tensor.content_type, components, json_config,
+                          collections))
 
   all_summaries = tf.summary.merge(
       summaries, collections=collections, name=name)
@@ -173,10 +172,9 @@ def pb(name,
       metadata.MeshTensor(
         colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
+  tensors = [tensor for tensor in tensors if tensor.data is not None]
   components = metadata.get_components_bitmask(tensors)
   for tensor in tensors:
-    if tensor.data is None:
-      continue
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
     tensor_proto = tf.compat.v1.make_tensor_proto(

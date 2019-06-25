@@ -18,12 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections import namedtuple
+import collections
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
 
-MeshTensor = namedtuple('MeshTensor', 'data content_type data_type')
+MeshTensor = collections.namedtuple(
+  'MeshTensor', ('data', 'content_type', 'data_type'))
 PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
@@ -41,8 +42,6 @@ def get_components_bitmask(tensors):
   """
   components = 0
   for tensor in tensors:
-    if tensor.data is None:
-      continue
     if tensor.content_type == plugin_data_pb2.MeshPluginData.UNDEFINED:
       raise ValueError('Cannot include UNDEFINED content type in mask.')
     components = components | (1 << tensor.content_type)
@@ -126,9 +125,9 @@ def parse_plugin_metadata(content):
   # Add components field to older version of the proto.
   if result.components == 0:
     result.components = get_components_bitmask([
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.VERTEX, None),
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.FACE, None),
-        MeshTensor({}, plugin_data_pb2.MeshPluginData.COLOR, None),
+        MeshTensor(None, plugin_data_pb2.MeshPluginData.VERTEX, None),
+        MeshTensor(None, plugin_data_pb2.MeshPluginData.FACE, None),
+        MeshTensor(None, plugin_data_pb2.MeshPluginData.COLOR, None),
     ])
     # Upgrade version to the most current one, since data is compliant.
     result.version = get_current_version()

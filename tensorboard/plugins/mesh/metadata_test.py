@@ -26,13 +26,6 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
-class FakeResult(object):
-  """Class to represent parsed metadata."""
-  def __init__(self, version, components):
-    self.version = version
-    self.components = components
-
-
 @test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
@@ -106,12 +99,12 @@ class MetadataTest(tf.test.TestCase):
   def test_default_components(self):
     """Tests that defult components are added when necessary."""
     self._create_metadata()
-    result = FakeResult(metadata.get_current_version(), 0)
-    with patch.object(
-        plugin_data_pb2.MeshPluginData, 'FromString',
-        return_value=result):
-      metadata.parse_plugin_metadata(self.summary_metadata.plugin_data.content)
-      self.assertGreater(result.components, 0)
+    stored_metadata = plugin_data_pb2.MeshPluginData(
+      version=metadata.get_current_version(),
+      components=0)
+    parsed_metadata = metadata.parse_plugin_metadata(
+      stored_metadata.SerializeToString())
+    self.assertGreater(parsed_metadata.components, 0)
 
 
 if __name__ == '__main__':
