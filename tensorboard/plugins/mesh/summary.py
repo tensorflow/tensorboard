@@ -167,9 +167,11 @@ def pb(name,
 
   summaries = []
   tensors = [
-      metadata.MeshTensor(vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+      metadata.MeshTensor(
+        vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
       metadata.MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
-      metadata.MeshTensor(colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
+      metadata.MeshTensor(
+        colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
   components = metadata.get_components_bitmask(tensors)
   for tensor in tensors:
@@ -177,7 +179,8 @@ def pb(name,
       continue
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
-    tensor_proto = tf.compat.v1.make_tensor_proto(tensor.data, dtype=tensor.data_type)
+    tensor_proto = tf.compat.v1.make_tensor_proto(
+      tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
         display_name,
@@ -193,5 +196,6 @@ def pb(name,
   for tag, summary_metadata, tensor_proto in summaries:
     tf_summary_metadata = tf.SummaryMetadata.FromString(
         summary_metadata.SerializeToString())
-    summary.value.add(tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
+    summary.value.add(
+      tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
   return summary

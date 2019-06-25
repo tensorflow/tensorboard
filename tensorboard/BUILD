@@ -24,6 +24,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":default",
+        ":dynamic_plugins",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
@@ -187,10 +188,16 @@ py_library(
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
-        "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
+    ],
+)
+
+py_library(
+    name = "dynamic_plugins",
+    deps = [
+        "//tensorboard/plugins/projector:projector_plugin",
     ],
 )
 

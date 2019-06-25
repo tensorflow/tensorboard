@@ -29,6 +29,8 @@ import io
 import os
 import shutil
 import six
+import sys
+import tempfile
 import uuid
 try:
     import botocore.exceptions
@@ -36,6 +38,11 @@ try:
     S3_ENABLED = True
 except ImportError:
     S3_ENABLED = False
+
+if sys.version_info < (3, 0):
+    # In Python 2 FileExistsError is not defined and the
+    # error manifests it as OSError.
+    FileExistsError = OSError
 
 from tensorboard.compat.tensorflow_stub import compat, errors
 
@@ -101,13 +108,40 @@ class LocalFileSystem(object):
             Subset of the contents of the file as a string or bytes.
         """
         mode = "rb" if binary_mode else "r"
-        with io.open(filename, mode) as f:
+        encoding = None if binary_mode else "utf8"
+        with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
             if size is not None:
                 return f.read(size)
             else:
                 return f.read()
+
+    def write(self, filename, file_content, binary_mode=False):
+        """Writes string file contents to a file, overwriting any
+        existing contents.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        self._write(filename, file_content, "wb" if binary_mode else "w")
+
+    def append(self, filename, file_content, binary_mode=False):
+        """Append string file contents to a file.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents to append
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        self._write(filename, file_content, "ab" if binary_mode else "a")
+
+    def _write(self, filename, file_content, mode):
+        encoding = None if "b" in mode else "utf8"
+        with io.open(filename, mode, encoding=encoding) as f:
+            f.write(file_content)
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
@@ -139,6 +173,13 @@ class LocalFileSystem(object):
         entries = os.listdir(compat.as_str_any(dirname))
         entries = [compat.as_str_any(item) for item in entries]
         return entries
+
+    def makedirs(self, path):
+        """Creates a directory and all parent/intermediate directories."""
+        try:
+            os.makedirs(path)
+        except FileExistsError:
+            raise errors.AlreadyExistsError(None, None, "Directory already exists")
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -203,7 +244,9 @@ class S3FileSystem(object):
             if offset is None:
                 offset = 0
             endpoint = '' if size is None else (offset + size)
-            args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
+            if offset != 0 or endpoint != '':
+                # Asked for a range, so modify the request
+                args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
         try:
             stream = s3.Object(bucket, path).get(**args)['Body'].read()
         except botocore.exceptions.ClientError as exc:
@@ -227,6 +270,24 @@ class S3FileSystem(object):
             return bytes(stream)
         else:
             return stream.decode('utf-8')
+
+    def write(self, filename, file_content, binary_mode=False):
+        """Writes string file contents to a file.
+
+        Args:
+            filename: string, a path
+            file_content: string, the contents
+            binary_mode: bool, write as binary if True, otherwise text
+        """
+        client = boto3.client("s3")
+        bucket, path = self.bucket_and_path(filename)
+        # Always convert to bytes for writing
+        if binary_mode:
+            if not isinstance(file_content, six.binary_type):
+                raise TypeError('File content type must be bytes')
+        else:
+            file_content = compat.as_bytes(file_content)
+        client.put_object(Body=file_content, Bucket=bucket, Key=path)
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
@@ -282,6 +343,16 @@ class S3FileSystem(object):
                     keys.append(key)
         return keys
 
+    def makedirs(self, dirname):
+        """Creates a directory and all parent/intermediate directories."""
+        if self.exists(dirname):
+            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+        client = boto3.client("s3")
+        bucket, path = self.bucket_and_path(dirname)
+        if not path.endswith("/"):
+            path += "/"  # This will make sure we don't override a file
+        client.put_object(Body='', Bucket=bucket, Key=path)
+
     def stat(self, filename):
         """Returns file statistics for a given path."""
         # NOTE: Size of the file is given by ContentLength from S3,
@@ -307,20 +378,27 @@ class GFile(object):
     # Only methods needed for TensorBoard are implemented.
 
     def __init__(self, filename, mode):
-        if mode not in ('r', 'rb', 'br'):
+        if mode not in ('r', 'rb', 'br', 'w', 'wb', 'bw'):
             raise NotImplementedError(
                 "mode {} not supported by compat GFile".format(mode))
         self.filename = compat.as_bytes(filename)
+        self.fs = get_filesystem(self.filename)
+        self.fs_supports_append = hasattr(self.fs, 'append')
         self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
-        self.binary_mode = (mode != 'r')
+        self.write_temp = None
+        self.write_started = False
+        self.binary_mode = 'b' in mode
+        self.write_mode = 'w' in mode
+        self.closed = False
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
+        self.close()
         self.buff = None
         self.buff_offset = 0
         self.offset = 0
@@ -336,6 +414,15 @@ class GFile(object):
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
     def read(self, n=None):
+        """Reads contents of file to a string.
+
+        Args:
+            n: int, number of bytes or characters to read, otherwise
+                read all the contents of the file
+
+        Returns:
+            Subset of the contents of the file as a string or bytes.
+        """
         result = None
         if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
@@ -350,10 +437,9 @@ class GFile(object):
                 result = self._read_buffer_to_offset(len(self.buff))
 
         # read from filesystem
-        fs = get_filesystem(self.filename)
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        self.buff = fs.read(self.filename, self.binary_mode,
-                            read_size, self.offset)
+        self.buff = self.fs.read(self.filename, self.binary_mode,
+                                 read_size, self.offset)
         self.buff_offset = 0
 
         # add from filesystem
@@ -365,6 +451,33 @@ class GFile(object):
         result = result + chunk if result else chunk
 
         return result
+
+    def write(self, file_content):
+        """Writes string file contents to file, clearing contents of the
+        file on first write and then appending on subsequent calls.
+
+        Args:
+            file_content: string, the contents
+        """
+        if not self.write_mode:
+            raise errors.OpError(None, None, "File not opened in write mode")
+        if self.closed:
+            raise errors.OpError(None, None, "File already closed")
+
+        if self.fs_supports_append:
+            if not self.write_started:
+                # write the first chunk to truncate file if it already exists
+                self.fs.write(self.filename, file_content, self.binary_mode)
+                self.write_started = True
+            else:
+                # append the later chunks
+                self.fs.append(self.filename, file_content, self.binary_mode)
+        else:
+            # add to temp file, but wait for flush to write to final filesystem
+            if self.write_temp is None:
+                mode = "w+b" if self.binary_mode else "w+"
+                self.write_temp = tempfile.TemporaryFile(mode)
+            self.write_temp.write(file_content)
 
     def __next__(self):
         line = None
@@ -395,8 +508,28 @@ class GFile(object):
     def next(self):
         return self.__next__()
 
+    def flush(self):
+        if self.closed:
+            raise errors.OpError(None, None, "File already closed")
+
+        if not self.fs_supports_append:
+            if self.write_temp is not None:
+                # read temp file from the beginning
+                self.write_temp.flush()
+                self.write_temp.seek(0)
+                chunk = self.write_temp.read()
+                if chunk is not None:
+                    # write full contents and keep in temp file
+                    self.fs.write(self.filename, chunk, self.binary_mode)
+                    self.write_temp.seek(len(chunk))
+
     def close(self):
-        pass
+        self.flush()
+        if  self.write_temp is not None:
+            self.write_temp.close()
+            self.write_temp = None
+            self.write_started = False
+        self.closed = True
 
 
 def exists(filename):
@@ -458,6 +591,21 @@ def listdir(dirname):
       errors.NotFoundError if directory doesn't exist
     """
     return get_filesystem(dirname).listdir(dirname)
+
+
+def makedirs(path):
+    """Creates a directory and all parent/intermediate directories.
+
+    It succeeds if path already exists and is writable.
+
+    Args:
+      path: string, name of the directory to be created
+
+    Raises:
+      errors.AlreadyExistsError: If leaf directory already exists or
+        cannot be created.
+    """
+    return get_filesystem(path).makedirs(path)
 
 
 def walk(top, topdown=True, onerror=None):

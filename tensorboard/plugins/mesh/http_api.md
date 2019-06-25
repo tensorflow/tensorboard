@@ -83,8 +83,8 @@ THREE.js options. Invalid keys will be ignored by the library.
 ## `/data/plugin/mesh/data?tag=mesh_color_tensor&run=train_run&content_type=VERTEX&sample=0&timestamp=1560968332.3`
 
 Retrieves binary data of particular type representing some part of the mesh,
-for example vertices with 3D coordinates. The data must be from particular point in
-time (milliseconds in UTC).
+for example vertices with 3D coordinates. The data must be from particular point
+in time (milliseconds in UTC).
 
 Returns stream of binary data, which will represent either mesh vertices,
 faces or RGB colors. Response type of this request is set to `arraybuffer`

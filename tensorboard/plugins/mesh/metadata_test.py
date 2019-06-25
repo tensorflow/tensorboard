@@ -26,6 +26,7 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
+<<<<<<< HEAD
 class FakeResult(object):
   """Class to represent parsed metadata."""
   def __init__(self, version, components):
@@ -33,6 +34,8 @@ class FakeResult(object):
     self.components = components
 
 
+=======
+>>>>>>> master
 @test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
@@ -57,7 +60,8 @@ class MetadataTest(tf.test.TestCase):
     """Tests proper creation of instance name based on display_name."""
     display_name = 'my_mesh'
     instance_name = metadata.get_instance_name(
-        display_name, plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'))
+        display_name,
+        plugin_data_pb2.MeshPluginData.ContentType.Value('VERTEX'))
     self.assertEqual('%s_VERTEX' % display_name, instance_name)
 
   def test_create_summary_metadata(self):
@@ -93,7 +97,8 @@ class MetadataTest(tf.test.TestCase):
 
   def test_tensor_shape(self):
     """Tests that target tensor should be of particular shape."""
-    with six.assertRaisesRegex(self, ValueError, r'Tensor shape should be of shape BxNx3.*'):
+    with six.assertRaisesRegex(
+        self, ValueError, r'Tensor shape should be of shape BxNx3.*'):
       self._create_metadata([1])
 
   def test_metadata_format(self):
@@ -114,4 +119,3 @@ class MetadataTest(tf.test.TestCase):
 
 if __name__ == '__main__':
   tf.test.main()
-

@@ -185,10 +185,10 @@ export class Projector extends ProjectorPolymer implements
   metadataEdit(metadataColumn: string, metadataLabel: string) {
     this.selectedPointIndices.forEach(i =>
         this.dataSet.points[i].metadata[metadataColumn] = metadataLabel);
-    
+
     this.neighborsOfFirstPoint.forEach(p =>
         this.dataSet.points[p.index].metadata[metadataColumn] = metadataLabel);
-    
+
     this.dataSet.spriteAndMetadataInfo.stats = analyzeMetadata(
         this.dataSet.spriteAndMetadataInfo.stats.map(s => s.name),
         this.dataSet.points.map(p => p.metadata));
@@ -205,7 +205,7 @@ export class Projector extends ProjectorPolymer implements
     this.projectionsPanel.metadataChanged(spriteAndMetadata);
     this.inspectorPanel.metadataChanged(spriteAndMetadata);
     this.dataPanel.metadataChanged(spriteAndMetadata, this.metadataFile);
-    
+
     if (this.selectedPointIndices.length > 0) {  // at least one selected point
       this.metadataCard.updateMetadata(  // show metadata for first selected point
           this.dataSet.points[this.selectedPointIndices[0]].metadata);
@@ -314,7 +314,7 @@ export class Projector extends ProjectorPolymer implements
         this.metadataCard.updateMetadata(null);
       }
     }
-    
+
     this.selectionChangedListeners.forEach(
         l => l(this.selectedPointIndices, neighbors));
   }
@@ -543,7 +543,7 @@ export class Projector extends ProjectorPolymer implements
       neighborsOfFirstPoint: knn.NearestEntry[]) {
     this.selectedPointIndices = selectedPointIndices;
     this.neighborsOfFirstPoint = neighborsOfFirstPoint;
-    this.dataPanel.onProjectorSelectionChanged(selectedPointIndices, 
+    this.dataPanel.onProjectorSelectionChanged(selectedPointIndices,
         neighborsOfFirstPoint);
     let totalNumPoints =
         this.selectedPointIndices.length + neighborsOfFirstPoint.length;

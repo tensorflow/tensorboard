@@ -317,6 +317,70 @@ def stat_tensorboardinfo():
     yield Suggestion("Fix permissions on \"%s\"" % path, message)
 
 
+@check
+def source_trees_without_genfiles():
+  roots = list(sys.path)
+  if "" not in roots:
+    # Catch problems that would occur in a Python interactive shell
+    # (where `""` is prepended to `sys.path`) but not when
+    # `diagnose_tensorboard.py` is run as a standalone script.
+    roots.insert(0, "")
+
+  def has_tensorboard(root):
+    return os.path.isfile(os.path.join(root, "tensorboard", "__init__.py"))
+  def has_genfiles(root):
+    sample_genfile = os.path.join("compat", "proto", "summary_pb2.py")
+    return os.path.isfile(os.path.join(root, "tensorboard", sample_genfile))
+  def is_bad(root):
+    return has_tensorboard(root) and not has_genfiles(root)
+
+  tensorboard_roots = [root for root in roots if has_tensorboard(root)]
+  bad_roots = [root for root in roots if is_bad(root)]
+
+  logging.info(
+      "tensorboard_roots (%d): %r; bad_roots (%d): %r",
+      len(tensorboard_roots),
+      tensorboard_roots,
+      len(bad_roots),
+      bad_roots,
+  )
+
+  if bad_roots:
+    if bad_roots == [""]:
+      message = reflow(
+          """
+          Your current directory contains a `tensorboard` Python package
+          that does not include generated files. This can happen if your
+          current directory includes the TensorBoard source tree (e.g.,
+          you are in the TensorBoard Git repository). Consider changing
+          to a different directory.
+          """
+      )
+    else:
+      preamble = reflow(
+          """
+          Your Python path contains a `tensorboard` package that does
+          not include generated files. This can happen if your current
+          directory includes the TensorBoard source tree (e.g., you are
+          in the TensorBoard Git repository). The following directories
+          from your Python path may be problematic:
+          """
+      )
+      roots = []
+      realpaths_seen = set()
+      for root in bad_roots:
+        label = repr(root) if root else "current directory"
+        realpath = os.path.realpath(root)
+        if realpath in realpaths_seen:
+          # virtualenvs on Ubuntu install to both `lib` and `local/lib`;
+          # explicitly call out such duplicates to avoid confusion.
+          label += " (duplicate underlying directory)"
+        realpaths_seen.add(realpath)
+        roots.append(label)
+      message = "%s\n\n%s" % (preamble, "\n".join("  - %s" % s for s in roots))
+    yield Suggestion("Avoid `tensorboard` packages without genfiles", message)
+
+
 # Prefer to include this check last, as its output is long.
 @check
 def full_pip_freeze():
@@ -340,6 +404,10 @@ def main():
   print("### Diagnostics")
   print()
 
+  print("<details>")
+  print("<summary>Diagnostics output</summary>")
+  print()
+
   markdown_code_fence = "``````"  # seems likely to be sufficient
   print(markdown_code_fence)
   suggestions = []
@@ -354,7 +422,7 @@ def main():
       pass
   print(markdown_code_fence)
   print()
-  print("End of diagnostics.")
+  print("</details>")
 
   for suggestion in suggestions:
     print()

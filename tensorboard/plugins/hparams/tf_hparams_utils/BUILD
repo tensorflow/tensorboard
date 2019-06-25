@@ -9,6 +9,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_hparams_utils",
     srcs = [
+        "tf-hparams-utils.d.ts",
         "tf-hparams-utils.html",
     ],
     path = "/tf-hparams-utils",
