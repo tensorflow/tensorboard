@@ -17,6 +17,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_paper_progress",
     ],
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
