@@ -365,6 +365,20 @@ limitations under the License.
         }
       }
     </style>
+    <template id="colabNotSupported" preserve-content>
+      <div style="max-width: 540px; margin: 80px auto 0 auto;">
+        <h3>Dynamic plugin isn’t supported in Colab yet.</h3>
+        <p>
+          Please see
+          <a
+            href="https://github.com/tensorflow/tensorboard/issues/1913"
+            rel="noopener"
+            target="_blank"
+          >GitHub issue #1913</a>
+          for more information.
+        </p>
+      </div>
+    </template>
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
@@ -581,7 +595,12 @@ limitations under the License.
         _refreshing: {
           type: Boolean,
           value: false,
-        }
+        },
+        _inColab: {
+          type: Boolean,
+          value: () => !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
+          readOnly: true,
+        },
       },
       observers: [
         ('_updateSelectedDashboardFromActive(' +
@@ -757,26 +776,8 @@ limitations under the License.
               break;
             }
             case 'IFRAME': {
-              const iframe = document.createElement('iframe');
-              iframe.id = 'dashboard';  // used in `_selectedDashboardComponent`
-              this.scopeSubtree(iframe);
-              container.appendChild(iframe);
-              const subdocument = iframe.contentDocument;
-              const pluginBasePath = tf_backend.getRouter()
-                  .pluginRoute(selectedDashboard, '/')
-              const base = subdocument.createElement('base');
-              // TODO(stephanwlee): Use sanitized URL when setting the href.
-              // setAttribute is a bypass for the security conformance which we
-              // have no way to address.
-              base.setAttribute(
-                  'href',
-                  String(new URL(pluginBasePath, window.location.href)));
-              subdocument.head.appendChild(base);
-              const script = subdocument.createElement('script');
-              const moduleString = JSON.stringify(loadingMechanism.modulePath);
-              script.textContent =
-                `import(${moduleString}).then((m) => void m.render());`;
-              subdocument.body.appendChild(script);
+              this._renderPluginIFrame(
+                  container, selectedDashboard, loadingMechanism);
               break;
             }
             default: {
@@ -786,6 +787,36 @@ limitations under the License.
           }
         }
         this.set('_isReloadDisabled', dashboard.disableReload);
+      },
+
+      _renderPluginIFrame(container, selectedDashboard, loadingMechanism) {
+        if (this._inColab) {
+          const templateContent = this.$.colabNotSupported.content;
+          const node = document.importNode(templateContent, true);
+          this.scopeSubtree(node);
+          container.appendChild(node);
+          return;
+        }
+        const iframe = document.createElement('iframe');
+        iframe.id = 'dashboard';  // used in `_selectedDashboardComponent`
+        this.scopeSubtree(iframe);
+        container.appendChild(iframe);
+        const subdocument = iframe.contentDocument;
+        const pluginBasePath = tf_backend.getRouter()
+            .pluginRoute(selectedDashboard, '/')
+        const base = subdocument.createElement('base');
+        // TODO(stephanwlee): Use sanitized URL when setting the href.
+        // setAttribute is a bypass for the security conformance which we
+        // have no way to address.
+        base.setAttribute(
+            'href',
+            String(new URL(pluginBasePath, window.location.href)));
+        subdocument.head.appendChild(base);
+        const script = subdocument.createElement('script');
+        const moduleString = JSON.stringify(loadingMechanism.modulePath);
+        script.textContent =
+          `import(${moduleString}).then((m) => void m.render());`;
+        subdocument.body.appendChild(script);
       },
 
       /**
