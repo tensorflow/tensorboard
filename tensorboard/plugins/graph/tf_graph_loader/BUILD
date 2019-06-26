@@ -36,6 +36,7 @@ tf_web_library(
         "tf-graph-dashboard-loader.ts",
     ],
     path = "/tf-graph-loader",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/plugins/graph/tf_graph_common",
