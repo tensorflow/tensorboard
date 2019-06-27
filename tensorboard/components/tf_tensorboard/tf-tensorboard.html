@@ -776,7 +776,7 @@ limitations under the License.
               break;
             }
             case 'IFRAME': {
-              this._renderPluginIFrame(
+              this._renderPluginIframe(
                   container, selectedDashboard, loadingMechanism);
               break;
             }
@@ -789,10 +789,11 @@ limitations under the License.
         this.set('_isReloadDisabled', dashboard.disableReload);
       },
 
-      _renderPluginIFrame(container, selectedDashboard, loadingMechanism) {
+      _renderPluginIframe(container, selectedDashboard, loadingMechanism) {
         if (this._inColab) {
           const templateContent = this.$.colabNotSupported.content;
           const node = document.importNode(templateContent, true);
+          node.id = 'dashboard';  // used in `_selectedDashboardComponent`
           this.scopeSubtree(node);
           container.appendChild(node);
           return;
