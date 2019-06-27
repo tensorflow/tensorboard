@@ -626,6 +626,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
       },
 
       _computeSchema() {
+        if (!this._hparams || !this._metrics) {
+          return {hparamColumns: [], metricColumns: []};
+        }
         return {
           hparamColumns: this._hparams.map(
               hparam => ({hparamInfo: hparam.info})),
@@ -645,11 +648,15 @@ TODO(erez): Add aggregation controls for repeated sessions.
       },
 
       _computeColumnsVisibility() {
+        if (!this._hparams || !this._metrics) return [];
         return this._hparams.map(hparam => hparam.displayed)
             .concat(this._metrics.map(metric => metric.displayed));
       },
 
       _computeVisibleSchema() {
+        if (!this._hparams || !this._metrics) {
+          return {hparamInfos: [], metricInfos: []};
+        }
         const newHParamInfos =
               this._hparams
                 .filter(hparam => hparam.displayed)
