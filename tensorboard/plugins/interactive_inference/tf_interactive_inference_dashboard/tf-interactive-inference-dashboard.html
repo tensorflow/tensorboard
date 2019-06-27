@@ -5046,14 +5046,16 @@ limitations under the License.
           for (let modelIdx = 0; modelIdx < data.length; modelIdx++) {
             let modelDataToChart = {};
             if (Object.keys(data[modelIdx]).length >
-                parseInt(this.maxInferenceEntriesPerRun)) {
+                Number(this.maxInferenceEntriesPerRun)) {
               const exampleId = this.selected &&
                 this.selected.length > 0 ? this.selected[0] : 0;
               // Get the class labels of the top scoring classes from the most
               // recent inference.
-              const labels = this.examplesAndInferences[exampleId].inferences[
-                this.examplesAndInferences[exampleId].inferences.length - 1][
-                  modelIdx].slice(0, this.maxInferenceEntriesPerRun);
+              const currentExample = this.examplesAndInferences[exampleId];
+              const lastInference = currentExample.inferences[
+                currentExample.inferences.length - 1];
+              const labels = lastInference[modelIdx].slice(
+                0, this.maxInferenceEntriesPerRun);
               for (let labelIdx = 0; labelIdx < labels.length; labelIdx++) {
                 const label = labels[labelIdx].label;
                 modelDataToChart[label] = data[modelIdx][label];
