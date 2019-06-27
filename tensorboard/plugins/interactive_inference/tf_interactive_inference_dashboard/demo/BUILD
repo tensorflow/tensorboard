@@ -15,10 +15,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        "//tensorboard/components:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_web_animations_js",
     ],
 )
 
@@ -41,10 +39,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        "//tensorboard/components:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_web_animations_js",
     ],
 )
 
@@ -67,10 +63,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        "//tensorboard/components:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_web_animations_js",
     ],
 )
 
@@ -93,10 +87,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        "//tensorboard/components:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_web_animations_js",
     ],
 )
 
@@ -109,7 +101,6 @@ tensorboard_html_binary(
     deps = [":irisdemo"],
 )
 
-
 tf_web_library(
     name = "agedemo",
     testonly = True,
@@ -120,10 +111,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
+        "//tensorboard/components:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_web_animations_js",
     ],
 )
 

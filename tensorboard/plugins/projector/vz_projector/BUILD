@@ -59,6 +59,7 @@ tf_web_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
+        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
@@ -117,10 +118,10 @@ tf_web_library(
     ],
     path = "/",
     deps = [
+        "//tensorboard/components:polymer",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_tooltip",
-        "@org_polymer_webcomponentsjs",
         ":vz_projector",
     ],
 )
