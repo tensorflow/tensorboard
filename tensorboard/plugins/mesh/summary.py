@@ -167,10 +167,10 @@ def pb(name,
   summaries = []
   tensors = [
       metadata.MeshTensor(
-        vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
+          vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
       metadata.MeshTensor(faces, plugin_data_pb2.MeshPluginData.FACE, tf.int32),
       metadata.MeshTensor(
-        colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
+          colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
   tensors = [tensor for tensor in tensors if tensor.data is not None]
   components = metadata.get_components_bitmask(tensors)
@@ -178,7 +178,7 @@ def pb(name,
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
     tensor_proto = tf.compat.v1.make_tensor_proto(
-      tensor.data, dtype=tensor.data_type)
+        tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
         display_name,
