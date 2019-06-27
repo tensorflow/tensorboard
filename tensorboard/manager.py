@@ -325,7 +325,7 @@ def get_all():
   return results
 
 
-# The following four types enumerate the possible return values of the
+# The following five types enumerate the possible return values of the
 # `start` function.
 
 # Indicates that a call to `start` was compatible with an existing
@@ -348,6 +348,19 @@ StartFailed = collections.namedtuple(
         "exit_code",  # int, as `Popen.returncode` (negative for signal)
         "stdout",  # str, or `None` if the stream could not be read
         "stderr",  # str, or `None` if the stream could not be read
+    ),
+)
+
+# Indicates that a call to `start` failed to invoke the subprocess.
+#
+# If the TensorBoard executable was chosen via the `TENSORBOARD_BINARY`
+# environment variable, then the `explicit_binary` field contains the
+# path to that binary; otherwise, the field is `None`.
+StartExecFailed = collections.namedtuple(
+    "StartExecFailed",
+    (
+        "os_error",  # `OSError` due to `Popen` invocation
+        "explicit_binary",  # `str` or `None`; see type-level comment
     ),
 )
 
@@ -397,13 +410,15 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
   (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
   (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
   start_time_seconds = time.time()
-  tensorboard_binary = os.environ.get("TENSORBOARD_BINARY", "tensorboard")
+  explicit_tb = os.environ.get("TENSORBOARD_BINARY", None)
   try:
     p = subprocess.Popen(
-        [tensorboard_binary] + arguments,
+        ["tensorboard" if explicit_tb is None else explicit_tb] + arguments,
         stdout=stdout_fd,
         stderr=stderr_fd,
     )
+  except OSError as e:
+    return StartExecFailed(os_error=e, explicit_binary=explicit_tb)
   finally:
     os.close(stdout_fd)
     os.close(stderr_fd)

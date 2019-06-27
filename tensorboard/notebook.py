@@ -21,8 +21,10 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import errno
 import shlex
 import sys
+import textwrap
 import time
 
 from tensorboard import manager
@@ -190,6 +192,28 @@ def start(args_string):
         )
     )
     print_or_update(message)
+
+  elif isinstance(start_result, manager.StartExecFailed):
+    the_tensorboard_binary = (
+        "%r (set by the `TENSORBOARD_BINARY` environment variable)"
+            % (start_result.explicit_binary,)
+        if start_result.explicit_binary is not None
+        else "`tensorboard`"
+    )
+    if start_result.os_error.errno == errno.ENOENT:
+      message = (
+          "ERROR: Could not find %s. Please ensure that your PATH contains "
+          "an executable `tensorboard` program, or explicitly specify the path "
+          "to a TensorBoard binary by setting the `TENSORBOARD_BINARY` "
+          "environment variable."
+          % (the_tensorboard_binary,)
+      )
+    else:
+      message = (
+          "ERROR: Failed to start %s: %s"
+          % (the_tensorboard_binary, start_result.os_error)
+      )
+    print_or_update(textwrap.fill(message))
 
   elif isinstance(start_result, manager.StartTimedOut):
     message = (
