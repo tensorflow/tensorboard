@@ -12,4 +12,7 @@ py_library(
     srcs = ["base_plugin.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
+    deps = [
+        "@org_pythonhosted_six",
+    ],
 )

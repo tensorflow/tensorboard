@@ -42,12 +42,11 @@ TODO(erez): Add aggregation controls for repeated sessions.
             <div class="section hyperparameters">
               <div class="section-title">Hyperparameters</div>
               <template is="dom-repeat"
-                        items="[[_hparams]]"
+                        items="{{_hparams}}"
                         as="hparam">
                 <div class="hparam">
                   <paper-checkbox
                     checked="{{hparam.displayed}}"
-                    on-change="_computeSchema"
                     class="hparam-checkbox">
                     [[_hparamName(hparam.info)]]
                   </paper-checkbox>
@@ -115,7 +114,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
                        scalars.-->
                   <paper-checkbox
                     checked="{{metric.displayed}}"
-                    on-change="_computeSchema"
                     class="metric-checkbox">
                     [[_metricName(metric.info)]]
                   </paper-checkbox>
@@ -220,9 +218,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
               </paper-input>
             </div>
           </div>
-        </div>
+        </vaadin-split-layout>
       </vaadin-split-layout>
-    </vaadin-split-layout>
+    </div>
     <style>
       .pane {
         display: flex;
@@ -323,24 +321,68 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // the /experiment HTTP endpoint.
         experimentName: String,
 
-        // Defines the type and id of each metric and hparam in the
-        // session groups.
-        // Contains two fields: "hparamInfos", and "metricInfos" containing
-        // arrays of HParamInfos and MetricInfos protocol buffers, respectively,
-        // as JavaScript objects. See the file api.proto for the
-        // definition of these protocol buffers.
-        schema: {
+        // Contains the schema and columns visibility status.
+        // We use a single object we call 'configuration' to hold both of
+        // these properties, since Polymer (v1) doesn't allow atomic
+        // changes to multiple properties (that is, sending the notification
+        // to downstream consumers only after all properties have been updated).
+        //
+        // Properties:
+        // -----------
+        // schema.hparamColumns[i].hparamInfo contains the HParamInfo protocol
+        // buffer representing the ith hparam.
+        // schema.metricColumns[i].metricInfo contains the MetricInfo protocol
+        // buffer representing the ith metric.
+        //
+        // columnsVisibility[].
+        // A boolean array whose ith entry is true if
+        // the ith column is visible (selected to be displayed by the user).
+        // Columns are indexed by listing the hyperparameters first in
+        // the order they are represented by schema.hparamColumns, followed
+        // by the metrics in the order they are represented by
+        // schema.metricColumns.
+        //
+        // visibleSchema.
+        // DEPRECATED. New code should use the schema and columnVisibile
+        // properties instead.
+        // TODO(): Remove when all consumers are migrated to use the
+        // schema and columnVisibile fields.
+        // Contains arrays of HParamInfo and MetricInfo protocol buffers
+        // consisting of only the visible hyperparameters and metrics,
+        // respectively.
+        /**
+         * @type {{
+         *    schema: {
+         *      hparamColumns: Array<{hparamInfo: Object}>,
+         *      metricColumns: Array<{metricInfo: Object}>,
+         *    },
+         *    columnsVisibility: Array<Boolean>,
+         *    visibleSchema: {
+         *      hparamInfos: Array<Object>,
+         *      metricInfos: Array<Object>,
+         *    }
+         * }}
+         */
+        configuration: {
           type: Object,
           value: () => {
-            return {"hparamInfos": [], "metricInfos": []};
+            return {
+              schema: {
+                hparamColumns: [],
+                metricColumns: [],
+              },
+              columnsVisibility: [],
+              visibleSchema: {
+                hparamInfos: [],
+                metricInfos: [],
+              }
+            };
           },
           readOnly: true,
           notify: true
         },
 
         // The latest list of session groups received from the server.
-        // Note that we limit this list to only the first K session groups
-        // to avoid consuming a large amount of memory in the browser.
         // See the comments in the _buildListSessionGroupsRequest() methods for
         // more details.
         sessionGroups: {
@@ -480,7 +522,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
       }  /* properties */,
 
       observers: [
-        '_computeExperimentAndRelatedProps(backend, experimentName)'
+        '_computeExperimentAndRelatedProps(backend, experimentName)',
+        '_updateConfiguration(_hparams.*, _metrics.*)'
       ],
 
       reload() {
@@ -507,7 +550,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this.set("_experiment", experiment);
           this._computeHParams();
           this._computeMetrics();
-          this._computeSchema();
           this._queryServer();
           this._resolveGetExperiment();
         });
@@ -583,29 +625,43 @@ TODO(erez): Add aggregation controls for repeated sessions.
         this.set("_metrics", result);
       },
 
-      // Computes the _schema property from the _experiment and _metrics
-      // properties.
       _computeSchema() {
-        // We have to use Polymer's 'path'-based array mutations so that
-        // other elements (like a dom-repeat template) that depend on
-        // schema.metricInfos and schema.hparamInfos would be notified of the
-        // change and update correctly.
+        return {
+          hparamColumns: this._hparams.map(
+              hparam => ({hparamInfo: hparam.info})),
+          metricColumns: this._metrics.map(
+              metric => ({metricInfo: metric.info})),
+        };
+      },
+
+      _updateConfiguration() {
+        this.debounce('_updateConfiguration', () => {
+          this._setConfiguration({
+            schema: this._computeSchema(),
+            columnsVisibility: this._computeColumnsVisibility(),
+            visibleSchema: this._computeVisibleSchema()
+          });
+        });
+      },
+
+      _computeColumnsVisibility() {
+        return this._hparams.map(hparam => hparam.displayed)
+            .concat(this._metrics.map(metric => metric.displayed));
+      },
+
+      _computeVisibleSchema() {
         const newHParamInfos =
               this._hparams
                 .filter(hparam => hparam.displayed)
                 .map(hparam => hparam.info);
         const newMetricInfos =
-            this._metrics
-              .filter(metric => metric.displayed)
-              .map(metric => metric.info);
-        this.splice.apply(
-            this,
-            ["schema.hparamInfos", 0, this.schema.hparamInfos.length].concat(
-                newHParamInfos));
-        this.splice.apply(
-            this,
-            ["schema.metricInfos", 0, this.schema.metricInfos.length].concat(
-                newMetricInfos));
+              this._metrics
+                  .filter(metric => metric.displayed)
+                  .map(metric => metric.info);
+        return {
+          hparamInfos: newHParamInfos,
+          metricInfos: newMetricInfos,
+        };
       },
 
       // Sends a query to the server for the list of session groups.

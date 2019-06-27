@@ -514,6 +514,8 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
       },
     });
 
+    // TODO(#2338): Remove this, and set up the "no TF" message properly.
+    // Keep this in sync with `frontend_metadata` in `beholder_plugin.py`.
     tf_tensorboard.registerDashboard({
       plugin: PLUGIN_NAME,
       elementName: 'tf-beholder-dashboard',

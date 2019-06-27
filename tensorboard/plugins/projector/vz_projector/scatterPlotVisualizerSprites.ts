@@ -38,6 +38,8 @@ const VERTEX_SHADER = `
   uniform float spritesPerRow;
   uniform float spritesPerColumn;
 
+  ${THREE.ShaderChunk[ 'fog_pars_vertex' ]}
+
   void main() {
     // Pass index and color values to fragment shader.
     vColor = color;
@@ -285,11 +287,11 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
     const geometry = new THREE.BufferGeometry();
     geometry.addAttribute(
-        'position', new THREE.BufferAttribute(null, XYZ_NUM_ELEMENTS));
+        'position', new THREE.BufferAttribute(undefined, XYZ_NUM_ELEMENTS));
     geometry.addAttribute(
-        'color', new THREE.BufferAttribute(null, RGB_NUM_ELEMENTS));
+        'color', new THREE.BufferAttribute(undefined, RGB_NUM_ELEMENTS));
     geometry.addAttribute(
-        'scaleFactor', new THREE.BufferAttribute(null, INDEX_NUM_ELEMENTS));
+        'scaleFactor', new THREE.BufferAttribute(undefined, INDEX_NUM_ELEMENTS));
     return geometry;
   }
 
@@ -372,7 +374,8 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
     const positions = (this.points.geometry as THREE.BufferGeometry)
                           .getAttribute('position') as THREE.BufferAttribute;
-    positions.array = newPositions;
+
+    (positions as any).setArray(newPositions);
     positions.needsUpdate = true;
   }
 
@@ -392,13 +395,13 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
     let colors = (this.points.geometry as THREE.BufferGeometry)
                      .getAttribute('color') as THREE.BufferAttribute;
-    colors.array = this.pickingColors;
+    (colors as any).setArray(this.pickingColors);
     colors.needsUpdate = true;
 
     let scaleFactors =
         (this.points.geometry as THREE.BufferGeometry)
             .getAttribute('scaleFactor') as THREE.BufferAttribute;
-    scaleFactors.array = rc.pointScaleFactors;
+    (scaleFactors as any).setArray(rc.pointScaleFactors);
     scaleFactors.needsUpdate = true;
   }
 
@@ -430,13 +433,13 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     let colors = (this.points.geometry as THREE.BufferGeometry)
                      .getAttribute('color') as THREE.BufferAttribute;
     this.renderColors = rc.pointColors;
-    colors.array = this.renderColors;
+    (colors as any).setArray(this.renderColors);
     colors.needsUpdate = true;
 
     let scaleFactors =
         (this.points.geometry as THREE.BufferGeometry)
             .getAttribute('scaleFactor') as THREE.BufferAttribute;
-    scaleFactors.array = rc.pointScaleFactors;
+    (scaleFactors as any).setArray(rc.pointScaleFactors);
     scaleFactors.needsUpdate = true;
   }
 

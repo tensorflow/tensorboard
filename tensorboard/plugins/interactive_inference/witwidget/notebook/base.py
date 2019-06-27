@@ -12,20 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from absl import logging
 import base64
 import json
 import googleapiclient.discovery
+import os
 import tensorflow as tf
-import sys
 from IPython import display
 from google.protobuf import json_format
 from numbers import Number
+from six import ensure_str
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
 NUM_MUTANTS_TO_GENERATE = 10
 NUM_EXAMPLES_FOR_MUTANT_ANALYSIS = 50
 
+# Custom user agent for tracking number of calls to Cloud AI Platform.
+USER_AGENT_FOR_CAIP_TRACKING = 'WhatIfTool'
 
 class WitWidgetBase(object):
   """WIT widget base class for common code between Jupyter and Colab."""
@@ -36,7 +40,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    tf.logging.set_verbosity(tf.logging.WARN)
+    logging.set_verbosity(logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
@@ -62,6 +66,12 @@ class WitWidgetBase(object):
     self.compare_adjust_prediction_fn = (
       config.get('compare_adjust_prediction')
       if 'compare_adjust_prediction' in config else None)
+    self.adjust_example_fn = (
+      config.get('adjust_example')
+      if 'adjust_example' in config else None)
+    self.compare_adjust_example_fn = (
+      config.get('compare_adjust_example')
+      if 'compare_adjust_example' in config else None)
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
@@ -70,6 +80,10 @@ class WitWidgetBase(object):
       del copied_config['adjust_prediction']
     if 'compare_adjust_prediction' in copied_config:
       del copied_config['compare_adjust_prediction']
+    if 'adjust_example' in copied_config:
+      del copied_config['adjust_example']
+    if 'compare_adjust_example' in copied_config:
+      del copied_config['compare_adjust_example']
 
     self.set_examples(config['examples'])
     del copied_config['examples']
@@ -110,6 +124,7 @@ class WitWidgetBase(object):
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
     infer_objs = []
+    attribution_objs = []
     serving_bundle = inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
@@ -122,8 +137,11 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    infer_objs.append(inference_utils.run_inference_for_inference_results(
+    (predictions, attributions) = (
+      inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
+    infer_objs.append(predictions)
+    attribution_objs.append(attributions)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
         self.compare_custom_predict_fn):
@@ -139,12 +157,16 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      infer_objs.append(inference_utils.run_inference_for_inference_results(
+      (predictions, attributions) = (
+        inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
+      infer_objs.append(predictions)
+      attribution_objs.append(attributions)
     self.updated_example_indices = set()
     return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
-      'label_vocab': self.config.get('label_vocab')}
+      'label_vocab': self.config.get('label_vocab'),
+      'attributions': attribution_objs}
 
   def infer_mutants_impl(self, info):
     """Performs mutant inference on specified examples."""
@@ -210,10 +232,8 @@ class WitWidgetBase(object):
       example_strings = [
         self.json_to_proto(ex).SerializeToString()
         for ex in self.examples]
-      encoded = base64.b64encode(
-        inference_utils.create_sprite_image(example_strings))
-      if sys.version_info >= (3, 0):
-        encoded = encoded.decode('utf-8')
+      encoded = ensure_str(base64.b64encode(
+        inference_utils.create_sprite_image(example_strings)))
       return 'data:image/png;base64,{}'.format(encoded)
     else:
       return None
@@ -246,7 +266,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat_idx] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat_idx] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat_idx] = ensure_str(
+              ex.features.feature[feat].bytes_list.value[0])
       else:
         json_ex = {}
         for feat in ex.features.feature:
@@ -257,7 +278,8 @@ class WitWidgetBase(object):
           elif ex.features.feature[feat].HasField('float_list'):
             json_ex[feat] = ex.features.feature[feat].float_list.value[0]
           else:
-            json_ex[feat] = ex.features.feature[feat].bytes_list.value[0]
+            json_ex[feat] = ensure_str(
+              ex.features.feature[feat].bytes_list.value[0])
       json_exs.append(json_ex)
     return json_exs
 
@@ -265,18 +287,24 @@ class WitWidgetBase(object):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
-      self.config.get('force_json_input'), self.adjust_prediction_fn)
+      self.config.get('force_json_input'), self.adjust_example_fn,
+      self.adjust_prediction_fn)
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address_2'),
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
       self.config.get('compare_force_json_input'),
+      self.compare_adjust_example_fn,
       self.compare_adjust_prediction_fn)
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_prediction):
+                        adjust_example, adjust_prediction):
     """Custom prediction function for running inference through AI Platform."""
+
+    # Set up environment for GCP call for specified project.
+    os.environ['GOOGLE_CLOUD_PROJECT'] = project
+
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
@@ -290,10 +318,21 @@ class WitWidgetBase(object):
         example.SerializeToString()).decode('utf-8') }
         for example in examples]
 
-    response = service.projects().predict(
+    # If there is a user-specified input example adjustment to make, make it.
+    if adjust_example:
+      examples_for_predict = [
+        adjust_example(ex) for ex in examples_for_predict]
+
+    # Send request, including custom user-agent for tracking.
+    request_builder = service.projects().predict(
         name=name,
         body={'instances': examples_for_predict}
-    ).execute()
+    )
+    user_agent = request_builder.headers.get('user-agent')
+    request_builder.headers['user-agent'] = (
+      USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+    response = request_builder.execute()
+
     if 'error' in response:
       raise RuntimeError(response['error'])
 
@@ -307,6 +346,8 @@ class WitWidgetBase(object):
 
     # Parse the results from the response and return them.
     results = []
+    attributions = (response['attributions']
+      if 'attributions' in response else None)
     for pred in response['predictions']:
       # If the prediction contains a key to fetch the prediction, use it.
       if isinstance(pred, dict):
@@ -321,4 +362,4 @@ class WitWidgetBase(object):
       if adjust_prediction:
         pred = adjust_prediction(pred)
       results.append(pred)
-    return results
+    return {'predictions': results, 'attributions': attributions}

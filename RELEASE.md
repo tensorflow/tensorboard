@@ -1,3 +1,54 @@
+# Release 1.14.0
+
+## Features
+- New hyperparameters dashboard: see [tutorial and demo][hparams-docs] and
+  [summary APIs][hparams-apis]
+- New dashboard for visualizing meshes and point clouds: see
+  [README][mesh-readme]
+- Graph dashboard now shows Keras conceptual graph: see [tutorial and
+  demo][conceptual-graph-docs]
+- Embedding projector now supports the [UMAP dimensionality reduction
+  algorithm][umap] ([learn more about UMAP here][umap-tutorial]) (#1901) -
+  thanks @cannoneyed
+- [TensorBoard notebook support][notebook-docs] is stabilized: in a Colab or
+  Jupyter notebook, run `%load_ext tensorboard` followed by `%tensorboard
+  --logdir ./path/to/logs`
+- Profile dashboard improvements:
+  - New pod viewer tool to analyze TPU performance (#2111)
+  - Now allows capturing profiles from TensorBoard (#1894)
+- What-If Tool improvements:
+  - Now available as a notebook widget for Jupyter and Colab: see
+    [demo][witwidget-demo]
+  - Now shows PR curves and F1 score (#2264)
+  - Now supports Cloud AI Platform, including XGBoost models (#2194)
+  - Now shows feature-level attributions for individual predictions, as
+    applicable (#2252)
+- Image dashboard now allows scrolling for large images (#2164) - thanks @lr1d
+- Scalar chart smoothing now caps at 0.999 for convenience (#1974) - thanks
+  @flostim
+- Scalar chart scroll-to-zoom behavior now requires holding `Alt` (#2221)
+- `tensorboard` now supports a `--version` command line argument (#2097) -
+  thanks @shashvatshahi1998
+- Python API now defines `tensorboard.__version__` in addition to
+  `tensorboard.version.VERSION` (#2026)
+
+## Bug fixes
+- Projector metadata card now formats long words properly (PR #2016) - thanks
+  @makseq
+- #2010 - `.tensorboard-info` is now world-writable for multi-user \*nix systems
+  (PR #2131)
+- #1989 - `importlib.reload(tensorboard)` now works properly (PR #2005)
+
+[conceptual-graph-docs]: https://www.tensorflow.org/tensorboard/r2/graphs
+[hparams-apis]: https://github.com/tensorflow/tensorboard/blob/1.14/tensorboard/plugins/hparams/api.py#L15
+[hparams-docs]: https://www.tensorflow.org/tensorboard/r2/hyperparameter_tuning_with_hparams
+[mesh-readme]: https://github.com/tensorflow/tensorboard/blob/1.14/tensorboard/plugins/mesh/README.md#mesh-plugin
+[notebook-docs]: https://www.tensorflow.org/tensorboard/r2/tensorboard_in_notebooks
+[umap-tutorial]: https://umap-learn.readthedocs.io/en/latest/how_umap_works.html
+[umap]: https://github.com/lmcinnes/umap#umap
+[witwidget-demo]: https://colab.research.google.com/github/tensorflow/tensorboard/blob/1.14/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb
+
+
 # Release 1.13.1
 
 ## Bug fixes

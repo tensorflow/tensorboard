@@ -94,4 +94,3 @@ def deserialize_array_buffer_response(byte_content, data_type):
     Flat numpy array with the data.
   """
   return np.frombuffer(byte_content, dtype=data_type)
-  

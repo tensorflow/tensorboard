@@ -16,6 +16,7 @@
 import sys
 import tensorflow as tf
 from numbers import Number
+from six import integer_types
 
 
 def _is_colab():
@@ -413,6 +414,24 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
+    Optionally, if attributions can be returned by the model with each
+    prediction, then this method can return a dict with the key 'predictions'
+    containing the predictions result list described above, and with the key
+    'attributions' containing a list of attributions for each example that was
+    predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
+
     Args:
       predict_fn: The custom python function which will be used for model
       inference.
@@ -444,6 +463,24 @@ class WitConfigBuilder(object):
         for each class ID in the prediction.
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
+
+    Optionally, if attributions can be returned by the model with each
+    prediction, then this method can return a dict with the key 'predictions'
+    containing the predictions result list described above, and with the key
+    'attributions' containing a list of attributions for each example that was
+    predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
 
     Args:
       predict_fn: The custom python function which will be used for model
@@ -488,7 +525,7 @@ class WitConfigBuilder(object):
     return tf_examples
 
   def _add_single_feature(self, feat, value, ex):
-    if isinstance(value, (int, long)):
+    if isinstance(value, integer_types):
       ex.features.feature[feat].int64_list.value.append(value)
     elif isinstance(value, Number):
       ex.features.feature[feat].float_list.value.append(value)
@@ -497,7 +534,7 @@ class WitConfigBuilder(object):
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None):
+    adjust_prediction=None, adjust_example=None):
     """Sets the model information for a model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -513,6 +550,10 @@ class WitConfigBuilder(object):
       prediction output from the model for a single example and converts it to
       the appopriate format - a regression score or a list of class scores. Only
       necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
 
     Returns:
       self, in order to enabled method chaining.
@@ -526,11 +567,13 @@ class WitConfigBuilder(object):
       self.store('force_json_input', True)
     if adjust_prediction:
       self.store('adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('adjust_example', adjust_example)
     return self
 
   def set_compare_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None):
+    adjust_prediction=None, adjust_example=None):
     """Sets the model information for a second model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -546,6 +589,10 @@ class WitConfigBuilder(object):
       prediction output from the model for a single example and converts it to
       the appopriate format - a regression score or a list of class scores. Only
       necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
 
     Returns:
       self, in order to enabled method chaining.
@@ -559,6 +606,8 @@ class WitConfigBuilder(object):
       self.store('compare_force_json_input', True)
     if adjust_prediction:
       self.store('compare_adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('compare_adjust_example', adjust_example)
     return self
 
   def set_target_feature(self, target):

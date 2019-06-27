@@ -159,6 +159,13 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
     """
     return self._grpc_port is not None
 
+  def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
+    return super(InteractiveDebuggerPlugin, self).frontend_metadata()._replace(
+        element_name='tf-debugger-dashboard',
+    )
+
   @wrappers.Request.application
   def _serve_ack(self, request):
     # Send client acknowledgement. `True` is just used as a dummy value.

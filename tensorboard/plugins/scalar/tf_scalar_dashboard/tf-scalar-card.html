@@ -41,8 +41,8 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       active="[[active]]"
-      color-scale="[[_getColorScale(multiExperiments, colorScale)]]"
-      data-series="[[_getDataSeries(multiExperiments, dataToLoad.*)]]"
+      color-scale="[[_getColorScale(colorScale)]]"
+      data-series="[[_getDataSeries(dataToLoad.*)]]"
       data-to-load="[[dataToLoad]]"
       get-data-load-name="[[_getDataLoadName]]"
       get-data-load-url="[[getDataLoadUrl]]"
@@ -195,8 +195,6 @@ limitations under the License.
          */
         xType: String,
 
-        multiExperiments: Boolean,
-
         active: Boolean,
         ignoreYOutliers: Boolean,
         requestManager: Object,
@@ -332,9 +330,7 @@ limitations under the License.
       },
       // title is a visible string of a series for the UI.
       _getSeriesDisplayNameFromDatum(datum) {
-        return this.multiExperiments ?
-            `${datum.experiment.name}/${datum.run}` :
-            datum.run;
+        return datum.run;
       },
       _getColorScale() {
         if (this.colorScale !== null) {
@@ -345,9 +341,7 @@ limitations under the License.
         return {
           scale: (name) => {
             const [exp, run] = JSON.parse(name);
-            return this.multiExperiments ?
-                tf_color_scale.experimentsColorScale(exp) :
-                tf_color_scale.runsColorScale(run);
+            return tf_color_scale.runsColorScale(run);
           },
         };
       }

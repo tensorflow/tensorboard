@@ -1190,7 +1190,7 @@ Polymer({
     this.fire('enable-click');
   },
 
-  _updateInputTrace() {
+  _updateInputTrace: function() {
     tf.graph.scene.node.updateInputTrace(
         this.getGraphSvgRoot(),
         this.renderHierarchy,

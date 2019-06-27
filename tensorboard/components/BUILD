@@ -16,7 +16,9 @@ tf_web_library(
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
+        "@org_polymer",
         "@org_polymer_web_animations_js",
+        "@org_polymer_webcomponentsjs",
     ],
 )
 

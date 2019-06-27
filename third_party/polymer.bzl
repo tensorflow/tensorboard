@@ -28,6 +28,9 @@ def tensorboard_polymer_workspace():
       ],
       path = "/polymer",
       srcs = [
+          "externs/closure-types.js",
+          "externs/polymer-externs.js",
+          "externs/polymer-internal-shared-types.js",
           "lib/elements/array-selector.html",
           "lib/elements/custom-style.html",
           "lib/elements/dom-bind.html",
@@ -1413,7 +1416,6 @@ def tensorboard_polymer_workspace():
       strip_prefix = "webcomponentsjs-1.3.3",
       path = "/webcomponentsjs",
       srcs = [
-          "webcomponents-lite.js.map",
           "webcomponents-lite.js",
       ],
   )

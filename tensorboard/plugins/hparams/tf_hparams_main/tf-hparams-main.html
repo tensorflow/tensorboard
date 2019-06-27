@@ -42,7 +42,7 @@ TODO(erez): Add aggregation of repeated trials.
           id="query-pane"
           backend="[[backend]]"
           experiment-name="[[experimentName]]"
-          schema="{{_schema}}"
+          configuration="{{_configuration}}"
           session-groups="{{_sessionGroups}}">
         </tf-hparams-query-pane>
       </div>
@@ -53,7 +53,7 @@ TODO(erez): Add aggregation of repeated trials.
           help-url="[[helpUrl]]"
           bug-report-url="[[bugReportUrl]]"
           experiment-name="[[experimentName]]"
-          schema="[[_schema]]"
+          configuration="[[_configuration]]"
           session-groups="[[_sessionGroups]]">
         </tf-hparams-sessions-pane>
       </div>
@@ -111,7 +111,7 @@ TODO(erez): Add aggregation of repeated trials.
         // The URL to use for the bug-report button.
         bugReportUrl: String,
 
-        _schema: Object,
+        _configuration: Object,
         _sessionGroups: Array,
 
         // A throttled function for sending events to GA analytics at a bounded

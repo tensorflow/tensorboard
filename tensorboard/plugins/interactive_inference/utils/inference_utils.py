@@ -18,11 +18,13 @@ import collections
 import copy
 import json
 import math
+
+from absl import logging
 import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
 from six import iteritems
-from six import string_types
+from six import string_types, integer_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -155,7 +157,7 @@ class MutantFeatureValue(object):
           'unexpected type: {}'.format(type(original_feature)))
     self.original_feature = original_feature
 
-    if index is not None and not isinstance(index, int):
+    if index is not None and not isinstance(index, integer_types):
       raise ValueError(
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
@@ -477,7 +479,8 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
     charts = []
     for serving_bundle in serving_bundles:
-      inference_result_proto = run_inference(mutant_examples, serving_bundle)
+      (inference_result_proto, _) = run_inference(
+        mutant_examples, serving_bundle)
       charts.append(make_json_formatted_for_single_chart(
         mutant_features, inference_result_proto, index_to_mutate))
     return charts
@@ -610,11 +613,12 @@ def get_example_features(example):
 
 def run_inference_for_inference_results(examples, serving_bundle):
   """Calls servo and wraps the inference results."""
-  inference_result_proto = run_inference(examples, serving_bundle)
+  (inference_result_proto, attributions) = run_inference(
+    examples, serving_bundle)
   inferences = wrap_inference_results(inference_result_proto)
   infer_json = json_format.MessageToJson(
     inferences, including_default_value_fields=True)
-  return json.loads(infer_json)
+  return json.loads(infer_json), attributions
 
 def get_eligible_features(examples, num_mutants):
   """Returns a list of JSON objects for each feature in the examples.
@@ -653,7 +657,7 @@ def get_label_vocab(vocab_path):
       with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
-      tf.logging.error('error reading vocab file: %s', err)
+      logging.error('error reading vocab file: %s', err)
   return []
 
 def create_sprite_image(examples):
@@ -691,9 +695,9 @@ def create_sprite_image(examples):
     with tf.compat.v1.Session():
       keys_to_features = {
           image_feature_name:
-              tf.FixedLenFeature((), tf.string, default_value=''),
+              tf.io.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.parse_example(examples, keys_to_features)
+      parsed = tf.io.parse_example(examples, keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (sprite_thumbnail_dim_px,
@@ -735,14 +739,16 @@ def run_inference(examples, serving_bundle):
       make the inference request.
 
   Returns:
-    A ClassificationResponse or RegressionResponse proto.
+    A tuple with the first entry being the ClassificationResponse or
+    RegressionResponse proto and the second entry being a list of the
+    attributions for each example, or None if no attributions exist.
   """
   batch_size = 64
   if serving_bundle.estimator and serving_bundle.feature_spec:
     # If provided an estimator and feature spec then run inference locally.
     preds = serving_bundle.estimator.predict(
       lambda: tf.data.Dataset.from_tensor_slices(
-        tf.parse_example([ex.SerializeToString() for ex in examples],
+        tf.io.parse_example([ex.SerializeToString() for ex in examples],
         serving_bundle.feature_spec)).batch(batch_size))
 
     if serving_bundle.use_predict:
@@ -755,11 +761,20 @@ def run_inference(examples, serving_bundle):
     values = []
     for pred in preds:
       values.append(pred[preds_key])
-    return common_utils.convert_prediction_values(values, serving_bundle)
+    return (common_utils.convert_prediction_values(values, serving_bundle),
+            None)
   elif serving_bundle.custom_predict_fn:
     # If custom_predict_fn is provided, pass examples directly for local
     # inference.
     values = serving_bundle.custom_predict_fn(examples)
-    return common_utils.convert_prediction_values(values, serving_bundle)
+    attributions = None
+    # If the custom prediction function returned a dict, then parse out the
+    # prediction scores and the attributions. If it is just a list, then the
+    # results are the prediction results without attributions.
+    if isinstance(values, dict):
+      attributions = values['attributions']
+      values = values['predictions']
+    return (common_utils.convert_prediction_values(values, serving_bundle),
+            attributions)
   else:
-    return platform_utils.call_servo(examples, serving_bundle)
+    return (platform_utils.call_servo(examples, serving_bundle), None)

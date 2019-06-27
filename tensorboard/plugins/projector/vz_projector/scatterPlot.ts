@@ -446,7 +446,7 @@ export class ScatterPlot {
   }
 
   private add3dAxis() {
-    const axes = new THREE.AxisHelper();
+    const axes = new (THREE as any).AxesHelper();
     axes.name = 'axes';
     this.scene.add(axes);
   }
@@ -594,7 +594,16 @@ export class ScatterPlot {
 
     {
       const axes = this.remove3dAxisFromScene();
-      this.renderer.render(this.scene, this.camera, this.pickingTexture);
+      // Render to the pickingTexture when existing.
+      if (this.pickingTexture) {
+        this.renderer.setRenderTarget(this.pickingTexture);
+      } else {
+        this.renderer.setRenderTarget(null);
+      }
+      this.renderer.render(this.scene, this.camera);
+
+      // Set the renderTarget back to the default.
+      this.renderer.setRenderTarget(null);
       if (axes != null) {
         this.scene.add(axes);
       }
@@ -602,7 +611,6 @@ export class ScatterPlot {
 
     // Render second pass to color buffer, to be displayed on the canvas.
     this.visualizers.forEach(v => v.onRender(rc));
-
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -691,7 +699,10 @@ export class ScatterPlot {
 
     // the picking texture needs to be exactly the same as the render texture.
     {
-      const renderCanvasSize = this.renderer.getSize();
+      const renderCanvasSize = new THREE.Vector2();
+      // TODO(stephanwlee): Remove casting to any after three.js typing is
+      // proper.
+      (this.renderer as any).getSize(renderCanvasSize);
       const pixelRatio = this.renderer.getPixelRatio();
       this.pickingTexture = new THREE.WebGLRenderTarget(
           renderCanvasSize.width * pixelRatio,

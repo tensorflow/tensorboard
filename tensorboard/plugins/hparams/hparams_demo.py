@@ -23,7 +23,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import hashlib
 import math
 import os.path
 import random
@@ -161,7 +160,7 @@ def model_fn(hparams, seed):
   return model
 
 
-def run(data, base_logdir, session_id, group_id, hparams):
+def run(data, base_logdir, session_id, hparams):
   """Run a training/validation session.
 
   Flags must have been parsed for this function to behave.
@@ -170,8 +169,6 @@ def run(data, base_logdir, session_id, group_id, hparams):
     data: The data as loaded by `prepare_data()`.
     base_logdir: The top-level logdir to which to write summary data.
     session_id: A unique string ID for this session.
-    group_id: The string ID of the session group that includes this
-      session.
     hparams: A dict mapping hyperparameters in `HPARAMS` to values.
   """
   model = model_fn(hparams=hparams, seed=session_id)
@@ -182,7 +179,7 @@ def run(data, base_logdir, session_id, group_id, hparams):
       update_freq=flags.FLAGS.summary_freq,
       profile_batch=0,  # workaround for issue #2084
   )
-  hparams_callback = hp.KerasCallback(logdir, hparams, group_name=group_id)
+  hparams_callback = hp.KerasCallback(logdir, hparams)
   ((x_train, y_train), (x_test, y_test)) = data
   result = model.fit(
       x=x_train,
@@ -222,9 +219,8 @@ def run_all(logdir, verbose=False):
   num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
   session_index = 0  # across all session groups
   for group_index in xrange(flags.FLAGS.num_session_groups):
-    hparams = {h: sample_uniform(h.domain, rng) for h in HPARAMS}
+    hparams = {h: h.domain.sample_uniform(rng) for h in HPARAMS}
     hparams_string = str(hparams)
-    group_id = hashlib.sha256(hparams_string.encode("utf-8")).hexdigest()
     for repeat_index in xrange(sessions_per_group):
       session_id = str(session_index)
       session_index += 1
@@ -239,30 +235,8 @@ def run_all(logdir, verbose=False):
           data=data,
           base_logdir=logdir,
           session_id=session_id,
-          group_id=group_id,
           hparams=hparams,
       )
-
-
-def sample_uniform(domain, rng):
-  """Sample a value uniformly from a domain.
-
-  Args:
-    domain: An `IntInterval`, `RealInterval`, or `Discrete` domain.
-    rng: A `random.Random` object; defaults to the `random` module.
-
-  Raises:
-    TypeError: If `domain` is not a known kind of domain.
-    IndexError: If the domain is empty.
-  """
-  if isinstance(domain, hp.IntInterval):
-    return rng.randint(domain.min_value, domain.max_value)
-  elif isinstance(domain, hp.RealInterval):
-    return rng.uniform(domain.min_value, domain.max_value)
-  elif isinstance(domain, hp.Discrete):
-    return rng.choice(domain.values)
-  else:
-    raise TypeError("unknown domain type: %r" % (domain,))
 
 
 def main(unused_argv):

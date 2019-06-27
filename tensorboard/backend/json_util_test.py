@@ -17,13 +17,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
+import string
+
 from tensorboard import test as tb_test
 from tensorboard.backend import json_util
 
 _INFINITY = float('inf')
 
 
-class FloatWrapperTest(tb_test.TestCase):
+class CleanseTest(tb_test.TestCase):
 
   def _assertWrapsAs(self, to_wrap, expected):
     """Asserts that |to_wrap| becomes |expected| when wrapped."""
@@ -49,6 +52,15 @@ class FloatWrapperTest(tb_test.TestCase):
 
   def testWrapsRecursively(self):
     self._assertWrapsAs({'x': [_INFINITY]}, {'x': ['Infinity']})
+
+  def testOrderedDict_preservesOrder(self):
+    # dict iteration order is not specified prior to Python 3.7, and is
+    # observably different from insertion order in CPython 2.7.
+    od = collections.OrderedDict()
+    for c in string.ascii_lowercase:
+      od[c] = c
+    self.assertEqual(len(od), 26, od)
+    self.assertEqual(list(od), list(json_util.Cleanse(od)))
 
   def testTuple_turnsIntoList(self):
     self.assertEqual(json_util.Cleanse(('a', 'b')), ['a', 'b'])
