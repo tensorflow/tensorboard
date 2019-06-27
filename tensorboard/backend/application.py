@@ -24,7 +24,6 @@ from __future__ import print_function
 
 import atexit
 import collections
-import functools
 import json
 import os
 import re
@@ -37,7 +36,6 @@ import time
 import six
 from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
 
-import werkzeug
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -326,33 +324,6 @@ class TensorBoardWSGI(object):
       response[plugin.plugin_name] = plugin_metadata
     return http_util.Respond(request, response, 'application/json')
 
-  def _headers_with_colab_csp(self, headers):
-    """Add a Content-Security-Policy facilitating Colab output frames.
-
-    This is intended for use with the `google.colab.kernel.proxyPort`
-    JavaScript function available from within a Colab output frame.
-
-    If the headers already include an explicit CSP, they are returned
-    unchanged.
-
-    Args:
-      headers: A list of WSGI headers (key-value tuples of `str`s).
-
-    Returns:
-      A new list of WSGI headers; the original is unchanged.
-    """
-    # use a Werkzeug `Headers` object for proper case-insensitivity
-    headers = werkzeug.Headers(headers)
-    csp_key = 'Content-Security-Policy'
-    if csp_key not in headers:
-      allowed_ancestors = ' '.join([
-          'https://*.googleusercontent.com',
-          'https://*.google.com',
-      ])
-      csp = 'frame-ancestors %s' % allowed_ancestors
-      headers[csp_key] = csp
-    return headers.to_wsgi_list()
-
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
 
@@ -373,17 +344,13 @@ class TensorBoardWSGI(object):
     parsed_url = urlparse.urlparse(request.path)
     clean_path = _clean_path(parsed_url.path, self._path_prefix)
 
-    @functools.wraps(start_response)
-    def new_start_response(status, headers):
-      return start_response(status, self._headers_with_colab_csp(headers))
-
     # pylint: disable=too-many-function-args
     if clean_path in self.data_applications:
-      return self.data_applications[clean_path](environ, new_start_response)
+      return self.data_applications[clean_path](environ, start_response)
     else:
       logger.warn('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
-          environ, new_start_response)
+          environ, start_response)
     # pylint: enable=too-many-function-args
 
 
