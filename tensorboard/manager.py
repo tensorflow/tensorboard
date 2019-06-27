@@ -397,9 +397,10 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
   (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
   (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
   start_time_seconds = time.time()
+  tensorboard_binary = os.environ.get("TENSORBOARD_BINARY", "tensorboard")
   try:
     p = subprocess.Popen(
-        ["tensorboard"] + arguments,
+        [tensorboard_binary] + arguments,
         stdout=stdout_fd,
         stderr=stderr_fd,
     )
