@@ -26,7 +26,7 @@ tf_web_library(
     path = "/vz-distribution-chart",
     deps = [
         ":vz_distribution_chart",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components:polymer",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
