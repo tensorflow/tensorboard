@@ -36,7 +36,6 @@ try:
 except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
-import werkzeug
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
@@ -149,22 +148,12 @@ class ApplicationTest(tb_test.TestCase):
             is_active_value=True,
             routes_mapping={
                 '/esmodule': lambda req: None,
-                '/no_csp': functools.partial(self._serve, False),
-                '/csp': functools.partial(self._serve, True),
             },
             es_module_path_value='/esmodule'
         ),
     ]
     app = application.TensorBoardWSGI(plugins)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-  @wrappers.Request.application
-  def _serve(self, include_csp, request):
-    assert isinstance(include_csp, bool), include_csp
-    response = wrappers.Response('hello\n')
-    if include_csp:
-      response.headers['CONTENT-sEcUrItY-POLICY'] = "frame-ancestors 'none'"
-    return response
 
   def _get_json(self, path):
     response = self.server.get(path)
@@ -217,27 +206,6 @@ class ApplicationTest(tb_test.TestCase):
         }
     )
 
-  def testColabCsp_whenNoCspPresent(self):
-    response = self.server.get('/data/plugin/baz/no_csp')
-    self.assertEqual(
-        response.headers.get('Content-Security-Policy'),
-        'frame-ancestors https://*.googleusercontent.com https://*.google.com',
-    )
-
-  def testColabCsp_whenExistingCspPresent(self):
-    response = self.server.get('/data/plugin/baz/csp')
-    self.assertEqual(
-        response.headers.get('Content-Security-Policy'),
-        "frame-ancestors 'none'",
-    )
-
-  def testColabCsp_on404(self):
-    response = self.server.get('/asdf')
-    self.assertEqual(404, response.status_code)
-    self.assertEqual(
-        response.headers.get('Content-Security-Policy'),
-        'frame-ancestors https://*.googleusercontent.com https://*.google.com',
-    )
 
 class ApplicationBaseUrlTest(tb_test.TestCase):
   path_prefix = '/test'
