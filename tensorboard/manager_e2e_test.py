@@ -353,6 +353,33 @@ class ManagerEndToEndTest(tf.test.TestCase):
     )
     self.assertEqual(manager.get_all(), [])
 
+  def test_exec_failure_with_explicit_binary(self):
+    path = os.path.join(".", "non", "existent")
+    environ = {"TENSORBOARD_BINARY": path}
+    environ_patcher = mock.patch.dict(os.environ, environ)
+    environ_patcher.start()
+    self.addCleanup(environ_patcher.stop)
+
+    start_result = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(start_result, manager.StartExecFailed)
+    self.assertEqual(start_result.os_error.errno, errno.ENOENT)
+    self.assertEqual(start_result.explicit_binary, path)
+
+  def test_exec_failure_with_no_explicit_binary(self):
+    if os.name == "nt":
+      # Can't use ENOENT without an absolute path (it's not treated as
+      # an exec failure).
+      self.skipTest("Not clear how to trigger this case on Windows.")
+    environ = {"PATH": "nope"}
+    environ_patcher = mock.patch.dict(os.environ, environ)
+    environ_patcher.start()
+    self.addCleanup(environ_patcher.stop)
+
+    start_result = manager.start(["--logdir=./logs", "--port=0"])
+    self.assertIsInstance(start_result, manager.StartExecFailed)
+    self.assertEqual(start_result.os_error.errno, errno.ENOENT)
+    self.assertIs(start_result.explicit_binary, None)
+
 
 if __name__ == "__main__":
   tf.test.main()
