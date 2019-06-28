@@ -21,8 +21,8 @@ tf_web_library(
     ],
     path = "/tf-categorization-utils/test",
     deps = [
-        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_categorization_utils",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],
 )

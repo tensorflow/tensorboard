@@ -59,7 +59,6 @@ tf_web_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
-        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
@@ -113,13 +112,13 @@ tf_web_library(
 tf_web_library(
     name = "standalone_lib",
     srcs = [
-      "standalone.html",
-      "standalone_projector_config.json",
+        "standalone.html",
+        "standalone_projector_config.json",
     ],
     path = "/",
     deps = [
         ":vz_projector",
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_tooltip",

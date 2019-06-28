@@ -49,4 +49,3 @@ tensorboard_html_binary(
     output_path = "/vz-example-viewer/demo.html",
     deps = [":demo"],
 )
-

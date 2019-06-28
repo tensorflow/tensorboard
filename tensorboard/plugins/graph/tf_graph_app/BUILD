@@ -13,11 +13,10 @@ tf_web_library(
     ],
     path = "/tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
-        "//tensorboard/components:polymer",
-        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_component_page",
     ],
 )
@@ -35,4 +34,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/webcomponentsjs:lib",
     ],
 )
-

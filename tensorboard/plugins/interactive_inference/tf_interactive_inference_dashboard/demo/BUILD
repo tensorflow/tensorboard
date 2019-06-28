@@ -15,7 +15,7 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
@@ -39,7 +39,7 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
@@ -63,7 +63,7 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
@@ -87,7 +87,7 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
@@ -111,7 +111,7 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )

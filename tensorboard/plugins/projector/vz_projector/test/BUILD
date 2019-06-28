@@ -29,7 +29,7 @@ tf_web_library(
     ],
     path = "/vz-projector/test",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/plugins/projector/vz_projector",
     ],

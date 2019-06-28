@@ -22,8 +22,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-backend/test",
     deps = [
-        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],
 )
