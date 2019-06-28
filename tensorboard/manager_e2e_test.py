@@ -365,7 +365,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
     start_result = manager.start(["--logdir=./logs", "--port=0"])
     self.assertIsInstance(start_result, manager.StartExecFailed)
     self.assertEqual(start_result.os_error.errno, errno.ENOENT)
-    self.assertIs(start_result.explicit_binary, None)
+    self.assertIsNone(start_result.explicit_binary)
 
 
 if __name__ == "__main__":
