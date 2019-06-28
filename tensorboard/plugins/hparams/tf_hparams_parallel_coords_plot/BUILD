@@ -43,9 +43,9 @@ tf_web_library(
     path = "/tf-hparams-parallel-coords-plot",
     deps = [
         ":tf_hparams_parallel_coords_plot",
+        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 

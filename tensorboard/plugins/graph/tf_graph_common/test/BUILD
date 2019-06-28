@@ -26,7 +26,7 @@ tf_web_library(
     ],
     path = "/tf-graph-common/test",
     deps = [
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/plugins/graph/tf_graph_common",
     ],
