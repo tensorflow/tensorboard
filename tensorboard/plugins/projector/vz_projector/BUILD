@@ -118,11 +118,11 @@ tf_web_library(
     ],
     path = "/",
     deps = [
+        ":vz_projector",
         "//tensorboard/components:polymer",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_tooltip",
-        ":vz_projector",
     ],
 )
 
