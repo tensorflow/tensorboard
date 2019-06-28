@@ -34,9 +34,9 @@ tf_web_library(
     path = "/tf-hparams-utils",
     deps = [
         ":tf_hparams_utils",
+        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 
