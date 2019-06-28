@@ -61,10 +61,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
     # created under our purview.
     self.tmproot = os.path.join(self.get_temp_dir(), "tmproot")
     os.mkdir(self.tmproot)
-    tmpdir_environ = {"TMPDIR": self.tmproot}
-    tmpdir_environ_patcher = mock.patch.dict(os.environ, tmpdir_environ)
-    tmpdir_environ_patcher.start()
-    self.addCleanup(tmpdir_environ_patcher.stop)
+    self._patch_environ({"TMPDIR": self.tmproot})
     tempfile.tempdir = None  # force `gettempdir` to reinitialize from env
     self.assertEqual(tempfile.gettempdir(), self.tmproot)
     self.info_dir = manager._get_info_dir()  # ensure that directory exists
@@ -73,12 +70,9 @@ class ManagerEndToEndTest(tf.test.TestCase):
     # //tensorboard:tensorboard target is made available in the same
     # directory as //tensorboard:manager_e2e_test.)
     tensorboard_binary_dir = os.path.dirname(os.environ["TEST_BINARY"])
-    path_environ = {
+    self._patch_environ({
         "PATH": os.pathsep.join((tensorboard_binary_dir, os.environ["PATH"])),
-    }
-    path_environ_patcher = mock.patch.dict(os.environ, path_environ)
-    path_environ_patcher.start()
-    self.addCleanup(path_environ_patcher.stop)
+    })
     self._ensure_tensorboard_on_path(tensorboard_binary_dir)
 
   def tearDown(self):
@@ -97,6 +91,11 @@ class ManagerEndToEndTest(tf.test.TestCase):
     for p in self.popens:
       p.wait()
     self.assertEqual(failed_kills, [])
+
+  def _patch_environ(self, partial_environ):
+    patcher = mock.patch.dict(os.environ, partial_environ)
+    patcher.start()
+    self.addCleanup(patcher.stop)
 
   def _ensure_tensorboard_on_path(self, expected_binary_dir):
     """Ensure that `tensorboard(1)` refers to our own binary.
@@ -133,12 +132,9 @@ class ManagerEndToEndTest(tf.test.TestCase):
     with open(filepath, "w") as outfile:
       outfile.write(program)
     os.chmod(filepath, 0o777)
-    environ = {
+    self._patch_environ({
         "PATH": os.pathsep.join((tempdir, os.environ["PATH"])),
-    }
-    environ_patcher = mock.patch.dict(os.environ, environ)
-    environ_patcher.start()
-    self.addCleanup(environ_patcher.stop)
+    })
     self._ensure_tensorboard_on_path(expected_binary_dir=tempdir)
 
   def _assert_live(self, info, expected_logdir):
@@ -336,10 +332,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
     with open(filepath, "w") as outfile:
       outfile.write(program)
     os.chmod(filepath, 0o777)
-    environ = {"TENSORBOARD_BINARY": filepath}
-    environ_patcher = mock.patch.dict(os.environ, environ)
-    environ_patcher.start()
-    self.addCleanup(environ_patcher.stop)
+    self._patch_environ({"TENSORBOARD_BINARY": filepath})
 
     start_result = manager.start(["--logdir=./logs", "--port=0"])
     self.assertIsInstance(start_result, manager.StartFailed)
@@ -355,10 +348,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
 
   def test_exec_failure_with_explicit_binary(self):
     path = os.path.join(".", "non", "existent")
-    environ = {"TENSORBOARD_BINARY": path}
-    environ_patcher = mock.patch.dict(os.environ, environ)
-    environ_patcher.start()
-    self.addCleanup(environ_patcher.stop)
+    self._patch_environ({"TENSORBOARD_BINARY": path})
 
     start_result = manager.start(["--logdir=./logs", "--port=0"])
     self.assertIsInstance(start_result, manager.StartExecFailed)
@@ -370,10 +360,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
       # Can't use ENOENT without an absolute path (it's not treated as
       # an exec failure).
       self.skipTest("Not clear how to trigger this case on Windows.")
-    environ = {"PATH": "nope"}
-    environ_patcher = mock.patch.dict(os.environ, environ)
-    environ_patcher.start()
-    self.addCleanup(environ_patcher.stop)
+    self._patch_environ({"PATH": "nope"})
 
     start_result = manager.start(["--logdir=./logs", "--port=0"])
     self.assertIsInstance(start_result, manager.StartExecFailed)
