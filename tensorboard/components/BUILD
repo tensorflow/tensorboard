@@ -25,6 +25,7 @@ tf_web_library(
         "polymer.html",
     ],
     path = "/",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer",
