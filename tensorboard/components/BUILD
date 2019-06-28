@@ -13,24 +13,9 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        ":polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
-    ],
-)
-
-tf_web_library(
-    name = "polymer",
-    srcs = [
-        "polymer.html",
-    ],
-    path = "/",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer",
-        "@org_polymer_web_animations_js",
-        "@org_polymer_webcomponentsjs",
     ],
 )
 

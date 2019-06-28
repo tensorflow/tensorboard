@@ -7,10 +7,10 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_debugger_dashboard",
     srcs = [
+        "health-pills.html",
         "health-pills.ts",
         "selection-tree-node.ts",
         "tensor-shape-helper.ts",
-        "health-pills.html",
         "tf-debugger-continue-dialog.html",
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",
@@ -46,10 +46,10 @@ tf_web_library(
         "@org_polymer_paper_button",
         "@org_polymer_paper_checkbox",
         "@org_polymer_paper_dropdown_menu",
-        "@org_polymer_paper_listbox",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_progress",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",

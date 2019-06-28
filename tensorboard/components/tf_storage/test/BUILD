@@ -21,7 +21,7 @@ tf_web_library(
     ],
     path = "/tf-storage/test",
     deps = [
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_storage",
     ],

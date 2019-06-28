@@ -35,12 +35,12 @@ tf_web_library(
     ],
     path = "/tf-graph-common",
     deps = [
+        "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:dagre",
         "//tensorboard/components/tf_imports:graphlib",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_dashboard_common",
     ],
 )
 
@@ -54,4 +54,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

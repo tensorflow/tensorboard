@@ -15,8 +15,14 @@ tf_web_library(
         ":tf_confusion_matrix",
         ":tf_inference_panel",
         ":tf_inference_viewer",
-        "//tensorboard/components/vz_example_viewer",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_dashboard_common",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_tensorboard:plugin_dialog",
+        "//tensorboard/components/tf_tensorboard:registry",
         "//tensorboard/components/vz_bar_chart",
+        "//tensorboard/components/vz_example_viewer",
         "//tensorboard/components/vz_line_chart2",
         "@ai_google_pair_facets//facets_dive/components/facets_dive",
         "@ai_google_pair_facets//facets_overview/components/facets_overview",
@@ -37,24 +43,18 @@ tf_web_library(
         "@org_polymer_paper_styles",
         "@org_polymer_paper_tabs",
         "@org_polymer_paper_toggle_button",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "//tensorboard/components/tf_tensorboard:plugin_dialog",
-        "//tensorboard/components/tf_tensorboard:registry",
     ],
 )
 
 tf_web_library(
     name = "wit_lib",
     srcs = [
-        "wit.html"
+        "wit.html",
     ],
     path = "/tf-interactive-inference-dashboard",
     deps = [
         ":tf_interactive_inference_dashboard",
-    ]
+    ],
 )
 
 tensorboard_html_binary(

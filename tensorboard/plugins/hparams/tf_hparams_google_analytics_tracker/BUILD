@@ -32,7 +32,7 @@ tf_web_library(
     path = "/tf-hparams-google-analytics-tracker",
     deps = [
         ":tf_hparams_google_analytics_tracker",
-        "//tensorboard/components:polymer",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],
 )

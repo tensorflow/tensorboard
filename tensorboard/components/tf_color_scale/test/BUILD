@@ -21,8 +21,8 @@ tf_web_library(
     ],
     path = "/tf-color-scale/test",
     deps = [
-        "//tensorboard/components:polymer",
         "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],
 )

@@ -15,11 +15,19 @@ tf_web_library(
 
 tf_web_library(
     name = "polymer",
-    srcs = ["@org_definitelytyped//:polymer.d.ts"],
-    path = "/polymer",
+    srcs = [
+        "polymer.html",
+        "@org_definitelytyped//:polymer.d.ts"
+    ],
+    path = "/tf-imports",
     visibility = ["//visibility:public"],
     exports = ["@org_polymer"],
-    deps = [":webcomponentsjs"],
+    deps = [
+        ":webcomponentsjs",
+        "@org_polymer",
+        "@org_polymer_web_animations_js",
+        "@org_polymer_webcomponentsjs",
+    ],
 )
 
 tf_web_library(
