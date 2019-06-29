@@ -15,11 +15,11 @@ A plugin is comprised of three components:
 ### Backend: How the plugin processes data, and sends it to the browser
 
 TensorBoard detects plugins using [entry_points] mechanism ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35)) and loads them on start-up. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints).
- You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
+ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at the load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
 
   - `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
   - `get_plugin_apps`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
-  - `define_flags`: Optional method needed to expose command-line flags.
+  - `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
   - `fix_flags`: : Optional method needed to fix or sanitize command-line flags.
 
 [entry_points]: https://packaging.python.org/specifications/entry-points/
@@ -37,7 +37,7 @@ TensorBoard does not impose any framework/tool requirements for building a front
 
 [ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
 
-Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ (please follow [#2357](https://github.com/tensorflow/tensorboard/issues/2357 for ETA on the library) provide as a library that can be bundled into your frontend binary:
+Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ (please follow [#2357](https://github.com/tensorflow/tensorboard/issues/2357 for ETA on the library)) provide as a library that can be bundled into your frontend binary:
 
 - `tf-dashboard-layout`: A custom element that makes it easy to set up a sidebar section and main section within TensorBoard. The sidebar should hold configuration options, and the run selector.
 - `tf-runs-selector`: A custom element to enable or disable various runs in the TensorBoard frontend.
@@ -51,7 +51,7 @@ A data written out as protocol buffer encodes follow: tensor, tag, step, and met
 
 ## Guideline on naming and branding
 
-We recommend your plugin to have an intuitive name that reflects the functionality -- users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the PIP package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
+We recommend your plugin to have an intuitive name that reflects the functionality -- users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
 
 A predictable package name not only helps user find plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires all loaded plugins to have unique names. However, the plugin name can differ from the [displayed name](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39) and, despite its potential to cause confusion to users, the displayed name is not required to be unique.
 
