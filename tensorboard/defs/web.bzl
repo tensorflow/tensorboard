@@ -113,10 +113,8 @@ def _tf_web_library(ctx):
       execroot.inputs.append(entry)
     elif suffix.endswith(".ts"):
       noext = suffix[:-3]
-      js = ctx.actions.declare_file(paths.join(
-          ctx.genfiles_dir.path, "%s.js" % noext))
-      dts = ctx.actions.declare_file(paths.join(
-          ctx.genfiles_dir.path, "%s.d.ts" % noext))
+      js = ctx.actions.declare_file("%s.js" % noext)
+      dts = ctx.actions.declare_file("%s.d.ts" % noext)
       webpath_js = webpath[:-3] + ".js"
       webpath_dts = webpath[:-3] + ".d.ts"
       _add_webpath(ctx, js, webpath_js, webpaths, new_webpaths, manifest_srcs)
