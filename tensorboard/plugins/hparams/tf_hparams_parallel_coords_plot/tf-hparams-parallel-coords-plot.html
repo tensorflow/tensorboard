@@ -201,7 +201,7 @@ limitations under the License.
         }
         const configuration = this.options.configuration;
         // See if we need to redraw from scratch. We redraw from scratch if
-        // this is initialization or if configuration.schema has changed. 
+        // this is initialization or if configuration.schema has changed.
         if (this._interactionManager === undefined ||
             !_.isEqual(this._interactionManager.schema(),
                        configuration.schema)) {

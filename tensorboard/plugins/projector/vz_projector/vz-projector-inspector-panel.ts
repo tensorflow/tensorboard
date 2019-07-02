@@ -110,7 +110,7 @@ export class InspectorPanel extends InspectorPanelPolymer {
       // Make the default label the first non-numeric column.
       this.selectedMetadataField = this.metadataFields[Math.max(0, labelIndex)];
     }
-    this.updateInspectorPane(this.selectedPointIndices, 
+    this.updateInspectorPane(this.selectedPointIndices,
         this.neighborsOfFirstPoint);
   }
 

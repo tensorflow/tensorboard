@@ -1,5 +1,5 @@
 # To release a new version of witwidget on PyPI and NPM:
- 
+
 1. Ensure updated version numbers have been merged to the master branch in
 tensorboard/plugins/interactive_inference/witwidget/version.py
 and tensorboard/plugins/interactive_inference/witwidget/notebook/jupyter/js/package.json

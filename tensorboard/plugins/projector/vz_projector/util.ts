@@ -173,8 +173,8 @@ export function getSearchPredicate(
  * @return The value returned by the task.
  */
 export function runAsyncTask<T>(
-    message: string, task: () => T, 
-    msgId: string = null, 
+    message: string, task: () => T,
+    msgId: string = null,
     taskDelay = TASK_DELAY_MS): Promise<T> {
   let autoClear = (msgId == null);
   msgId = logging.setModalMessage(message, msgId);

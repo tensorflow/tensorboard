@@ -1,4 +1,3 @@
-#!/bin/sh
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +13,24 @@
 # limitations under the License.
 # ==============================================================================
 
-# Check that any Markdown lists in IPython notebooks are preceded by a
-# blank line, which is required for the Google-internal docs processor
-# to interpret them as lists.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-set -e
+import setuptools
 
-if ! [ -f WORKSPACE ]; then
-    printf >&2 'fatal: no WORKSPACE file found (are you at TensorBoard root?)\n'
-    exit 2
-fi
 
-git ls-files -z '*.ipynb' |
-xargs -0 awk '
-    { is_list = /"([-*]|[0-9]+\.) / }
-    is_list && !last_list && !last_blank {
-        printf "%s:%s:%s\n", FILENAME, FNR, $0;
-        status = 1;
-    }
-    { last_blank = /"\\n",/; last_list = is_list }
-    END { exit status }
-'
+setuptools.setup(
+    name="tensorboard_plugin_example",
+    version="0.1.0",
+    description="Sample TensorBoard plugin.",
+    packages=["tensorboard_plugin_example"],
+    package_data={
+        "tensorboard_plugin_example": ["static/**"],
+    },
+    entry_points={
+        "tensorboard_plugins": [
+            "example = tensorboard_plugin_example.plugin:ExamplePlugin",
+        ],
+    },
+)
