@@ -39,6 +39,7 @@ data, scene configuration, wall time etc. Type of the content maps directly to
 underlying binary data type, i.e. `float32`, `int32` or `uint8`. Content type
 mapping to their enum constant representations is given by a
 [proto definition](https://github.com/tensorflow/tensorboard/plugins/mesh/plugin_data.proto).
+Field `components` serves as bitmask representing all existing parts (vertices, colors, etc.) of the same mesh.
 
 Here is an example:
 ```json

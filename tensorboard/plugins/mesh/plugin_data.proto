@@ -12,7 +12,7 @@ message MeshPluginData {
     COLOR = 3;
   }
 
-  // Version `1` is the only supported version.
+  // Version `0` is the only supported version.
   int32 version = 1;
 
   // The name of the mesh summary this particular summary belongs to.

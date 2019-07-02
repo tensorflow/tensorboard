@@ -67,13 +67,13 @@ class MeshPlugin(base_plugin.TBPlugin):
     # the number of samples.
     self._tag_to_instance_tags = collections.defaultdict(list)
     self._instance_tag_to_metadata = dict()
-    for _, tag_to_content in six.iteritems(all_runs):
+    for run, tag_to_content in six.iteritems(all_runs):
       for tag, content in six.iteritems(tag_to_content):
         meta = metadata.parse_plugin_metadata(content)
-        self._instance_tag_to_metadata[tag] = meta
+        self._instance_tag_to_metadata[(run, tag)] = meta
         # Remember instance_name (instance_tag) for future reference.
-        self._tag_to_instance_tags[meta.name].append(tag)
-        self._instance_tag_to_tag[tag] = meta.name
+        self._tag_to_instance_tags[(run, meta.name)].append(tag)
+        self._instance_tag_to_tag[(run, tag)] = meta.name
 
   @wrappers.Request.application
   def _serve_tags(self, request):
@@ -104,8 +104,8 @@ class MeshPlugin(base_plugin.TBPlugin):
       response[run] = dict()
       for instance_tag, _ in six.iteritems(tag_to_content):
         # Make sure we only operate on user-defined tags here.
-        tag = self._instance_tag_to_tag[instance_tag]
-        meta = self._instance_tag_to_metadata[instance_tag]
+        tag = self._instance_tag_to_tag[(run, instance_tag)]
+        meta = self._instance_tag_to_metadata[(run, instance_tag)]
         # Batch size must be defined, otherwise we don't know how many
         # samples were there.
         response[run][tag] = {'samples': meta.shape[0]}
@@ -184,7 +184,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     data = self._get_sample(event, sample)
     return data
 
-  def _collect_tensor_events(self, request, timestamp=None):
+  def _collect_tensor_events(self, request, step=None):
     """Collects list of tensor events based on request."""
     run = request.args.get('run')
     tag = request.args.get('tag')
@@ -195,18 +195,18 @@ class MeshPlugin(base_plugin.TBPlugin):
     self.prepare_metadata()
 
     tensor_events = []  # List of tuples (meta, tensor) that contain tag.
-    for instance_tag in self._tag_to_instance_tags[tag]:
+    for instance_tag in self._tag_to_instance_tags[(run, tag)]:
       tensors = self._multiplexer.Tensors(run, instance_tag)
-      meta = self._instance_tag_to_metadata[instance_tag]
+      meta = self._instance_tag_to_metadata[(run, instance_tag)]
       tensor_events += [(meta, tensor) for tensor in tensors]
 
-    if timestamp is not None:
+    if step is not None:
       tensor_events = [
-        event for event in tensor_events if event[1].wall_time == timestamp]
+        event for event in tensor_events if event[1].step == step]
     else:
-      # Make sure tensors sorted by timestamp in ascending order.
+      # Make sure tensors sorted by step in ascending order.
       tensor_events = sorted(
-        tensor_events, key=lambda tensor_data: tensor_data[1].wall_time)
+        tensor_events, key=lambda tensor_data: tensor_data[1].step)
 
     return tensor_events
 
@@ -226,8 +226,8 @@ class MeshPlugin(base_plugin.TBPlugin):
     Returns:
       werkzeug.Response either float32 or int32 data in binary format.
     """
-    timestamp = float(request.args.get('timestamp', 0.0))
-    tensor_events = self._collect_tensor_events(request, timestamp)
+    step = float(request.args.get('step', 0.0))
+    tensor_events = self._collect_tensor_events(request, step)
     content_type = request.args['content_type']
     content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(
         content_type)

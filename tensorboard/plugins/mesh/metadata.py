@@ -24,7 +24,7 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 
 
 MeshTensor = collections.namedtuple(
-  'MeshTensor', ('data', 'content_type', 'data_type'))
+    'MeshTensor', ('data', 'content_type', 'data_type'))
 PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
@@ -129,6 +129,4 @@ def parse_plugin_metadata(content):
         MeshTensor(None, plugin_data_pb2.MeshPluginData.FACE, None),
         MeshTensor(None, plugin_data_pb2.MeshPluginData.COLOR, None),
     ])
-    # Upgrade version to the most current one, since data is compliant.
-    result.version = get_current_version()
   return result
