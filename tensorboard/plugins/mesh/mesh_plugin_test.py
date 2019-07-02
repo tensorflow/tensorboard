@@ -161,12 +161,12 @@ class MeshPluginTest(tf.test.TestCase):
 
   def validate_data_response(
       self, run, tag, sample, content_type, dtype, ground_truth_data,
-      timestamp=0.0):
+      step=0):
     """Makes request and checks that response has expected data."""
     response = self.server.get(
         "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type="
-        "%s&timestamp=%.f" %
-        (run, tag, sample, content_type, timestamp))
+        "%s&step=%d" %
+        (run, tag, sample, content_type, step))
     self.assertEqual(200, response.status_code)
     data = test_utils.deserialize_array_buffer_response(
         next(response.response), dtype)
@@ -182,10 +182,10 @@ class MeshPluginTest(tf.test.TestCase):
       self.runs[0], self.names[1], 0, "FACE", np.int32, self.data[1].faces)
 
     # Validate that the same summary has mesh with different number of faces at
-    # different timestamp=1.
+    # different step=1.
     self.validate_data_response(
       self.runs[0], self.names[1], 0, "FACE", np.int32, self.data[2].faces,
-        timestamp=1.0)
+        step=1)
 
     self.validate_data_response(
       self.runs[0], self.names[2], 0, "COLOR", np.uint8, self.data[3].colors)
@@ -202,18 +202,18 @@ class MeshPluginTest(tf.test.TestCase):
                         plugin_data_pb2.MeshPluginData.VERTEX)
     self.assertAllEqual(metadata[0]["data_shape"], self.data[0].vertices.shape)
 
-  def testsEventsAlwaysSortedByWallTime(self):
-    """Tests that events always sorted by wall time."""
+  def testsEventsAlwaysSortedByStep(self):
+    """Tests that events always sorted by step."""
     response = self.server.get(
         "/data/plugin/mesh/meshes?run=%s&tag=%s&sample=%d" %
         (self.runs[0], self.names[1], 0))
     self.assertEqual(200, response.status_code)
     metadata = test_utils.deserialize_json_response(response.get_data())
     for i in range(1, self.steps):
-      # Timestamp will be equal when two tensors of different content type
-      #  belong to the same mesh.
-      self.assertLessEqual(metadata[i - 1]["wall_time"],
-                           metadata[i]["wall_time"])
+      # Step will be equal when two tensors of different content type
+      # belong to the same mesh.
+      self.assertLessEqual(metadata[i - 1]["step"],
+                           metadata[i]["step"])
 
   @mock.patch.object(
       event_multiplexer.EventMultiplexer,
