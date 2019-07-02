@@ -32,19 +32,19 @@ PLUGIN_NAME = 'mesh'
 _PROTO_VERSION = 0
 
 
-def get_components_bitmask(tensors):
+def get_components_bitmask(content_types):
   """Creates bitmask for all existing components of the summary.
 
   Args:
-    tensors: list of MeshTensor tuples, representing all components
-      related to the summary.
+    content_type: list of plugin_data_pb2.MeshPluginData.ContentType,
+      representing all components related to the summary.
   Returns: bitmask based on passed tensors.
   """
   components = 0
-  for tensor in tensors:
-    if tensor.content_type == plugin_data_pb2.MeshPluginData.UNDEFINED:
+  for content_type in content_types:
+    if content_type == plugin_data_pb2.MeshPluginData.UNDEFINED:
       raise ValueError('Cannot include UNDEFINED content type in mask.')
-    components = components | (1 << tensor.content_type)
+    components = components | (1 << content_type)
   return components
 
 
@@ -125,8 +125,8 @@ def parse_plugin_metadata(content):
   # Add components field to older version of the proto.
   if result.components == 0:
     result.components = get_components_bitmask([
-        MeshTensor(None, plugin_data_pb2.MeshPluginData.VERTEX, None),
-        MeshTensor(None, plugin_data_pb2.MeshPluginData.FACE, None),
-        MeshTensor(None, plugin_data_pb2.MeshPluginData.COLOR, None),
+        plugin_data_pb2.MeshPluginData.VERTEX,
+        plugin_data_pb2.MeshPluginData.FACE,
+        plugin_data_pb2.MeshPluginData.COLOR,
     ])
   return result

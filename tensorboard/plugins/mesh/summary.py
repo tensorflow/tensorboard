@@ -122,7 +122,9 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
         colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
   tensors = [tensor for tensor in tensors if tensor.data is not None]
-  components = metadata.get_components_bitmask(tensors)
+
+  components = metadata.get_components_bitmask([
+    tensor.content_type for tensor in tensors])
 
   for tensor in tensors:
     summaries.append(
@@ -173,7 +175,8 @@ def pb(name,
           colors, plugin_data_pb2.MeshPluginData.COLOR, tf.uint8)
   ]
   tensors = [tensor for tensor in tensors if tensor.data is not None]
-  components = metadata.get_components_bitmask(tensors)
+  components = metadata.get_components_bitmask([
+    tensor.content_type for tensor in tensors])
   for tensor in tensors:
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
