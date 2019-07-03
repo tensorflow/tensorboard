@@ -14,8 +14,6 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
 load("//third_party:clutz.bzl",
      "DEPRECATED_CLUTZ_ATTRIBUTES",
      "DEPRECATED_CLUTZ_OUTPUTS",
@@ -332,8 +330,7 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
   return dummy, manifests
 
 def _new_file(ctx, suffix):
-  return ctx.actions.declare_file(paths.join(
-      ctx.bin_dir.path, "%s%s" % (ctx.label.name, suffix)))
+  return ctx.actions.declare_file("%s%s" % (ctx.label.name, suffix))
 
 def _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs):
   if webpath in new_webpaths:
