@@ -14,8 +14,6 @@
 
 """Rule for building the HTML binary using Closure Compiler."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
 
@@ -64,8 +62,7 @@ def _tensorboard_html_binary(ctx):
   manifest_srcs = [struct(path=ctx.outputs.html.path,
                           longpath=long_path(ctx, ctx.outputs.html),
                           webpath=ctx.attr.output_path)]
-  manifest = ctx.actions.declare_file(paths.join(
-      ctx.configuration.bin_dir.path, "%s.pbtxt" % ctx.label.name))
+  manifest = ctx.actions.declare_file("%s.pbtxt" % ctx.label.name)
   ctx.actions.write(
       output=manifest,
       content=struct(
@@ -80,9 +77,8 @@ def _tensorboard_html_binary(ctx):
       manifest=[long_path(ctx, man) for man in manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
-  params_file = ctx.actions.declare_file(paths.join(
-      ctx.configuration.bin_dir.path,
-      "%s_server_params.pbtxt" % ctx.label.name))
+  params_file = ctx.actions.declare_file(
+      "%s_server_params.pbtxt" % ctx.label.name)
   ctx.actions.write(output=params_file, content=params.to_proto())
   ctx.actions.write(
       is_executable=True,
