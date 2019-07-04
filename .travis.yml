@@ -77,14 +77,16 @@ before_script:
   - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
   - yamllint -c docs/.yamllint docs docs/.yamllint
+  # Make sure that IPython notebooks have valid Markdown.
+  - tensorboard/tools/docs_list_format_test.sh
   # Make sure we aren't accidentally including work-in-progress code.
   - tensorboard/tools/do_not_submit_test.sh
   # Make sure all necessary files have the license information.
   - tensorboard/tools/license_test.sh
-  # Make sure that IPython notebooks have valid Markdown.
-  - tensorboard/tools/docs_list_format_test.sh
   # Make sure that build URLs are valid.
   - tensorboard/tools/mirror_urls_test.sh
+  # Make sure that files have no trailing whitespace.
+  - tensorboard/tools/whitespace_hygiene_test.py
   - |
     # Specify subset of tests to run depending on TF installation config.
     # We condition the value of --test_tag_filters so that we can run the
@@ -104,7 +106,7 @@ script:
   - elapsed && bazel fetch //tensorboard/...
   - elapsed && bazel build //tensorboard/...
   - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
-  - elapsed && bazel run //tensorboard/pip_package:build_pip_package -- --tf-version "${TF_VERSION_ID}" --smoke
+  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${TF_VERSION_ID}"
   # Run manual S3 test
   - elapsed && bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - elapsed && bazel test //tensorboard/summary/writer:event_file_writer_s3_test

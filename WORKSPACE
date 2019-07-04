@@ -54,11 +54,11 @@ closure_repositories(
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "1086f63c2c9fbea6873e137d08b5711a0493a5b699f258774da97f7672ba939a",
-    strip_prefix = "tensorflow-2243bd6ba9b36d43dbd5c0ede313853f187f5dce",
+    sha256 = "8fd92a6b65330ec23e32ae052eca5cf68e278df677b7e15f36d59e6350f201f0",
+    strip_prefix = "tensorflow-6168f476b52d6d40eeff1823943ed2c0ea28adde",
     urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/2243bd6ba9b36d43dbd5c0ede313853f187f5dce.tar.gz",  # 2019-03-26
-        "https://github.com/tensorflow/tensorflow/archive/2243bd6ba9b36d43dbd5c0ede313853f187f5dce.tar.gz",
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",  # 2019-04-08
+        "https://github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",
     ],
 )
 

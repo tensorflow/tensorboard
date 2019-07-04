@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from absl import logging
 import base64
 import json
 import googleapiclient.discovery
+import os
 import tensorflow as tf
 from IPython import display
 from google.protobuf import json_format
@@ -26,6 +28,8 @@ from tensorboard.plugins.interactive_inference.utils import inference_utils
 NUM_MUTANTS_TO_GENERATE = 10
 NUM_EXAMPLES_FOR_MUTANT_ANALYSIS = 50
 
+# Custom user agent for tracking number of calls to Cloud AI Platform.
+USER_AGENT_FOR_CAIP_TRACKING = 'WhatIfTool'
 
 class WitWidgetBase(object):
   """WIT widget base class for common code between Jupyter and Colab."""
@@ -36,7 +40,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    tf.logging.set_verbosity(tf.logging.WARN)
+    logging.set_verbosity(logging.WARN)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
@@ -297,6 +301,10 @@ class WitWidgetBase(object):
   def _predict_aip_impl(self, examples, project, model, version, force_json,
                         adjust_example, adjust_prediction):
     """Custom prediction function for running inference through AI Platform."""
+
+    # Set up environment for GCP call for specified project.
+    os.environ['GOOGLE_CLOUD_PROJECT'] = project
+
     service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
@@ -315,10 +323,16 @@ class WitWidgetBase(object):
       examples_for_predict = [
         adjust_example(ex) for ex in examples_for_predict]
 
-    response = service.projects().predict(
+    # Send request, including custom user-agent for tracking.
+    request_builder = service.projects().predict(
         name=name,
         body={'instances': examples_for_predict}
-    ).execute()
+    )
+    user_agent = request_builder.headers.get('user-agent')
+    request_builder.headers['user-agent'] = (
+      USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+    response = request_builder.execute()
+
     if 'error' in response:
       raise RuntimeError(response['error'])
 

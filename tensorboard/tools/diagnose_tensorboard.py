@@ -404,6 +404,10 @@ def main():
   print("### Diagnostics")
   print()
 
+  print("<details>")
+  print("<summary>Diagnostics output</summary>")
+  print()
+
   markdown_code_fence = "``````"  # seems likely to be sufficient
   print(markdown_code_fence)
   suggestions = []
@@ -418,7 +422,7 @@ def main():
       pass
   print(markdown_code_fence)
   print()
-  print("End of diagnostics.")
+  print("</details>")
 
   for suggestion in suggestions:
     print()

@@ -35,13 +35,14 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
+import inspect
+import logging
 import os
 import signal
 import socket
 import sys
 import threading
 import time
-import inspect
 
 import absl.logging
 import six
@@ -428,6 +429,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     if self._auto_wildcard:
       host = self._get_wildcard_address(port)
 
+    self._fix_werkzeug_logging()
     try:
       super(WerkzeugServer, self).__init__(host, port, wsgi_app)
     except socket.error as e:
@@ -528,6 +530,23 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
     return 'http://%s:%d%s/' % (display_host, self.server_port,
                                self._flags.path_prefix.rstrip('/'))
+
+  def _fix_werkzeug_logging(self):
+    """Fix werkzeug logging setup so it inherits TensorBoard's log level.
+
+    This addresses a change in werkzeug 0.15.0+ [1] that causes it set its own
+    log level to INFO regardless of the root logger configuration. We instead
+    want werkzeug to inherit TensorBoard's root logger log level (set via absl
+    to WARNING by default).
+
+    [1]: https://github.com/pallets/werkzeug/commit/4cf77d25858ff46ac7e9d64ade054bf05b41ce12
+    """
+    # Log once at DEBUG to force werkzeug to initialize its singleton logger,
+    # which sets the logger level to INFO it if is unset, and then access that
+    # object via logging.getLogger('werkzeug') to durably revert the level to
+    # unset (and thus make messages logged to it inherit the root logger level).
+    self.log('debug', 'Fixing werkzeug logger to inherit TensorBoard log level')
+    logging.getLogger('werkzeug').setLevel(logging.NOTSET)
 
 
 create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)
