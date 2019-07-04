@@ -12,9 +12,7 @@ exports_files(["LICENSE"])  # Needed for internal repo.
 
 package_group(
     name = "internal",
-    packages = [
-        "//tensorboard/...",
-    ],
+    packages = ["//tensorboard/..."],
 )
 
 # The standard TensorBoard binary that serves the webapp.

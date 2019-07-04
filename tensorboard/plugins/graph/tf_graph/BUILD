@@ -27,7 +27,6 @@ tf_web_library(
         "@org_polymer_paper_toggle_button",
         "@org_polymer_paper_tooltip",
     ],
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
