@@ -73,6 +73,7 @@ export class ProjectorScatterPlotAdapter {
   private renderLabelsIn3D: boolean = false;
   private labelPointAccessor: string;
   private legendPointColorer: (ds: DataSet, index: number) => string;
+  private distanceSpace: DistanceSpace;
   private distanceMetric: DistanceFunction;
 
   private spriteVisualizer: ScatterPlotVisualizerSprites;
@@ -102,6 +103,12 @@ export class ProjectorScatterPlotAdapter {
       this.updateScatterPlotAttributes();
       this.scatterPlot.render();
     });
+    projectorEventContext.registerDistanceSpaceChangedListener(
+        distanceSpace => {
+          this.distanceSpace = distanceSpace;
+          this.updateScatterPlotAttributes();
+          this.scatterPlot.render();
+        });
     projectorEventContext.registerDistanceMetricChangedListener(
         distanceMetric => {
           this.distanceMetric = distanceMetric;

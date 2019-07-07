@@ -313,6 +313,12 @@ export class ScatterPlot {
       this.rectangleSelector.onMouseUp();
       this.render();
     }
+    // right-click and not isDragSequence
+    else if (e.button == 2 && !this.isDragSequence) {
+      const selection = (this.nearestPoint != null) ? [this.nearestPoint] : [];
+      this.projectorEventContext.notifySelectionChanged(selection, 'edit');
+      this.render();
+    }
     this.mouseIsDown = false;
   }
 
