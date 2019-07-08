@@ -19,15 +19,15 @@ TensorBoard detects plugins using the [Python `entry_points` mechanism][entrypoi
   - `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
   - `get_plugin_apps`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
-  - `fix_flags`: : Optional method needed to fix or sanitize command-line flags.
+  - `fix_flags`: Optional method needed to fix or sanitize command-line flags.
 
 [entrypoints-spec]: https://packaging.python.org/specifications/entry-points/
 [entrypoints-declaration]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35
 [`base_plugin.py`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/base_plugin.py
 
-On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin. For more information abuto summaries, please refer to the relevant section below.
+On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin. For more information about summaries, please refer to the relevant section below.
 
-Plugins are not technically restricted from arbitrary filesystem and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
+Plugins are not technically restricted from arbitrary file system and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
 
 [`PluginEventMultiplexer`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/plugin_event_multiplexer.py
 
