@@ -30,6 +30,7 @@ tf_web_library(
         "util.ts",
     ],
     path = "/tf-graph-common",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:dagre",
