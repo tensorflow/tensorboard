@@ -48,9 +48,15 @@ Consistency in user interface and experience, we believe, is important for happy
 
 ### Summaries: How the plugin gets data
 
-Your plugin will likely to visualize data logged by TensorFlow. You will need to provide a way for user to log data that your plugin later can identify. For example, the example plugin provides a novel [greeting TensorFlow op](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48) that writes data in the form below.
+Your plugin will need to provide a way for users to log **summaries**, which are the mechanism for getting data from a TensorFlow model to disk and eventually into your TensorBoard plugin for visualization. For example, the example plugin provides a novel [“greeting” TensorFlow op][greeting-op] that writes greeting summaries. A summary is a protocol buffer with the following information:
 
-A data written out as protocol buffer encodes follow: tensor, tag, step, and metadata. A Tensor is an actual value that is related to a specific tag and a specific step. A tag is a string that uniquely identifies a data series, often supplied by a user. A step encodes a temporal information which often is either batch or epoch number. Lastly, metadata can contain extra information about data and it can contain a plugin specific payload in addition to an [owner identifier](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64).
+  - tag: A string that uniquely identifies a data series, often supplied by the user (e.g., “loss”).
+  - step: A temporal index (an integer), often batch number of epoch number.
+  - tensor: The actual value for a tag–step combination, as a tensor of arbitrary shape and dtype (e.g., `0.123`, or `["one", "two"]`).
+  - metadata: Specifies [which plugin owns the summary][owner-identifier], and provides an arbitrary plugin-specific payload.
+
+[greeting-op]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48
+[owner-identifier]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64
 
 ## Guideline on naming and branding
 
