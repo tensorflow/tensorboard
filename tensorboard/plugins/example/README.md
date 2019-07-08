@@ -46,7 +46,7 @@ Consistency in user interface and experience, we believe, is important for happy
 - `tf-dashboard-layout`: A custom element that makes it easy to set up a sidebar section and main section within TensorBoard. The sidebar should hold configuration options, and the run selector.
 - `tf-runs-selector`: A custom element to enable or disable various runs in the TensorBoard frontend.
 
-### Summary: How the plugin gets data
+### Summaries: How the plugin gets data
 
 Your plugin will likely to visualize data logged by TensorFlow. You will need to provide a way for user to log data that your plugin later can identify. For example, the example plugin provides a novel [greeting TensorFlow op](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48) that writes data in the form below.
 
