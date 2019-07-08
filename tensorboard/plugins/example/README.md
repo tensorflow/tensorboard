@@ -39,7 +39,7 @@ TensorBoard does not impose any framework/tool requirements for building a front
 
 [ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
 
-Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ (please follow [issue #2357][dynamic-plugin-tracking-bug] for ETA on the library) provide as a library that can be bundled into your frontend binary:
+Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ provide as a library that can be bundled into your frontend binary (please follow [issue #2357][dynamic-plugin-tracking-bug] for progress):
 
 [dynamic-plugin-tracking-bug]: https://github.com/tensorflow/tensorboard/issues/2357
 
