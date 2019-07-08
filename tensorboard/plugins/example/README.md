@@ -98,4 +98,6 @@ to unlink the plugin from your virtualenv, after which you can also delete the `
 
 ## Distribution
 
-A plugin should be distributed as a Pip package to PyPI. Please follow the guide [here](https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives).
+A plugin should be distributed as a Pip package, and may be uploaded to PyPI. Please follow the [PyPI distribution archive upload guide][pypi-upload] for more information.
+
+[pypi-upload]: https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives
