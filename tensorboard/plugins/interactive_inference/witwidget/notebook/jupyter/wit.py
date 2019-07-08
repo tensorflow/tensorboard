@@ -47,6 +47,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   mutant_charts = Dict([]).tag(sync=True)
   mutant_charts_counter = Int(0)
   sprite = Unicode('').tag(sync=True)
+  error_str = Unicode('').tag(sync=True)
 
   def __init__(self, config_builder, height=1000):
     """Constructor for Jupyter notebook WitWidget.
@@ -67,7 +68,10 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
 
   @observe('infer')
   def _infer(self, change):
-    self.inferences = base.WitWidgetBase.infer_impl(self)
+    try:
+      self.inferences = base.WitWidgetBase.infer_impl(self)
+    except Exception as e:
+      self.error_str = str(e)
 
   # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')
@@ -78,10 +82,13 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   @observe('infer_mutants')
   def _infer_mutants(self, change):
     info = self.infer_mutants
-    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-    json_mapping['counter'] = self.mutant_charts_counter
-    self.mutant_charts_counter += 1
-    self.mutant_charts = json_mapping
+    try:
+      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+      json_mapping['counter'] = self.mutant_charts_counter
+      self.mutant_charts_counter += 1
+      self.mutant_charts = json_mapping
+    except Exception as e:
+      self.error_str = str(e)
 
   @observe('update_example')
   def _update_example(self, change):

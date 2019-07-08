@@ -32,6 +32,7 @@ var WITView = widgets.DOMWidgetView.extend({
         this.eligibleFeaturesChanged, this);
     this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
     this.model.on('change:sprite', this.spriteChanged, this);
+    this.model.on('change:error_str', this.backendError, this);
   },
 
   /**
@@ -228,6 +229,10 @@ var WITView = widgets.DOMWidgetView.extend({
     this.view_.hasSprite = true;
     this.view_.localAtlasUrl = spriteUrl;
     this.view_.updateSprite();
+  },
+  backendError: function() {
+    const errorStr = this.model.get('error_str');
+    this.view_.handleError_(errorStr);
   },
 });
 

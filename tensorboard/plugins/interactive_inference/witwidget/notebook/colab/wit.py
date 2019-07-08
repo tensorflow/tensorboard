@@ -90,6 +90,9 @@ WIT_HTML = """
 
       // Javascript callbacks called by python code to communicate with WIT
       // Polymer element.
+      window.backendError = errorStr => {{
+        wit.handleError_(errorStr);
+      }};
       window.inferenceCallback = inferences => {{
         const parsedInferences = JSON.parse(inferences);
         wit.labelVocab = parsedInferences.label_vocab;
@@ -233,9 +236,14 @@ class WitWidget(base.WitWidgetBase):
       self._generate_sprite()
 
   def infer(self):
-    inferences = base.WitWidgetBase.infer_impl(self)
-    output.eval_js("""inferenceCallback('{inferences}')""".format(
-      inferences=json.dumps(inferences)))
+    try:
+      inferences = base.WitWidgetBase.infer_impl(self)
+      output.eval_js("""inferenceCallback('{inferences}')""".format(
+        inferences=json.dumps(inferences)))
+    except Exception as e:
+      error_str = str(e)
+      output.eval_js("""backendError('{error}')""".format(
+        error=json.dumps(str(e))))
 
   def delete_example(self, index):
     self.examples.pop(index)
@@ -259,9 +267,13 @@ class WitWidget(base.WitWidgetBase):
       features_list=json.dumps(features_list)))
 
   def infer_mutants(self, info):
-    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-    output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
-      json_mapping=json.dumps(json_mapping)))
+    try:
+      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+      output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
+        json_mapping=json.dumps(json_mapping)))
+    except Exception as e:
+      output.eval_js("""backendError('{error}')""".format(
+        error=json.dumps(str(e))))
 
   def _generate_sprite(self):
     sprite = base.WitWidgetBase.create_sprite(self)

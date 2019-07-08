@@ -35,6 +35,7 @@ limitations under the License.
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
@@ -4438,6 +4439,9 @@ limitations under the License.
               : this.strWithModelName_(inferenceValueStr, 0);
           if (this.isRegression_(this.modelType)) {
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
+            if (this.numModels > 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceValueStr, 1);
+            }
           }
           else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             if (this.numModels == 1) {
@@ -4704,6 +4708,12 @@ limitations under the License.
         console.error(msg);
       },
 
+      handleError_: function(errorStr) {
+        this.showToast_(errorStr);
+        this.exampleStatusStr = errorStr;
+        this.$.spinner.hidden = true;
+      },
+
       makeAsyncRequest_: function(
           url, thenDoFn, postData, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
@@ -4711,9 +4721,7 @@ limitations under the License.
             return;
           }
           if (result.value && result.value.error){
-            // show toast with the error
-            this.showToast_(result.value.error);
-            this.$.spinner.hidden = true;
+            this.handleError_(result.value.error);
             if (errorFn != null) {
               errorFn();
             }
@@ -4723,9 +4731,7 @@ limitations under the License.
         });
         this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.exampleStatusStr = 'Request failed';
-              this.showToast_('Request failed: ' + reason);
-              this.$.spinner.hidden = true;
+              this.handleError_('Request failed: ' + reason);
               if (errorFn != null) {
                 errorFn();
               }
@@ -5398,16 +5404,6 @@ limitations under the License.
           return null;
         }
         return {step: origValue, scalar: origInferenceScore};
-      },
-
-      showToast: function(msg) {
-        const toast = document.createElement('paper-toast');
-        document.body.appendChild(toast);
-        toast.text = msg;
-        toast.show();
-
-        // Also, log to console.
-        console.error(msg);
       },
 
       deletePdPlotSpinner: function(featureName) {
