@@ -14,18 +14,20 @@ A plugin is comprised of three components:
 
 ### Backend: How the plugin processes data, and sends it to the browser
 
-TensorBoard detects plugins using [entry_points] mechanism ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35)) and loads them on start-up. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints).
- You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at the load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
+TensorBoard detects plugins using the [Python `entry_points` mechanism][entrypoints-spec]; see [the example plugin’s `setup.py`][entrypoints-declaration] for an example of how to declare a plugin to TensorBoard. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints). You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at the load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
 
   - `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
   - `get_plugin_apps`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
   - `fix_flags`: : Optional method needed to fix or sanitize command-line flags.
 
-[entry_points]: https://packaging.python.org/specifications/entry-points/
+[entrypoints-spec]: https://packaging.python.org/specifications/entry-points/
+[entrypoints-declaration]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35
 [`base_plugin.py`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/base_plugin.py
 
-While plugins have unfettered access to filesystem, TensorBoard recommends accessing data via `PluginRunToTagToContent` in [`PluginEventMultiplexer`] for its abstraction over filesystem, consistency in user experience (runs and tags), and optimizations for read operations. It, when invoked with the `plugin_name`, returns a dictionary mapping from run name to all of the tags that are associated with your plugin. The tag names themselves map to the `content` from the `PluginData` proto. For more information about Summary, please refer to the section on it below.
+On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin. For more information abuto summaries, please refer to the relevant section below.
+
+Plugins are not technically restricted from arbitrary filesystem and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
 
 [`PluginEventMultiplexer`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/plugin_event_multiplexer.py
 
@@ -33,27 +35,38 @@ While plugins have unfettered access to filesystem, TensorBoard recommends acces
 
 Now that we have an API, it’s time for the cool part: adding a visualization.
 
-TensorBoard does not impose any framework/tool requirements for building a frontend -- you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16). Do note that all frontend resources have to be served by the plugin backend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/plugin.py#L45)).
+TensorBoard does not impose any framework/tool requirements for building a frontend—you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example ES module][example-es-module]). Do note that all frontend resources have to be served by the plugin backend ([example backend][example-backend])
 
 [ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
+[example-es-module]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16
+[example-backend]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/plugin.py#L45
 
-Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ (please follow [#2357](https://github.com/tensorflow/tensorboard/issues/2357 for ETA on the library)) provide as a library that can be bundled into your frontend binary:
+Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. Below are components we _will_ provide as a library that can be bundled into your frontend binary (please follow [issue #2357][dynamic-plugin-tracking-bug] for progress):
+
+[dynamic-plugin-tracking-bug]: https://github.com/tensorflow/tensorboard/issues/2357
 
 - `tf-dashboard-layout`: A custom element that makes it easy to set up a sidebar section and main section within TensorBoard. The sidebar should hold configuration options, and the run selector.
 - `tf-runs-selector`: A custom element to enable or disable various runs in the TensorBoard frontend.
 
-### Summary: How the plugin gets data
+### Summaries: How the plugin gets data
 
-Your plugin will likely to visualize data logged by TensorFlow. You will need to provide a way for user to log data that your plugin later can identify. For example, the example plugin provides a novel [greeting TensorFlow op](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48) that writes data in the form below.
+Your plugin will need to provide a way for users to log **summaries**, which are the mechanism for getting data from a TensorFlow model to disk and eventually into your TensorBoard plugin for visualization. For example, the example plugin provides a novel [“greeting” TensorFlow op][greeting-op] that writes greeting summaries. A summary is a protocol buffer with the following information:
 
-A data written out as protocol buffer encodes follow: tensor, tag, step, and metadata. A Tensor is an actual value that is related to a specific tag and a specific step. A tag is a string that uniquely identifies a data series, often supplied by a user. A step encodes a temporal information which often is either batch or epoch number. Lastly, metadata can contain extra information about data and it can contain a plugin specific payload in addition to an [owner identifier](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64).
+  - tag: A string that uniquely identifies a data series, often supplied by the user (e.g., “loss”).
+  - step: A temporal index (an integer), often batch number of epoch number.
+  - tensor: The actual value for a tag–step combination, as a tensor of arbitrary shape and dtype (e.g., `0.123`, or `["one", "two"]`).
+  - metadata: Specifies [which plugin owns the summary][owner-identifier], and provides an arbitrary plugin-specific payload.
 
+[greeting-op]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48
+[owner-identifier]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64
 
 ## Guideline on naming and branding
 
-We recommend your plugin to have an intuitive name that reflects the functionality -- users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
+We recommend that your plugin have an intuitive name that reflects the functionality—users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should be distributed in a Pip package named `tensorboard_plugin_foo`.
 
-A predictable package name not only helps user find plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires all loaded plugins to have unique names. However, the plugin name can differ from the [displayed name](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39) and, despite its potential to cause confusion to users, the displayed name is not required to be unique.
+A predictable package naming scheme not only helps users find your plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires that all loaded plugins kave unique names. However, the plugin name can differ from the [user-facing display name][display-name]; display names are not strictly required to be unique.
+
+[display-name]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39
 
 Lastly, when distributing a custom plugin of TensorBoard, we recommend that it be branded as “Foo for TensorBoard” (rather than “TensorBoard Foo”). TensorBoard is distributed under the Apache 2.0 license, but the name itself is a trademark of Google LLC.
 
@@ -85,6 +98,8 @@ python setup.py develop --uninstall
 
 to unlink the plugin from your virtualenv, after which you can also delete the `tensorboard_plugin_example.egg-info/` directory that the original `setup.py` invocation created.
 
-
 ## Distribution
-A plugin should be distributed as a Pip package to PyPI. Please follow the guide [here](https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives).
+
+A plugin should be distributed as a Pip package, and may be uploaded to PyPI. Please follow the [PyPI distribution archive upload guide][pypi-upload] for more information.
+
+[pypi-upload]: https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives
