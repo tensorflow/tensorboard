@@ -62,7 +62,9 @@ Your plugin will need to provide a way for users to log **summaries**, which are
 
 We recommend that your plugin have an intuitive name that reflects the functionality—users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should be distributed in a Pip package named `tensorboard_plugin_foo`.
 
-A predictable package naming scheme not only helps users find your plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires that all loaded plugins kave unique names. However, the plugin name can differ from the [displayed name](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39) and, despite its potential to cause confusion to users, the displayed name is not required to be unique.
+A predictable package naming scheme not only helps users find your plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires that all loaded plugins kave unique names. However, the plugin name can differ from the [user-facing display name][display-name]; display names are not strictly required to be unique.
+
+[display-name]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39
 
 Lastly, when distributing a custom plugin of TensorBoard, we recommend that it be branded as “Foo for TensorBoard” (rather than “TensorBoard Foo”). TensorBoard is distributed under the Apache 2.0 license, but the name itself is a trademark of Google LLC.
 
