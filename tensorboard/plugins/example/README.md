@@ -25,7 +25,9 @@ TensorBoard detects plugins using the [Python `entry_points` mechanism][entrypoi
 [entrypoints-declaration]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35
 [`base_plugin.py`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/base_plugin.py
 
-While plugins have unfettered access to filesystem, TensorBoard recommends accessing data via `PluginRunToTagToContent` in [`PluginEventMultiplexer`] for its abstraction over filesystem, consistency in user experience (runs and tags), and optimizations for read operations. It, when invoked with the `plugin_name`, returns a dictionary mapping from run name to all of the tags that are associated with your plugin. The tag names themselves map to the `content` from the `PluginData` proto. For more information about Summary, please refer to the section on it below.
+On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin. For more information abuto summaries, please refer to the relevant section below.
+
+Plugins are not technically restricted from arbitrary filesystem and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
 
 [`PluginEventMultiplexer`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/plugin_event_multiplexer.py
 
