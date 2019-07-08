@@ -35,7 +35,7 @@ Plugins are not technically restricted from arbitrary filesystem and network acc
 
 Now that we have an API, it’s time for the cool part: adding a visualization.
 
-TensorBoard does not impose any framework/tool requirements for building a frontend -- you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16). Do note that all frontend resources have to be served by the plugin backend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/plugin.py#L45)).
+TensorBoard does not impose any framework/tool requirements for building a frontend—you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16). Do note that all frontend resources have to be served by the plugin backend ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/plugin.py#L45)).
 
 [ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
 
@@ -52,7 +52,7 @@ A data written out as protocol buffer encodes follow: tensor, tag, step, and met
 
 ## Guideline on naming and branding
 
-We recommend your plugin to have an intuitive name that reflects the functionality -- users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
+We recommend your plugin to have an intuitive name that reflects the functionality—users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
 
 A predictable package name not only helps user find plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires all loaded plugins to have unique names. However, the plugin name can differ from the [displayed name](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39) and, despite its potential to cause confusion to users, the displayed name is not required to be unique.
 
