@@ -48,7 +48,6 @@ Your plugin will likely to visualize data logged by TensorFlow. You will need to
 
 A data written out as protocol buffer encodes follow: tensor, tag, step, and metadata. A Tensor is an actual value that is related to a specific tag and a specific step. A tag is a string that uniquely identifies a data series, often supplied by a user. A step encodes a temporal information which often is either batch or epoch number. Lastly, metadata can contain extra information about data and it can contain a plugin specific payload in addition to an [owner identifier](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64).
 
-
 ## Guideline on naming and branding
 
 We recommend your plugin to have an intuitive name that reflects the functionality -- users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should have a name `tensorboard_plugin_foo`.
@@ -85,6 +84,6 @@ python setup.py develop --uninstall
 
 to unlink the plugin from your virtualenv, after which you can also delete the `tensorboard_plugin_example.egg-info/` directory that the original `setup.py` invocation created.
 
-
 ## Distribution
+
 A plugin should be distributed as a Pip package to PyPI. Please follow the guide [here](https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives).
