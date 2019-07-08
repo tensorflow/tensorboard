@@ -14,7 +14,7 @@ A plugin is comprised of three components:
 
 ### Backend: How the plugin processes data, and sends it to the browser
 
-TensorBoard detects plugins using [entry_points] mechanism ([example](https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35)) and loads them on start-up. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints).
+TensorBoard detects plugins using the [Python `entry_points` mechanism][entrypoints-spec]; see [the example plugin’s `setup.py`][entrypoints-declaration] for an example of how to declare a plugin to TensorBoard. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints).
  You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at the load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
 
   - `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
@@ -22,7 +22,8 @@ TensorBoard detects plugins using [entry_points] mechanism ([example](https://gi
   - `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
   - `fix_flags`: : Optional method needed to fix or sanitize command-line flags.
 
-[entry_points]: https://packaging.python.org/specifications/entry-points/
+[entrypoints-spec]: https://packaging.python.org/specifications/entry-points/
+[entrypoints-declaration]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35
 [`base_plugin.py`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/base_plugin.py
 
 While plugins have unfettered access to filesystem, TensorBoard recommends accessing data via `PluginRunToTagToContent` in [`PluginEventMultiplexer`] for its abstraction over filesystem, consistency in user experience (runs and tags), and optimizations for read operations. It, when invoked with the `plugin_name`, returns a dictionary mapping from run name to all of the tags that are associated with your plugin. The tag names themselves map to the `content` from the `PluginData` proto. For more information about Summary, please refer to the section on it below.
