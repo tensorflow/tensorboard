@@ -1502,7 +1502,7 @@ limitations under the License.
                     <div id="noexamples" class="noexamples info-text">
                       Datapoints and their inference results will be displayed here.
                     </div>
-                    <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+                    <paper-spinner-lite id="spinner" hidden="[[spinnerHidden_]]" active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
                       <div class="pd-plots-header">
                         <div class="flex">
@@ -2652,7 +2652,12 @@ limitations under the License.
         allConfMatrixLabels: {
           type: Array,
           value: () => ([]),
-        }
+        },
+        // Controls if the loading spinner is hidden from view.
+        spinnerHidden_: {
+          type: Boolean,
+          value: true,
+        },
       },
 
       observers: [
@@ -4308,7 +4313,7 @@ limitations under the License.
       },
 
       newInferences_: function() {
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.updateInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
@@ -4587,16 +4592,16 @@ limitations under the License.
                              'use_predict': this.usePredictApi,
                              'predict_output_tensor': this.predictOutputTensor,
                              'predict_input_tensor': this.predictInputTensor};
-        this.$.spinner.hidden = false;
+        this.spinnerHidden_ = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
               inferParams);
           const inferContents = result => {
-            this.$.spinner.hidden = true;
+            this.spinnerHidden_ = true;
             this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
             this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
           };
-          this.makeAsyncRequest_(url, inferContents, null);
+          this.makeAsyncRequest_(url, inferContents, null, 'Model inference');
         }
         this.fire('infer-examples', inferParams);
       },
@@ -4680,7 +4685,8 @@ limitations under the License.
           var url = this.makeUrl_('/data/plugin/whatif/update_example', null);
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
-                                              'index': index});
+                                             'index': index},
+                                 'Datapoint update');
         }
       },
 
@@ -4708,20 +4714,20 @@ limitations under the License.
         console.error(msg);
       },
 
-      handleError_: function(errorStr) {
+      handleError: function(errorStr) {
         this.showToast_(errorStr);
         this.exampleStatusStr = errorStr;
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
       },
 
       makeAsyncRequest_: function(
-          url, thenDoFn, postData, errorFn = () => {}) {
+          url, thenDoFn, postData, requestStr, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
           if (result.value && result.value.error){
-            this.handleError_(result.value.error);
+            this.handleError(result.value.error);
             if (errorFn != null) {
               errorFn();
             }
@@ -4731,7 +4737,7 @@ limitations under the License.
         });
         this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.handleError_('Request failed: ' + reason);
+              this.handleError(requestStr + ' failed: ' + reason);
               if (errorFn != null) {
                 errorFn();
               }
@@ -4841,7 +4847,7 @@ limitations under the License.
       updateExampleContents: function(examples, hasSprite) {
         this.exampleStatusStr = examples.length + ' datapoints loaded';
         this.$.noexamples.style.display = 'none';
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.examplesAndInferences = examples.map(function(ex) {
           const example = JSON.parse(ex);
           return {example: example, changed: false, orig: JSON.parse(ex)};});
@@ -4914,8 +4920,8 @@ limitations under the License.
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading datapoints...'
-        this.makeAsyncRequest_(url, updateExampleContents, null);
-        this.$.spinner.hidden = false;
+        this.makeAsyncRequest_(url, updateExampleContents, null, 'Datapoint load');
+        this.spinnerHidden_ = false;
       },
 
       updateSprite: function() {
@@ -4969,7 +4975,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null, 'Datapoint duplication');
         } else {
           this.refreshDive_();
         }
@@ -5004,7 +5010,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/delete_example',
             {'index': deletedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null, 'Datapoint delete');
         } else {
           this.refreshDive_();
         }
@@ -5462,7 +5468,7 @@ limitations under the License.
           }
           this.makeAsyncRequest_(
             url, chartMakerCallback.bind(this), null,
-            chartErrorCallback.bind(this));
+            'Plot creation', chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5652,7 +5658,7 @@ limitations under the License.
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
-          this.makeAsyncRequest_(url, setEligibleFields, null);
+          this.makeAsyncRequest_(url, setEligibleFields, null, 'Plot setup');
         } else {
           this.fire('get-eligible-features');
         }

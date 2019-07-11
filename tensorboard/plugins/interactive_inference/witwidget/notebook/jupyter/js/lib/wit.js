@@ -232,7 +232,7 @@ var WITView = widgets.DOMWidgetView.extend({
   },
   backendError: function() {
     const error = this.model.get('error');
-    this.view_.handleError_(error['msg']);
+    this.view_.handleError(error['msg']);
   },
 });
 

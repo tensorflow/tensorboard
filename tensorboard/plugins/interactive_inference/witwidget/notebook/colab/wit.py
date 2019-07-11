@@ -91,14 +91,13 @@ WIT_HTML = """
       // Javascript callbacks called by python code to communicate with WIT
       // Polymer element.
       window.backendError = errorStr => {{
-        wit.handleError_(errorStr);
+        wit.handleError(errorStr);
       }};
       window.inferenceCallback = inferences => {{
-        const parsedInferences = JSON.parse(inferences);
-        wit.labelVocab = parsedInferences.label_vocab;
-        wit.inferences = parsedInferences.inferences;
+        wit.labelVocab = inferences.label_vocab;
+        wit.inferences = inferences.inferences;
         wit.attributions = {{indices: wit.inferences.indices,
-                            attributions: parsedInferences.attributions}}
+                            attributions: inferences.attributions}}
       }};
       window.spriteCallback = spriteUrl => {{
         if (!wit.updateSprite) {{
@@ -238,10 +237,9 @@ class WitWidget(base.WitWidgetBase):
   def infer(self):
     try:
       inferences = base.WitWidgetBase.infer_impl(self)
-      output.eval_js("""inferenceCallback('{inferences}')""".format(
+      output.eval_js("""inferenceCallback({inferences})""".format(
         inferences=json.dumps(inferences)))
     except Exception as e:
-      error_str = str(e)
       output.eval_js("""backendError('{error}')""".format(
         error=json.dumps(str(e))))
 
