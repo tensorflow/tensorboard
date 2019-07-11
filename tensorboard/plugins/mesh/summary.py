@@ -124,7 +124,7 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
   tensors = [tensor for tensor in tensors if tensor.data is not None]
 
   components = metadata.get_components_bitmask([
-    tensor.content_type for tensor in tensors])
+      tensor.content_type for tensor in tensors])
 
   for tensor in tensors:
     summaries.append(
@@ -176,7 +176,7 @@ def pb(name,
   ]
   tensors = [tensor for tensor in tensors if tensor.data is not None]
   components = metadata.get_components_bitmask([
-    tensor.content_type for tensor in tensors])
+      tensor.content_type for tensor in tensors])
   for tensor in tensors:
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
