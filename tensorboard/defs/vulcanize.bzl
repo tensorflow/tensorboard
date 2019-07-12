@@ -56,6 +56,7 @@ def _tensorboard_html_binary(ctx):
                   ignore_regexs_file_path] +
                  [f.path for f in jslibs.to_list()] +
                  [f.path for f in manifests.to_list()]),
+      mnemonic="Vulcanize",
       progress_message="Vulcanizing %s" % ctx.attr.input_path)
 
   # webfiles manifest
