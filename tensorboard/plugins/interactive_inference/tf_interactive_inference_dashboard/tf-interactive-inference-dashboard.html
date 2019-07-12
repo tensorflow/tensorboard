@@ -4470,7 +4470,8 @@ limitations under the License.
           // TODO(jwexler): Support attributions from multiple models.
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
-          const attribs = attributions.attributions[0][i];
+          const attribs = attributions.attributions[0] == null ? {} :
+              attributions.attributions[0][i];
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
             // If the attributions for a key is a 2D array then treat the first
