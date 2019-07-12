@@ -26,6 +26,7 @@ def _tensorboard_zip_file(ctx):
     webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
     files = depset(transitive=[files, dep.data_runfiles.files])
   ctx.actions.run(
+      mnemonic="Zipper",
       inputs=depset(transitive=[manifests, files]).to_list(),
       outputs=[ctx.outputs.zip],
       executable=ctx.executable._Zipper,
