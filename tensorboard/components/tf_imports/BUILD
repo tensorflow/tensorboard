@@ -31,6 +31,19 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "polymer-externs",
+    srcs = [
+        "polymer-externs.html",
+    ],
+    path = "/polymer",
+    visibility = ["//visibility:public"],
+    exports = ["@org_polymer"],
+    deps = [
+        "@org_polymer",
+    ],
+)
+
+tf_web_library(
     name = "lodash",
     srcs = [
         "lodash.html",

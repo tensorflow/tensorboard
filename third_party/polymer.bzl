@@ -31,6 +31,7 @@ def tensorboard_polymer_workspace():
           "externs/closure-types.js",
           "externs/polymer-externs.js",
           "externs/polymer-internal-shared-types.js",
+          "externs/webcomponents-externs.js",
           "lib/elements/array-selector.html",
           "lib/elements/custom-style.html",
           "lib/elements/dom-bind.html",

@@ -149,7 +149,18 @@ public final class Vulcanize {
       }
       Webfiles manifest = loadWebfilesPbtxt(Paths.get(args[i]));
       for (WebfilesSource src : manifest.getSrcList()) {
-        webfiles.put(Webpath.get(src.getWebpath()), Paths.get(src.getPath()));
+        String webpath = src.getWebpath();
+        Path srcPath = Paths.get(src.getPath());
+
+        webfiles.put(Webpath.get(webpath), srcPath);
+
+        if (webpath.startsWith("/polymer/externs")) {
+          String code = new String(Files.readAllBytes(srcPath), UTF_8);
+          SourceFile sourceFile = SourceFile.fromCode(webpath, code);
+          if (code.contains("@externs")) {
+            externs.add(sourceFile);
+          }
+        }
       }
     }
     stack.add(inputPath);
@@ -453,7 +464,7 @@ public final class Vulcanize {
     options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
 
     // Polymer pass.
-    options.setPolymerVersion(1);
+    options.setPolymerVersion(2);
 
     // Debug flags.
     if (testOnly) {
