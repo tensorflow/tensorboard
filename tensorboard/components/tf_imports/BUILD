@@ -17,6 +17,7 @@ tf_web_library(
     name = "polymer",
     srcs = [
         "polymer.html",
+        "polymer-externs.html",
         "@org_definitelytyped//:polymer.d.ts"
     ],
     path = "/tf-imports",
@@ -27,19 +28,6 @@ tf_web_library(
         "@org_polymer",
         "@org_polymer_web_animations_js",
         "@org_polymer_webcomponentsjs",
-    ],
-)
-
-tf_web_library(
-    name = "polymer-externs",
-    srcs = [
-        "polymer-externs.html",
-    ],
-    path = "/polymer",
-    visibility = ["//visibility:public"],
-    exports = ["@org_polymer"],
-    deps = [
-        "@org_polymer",
     ],
 )
 

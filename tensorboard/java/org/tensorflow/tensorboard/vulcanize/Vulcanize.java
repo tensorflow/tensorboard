@@ -149,18 +149,7 @@ public final class Vulcanize {
       }
       Webfiles manifest = loadWebfilesPbtxt(Paths.get(args[i]));
       for (WebfilesSource src : manifest.getSrcList()) {
-        String webpath = src.getWebpath();
-        Path srcPath = Paths.get(src.getPath());
-
-        webfiles.put(Webpath.get(webpath), srcPath);
-
-        if (webpath.startsWith("/polymer/externs")) {
-          String code = new String(Files.readAllBytes(srcPath), UTF_8);
-          SourceFile sourceFile = SourceFile.fromCode(webpath, code);
-          if (code.contains("@externs")) {
-            externs.add(sourceFile);
-          }
-        }
+        webfiles.put(Webpath.get(src.getWebpath()), Paths.get(src.getPath()));
       }
     }
     stack.add(inputPath);
@@ -332,7 +321,14 @@ public final class Vulcanize {
       script = INLINE_SOURCE_MAP_PATTERN.matcher(script).replaceAll("");
     }
     boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
-    if (node.attr("src").endsWith(".min.js")
+
+    if (node.hasAttr("jscomp-externs")) {
+      Path filePath = getWebfile(path);
+      SourceFile sourceFile = SourceFile.fromCode(path.toString(), script);
+      externs.add(sourceFile);
+      // Remove script tag of extern since it is not needed at the run time.
+      return replaceNode(node, new TextNode("", node.baseUri()));
+    } else if (node.attr("src").endsWith(".min.js")
         || getAttrTransitive(node, "jscomp-nocompile").isPresent()
         || wantsMinify) {
       if (wantsMinify) {

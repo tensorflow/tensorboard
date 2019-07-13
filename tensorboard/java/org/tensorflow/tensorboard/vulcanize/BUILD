@@ -41,7 +41,6 @@ filegroup(
         # Ordering probably matters
         "//third_party:jspbfix",
         "@com_google_javascript_closure_compiler_externs",
-        "//tensorboard/components/tf_imports:polymer-externs",
         "externs.js",
         "@com_google_javascript_closure_library//:closure/goog/base.js",
         "@com_google_javascript_closure_library//:closure/goog/deps.js",
