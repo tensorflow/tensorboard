@@ -185,6 +185,7 @@ def _tf_web_library(ctx):
             [er_config.path] +
             [f.path for f in ts_typings_execroots.to_list()]
         ),
+        mnemonic="Tsc",
         progress_message="Compiling %d TypeScript files %s" % (
             len(ts_files), ctx.label))
 
