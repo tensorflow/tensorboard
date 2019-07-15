@@ -150,17 +150,6 @@ def tensorboard_js_workspace():
   )
 
   filegroup_external(
-      name = "com_google_javascript_closure_compiler_externs_polymer",
-      licenses = ["notice"],  # Apache 2.0
-      sha256_urls = {
-          "a537215a0981b2fdd8cb1d12a0ef9f38398f62a5be7885e39de305fa4bd98f54": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/google/closure-compiler/v20190121/contrib/externs/polymer-1.0.js",
-              "https://raw.githubusercontent.com/google/closure-compiler/v20190121/contrib/externs/polymer-1.0.js",
-          ],
-      },
-  )
-
-  filegroup_external(
       name = "org_threejs",
       # no @license header
       licenses = ["notice"],  # MIT

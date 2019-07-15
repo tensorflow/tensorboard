@@ -23,10 +23,22 @@ tf_web_library(
     visibility = ["//visibility:public"],
     exports = ["@org_polymer"],
     deps = [
+        ":polymer_externs",
         ":webcomponentsjs",
         "@org_polymer",
         "@org_polymer_web_animations_js",
         "@org_polymer_webcomponentsjs",
+    ],
+)
+
+tf_web_library(
+    name = "polymer_externs",
+    srcs = [
+        "polymer-externs.html",
+    ],
+    path = "/tf-imports",
+    deps = [
+        "@org_polymer_externs",
     ],
 )
 
