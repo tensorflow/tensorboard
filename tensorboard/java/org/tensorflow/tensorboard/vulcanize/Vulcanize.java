@@ -277,10 +277,10 @@ public final class Vulcanize {
         if (licenseComment == null) {
           licenseComment = node;
         } else {
-          node = replaceNode(node, new TextNode("", node.baseUri()));
+          node = removeNode(node);
         }
       } else {
-        node = replaceNode(node, new TextNode("", node.baseUri()));
+        node = removeNode(node);
       }
     }
     return node;
@@ -305,7 +305,7 @@ public final class Vulcanize {
       }
       return replaceNode(node, subdocument);
     } else {
-      return replaceNode(node, new TextNode("", node.baseUri()));
+      return removeNode(node);
     }
   }
 
@@ -335,7 +335,7 @@ public final class Vulcanize {
               .removeAttr("jscomp-nocompile");
       if (firstCompiledScript != null) {
         firstCompiledScript.before(newScript);
-        return replaceNode(node, new TextNode("", node.baseUri()));
+        return removeNode(node);
       } else {
         return replaceNode(node, newScript);
       }
@@ -403,6 +403,10 @@ public final class Vulcanize {
   private static Node replaceNode(Node oldNode, Node newNode) {
     oldNode.replaceWith(newNode);
     return newNode;
+  }
+
+  private static Node removeNode(Node node) {
+    return replaceNode(node, new TextNode("", node.baseUri()));
   }
 
   private static Path getWebfile(Webpath path) {
