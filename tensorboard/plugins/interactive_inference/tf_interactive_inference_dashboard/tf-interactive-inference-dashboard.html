@@ -4602,7 +4602,7 @@ limitations under the License.
             this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
             this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
           };
-          this.makeAsyncRequest_(url, inferContents, null, 'Model inference');
+          this.makeAsyncRequest_(url, inferContents, null, 'model inference');
         }
         this.fire('infer-examples', inferParams);
       },
@@ -4687,7 +4687,7 @@ limitations under the License.
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
                                              'index': index},
-                                 'Datapoint update');
+                                 'datapoint update');
         }
       },
 
@@ -4722,7 +4722,7 @@ limitations under the License.
       },
 
       makeAsyncRequest_: function(
-          url, thenDoFn, postData, requestStr, errorFn = () => {}) {
+          url, thenDoFn, postData, readableRequestName, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
@@ -4738,7 +4738,8 @@ limitations under the License.
         });
         this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.handleError(requestStr + ' failed: ' + reason);
+              this.handleError(
+                  `Request for ${readableRequestName} failed: ${reason}`);
               if (errorFn != null) {
                 errorFn();
               }
@@ -4921,7 +4922,7 @@ limitations under the License.
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading datapoints...'
-        this.makeAsyncRequest_(url, updateExampleContents, null, 'Datapoint load');
+        this.makeAsyncRequest_(url, updateExampleContents, null, 'datapoint load');
         this.spinnerHidden_ = false;
       },
 
@@ -4976,7 +4977,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null, 'Datapoint duplication');
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null, 'datapoint duplication');
         } else {
           this.refreshDive_();
         }
@@ -5011,7 +5012,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/delete_example',
             {'index': deletedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null, 'Datapoint delete');
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null, 'datapoint delete');
         } else {
           this.refreshDive_();
         }
@@ -5469,7 +5470,7 @@ limitations under the License.
           }
           this.makeAsyncRequest_(
             url, chartMakerCallback.bind(this), null,
-            'Plot creation', chartErrorCallback.bind(this));
+            'plot creation', chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5659,7 +5660,7 @@ limitations under the License.
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
-          this.makeAsyncRequest_(url, setEligibleFields, null, 'Plot setup');
+          this.makeAsyncRequest_(url, setEligibleFields, null, 'plot setup');
         } else {
           this.fire('get-eligible-features');
         }
