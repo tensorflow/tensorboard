@@ -9,6 +9,7 @@ tf_web_library(
     name = "tf_graph_board",
     srcs = ["tf-graph-board.html"],
     path = "/tf-graph-board",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph",

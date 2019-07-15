@@ -14,8 +14,6 @@
 
 """Build definitions for TypeScript from Closure JavaScript libraries."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
 load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "JS_FILE_TYPE",
      "collect_js",
@@ -51,8 +49,7 @@ def deprecated_extract_dts_from_closure_libraries(ctx):
   js = collect_js(deps, ctx.files._closure_library_base)
   if not js.srcs:
     return None
-  js_typings = ctx.actions.declare_file(paths.join(
-      ctx.bin_dir.path, "%s-js-typings.d.ts" % ctx.label.name))
+  js_typings = ctx.actions.declare_file("%s-js-typings.d.ts" % ctx.label.name)
   # File.extension does not have leading "." whereas JS_FILE_TYPE does.
   clutz_js_externs = [f for f in ctx.files._clutz_externs
                       if '.%s' % f.extension in JS_FILE_TYPE]

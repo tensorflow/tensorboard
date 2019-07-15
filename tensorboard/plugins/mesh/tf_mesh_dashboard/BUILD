@@ -23,6 +23,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:tf_graphics_lib",
+        "//tensorboard/components/tf_imports:threejs",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_tensorboard:registry",

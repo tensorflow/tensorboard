@@ -42,6 +42,7 @@ tf_web_library(
         "@org_polymer_paper_spinner",
         "@org_polymer_paper_styles",
         "@org_polymer_paper_tabs",
+        "@org_polymer_paper_toast",
         "@org_polymer_paper_toggle_button",
     ],
 )

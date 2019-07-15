@@ -34,6 +34,7 @@ tf_web_library(
         "util.ts",
     ],
     path = "/tf-graph-common",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",

@@ -35,11 +35,12 @@ limitations under the License.
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
-<link rel="import" href="../tf-imports/polymer.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="./tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/plugin-dialog.html">
@@ -1021,6 +1022,10 @@ limitations under the License.
         margin-left: 30px;
       }
 
+      .scroll-x {
+        overflow-x: auto;
+      }
+
       .perf-table-clickable {
         cursor: pointer;
       }
@@ -1501,7 +1506,7 @@ limitations under the License.
                     <div id="noexamples" class="noexamples info-text">
                       Datapoints and their inference results will be displayed here.
                     </div>
-                    <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+                    <paper-spinner-lite id="spinner" hidden="[[spinnerHidden_]]" active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
                       <div class="pd-plots-header">
                         <div class="flex">
@@ -2085,7 +2090,7 @@ limitations under the License.
                           </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
-                          <div class="perf-table-entry-expanded flex-row-reverse">
+                          <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                             <div>
                               <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                                 <div class="conf-matrix-holder">
@@ -2128,7 +2133,7 @@ limitations under the License.
                             </div>
                           </div>
                         </div>
-                        <div class="perf-table-entry-expanded flex-row-reverse">
+                        <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                           <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="conf-matrix-holder">
                               <div class="conf-text">Confusion matrix</div>
@@ -2651,7 +2656,12 @@ limitations under the License.
         allConfMatrixLabels: {
           type: Array,
           value: () => ([]),
-        }
+        },
+        // Controls if the loading spinner is hidden from view.
+        spinnerHidden_: {
+          type: Boolean,
+          value: true,
+        },
       },
 
       observers: [
@@ -4308,7 +4318,7 @@ limitations under the License.
       },
 
       newInferences_: function() {
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.updateInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
@@ -4439,6 +4449,9 @@ limitations under the License.
               : this.strWithModelName_(inferenceValueStr, 0);
           if (this.isRegression_(this.modelType)) {
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
+            if (this.numModels > 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceValueStr, 1);
+            }
           }
           else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             if (this.numModels == 1) {
@@ -4462,7 +4475,8 @@ limitations under the License.
           // TODO(jwexler): Support attributions from multiple models.
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
-          const attribs = attributions.attributions[0][i];
+          const attribs = attributions.attributions[0] == null ? {} :
+              attributions.attributions[0][i];
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
             // If the attributions for a key is a 2D array then treat the first
@@ -4584,16 +4598,16 @@ limitations under the License.
                              'use_predict': this.usePredictApi,
                              'predict_output_tensor': this.predictOutputTensor,
                              'predict_input_tensor': this.predictInputTensor};
-        this.$.spinner.hidden = false;
+        this.spinnerHidden_ = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
               inferParams);
           const inferContents = result => {
-            this.$.spinner.hidden = true;
+            this.spinnerHidden_ = true;
             this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
             this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
           };
-          this.makeAsyncRequest_(url, inferContents, null);
+          this.makeAsyncRequest_(url, inferContents, null, 'model inference');
         }
         this.fire('infer-examples', inferParams);
       },
@@ -4677,7 +4691,8 @@ limitations under the License.
           var url = this.makeUrl_('/data/plugin/whatif/update_example', null);
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
-                                              'index': index});
+                                             'index': index},
+                                 'datapoint update');
         }
       },
 
@@ -4705,16 +4720,20 @@ limitations under the License.
         console.error(msg);
       },
 
+      handleError: function(errorStr) {
+        this.showToast_(errorStr);
+        this.exampleStatusStr = errorStr;
+        this.spinnerHidden_ = true;
+      },
+
       makeAsyncRequest_: function(
-          url, thenDoFn, postData, errorFn = () => {}) {
+          url, thenDoFn, postData, readableRequestName, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
           if (result.value && result.value.error){
-            // show toast with the error
-            this.showToast_(result.value.error);
-            this.$.spinner.hidden = true;
+            this.handleError(result.value.error);
             if (errorFn != null) {
               errorFn();
             }
@@ -4724,9 +4743,8 @@ limitations under the License.
         });
         this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.exampleStatusStr = 'Request failed';
-              this.showToast_('Request failed: ' + reason);
-              this.$.spinner.hidden = true;
+              this.handleError(
+                  `Request for ${readableRequestName} failed: ${reason}`);
               if (errorFn != null) {
                 errorFn();
               }
@@ -4836,7 +4854,7 @@ limitations under the License.
       updateExampleContents: function(examples, hasSprite) {
         this.exampleStatusStr = examples.length + ' datapoints loaded';
         this.$.noexamples.style.display = 'none';
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.examplesAndInferences = examples.map(function(ex) {
           const example = JSON.parse(ex);
           return {example: example, changed: false, orig: JSON.parse(ex)};});
@@ -4909,8 +4927,8 @@ limitations under the License.
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading datapoints...'
-        this.makeAsyncRequest_(url, updateExampleContents, null);
-        this.$.spinner.hidden = false;
+        this.makeAsyncRequest_(url, updateExampleContents, null, 'datapoint load');
+        this.spinnerHidden_ = false;
       },
 
       updateSprite: function() {
@@ -4964,7 +4982,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null, 'datapoint duplication');
         } else {
           this.refreshDive_();
         }
@@ -4999,7 +5017,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/delete_example',
             {'index': deletedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null, 'datapoint delete');
         } else {
           this.refreshDive_();
         }
@@ -5037,10 +5055,41 @@ limitations under the License.
        */
       addChart: function(chartType, featureName, data){
         let chart;
+        let dataToChart = data;
+
+        // If multiclass and there are more inferred classes than the set
+        // number of classes to display, then filter the classes to display
+        // in the chart down to the top scoring classes.
+        if (this.isMultiClass_(this.modelType, this.multiClass)) {
+          dataToChart = [];
+          for (let modelIdx = 0; modelIdx < data.length; modelIdx++) {
+            let modelDataToChart = {};
+            if (Object.keys(data[modelIdx]).length >
+                Number(this.maxInferenceEntriesPerRun)) {
+              const exampleId = this.selected &&
+                this.selected.length > 0 ? this.selected[0] : 0;
+              // Get the class labels of the top scoring classes from the most
+              // recent inference.
+              const currentExample = this.examplesAndInferences[exampleId];
+              const lastInference = currentExample.inferences[
+                currentExample.inferences.length - 1];
+              const labels = lastInference[modelIdx].slice(
+                0, this.maxInferenceEntriesPerRun);
+              for (let labelIdx = 0; labelIdx < labels.length; labelIdx++) {
+                const label = labels[labelIdx].label;
+                modelDataToChart[label] = data[modelIdx][label];
+              }
+            } else {
+              modelDataToChart = data[modelIdx];
+            }
+            dataToChart.push(modelDataToChart);
+          }
+        }
+
         if (chartType == 'numeric'){
-          chart = this.makeLineChart(featureName, data);
+          chart = this.makeLineChart(featureName, dataToChart);
         } else if (chartType == 'categorical'){
-          chart = this.makeBarChart(featureName, data);
+          chart = this.makeBarChart(featureName, dataToChart);
         } else {
           console.error('Unknown chartType: ' + chartType);
         }
@@ -5370,16 +5419,6 @@ limitations under the License.
         return {step: origValue, scalar: origInferenceScore};
       },
 
-      showToast: function(msg) {
-        const toast = document.createElement('paper-toast');
-        document.body.appendChild(toast);
-        toast.text = msg;
-        toast.show();
-
-        // Also, log to console.
-        console.error(msg);
-      },
-
       deletePdPlotSpinner: function(featureName) {
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
@@ -5436,7 +5475,7 @@ limitations under the License.
           }
           this.makeAsyncRequest_(
             url, chartMakerCallback.bind(this), null,
-            chartErrorCallback.bind(this));
+            'plot creation', chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5626,7 +5665,7 @@ limitations under the License.
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
-          this.makeAsyncRequest_(url, setEligibleFields, null);
+          this.makeAsyncRequest_(url, setEligibleFields, null, 'plot setup');
         } else {
           this.fire('get-eligible-features');
         }

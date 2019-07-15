@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,26 +12,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+set -eu
 
-import setuptools
+usage() {
+    cat <<'EOF'
+usage: extract_pip_package [OUTPUT_DIR]
 
+Extract TensorBoard wheel files into a given directory.
 
-setuptools.setup(
-    name="tensorboard_plugin_example",
-    version="0.1.0",
-    description="Sample TensorBoard plugin.",
-    packages=["tensorboard_plugin_example"],
-    package_data={
-        "tensorboard_plugin_example": ["static/**"],
-    },
-    entry_points={
-        "tensorboard_plugins": [
-            "example = tensorboard_plugin_example.plugin:ExamplePlugin",
-        ],
-    },
-)
+If OUTPUT_DIR is omitted, a temporary directory will be created, and its
+path and contents printed to stdout.
+EOF
+}
+
+tarball="$0.runfiles/org_tensorflow_tensorboard/tensorboard/pip_package/pip_packages.tar.gz"
+
+case $# in
+    0)
+        tmpdir="$(mktemp -d)"
+        tar xzf "${tarball}" -C "${tmpdir}"
+        find "${tmpdir}"
+        ;;
+    1)
+        tar xzf "${tarball}" -C "$1"
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac

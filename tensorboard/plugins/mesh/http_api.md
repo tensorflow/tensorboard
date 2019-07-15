@@ -39,6 +39,7 @@ data, scene configuration, wall time etc. Type of the content maps directly to
 underlying binary data type, i.e. `float32`, `int32` or `uint8`. Content type
 mapping to their enum constant representations is given by a
 [proto definition](https://github.com/tensorflow/tensorboard/plugins/mesh/plugin_data.proto).
+Field `components` serves as bitmask representing all existing parts (vertices, colors, etc.) of the same mesh.
 
 Here is an example:
 ```json
@@ -49,7 +50,8 @@ Here is an example:
             "data_shape": [1, 17192, 3],
             "step": 0,
             "content_type": 2,
-            "wall_time": 1556678491.836787
+            "wall_time": 1556678491.836787,
+            "components": 14
         },
         {
             "config": "{\"camera\": {\"cls\": \"PerspectiveCamera\", \"fov\":
@@ -57,7 +59,8 @@ Here is an example:
             "data_shape": [1, 9771, 3],
             "step": 0,
             "content_type": 3,
-            "wall_time": 1556678491.836787
+            "wall_time": 1556678491.836787,
+            "components": 14
         },
         {
             "config": "{\"camera\": {\"cls\": \"PerspectiveCamera\", \"fov\":
@@ -65,7 +68,8 @@ Here is an example:
             "data_shape": [1, 9771, 3],
             "step": 0,
             "content_type": 1,
-            "wall_time": 1556678491.836787
+            "wall_time": 1556678491.836787,
+            "components": 14
         }
     ]
 ```
@@ -77,10 +81,11 @@ be used as parameters to the class constructor and should also be valid
 THREE.js options. Invalid keys will be ignored by the library.
 
 
-## `/data/plugin/mesh/data?tag=mesh_color_tensor&run=train_run&content_type=VERTEX&sample=0`
+## `/data/plugin/mesh/data?tag=mesh_color_tensor&run=train_run&content_type=VERTEX&sample=0&timestamp=1560968332.3`
 
 Retrieves binary data of particular type representing some part of the mesh,
-for example vertices with 3D coordinates.
+for example vertices with 3D coordinates. The data must be from particular point
+in time (milliseconds in UTC).
 
 Returns stream of binary data, which will represent either mesh vertices,
 faces or RGB colors. Response type of this request is set to `arraybuffer`
