@@ -50,6 +50,10 @@ export interface TensorView {
   getHealthPill: () => Promise<BaseTensorHealthPill>;
 }
 
+/**
+ * Represents the primitive values from slicing a multi-dimensional
+ * tensor.
+ */
 export type SlicedValues =
     boolean|boolean[]|boolean[][]|boolean[][][]|
     number|number[]|number[][]|number[][][]|
