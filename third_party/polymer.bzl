@@ -22,16 +22,13 @@ def tensorboard_polymer_workspace():
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "604dbbb0bc90d833abfc24cbe67e98c628c50ee28a828b8d97551c2732b8e3ba",
       strip_prefix = "polymer-2.7.0",
+      # IMPORTANT: Keep this in sync with @org_polymer_externs
       urls = [
           "http://mirror.tensorflow.org/github.com/polymer/polymer/archive/v2.7.0.tar.gz",
           "https://github.com/polymer/polymer/archive/v2.7.0.tar.gz",
       ],
       path = "/polymer",
       srcs = [
-          "externs/closure-types.js",
-          "externs/polymer-externs.js",
-          "externs/polymer-internal-shared-types.js",
-          "externs/webcomponents-externs.js",
           "lib/elements/array-selector.html",
           "lib/elements/custom-style.html",
           "lib/elements/dom-bind.html",
@@ -78,6 +75,24 @@ def tensorboard_polymer_workspace():
           "polymer.html",
       ],
       deps = ["@org_webcomponents_shadycss"],
+  )
+
+  web_library_external(
+      name = "org_polymer_externs",
+      licenses = ["notice"],  # BSD-3-Clause
+      sha256 = "604dbbb0bc90d833abfc24cbe67e98c628c50ee28a828b8d97551c2732b8e3ba",
+      strip_prefix = "polymer-2.7.0",
+      urls = [
+          "http://mirror.tensorflow.org/github.com/polymer/polymer/archive/v2.7.0.tar.gz",
+          "https://github.com/polymer/polymer/archive/v2.7.0.tar.gz",
+      ],
+      path = "/polymer",
+      srcs = [
+          "externs/closure-types.js",
+          "externs/polymer-externs.js",
+          "externs/polymer-internal-shared-types.js",
+          "externs/webcomponents-externs.js",
+      ],
   )
 
   web_library_external(
