@@ -222,7 +222,7 @@ class TextPlugin(base_plugin.TBPlugin):
   def index_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     return {
-        run: list(six.iterkeys(tag_to_content))
+        run: list(tag_to_content)
         for (run, tag_to_content)
         in six.iteritems(mapping)
     }
