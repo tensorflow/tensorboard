@@ -406,7 +406,7 @@ public final class Vulcanize {
   }
 
   private static Node removeNode(Node node) {
-    return replaceNode(node, new TextNode(""));
+    return replaceNode(node, new TextNode("", node.baseUri()));
   }
 
   private static Path getWebfile(Webpath path) {
