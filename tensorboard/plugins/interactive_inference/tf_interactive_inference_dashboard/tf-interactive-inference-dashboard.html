@@ -3507,7 +3507,7 @@ limitations under the License.
             return b.medianError - a.medianError;
           } else if (this.selectedFeatureSort == 'Median absolute error') {
             return b.medianAbsError - a.medianAbsError;
-          } else {
+          } else if (this.selectedFeatureSort == 'Median squared error') {
             return b.medianSquaredError - a.medianSquaredError;
           }
         });
