@@ -156,7 +156,7 @@ def _tf_web_library(ctx):
                 moduleResolution="node",
                 skipLibCheck=True,
                 noResolve=True,
-                target="es5",
+                target="es6",
             ),
             files=ts_files,
         ).to_json())

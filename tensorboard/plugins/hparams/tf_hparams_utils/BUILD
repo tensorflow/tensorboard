@@ -35,8 +35,8 @@ tf_web_library(
     deps = [
         ":tf_hparams_utils",
         "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 

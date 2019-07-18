@@ -82,6 +82,7 @@ export class DataPanel extends DataPanelPolymer {
   private metadataFile: string;
 
   ready() {
+    super.ready();
     this.normalizeData = true;
     this.superviseInputSelected = '';
   }
@@ -94,13 +95,13 @@ export class DataPanel extends DataPanelPolymer {
     // Tell the projector whenever the data normalization changes.
     // Unknown why, but the polymer checkbox button stops working as soon as
     // you do d3.select() on it.
-    this.querySelector('#normalize-data-checkbox')
+    this.$$('#normalize-data-checkbox')
         .addEventListener('change', () => {
           this.projector.setNormalizeData(this.normalizeData);
         });
 
     let forceCategoricalColoringCheckbox =
-        this.querySelector('#force-categorical-checkbox');
+        this.$$('#force-categorical-checkbox');
     forceCategoricalColoringCheckbox.addEventListener('change', () => {
       this.setForceCategoricalColoring(
           (forceCategoricalColoringCheckbox as HTMLInputElement).checked);
@@ -126,7 +127,7 @@ export class DataPanel extends DataPanelPolymer {
 
   setForceCategoricalColoring(forceCategoricalColoring: boolean) {
     this.forceCategoricalColoring = forceCategoricalColoring;
-    (this.querySelector('#force-categorical-checkbox') as HTMLInputElement)
+    (this.$$('#force-categorical-checkbox') as HTMLInputElement)
         .checked = this.forceCategoricalColoring;
 
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
@@ -207,7 +208,7 @@ export class DataPanel extends DataPanelPolymer {
 
   private updateMetadataUI(columnStats: ColumnStats[], metadataFile: string) {
     const metadataFileElement =
-        this.querySelector('#metadata-file') as HTMLSpanElement;
+        this.$$('#metadata-file') as HTMLSpanElement;
     metadataFileElement.innerHTML = this.addWordBreaks(metadataFile);
     metadataFileElement.title = metadataFile;
 
@@ -515,7 +516,7 @@ export class DataPanel extends DataPanelPolymer {
       const wordBreakablePath =
           this.addWordBreaks(this.projectorConfig.modelCheckpointPath);
       const checkpointFile =
-          this.querySelector('#checkpoint-file') as HTMLSpanElement;
+          this.$$('#checkpoint-file') as HTMLSpanElement;
       checkpointFile.innerHTML = wordBreakablePath;
       checkpointFile.title = this.projectorConfig.modelCheckpointPath;
 
@@ -574,7 +575,7 @@ export class DataPanel extends DataPanelPolymer {
   private tensorWasReadFromFile(rawContents: ArrayBuffer, fileName: string) {
     parseRawTensors(rawContents, ds => {
       const checkpointFile =
-          this.querySelector('#checkpoint-file') as HTMLSpanElement;
+          this.$$('#checkpoint-file') as HTMLSpanElement;
       checkpointFile.innerText = fileName;
       checkpointFile.title = fileName;
       this.projector.updateDataSet(ds);
@@ -598,7 +599,7 @@ export class DataPanel extends DataPanelPolymer {
 
   private setupUploadButtons() {
     // Show and setup the upload button.
-    const fileInput = this.querySelector('#file') as HTMLInputElement;
+    const fileInput = this.$$('#file') as HTMLInputElement;
     fileInput.onchange = () => {
       const file: File = fileInput.files[0];
       // Clear out the value of the file chooser. This ensures that if the user
@@ -613,14 +614,14 @@ export class DataPanel extends DataPanelPolymer {
     };
 
     const uploadButton =
-        this.querySelector('#upload-tensors') as HTMLButtonElement;
+        this.$$('#upload-tensors') as HTMLButtonElement;
     uploadButton.onclick = () => {
       fileInput.click();
     };
 
     // Show and setup the upload metadata button.
     const fileMetadataInput =
-        this.querySelector('#file-metadata') as HTMLInputElement;
+        this.$$('#file-metadata') as HTMLInputElement;
     fileMetadataInput.onchange = () => {
       const file: File = fileMetadataInput.files[0];
       // Clear out the value of the file chooser. This ensures that if the user
@@ -635,7 +636,7 @@ export class DataPanel extends DataPanelPolymer {
     };
 
     const uploadMetadataButton =
-        this.querySelector('#upload-metadata') as HTMLButtonElement;
+        this.$$('#upload-metadata') as HTMLButtonElement;
     uploadMetadataButton.onclick = () => {
       fileMetadataInput.click();
     };
@@ -744,8 +745,16 @@ export class DataPanel extends DataPanelPolymer {
   _hasChoices(choices: any[]): boolean {
     return choices.length > 1;
   }
+
+  _openDataDialog(): void {
+    this.$.dataDialog.open();
+  }
+
+  _openConfigDialog(): void {
+    this.$.projectorConfigDialog.open();
+  }
 }
 
-document.registerElement(DataPanel.prototype.is, DataPanel);
+customElements.define(DataPanel.prototype.is, DataPanel);
 
 }  // namespace vz_projector

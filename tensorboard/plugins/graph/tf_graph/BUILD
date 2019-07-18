@@ -15,14 +15,13 @@ tf_web_library(
     path = "/tf-graph",
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/graph/tf_graph_common",
         "@org_polymer_iron_flex_layout",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_input",
-        "@org_polymer_paper_menu",
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_toggle_button",
         "@org_polymer_paper_tooltip",
@@ -41,11 +40,9 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-button:lib",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
         "//third_party/javascript/polymer/v1/paper-input:lib",
-        "//third_party/javascript/polymer/v1/paper-menu:lib",
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
         "//third_party/javascript/polymer/v1/paper-tooltip:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

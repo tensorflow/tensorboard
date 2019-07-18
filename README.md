@@ -352,6 +352,14 @@ This is because by default, TensorBoard serves on host `0.0.0.0` which is
 publicly accessible. You can stop the popups by specifying `--host localhost` at
 startup.
 
+### Can I run `tensorboard` without a TensorFlow installation?
+
+TensorBoard 1.14+ can be run with a reduced feature set if you do not have
+TensorFlow installed. The primary limitation is that as of 1.14, only the
+following plugins are supported: scalars, custom scalars, image, audio,
+graph, projector (partial), distributions, histograms, text, PR curves, mesh.
+In addition, there is no support for log directories on Google Cloud Storage.
+
 ### How can I contribute to TensorBoard development?
 
 See [DEVELOPMENT.md](DEVELOPMENT.md).

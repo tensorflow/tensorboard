@@ -3,6 +3,6 @@ home_url: /tensorboard/
 parent_project_metadata_path: /_project.yaml
 description: "TensorBoard: TensorFlow's visualization toolkit"
 hide_from_products_list: true
-content_license: cc3-apache2
+content_license: cc-apache
 buganizer_id: 141521
 include: /_project_included.yaml
