@@ -21,7 +21,7 @@ tf_web_library(
     path = "/vz-histogram-timeseries",
     deps = [
         ":vz_histogram_timeseries",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_button",
         "@org_polymer_paper_styles",
@@ -38,4 +38,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

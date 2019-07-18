@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 
 <!--
   tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
@@ -32,7 +32,7 @@ limitations under the License.
           label-float="[[labelFloat]]"
           slot="dropdown-trigger"
         ></tf-dropdown-trigger>
-        <div class="dropdown-content">
+        <div slot="dropdown-content">
           conten goes here
         </div>
       </paper-menu-button>
@@ -77,14 +77,14 @@ limitations under the License.
       color: var(--tf-dropdown-trigger-secondary-color);
     }
 
-    :host.label-floats .hidden-label {
+    :host(.label-floats) .hidden-label {
       display: unset;
       line-height: calc(var(--tf-dropdown-trigger-content-height) * .833);
       padding-right: var(--tf-dropdown-trigger-content-height);
       visibility: hidden;
     }
 
-    :host.label-floats .real-label {
+    :host(.label-floats) .real-label {
       bottom: 0;
       left: 0;
       position: absolute;
@@ -93,11 +93,11 @@ limitations under the License.
       transition: transform .25s;
     }
 
-    :host.label-shown .real-label {
+    :host(.label-shown) .real-label {
       display: unset;
     }
 
-    :host.label-floating .real-label {
+    :host(.label-floating) .real-label {
       transform: translateY(-75%) scale(.75);
     }
 
@@ -107,14 +107,14 @@ limitations under the License.
       width: var(--tf-dropdown-trigger-content-height);
     }
 
-    :host[focused] .focused-line {
+    :host([focused]) .focused-line {
       transform: none;
       transition: transform .25s;
 
       @apply --paper-transition-easing;
     }
 
-    :host[focused].label-floating .real-label {
+    :host([focused].label-floating) .real-label {
       color: var(--tf-dropdown-focus-color);
       transition: color .25s;
     }

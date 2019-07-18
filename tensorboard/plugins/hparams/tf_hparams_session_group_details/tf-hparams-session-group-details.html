@@ -23,7 +23,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
 -->
 
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-scalar-dashboard/tf-scalar-card.html">
@@ -69,14 +69,13 @@ clicks on a row in table-view or a curve in parallel-coords view.
         </template>
       </template>
     </div>
+    <!-- "iron-flex" is needed to use the layout classes in the div above -->
+    <style include="iron-flex">
+      :host {
+        display: block;
+      }
+    </style>
   </template>
-
-  <!-- "iron-flex" is needed to use the layout classes in the div above -->
-  <style include="iron-flex">
-    :host {
-      display: block;
-    }
-  </style>
   <script>
     'use strict';
     Polymer({

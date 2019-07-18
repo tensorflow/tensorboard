@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
@@ -89,14 +89,14 @@ limitations under the License.
         margin-right: 10px;
         margin-bottom: 25px;
       }
-      :host[_expanded] {
+      :host([_expanded]) {
         width: 100%;
       }
       tf-line-chart-data-loader {
         height: 300px;
         position: relative;
       }
-      :host[_expanded] tf-line-chart-data-loader {
+      :host([_expanded]) tf-line-chart-data-loader {
         height: 600px;
       }
       #buttons-row {

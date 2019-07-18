@@ -11,10 +11,10 @@ tf_web_library(
     path = "/tf-graph-board",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_info",
-        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_paper_progress",
     ],
 )
@@ -31,4 +31,3 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

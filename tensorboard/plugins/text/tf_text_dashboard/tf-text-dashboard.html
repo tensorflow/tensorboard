@@ -17,14 +17,13 @@ limitations under the License.
 
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-text-loader.html">
@@ -35,13 +34,13 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
 <dom-module id="tf-text-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No text data was found.</h3>
@@ -64,6 +63,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
+<<<<<<< HEAD
             <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
               <tf-paginated-view
                 items="[[category.items]]"
@@ -84,6 +84,21 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
                 </template>
               </tf-paginated-view>
             </tf-category-pane>
+=======
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-text-loader
+                  active="[[active]]"
+                  tag="[[item.tag]]"
+                  run="[[item.run]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-text-loader>
+              </template>
+            </tf-category-paginated-view>
+>>>>>>> fa56d0cc787260a4778f6aefc757125589e6ed95
           </template>
         </template>
       </div>
@@ -148,7 +163,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         });
       },
       _reloadTexts() {
-        this.querySelectorAll('tf-text-loader').forEach(textLoader => {
+        this.root.querySelectorAll('tf-text-loader').forEach(textLoader => {
           textLoader.reload();
         });
       },

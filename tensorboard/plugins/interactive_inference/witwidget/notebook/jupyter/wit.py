@@ -47,6 +47,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   mutant_charts = Dict([]).tag(sync=True)
   mutant_charts_counter = Int(0)
   sprite = Unicode('').tag(sync=True)
+  error = Dict(dict()).tag(sync=True)
 
   def __init__(self, config_builder, height=1000):
     """Constructor for Jupyter notebook WitWidget.
@@ -57,6 +58,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
     """
     widgets.DOMWidget.__init__(self, layout=Layout(height='%ipx' % height))
     base.WitWidgetBase.__init__(self, config_builder)
+    self.error_counter = 0
 
     # Ensure the visualization takes all available width.
     display(HTML("<style>.container { width:100% !important; }</style>"))
@@ -65,9 +67,19 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
     base.WitWidgetBase.set_examples(self, examples)
     self._generate_sprite()
 
+  def _report_error(self, err):
+    self.error = {
+      'msg': str(err),
+      'counter': self.error_counter
+    }
+    self.error_counter += 1
+
   @observe('infer')
   def _infer(self, change):
-    self.inferences = base.WitWidgetBase.infer_impl(self)
+    try:
+      self.inferences = base.WitWidgetBase.infer_impl(self)
+    except Exception as e:
+      self._report_error(e)
 
   # Observer callbacks for changes from javascript.
   @observe('get_eligible_features')
@@ -78,10 +90,13 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   @observe('infer_mutants')
   def _infer_mutants(self, change):
     info = self.infer_mutants
-    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-    json_mapping['counter'] = self.mutant_charts_counter
-    self.mutant_charts_counter += 1
-    self.mutant_charts = json_mapping
+    try:
+      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+      json_mapping['counter'] = self.mutant_charts_counter
+      self.mutant_charts_counter += 1
+      self.mutant_charts = json_mapping
+    except Exception as e:
+      self._report_error(e)
 
   @observe('update_example')
   def _update_example(self, change):

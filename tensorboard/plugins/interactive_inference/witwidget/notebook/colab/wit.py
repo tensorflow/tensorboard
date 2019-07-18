@@ -90,12 +90,14 @@ WIT_HTML = """
 
       // Javascript callbacks called by python code to communicate with WIT
       // Polymer element.
+      window.backendError = error => {{
+        wit.handleError(error.msg);
+      }};
       window.inferenceCallback = inferences => {{
-        const parsedInferences = JSON.parse(inferences);
-        wit.labelVocab = parsedInferences.label_vocab;
-        wit.inferences = parsedInferences.inferences;
+        wit.labelVocab = inferences.label_vocab;
+        wit.inferences = inferences.inferences;
         wit.attributions = {{indices: wit.inferences.indices,
-                            attributions: parsedInferences.attributions}}
+                            attributions: inferences.attributions}}
       }};
       window.spriteCallback = spriteUrl => {{
         if (!wit.updateSprite) {{
@@ -107,20 +109,17 @@ WIT_HTML = """
         wit.updateSprite();
       }};
       window.eligibleFeaturesCallback = features => {{
-        const parsedFeatures = JSON.parse(features);
-        wit.partialDepPlotEligibleFeatures = parsedFeatures;
+        wit.partialDepPlotEligibleFeatures = features;
       }};
-      window.inferMutantsCallback = jsonMapping => {{
-        const chartInfo = JSON.parse(jsonMapping);
+      window.inferMutantsCallback = chartInfo => {{
         wit.makeChartForFeature(chartInfo.chartType, mutantFeature,
           chartInfo.data);
       }};
-      window.configCallback = jsonConfig => {{
+      window.configCallback = config => {{
         if (!wit.updateNumberOfModels) {{
-          requestAnimationFrame(() => window.configCallback(jsonConfig));
+          requestAnimationFrame(() => window.configCallback(config));
           return;
         }}
-        const config = JSON.parse(jsonConfig);
         if ('inference_address' in config) {{
           let addresses = config['inference_address'];
           if ('inference_address_2' in config) {{
@@ -201,16 +200,16 @@ class WitWidget(base.WitWidgetBase):
     # Display WIT Polymer element.
     display.display(display.HTML(self._get_element_html()))
     display.display(display.HTML(
-      WIT_HTML.format(height=height, id=self.id)))
+        WIT_HTML.format(height=height, id=self.id)))
 
     # Increment the static instance WitWidget index counter
     WitWidget.index += 1
 
     # Send the provided config and examples to JS
-    output.eval_js("""configCallback('{config}')""".format(
-      config=json.dumps(self.config)))
+    output.eval_js("""configCallback({config})""".format(
+        config=json.dumps(self.config)))
     output.eval_js("""updateExamplesCallback({examples})""".format(
-      examples=json.dumps(self.examples)))
+        examples=json.dumps(self.examples)))
     self._generate_sprite()
     self._ctor_complete = True
 
@@ -228,19 +227,23 @@ class WitWidget(base.WitWidgetBase):
       # cell from the cell that displays WIT.
       channel_name = 'updateExamples{}'.format(self.id)
       output.eval_js("""(new BroadcastChannel('{channel_name}')).postMessage(
-        {examples})""".format(
-          examples=json.dumps(self.examples), channel_name=channel_name))
+          {examples})""".format(
+              examples=json.dumps(self.examples), channel_name=channel_name))
       self._generate_sprite()
 
   def infer(self):
-    inferences = base.WitWidgetBase.infer_impl(self)
-    output.eval_js("""inferenceCallback('{inferences}')""".format(
-      inferences=json.dumps(inferences)))
+    try:
+      inferences = base.WitWidgetBase.infer_impl(self)
+      output.eval_js("""inferenceCallback({inferences})""".format(
+          inferences=json.dumps(inferences)))
+    except Exception as e:
+      output.eval_js("""backendError({error})""".format(
+          error=json.dumps({'msg': str(e)})))
 
   def delete_example(self, index):
     self.examples.pop(index)
     self.updated_example_indices = set([
-      i if i < index else i - 1 for i in self.updated_example_indices])
+        i if i < index else i - 1 for i in self.updated_example_indices])
     self._generate_sprite()
 
   def update_example(self, index, example):
@@ -255,13 +258,17 @@ class WitWidget(base.WitWidgetBase):
 
   def get_eligible_features(self):
     features_list = base.WitWidgetBase.get_eligible_features_impl(self)
-    output.eval_js("""eligibleFeaturesCallback('{features_list}')""".format(
-      features_list=json.dumps(features_list)))
+    output.eval_js("""eligibleFeaturesCallback({features_list})""".format(
+        features_list=json.dumps(features_list)))
 
   def infer_mutants(self, info):
-    json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-    output.eval_js("""inferMutantsCallback('{json_mapping}')""".format(
-      json_mapping=json.dumps(json_mapping)))
+    try:
+      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+      output.eval_js("""inferMutantsCallback({json_mapping})""".format(
+          json_mapping=json.dumps(json_mapping)))
+    except Exception as e:
+      output.eval_js("""backendError({error})""".format(
+          error=json.dumps({'msg': str(e)})))
 
   def _generate_sprite(self):
     sprite = base.WitWidgetBase.create_sprite(self)

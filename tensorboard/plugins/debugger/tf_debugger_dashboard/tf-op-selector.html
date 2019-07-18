@@ -18,10 +18,11 @@ limitations under the License.
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/lodash.html">
 
 <!--
@@ -36,10 +37,10 @@ limitations under the License.
         label="Filter Mode"
         selected-item-label="{{_filterMode}}"
       >
-        <paper-menu class="dropdown-content" slot="dropdown-content">
+        <paper-listbox class="dropdown-content" slot="dropdown-content">
           <paper-item no-label-float=true>Node Name</paper-item>
           <paper-item no-label-float=true>Op Type</paper-item>
-        </paper-menu>
+        </paper-listbox>
       </paper-dropdown-menu>
       <paper-input
         id="filter-input"
@@ -57,80 +58,84 @@ limitations under the License.
     <div id="selector-hierarchy">
     </div>
     <style>
-      :host .indented-level-container .content-container {
+      .indented-level-container .content-container {
         margin: 0 0 0 20px;
       }
 
-      :host .level-container iron-collapse {
+      .level-container iron-collapse {
         padding: 0 0 0 20px;
       }
 
-      :host paper-checkbox {
+      paper-checkbox {
         display: inline-block;
         width: 18px;
         height: 18px;
         margin: 0 8px 0 0;
       }
 
-      :host .op-type {
+      .op-type {
         padding-right: 10px;
         color: #444;
       }
 
-      :host .op-title-leaf {
+      .op-title-leaf {
         text-decoration: underline;
         cursor: pointer;
       }
 
-      :host .op-title-leaf:hover {
+      .op-title-leaf:hover {
         color: blue;
       }
 
-      :host .partial-checkbox {
+      .partial-checkbox {
         background: #f57c00;
       }
 
-      :host .node-expand-button {
+      .node-expand-button {
         margin: 0 0 0 -13px;
       }
 
-      :host .level-title-text {
+      .level-title-text {
         display: inline-block;
         font-weight: 800;
         margin: 0 0 0 -1px;
       }
 
-      :host .op-description {
+      .op-description {
         font-weight: 300;
         margin: 0 0 0 27px;
         padding: 10px 0;
       }
 
-      :host .spinner {
+      .spinner {
         width: 20px;
         height: 20px;
         vertical-align: middle;
       }
 
-      :host #filter-mode {
+      #filter-mode {
         width: 150px;
         display: inline-block;
       }
 
-      :host #filter-input {
+      #filter-input {
         width: 250px;
         display: inline-block;
       }
 
-      :host .highlighted {
+      .highlighted {
         color: red;
       }
-      :host .highlighted > .op-type {
+      .highlighted > .op-type {
         color: red;
       }
 
       #selector-hierarchy {
         width: 100%;
+      }
+
+      [hidden] {
+        display: none;
       }
     </style>
   </template>

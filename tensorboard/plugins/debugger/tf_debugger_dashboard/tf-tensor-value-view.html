@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-imports/lodash.html">
@@ -33,7 +33,8 @@ limitations under the License.
           <div>
             <paper-item
               id="tensor-name"
-              on-tap="tensorNameCallback">[[tensorName]]
+              on-tap="tensorNameCallback">
+              <span class="tensor-name-text">[[tensorName]]</span>
             </paper-item>
             <paper-icon-button
               icon="close"
@@ -102,59 +103,61 @@ limitations under the License.
         </td>
       </tr>
     </table>
+    <style>
+      .tensor-value-buttons {
+        height: 75%;
+        font-size: 10px;
+      }
+      .tensor-value-view-table {
+        width: 500px;
+        display: inline-table;
+        border-spacing: 5px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+        background-color: #f8f8f8;
+        box-shadow: 3px 3px 1px 1px #d8d8d8;
+      }
+      .tensor-value-view-td {
+        width: 350px;
+      }
+      .value-card-input {
+        width: 150px;
+      }
+      #tensor-name {
+        display: inline-block;
+        position: relative;
+        width: 50%;
+        cursor: pointer;
+      }
+      .tensor-name-text {
+        color: blue;
+        text-decoration: underline;
+      }
+      #debug-op {
+        font-size: 90%;
+      }
+      .value-image {
+        image-rendering: pixelated;
+      }
+      .value-view-icon-button {
+        display: inline-block;
+        float: right;
+        text-align: right;
+        width: 20%;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 90%;
+        color: blue;
+      }
+      #slicing, #time-indices {
+        --paper-input-container-input: {
+          font-family: monospace;
+        };
+      }
+    </style>
   </template>
-  <style>
-    .tensor-value-buttons {
-      height: 75%;
-      font-size: 10px;
-    }
-    .tensor-value-view-table {
-      width: 500px;
-      display: inline-table;
-      border-spacing: 5px;
-      padding-top: 3px;
-      padding-bottom: 3px;
-      padding-left: 3px;
-      padding-right: 3px;
-      background-color: #f8f8f8;
-      box-shadow: 3px 3px 1px 1px #d8d8d8;
-    }
-    .tensor-value-view-td {
-      width: 350px;
-    }
-    .value-card-input {
-      width: 150px;
-    }
-    #tensor-name {
-      display: inline-block;
-      position: relative;
-      width: 50%;
-      cursor: pointer;
-      color: blue;
-      text-decoration: underline;
-    }
-    #debug-op {
-      font-size: 90%;
-    }
-    .value-image {
-      image-rendering: pixelated;
-    }
-    .value-view-icon-button {
-      display: inline-block;
-      float: right;
-      text-align: right;
-      width: 20%;
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 90%;
-      color: blue;
-    }
-    #slicing, #time-indices {
-      --paper-input-container-input: {
-        font-family: monospace;
-      };
-    }
-  </style>
   <script>
 
   Polymer({

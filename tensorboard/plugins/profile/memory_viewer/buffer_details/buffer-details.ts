@@ -78,7 +78,7 @@ Polymer({
       this.expansion = (1 / this.utilization).toFixed(1);
       color = memory_viewer_utils.flameColor(this.utilization, 0.7);
     }
-    this.$.card.updateStyles({'--paper-card-header':'background-color:' + color});
+    this.$.card.updateStyles({'--paper-card-background-color': color});
     this.$.subheader.style.backgroundColor = color;
   },
   /**
