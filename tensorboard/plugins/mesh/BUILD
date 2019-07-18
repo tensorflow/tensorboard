@@ -107,6 +107,20 @@ py_library(
     ],
 )
 
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":metadata",
+        ":protos_all_py_pb2",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
 py_test(
     name = "summary_test",
     size = "small",
@@ -163,6 +177,20 @@ py_binary(
     deps = [
         ":demo_utils",
         ":summary",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_binary(
+    name = "mesh_demo_v2",
+    srcs = ["mesh_demo_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":demo_utils",
+        ":summary_v2",
         "//tensorboard/compat:tensorflow",
     ],
 )
