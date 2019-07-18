@@ -34,6 +34,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
         "//third_party/javascript/polymer/v1/iron-flex-layout:lib",
         "//third_party/javascript/polymer/v1/iron-icons:lib",
@@ -43,6 +44,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
         "//third_party/javascript/polymer/v1/paper-tooltip:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
