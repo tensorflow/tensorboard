@@ -9,4 +9,3 @@ web_library(
     srcs = glob(["*.json"]),
     path = "/tf-trace-viewer/data/plugin/profile",
 )
-

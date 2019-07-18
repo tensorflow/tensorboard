@@ -15,11 +15,11 @@ sh_binary(
         "README.rst",
         "setup.py",
         "wit-widget.json",
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_jupyter", # For HTML payload
-        "//tensorboard/plugins/interactive_inference/witwidget/notebook/jupyter/js:js_files",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard:wit_jupyter",  # For HTML payload
         "//tensorboard/plugins/interactive_inference/utils:inference_utils",  # Utility method that visualization code uses.
         "//tensorboard/plugins/interactive_inference/witwidget",  # WitWidget code
         "//tensorboard/plugins/interactive_inference/witwidget:version",  # Version module (read by setup.py)
+        "//tensorboard/plugins/interactive_inference/witwidget/notebook/jupyter/js:js_files",
     ],
     tags = [
         "local",

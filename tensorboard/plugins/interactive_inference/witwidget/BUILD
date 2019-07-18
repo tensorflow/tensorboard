@@ -15,7 +15,7 @@ py_library(
         "//tensorboard/plugins/interactive_inference/utils:inference_utils",
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
-    ]
+    ],
 )
 
 py_library(

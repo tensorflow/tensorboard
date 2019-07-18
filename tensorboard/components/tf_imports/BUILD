@@ -17,7 +17,7 @@ tf_web_library(
     name = "polymer",
     srcs = [
         "polymer.html",
-        "@org_definitelytyped//:polymer.d.ts"
+        "@org_definitelytyped//:polymer.d.ts",
     ],
     path = "/tf-imports",
     visibility = ["//visibility:public"],
@@ -167,8 +167,8 @@ tf_web_library(
     exports = [
         ":chai_typings",
         ":mocha_typings",
-        ":sinon_typings",
         ":sinon_chai_typings",
+        ":sinon_typings",
         "@org_npmjs_registry_web_component_tester",
     ],
 )
@@ -232,10 +232,10 @@ tf_web_library(
         "@org_tensorflow_graphics_lib//:array-buffer-data-provider.js",
         "@org_tensorflow_graphics_lib//:mesh-viewer.js",
     ],
+    path = "/tf-imports",
     deps = [
         ":threejs",
     ],
-    path = "/tf-imports",
 )
 
 # Generate single TypeScript typings file for d3.js with no ES6 imports.

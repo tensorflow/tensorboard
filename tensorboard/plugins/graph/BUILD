@@ -14,8 +14,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":keras_util",
         ":graph_util",
+        ":keras_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:event_accumulator",

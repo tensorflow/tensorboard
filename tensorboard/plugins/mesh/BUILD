@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
+
 exports_files(["LICENSE"])
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
@@ -53,8 +54,8 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -88,8 +89,8 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 
