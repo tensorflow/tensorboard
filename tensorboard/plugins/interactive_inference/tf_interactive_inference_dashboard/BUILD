@@ -55,6 +55,7 @@ tf_web_library(
     path = "/tf-interactive-inference-dashboard",
     deps = [
         ":tf_interactive_inference_dashboard",
+        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 
