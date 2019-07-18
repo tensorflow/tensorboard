@@ -206,7 +206,7 @@ def _normalize_hparams(hparams):
 
 def _derive_session_group_name(trial_id, hparams):
   if trial_id is not None:
-    if not isinstance(trial_id, str):
+    if not isinstance(trial_id, six.string_types):
       raise TypeError("`trial_id` should be a `str`, but got: %r" % (trial_id,))
     return trial_id
   # Use `json.dumps` rather than `str` to ensure invariance under string
