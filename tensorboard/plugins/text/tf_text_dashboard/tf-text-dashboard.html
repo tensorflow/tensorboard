@@ -63,28 +63,6 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-<<<<<<< HEAD
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-text-loader
-                          tag="[[item.tag]]"
-                          run="[[item.run]]"
-                          request-manager="[[_requestManager]]"
-                        ></tf-text-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
-=======
             <tf-category-paginated-view
               category="[[category]]"
               initial-opened="[[_shouldOpen(index)]]"
@@ -98,7 +76,6 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
                 ></tf-text-loader>
               </template>
             </tf-category-paginated-view>
->>>>>>> fa56d0cc787260a4778f6aefc757125589e6ed95
           </template>
         </template>
       </div>
