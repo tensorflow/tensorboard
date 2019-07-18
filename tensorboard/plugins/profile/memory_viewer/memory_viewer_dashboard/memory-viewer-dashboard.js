@@ -42,7 +42,7 @@ var memory_viewer_dashboard;
                 value: null,
             },
         },
-        dataChanged_: function (newData) {
+        dataChanged_(newData) {
             if (newData && newData.hloModule && newData.bufferAssignment) {
                 this.hloModule_ = newData.hloModule;
                 this.moduleName_ = this.hloModule_.name ? this.hloModule_.name : '';

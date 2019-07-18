@@ -35,10 +35,10 @@ var tf_utils;
      * of this function respects this convention as well.
      */
     function aggregateTagInfo(runToTagInfo, defaultDisplayName) {
-        var unanimousDisplayName = undefined;
-        var descriptionToRuns = {};
-        Object.keys(runToTagInfo).forEach(function (run) {
-            var info = runToTagInfo[run];
+        let unanimousDisplayName = undefined;
+        const descriptionToRuns = {};
+        Object.keys(runToTagInfo).forEach(run => {
+            const info = runToTagInfo[run];
             if (unanimousDisplayName === undefined) {
                 unanimousDisplayName = info.displayName;
             }
@@ -50,11 +50,11 @@ var tf_utils;
             }
             descriptionToRuns[info.description].push(run);
         });
-        var displayName = unanimousDisplayName != null ?
+        const displayName = unanimousDisplayName != null ?
             unanimousDisplayName :
             defaultDisplayName;
-        var description = (function () {
-            var descriptions = Object.keys(descriptionToRuns);
+        const description = (() => {
+            const descriptions = Object.keys(descriptionToRuns);
             if (descriptions.length === 0) {
                 return '';
             }
@@ -62,28 +62,28 @@ var tf_utils;
                 return descriptions[0];
             }
             else {
-                var items = descriptions.map(function (description) {
-                    var runs = descriptionToRuns[description].map(function (run) {
+                const items = descriptions.map(description => {
+                    const runs = descriptionToRuns[description].map(run => {
                         // We're splicing potentially unsafe display names into
                         // sanitized descriptions, so we need to sanitize them.
-                        var safeRun = run
+                        const safeRun = run
                             .replace(/</g, '&lt;')
                             .replace(/>/g, '&gt;') // for symmetry :-)
                             .replace(/&/g, '&amp;');
-                        return "<code>" + safeRun + "</code>";
+                        return `<code>${safeRun}</code>`;
                     });
-                    var joined = runs.length > 2 ?
+                    const joined = runs.length > 2 ?
                         (runs.slice(0, runs.length - 1).join(', ')
                             + ', and ' + runs[runs.length - 1]) :
                         runs.join(' and ');
-                    var runNoun = ngettext(runs.length, 'run', 'runs');
-                    return "<li><p>For " + runNoun + " " + joined + ":</p>" + description + "</li>";
+                    const runNoun = ngettext(runs.length, 'run', 'runs');
+                    return `<li><p>For ${runNoun} ${joined}:</p>${description}</li>`;
                 });
-                var prefix = '<p><strong>Multiple descriptions:</strong></p>';
-                return prefix + "<ul>" + items.join('') + "</ul>";
+                const prefix = '<p><strong>Multiple descriptions:</strong></p>';
+                return `${prefix}<ul>${items.join('')}</ul>`;
             }
         })();
-        return { displayName: displayName, description: description };
+        return { displayName, description };
     }
     tf_utils.aggregateTagInfo = aggregateTagInfo;
     function ngettext(k, enSingular, enPlural) {

@@ -12,19 +12,112 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var expect = chai.expect;
-describe('hierarchy', function () {
+const { expect } = chai;
+describe('hierarchy', () => {
     beforeEach(function () {
-        var _this = this;
-        var pbtxt = tf.graph.test.util.stringToArrayBuffer("\n      node {\n        name: \"Q\"\n        op: \"VariableV2\"\n        attr {\n          key: \"_output_shapes\"\n          value {\n            list {\n              shape {\n                dim {\n                  size: 100\n                }\n                dim {\n                  size: 200\n                }\n              }\n            }\n          }\n        }\n        attr {\n          key: \"container\"\n          value {\n            s: \"\"\n          }\n        }\n        attr {\n          key: \"dtype\"\n          value {\n            type: DT_FLOAT\n          }\n        }\n        attr {\n          key: \"shape\"\n          value {\n            shape {\n              dim {\n                size: 100\n              }\n              dim {\n                size: 200\n              }\n            }\n          }\n        }\n      }\n      node {\n        name: \"W\"\n        op: \"VariableV2\"\n        attr {\n          key: \"_output_shapes\"\n          value {\n            list {\n              shape {\n                dim {\n                  size: 200\n                }\n                dim {\n                  size: 100\n                }\n              }\n            }\n          }\n        }\n        attr {\n          key: \"container\"\n          value {\n            s: \"\"\n          }\n        }\n        attr {\n          key: \"dtype\"\n          value {\n            type: DT_FLOAT\n          }\n        }\n        attr {\n          key: \"shape\"\n          value {\n            shape {\n              dim {\n                size: 200\n              }\n              dim {\n                size: 100\n              }\n            }\n          }\n        }\n      }\n      node {\n        name: \"Y\"\n        op: \"MatMul\"\n        input: \"Q\"\n        input: \"W\"\n      }");
-        var buildParams = {
+        const pbtxt = tf.graph.test.util.stringToArrayBuffer(`
+      node {
+        name: "Q"
+        op: "VariableV2"
+        attr {
+          key: "_output_shapes"
+          value {
+            list {
+              shape {
+                dim {
+                  size: 100
+                }
+                dim {
+                  size: 200
+                }
+              }
+            }
+          }
+        }
+        attr {
+          key: "container"
+          value {
+            s: ""
+          }
+        }
+        attr {
+          key: "dtype"
+          value {
+            type: DT_FLOAT
+          }
+        }
+        attr {
+          key: "shape"
+          value {
+            shape {
+              dim {
+                size: 100
+              }
+              dim {
+                size: 200
+              }
+            }
+          }
+        }
+      }
+      node {
+        name: "W"
+        op: "VariableV2"
+        attr {
+          key: "_output_shapes"
+          value {
+            list {
+              shape {
+                dim {
+                  size: 200
+                }
+                dim {
+                  size: 100
+                }
+              }
+            }
+          }
+        }
+        attr {
+          key: "container"
+          value {
+            s: ""
+          }
+        }
+        attr {
+          key: "dtype"
+          value {
+            type: DT_FLOAT
+          }
+        }
+        attr {
+          key: "shape"
+          value {
+            shape {
+              dim {
+                size: 200
+              }
+              dim {
+                size: 100
+              }
+            }
+          }
+        }
+      }
+      node {
+        name: "Y"
+        op: "MatMul"
+        input: "Q"
+        input: "W"
+      }`);
+        const buildParams = {
             enableEmbedding: true,
             inEmbeddingTypes: ['Const'],
             outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
             refEdges: {}
         };
         this.dummyTracker = tf.graph.util.getTracker({
-            set: function () { },
+            set: () => { },
             progress: 0,
         });
         this.options = {
@@ -35,13 +128,13 @@ describe('hierarchy', function () {
             useGeneralizedSeriesPatterns: false,
         };
         return tf.graph.parser.parseGraphPbTxt(pbtxt)
-            .then(function (nodes) { return tf.graph.build(nodes, buildParams, _this.dummyTracker); })
-            .then(function (graph) { return _this.slimGraph = graph; });
+            .then(nodes => tf.graph.build(nodes, buildParams, this.dummyTracker))
+            .then((graph) => this.slimGraph = graph);
     });
     it('builds hierarchy with metagraph', function () {
         return tf.graph.hierarchy
             .build(this.slimGraph, this.options, this.dummyTracker)
-            .then(function (hierarchy) {
+            .then(hierarchy => {
             if (!hierarchy)
                 throw new Error('Expected hierarchy to be built');
             expect(hierarchy.hasShapeInfo).to.be.true;
@@ -52,7 +145,7 @@ describe('hierarchy', function () {
             expect(hierarchy.root.metagraph.edge('Y', 'Q')).to.not.exist;
             // Two variables are not connected directly.
             expect(hierarchy.root.metagraph.edge('Q', 'W')).to.not.exist;
-            var edge = hierarchy.root.metagraph.edge('Q', 'Y');
+            const edge = hierarchy.root.metagraph.edge('Q', 'Y');
             expect(edge.totalSize).to.equal(20000);
             expect(edge.v).to.equal('Q');
             expect(edge.w).to.equal('Y');

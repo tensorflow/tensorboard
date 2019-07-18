@@ -26,10 +26,7 @@ var tf_op_profile;
      * @param {Function=} curve mapping [0-1] to [0-1]
      * @return {string} An RGBA color.
      */
-    function flameColor(fraction, brightness, opacity, curve) {
-        if (brightness === void 0) { brightness = 1; }
-        if (opacity === void 0) { opacity = 1; }
-        if (curve === void 0) { curve = Math.sqrt; }
+    function flameColor(fraction, brightness = 1, opacity = 1, curve = Math.sqrt) {
         if (isNaN(fraction))
             return rgba(brightness, brightness, brightness, opacity);
         fraction = curve(fraction); // Or everything is depressing and red.

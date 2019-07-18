@@ -15,12 +15,12 @@ var memory_viewer_usage;
      * Provides calculation of memory usage from xla buffer assignment.
      * @final
      */
-    var MemoryUsage = /** @class */ (function () {
+    class MemoryUsage {
         /**
          * @param json Json message that contains the hloModule,
          *     hloOrdering and bufferAssignment.
          */
-        function MemoryUsage(json) {
+        constructor(json) {
             this.buffers_ = [];
             this.idToBuffer_ = {};
             this.idToBufferAllocation_ = {};
@@ -49,26 +49,24 @@ var memory_viewer_usage;
         /**
          * Constructs a mapping from name to HLO instruction.
          */
-        MemoryUsage.prototype.initHloInstructions_ = function (hloModule) {
+        initHloInstructions_(hloModule) {
             if (!hloModule) {
                 console.warn('Missing hloModule, skipping unpadded allocation size analysis');
                 return;
             }
-            for (var _i = 0, _a = hloModule.computations; _i < _a.length; _i++) {
-                var comp = _a[_i];
-                for (var _b = 0, _c = comp.instructions; _b < _c.length; _b++) {
-                    var inst = _c[_b];
+            for (const comp of hloModule.computations) {
+                for (const inst of comp.instructions) {
                     if (inst.name) {
                         this.nameToHlo_[inst.name] =
                             new memory_viewer_xla_hi.HloInstruction(inst);
                     }
                 }
             }
-        };
+        }
         /**
          * Initializes memory usage of the module.
          */
-        MemoryUsage.prototype.initMemoryUsage_ = function (bufferAssignment) {
+        initMemoryUsage_(bufferAssignment) {
             if (!bufferAssignment) {
                 console.error('No buffer assignment info');
                 return;
@@ -76,43 +74,40 @@ var memory_viewer_usage;
             this.initBuffers_(bufferAssignment);
             this.initAllocations_(bufferAssignment);
             this.findPeakMemoryUsage_(bufferAssignment);
-        };
+        }
         /**
          * Creates a sorted buffer list and an id to buffer map from
          * `bufferAssignment`.
          */
-        MemoryUsage.prototype.initBuffers_ = function (bufferAssignment) {
-            for (var _i = 0, _a = bufferAssignment.logicalBuffers; _i < _a.length; _i++) {
-                var jsonBuffer = _a[_i];
-                var buffer = new memory_viewer_xla_lb.LogicalBuffer(jsonBuffer);
+        initBuffers_(bufferAssignment) {
+            for (let jsonBuffer of bufferAssignment.logicalBuffers) {
+                const buffer = new memory_viewer_xla_lb.LogicalBuffer(jsonBuffer);
                 this.buffers_.push(buffer);
                 this.idToBuffer_[buffer.id] = buffer;
                 this.unSeenLogicalBuffers_.add(buffer.id);
             }
-        };
+        }
         /**
          * Creates a logical buffer id to buffer allocation map from
          * `bufferAssignment`.
          */
-        MemoryUsage.prototype.initAllocations_ = function (bufferAssignment) {
-            for (var _i = 0, _a = bufferAssignment.bufferAllocations; _i < _a.length; _i++) {
-                var jsonAlloc = _a[_i];
-                var alloc = new memory_viewer_xla_ba.BufferAllocation(jsonAlloc);
-                for (var _b = 0, _c = jsonAlloc.assigned; _b < _c.length; _b++) {
-                    var assigned = _c[_b];
+        initAllocations_(bufferAssignment) {
+            for (const jsonAlloc of bufferAssignment.bufferAllocations) {
+                const alloc = new memory_viewer_xla_ba.BufferAllocation(jsonAlloc);
+                for (const assigned of jsonAlloc.assigned) {
                     if (assigned.logicalBufferId) {
                         this.idToBufferAllocation_[assigned.logicalBufferId] = alloc;
                     }
                 }
             }
-        };
+        }
         /**
          * Creates a heap object that is displayed in a plot in the memory
          * visualization.
          */
-        MemoryUsage.prototype.newHeapObject_ = function (color, buffer, shape, inst, groupName) {
-            var unpaddedSize = shape ? memory_viewer_utils.bytesToMiB(shape.unpaddedHeapSizeBytes()) : 0;
-            var dict = {
+        newHeapObject_(color, buffer, shape, inst, groupName) {
+            const unpaddedSize = shape ? memory_viewer_utils.bytesToMiB(shape.unpaddedHeapSizeBytes()) : 0;
+            const dict = {
                 'instructionName': buffer.instructionName,
                 'logicalBufferId': buffer.id,
                 'unpaddedSizeMiB': unpaddedSize,
@@ -124,14 +119,14 @@ var memory_viewer_usage;
                 'groupName': groupName,
             };
             return dict;
-        };
+        }
         /**
          * Adds the logical buffer as an element in the maxHeap with constitutent
          * logical buffers. If the logical buffer size is smaller than the specified
          * small buffer size, return the size without adding into the maxHeap.
          * Otherwise, return 0.
          */
-        MemoryUsage.prototype.addHeapObject_ = function (parent, buffer, groupName) {
+        addHeapObject_(parent, buffer, groupName) {
             if (buffer.size <= parent.smallBufferSize) {
                 parent.rest_ += buffer.size;
                 return;
@@ -139,28 +134,27 @@ var memory_viewer_usage;
             if (!buffer.instructionName) {
                 return;
             }
-            var inst = parent.nameToHlo_[buffer.instructionName];
+            const inst = parent.nameToHlo_[buffer.instructionName];
             if (!inst) {
                 return;
             }
-            var shape = inst.shape.resolveShapeIndex(buffer.shapeIndex);
+            const shape = inst.shape.resolveShapeIndex(buffer.shapeIndex);
             parent.maxHeap.push(parent.newHeapObject_(parent.nColor_++, buffer, shape, inst, groupName));
-        };
+        }
         /**
          * Accumulate data for use in a stacked bar plot.
          * We accumulate it in "program order" -- the order in which it was placed
          * into the logical_buffers sequence above was program order, and we iterate
          * that order to create data points.
          **/
-        MemoryUsage.prototype.initMaxHeap_ = function () {
-            for (var _i = 0, _a = this.peakLogicalBuffers; _i < _a.length; _i++) {
-                var id = _a[_i];
-                var alloc = this.idToBufferAllocation_[id];
-                var groupName = alloc ? alloc.groupName : '';
+        initMaxHeap_() {
+            for (const id of this.peakLogicalBuffers) {
+                const alloc = this.idToBufferAllocation_[id];
+                const groupName = alloc ? alloc.groupName : '';
                 this.addHeapObject_(this, this.idToBuffer_[id], groupName);
             }
             if (this.rest_ != 0) {
-                var small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
+                const small = 'small (<' + this.smallBufferSize / 1024 + ' KiB)';
                 this.maxHeap.push({
                     'instructionName': small,
                     'sizeMiB': memory_viewer_utils.bytesToMiB(this.rest_),
@@ -168,10 +162,10 @@ var memory_viewer_usage;
                     'groupName': small
                 });
             }
-            var indexedMaxHeap = this.maxHeap.map(function (e, i) {
+            let indexedMaxHeap = this.maxHeap.map(function (e, i) {
                 return { ind: i, val: e };
             });
-            indexedMaxHeap.sort(function (a, b) { return b.val.sizeMiB - a.val.sizeMiB; });
+            indexedMaxHeap.sort((a, b) => b.val.sizeMiB - a.val.sizeMiB);
             this.maxHeapBySize = indexedMaxHeap.map(function (e) {
                 return e.val;
             });
@@ -179,39 +173,39 @@ var memory_viewer_usage;
                 return e.ind;
             });
             this.maxHeapToBySize.length = this.maxHeap.length;
-            for (var i = 0; i < this.bySizeToMaxHeap.length; i++) {
+            for (let i = 0; i < this.bySizeToMaxHeap.length; i++) {
                 this.maxHeapToBySize[this.bySizeToMaxHeap[i]] = i;
             }
-        };
+        }
         /**
          * Finds the peak memory usage from the `bufferAssignment`.
          */
-        MemoryUsage.prototype.findPeakMemoryUsage_ = function (bufferAssignment) {
-            var heapSizes = [];
-            var unpaddedHeapSizes = [];
-            var logicalBuffers = [];
-            var peakLogicalBuffers = [];
-            var heapSizeBytes = 0;
-            var unpaddedHeapSizeBytes = 0;
-            var peakHeapSizeBytes = 0;
+        findPeakMemoryUsage_(bufferAssignment) {
+            let heapSizes = [];
+            let unpaddedHeapSizes = [];
+            let logicalBuffers = [];
+            let peakLogicalBuffers = [];
+            let heapSizeBytes = 0;
+            let unpaddedHeapSizeBytes = 0;
+            let peakHeapSizeBytes = 0;
             // Unpadded size at peak.
-            var unpaddedPeakHeapSizeBytes = 0;
-            var peakHeapSizePosition = 0;
-            var _loop_1 = function (event_1) {
+            let unpaddedPeakHeapSizeBytes = 0;
+            let peakHeapSizePosition = 0;
+            for (const event of bufferAssignment.heapSimulatorTraces[0].events) {
                 heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
                 unpaddedHeapSizes.push(memory_viewer_utils.bytesToMiB(unpaddedHeapSizeBytes));
-                var eventId = parseInt(event_1.bufferId, 10);
-                var buffer = this_1.idToBuffer_[eventId];
-                this_1.unSeenLogicalBuffers_.delete(eventId);
-                var alloc = this_1.idToBufferAllocation_[eventId];
+                const eventId = parseInt(event.bufferId, 10);
+                const buffer = this.idToBuffer_[eventId];
+                this.unSeenLogicalBuffers_.delete(eventId);
+                const alloc = this.idToBufferAllocation_[eventId];
                 if (alloc) {
-                    this_1.seenBufferAllocations_.add(alloc.index);
+                    this.seenBufferAllocations_.add(alloc.index);
                 }
-                var shape = null;
+                let shape = null;
                 if (buffer.instructionName && buffer.instructionName != '') {
-                    shape = this_1.nameToHlo_[buffer.instructionName].shape.resolveShapeIndex(buffer.shapeIndex);
+                    shape = this.nameToHlo_[buffer.instructionName].shape.resolveShapeIndex(buffer.shapeIndex);
                 }
-                switch (event_1.kind.toString()) {
+                switch (event.kind.toString()) {
                     case 'ALLOC':
                         logicalBuffers.push(eventId);
                         heapSizeBytes += buffer.size;
@@ -219,7 +213,7 @@ var memory_viewer_usage;
                         if (shape) {
                             unpaddedHeapSizeBytes += shape.unpaddedHeapSizeBytes();
                         }
-                        this_1.logicalBufferSpans[eventId] = [heapSizes.length, -1];
+                        this.logicalBufferSpans[eventId] = [heapSizes.length, -1];
                         if (heapSizeBytes > peakHeapSizeBytes) {
                             peakHeapSizeBytes = heapSizeBytes;
                             unpaddedPeakHeapSizeBytes = unpaddedHeapSizeBytes;
@@ -229,71 +223,64 @@ var memory_viewer_usage;
                         }
                         break;
                     case 'FREE':
-                        logicalBuffers = logicalBuffers.filter(function (item) {
+                        logicalBuffers = logicalBuffers.filter((item) => {
                             return item !== eventId;
                         });
                         heapSizeBytes -= buffer.size;
                         if (shape) {
                             unpaddedHeapSizeBytes -= shape.unpaddedHeapSizeBytes();
                         }
-                        this_1.logicalBufferSpans[eventId][1] = heapSizes.length;
+                        this.logicalBufferSpans[eventId][1] = heapSizes.length;
                         if (heapSizeBytes < 0) {
                             console.error('heap_size_bytes < 0');
                         }
                         break;
                     case 'SHARE_WITH':
                         // Nothing to do, but note we've seen the shared thing.
-                        this_1.unSeenLogicalBuffers_.delete(parseInt(event_1.shareWithCanonicalId, 10));
+                        this.unSeenLogicalBuffers_.delete(parseInt(event.shareWithCanonicalId, 10));
                         break;
                     default:
-                        console.log('ERROR: unknown heap event kind:', event_1);
+                        console.log('ERROR: unknown heap event kind:', event);
                         break;
                 }
-            };
-            var this_1 = this;
-            for (var _i = 0, _a = bufferAssignment.heapSimulatorTraces[0].events; _i < _a.length; _i++) {
-                var event_1 = _a[_i];
-                _loop_1(event_1);
             }
             heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
-            var indefiniteMemoryUsageBytes = this.findIndefiniteMemoryUsage_(this.unSeenLogicalBuffers_);
+            const indefiniteMemoryUsageBytes = this.findIndefiniteMemoryUsage_(this.unSeenLogicalBuffers_);
             this.peakHeapSizeBytes = peakHeapSizeBytes + indefiniteMemoryUsageBytes;
             this.unpaddedPeakHeapSizeBytes =
                 unpaddedPeakHeapSizeBytes + indefiniteMemoryUsageBytes;
             this.peakLogicalBuffers = peakLogicalBuffers;
             this.peakHeapSizePosition = peakHeapSizePosition;
-            var addend = memory_viewer_utils.bytesToMiB(indefiniteMemoryUsageBytes);
-            this.heapSizes = heapSizes.map(function (item) {
+            const addend = memory_viewer_utils.bytesToMiB(indefiniteMemoryUsageBytes);
+            this.heapSizes = heapSizes.map((item) => {
                 return item + addend;
             });
-            this.unpaddedHeapSizes = unpaddedHeapSizes.map(function (item) {
+            this.unpaddedHeapSizes = unpaddedHeapSizes.map((item) => {
                 return item + addend;
             });
-        };
+        }
         /**
          * Calculate the indefinite memory usage from the unseen logical buffers.
          * Assume they have indefinite lifetime if they are not in thread-local buffer
          * allocations.
          */
-        MemoryUsage.prototype.findIndefiniteMemoryUsage_ = function (buffers) {
-            var _this = this;
-            var indefiniteMemoryUsageBytes = 0;
-            buffers.forEach(function (id) {
-                var alloc = _this.idToBufferAllocation_[id];
+        findIndefiniteMemoryUsage_(buffers) {
+            let indefiniteMemoryUsageBytes = 0;
+            buffers.forEach((id) => {
+                const alloc = this.idToBufferAllocation_[id];
                 if (alloc.isThreadLocal) {
                     return;
                 }
-                if (!_this.seenBufferAllocations_.has(alloc.index)) {
-                    _this.seenBufferAllocations_.add(alloc.index);
+                if (!this.seenBufferAllocations_.has(alloc.index)) {
+                    this.seenBufferAllocations_.add(alloc.index);
                     indefiniteMemoryUsageBytes += alloc.size;
                     // Show the logical buffer assiciated with this buffer allocation.
-                    _this.addHeapObject_(_this, _this.idToBuffer_[id], alloc.groupName);
+                    this.addHeapObject_(this, this.idToBuffer_[id], alloc.groupName);
                 }
             });
             this.indefiniteMemoryUsageBytes = indefiniteMemoryUsageBytes;
             return indefiniteMemoryUsageBytes;
-        };
-        return MemoryUsage;
-    }());
+        }
+    }
     memory_viewer_usage.MemoryUsage = MemoryUsage;
 })(memory_viewer_usage || (memory_viewer_usage = {})); // namespace memory_viewer_usage

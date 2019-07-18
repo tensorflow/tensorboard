@@ -15,13 +15,12 @@ var memory_viewer_xla_baa;
      * HLO assigned buffer allocation representation.
      * @final
      */
-    var BufferAllocationAssigned = /** @class */ (function () {
-        function BufferAllocationAssigned(assigned) {
+    class BufferAllocationAssigned {
+        constructor(assigned) {
             this.logicalBufferId = parseInt(assigned.logicalBufferId, 10);
             this.offset = parseInt(assigned.offset, 10);
             this.size = parseInt(assigned.size, 10);
         }
-        return BufferAllocationAssigned;
-    }());
+    }
     memory_viewer_xla_baa.BufferAllocationAssigned = BufferAllocationAssigned;
 })(memory_viewer_xla_baa || (memory_viewer_xla_baa = {})); // namespace memory_viewer_xla_baa

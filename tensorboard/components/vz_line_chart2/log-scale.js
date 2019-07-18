@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,83 +31,80 @@ var vz_line_chart2;
      * non-positive. Lastly, if using autoDomain feature and if all values are the
      * same value, it pads 10% of the value.
      */
-    var LogScale = /** @class */ (function (_super) {
-        __extends(LogScale, _super);
-        function LogScale() {
-            var _this = _super.call(this) || this;
-            _this._d3LogScale = d3.scaleLog();
-            _this.padProportion(.2);
-            return _this;
+    class LogScale extends vz_line_chart2.TfScale {
+        constructor() {
+            super();
+            this._d3LogScale = d3.scaleLog();
+            this.padProportion(.2);
         }
-        LogScale.prototype.scale = function (x) {
+        scale(x) {
             // Returning NaN makes sure line plot does not plot illegal values.
             if (x <= 0)
                 return NaN;
             return this._d3LogScale(x);
-        };
-        LogScale.prototype.invert = function (x) {
+        }
+        invert(x) {
             return this._d3LogScale.invert(x);
-        };
-        LogScale.prototype.scaleTransformation = function (value) {
+        }
+        scaleTransformation(value) {
             return this.scale(value);
-        };
-        LogScale.prototype.invertedTransformation = function (value) {
+        }
+        invertedTransformation(value) {
             return this.invert(value);
-        };
-        LogScale.prototype.getTransformationDomain = function () {
+        }
+        getTransformationDomain() {
             return this.domain();
-        };
-        LogScale.prototype._getDomain = function () {
+        }
+        _getDomain() {
             return this._untransformedDomain;
-        };
-        LogScale.prototype._setDomain = function (values) {
+        }
+        _setDomain(values) {
             this._untransformedDomain = values;
-            var min = values[0], max = values[1];
-            _super.prototype._setDomain.call(this, [Math.max(vz_line_chart2.MIN_POSITIVE_VALUE, min), max]);
-        };
+            const [min, max] = values;
+            super._setDomain([Math.max(vz_line_chart2.MIN_POSITIVE_VALUE, min), max]);
+        }
         /**
          * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
          */
-        LogScale.prototype._niceDomain = function (domain, count) {
-            var low = domain[0], high = domain[1];
-            var adjustedLogLow = Math.max(log(vz_line_chart2.MIN_POSITIVE_VALUE), log(low));
-            var logHigh = log(high);
-            var spread = logHigh - adjustedLogLow;
-            var pad = spread ? spread * this.padProportion() : 1;
+        _niceDomain(domain, count) {
+            const [low, high] = domain;
+            const adjustedLogLow = Math.max(log(vz_line_chart2.MIN_POSITIVE_VALUE), log(low));
+            const logHigh = log(high);
+            const spread = logHigh - adjustedLogLow;
+            const pad = spread ? spread * this.padProportion() : 1;
             return [
                 pow(Math.max(log(vz_line_chart2.MIN_POSITIVE_VALUE), adjustedLogLow - pad)),
                 pow(logHigh + pad),
             ];
-        };
+        }
         /**
          * Generates a possible extent based on data from all plots the scale is
          * connected to by taking the minimum and maximum values of all extents for
          * lower and upper bound, respectively.
          * @override to remove default padding logic.
          */
-        LogScale.prototype._getUnboundedExtent = function (ignoreAttachState) {
-            var includedValues = this._getAllIncludedValues(ignoreAttachState);
-            var extent = this._defaultExtent();
+        _getUnboundedExtent(ignoreAttachState) {
+            const includedValues = this._getAllIncludedValues(ignoreAttachState);
+            let extent = this._defaultExtent();
             if (includedValues.length !== 0) {
-                var combinedExtent = [
+                const combinedExtent = [
                     Plottable.Utils.Math.min(includedValues, extent[0]),
                     Plottable.Utils.Math.max(includedValues, extent[1]),
                 ];
                 extent = this._niceDomain(combinedExtent);
             }
             return extent;
-        };
-        LogScale.prototype._getAllIncludedValues = function (ignoreAttachState) {
-            if (ignoreAttachState === void 0) { ignoreAttachState = false; }
-            var values = _super.prototype._getAllIncludedValues.call(this);
+        }
+        _getAllIncludedValues(ignoreAttachState = false) {
+            const values = super._getAllIncludedValues();
             // For log scale, the value cannot be smaller or equal to 0. They are
             // negative infinity.
-            return values.map(function (x) { return x > 0 ? x : vz_line_chart2.MIN_POSITIVE_VALUE; });
-        };
-        LogScale.prototype._defaultExtent = function () {
+            return values.map(x => x > 0 ? x : vz_line_chart2.MIN_POSITIVE_VALUE);
+        }
+        _defaultExtent() {
             return [1, 10];
-        };
-        LogScale.prototype._backingScaleDomain = function (values) {
+        }
+        _backingScaleDomain(values) {
             if (values == null) {
                 return this._d3LogScale.domain();
             }
@@ -125,40 +112,39 @@ var vz_line_chart2;
                 this._d3LogScale.domain(values);
                 return this;
             }
-        };
-        LogScale.prototype._getRange = function () {
+        }
+        _getRange() {
             return this._d3LogScale.range();
-        };
-        LogScale.prototype._setRange = function (values) {
+        }
+        _setRange(values) {
             this._d3LogScale.range(values);
-        };
-        LogScale.prototype.defaultTicks = function () {
+        }
+        defaultTicks() {
             return this._d3LogScale.ticks(1);
-        };
-        LogScale.prototype.ticks = function () {
+        }
+        ticks() {
             return this._d3LogScale.ticks();
-        };
+        }
         /**
          * Returns an `extent` for a data series. In log-scale, we must omit all
          * non-positive values when computing a `domain`.
          * @override
          */
-        LogScale.prototype.extentOfValues = function (values) {
+        extentOfValues(values) {
             // Log can only take positive values.
-            var legalValues = values
-                .filter(function (x) { return Plottable.Utils.Math.isValidNumber(x) && x > 0; });
-            var filteredValues = legalValues;
+            const legalValues = values
+                .filter(x => Plottable.Utils.Math.isValidNumber(x) && x > 0);
+            let filteredValues = legalValues;
             if (this.ignoreOutlier()) {
-                var logValues = legalValues.map(log);
-                var sortedLogValues = logValues.sort(function (a, b) { return a - b; });
-                var a_1 = d3.quantile(sortedLogValues, 0.05);
-                var b_1 = d3.quantile(sortedLogValues, 0.95);
-                filteredValues = sortedLogValues.filter(function (x) { return x >= a_1 && x <= b_1; }).map(pow);
+                const logValues = legalValues.map(log);
+                const sortedLogValues = logValues.sort((a, b) => a - b);
+                const a = d3.quantile(sortedLogValues, 0.05);
+                const b = d3.quantile(sortedLogValues, 0.95);
+                filteredValues = sortedLogValues.filter(x => x >= a && x <= b).map(pow);
             }
-            var extent = d3.extent(filteredValues);
+            const extent = d3.extent(filteredValues);
             return extent[0] == null || extent[1] == null ? [] : extent;
-        };
-        return LogScale;
-    }(vz_line_chart2.TfScale));
+        }
+    }
     vz_line_chart2.LogScale = LogScale;
 })(vz_line_chart2 || (vz_line_chart2 = {})); //  namespace vz_line_chart2

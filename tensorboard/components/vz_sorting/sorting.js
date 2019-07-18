@@ -25,8 +25,8 @@ var vz_sorting;
      * though '+' < '/' in the ASCII table.
      */
     function compareTagNames(a, b) {
-        var ai = 0;
-        var bi = 0;
+        let ai = 0;
+        let bi = 0;
         while (true) {
             if (ai === a.length) {
                 return bi === b.length ? 0 : -1;
@@ -35,12 +35,12 @@ var vz_sorting;
                 return 1;
             }
             if (isDigit(a[ai]) && isDigit(b[bi])) {
-                var ais = ai;
-                var bis = bi;
+                const ais = ai;
+                const bis = bi;
                 ai = consumeNumber(a, ai + 1);
                 bi = consumeNumber(b, bi + 1);
-                var an = parseFloat(a.slice(ais, ai));
-                var bn = parseFloat(b.slice(bis, bi));
+                const an = parseFloat(a.slice(ais, ai));
+                const bn = parseFloat(b.slice(bis, bi));
                 if (an < bn) {
                     return -1;
                 }
@@ -69,14 +69,14 @@ var vz_sorting;
     }
     vz_sorting.compareTagNames = compareTagNames;
     function consumeNumber(s, i) {
-        var State;
+        let State;
         (function (State) {
             State[State["NATURAL"] = 0] = "NATURAL";
             State[State["REAL"] = 1] = "REAL";
             State[State["EXPONENT_SIGN"] = 2] = "EXPONENT_SIGN";
             State[State["EXPONENT"] = 3] = "EXPONENT";
         })(State || (State = {}));
-        var state = State.NATURAL;
+        let state = State.NATURAL;
         for (; i < s.length; i++) {
             if (state === State.NATURAL) {
                 if (s[i] === '.') {

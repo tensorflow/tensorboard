@@ -14,28 +14,28 @@ limitations under the License.
 ==============================================================================*/
 var tf_color_scale;
 (function (tf_color_scale) {
-    var assert = chai.assert;
+    const { assert } = chai;
     describe('ColorScale', function () {
-        var ccs;
+        let ccs;
         beforeEach(function () {
             ccs = new tf_color_scale.ColorScale();
         });
         it('Returns consistent colors', function () {
             ccs.setDomain(['train', 'eval', 'test']);
-            var trainColor = ccs.getColor('train');
-            var trainColor2 = ccs.getColor('train');
+            let trainColor = ccs.getColor('train');
+            let trainColor2 = ccs.getColor('train');
             assert.equal(trainColor, trainColor2);
         });
         it('Returns consistent colors after new domain', function () {
             ccs.setDomain(['train', 'eval']);
-            var trainColor = ccs.getColor('train');
+            let trainColor = ccs.getColor('train');
             ccs.setDomain(['train', 'eval', 'test']);
-            var trainColor2 = ccs.getColor('train');
+            let trainColor2 = ccs.getColor('train');
             assert.equal(trainColor, trainColor2);
         });
         it('Throws an error if string is not in the domain', function () {
             ccs.setDomain(['red', 'yellow', 'green']);
-            assert.throws(function () {
+            assert.throws(() => {
                 ccs.getColor('WAT');
             }, 'String WAT was not in the domain.');
         });

@@ -14,15 +14,15 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var FILL = '#dddddd';
-    var FILL_OPACITY = .2;
-    var STROKE = '#aaaaaa';
-    var STROKE_WIDTH = 2;
-    var STROKE_DASHARRAY = '10 5';
+    const FILL = '#dddddd';
+    const FILL_OPACITY = .2;
+    const STROKE = '#aaaaaa';
+    const STROKE_WIDTH = 2;
+    const STROKE_DASHARRAY = '10 5';
     /**
      * A class that manages and renders a data selection rectangle.
      */
-    var ScatterPlotRectangleSelector = /** @class */ (function () {
+    class ScatterPlotRectangleSelector {
         /**
          * @param container The container HTML element that the selection SVG rect
          *     will be a child of.
@@ -30,7 +30,7 @@ var vz_projector;
          *     called when selection changes. Currently, we only call the callback on
          *     mouseUp.
          */
-        function ScatterPlotRectangleSelector(container, selectionCallback) {
+        constructor(container, selectionCallback) {
             this.svgElement = container.querySelector('#selector');
             this.rectElement =
                 document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -43,7 +43,7 @@ var vz_projector;
             this.selectionCallback = selectionCallback;
             this.isMouseDown = false;
         }
-        ScatterPlotRectangleSelector.prototype.onMouseDown = function (offsetX, offsetY) {
+        onMouseDown(offsetX, offsetY) {
             this.isMouseDown = true;
             this.svgElement.style.display = 'block';
             this.startCoordinates = [offsetX, offsetY];
@@ -53,8 +53,8 @@ var vz_projector;
                 width: 1,
                 height: 1
             };
-        };
-        ScatterPlotRectangleSelector.prototype.onMouseMove = function (offsetX, offsetY) {
+        }
+        onMouseMove(offsetX, offsetY) {
             if (!this.isMouseDown) {
                 return;
             }
@@ -68,15 +68,14 @@ var vz_projector;
             this.rectElement.setAttribute('y', '' + (this.lastBoundingBox.y - this.lastBoundingBox.height));
             this.rectElement.setAttribute('width', '' + this.lastBoundingBox.width);
             this.rectElement.setAttribute('height', '' + this.lastBoundingBox.height);
-        };
-        ScatterPlotRectangleSelector.prototype.onMouseUp = function () {
+        }
+        onMouseUp() {
             this.isMouseDown = false;
             this.svgElement.style.display = 'none';
             this.rectElement.setAttribute('width', '0');
             this.rectElement.setAttribute('height', '0');
             this.selectionCallback(this.lastBoundingBox);
-        };
-        return ScatterPlotRectangleSelector;
-    }());
+        }
+    }
     vz_projector.ScatterPlotRectangleSelector = ScatterPlotRectangleSelector;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

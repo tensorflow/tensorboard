@@ -22,8 +22,8 @@ var vz_projector;
         /** Returns the dot product of two vectors. */
         function dot(a, b) {
             vz_projector.util.assert(a.length === b.length, 'Vectors a and b must be of same length');
-            var result = 0;
-            for (var i = 0; i < a.length; ++i) {
+            let result = 0;
+            for (let i = 0; i < a.length; ++i) {
                 result += a[i] * b[i];
             }
             return result;
@@ -31,8 +31,8 @@ var vz_projector;
         vector_1.dot = dot;
         /** Sums all the elements in the vector */
         function sum(a) {
-            var result = 0;
-            for (var i = 0; i < a.length; ++i) {
+            let result = 0;
+            for (let i = 0; i < a.length; ++i) {
                 result += a[i];
             }
             return result;
@@ -41,8 +41,8 @@ var vz_projector;
         /** Returns the sum of two vectors, i.e. a + b */
         function add(a, b) {
             vz_projector.util.assert(a.length === b.length, 'Vectors a and b must be of same length');
-            var result = new Float32Array(a.length);
-            for (var i = 0; i < a.length; ++i) {
+            let result = new Float32Array(a.length);
+            for (let i = 0; i < a.length; ++i) {
                 result[i] = a[i] + b[i];
             }
             return result;
@@ -51,8 +51,8 @@ var vz_projector;
         /** Subtracts vector b from vector a, i.e. returns a - b */
         function sub(a, b) {
             vz_projector.util.assert(a.length === b.length, 'Vectors a and b must be of same length');
-            var result = new Float32Array(a.length);
-            for (var i = 0; i < a.length; ++i) {
+            let result = new Float32Array(a.length);
+            for (let i = 0; i < a.length; ++i) {
                 result[i] = a[i] - b[i];
             }
             return result;
@@ -60,8 +60,8 @@ var vz_projector;
         vector_1.sub = sub;
         /** Returns the square norm of the vector */
         function norm2(a) {
-            var result = 0;
-            for (var i = 0; i < a.length; ++i) {
+            let result = 0;
+            for (let i = 0; i < a.length; ++i) {
                 result += a[i] * a[i];
             }
             return result;
@@ -75,9 +75,9 @@ var vz_projector;
         /** Returns the square euclidean distance between two vectors. */
         function dist2(a, b) {
             vz_projector.util.assert(a.length === b.length, 'Vectors a and b must be of same length');
-            var result = 0;
-            for (var i = 0; i < a.length; ++i) {
-                var diff = a[i] - b[i];
+            let result = 0;
+            for (let i = 0; i < a.length; ++i) {
+                let diff = a[i] - b[i];
                 result += diff * diff;
             }
             return result;
@@ -85,16 +85,16 @@ var vz_projector;
         vector_1.dist2 = dist2;
         /** Returns the square euclidean distance between two 2D points. */
         function dist2_2D(a, b) {
-            var dX = a[0] - b[0];
-            var dY = a[1] - b[1];
+            let dX = a[0] - b[0];
+            let dY = a[1] - b[1];
             return dX * dX + dY * dY;
         }
         vector_1.dist2_2D = dist2_2D;
         /** Returns the square euclidean distance between two 3D points. */
         function dist2_3D(a, b) {
-            var dX = a[0] - b[0];
-            var dY = a[1] - b[1];
-            var dZ = a[2] - b[2];
+            let dX = a[0] - b[0];
+            let dY = a[1] - b[1];
+            let dZ = a[2] - b[2];
             return dX * dX + dY * dY + dZ * dZ;
         }
         vector_1.dist2_3D = dist2_3D;
@@ -109,9 +109,9 @@ var vz_projector;
          */
         function dist2WithLimit(a, b, limit) {
             vz_projector.util.assert(a.length === b.length, 'Vectors a and b must be of same length');
-            var result = 0;
-            for (var i = 0; i < a.length; ++i) {
-                var diff = a[i] - b[i];
+            let result = 0;
+            for (let i = 0; i < a.length; ++i) {
+                let diff = a[i] - b[i];
                 result += diff * diff;
                 if (result >= limit) {
                     return -1;
@@ -122,16 +122,16 @@ var vz_projector;
         vector_1.dist2WithLimit = dist2WithLimit;
         /** Returns the square euclidean distance between two 2D points. */
         function dist22D(a, b) {
-            var dX = a[0] - b[0];
-            var dY = a[1] - b[1];
+            let dX = a[0] - b[0];
+            let dY = a[1] - b[1];
             return dX * dX + dY * dY;
         }
         vector_1.dist22D = dist22D;
         /** Modifies the vector in-place to have unit norm. */
         function unit(a) {
-            var norm = Math.sqrt(norm2(a));
+            let norm = Math.sqrt(norm2(a));
             vz_projector.util.assert(norm >= 0, 'Norm of the vector must be > 0');
-            for (var i = 0; i < a.length; ++i) {
+            for (let i = 0; i < a.length; ++i) {
                 a[i] /= norm;
             }
         }
@@ -143,16 +143,16 @@ var vz_projector;
          * @param newDim The resulting dimension of the vectors.
          */
         function projectRandom(vectors, newDim) {
-            var dim = vectors[0].length;
-            var N = vectors.length;
-            var newVectors = new Array(N);
-            for (var i = 0; i < N; ++i) {
+            let dim = vectors[0].length;
+            let N = vectors.length;
+            let newVectors = new Array(N);
+            for (let i = 0; i < N; ++i) {
                 newVectors[i] = new Float32Array(newDim);
             }
             // Make nDim projections.
-            for (var k = 0; k < newDim; ++k) {
-                var randomVector = rn(dim);
-                for (var i = 0; i < N; ++i) {
+            for (let k = 0; k < newDim; ++k) {
+                let randomVector = rn(dim);
+                for (let i = 0; i < N; ++i) {
                     newVectors[i][k] = dot(vectors[i], randomVector);
                 }
             }
@@ -175,18 +175,18 @@ var vz_projector;
                 return null;
             }
             if (accessor == null) {
-                accessor = function (a) { return a; };
+                accessor = (a) => a;
             }
             vz_projector.util.assert(dataPoints.length >= 0, '`vectors` must be of length >= 1');
-            var centroid = new Float32Array(accessor(dataPoints[0]).length);
-            for (var i = 0; i < dataPoints.length; ++i) {
-                var dataPoint = dataPoints[i];
-                var vector_2 = accessor(dataPoint);
-                for (var j = 0; j < centroid.length; ++j) {
-                    centroid[j] += vector_2[j];
+            let centroid = new Float32Array(accessor(dataPoints[0]).length);
+            for (let i = 0; i < dataPoints.length; ++i) {
+                let dataPoint = dataPoints[i];
+                let vector = accessor(dataPoint);
+                for (let j = 0; j < centroid.length; ++j) {
+                    centroid[j] += vector[j];
                 }
             }
-            for (var j = 0; j < centroid.length; ++j) {
+            for (let j = 0; j < centroid.length; ++j) {
                 centroid[j] /= dataPoints.length;
             }
             return centroid;
@@ -197,9 +197,9 @@ var vz_projector;
          * a random (0, 1) gaussian distribution.
          */
         function rn(size) {
-            var normal = d3.randomNormal();
-            var result = new Float32Array(size);
-            for (var i = 0; i < size; ++i) {
+            const normal = d3.randomNormal();
+            let result = new Float32Array(size);
+            for (let i = 0; i < size; ++i) {
                 result[i] = normal();
             }
             return result;
@@ -230,13 +230,13 @@ var vz_projector;
          * typed array with row-first order.
          */
         function toTypedArray(dataPoints, accessor) {
-            var N = dataPoints.length;
-            var dim = accessor(dataPoints[0]).length;
-            var result = new Float32Array(N * dim);
-            for (var i = 0; i < N; ++i) {
-                var vector_3 = accessor(dataPoints[i]);
-                for (var d = 0; d < dim; ++d) {
-                    result[i * dim + d] = vector_3[d];
+            let N = dataPoints.length;
+            let dim = accessor(dataPoints[0]).length;
+            let result = new Float32Array(N * dim);
+            for (let i = 0; i < N; ++i) {
+                let vector = accessor(dataPoints[i]);
+                for (let d = 0; d < dim; ++d) {
+                    result[i * dim + d] = vector[d];
                 }
             }
             return result;
@@ -247,9 +247,9 @@ var vz_projector;
          * into a CxR matrix, again represented as a flat typed array.
          */
         function transposeTypedArray(r, c, typedArray) {
-            var result = new Float32Array(r * c);
-            for (var i = 0; i < r; ++i) {
-                for (var j = 0; j < c; ++j) {
+            let result = new Float32Array(r * c);
+            for (let i = 0; i < r; ++i) {
+                for (let j = 0; j < c; ++j) {
                     result[j * r + i] = typedArray[i * c + j];
                 }
             }

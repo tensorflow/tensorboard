@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-describe('util', function () {
-    var assert = chai.assert;
-    it('remove common prefix', function () {
+describe('util', () => {
+    let assert = chai.assert;
+    it('remove common prefix', () => {
         // Empty array.
-        var result = tf.graph.util.removeCommonPrefix([]);
+        let result = tf.graph.util.removeCommonPrefix([]);
         assert.deepEqual(result, []);
         // No common prefix.
         result = tf.graph.util.removeCommonPrefix(['a', 'b', 'c']);

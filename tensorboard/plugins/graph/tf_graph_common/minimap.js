@@ -17,8 +17,8 @@ var tf;
     var scene;
     (function (scene) {
         /** Show minimap when the viewpoint area is less than X% of the whole area. */
-        var FRAC_VIEWPOINT_AREA = 0.8;
-        var Minimap = /** @class */ (function () {
+        const FRAC_VIEWPOINT_AREA = 0.8;
+        class Minimap {
             /**
              * Constructs a new minimap.
              *
@@ -29,49 +29,48 @@ var tf;
              * @param maxWandH The maximum width/height for the minimap.
              * @param labelPadding Padding in pixels due to the main graph labels.
              */
-            function Minimap(svg, zoomG, mainZoom, minimap, maxWandH, labelPadding) {
-                var _this = this;
+            constructor(svg, zoomG, mainZoom, minimap, maxWandH, labelPadding) {
                 this.svg = svg;
                 this.labelPadding = labelPadding;
                 this.zoomG = zoomG;
                 this.mainZoom = mainZoom;
                 this.maxWandH = maxWandH;
-                var $minimap = d3.select(minimap);
+                let $shadowRoot = d3.select(minimap.shadowRoot);
                 // The minimap will have 2 main components: the canvas showing the content
                 // and an svg showing a rectangle of the currently zoomed/panned viewpoint.
-                var $minimapSvg = $minimap.select('svg');
+                let $minimapSvg = $shadowRoot.select('svg');
                 // Make the viewpoint rectangle draggable.
-                var $viewpoint = $minimapSvg.select('rect');
-                var dragmove = function (d) {
-                    _this.viewpointCoord.x = d3.event.x;
-                    _this.viewpointCoord.y = d3.event.y;
-                    _this.updateViewpoint();
+                let $viewpoint = $minimapSvg.select('rect');
+                let dragmove = (d) => {
+                    this.viewpointCoord.x = d3.event.x;
+                    this.viewpointCoord.y = d3.event.y;
+                    this.updateViewpoint();
                 };
                 this.viewpointCoord = { x: 0, y: 0 };
-                var drag = d3.drag().subject(Object).on('drag', dragmove);
+                let drag = d3.drag().subject(Object).on('drag', dragmove);
                 $viewpoint.datum(this.viewpointCoord).call(drag);
                 // Make the minimap clickable.
-                $minimapSvg.on('click', function () {
+                $minimapSvg.on('click', () => {
                     if (d3.event.defaultPrevented) {
                         // This click was part of a drag event, so suppress it.
                         return;
                     }
                     // Update the coordinates of the viewpoint.
-                    var width = Number($viewpoint.attr('width'));
-                    var height = Number($viewpoint.attr('height'));
-                    var clickCoords = d3.mouse($minimapSvg.node());
-                    _this.viewpointCoord.x = clickCoords[0] - width / 2;
-                    _this.viewpointCoord.y = clickCoords[1] - height / 2;
-                    _this.updateViewpoint();
+                    let width = Number($viewpoint.attr('width'));
+                    let height = Number($viewpoint.attr('height'));
+                    let clickCoords = d3.mouse($minimapSvg.node());
+                    this.viewpointCoord.x = clickCoords[0] - width / 2;
+                    this.viewpointCoord.y = clickCoords[1] - height / 2;
+                    this.updateViewpoint();
                 });
                 this.viewpoint = $viewpoint.node();
                 this.minimapSvg = $minimapSvg.node();
                 this.minimap = minimap;
-                this.canvas = $minimap.select('canvas.first').node();
+                this.canvas = $shadowRoot.select('canvas.first').node();
                 this.canvasBuffer =
-                    $minimap.select('canvas.second').node();
+                    $shadowRoot.select('canvas.second').node();
                 this.downloadCanvas =
-                    $minimap.select('canvas.download').node();
+                    $shadowRoot.select('canvas.download').node();
                 d3.select(this.downloadCanvas).style('display', 'none');
                 this.update();
             }
@@ -79,24 +78,23 @@ var tf;
              * Updates the position and the size of the viewpoint rectangle.
              * It also notifies the main svg about the new panned position.
              */
-            Minimap.prototype.updateViewpoint = function () {
+            updateViewpoint() {
                 // Update the coordinates of the viewpoint rectangle.
                 d3.select(this.viewpoint)
                     .attr('x', this.viewpointCoord.x)
                     .attr('y', this.viewpointCoord.y);
                 // Update the translation vector of the main svg to reflect the
                 // new viewpoint.
-                var mainX = -this.viewpointCoord.x * this.scaleMain / this.scaleMinimap;
-                var mainY = -this.viewpointCoord.y * this.scaleMain / this.scaleMinimap;
+                let mainX = -this.viewpointCoord.x * this.scaleMain / this.scaleMinimap;
+                let mainY = -this.viewpointCoord.y * this.scaleMain / this.scaleMinimap;
                 d3.select(this.svg).call(this.mainZoom.transform, d3.zoomIdentity.translate(mainX, mainY).scale(this.scaleMain));
-            };
+            }
             /**
              * Redraws the minimap. Should be called whenever the main svg
              * was updated (e.g. when a node was expanded).
              */
-            Minimap.prototype.update = function () {
-                var _this = this;
-                var sceneSize = null;
+            update() {
+                let sceneSize = null;
                 try {
                     // Get the size of the entire scene.
                     sceneSize = this.zoomG.getBBox();
@@ -110,40 +108,48 @@ var tf;
                     // detached from the dom.
                     return;
                 }
-                var $download = d3.select('#graphdownload');
+                let $download = d3.select('#graphdownload');
                 this.download = $download.node();
-                $download.on('click', function (d) {
+                $download.on('click', d => {
                     // Revoke the old URL, if any. Then, generate a new URL.
-                    URL.revokeObjectURL(_this.download.href);
+                    URL.revokeObjectURL(this.download.href);
                     // We can't use the `HTMLCanvasElement.toBlob` API because it does
                     // not have a synchronous variant, and we need to update this href
                     // synchronously. Instead, we create a blob manually from the data
                     // URL.
-                    var dataUrl = _this.downloadCanvas.toDataURL("image/png");
-                    var prefix = dataUrl.slice(0, dataUrl.indexOf(","));
+                    const dataUrl = this.downloadCanvas.toDataURL("image/png");
+                    const prefix = dataUrl.slice(0, dataUrl.indexOf(","));
                     if (!prefix.endsWith(";base64")) {
-                        console.warn("non-base64 data URL (" + prefix + "); cannot use blob download");
-                        _this.download.href = dataUrl;
+                        console.warn(`non-base64 data URL (${prefix}); cannot use blob download`);
+                        this.download.href = dataUrl;
                         return;
                     }
-                    var data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
-                    var bytes = new Uint8Array(data.length).map(function (_, i) { return data.charCodeAt(i); });
-                    var blob = new Blob([bytes], { type: "image/png" });
-                    _this.download.href = URL.createObjectURL(blob);
+                    const data = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+                    const bytes = new Uint8Array(data.length).map((_, i) => data.charCodeAt(i));
+                    const blob = new Blob([bytes], { type: "image/png" });
+                    this.download.href = URL.createObjectURL(blob);
                 });
-                var $svg = d3.select(this.svg);
+                let $svg = d3.select(this.svg);
                 // Read all the style rules in the document and embed them into the svg.
                 // The svg needs to be self contained, i.e. all the style rules need to be
                 // embedded so the canvas output matches the origin.
-                var stylesText = '';
-                for (var k = 0; k < document.styleSheets.length; k++) {
+                let stylesText = '';
+                const anySvg = this.svg;
+                // MSEdge does not have `getRootNode`. In that case, manually get the root
+                // node. This is more brittle than the getRootNode as changing DOM structure
+                // will break this.
+                const rootNode = anySvg.getRootNode ?
+                    anySvg.getRootNode() :
+                    this.svg.parentNode;
+                const styleSheets = rootNode.styleSheets;
+                for (let k = 0; k < styleSheets.length; k++) {
                     try {
-                        var cssRules = document.styleSheets[k].cssRules ||
-                            document.styleSheets[k].rules;
+                        let cssRules = styleSheets[k].cssRules ||
+                            styleSheets[k].rules;
                         if (cssRules == null) {
                             continue;
                         }
-                        for (var i = 0; i < cssRules.length; i++) {
+                        for (let i = 0; i < cssRules.length; i++) {
                             // Remove tf-* selectors from the styles.
                             stylesText +=
                                 cssRules[i].cssText.replace(/ ?tf-[\w-]+ ?/g, '') + '\n';
@@ -156,12 +162,12 @@ var tf;
                     }
                 }
                 // Temporarily add the css rules to the main svg.
-                var svgStyle = $svg.append('style');
+                let svgStyle = $svg.append('style');
                 svgStyle.text(stylesText);
                 // Temporarily remove the zoom/pan transform from the main svg since we
                 // want the minimap to show a zoomed-out and centered view.
-                var $zoomG = d3.select(this.zoomG);
-                var zoomTransform = $zoomG.attr('transform');
+                let $zoomG = d3.select(this.zoomG);
+                let zoomTransform = $zoomG.attr('transform');
                 $zoomG.attr('transform', null);
                 // https://github.com/tensorflow/tensorboard/issues/1598
                 // Account for SVG content shift. SVGGraphicsElement.getBBox().width returns
@@ -196,7 +202,7 @@ var tf;
                 d3.select(this.canvasBuffer).attr(this.minimapSize);
                 // Download canvas width and height are multiples of the style width and
                 // height in order to increase pixel density of the PNG for clarity.
-                var downloadCanvasSelection = d3.select(this.downloadCanvas);
+                const downloadCanvasSelection = d3.select(this.downloadCanvas);
                 downloadCanvasSelection.style('width', sceneSize.width);
                 downloadCanvasSelection.style('height', sceneSize.height);
                 downloadCanvasSelection.attr('width', 3 * sceneSize.width);
@@ -204,42 +210,43 @@ var tf;
                 if (this.translate != null && this.zoom != null) {
                     // Update the viewpoint rectangle shape since the aspect ratio of the
                     // map has changed.
-                    requestAnimationFrame(function () { return _this.zoom(); });
+                    requestAnimationFrame(() => this.zoom());
                 }
+                // TODO(stephanwlee): Consider not mutating the original DOM then read it --
+                // this may cause reflow.
                 // Serialize the main svg to a string which will be used as the rendering
                 // content for the canvas.
-                var svgXml = (new XMLSerializer()).serializeToString(this.svg);
+                let svgXml = (new XMLSerializer()).serializeToString(this.svg);
                 // Now that the svg is serialized for rendering, remove the temporarily
                 // assigned styles, explicit width and height and bring back the pan/zoom
                 // transform.
                 svgStyle.remove();
                 $svg.attr('width', null).attr('height', null);
                 $zoomG.attr('transform', zoomTransform);
-                var image = new Image();
-                image.onload = function () {
+                let image = new Image();
+                image.onload = () => {
                     // Draw the svg content onto the buffer canvas.
-                    var context = _this.canvasBuffer.getContext('2d');
-                    context.clearRect(0, 0, _this.canvasBuffer.width, _this.canvasBuffer.height);
-                    context.drawImage(image, 0, 0, _this.minimapSize.width, _this.minimapSize.height);
-                    requestAnimationFrame(function () {
-                        var _a;
+                    let context = this.canvasBuffer.getContext('2d');
+                    context.clearRect(0, 0, this.canvasBuffer.width, this.canvasBuffer.height);
+                    context.drawImage(image, 0, 0, this.minimapSize.width, this.minimapSize.height);
+                    requestAnimationFrame(() => {
                         // Hide the old canvas and show the new buffer canvas.
-                        d3.select(_this.canvasBuffer).style('display', null);
-                        d3.select(_this.canvas).style('display', 'none');
+                        d3.select(this.canvasBuffer).style('display', null);
+                        d3.select(this.canvas).style('display', 'none');
                         // Swap the two canvases.
-                        _a = [_this.canvasBuffer, _this.canvas], _this.canvas = _a[0], _this.canvasBuffer = _a[1];
+                        [this.canvas, this.canvasBuffer] = [this.canvasBuffer, this.canvas];
                     });
-                    var downloadContext = _this.downloadCanvas.getContext('2d');
-                    downloadContext.clearRect(0, 0, _this.downloadCanvas.width, _this.downloadCanvas.height);
-                    downloadContext.drawImage(image, 0, 0, _this.downloadCanvas.width, _this.downloadCanvas.height);
+                    let downloadContext = this.downloadCanvas.getContext('2d');
+                    downloadContext.clearRect(0, 0, this.downloadCanvas.width, this.downloadCanvas.height);
+                    downloadContext.drawImage(image, 0, 0, this.downloadCanvas.width, this.downloadCanvas.height);
                 };
-                image.onerror = function () {
-                    var blob = new Blob([svgXml], { type: 'image/svg+xml;charset=utf-8' });
+                image.onerror = () => {
+                    let blob = new Blob([svgXml], { type: 'image/svg+xml;charset=utf-8' });
                     image.src = URL.createObjectURL(blob);
                 };
                 image.src =
                     'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgXml);
-            };
+            }
             /**
              * Handles changes in zooming/panning. Should be called from the main svg
              * to notify that a zoom/pan was performed and this minimap will update it's
@@ -248,7 +255,7 @@ var tf;
              * @param translate The translate vector, or none to use the last used one.
              * @param scale The scaling factor, or none to use the last used one.
              */
-            Minimap.prototype.zoom = function (transform) {
+            zoom(transform) {
                 if (this.scaleMinimap == null) {
                     // Scene is not ready yet.
                     return;
@@ -259,14 +266,14 @@ var tf;
                     this.scaleMain = transform.k;
                 }
                 // Update the location of the viewpoint rectangle.
-                var svgRect = this.svg.getBoundingClientRect();
-                var $viewpoint = d3.select(this.viewpoint);
+                let svgRect = this.svg.getBoundingClientRect();
+                let $viewpoint = d3.select(this.viewpoint);
                 this.viewpointCoord.x = -this.translate[0] * this.scaleMinimap /
                     this.scaleMain;
                 this.viewpointCoord.y = -this.translate[1] * this.scaleMinimap /
                     this.scaleMain;
-                var viewpointWidth = svgRect.width * this.scaleMinimap / this.scaleMain;
-                var viewpointHeight = svgRect.height * this.scaleMinimap / this.scaleMain;
+                let viewpointWidth = svgRect.width * this.scaleMinimap / this.scaleMain;
+                let viewpointHeight = svgRect.height * this.scaleMinimap / this.scaleMain;
                 $viewpoint
                     .attr('x', this.viewpointCoord.x)
                     .attr('y', this.viewpointCoord.y)
@@ -274,24 +281,23 @@ var tf;
                     .attr('height', viewpointHeight);
                 // Show/hide the minimap depending on the viewpoint area as fraction of the
                 // whole minimap.
-                var mapWidth = this.minimapSize.width;
-                var mapHeight = this.minimapSize.height;
-                var x = this.viewpointCoord.x;
-                var y = this.viewpointCoord.y;
-                var w = Math.min(Math.max(0, x + viewpointWidth), mapWidth) -
+                let mapWidth = this.minimapSize.width;
+                let mapHeight = this.minimapSize.height;
+                let x = this.viewpointCoord.x;
+                let y = this.viewpointCoord.y;
+                let w = Math.min(Math.max(0, x + viewpointWidth), mapWidth) -
                     Math.min(Math.max(0, x), mapWidth);
-                var h = Math.min(Math.max(0, y + viewpointHeight), mapHeight) -
+                let h = Math.min(Math.max(0, y + viewpointHeight), mapHeight) -
                     Math.min(Math.max(0, y), mapHeight);
-                var fracIntersect = (w * h) / (mapWidth * mapHeight);
+                let fracIntersect = (w * h) / (mapWidth * mapHeight);
                 if (fracIntersect < FRAC_VIEWPOINT_AREA) {
                     this.minimap.classList.remove('hidden');
                 }
                 else {
                     this.minimap.classList.add('hidden');
                 }
-            };
-            return Minimap;
-        }());
+            }
+        }
         scene.Minimap = Minimap;
     })(scene = tf.scene || (tf.scene = {}));
 })(tf || (tf = {})); // close module tf.scene

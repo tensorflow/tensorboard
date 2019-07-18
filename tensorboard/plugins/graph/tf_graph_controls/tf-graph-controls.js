@@ -18,11 +18,11 @@ var tf;
     (function (graph) {
         var controls;
         (function (controls) {
-            var DEVICE_NAME_REGEX = /device:([^:]+:[0-9]+)$/;
+            const DEVICE_NAME_REGEX = /device:([^:]+:[0-9]+)$/;
             /**
              * Display only devices matching one of the following regex.
              */
-            var DEVICE_NAMES_INCLUDE = [
+            const DEVICE_NAMES_INCLUDE = [
                 {
                     // Don't include GPU stream, memcpy, etc. devices
                     regex: DEVICE_NAME_REGEX,
@@ -32,8 +32,8 @@ var tf;
              * Stats from device names that match these regexes will be disabled by default.
              * The user can still turn on a device by selecting the checkbox in the device list.
              */
-            var DEVICE_STATS_DEFAULT_OFF = [];
-            var ColorBy;
+            const DEVICE_STATS_DEFAULT_OFF = [];
+            let ColorBy;
             (function (ColorBy) {
                 ColorBy["COMPUTE_TIME"] = "compute_time";
                 ColorBy["MEMORY"] = "memory";
@@ -41,7 +41,7 @@ var tf;
                 ColorBy["XLA_CLUSTER"] = "xla_cluster";
                 ColorBy["OP_COMPATIBILITY"] = "op_compatibility";
             })(ColorBy = controls.ColorBy || (controls.ColorBy = {}));
-            var GRADIENT_COMPATIBLE_COLOR_BY = new Set([
+            const GRADIENT_COMPATIBLE_COLOR_BY = new Set([
                 ColorBy.COMPUTE_TIME, ColorBy.MEMORY
             ]);
             Polymer({
@@ -83,14 +83,13 @@ var tf;
                     datasets: {
                         type: Array,
                         observer: '_datasetsChanged',
-                        value: function () { return []; },
+                        value: () => [],
                     },
                     /**
                      * @type {tf.graph.render.RenderGraphInfo}
                      */
                     renderHierarchy: {
                         type: Object,
-                        notify: true,
                     },
                     /**
                      * @type {!Selection}
@@ -109,6 +108,11 @@ var tf;
                         type: Number,
                         value: 0,
                         observer: '_selectedRunIndexChanged',
+                    },
+                    traceInputs: {
+                        type: Boolean,
+                        notify: true,
+                        value: false,
                     },
                     _selectedTagIndex: {
                         type: Number,
@@ -163,15 +167,6 @@ var tf;
                         value: true,
                     },
                 },
-                listeners: {
-                    'trace-inputs.change': '_traceInputToggleChanged',
-                },
-                _traceInputToggleChanged: function (event) {
-                    // Flip the state of the trace inputs flag.
-                    var toggleButton = event.target;
-                    this.renderHierarchy.traceInputs = toggleButton.active;
-                    tf.graph.scene.node.traceInputs(this.renderHierarchy);
-                },
                 _xlaClustersProvided: function (renderHierarchy) {
                     return renderHierarchy &&
                         renderHierarchy.hierarchy &&
@@ -198,28 +193,28 @@ var tf;
                     this.set('devicesForStats', devicesForStats);
                 },
                 _getCurrentDevices: function (devicesForStats) {
-                    var stats = this.stats;
-                    var devStats = stats ? stats.dev_stats : [];
-                    var allDevices = devStats.map(function (d) { return d.device; });
-                    var devices = allDevices.filter(function (deviceName) {
-                        return DEVICE_NAMES_INCLUDE.some(function (rule) {
+                    const stats = this.stats;
+                    const devStats = stats ? stats.dev_stats : [];
+                    const allDevices = devStats.map((d) => d.device);
+                    const devices = allDevices.filter((deviceName) => {
+                        return DEVICE_NAMES_INCLUDE.some((rule) => {
                             return rule.regex.test(deviceName);
                         });
                     });
                     // Devices names can be long so we remove the longest common prefix
                     // before showing the devices in a list.
-                    var suffixes = tf.graph.util.removeCommonPrefix(devices);
+                    const suffixes = tf.graph.util.removeCommonPrefix(devices);
                     if (suffixes.length == 1) {
-                        var found = suffixes[0].match(DEVICE_NAME_REGEX);
+                        const found = suffixes[0].match(DEVICE_NAME_REGEX);
                         if (found) {
                             suffixes[0] = found[1];
                         }
                     }
-                    return devices.map(function (device, i) {
-                        var ignoredMsg = null;
+                    return devices.map((device, i) => {
+                        let ignoredMsg = null;
                         // TODO(stephanwlee): this should probably bail on the first match or
                         // do something useful with multiple rule.msgs.
-                        DEVICE_STATS_DEFAULT_OFF.forEach(function (rule) {
+                        DEVICE_STATS_DEFAULT_OFF.forEach((rule) => {
                             if (rule.regex.test(device)) {
                                 ignoredMsg = rule.msg;
                             }
@@ -234,9 +229,9 @@ var tf;
                 },
                 _deviceCheckboxClicked: function (event) {
                     // Update the device map.
-                    var input = event.target;
-                    var devicesForStats = Object.assign({}, this.devicesForStats);
-                    var device = input.value;
+                    const input = event.target;
+                    const devicesForStats = Object.assign({}, this.devicesForStats);
+                    const device = input.value;
                     if (input.checked) {
                         devicesForStats[device] = true;
                     }
@@ -254,14 +249,8 @@ var tf;
                     }
                     return datasets[_selectedRunIndex].tags;
                 },
-                fit: function () {
-                    // TODO(stephanwlee): document -> this. A WebComponent should not use
-                    // document.querySelector. tf-graph renders tf-graph-scene#scene
-                    // which means this component has an incomplete API and encapsulation is
-                    // leaking in a bad way.
-                    // Constructor is not exported and is not typed.
-                    var tfGraphScene = document.querySelector('#scene');
-                    tfGraphScene.fit();
+                _fit: function () {
+                    this.fire('fit-tap');
                 },
                 _isGradientColoring: function (stats, colorBy) {
                     return GRADIENT_COMPATIBLE_COLOR_BY.has(colorBy) && stats != null;
@@ -270,21 +259,21 @@ var tf;
                     return a === b;
                 },
                 _getCurrentDeviceParams: function (colorByParams) {
-                    var deviceParams = colorByParams.device.filter(function (param) {
-                        return DEVICE_NAMES_INCLUDE.some(function (rule) {
+                    const deviceParams = colorByParams.device.filter((param) => {
+                        return DEVICE_NAMES_INCLUDE.some((rule) => {
                             return rule.regex.test(param.device);
                         });
                     });
                     // Remove common prefix and merge back corresponding color. If
                     // there is only one device then remove everything up to "/device:".
-                    var suffixes = tf.graph.util.removeCommonPrefix(deviceParams.map(function (d) { return d.device; }));
+                    const suffixes = tf.graph.util.removeCommonPrefix(deviceParams.map((d) => d.device));
                     if (suffixes.length == 1) {
                         var found = suffixes[0].match(DEVICE_NAME_REGEX);
                         if (found) {
                             suffixes[0] = found[1];
                         }
                     }
-                    return deviceParams.map(function (d, i) {
+                    return deviceParams.map((d, i) => {
                         return { device: suffixes[i], color: d.color };
                     });
                 },
@@ -295,9 +284,9 @@ var tf;
                     if (!this._isGradientColoring(this.stats, colorBy)) {
                         return;
                     }
-                    var params = colorByParams[colorBy];
-                    var minValue = params.minValue;
-                    var maxValue = params.maxValue;
+                    const params = colorByParams[colorBy];
+                    let minValue = params.minValue;
+                    let maxValue = params.maxValue;
                     if (colorBy === ColorBy.MEMORY) {
                         minValue = tf.graph.util.convertUnitsToHumanReadable(minValue, tf.graph.util.MEMORY_UNITS);
                         maxValue = tf.graph.util.convertUnitsToHumanReadable(maxValue, tf.graph.util.MEMORY_UNITS);
@@ -307,8 +296,8 @@ var tf;
                         maxValue = tf.graph.util.convertUnitsToHumanReadable(maxValue, tf.graph.util.TIME_UNITS);
                     }
                     return {
-                        minValue: minValue,
-                        maxValue: maxValue,
+                        minValue,
+                        maxValue,
                         startColor: params.startColor,
                         endColor: params.endColor,
                     };
@@ -317,17 +306,17 @@ var tf;
                     this.$.graphdownload.click();
                 },
                 _updateFileInput: function (e) {
-                    var file = e.target.files[0];
+                    const file = e.target.files[0];
                     if (!file)
                         return;
                     // Strip off everything before the last "/" and strip off the file
                     // extension in order to get the name of the PNG for the graph.
-                    var filePath = file.name;
-                    var dotIndex = filePath.lastIndexOf('.');
+                    let filePath = file.name;
+                    const dotIndex = filePath.lastIndexOf('.');
                     if (dotIndex >= 0) {
                         filePath = filePath.substring(0, dotIndex);
                     }
-                    var lastSlashIndex = filePath.lastIndexOf('/');
+                    const lastSlashIndex = filePath.lastIndexOf('/');
                     if (lastSlashIndex >= 0) {
                         filePath = filePath.substring(lastSlashIndex + 1);
                     }
@@ -358,14 +347,14 @@ var tf;
                     this.colorBy = ColorBy.STRUCTURE;
                     this._selectedTagIndex = 0;
                     this._selectedGraphType = this._getDefaultSelectionType();
-                    this.$['trace-inputs'].active = false; // Set trace input to off-state.
+                    this.traceInputs = false; // Set trace input to off-state.
                     this._setDownloadFilename(this.datasets[runIndex] ? this.datasets[runIndex].name : '');
                 },
-                _selectedTagIndexChanged: function () {
+                _selectedTagIndexChanged() {
                     this._selectedGraphType = this._getDefaultSelectionType();
                 },
-                _getDefaultSelectionType: function () {
-                    var _a = this, datasets = _a.datasets, run = _a._selectedRunIndex, tag = _a._selectedTagIndex;
+                _getDefaultSelectionType() {
+                    const { datasets, _selectedRunIndex: run, _selectedTagIndex: tag, } = this;
                     if (!datasets ||
                         !datasets[run] ||
                         !datasets[run].tags[tag] ||
@@ -389,13 +378,13 @@ var tf;
                 _statsNotNull: function (stats) {
                     return stats !== null;
                 },
-                _toggleLegendOpen: function () {
+                _toggleLegendOpen() {
                     this.set('_legendOpened', !this._legendOpened);
                 },
-                _getToggleText: function (legendOpened) {
+                _getToggleText(legendOpened) {
                     return legendOpened ? 'Close legend.' : 'Expand legend.';
                 },
-                _getToggleLegendIcon: function (legendOpened) {
+                _getToggleLegendIcon(legendOpened) {
                     // This seems counter-intuitive, but actually makes sense because the
                     // expand-more button points downwards, and the expand-less button points
                     // upwards. For most collapsibles, this works because the collapsibles
@@ -403,17 +392,17 @@ var tf;
                     // though, so we reverse the icons.
                     return legendOpened ? 'expand-more' : 'expand-less';
                 },
-                _getSelectionOpGraphDisabled: function (datasets, _selectedRunIndex, _selectedTagIndex) {
+                _getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
                     return !datasets[_selectedRunIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex].opGraph;
                 },
-                _getSelectionProfileDisabled: function (datasets, _selectedRunIndex, _selectedTagIndex) {
+                _getSelectionProfileDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
                     return !datasets[_selectedRunIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex].profile;
                 },
-                _getSelectionConceptualGraphDisabled: function (datasets, _selectedRunIndex, _selectedTagIndex) {
+                _getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex) {
                     return !datasets[_selectedRunIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex] ||
                         !datasets[_selectedRunIndex].tags[_selectedTagIndex].conceptualGraph;

@@ -23,7 +23,7 @@ var pod_viewer_details_card;
             },
             stepBreakdownLayers: {
                 type: Array,
-                value: function () { return [
+                value: () => [
                     { key: 'highFlopsComputeUs', label: 'High flops compute' },
                     { key: 'lowFlopsComputeUs', label: 'Low flops compute' },
                     { key: 'hostInfeedDurationUs', label: 'Infeed' },
@@ -32,25 +32,25 @@ var pod_viewer_details_card;
                     { key: 'allReduceSyncDurationUs', label: 'AllReduce sync' },
                     { key: 'sendDurationUs', label: 'Send' },
                     { key: 'recvDurationUs', label: 'Recv' },
-                ]; },
+                ],
             },
         },
-        _isAllReduce: function (node) {
+        _isAllReduce(node) {
             return node.replicaGroups != undefined;
         },
-        _isChannel: function (node) {
+        _isChannel(node) {
             return node.channelId != undefined;
         },
-        _isStep: function (node) {
+        _isStep(node) {
             return node.hostName != undefined;
         },
-        _hasReplicaGroups: function (node) {
+        _hasReplicaGroups(node) {
             return node.replicaGroups && node.replicaGroups.length > 0;
         },
         _computeName: function (nodes) {
             if (!nodes || nodes.length == 0)
                 return;
-            var node = nodes[0];
+            const node = nodes[0];
             if (this._isChannel(node)) {
                 return 'Channel # ' + node.channelId;
             }

@@ -16,10 +16,11 @@ limitations under the License.
 -->
 
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -32,7 +33,7 @@ limitations under the License.
   <template>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <template is="dom-if" if="[[_controls_disabled]]">
           <div class="sidebar-section">
             <p class="controls-disabled-message">
@@ -129,13 +130,13 @@ limitations under the License.
                 selected-item-label="{{_colormap}}"
                 disabled="[[_controls_disabled]]"
               >
-                <paper-menu class="dropdown-content" selected="0">
+                <paper-listbox slot="dropdown-content" selected="0">
                   <paper-item>magma</paper-item>
                   <paper-item>inferno</paper-item>
                   <paper-item>plasma</paper-item>
                   <paper-item>viridis</paper-item>
                   <paper-item>grayscale</paper-item>
-                </paper-menu>
+                </paper-listbox>
               </paper-dropdown-menu>
             </div>
           </div>
@@ -173,7 +174,7 @@ limitations under the License.
         </div>
 
       </div>
-      <div class="center">
+      <div class="center" slot="center">
 
         <template is="dom-if" if="[[!_is_active]]">
           <div class="no-data-warning">

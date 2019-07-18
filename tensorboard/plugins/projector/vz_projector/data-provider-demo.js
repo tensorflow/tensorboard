@@ -14,32 +14,31 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var BYTES_EXTENSION = '.bytes';
+    const BYTES_EXTENSION = '.bytes';
     /** Data provider that loads data from a demo folder. */
-    var DemoDataProvider = /** @class */ (function () {
-        function DemoDataProvider(projectorConfigPath) {
+    class DemoDataProvider {
+        constructor(projectorConfigPath) {
             this.projectorConfigPath = projectorConfigPath;
         }
-        DemoDataProvider.prototype.getEmbeddingInfo = function (tensorName) {
-            var embeddings = this.projectorConfig.embeddings;
-            for (var i = 0; i < embeddings.length; i++) {
-                var embedding = embeddings[i];
+        getEmbeddingInfo(tensorName) {
+            let embeddings = this.projectorConfig.embeddings;
+            for (let i = 0; i < embeddings.length; i++) {
+                let embedding = embeddings[i];
                 if (embedding.tensorName === tensorName) {
                     return embedding;
                 }
             }
             return null;
-        };
-        DemoDataProvider.prototype.retrieveRuns = function (callback) {
+        }
+        retrieveRuns(callback) {
             callback(['Demo']);
-        };
-        DemoDataProvider.prototype.retrieveProjectorConfig = function (run, callback) {
-            var _this = this;
-            var msgId = vz_projector.logging.setModalMessage('Fetching projector config...');
-            var xhr = new XMLHttpRequest();
+        }
+        retrieveProjectorConfig(run, callback) {
+            const msgId = vz_projector.logging.setModalMessage('Fetching projector config...');
+            const xhr = new XMLHttpRequest();
             xhr.open('GET', this.projectorConfigPath);
-            xhr.onerror = function (err) {
-                var errorMessage = err.message;
+            xhr.onerror = (err) => {
+                let errorMessage = err.message;
                 // If the error is a valid XMLHttpResponse, it's possible this is a
                 // cross-origin error.
                 if (xhr.responseText != null) {
@@ -48,61 +47,60 @@ var vz_projector;
                 }
                 vz_projector.logging.setErrorMessage(errorMessage, 'fetching projector config');
             };
-            xhr.onload = function () {
-                var projectorConfig = JSON.parse(xhr.responseText);
+            xhr.onload = () => {
+                const projectorConfig = JSON.parse(xhr.responseText);
                 vz_projector.logging.setModalMessage(null, msgId);
-                _this.projectorConfig = projectorConfig;
+                this.projectorConfig = projectorConfig;
                 callback(projectorConfig);
             };
             xhr.send();
-        };
-        DemoDataProvider.prototype.retrieveTensor = function (run, tensorName, callback) {
-            var embedding = this.getEmbeddingInfo(tensorName);
-            var url = "" + embedding.tensorPath;
+        }
+        retrieveTensor(run, tensorName, callback) {
+            let embedding = this.getEmbeddingInfo(tensorName);
+            let url = `${embedding.tensorPath}`;
             if (embedding.tensorPath.substr(-1 * BYTES_EXTENSION.length) ===
                 BYTES_EXTENSION) {
                 vz_projector.retrieveTensorAsBytes(this, this.getEmbeddingInfo(tensorName), run, tensorName, url, callback);
             }
             else {
                 vz_projector.logging.setModalMessage('Fetching tensors...', vz_projector.TENSORS_MSG_ID);
-                var request_1 = new XMLHttpRequest();
-                request_1.open('GET', url);
-                request_1.responseType = 'arraybuffer';
-                request_1.onerror = function () {
-                    vz_projector.logging.setErrorMessage(request_1.responseText, 'fetching tensors');
+                const request = new XMLHttpRequest();
+                request.open('GET', url);
+                request.responseType = 'arraybuffer';
+                request.onerror = () => {
+                    vz_projector.logging.setErrorMessage(request.responseText, 'fetching tensors');
                 };
-                request_1.onload = function () {
-                    vz_projector.parseTensors(request_1.response).then(function (points) {
+                request.onload = () => {
+                    vz_projector.parseTensors(request.response).then(points => {
                         callback(new vz_projector.DataSet(points));
                     });
                 };
-                request_1.send();
+                request.send();
             }
-        };
-        DemoDataProvider.prototype.retrieveSpriteAndMetadata = function (run, tensorName, callback) {
-            var embedding = this.getEmbeddingInfo(tensorName);
-            var spriteImagePath = null;
+        }
+        retrieveSpriteAndMetadata(run, tensorName, callback) {
+            let embedding = this.getEmbeddingInfo(tensorName);
+            let spriteImagePath = null;
             if (embedding.sprite && embedding.sprite.imagePath) {
                 spriteImagePath = embedding.sprite.imagePath;
             }
             vz_projector.retrieveSpriteAndMetadataInfo(embedding.metadataPath, spriteImagePath, embedding.sprite, callback);
-        };
-        DemoDataProvider.prototype.getBookmarks = function (run, tensorName, callback) {
-            var embedding = this.getEmbeddingInfo(tensorName);
-            var msgId = vz_projector.logging.setModalMessage('Fetching bookmarks...');
-            var xhr = new XMLHttpRequest();
+        }
+        getBookmarks(run, tensorName, callback) {
+            let embedding = this.getEmbeddingInfo(tensorName);
+            let msgId = vz_projector.logging.setModalMessage('Fetching bookmarks...');
+            const xhr = new XMLHttpRequest();
             xhr.open('GET', embedding.bookmarksPath);
-            xhr.onerror = function (err) {
+            xhr.onerror = (err) => {
                 vz_projector.logging.setErrorMessage(xhr.responseText);
             };
-            xhr.onload = function () {
-                var bookmarks = JSON.parse(xhr.responseText);
+            xhr.onload = () => {
+                const bookmarks = JSON.parse(xhr.responseText);
                 vz_projector.logging.setModalMessage(null, msgId);
                 callback(bookmarks);
             };
             xhr.send();
-        };
-        return DemoDataProvider;
-    }());
+        }
+    }
     vz_projector.DemoDataProvider = DemoDataProvider;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

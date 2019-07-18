@@ -23,11 +23,10 @@ var vz_projector;
          * @param sequences The i-th entry holds the 'next' attribute for the i-th
          * point.
          */
-        function makePointsWithSequences(sequences, nextAttr) {
-            if (nextAttr === void 0) { nextAttr = '__seq_next__'; }
-            var points = [];
-            sequences.forEach(function (t, i) {
-                var metadata = {};
+        function makePointsWithSequences(sequences, nextAttr = '__seq_next__') {
+            let points = [];
+            sequences.forEach((t, i) => {
+                let metadata = {};
                 metadata[nextAttr] = t >= 0 ? t : null;
                 points.push({
                     vector: new Float32Array(0),
@@ -38,70 +37,70 @@ var vz_projector;
             });
             return points;
         }
-        describe('constructor_with_sequences', function () {
-            it('Simple forward pointing sequences, __seq_next__ metadata format', function () {
+        describe('constructor_with_sequences', () => {
+            it('Simple forward pointing sequences, __seq_next__ metadata format', () => {
                 // The input is: 0->2, 1->None, 2->3, 3->None. This should return
                 // one sequence 0->2->3.
-                var points = makePointsWithSequences([2, -1, 3, -1]);
-                var dataset = new vz_projector.DataSet(points);
+                const points = makePointsWithSequences([2, -1, 3, -1]);
+                let dataset = new vz_projector.DataSet(points);
                 test.assert.equal(1, dataset.sequences.length);
                 test.assert.deepEqual([0, 2, 3], dataset.sequences[0].pointIndices);
             });
-            it('Simple forward pointing sequences, __next__ metadata format', function () {
+            it('Simple forward pointing sequences, __next__ metadata format', () => {
                 // The input is: 0->2, 1->None, 2->3, 3->None. This should return
                 // one sequence 0->2->3.
-                var points = makePointsWithSequences([2, -1, 3, -1], '__next__');
-                var dataset = new vz_projector.DataSet(points);
+                const points = makePointsWithSequences([2, -1, 3, -1], '__next__');
+                let dataset = new vz_projector.DataSet(points);
                 test.assert.equal(1, dataset.sequences.length);
                 test.assert.deepEqual([0, 2, 3], dataset.sequences[0].pointIndices);
             });
-            it('No sequences', function () {
-                var points = makePointsWithSequences([-1, -1, -1, -1]);
-                var dataset = new vz_projector.DataSet(points);
+            it('No sequences', () => {
+                let points = makePointsWithSequences([-1, -1, -1, -1]);
+                let dataset = new vz_projector.DataSet(points);
                 test.assert.equal(0, dataset.sequences.length);
             });
-            it('A sequence that goes backwards and forward in the array', function () {
+            it('A sequence that goes backwards and forward in the array', () => {
                 // The input is: 0->2, 1->0, 2->nothing, 3->1. This should return
                 // one sequence 3->1->0->2.
-                var points = makePointsWithSequences([2, 0, -1, 1]);
-                var dataset = new vz_projector.DataSet(points);
+                let points = makePointsWithSequences([2, 0, -1, 1]);
+                let dataset = new vz_projector.DataSet(points);
                 test.assert.equal(1, dataset.sequences.length);
                 test.assert.deepEqual([3, 1, 0, 2], dataset.sequences[0].pointIndices);
             });
         });
-        describe('stateGetAccessorDimensions', function () {
-            it('returns [0, 1] for 2d t-SNE', function () {
-                var state = new vz_projector.State();
+        describe('stateGetAccessorDimensions', () => {
+            it('returns [0, 1] for 2d t-SNE', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'tsne';
                 state.tSNEis3d = false;
                 test.assert.deepEqual([0, 1], vz_projector.stateGetAccessorDimensions(state));
             });
-            it('returns [0, 1, 2] for 3d t-SNE', function () {
-                var state = new vz_projector.State();
+            it('returns [0, 1, 2] for 3d t-SNE', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'tsne';
                 state.tSNEis3d = true;
                 test.assert.deepEqual([0, 1, 2], vz_projector.stateGetAccessorDimensions(state));
             });
-            it('returns [0, 1] for 2d umap', function () {
-                var state = new vz_projector.State();
+            it('returns [0, 1] for 2d umap', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'umap';
                 state.umapIs3d = false;
                 test.assert.deepEqual([0, 1], vz_projector.stateGetAccessorDimensions(state));
             });
-            it('returns [0, 1, 2] for 3d umap', function () {
-                var state = new vz_projector.State();
+            it('returns [0, 1, 2] for 3d umap', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'umap';
                 state.umapIs3d = true;
                 test.assert.deepEqual([0, 1, 2], vz_projector.stateGetAccessorDimensions(state));
             });
-            it('returns pca component dimensions array for pca', function () {
-                var state = new vz_projector.State();
+            it('returns pca component dimensions array for pca', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'pca';
                 state.pcaComponentDimensions = [13, 12, 11, 10];
                 test.assert.deepEqual(state.pcaComponentDimensions, vz_projector.stateGetAccessorDimensions(state));
             });
-            it('returns ["x", "y"] for custom projections', function () {
-                var state = new vz_projector.State();
+            it('returns ["x", "y"] for custom projections', () => {
+                const state = new vz_projector.State();
                 state.selectedProjection = 'custom';
                 test.assert.deepEqual(['x', 'y'], vz_projector.stateGetAccessorDimensions(state));
             });

@@ -13,7 +13,6 @@ tf_web_library(
     path = "/pod-viewer",
     deps = [
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/profile/pod_viewer/details_card",
         "//tensorboard/plugins/profile/pod_viewer/pod_viewer_common",
         "//tensorboard/plugins/profile/pod_viewer/stack_bar_chart",
         "//tensorboard/plugins/profile/pod_viewer/topology_graph",

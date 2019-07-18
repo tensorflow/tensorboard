@@ -17,37 +17,36 @@ var tf_custom_scalar_dashboard;
     /**
      * A class that represents a data series for a custom scalars chart.
      */
-    var DataSeries = /** @class */ (function () {
-        function DataSeries(run, tag, name, scalarData, symbol) {
+    class DataSeries {
+        constructor(run, tag, name, scalarData, symbol) {
             this.run = run;
             this.tag = tag;
             this.name = name;
             this.scalarData = scalarData;
             this.symbol = symbol;
         }
-        DataSeries.prototype.getName = function () {
+        getName() {
             return this.name;
-        };
-        DataSeries.prototype.setData = function (scalarData) {
+        }
+        setData(scalarData) {
             this.scalarData = scalarData;
-        };
-        DataSeries.prototype.getData = function () {
+        }
+        getData() {
             return this.scalarData;
-        };
-        DataSeries.prototype.getRun = function () {
+        }
+        getRun() {
             return this.run;
-        };
-        DataSeries.prototype.getTag = function () {
+        }
+        getTag() {
             return this.tag;
-        };
-        DataSeries.prototype.getSymbol = function () {
+        }
+        getSymbol() {
             return this.symbol;
-        };
-        return DataSeries;
-    }());
+        }
+    }
     tf_custom_scalar_dashboard.DataSeries = DataSeries;
     function generateDataSeriesName(run, tag) {
-        return tag + " (" + run + ")";
+        return `${tag} (${run})`;
     }
     tf_custom_scalar_dashboard.generateDataSeriesName = generateDataSeriesName;
     /**
@@ -55,8 +54,8 @@ var tf_custom_scalar_dashboard;
      * particular color scale parses the run from a series name and defers to that
      * former color scale.
      */
-    var DataSeriesColorScale = /** @class */ (function () {
-        function DataSeriesColorScale(runBasedColorScale) {
+    class DataSeriesColorScale {
+        constructor(runBasedColorScale) {
             this.runBasedColorScale = runBasedColorScale;
         }
         /**
@@ -64,22 +63,21 @@ var tf_custom_scalar_dashboard;
          * @param {string} dataSeries
          * @return {string} The color.
          */
-        DataSeriesColorScale.prototype.scale = function (dataSeries) {
+        scale(dataSeries) {
             return this.runBasedColorScale.scale(this.parseRunName(dataSeries));
-        };
+        }
         /**
          * Parses the run name from a data series string. Returns the empty string if
          * parsing fails.
          */
-        DataSeriesColorScale.prototype.parseRunName = function (dataSeries) {
-            var match = dataSeries.match(/\((.*)\)$/);
+        parseRunName(dataSeries) {
+            const match = dataSeries.match(/\((.*)\)$/);
             if (!match) {
                 // No match found.
                 return '';
             }
             return match[1];
-        };
-        return DataSeriesColorScale;
-    }());
+        }
+    }
     tf_custom_scalar_dashboard.DataSeriesColorScale = DataSeriesColorScale;
 })(tf_custom_scalar_dashboard || (tf_custom_scalar_dashboard = {})); // namespace tf_custom_scalar_dashboard

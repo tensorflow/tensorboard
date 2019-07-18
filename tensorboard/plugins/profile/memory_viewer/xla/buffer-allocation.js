@@ -15,15 +15,15 @@ var memory_viewer_xla_ba;
      * HLO buffer allocation representation.
      * @final
      */
-    var BufferAllocation = /** @class */ (function () {
-        function BufferAllocation(alloc) {
+    class BufferAllocation {
+        constructor(alloc) {
             this.index = parseInt(alloc.index, 10);
             this.size = parseInt(alloc.size, 10);
             this.isThreadLocal = alloc.isThreadLocal || false;
-            this.assigned = alloc.assigned.map(function (assigned) { return new memory_viewer_xla_baa.BufferAllocationAssigned(assigned); });
+            this.assigned = alloc.assigned.map((assigned) => new memory_viewer_xla_baa.BufferAllocationAssigned(assigned));
             this.groupName = this.getGroupName(alloc);
         }
-        BufferAllocation.prototype.getGroupName = function (alloc) {
+        getGroupName(alloc) {
             if (alloc.isEntryComputationParameter) {
                 return 'Parameter';
             }
@@ -40,8 +40,7 @@ var memory_viewer_xla_ba;
                     }
                 }
             }
-        };
-        return BufferAllocation;
-    }());
+        }
+    }
     memory_viewer_xla_ba.BufferAllocation = BufferAllocation;
 })(memory_viewer_xla_ba || (memory_viewer_xla_ba = {})); // namespace memory_viewer_xla_ba

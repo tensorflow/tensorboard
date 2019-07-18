@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_tensorboard;
 (function (tf_tensorboard) {
-    var ActiveDashboardsLoadState;
+    let ActiveDashboardsLoadState;
     (function (ActiveDashboardsLoadState) {
         ActiveDashboardsLoadState["NOT_LOADED"] = "NOT_LOADED";
         ActiveDashboardsLoadState["LOADED"] = "LOADED";
@@ -48,7 +48,7 @@ var tf_tensorboard;
             throw new Error('Dashboard.elementName must be present');
         }
         if (dashboard.plugin in tf_tensorboard.dashboardRegistry) {
-            throw new Error("Plugin already registered: " + dashboard.plugin);
+            throw new Error(`Plugin already registered: ${dashboard.plugin}`);
         }
         if (!dashboard.tabName) {
             dashboard.tabName = dashboard.plugin;

@@ -39,8 +39,8 @@ tf_web_library(
     path = "/tf-hparams-scale-and-color-controls",
     deps = [
         ":tf_hparams_scale_and_color_controls",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 

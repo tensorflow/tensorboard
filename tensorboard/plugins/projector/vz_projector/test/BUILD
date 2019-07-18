@@ -9,10 +9,10 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_test(
     name = "test",
+    src = "/vz-projector/test/tests.html",
     # TODO(@wchargin): This test does not work in headless mode.
     tags = ["manual"],
     web_library = ":test_web_library",
-    src = "/vz-projector/test/tests.html",
 )
 
 tf_web_library(
@@ -31,7 +31,6 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/plugins/projector/vz_projector",
     ],
 )

@@ -43,24 +43,24 @@ var tf;
                  */
                 function buildGroup(container, annotationData, d, sceneElement) {
                     // Select all children and join with data.
-                    var annotationGroups = container
+                    let annotationGroups = container
                         .selectAll(function () {
                         // using d3's selector function
                         // See https://github.com/mbostock/d3/releases/tag/v2.0.0
                         // (It's not listed in the d3 wiki.)
                         return this.childNodes;
                     })
-                        .data(annotationData.list, function (d) { return d.node.name; });
+                        .data(annotationData.list, d => { return d.node.name; });
                     annotationGroups.enter()
                         .append('g')
-                        .attr('data-name', function (a) { return a.node.name; })
+                        .attr('data-name', a => { return a.node.name; })
                         .each(function (a) {
-                        var aGroup = d3.select(this);
+                        let aGroup = d3.select(this);
                         // Add annotation to the index in the scene
                         sceneElement.addAnnotationGroup(a, d, aGroup);
                         // Append annotation edge
-                        var edgeType = scene.Class.Annotation.EDGE;
-                        var metaedge = a.renderMetaedgeInfo && a.renderMetaedgeInfo.metaedge;
+                        let edgeType = scene.Class.Annotation.EDGE;
+                        let metaedge = a.renderMetaedgeInfo && a.renderMetaedgeInfo.metaedge;
                         if (metaedge && !metaedge.numRegularEdges) {
                             edgeType += ' ' + scene.Class.Annotation.CONTROL_EDGE;
                         }
@@ -77,13 +77,13 @@ var tf;
                             addAnnotationLabel(aGroup, a.node.name, a, scene.Class.Annotation.ELLIPSIS);
                         }
                     }).merge(annotationGroups)
-                        .attr('class', function (a) {
+                        .attr('class', a => {
                         return scene.Class.Annotation.GROUP + ' ' +
                             annotationToClassName(a.annotationType) + ' ' +
                             scene.node.nodeClass(a);
                     })
                         .each(function (a) {
-                        var aGroup = d3.select(this);
+                        let aGroup = d3.select(this);
                         update(aGroup, d, a, sceneElement);
                         if (a.annotationType !== graph.render.AnnotationType.ELLIPSIS) {
                             addInteraction(aGroup, d, a, sceneElement);
@@ -91,7 +91,7 @@ var tf;
                     });
                     annotationGroups.exit()
                         .each(function (a) {
-                        var aGroup = d3.select(this);
+                        let aGroup = d3.select(this);
                         // Remove annotation from the index in the scene
                         sceneElement.removeAnnotationGroup(a, d, aGroup);
                     })
@@ -108,29 +108,29 @@ var tf;
                 }
                 function buildShape(aGroup, a) {
                     if (a.annotationType === graph.render.AnnotationType.SUMMARY) {
-                        var summary = scene.selectOrCreateChild(aGroup, 'use');
+                        let summary = scene.selectOrCreateChild(aGroup, 'use');
                         summary
                             .attr('class', 'summary')
                             .attr('xlink:href', '#summary-icon')
                             .attr('cursor', 'pointer');
                     }
                     else {
-                        var shape = scene.node.buildShape(aGroup, a, scene.Class.Annotation.NODE);
+                        let shape = scene.node.buildShape(aGroup, a, scene.Class.Annotation.NODE);
                         // add title tag to get native tooltips
                         scene.selectOrCreateChild(shape, 'title').text(a.node.name);
                     }
                 }
                 function addAnnotationLabelFromNode(aGroup, a) {
-                    var namePath = a.node.name.split('/');
-                    var text = namePath[namePath.length - 1];
+                    let namePath = a.node.name.split('/');
+                    let text = namePath[namePath.length - 1];
                     return addAnnotationLabel(aGroup, text, a, null);
                 }
                 function addAnnotationLabel(aGroup, label, a, additionalClassNames) {
-                    var classNames = scene.Class.Annotation.LABEL;
+                    let classNames = scene.Class.Annotation.LABEL;
                     if (additionalClassNames) {
                         classNames += ' ' + additionalClassNames;
                     }
-                    var txtElement = aGroup.append('text')
+                    let txtElement = aGroup.append('text')
                         .attr('class', classNames)
                         .attr('dy', '.35em')
                         .attr('text-anchor', a.isIn ? 'end' : 'start')
@@ -139,13 +139,13 @@ var tf;
                 }
                 function addInteraction(selection, d, annotation, sceneElement) {
                     selection
-                        .on('mouseover', function (a) {
+                        .on('mouseover', a => {
                         sceneElement.fire('annotation-highlight', { name: a.node.name, hostName: d.node.name });
                     })
-                        .on('mouseout', function (a) {
+                        .on('mouseout', a => {
                         sceneElement.fire('annotation-unhighlight', { name: a.node.name, hostName: d.node.name });
                     })
-                        .on('click', function (a) {
+                        .on('click', a => {
                         // Stop this event's propagation so that it isn't also considered a
                         // graph-select.
                         d3.event.stopPropagation();
@@ -166,7 +166,7 @@ var tf;
                  * @param sceneElement <tf-graph-scene> polymer element.
                  */
                 function update(aGroup, d, a, sceneElement) {
-                    var cx = graph.layout.computeCXPositionOfNodeShape(d);
+                    let cx = graph.layout.computeCXPositionOfNodeShape(d);
                     // Annotations that point to embedded nodes (constants,summary)
                     // don't have a render information attached so we don't stylize these.
                     // Also we don't stylize ellipsis annotations (the string '... and X more').
@@ -195,9 +195,9 @@ var tf;
                     scene.positionRect(aGroup.select('.' + scene.Class.Annotation.NODE + ' rect'), cx + a.dx, d.y + a.dy, a.width, a.height);
                     scene.positionRect(aGroup.select('.' + scene.Class.Annotation.NODE + ' use'), cx + a.dx, d.y + a.dy, a.width, a.height);
                     // Edge position
-                    aGroup.select('path.' + scene.Class.Annotation.EDGE).transition().attr('d', function (a) {
+                    aGroup.select('path.' + scene.Class.Annotation.EDGE).transition().attr('d', a => {
                         // map relative position to absolute position
-                        var points = a.points.map(function (p) { return { x: p.dx + cx, y: p.dy + d.y }; });
+                        let points = a.points.map(p => { return { x: p.dx + cx, y: p.dy + d.y }; });
                         return scene.edge.interpolate(points);
                     });
                 }

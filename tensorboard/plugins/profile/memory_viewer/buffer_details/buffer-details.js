@@ -27,10 +27,10 @@ var memory_viewer_buffer_details;
          * Updates the utilization bar.
          */
         _updateValue: function (value) {
-            var color = memory_viewer_utils.flameColor(value);
-            var length = memory_viewer_utils.percent(value);
+            const color = memory_viewer_utils.flameColor(value);
+            const length = memory_viewer_utils.percent(value);
             this.style.background =
-                "linear-gradient(to right, " + color + " " + length + ", #ccc " + length + ")";
+                `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
         }
     });
     Polymer({
@@ -69,7 +69,7 @@ var memory_viewer_buffer_details;
             if (!node)
                 return;
             this.size = node.sizeMiB.toFixed(1);
-            var color = 'rgb(192,192,192)';
+            let color = 'rgb(192,192,192)';
             if (node.unpaddedSizeMiB) {
                 this.unpaddedSize = node.unpaddedSizeMiB.toFixed(1);
                 this.padding = (node.sizeMiB - node.unpaddedSizeMiB).toFixed(1);
@@ -77,7 +77,7 @@ var memory_viewer_buffer_details;
                 this.expansion = (1 / this.utilization).toFixed(1);
                 color = memory_viewer_utils.flameColor(this.utilization, 0.7);
             }
-            this.$.card.updateStyles({ '--paper-card-header': 'background-color:' + color });
+            this.$.card.updateStyles({ '--paper-card-background-color': color });
             this.$.subheader.style.backgroundColor = color;
         },
         /**

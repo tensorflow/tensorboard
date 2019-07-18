@@ -18,11 +18,11 @@ var tf_dashboard_common;
      * @polymerBehavior
      */
     tf_dashboard_common.ArrayUpdateHelper = {
-        updateArrayProp: function (prop, value, getKey) {
-            var orig = this.get(prop);
-            var newVal = value;
+        updateArrayProp(prop, value, getKey) {
+            let orig = this.get(prop);
+            const newVal = value;
             if (!Array.isArray(newVal)) {
-                throw RangeError("Expected new value to '" + prop + "' to be an array.");
+                throw RangeError(`Expected new value to '${prop}' to be an array.`);
             }
             // In case using ComplexObserver, the method can be invoked before the prop
             // had a chance to initialize properly.
@@ -30,9 +30,9 @@ var tf_dashboard_common;
                 orig = [];
                 this.set(prop, orig);
             }
-            var lookup = new Set(newVal.map(function (item, i) { return getKey(item, i); }));
-            var origInd = 0;
-            var newValInd = 0;
+            const lookup = new Set(newVal.map((item, i) => getKey(item, i)));
+            let origInd = 0;
+            let newValInd = 0;
             while (origInd < orig.length && newValInd < newVal.length) {
                 if (!lookup.has(getKey(orig[origInd], origInd))) {
                     this.splice(prop, origInd, 1);
@@ -43,7 +43,7 @@ var tf_dashboard_common;
                     // update the element.
                     // TODO(stephanwlee): We may be able to update the original reference of
                     // the `value` by deep-copying the new value over.
-                    this.set(prop + "." + origInd, newVal[newValInd]);
+                    this.set(`${prop}.${origInd}`, newVal[newValInd]);
                 }
                 else {
                     this.splice(prop, origInd, 0, newVal[newValInd]);
@@ -55,7 +55,7 @@ var tf_dashboard_common;
                 this.splice(prop, origInd);
             }
             if (newValInd < newVal.length) {
-                this.push.apply(this, [prop].concat(newVal.slice(newValInd)));
+                this.push(prop, ...newVal.slice(newValInd));
             }
         },
     };

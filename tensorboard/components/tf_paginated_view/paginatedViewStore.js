@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 var tf_paginated_view;
 (function (tf_paginated_view) {
-    var LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
-    var DEFAULT_LIMIT = 12; // reasonably small and has lots of factors
-    var _limit = null; // cached localStorage value
-    var listeners = new Set();
+    const LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
+    const DEFAULT_LIMIT = 12; // reasonably small and has lots of factors
+    let _limit = null; // cached localStorage value
+    const listeners = new Set();
     /**
      * Register a listener (nullary function) to be called when the page
      * limit changes.
@@ -45,17 +45,17 @@ var tf_paginated_view;
     tf_paginated_view.getLimit = getLimit;
     function setLimit(limit) {
         if (limit !== Math.floor(limit)) {
-            throw new Error("limit must be an integer, but got: " + limit);
+            throw new Error(`limit must be an integer, but got: ${limit}`);
         }
         if (limit <= 0) {
-            throw new Error("limit must be positive, but got: " + limit);
+            throw new Error(`limit must be positive, but got: ${limit}`);
         }
         if (limit === _limit) {
             return;
         }
         _limit = limit;
         tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, { useLocalStorage: true });
-        listeners.forEach(function (listener) {
+        listeners.forEach(listener => {
             listener();
         });
     }

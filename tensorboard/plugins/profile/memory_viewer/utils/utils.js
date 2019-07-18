@@ -80,7 +80,7 @@ var memory_viewer_utils;
             opacity = 1;
         }
         if (curve === void 0) {
-            curve = function (x) { return 1 - Math.sqrt(1 - x); };
+            curve = (x) => 1 - Math.sqrt(1 - x);
         }
         if (isNaN(fraction)) {
             return rgba(brightness, brightness, brightness, opacity);

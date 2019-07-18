@@ -14,95 +14,88 @@ limitations under the License.
 ==============================================================================*/
 var vz_distribution_chart;
 (function (vz_distribution_chart) {
-    var DistributionChart = /** @class */ (function () {
-        function DistributionChart(xType, colorScale) {
+    class DistributionChart {
+        constructor(xType, colorScale) {
             this.run2datasets = {};
             this.colorScale = colorScale;
             this.buildChart(xType);
         }
-        DistributionChart.prototype.getDataset = function (run) {
+        getDataset(run) {
             if (this.run2datasets[run] === undefined) {
                 this.run2datasets[run] = new Plottable.Dataset([], { run: run });
             }
             return this.run2datasets[run];
-        };
-        DistributionChart.prototype.buildChart = function (xType) {
+        }
+        buildChart(xType) {
             if (this.outer) {
                 this.outer.destroy();
             }
-            var xComponents = vz_chart_helpers.getXComponents(xType);
+            let xComponents = vz_chart_helpers.getXComponents(xType);
             this.xAccessor = xComponents.accessor;
             this.xScale = xComponents.scale;
             this.xAxis = xComponents.axis;
             this.xAxis.margin(0).tickLabelPadding(3);
             this.yScale = new Plottable.Scales.Linear();
             this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-            var yFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
+            let yFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION);
             this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
             this.yAxis.usesTextWidthApproximation(true);
-            var center = this.buildPlot(this.xAccessor, this.xScale, this.yScale);
+            let center = this.buildPlot(this.xAccessor, this.xScale, this.yScale);
             this.gridlines =
                 new Plottable.Components.Gridlines(this.xScale, this.yScale);
             this.center = new Plottable.Components.Group([this.gridlines, center]);
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
-        };
-        DistributionChart.prototype.buildPlot = function (xAccessor, xScale, yScale) {
-            var _this = this;
-            var percents = [0, 228, 1587, 3085, 5000, 6915, 8413, 9772, 10000];
-            var opacities = _.range(percents.length - 1)
-                .map(function (i) { return (percents[i + 1] - percents[i]) / 2500; });
-            var accessors = percents.map(function (p, i) { return function (datum) { return datum[i][1]; }; });
-            var median = 4;
-            var medianAccessor = accessors[median];
-            var plots = _.range(accessors.length - 1).map(function (i) {
-                var p = new Plottable.Plots.Area();
+        }
+        buildPlot(xAccessor, xScale, yScale) {
+            let percents = [0, 228, 1587, 3085, 5000, 6915, 8413, 9772, 10000];
+            let opacities = _.range(percents.length - 1)
+                .map((i) => (percents[i + 1] - percents[i]) / 2500);
+            let accessors = percents.map((p, i) => (datum) => datum[i][1]);
+            let median = 4;
+            let medianAccessor = accessors[median];
+            let plots = _.range(accessors.length - 1).map((i) => {
+                let p = new Plottable.Plots.Area();
                 p.x(xAccessor, xScale);
-                var y0 = i > median ? accessors[i] : accessors[i + 1];
-                var y = i > median ? accessors[i + 1] : accessors[i];
+                let y0 = i > median ? accessors[i] : accessors[i + 1];
+                let y = i > median ? accessors[i + 1] : accessors[i];
                 p.y(y, yScale);
                 p.y0(y0);
-                p.attr('fill', function (d, i, dataset) {
-                    return _this.colorScale.scale(dataset.metadata().run);
-                });
-                p.attr('stroke', function (d, i, dataset) {
-                    return _this.colorScale.scale(dataset.metadata().run);
-                });
-                p.attr('stroke-weight', function (d, i, m) { return '0.5px'; });
-                p.attr('stroke-opacity', function () { return opacities[i]; });
-                p.attr('fill-opacity', function () { return opacities[i]; });
+                p.attr('fill', (d, i, dataset) => this.colorScale.scale(dataset.metadata().run));
+                p.attr('stroke', (d, i, dataset) => this.colorScale.scale(dataset.metadata().run));
+                p.attr('stroke-weight', (d, i, m) => '0.5px');
+                p.attr('stroke-opacity', () => opacities[i]);
+                p.attr('fill-opacity', () => opacities[i]);
                 return p;
             });
-            var medianPlot = new Plottable.Plots.Line();
+            let medianPlot = new Plottable.Plots.Line();
             medianPlot.x(xAccessor, xScale);
             medianPlot.y(medianAccessor, yScale);
-            medianPlot.attr('stroke', function (d, i, m) { return _this.colorScale.scale(m.run); });
+            medianPlot.attr('stroke', (d, i, m) => this.colorScale.scale(m.run));
             this.plots = plots;
             return new Plottable.Components.Group(plots);
-        };
-        DistributionChart.prototype.setVisibleSeries = function (runs) {
-            var _this = this;
+        }
+        setVisibleSeries(runs) {
             this.runs = runs;
-            var datasets = runs.map(function (r) { return _this.getDataset(r); });
-            this.plots.forEach(function (p) { return p.datasets(datasets); });
-        };
+            let datasets = runs.map((r) => this.getDataset(r));
+            this.plots.forEach((p) => p.datasets(datasets));
+        }
         /**
          * Set the data of a series on the chart.
          */
-        DistributionChart.prototype.setSeriesData = function (name, data) {
+        setSeriesData(name, data) {
             this.getDataset(name).data(data);
-        };
-        DistributionChart.prototype.renderTo = function (targetSVG) {
+        }
+        renderTo(targetSVG) {
             this.targetSVG = targetSVG;
             this.outer.renderTo(targetSVG);
-        };
-        DistributionChart.prototype.redraw = function () {
+        }
+        redraw() {
             this.outer.redraw();
-        };
-        DistributionChart.prototype.destroy = function () {
+        }
+        destroy() {
             this.outer.destroy();
-        };
-        return DistributionChart;
-    }());
+        }
+    }
     vz_distribution_chart.DistributionChart = DistributionChart;
     Polymer({
         is: 'vz-distribution-chart',

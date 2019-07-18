@@ -25,7 +25,7 @@ var tf;
              * tf-hparam-scale-and-color-controls.html for more details on the various
              * scale types.
              */
-            var ScaleType;
+            let ScaleType;
             (function (ScaleType) {
                 ScaleType["LINEAR"] = "LINEAR";
                 ScaleType["LOG"] = "LOG";
@@ -36,56 +36,51 @@ var tf;
              * An AlwaysPassingBrushFilter returns 'true' for any value. It is used
              * to represent the case when an Axis does not have an active brush selection.
              */
-            var AlwaysPassingBrushFilter = /** @class */ (function () {
-                function AlwaysPassingBrushFilter() {
-                }
-                AlwaysPassingBrushFilter.prototype.isPassing = function (value) {
+            class AlwaysPassingBrushFilter {
+                isPassing(value) {
                     return true;
-                };
-                return AlwaysPassingBrushFilter;
-            }());
+                }
+            }
             /**
              * An IntervalBrushFilter returns 'true' if the given (numeric) value lies
              * in a given interval specified on construction . It's used to represent
              * brush filters for Axis with linear, logarithmic or quantile scales.
              */
-            var IntervalBrushFilter = /** @class */ (function () {
+            class IntervalBrushFilter {
                 /** Constructs the filter. The interval used is defined by lower, and upper.
                  * If lowerOpen (resp. upperOpen) is true, the interval will be open in
                  * its lower (resp. upper) end, otherwise it will be closed.
                  */
-                function IntervalBrushFilter(lower, upper, lowerOpen, upperOpen) {
+                constructor(lower, upper, lowerOpen, upperOpen) {
                     this._lower = lower;
                     this._upper = upper;
                     this._lowerOpen = lowerOpen;
                     this._upperOpen = upperOpen;
                 }
-                IntervalBrushFilter.prototype.isPassing = function (value) {
-                    var numValue = value;
+                isPassing(value) {
+                    const numValue = value;
                     return this._before(this._lower, numValue, !this._lowerOpen) &&
                         this._before(numValue, this._upper, !this._upperOpen);
-                };
-                IntervalBrushFilter.prototype._before = function (a, b, inclusive) {
+                }
+                _before(a, b, inclusive) {
                     if (inclusive) {
                         return a <= b;
                     }
                     return a < b;
-                };
-                return IntervalBrushFilter;
-            }());
+                }
+            }
             /**
              * A SetBrushFilter returns 'true' if the value is in a given set specified
              * in construction.
              */
-            var SetBrushFilter = /** @class */ (function () {
-                function SetBrushFilter(domainSet) {
+            class SetBrushFilter {
+                constructor(domainSet) {
                     this._domainSet = domainSet;
                 }
-                SetBrushFilter.prototype.isPassing = function (value) {
-                    return this._domainSet.findIndex(function (element) { return (element === value); }) !== -1;
-                };
-                return SetBrushFilter;
-            }());
+                isPassing(value) {
+                    return this._domainSet.findIndex(element => (element === value)) !== -1;
+                }
+            }
             /**
              * Represents a single Axis. An axis does not know its horizontal location in
              * the SVG; instead the axes locations are managed by the AxesCollection class.
@@ -100,13 +95,13 @@ var tf;
              * set based on the user's settings for the corresponding column). An invisible
              * axis need not have its scale or scale-type populated.
              */
-            var Axis = /** @class */ (function () {
+            class Axis {
                 /**
                  * Constructs an axis representing the column indexed by 'colIndex' with
                  * respect to 'schema'. Needs an InteractionManager instance so that it can
                  * call its event handlers upon receiving events from the DOM.
                  */
-                function Axis(svgProps, schema, interactionManager, colIndex) {
+                constructor(svgProps, schema, interactionManager, colIndex) {
                     this._svgProps = svgProps;
                     this._schema = schema;
                     this._interactionManager = interactionManager;
@@ -116,30 +111,30 @@ var tf;
                     this._scaleType = null;
                     this.setBrushSelection(null);
                 }
-                Axis.prototype.colIndex = function () {
+                colIndex() {
                     return this._colIndex;
-                };
-                Axis.prototype.yScale = function () {
+                }
+                yScale() {
                     return this._yScale;
-                };
-                Axis.prototype.scaleType = function () {
+                }
+                scaleType() {
                     return this._scaleType;
-                };
-                Axis.prototype.brushSelection = function () {
+                }
+                brushSelection() {
                     return this._brushSelection;
-                };
-                Axis.prototype.isDisplayed = function () {
+                }
+                isDisplayed() {
                     return this._isDisplayed;
-                };
-                Axis.prototype.setBrushSelection = function (brushSelection) {
+                }
+                setBrushSelection(brushSelection) {
                     this._brushSelection = brushSelection;
                     this._brushFilter = this._buildBrushFilter(this.brushSelection(), this.scaleType(), this.yScale());
-                };
+                }
                 /**
                  * Sets the domain and scale type for the axis. The current brush selection
                  * is preserved.
                  */
-                Axis.prototype.setDomainAndScale = function (domainValues, scaleType) {
+                setDomainAndScale(domainValues, scaleType) {
                     this._scaleType = scaleType;
                     this._yScale = tf.hparams.parallel_coords_plot.createAxisScale(
                     // Pass a copy since createAxisScale may permute the domainValues array.
@@ -156,17 +151,16 @@ var tf;
                     // sure not to change the selection if the data hasn't changed, as that
                     // would be very annoying to the end user.
                     this._brushFilter = this._buildBrushFilter(this.brushSelection(), this.scaleType(), this.yScale());
-                };
-                Axis.prototype.brushFilter = function () {
+                }
+                brushFilter() {
                     return this._brushFilter;
-                };
+                }
                 /**
                  * Renders the axis as child elements of 'axisParent'. Removes any preexisting
                  * children of axisParent. 'axisParent' is expected to be a <g> element.
                  */
-                Axis.prototype.updateDOM = function (axisParent /* HTMLElement */) {
-                    var _this_1 = this;
-                    var d3Axis = d3.axisLeft(this.yScale());
+                updateDOM(axisParent /* HTMLElement */) {
+                    let d3Axis = d3.axisLeft(this.yScale());
                     if (this.scaleType() === ScaleType.QUANTILE) {
                         // The default tickValues of a quantile scale is just the
                         // scale domain, which produces overlapping labels if the
@@ -177,7 +171,7 @@ var tf;
                             .tickValues(this.yScale().quantiles())
                             .tickFormat(d3.format("-.6g"));
                     }
-                    var axisParentSel = d3.select(axisParent);
+                    const axisParentSel = d3.select(axisParent);
                     axisParentSel.selectAll("g").remove();
                     axisParentSel.append("g").classed("axis", true)
                         .call(d3Axis)
@@ -187,25 +181,23 @@ var tf;
                         .style("cursor", "move")
                         .style("text-anchor", "middle")
                         .attr("y", -9)
-                        .text(function (colIndex) {
-                        return tf.hparams.utils.schemaColumnName(_this_1._schema, colIndex);
-                    });
+                        .text(colIndex => tf.hparams.utils.schemaColumnName(this._schema, colIndex));
                     // Add dragging event handlers.
                     axisParentSel.call(d3.drag()
-                        .on("start", function () {
+                        .on("start", () => {
                         // We set an attribute on the axis that signals
                         // that it is being dragged. This allows
                         // integration tests to know when dragging is done.
                         axisParent.setAttribute("is-dragging", "");
-                        _this_1._interactionManager.onDragStart(_this_1.colIndex());
+                        this._interactionManager.onDragStart(this.colIndex());
                     })
-                        .on("drag", function () { return _this_1._interactionManager.onDrag(d3.event.x); })
-                        .on("end", function () {
-                        _this_1._interactionManager.onDragEnd();
+                        .on("drag", () => this._interactionManager.onDrag(d3.event.x))
+                        .on("end", () => {
+                        this._interactionManager.onDragEnd();
                         axisParent.removeAttribute("is-dragging");
                     }));
                     // Add the brush.
-                    var d3Brush = d3.brushY()
+                    const d3Brush = d3.brushY()
                         .extent([[-8, 0], [8, this._svgProps.height + 1]])
                         /* Define the brush event handlers. D3 will call these both when
                            the user moves the brush selection and when we change the brush
@@ -214,7 +206,7 @@ var tf;
                            we call _isInteractiveD3Event() to find out if the event was fired
                            due to a programmetic change of the brush selection , and if so,
                            ignore the event. */
-                        .on("start", function () {
+                        .on("start", () => {
                         if (!_isInteractiveD3Event(d3.event)) {
                             return;
                         }
@@ -222,22 +214,22 @@ var tf;
                         // 'axis-parent'-classed <g> element to notify integration tests
                         // that the axis is busy brushing.
                         axisParent.setAttribute("is-brushing", "");
-                        _this_1._interactionManager.onBrushChanged(_this_1.colIndex(), d3.event.selection);
+                        this._interactionManager.onBrushChanged(this.colIndex(), d3.event.selection);
                     })
-                        .on("brush", function () {
+                        .on("brush", () => {
                         if (!_isInteractiveD3Event(d3.event)) {
                             return;
                         }
-                        _this_1._interactionManager.onBrushChanged(_this_1.colIndex(), d3.event.selection);
+                        this._interactionManager.onBrushChanged(this.colIndex(), d3.event.selection);
                     })
-                        .on("end", function () {
+                        .on("end", () => {
                         if (!_isInteractiveD3Event(d3.event)) {
                             return;
                         }
-                        _this_1._interactionManager.onBrushChanged(_this_1.colIndex(), d3.event.selection);
+                        this._interactionManager.onBrushChanged(this.colIndex(), d3.event.selection);
                         axisParent.removeAttribute("is-brushing");
                     });
-                    var brushG = d3.select(axisParent)
+                    const brushG = d3.select(axisParent)
                         .append("g")
                         .classed("brush", true);
                     brushG.call(d3Brush);
@@ -245,15 +237,15 @@ var tf;
                     // We need to cast brushG to 'any' here since TypeScript doesn't realize
                     // the brushG is a <g> selection and complains.
                     d3Brush.move(brushG, this.brushSelection());
-                };
-                Axis.prototype.setDisplayed = function (value) {
+                }
+                setDisplayed(value) {
                     this._isDisplayed = value;
-                };
+                }
                 /**
                  * @return the brush filter for the given selection using the current
                  * scale.
                  */
-                Axis.prototype._buildBrushFilter = function (brushSelection, scaleType, yScale /* D3 scale */) {
+                _buildBrushFilter(brushSelection, scaleType, yScale /* D3 scale */) {
                     if (brushSelection === null) {
                         return new AlwaysPassingBrushFilter();
                     }
@@ -264,13 +256,13 @@ var tf;
                     switch (scaleType) {
                         case ScaleType.LINEAR:
                         case ScaleType.LOG: { /* Fall Through */
-                            var _a = tf.hparams.parallel_coords_plot.continuousScaleInverseImage(yScale, brushSelection[0], brushSelection[1]), lower = _a[0], upper = _a[1];
+                            const [lower, upper] = tf.hparams.parallel_coords_plot.continuousScaleInverseImage(yScale, brushSelection[0], brushSelection[1]);
                             return new IntervalBrushFilter(lower, upper, 
                             /*lowerOpen=*/ false, 
                             /*upperOpen=*/ false);
                         }
                         case ScaleType.QUANTILE: {
-                            var _b = tf.hparams.parallel_coords_plot.quantileScaleInverseImage(yScale, brushSelection[0], brushSelection[1]), lower = _b[0], upper = _b[1];
+                            const [lower, upper] = tf.hparams.parallel_coords_plot.quantileScaleInverseImage(yScale, brushSelection[0], brushSelection[1]);
                             return new IntervalBrushFilter(lower, upper, 
                             /*lowerOpen=*/ false, 
                             /*upperOpen=*/ true);
@@ -280,17 +272,16 @@ var tf;
                     }
                     console.error("Unknown scale type: ", scaleType);
                     return new AlwaysPassingBrushFilter();
-                };
-                return Axis;
-            }());
+                }
+            }
             parallel_coords_plot.Axis = Axis;
             /**
              * Manages the collection of axes shown in the plot. Has methods that handle
              * dragging an axis and contains the logic for re-ordering the axes
              * during dragging.
              */
-            var AxesCollection = /** @class */ (function () {
-                function AxesCollection(svgProps, schema, interactionManager) {
+            class AxesCollection {
+                constructor(svgProps, schema, interactionManager) {
                     this._svgProps = svgProps;
                     this._schema = schema;
                     this._axes = this._createAxes(interactionManager);
@@ -307,21 +298,20 @@ var tf;
                  * are used to update the domain (and thus scale) of the axes. The 'options'
                  * object control which axes are visible.
                  */
-                AxesCollection.prototype.updateAxes = function (options, sessionGroups) {
-                    var _this_1 = this;
+                updateAxes(options, sessionGroups) {
                     console.assert(!this.isAxisDragging());
                     // Traverse options.columns, and update each corresponding axis.
-                    var visibleColIndices = new Set();
-                    options.columns.forEach(function (column) {
-                        var colIndex = column.absoluteIndex;
-                        var axis = _this_1._axes[colIndex];
+                    const visibleColIndices = new Set();
+                    options.columns.forEach(column => {
+                        const colIndex = column.absoluteIndex;
+                        let axis = this._axes[colIndex];
                         axis.setDisplayed(true);
-                        var domainValues = sessionGroups.map(function (sg) { return tf.hparams.utils.columnValueByIndex(_this_1._schema, sg, colIndex); });
+                        const domainValues = sessionGroups.map(sg => tf.hparams.utils.columnValueByIndex(this._schema, sg, colIndex));
                         axis.setDomainAndScale(domainValues, column.scale);
                         visibleColIndices.add(colIndex);
                     });
                     // Set the visibility of the remaining axes to false.
-                    this._axes.forEach(function (axis) {
+                    this._axes.forEach(axis => {
                         if (!visibleColIndices.has(axis.colIndex())) {
                             axis.setDisplayed(false);
                         }
@@ -329,42 +319,40 @@ var tf;
                     this._updateStationaryAxesPositions(visibleColIndices);
                     // Update the DOM.
                     this._parentsSel = this._parentsSel
-                        .data(Array.from(visibleColIndices), /*key=*/ (function (colIndex) { return colIndex; }));
+                        .data(Array.from(visibleColIndices), /*key=*/ (colIndex => colIndex));
                     this._parentsSel.exit().remove();
                     this._parentsSel = this._parentsSel.enter()
                         .append("g")
                         .classed("axis-parent", true)
                         .merge(this._parentsSel);
-                    var _this = this;
+                    const _this = this;
                     this._parentsSel
-                        .call(function (sel) { return _this_1._updateAxesPositionsInDOM(sel); })
+                        .call(sel => this._updateAxesPositionsInDOM(sel))
                         .each(function (colIndex) {
                         /* Here 'this' is the 'axis-parent'-classed <g> element,
                            and '_this' is the AxesCollection element. */
                         _this._axes[colIndex].updateDOM(this);
                     });
-                };
+                }
                 /**
                  * Executes mapFunction on each visible axis. Returns an array containing the
                  * result from each invocation. The function is invoked on the axes ordered
                  * by their increasing xPosition.
                  */
-                AxesCollection.prototype.mapVisibleAxes = function (mapFunction) {
-                    var _this_1 = this;
-                    return this._stationaryAxesPositions.domain().map(function (colIndex) { return mapFunction(_this_1.getAxisPosition(colIndex), _this_1._axes[colIndex]); });
-                };
+                mapVisibleAxes(mapFunction) {
+                    return this._stationaryAxesPositions.domain().map(colIndex => mapFunction(this.getAxisPosition(colIndex), this._axes[colIndex]));
+                }
                 /**
                  * @return true if the given predicate returns true on every visible axis,
                  *     false otherwise. Note that the predicate will only be evaluated until
                  *     the first time it returns false.
                  */
-                AxesCollection.prototype.allVisibleAxesSatisfy = function (predicate) {
-                    var _this_1 = this;
-                    return this._stationaryAxesPositions.domain().every(function (colIndex) { return predicate(_this_1.getAxisPosition(colIndex), _this_1._axes[colIndex]); });
-                };
-                AxesCollection.prototype.getAxisForColIndex = function (colIndex) {
+                allVisibleAxesSatisfy(predicate) {
+                    return this._stationaryAxesPositions.domain().every(colIndex => predicate(this.getAxisPosition(colIndex), this._axes[colIndex]));
+                }
+                getAxisForColIndex(colIndex) {
                     return this._axes[colIndex];
-                };
+                }
                 /* Axis dragging.
                  * To drag an axis, call: dragStart(), followed by one or more drag() calls
                  * followed by a single call to dragEnd().
@@ -377,36 +365,35 @@ var tf;
                  * of their actual position by re-assigning stationary positions to axes when
                  * dragging an axis causes it to "pass" another axes.
                  */
-                AxesCollection.prototype.dragStart = function (colIndex) {
+                dragStart(colIndex) {
                     console.assert(!this.isAxisDragging());
                     console.assert(this._axes[colIndex].isDisplayed());
                     this._draggedAxis = this._axes[colIndex];
                     this._draggedAxisPosition = this._stationaryAxesPositions(colIndex);
-                };
-                AxesCollection.prototype.drag = function (newX) {
-                    var _this_1 = this;
+                }
+                drag(newX) {
                     newX = Math.min(Math.max(newX, 0), this._svgProps.width);
                     this._draggedAxisPosition = newX;
-                    var visibleColIndices = this._stationaryAxesPositions.domain();
-                    visibleColIndices.sort(function (ci1, ci2) { return _this_1.getAxisPosition(ci1) - _this_1.getAxisPosition(ci2); });
+                    let visibleColIndices = this._stationaryAxesPositions.domain();
+                    visibleColIndices.sort((ci1, ci2) => this.getAxisPosition(ci1) - this.getAxisPosition(ci2));
                     this._stationaryAxesPositions.domain(visibleColIndices);
                     this._updateAxesPositionsInDOM(this._parentsSel);
-                };
-                AxesCollection.prototype.dragEnd = function (duration) {
+                }
+                dragEnd(duration) {
                     console.assert(this.isAxisDragging());
                     this._draggedAxisPosition = null;
                     this._draggedAxis = null;
                     this._updateAxesPositionsInDOM(this._parentsSel.transition().duration(duration));
-                };
-                AxesCollection.prototype.isAxisDragging = function () {
+                }
+                isAxisDragging() {
                     return this._draggedAxis !== null;
-                };
-                AxesCollection.prototype.getAxisPosition = function (colIndex) {
+                }
+                getAxisPosition(colIndex) {
                     return (this._draggedAxis !== null) &&
                         (this._draggedAxis.colIndex() === colIndex)
                         ? this._draggedAxisPosition
                         : this._stationaryAxesPositions(colIndex);
-                };
+                }
                 /**
                  * Sets the domain of 'stationaryAxesPositions' to be precisely the given
                  * visibleColIndices, but preserves the order of the column indices that
@@ -421,23 +408,20 @@ var tf;
                  * axes are the ones with column indices in 'visibleColIndices', but preserves
                  * the order of axes indexed by visibleColIndices that are already visible.
                  */
-                AxesCollection.prototype._updateStationaryAxesPositions = function (visibleColIndices) {
-                    var visibleDomain = this._stationaryAxesPositions.domain().filter(function (colIndex) { return visibleColIndices.has(colIndex); });
-                    var newDomain = Array.from(new Set(visibleDomain.concat(Array.from(visibleColIndices))));
+                _updateStationaryAxesPositions(visibleColIndices) {
+                    const visibleDomain = this._stationaryAxesPositions.domain().filter(colIndex => visibleColIndices.has(colIndex));
+                    const newDomain = Array.from(new Set([
+                        ...visibleDomain, ...Array.from(visibleColIndices)
+                    ]));
                     this._stationaryAxesPositions.domain(newDomain);
-                };
-                AxesCollection.prototype._updateAxesPositionsInDOM = function (selectionOrTransition) {
-                    var _this_1 = this;
-                    selectionOrTransition.attr("transform", function (colIndex) {
-                        return tf.hparams.utils.translateStr(_this_1.getAxisPosition(colIndex));
-                    });
-                };
-                AxesCollection.prototype._createAxes = function (interactionManager) {
-                    var _this_1 = this;
-                    return d3.range(tf.hparams.utils.numColumns(this._schema)).map(function (colIndex) { return new Axis(_this_1._svgProps, _this_1._schema, interactionManager, colIndex); });
-                };
-                return AxesCollection;
-            }());
+                }
+                _updateAxesPositionsInDOM(selectionOrTransition) {
+                    selectionOrTransition.attr("transform", colIndex => tf.hparams.utils.translateStr(this.getAxisPosition(colIndex)));
+                }
+                _createAxes(interactionManager) {
+                    return d3.range(tf.hparams.utils.numColumns(this._schema)).map(colIndex => new Axis(this._svgProps, this._schema, interactionManager, colIndex));
+                }
+            }
             parallel_coords_plot.AxesCollection = AxesCollection;
             function _isInteractiveD3Event(d3Event) {
                 return d3Event.sourceEvent !== null;

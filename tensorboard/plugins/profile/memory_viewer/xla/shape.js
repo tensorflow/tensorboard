@@ -17,26 +17,26 @@ var memory_viewer_xla_s;
      * that they have rank zero and have tuple_shapes defined.
      * @final
      */
-    var Shape = /** @class */ (function () {
-        function Shape(shape) {
+    class Shape {
+        constructor(shape) {
             this.elementType = shape.elementType.toString();
-            this.dimensions = shape.dimensions.map(function (item) { return parseInt(item, 10); });
+            this.dimensions = shape.dimensions.map((item) => parseInt(item, 10));
             if (shape.tupleShapes) {
-                this.tupleShapes = shape.tupleShapes.map(function (item) { return new Shape(item); });
+                this.tupleShapes = shape.tupleShapes.map((item) => new Shape(item));
             }
             this.layout = shape.layout;
         }
         /**
          * Resolve the right shape from the shapeIndex.
          */
-        Shape.prototype.resolveShapeIndex = function (shapeIndex) {
-            return shapeIndex.reduce(function (shape, item) { return shape.tupleShapes[item]; }, this);
-        };
+        resolveShapeIndex(shapeIndex) {
+            return shapeIndex.reduce((shape, item) => shape.tupleShapes[item], this);
+        }
         /**
          * Returns the size of shape with out padding.
          */
-        Shape.prototype.unpaddedHeapSizeBytes = function () {
-            var INT64_BYTES = 8;
+        unpaddedHeapSizeBytes() {
+            const INT64_BYTES = 8;
             if (this.elementType === 'TOKEN') {
                 return 0;
             }
@@ -45,39 +45,38 @@ var memory_viewer_xla_s;
             if (this.elementType === 'TUPLE') {
                 return INT64_BYTES * this.tupleShapes.length;
             }
-            var byteSize = 0;
+            let byteSize = 0;
             // We assume the layout format is 'DENSE' by default.
             if (!this.layout || this.layout.format == 'DENSE') {
-                var allocatedElementCount = this.dimensions.reduce(function (count, item) { return count * item; }, 1);
+                const allocatedElementCount = this.dimensions.reduce((count, item) => count * item, 1);
                 byteSize += allocatedElementCount *
                     memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
             }
             else if (this.layout.format == 'SPARSE') {
-                var maxElements = parseInt(this.layout.maxSparseElements, 10);
+                const maxElements = parseInt(this.layout.maxSparseElements, 10);
                 byteSize = maxElements *
                     memory_viewer_utils.byteSizeOfPrimitiveType(this.elementType);
                 // Add byte size of sparse indices, assume each indice is int64 type.
                 byteSize += maxElements * this.dimensions.length * INT64_BYTES;
             }
             return byteSize;
-        };
+        }
         /**
          * Returns a human-readable string that represents the given shape, with
          * layout. e.g. "f32[42x12] {0, 1}"
          */
-        Shape.prototype.humanStringWithLayout = function () {
+        humanStringWithLayout() {
             if (this.elementType === 'TUPLE') {
-                var text = '(';
-                var prefix = '';
-                for (var _i = 0, _a = this.tupleShapes; _i < _a.length; _i++) {
-                    var ele_shape = _a[_i];
+                let text = '(';
+                let prefix = '';
+                for (const ele_shape of this.tupleShapes) {
                     text = text + prefix + ele_shape.humanStringWithLayout();
                     prefix = ', ';
                 }
                 text += ')';
                 return text;
             }
-            var result = this.elementType.toLowerCase() + '[';
+            let result = this.elementType.toLowerCase() + '[';
             result += this.dimensions.join() + ']';
             if (!(this.elementType === 'OPAQUE') && !(this.elementType === 'TOKEN') &&
                 this.dimensions.length > 0) {
@@ -86,11 +85,11 @@ var memory_viewer_xla_s;
                 }
             }
             return result;
-        };
+        }
         /**
          * Returns a human-readable string that represents the given layout.
          */
-        Shape.prototype.humanLayoutString = function (layout) {
+        humanLayoutString(layout) {
             if (layout.format == 'SPARSE') {
                 return 'sparse{' + layout.maxSparseElements + '}';
             }
@@ -102,8 +101,7 @@ var memory_viewer_xla_s;
                     return '';
                 }
             }
-        };
-        return Shape;
-    }());
+        }
+    }
     memory_viewer_xla_s.Shape = Shape;
 })(memory_viewer_xla_s || (memory_viewer_xla_s = {})); // namespace memory_viewer_xla_s

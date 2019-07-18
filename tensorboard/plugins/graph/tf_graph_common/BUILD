@@ -27,11 +27,16 @@ tf_web_library(
         "scene.js",
         "template.js",
         "tf-graph-common.html",
+        "tf-graph-icon.html",
+        "tf-graph-icon.js",
+        "tf-graph-scene.js",
+        "tf-node-icon.html",
         "util.js",
     ],
     path = "/tf-graph-common",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:dagre",
         "//tensorboard/components/tf_imports:graphlib",
@@ -45,8 +50,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_common"],
     destdir = "tf-graph-common",
     deps = [
+        "//tensorboard/components/tf_dashboard_common:legacy",
         "//tensorboard/components/tf_imports_google:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
-

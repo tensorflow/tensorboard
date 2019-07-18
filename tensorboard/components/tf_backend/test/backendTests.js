@@ -14,21 +14,21 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
-    var assert = chai.assert;
-    describe('urlPathHelpers', function () {
-        it('addParams leaves input untouched when there are no parameters', function () {
-            var actual = tf_backend.addParams('http://foo', { a: undefined, b: undefined });
-            var expected = 'http://foo';
+    const { assert } = chai;
+    describe('urlPathHelpers', () => {
+        it('addParams leaves input untouched when there are no parameters', () => {
+            const actual = tf_backend.addParams('http://foo', { a: undefined, b: undefined });
+            const expected = 'http://foo';
             chai.assert.equal(actual, expected);
         });
-        it('addParams adds parameters to a URL without parameters', function () {
-            var actual = tf_backend.addParams('http://foo', { a: "1", b: ["2", "3+4"], c: "5", d: undefined });
-            var expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
+        it('addParams adds parameters to a URL without parameters', () => {
+            const actual = tf_backend.addParams('http://foo', { a: "1", b: ["2", "3+4"], c: "5", d: undefined });
+            const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
             chai.assert.equal(actual, expected);
         });
-        it('addParams adds parameters to a URL with parameters', function () {
-            var actual = tf_backend.addParams('http://foo?a=1', { b: ["2", "3+4"], c: "5", d: undefined });
-            var expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
+        it('addParams adds parameters to a URL with parameters', () => {
+            const actual = tf_backend.addParams('http://foo?a=1', { b: ["2", "3+4"], c: "5", d: undefined });
+            const expected = 'http://foo?a=1&b=2&b=3%2B4&c=5';
             chai.assert.equal(actual, expected);
         });
     });
@@ -36,15 +36,15 @@ var tf_backend;
         chai.assert.isNumber(x.step);
         chai.assert.instanceOf(x.wall_time, Date);
     }
-    describe('backend tests', function () {
-        it('runToTag helpers work', function () {
-            var r2t = {
+    describe('backend tests', () => {
+        it('runToTag helpers work', () => {
+            const r2t = {
                 run1: ['foo', 'bar', 'zod'],
                 run2: ['zod', 'zoink'],
                 a: ['foo', 'zod']
             };
-            var empty1 = {};
-            var empty2 = { run1: [], run2: [] };
+            const empty1 = {};
+            const empty2 = { run1: [], run2: [] };
             chai.assert.deepEqual(tf_backend.getRunsNamed(r2t), ['a', 'run1', 'run2']);
             chai.assert.deepEqual(tf_backend.getTags(r2t), ['bar', 'foo', 'zod', 'zoink']);
             chai.assert.deepEqual(tf_backend.filterTags(r2t, ['run1', 'run2']), tf_backend.getTags(r2t));
@@ -55,59 +55,59 @@ var tf_backend;
             chai.assert.deepEqual(tf_backend.getRunsNamed(empty2), ['run1', 'run2']);
             chai.assert.deepEqual(tf_backend.getTags(empty2), []);
         });
-        describe('router', function () {
-            describe('prod mode', function () {
-                var router;
-                beforeEach(function () {
+        describe('router', () => {
+            describe('prod mode', () => {
+                let router;
+                beforeEach(() => {
                     router = tf_backend.createRouter('data');
                 });
-                it('leading slash in pathPrefix is an absolute path', function () {
-                    var router = tf_backend.createRouter('/data/');
+                it('leading slash in pathPrefix is an absolute path', () => {
+                    const router = tf_backend.createRouter('/data/');
                     assert.equal(router.runs(), '/data/runs');
                 });
-                it('returns complete pathname when pathPrefix omits slash', function () {
-                    var router = tf_backend.createRouter('data/');
+                it('returns complete pathname when pathPrefix omits slash', () => {
+                    const router = tf_backend.createRouter('data/');
                     assert.equal(router.runs(), 'data/runs');
                 });
-                it('does not prune many leading slashes that forms full url', function () {
-                    var router = tf_backend.createRouter('///data/hello');
+                it('does not prune many leading slashes that forms full url', () => {
+                    const router = tf_backend.createRouter('///data/hello');
                     // This becomes 'http://data/hello/runs'
                     assert.equal(router.runs(), '///data/hello/runs');
                 });
-                it('returns correct value for #environment', function () {
+                it('returns correct value for #environment', () => {
                     assert.equal(router.environment(), 'data/environment');
                 });
-                it('returns correct value for #experiments', function () {
+                it('returns correct value for #experiments', () => {
                     assert.equal(router.experiments(), 'data/experiments');
                 });
-                describe('#pluginRoute', function () {
-                    it('encodes slash correctly', function () {
+                describe('#pluginRoute', () => {
+                    it('encodes slash correctly', () => {
                         assert.equal(router.pluginRoute('scalars', '/scalar'), 'data/plugin/scalars/scalar');
                     });
-                    it('encodes query param correctly', function () {
+                    it('encodes query param correctly', () => {
                         assert.equal(router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ b: 'c', d: ['1', '2'] })), 'data/plugin/scalars/a?b=c&d=1&d=2');
                     });
-                    it('does not put ? when passed an empty URLSearchParams', function () {
+                    it('does not put ? when passed an empty URLSearchParams', () => {
                         assert.equal(router.pluginRoute('scalars', '/a', new URLSearchParams()), 'data/plugin/scalars/a');
                     });
-                    it('encodes parenthesis correctly', function () {
+                    it('encodes parenthesis correctly', () => {
                         assert.equal(router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), 'data/plugin/scalars/a?foo=%28%29');
                     });
-                    it('deals with existing query param correctly', function () {
+                    it('deals with existing query param correctly', () => {
                         assert.equal(router.pluginRoute('scalars', '/a?foo=bar', tf_backend.createSearchParam({ hello: 'world' })), 'data/plugin/scalars/a?foo=bar&hello=world');
                     });
-                    it('encodes query param the same as #addParams', function () {
+                    it('encodes query param the same as #addParams', () => {
                         assert.equal(router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ b: 'c', d: ['1'] })), tf_backend.addParams('data/plugin/scalars/a', { b: 'c', d: ['1'] }));
                         assert.equal(router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), tf_backend.addParams('data/plugin/scalars/a', { foo: '()' }));
                     });
                 });
-                it('returns correct value for #pluginsListing', function () {
+                it('returns correct value for #pluginsListing', () => {
                     assert.equal(router.pluginsListing(), 'data/plugins_listing');
                 });
-                it('returns correct value for #runs', function () {
+                it('returns correct value for #runs', () => {
                     assert.equal(router.runs(), 'data/runs');
                 });
-                it('returns correct value for #runsForExperiment', function () {
+                it('returns correct value for #runsForExperiment', () => {
                     assert.equal(router.runsForExperiment(1), 'data/experiment_runs?experiment=1');
                 });
             });

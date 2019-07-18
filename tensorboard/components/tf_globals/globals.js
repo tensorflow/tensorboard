@@ -17,7 +17,7 @@ var tf_globals;
     // If true, TensorBoard stores its hash in the URI state.
     // If false, tab switching in TensorBoard will not update location hash,
     // because hash updates interfere with wct_tests.
-    var _useHash = false;
+    let _useHash = false;
     function setUseHash(shouldUseHash) {
         _useHash = shouldUseHash;
     }
@@ -26,7 +26,7 @@ var tf_globals;
         return _useHash;
     }
     tf_globals.useHash = useHash;
-    var _fakeHash = '';
+    let _fakeHash = '';
     function setFakeHash(h) {
         _fakeHash = h;
     }

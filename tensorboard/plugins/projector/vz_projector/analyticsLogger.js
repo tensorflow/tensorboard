@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var AnalyticsLogger = /** @class */ (function () {
+    class AnalyticsLogger {
         /**
          * Constructs an event logger using Google Analytics. It assumes there is a
          * Google Analytics script added to the page elsewhere. If there is no such
@@ -23,7 +23,7 @@ var vz_projector;
          * @param pageViewLogging Whether to log page views.
          * @param eventLogging Whether to log user interaction.
          */
-        function AnalyticsLogger(pageViewLogging, eventLogging) {
+        constructor(pageViewLogging, eventLogging) {
             if (typeof ga === 'undefined' || ga == null) {
                 this.eventLogging = false;
                 this.pageViewLogging = false;
@@ -32,13 +32,13 @@ var vz_projector;
             this.eventLogging = eventLogging;
             this.pageViewLogging = pageViewLogging;
         }
-        AnalyticsLogger.prototype.logPageView = function (pageTitle) {
+        logPageView(pageTitle) {
             if (this.pageViewLogging) {
                 // Always send a page view.
-                ga('send', { hitType: 'pageview', page: "/v/" + pageTitle });
+                ga('send', { hitType: 'pageview', page: `/v/${pageTitle}` });
             }
-        };
-        AnalyticsLogger.prototype.logProjectionChanged = function (projection) {
+        }
+        logProjectionChanged(projection) {
             if (this.eventLogging) {
                 ga('send', {
                     hitType: 'event',
@@ -47,8 +47,8 @@ var vz_projector;
                     eventLabel: projection
                 });
             }
-        };
-        AnalyticsLogger.prototype.logWebGLDisabled = function () {
+        }
+        logWebGLDisabled() {
             if (this.eventLogging) {
                 ga('send', {
                     hitType: 'event',
@@ -57,8 +57,7 @@ var vz_projector;
                     eventLabel: 'WebGL_disabled'
                 });
             }
-        };
-        return AnalyticsLogger;
-    }());
+        }
+    }
     vz_projector.AnalyticsLogger = AnalyticsLogger;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

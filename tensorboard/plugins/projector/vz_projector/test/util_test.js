@@ -16,25 +16,25 @@ var vz_projector;
 (function (vz_projector) {
     var test;
     (function (test) {
-        describe('getURLParams', function () {
-            it('search query with valid param returns correct object', function () {
-                var urlParams = vz_projector.util.getURLParams('?config=http://google.com/');
+        describe('getURLParams', () => {
+            it('search query with valid param returns correct object', () => {
+                let urlParams = vz_projector.util.getURLParams('?config=http://google.com/');
                 test.assert.deepEqual({ 'config': 'http://google.com/' }, urlParams);
             });
-            it('search query with multiple valid params returns correct object', function () {
-                var urlParams = vz_projector.util.getURLParams('?config=http://google.com/&foo=bar');
+            it('search query with multiple valid params returns correct object', () => {
+                let urlParams = vz_projector.util.getURLParams('?config=http://google.com/&foo=bar');
                 test.assert.deepEqual({ 'config': 'http://google.com/', 'foo': 'bar' }, urlParams);
             });
-            it('search query with valid param with URL encoded characters', function () {
-                var urlParams = vz_projector.util.getURLParams('?config=http://google.com/%20search');
+            it('search query with valid param with URL encoded characters', () => {
+                let urlParams = vz_projector.util.getURLParams('?config=http://google.com/%20search');
                 test.assert.deepEqual({ 'config': 'http://google.com/ search' }, urlParams);
             });
-            it('search query with pound sign', function () {
-                var urlParams = vz_projector.util.getURLParams('?config=http://google.com/#foo');
+            it('search query with pound sign', () => {
+                let urlParams = vz_projector.util.getURLParams('?config=http://google.com/#foo');
                 test.assert.deepEqual({ 'config': 'http://google.com/' }, urlParams);
             });
-            it('no search query returns empty object', function () {
-                var urlParams = vz_projector.util.getURLParams('');
+            it('no search query returns empty object', () => {
+                let urlParams = vz_projector.util.getURLParams('');
                 test.assert.deepEqual({}, urlParams);
             });
         });

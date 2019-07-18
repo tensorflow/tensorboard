@@ -18,7 +18,7 @@ var tf;
     (function (graph) {
         // Note that tf-graph-control depends on the value of the enum.
         // Polymer does not let one use JS variable as a prop.
-        var SelectionType;
+        let SelectionType;
         (function (SelectionType) {
             SelectionType["OP_GRAPH"] = "op_graph";
             SelectionType["CONCEPTUAL_GRAPH"] = "conceptual_graph";

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var vz_chart_helper;
 (function (vz_chart_helper) {
-    var TooltipPosition;
+    let TooltipPosition;
     (function (TooltipPosition) {
         /**
          * Positions the tooltip to the bottom of the chart in most case. Positions
@@ -30,9 +30,21 @@ var vz_chart_helper;
          */
         TooltipPosition["RIGHT"] = "right";
     })(TooltipPosition = vz_chart_helper.TooltipPosition || (vz_chart_helper.TooltipPosition = {}));
+    const DEFAULT_TOOLTIP_STYLE = {
+        boxShadow: '0 1px 4px rgba(0, 0, 0, .3)',
+        opacity: 0,
+        position: 'fixed',
+        willChange: 'transform',
+        zIndex: 5,
+    };
     Polymer({
         is: 'vz-chart-tooltip',
         properties: {
+            /**
+             * Required prop for specifying name of the WebComponent for tooltip
+             * content.
+             */
+            contentComponentName: String,
             /**
              * Possible values are TooltipPosition.BOTTOM and TooltipPosition.RIGHT.
              */
@@ -48,56 +60,60 @@ var vz_chart_helper;
                 value: 15,
             },
         },
-        ready: function () {
+        ready() {
             this._styleCache = null;
             this._raf = null;
             this._tunnel = null;
         },
-        attached: function () {
+        attached() {
             this._tunnel = this._createTunnel();
+            this._hideOnBlur = () => {
+                if (document.hidden)
+                    this.hide();
+            };
+            window.addEventListener('visibilitychange', this._hideOnBlur);
         },
-        detached: function () {
+        detached() {
             this.hide();
             this._removeTunnel(this._tunnel);
             this._tunnel = null;
+            window.removeEventListener('visibilitychange', this._hideOnBlur);
         },
-        hide: function () {
+        content() {
+            return this._tunnel.shadowRoot;
+        },
+        hide() {
             window.cancelAnimationFrame(this._raf);
             this._styleCache = null;
-            this.content().style.opacity = 0;
-        },
-        content: function () {
-            return this._tunnel.firstElementChild;
+            this._tunnel.style.opacity = 0;
         },
         /**
          * CSS Scopes the newly added DOM (in most tooltip where columns are
          * invariable, only newly added rows are necessary to be scoped) and positions
          * the tooltip with respect to the anchorNode.
          */
-        updateAndPosition: function (anchorNode, newDom) {
-            var _this = this;
-            newDom.forEach(function (row) { return _this.scopeSubtree(row); });
+        updateAndPosition(anchorNode) {
             window.cancelAnimationFrame(this._raf);
-            this._raf = window.requestAnimationFrame(function () {
-                if (!_this.isAttached)
+            this._raf = window.requestAnimationFrame(() => {
+                if (!this.isAttached)
                     return;
-                _this._repositionImpl(anchorNode);
+                this._repositionImpl(anchorNode);
             });
         },
-        _repositionImpl: function (anchorNode) {
-            var tooltipContent = this.content();
-            var nodeRect = anchorNode.getBoundingClientRect();
-            var tooltipRect = tooltipContent.getBoundingClientRect();
-            var viewportHeight = window.innerHeight;
-            var documentWidth = document.body.clientWidth;
-            var anchorTop = nodeRect.top;
-            var anchorBottom = anchorTop + nodeRect.height;
-            var effectiveTooltipHeight = tooltipRect.height +
+        _repositionImpl(anchorNode) {
+            const tooltipContent = this._tunnel;
+            const nodeRect = anchorNode.getBoundingClientRect();
+            const tooltipRect = tooltipContent.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const documentWidth = document.body.clientWidth;
+            const anchorTop = nodeRect.top;
+            const anchorBottom = anchorTop + nodeRect.height;
+            const effectiveTooltipHeight = tooltipRect.height +
                 vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
-            var bottom = null;
-            var left = Math.max(this.minDistFromEdge, nodeRect.left);
-            var right = null;
-            var top = anchorTop;
+            let bottom = null;
+            let left = Math.max(this.minDistFromEdge, nodeRect.left);
+            let right = null;
+            let top = anchorTop;
             if (this.position == TooltipPosition.RIGHT) {
                 left = nodeRect.right;
             }
@@ -120,12 +136,12 @@ var vz_chart_helper;
                 bottom = viewportHeight - anchorTop +
                     vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
             }
-            var newStyle = {
+            const newStyle = {
                 opacity: 1,
-                left: left ? left + "px" : null,
-                right: right ? right + "px" : null,
-                top: top ? top + "px" : null,
-                bottom: bottom ? bottom + "px" : null,
+                left: left ? `${left}px` : null,
+                right: right ? `${right}px` : null,
+                top: top ? `${top}px` : null,
+                bottom: bottom ? `${bottom}px` : null,
             };
             // Do not update the style (which can cause re-layout) if it has not
             // changed.
@@ -134,16 +150,16 @@ var vz_chart_helper;
                 this._styleCache = newStyle;
             }
         },
-        _createTunnel: function () {
-            var div = document.createElement('div');
-            div.classList.add(this.is + "-tunnel");
-            var template = this.instanceTemplate(this.$.template);
-            this.scopeSubtree(template);
-            div.appendChild(template);
-            document.body.appendChild(div);
-            return div;
+        _createTunnel() {
+            if (!this.contentComponentName) {
+                throw new RangeError('Require `contentComponentName` to be a name of a Polymer component');
+            }
+            const tunnel = document.createElement(this.contentComponentName);
+            Object.assign(tunnel.style, DEFAULT_TOOLTIP_STYLE);
+            document.body.appendChild(tunnel);
+            return tunnel;
         },
-        _removeTunnel: function (tunnel) {
+        _removeTunnel(tunnel) {
             document.body.removeChild(tunnel);
         },
     });

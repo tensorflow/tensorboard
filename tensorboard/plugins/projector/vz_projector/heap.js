@@ -18,61 +18,61 @@ var vz_projector;
      * Min-heap data structure. Provides O(1) for peek, returning the smallest key.
      */
     // TODO(@jart): Rename to Heap and use Comparator.
-    var MinHeap = /** @class */ (function () {
-        function MinHeap() {
+    class MinHeap {
+        constructor() {
             this.arr = [];
         }
         /** Push an element with the provided key. */
-        MinHeap.prototype.push = function (key, value) {
-            this.arr.push({ key: key, value: value });
+        push(key, value) {
+            this.arr.push({ key, value });
             this.bubbleUp(this.arr.length - 1);
-        };
+        }
         /** Pop the element with the smallest key. */
-        MinHeap.prototype.pop = function () {
+        pop() {
             if (this.arr.length === 0) {
                 throw new Error('pop() called on empty binary heap');
             }
-            var item = this.arr[0];
-            var last = this.arr.length - 1;
+            let item = this.arr[0];
+            let last = this.arr.length - 1;
             this.arr[0] = this.arr[last];
             this.arr.pop();
             if (last > 0) {
                 this.bubbleDown(0);
             }
             return item;
-        };
+        }
         ;
         /** Returns, but doesn't remove the element with the smallest key */
-        MinHeap.prototype.peek = function () { return this.arr[0]; };
+        peek() { return this.arr[0]; }
         /**
          * Pops the element with the smallest key and at the same time
          * adds the newly provided element. This is faster than calling
          * pop() and push() separately.
          */
-        MinHeap.prototype.popPush = function (key, value) {
+        popPush(key, value) {
             if (this.arr.length === 0) {
                 throw new Error('pop() called on empty binary heap');
             }
-            var item = this.arr[0];
-            this.arr[0] = { key: key, value: value };
+            let item = this.arr[0];
+            this.arr[0] = { key, value };
             if (this.arr.length > 0) {
                 this.bubbleDown(0);
             }
             return item;
-        };
+        }
         /** Returns the number of elements in the heap. */
-        MinHeap.prototype.size = function () { return this.arr.length; };
+        size() { return this.arr.length; }
         /** Returns all the items in the heap. */
-        MinHeap.prototype.items = function () { return this.arr; };
-        MinHeap.prototype.swap = function (a, b) {
-            var temp = this.arr[a];
+        items() { return this.arr; }
+        swap(a, b) {
+            let temp = this.arr[a];
             this.arr[a] = this.arr[b];
             this.arr[b] = temp;
-        };
-        MinHeap.prototype.bubbleDown = function (pos) {
-            var left = (pos << 1) + 1;
-            var right = left + 1;
-            var largest = pos;
+        }
+        bubbleDown(pos) {
+            let left = (pos << 1) + 1;
+            let right = left + 1;
+            let largest = pos;
             if (left < this.arr.length && this.arr[left].key < this.arr[largest].key) {
                 largest = left;
             }
@@ -84,52 +84,50 @@ var vz_projector;
                 this.swap(largest, pos);
                 this.bubbleDown(largest);
             }
-        };
-        MinHeap.prototype.bubbleUp = function (pos) {
+        }
+        bubbleUp(pos) {
             if (pos <= 0) {
                 return;
             }
-            var parent = ((pos - 1) >> 1);
+            let parent = ((pos - 1) >> 1);
             if (this.arr[pos].key < this.arr[parent].key) {
                 this.swap(pos, parent);
                 this.bubbleUp(parent);
             }
-        };
-        return MinHeap;
-    }());
+        }
+    }
     vz_projector.MinHeap = MinHeap;
     /** List that keeps the K elements with the smallest keys. */
-    var KMin = /** @class */ (function () {
+    class KMin {
         /** Constructs a new k-min data structure with the provided k. */
-        function KMin(k) {
+        constructor(k) {
             this.maxHeap = new MinHeap();
             this.k = k;
         }
         /** Adds an element to the list. */
-        KMin.prototype.add = function (key, value) {
+        add(key, value) {
             if (this.maxHeap.size() < this.k) {
                 this.maxHeap.push(-key, value);
                 return;
             }
-            var largest = this.maxHeap.peek();
+            let largest = this.maxHeap.peek();
             // If the new element is smaller, replace the largest with the new element.
             if (key < -largest.key) {
                 this.maxHeap.popPush(-key, value);
             }
-        };
+        }
         /** Returns the k items with the smallest keys. */
-        KMin.prototype.getMinKItems = function () {
-            var items = this.maxHeap.items();
-            items.sort(function (a, b) { return b.key - a.key; });
-            return items.map(function (a) { return a.value; });
-        };
+        getMinKItems() {
+            let items = this.maxHeap.items();
+            items.sort((a, b) => b.key - a.key);
+            return items.map(a => a.value);
+        }
         /** Returns the size of the list. */
-        KMin.prototype.getSize = function () { return this.maxHeap.size(); };
+        getSize() { return this.maxHeap.size(); }
         /** Returns the largest key in the list. */
-        KMin.prototype.getLargestKey = function () {
+        getLargestKey() {
             return this.maxHeap.size() === 0 ? null : -this.maxHeap.peek().key;
-        };
-        return KMin;
-    }());
+        }
+    }
     vz_projector.KMin = KMin;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

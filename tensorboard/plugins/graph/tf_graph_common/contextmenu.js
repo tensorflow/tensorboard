@@ -25,9 +25,9 @@ var tf;
                  * corner of the screen.
                  */
                 function getOffset(sceneElement) {
-                    var leftDistance = 0;
-                    var topDistance = 0;
-                    var currentElement = sceneElement;
+                    let leftDistance = 0;
+                    let topDistance = 0;
+                    let currentElement = sceneElement;
                     while (currentElement &&
                         currentElement.offsetLeft >= 0 &&
                         currentElement.offsetTop >= 0) {
@@ -46,15 +46,13 @@ var tf;
                  * in response to the event.
                  */
                 function getMenu(sceneElement, menu) {
-                    var menuSelection = d3.select('.context-menu');
-                    // Close the menu when anything else is clicked.
-                    d3.select('body').on('click.context', function () { menuSelection.style('display', 'none'); });
+                    const menuNode = sceneElement.getContextMenu();
+                    const menuSelection = d3.select(sceneElement.getContextMenu());
                     // Function called to populate the context menu.
                     return function (data, index) {
-                        var _this = this;
                         // Position and display the menu.
-                        var event = d3.event;
-                        var sceneOffset = getOffset(sceneElement);
+                        let event = d3.event;
+                        const sceneOffset = getOffset(sceneElement);
                         menuSelection
                             .style('display', 'block')
                             .style('left', (event.clientX - sceneOffset.left + 1) + 'px')
@@ -62,18 +60,30 @@ var tf;
                         // Stop the event from propagating further.
                         event.preventDefault();
                         event.stopPropagation();
+                        function maybeCloseMenu(event) {
+                            if (event && event.composedPath().includes(menuNode)) {
+                                return;
+                            }
+                            menuSelection.style('display', 'none');
+                            document.body.removeEventListener('mousedown', maybeCloseMenu, { capture: true });
+                        }
+                        ;
+                        // Dismiss and remove the click listener as soon as there is a mousedown
+                        // on the document. We use capture listener so no component can stop
+                        // context menu from dismissing due to stopped propagation.
+                        document.body.addEventListener('mousedown', maybeCloseMenu, { capture: true });
                         // Add provided items to the context menu.
                         menuSelection.html('');
-                        var list = menuSelection.append('ul');
+                        let list = menuSelection.append('ul');
                         list.selectAll('li')
                             .data(menu)
                             .enter()
                             .append('li')
-                            .html(function (d) { return d.title(data); })
-                            .on('click', function (d, i) {
-                            d.action(_this, data, index);
-                            menuSelection.style('display', 'none');
-                        });
+                            .on('click', (d, i) => {
+                            d.action(this, data, index);
+                            maybeCloseMenu();
+                        })
+                            .html(function (d) { return d.title(data); });
                     };
                 }
                 contextmenu.getMenu = getMenu;

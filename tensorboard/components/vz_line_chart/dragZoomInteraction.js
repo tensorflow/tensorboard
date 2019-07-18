@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -24,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var vz_line_chart;
 (function (vz_line_chart) {
-    var DragZoomLayer = /** @class */ (function (_super) {
-        __extends(DragZoomLayer, _super);
+    class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
         /**
          * Constructs a SelectionBoxLayer with an attached DragInteraction and
          * ClickInteraction. On drag, it triggers an animated zoom into the box
@@ -38,75 +27,73 @@ var vz_line_chart;
          * Component Group.
          * TODO(@decentralion) - merge this into Plottable
          */
-        function DragZoomLayer(xScale, yScale, unzoomMethod) {
-            var _this = _super.call(this) || this;
-            _this.easeFn = d3.easeCubicInOut;
-            _this._animationTime = 750;
-            _this.xScale(xScale);
-            _this.yScale(yScale);
-            _this._dragInteraction = new Plottable.Interactions.Drag();
-            _this._doubleClickInteraction = new Plottable.Interactions.Click();
-            _this.setupCallbacks();
-            _this.unzoomMethod = unzoomMethod;
+        constructor(xScale, yScale, unzoomMethod) {
+            super();
+            this.easeFn = d3.easeCubicInOut;
+            this._animationTime = 750;
+            this.xScale(xScale);
+            this.yScale(yScale);
+            this._dragInteraction = new Plottable.Interactions.Drag();
+            this._doubleClickInteraction = new Plottable.Interactions.Click();
+            this.setupCallbacks();
+            this.unzoomMethod = unzoomMethod;
             // Activate interaction only when the component is mounted onto DOM.
-            _this.onDetach(function () {
-                _this._doubleClickInteraction.detachFrom(_this);
-                _this._dragInteraction.detachFrom(_this);
+            this.onDetach(() => {
+                this._doubleClickInteraction.detachFrom(this);
+                this._dragInteraction.detachFrom(this);
             });
-            _this.onAnchor(function () {
-                _this._doubleClickInteraction.attachTo(_this);
-                _this._dragInteraction.attachTo(_this);
+            this.onAnchor(() => {
+                this._doubleClickInteraction.attachTo(this);
+                this._dragInteraction.attachTo(this);
             });
-            return _this;
         }
         /**
          * Register a method that calls when the DragZoom interaction starts.
          */
-        DragZoomLayer.prototype.interactionStart = function (cb) {
+        interactionStart(cb) {
             this.onStart = cb;
-        };
+        }
         /**
          * Register a method that calls when the DragZoom interaction ends.
          */
-        DragZoomLayer.prototype.interactionEnd = function (cb) {
+        interactionEnd(cb) {
             this.onEnd = cb;
-        };
+        }
         /**
          * Returns backing drag interaction. Useful for customization to the
          * interaction.
          */
-        DragZoomLayer.prototype.dragInteraction = function () {
+        dragInteraction() {
             return this._dragInteraction;
-        };
-        DragZoomLayer.prototype.setupCallbacks = function () {
-            var _this = this;
-            var dragging = false;
-            this._dragInteraction.onDragStart(function (startPoint) {
-                _this.bounds({
+        }
+        setupCallbacks() {
+            let dragging = false;
+            this._dragInteraction.onDragStart((startPoint) => {
+                this.bounds({
                     topLeft: startPoint,
                     bottomRight: startPoint,
                 });
-                _this.onStart();
+                this.onStart();
             });
-            this._dragInteraction.onDrag(function (startPoint, endPoint) {
-                _this.bounds({ topLeft: startPoint, bottomRight: endPoint });
-                _this.boxVisible(true);
+            this._dragInteraction.onDrag((startPoint, endPoint) => {
+                this.bounds({ topLeft: startPoint, bottomRight: endPoint });
+                this.boxVisible(true);
                 dragging = true;
             });
-            this._dragInteraction.onDragEnd(function (startPoint, endPoint) {
-                _this.boxVisible(false);
-                _this.bounds({ topLeft: startPoint, bottomRight: endPoint });
+            this._dragInteraction.onDragEnd((startPoint, endPoint) => {
+                this.boxVisible(false);
+                this.bounds({ topLeft: startPoint, bottomRight: endPoint });
                 if (dragging) {
-                    _this.zoom();
+                    this.zoom();
                 }
                 else {
-                    _this.onEnd();
+                    this.onEnd();
                 }
                 dragging = false;
             });
             this._doubleClickInteraction.onDoubleClick(this.unzoom.bind(this));
-        };
-        DragZoomLayer.prototype.animationTime = function (animationTime) {
+        }
+        animationTime(animationTime) {
             if (animationTime == null) {
                 return this._animationTime;
             }
@@ -115,12 +102,12 @@ var vz_line_chart;
             }
             this._animationTime = animationTime;
             return this;
-        };
+        }
         /**
          * Set the easing function, which determines how the zoom interpolates
          * over time.
          */
-        DragZoomLayer.prototype.ease = function (fn) {
+        ease(fn) {
             if (typeof (fn) !== 'function') {
                 throw new Error('ease function must be a function');
             }
@@ -130,71 +117,67 @@ var vz_line_chart;
             }
             this.easeFn = fn;
             return this;
-        };
+        }
         // Zoom into extent of the selection box bounds
-        DragZoomLayer.prototype.zoom = function () {
-            var x0 = this.xExtent()[0].valueOf();
-            var x1 = this.xExtent()[1].valueOf();
-            var y0 = this.yExtent()[1].valueOf();
-            var y1 = this.yExtent()[0].valueOf();
+        zoom() {
+            let x0 = this.xExtent()[0].valueOf();
+            let x1 = this.xExtent()[1].valueOf();
+            let y0 = this.yExtent()[1].valueOf();
+            let y1 = this.yExtent()[0].valueOf();
             if (x0 === x1 || y0 === y1) {
                 return;
             }
             this.interpolateZoom(x0, x1, y0, y1);
-        };
+        }
         // Restore the scales to their state before any zoom
-        DragZoomLayer.prototype.unzoom = function () {
+        unzoom() {
             // We need to reset the zoom domain unconditionally, as the data or the
             // smoothing may have updated, such that we are not longer fully zoomed out.
-            var xScale = this.xScale();
+            let xScale = this.xScale();
             xScale._domainMin = null;
             xScale._domainMax = null;
-            var xDomain = xScale._getExtent();
+            let xDomain = xScale._getExtent();
             this.xScale().domain(xDomain);
             this.unzoomMethod();
-        };
+        }
         // If we are zooming, disable interactions, to avoid contention
-        DragZoomLayer.prototype.isZooming = function (isZooming) {
+        isZooming(isZooming) {
             this._dragInteraction.enabled(!isZooming);
             this._doubleClickInteraction.enabled(!isZooming);
-        };
-        DragZoomLayer.prototype.interpolateZoom = function (x0f, x1f, y0f, y1f) {
-            var _this = this;
-            var x0s = this.xScale().domain()[0].valueOf();
-            var x1s = this.xScale().domain()[1].valueOf();
-            var y0s = this.yScale().domain()[0].valueOf();
-            var y1s = this.yScale().domain()[1].valueOf();
+        }
+        interpolateZoom(x0f, x1f, y0f, y1f) {
+            let x0s = this.xScale().domain()[0].valueOf();
+            let x1s = this.xScale().domain()[1].valueOf();
+            let y0s = this.yScale().domain()[0].valueOf();
+            let y1s = this.yScale().domain()[1].valueOf();
             // Copy a ref to the ease fn, so that changing ease wont affect zooms in
             // progress.
-            var ease = this.easeFn;
-            var interpolator = function (a, b, p) {
-                return d3.interpolateNumber(a, b)(ease(p));
-            };
+            let ease = this.easeFn;
+            let interpolator = (a, b, p) => d3.interpolateNumber(a, b)(ease(p));
             this.isZooming(true);
-            var start = Date.now();
-            var draw = function () {
-                var now = Date.now();
-                var passed = now - start;
-                var p = _this._animationTime === 0 ?
+            let start = Date.now();
+            let draw = () => {
+                let now = Date.now();
+                let passed = now - start;
+                let p = this._animationTime === 0 ?
                     1 :
-                    Math.min(1, passed / _this._animationTime);
-                var x0 = interpolator(x0s, x0f, p);
-                var x1 = interpolator(x1s, x1f, p);
-                var y0 = interpolator(y0s, y0f, p);
-                var y1 = interpolator(y1s, y1f, p);
-                _this.xScale().domain([x0, x1]);
-                _this.yScale().domain([y0, y1]);
+                    Math.min(1, passed / this._animationTime);
+                let x0 = interpolator(x0s, x0f, p);
+                let x1 = interpolator(x1s, x1f, p);
+                let y0 = interpolator(y0s, y0f, p);
+                let y1 = interpolator(y1s, y1f, p);
+                this.xScale().domain([x0, x1]);
+                this.yScale().domain([y0, y1]);
                 if (p < 1) {
                     Plottable.Utils.DOM.requestAnimationFramePolyfill(draw);
                 }
                 else {
-                    _this.onEnd();
-                    _this.isZooming(false);
+                    this.onEnd();
+                    this.isZooming(false);
                 }
             };
             draw();
-        };
-        return DragZoomLayer;
-    }(Plottable.Components.SelectionBoxLayer));
+        }
+    }
     vz_line_chart.DragZoomLayer = DragZoomLayer;
 })(vz_line_chart || (vz_line_chart = {})); // namespace vz_line_chart

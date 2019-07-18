@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_storage;
 (function (tf_storage) {
-    var assert = chai.assert;
+    const { assert } = chai;
     function setHash(hash) {
         tf_globals.setFakeHash(hash);
     }
@@ -22,9 +22,9 @@ var tf_storage;
         return tf_globals.getFakeHash();
     }
     /* tslint:disable:no-namespace */
-    describe('Storage', function () {
-        var option = { useLocalStorage: false };
-        afterEach(function () {
+    describe('Storage', () => {
+        const option = { useLocalStorage: false };
+        afterEach(() => {
             setHash('');
             window.localStorage.clear();
             tf_storage.disposeStringBinding();
@@ -32,26 +32,26 @@ var tf_storage;
             tf_storage.disposeBooleanBinding();
             tf_storage.disposeObjectBinding();
         });
-        it('get/setString', function () {
+        it('get/setString', () => {
             tf_storage.setString('key_a', 'hello', option);
             tf_storage.setString('key_b', 'there', option);
             assert.equal('hello', tf_storage.getString('key_a', option));
             assert.equal('there', tf_storage.getString('key_b', option));
             assert.equal(null, tf_storage.getString('key_c', option));
         });
-        it('get/setNumber', function () {
+        it('get/setNumber', () => {
             tf_storage.setNumber('key_a', 12, option);
             tf_storage.setNumber('key_b', 3.4, option);
             assert.equal(12, tf_storage.getNumber('key_a', option));
             assert.equal(3.4, tf_storage.getNumber('key_b', option));
             assert.equal(null, tf_storage.getNumber('key_c', option));
         });
-        it('get/setObject', function () {
-            var obj = { 'foo': 2.3, 'bar': 'barstr' };
+        it('get/setObject', () => {
+            const obj = { 'foo': 2.3, 'bar': 'barstr' };
             tf_storage.setObject('key_a', obj, option);
             assert.deepEqual(obj, tf_storage.getObject('key_a', option));
         });
-        it('get/setWeirdValues', function () {
+        it('get/setWeirdValues', () => {
             tf_storage.setNumber('key_a', NaN, option);
             assert.deepEqual(NaN, tf_storage.getNumber('key_a', option));
             tf_storage.setNumber('key_a', +Infinity, option);
@@ -63,19 +63,18 @@ var tf_storage;
             tf_storage.setNumber('key_a', -0, option);
             assert.equal(-0, tf_storage.getNumber('key_a', option));
         });
-        it('set/getTab', function () {
+        it('set/getTab', () => {
             tf_storage.setString(tf_storage.TAB, 'scalars', option);
             assert.equal('scalars', tf_storage.getString(tf_storage.TAB, option));
         });
-        describe('getInitializer', function () {
+        describe('getInitializer', () => {
             [
                 { useLocalStorage: true, name: 'local storage', eventName: 'storage' },
                 { useLocalStorage: false, name: 'hash storage', eventName: 'hashchange' }
-            ].forEach(function (_a) {
-                var useLocalStorage = _a.useLocalStorage, name = _a.name, eventName = _a.eventName;
-                describe(name, function () {
-                    var options = {
-                        useLocalStorage: useLocalStorage,
+            ].forEach(({ useLocalStorage, name, eventName }) => {
+                describe(name, () => {
+                    const options = {
+                        useLocalStorage,
                         defaultValue: 'baz',
                         polymerProperty: 'prop',
                     };
@@ -83,25 +82,25 @@ var tf_storage;
                         if (useLocalStorage)
                             window.localStorage.setItem(key, value);
                         else
-                            setHash(key + "=" + value);
+                            setHash(`${key}=${value}`);
                     }
-                    it('sets the polymerProperty with the value', function () {
+                    it('sets the polymerProperty with the value', () => {
                         setValue('foo', 'bar');
-                        var initializer = tf_storage.getStringInitializer('foo', options);
-                        var fakeScope = { prop: null };
+                        const initializer = tf_storage.getStringInitializer('foo', options);
+                        const fakeScope = { prop: null };
                         initializer.call(fakeScope);
                         assert.equal(fakeScope.prop, 'bar');
                     });
-                    it('sets the prop with defaultValue when value is missing', function () {
-                        var initializer = tf_storage.getStringInitializer('foo', options);
-                        var fakeScope = { prop: null };
+                    it('sets the prop with defaultValue when value is missing', () => {
+                        const initializer = tf_storage.getStringInitializer('foo', options);
+                        const fakeScope = { prop: null };
                         initializer.call(fakeScope);
                         assert.equal(fakeScope.prop, 'baz');
                     });
-                    it("reacts to '" + eventName + "' and sets the new value (simulated)", function () {
+                    it(`reacts to '${eventName}' and sets the new value (simulated)`, () => {
                         setValue('foo', '');
-                        var initializer = tf_storage.getStringInitializer('foo', options);
-                        var fakeScope = { prop: null };
+                        const initializer = tf_storage.getStringInitializer('foo', options);
+                        const fakeScope = { prop: null };
                         initializer.call(fakeScope);
                         // Simulate the hashchange.
                         setValue('foo', 'changed');
@@ -111,12 +110,12 @@ var tf_storage;
                     // It is hard to test against real URL hash and we use fakeHash for
                     // testing and fakeHash does not emit any event for a change.
                     if (useLocalStorage) {
-                        it("reacts to change and sets the new value (real)", function () {
+                        it(`reacts to change and sets the new value (real)`, () => {
                             tf_storage.setString('foo', '', options);
-                            var initializer = tf_storage.getStringInitializer('foo', options);
-                            var fakeScope1 = { prop: null };
+                            const initializer = tf_storage.getStringInitializer('foo', options);
+                            const fakeScope1 = { prop: null };
                             initializer.call(fakeScope1);
-                            var fakeScope2 = { prop: 'bar' };
+                            const fakeScope2 = { prop: 'bar' };
                             initializer.call(fakeScope2);
                             tf_storage.setString('foo', 'changed', options);
                             assert.equal(fakeScope1.prop, 'changed');
@@ -126,16 +125,16 @@ var tf_storage;
                 });
             });
         });
-        describe('advanced setter', function () {
-            var keyName = 'key';
-            beforeEach(function () {
+        describe('advanced setter', () => {
+            const keyName = 'key';
+            beforeEach(() => {
                 assert.isFalse(getHash().includes(keyName));
             });
-            it('sets url hash', function () {
+            it('sets url hash', () => {
                 tf_storage.setNumber(keyName, 1, option);
                 assert.isTrue(getHash().includes(keyName));
             });
-            it('unsets url hash when value equals defaultValue', function () {
+            it('unsets url hash when value equals defaultValue', () => {
                 tf_storage.setNumber(keyName, 1, Object.assign({}, option, { defaultValue: 0 }));
                 assert.isTrue(getHash().includes(keyName));
                 // If previous value on hash (which is 1 from above) matches the new value

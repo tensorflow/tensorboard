@@ -14,29 +14,145 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var NUM_POINTS_FOG_THRESHOLD = 5000;
-    var MIN_POINT_SIZE = 5.0;
-    var IMAGE_SIZE = 30;
+    const NUM_POINTS_FOG_THRESHOLD = 5000;
+    const MIN_POINT_SIZE = 5.0;
+    const IMAGE_SIZE = 30;
     // Constants relating to the indices of buffer arrays.
-    var RGB_NUM_ELEMENTS = 3;
-    var INDEX_NUM_ELEMENTS = 1;
-    var XYZ_NUM_ELEMENTS = 3;
-    var VERTEX_SHADER = "\n  // Index of the specific vertex (passed in as bufferAttribute), and the\n  // variable that will be used to pass it to the fragment shader.\n  attribute float spriteIndex;\n  attribute vec3 color;\n  attribute float scaleFactor;\n\n  varying vec2 xyIndex;\n  varying vec3 vColor;\n\n  uniform bool sizeAttenuation;\n  uniform float pointSize;\n  uniform float spritesPerRow;\n  uniform float spritesPerColumn;\n\n  " + THREE.ShaderChunk['fog_pars_vertex'] + "\n\n  void main() {\n    // Pass index and color values to fragment shader.\n    vColor = color;\n    xyIndex = vec2(mod(spriteIndex, spritesPerRow),\n              floor(spriteIndex / spritesPerColumn));\n\n    // Transform current vertex by modelViewMatrix (model world position and\n    // camera world position matrix).\n    vec4 cameraSpacePos = modelViewMatrix * vec4(position, 1.0);\n\n    // Project vertex in camera-space to screen coordinates using the camera's\n    // projection matrix.\n    gl_Position = projectionMatrix * cameraSpacePos;\n\n    // Create size attenuation (if we're in 3D mode) by making the size of\n    // each point inversly proportional to its distance to the camera.\n    float outputPointSize = pointSize;\n    if (sizeAttenuation) {\n      outputPointSize = -pointSize / cameraSpacePos.z;\n    } else {  // Create size attenuation (if we're in 2D mode)\n      const float PI = 3.1415926535897932384626433832795;\n      const float minScale = 0.1;  // minimum scaling factor\n      const float outSpeed = 2.0;  // shrink speed when zooming out\n      const float outNorm = (1. - minScale) / atan(outSpeed);\n      const float maxScale = 15.0;  // maximum scaling factor\n      const float inSpeed = 0.02;  // enlarge speed when zooming in\n      const float zoomOffset = 0.3;  // offset zoom pivot\n      float zoom = projectionMatrix[0][0] + zoomOffset;  // zoom pivot\n      float scale = zoom < 1. ? 1. + outNorm * atan(outSpeed * (zoom - 1.)) :\n                    1. + 2. / PI * (maxScale - 1.) * atan(inSpeed * (zoom - 1.));\n      outputPointSize = pointSize * scale;\n    }\n\n    gl_PointSize =\n      max(outputPointSize * scaleFactor, " + MIN_POINT_SIZE.toFixed(1) + ");\n  }";
-    var FRAGMENT_SHADER_POINT_TEST_CHUNK = "\n  bool point_in_unit_circle(vec2 spriteCoord) {\n    vec2 centerToP = spriteCoord - vec2(0.5, 0.5);\n    return dot(centerToP, centerToP) < (0.5 * 0.5);\n  }\n\n  bool point_in_unit_equilateral_triangle(vec2 spriteCoord) {\n    vec3 v0 = vec3(0, 1, 0);\n    vec3 v1 = vec3(0.5, 0, 0);\n    vec3 v2 = vec3(1, 1, 0);\n    vec3 p = vec3(spriteCoord, 0);\n    float p_in_v0_v1 = cross(v1 - v0, p - v0).z;\n    float p_in_v1_v2 = cross(v2 - v1, p - v1).z;\n    return (p_in_v0_v1 > 0.0) && (p_in_v1_v2 > 0.0);\n  }\n\n  bool point_in_unit_square(vec2 spriteCoord) {\n    return true;\n  }\n";
-    var FRAGMENT_SHADER = "\n  varying vec2 xyIndex;\n  varying vec3 vColor;\n\n  uniform sampler2D texture;\n  uniform float spritesPerRow;\n  uniform float spritesPerColumn;\n  uniform bool isImage;\n\n  " + THREE.ShaderChunk['common'] + "\n  " + THREE.ShaderChunk['fog_pars_fragment'] + "\n  " + FRAGMENT_SHADER_POINT_TEST_CHUNK + "\n\n  void main() {\n    if (isImage) {\n      // Coordinates of the vertex within the entire sprite image.\n      vec2 coords =\n        (gl_PointCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);\n      gl_FragColor = vec4(vColor, 1.0) * texture2D(texture, coords);\n    } else {\n      bool inside = point_in_unit_circle(gl_PointCoord);\n      if (!inside) {\n        discard;\n      }\n      gl_FragColor = vec4(vColor, 1);\n    }\n    " + THREE.ShaderChunk['fog_fragment'] + "\n  }";
-    var FRAGMENT_SHADER_PICKING = "\n  varying vec2 xyIndex;\n  varying vec3 vColor;\n  uniform bool isImage;\n\n  " + FRAGMENT_SHADER_POINT_TEST_CHUNK + "\n\n  void main() {\n    xyIndex; // Silence 'unused variable' warning.\n    if (isImage) {\n      gl_FragColor = vec4(vColor, 1);\n    } else {\n      bool inside = point_in_unit_circle(gl_PointCoord);\n      if (!inside) {\n        discard;\n      }\n      gl_FragColor = vec4(vColor, 1);\n    }\n  }";
+    const RGB_NUM_ELEMENTS = 3;
+    const INDEX_NUM_ELEMENTS = 1;
+    const XYZ_NUM_ELEMENTS = 3;
+    const VERTEX_SHADER = `
+  // Index of the specific vertex (passed in as bufferAttribute), and the
+  // variable that will be used to pass it to the fragment shader.
+  attribute float spriteIndex;
+  attribute vec3 color;
+  attribute float scaleFactor;
+
+  varying vec2 xyIndex;
+  varying vec3 vColor;
+
+  uniform bool sizeAttenuation;
+  uniform float pointSize;
+  uniform float spritesPerRow;
+  uniform float spritesPerColumn;
+
+  ${THREE.ShaderChunk['fog_pars_vertex']}
+
+  void main() {
+    // Pass index and color values to fragment shader.
+    vColor = color;
+    xyIndex = vec2(mod(spriteIndex, spritesPerRow),
+              floor(spriteIndex / spritesPerColumn));
+
+    // Transform current vertex by modelViewMatrix (model world position and
+    // camera world position matrix).
+    vec4 cameraSpacePos = modelViewMatrix * vec4(position, 1.0);
+
+    // Project vertex in camera-space to screen coordinates using the camera's
+    // projection matrix.
+    gl_Position = projectionMatrix * cameraSpacePos;
+
+    // Create size attenuation (if we're in 3D mode) by making the size of
+    // each point inversly proportional to its distance to the camera.
+    float outputPointSize = pointSize;
+    if (sizeAttenuation) {
+      outputPointSize = -pointSize / cameraSpacePos.z;
+    } else {  // Create size attenuation (if we're in 2D mode)
+      const float PI = 3.1415926535897932384626433832795;
+      const float minScale = 0.1;  // minimum scaling factor
+      const float outSpeed = 2.0;  // shrink speed when zooming out
+      const float outNorm = (1. - minScale) / atan(outSpeed);
+      const float maxScale = 15.0;  // maximum scaling factor
+      const float inSpeed = 0.02;  // enlarge speed when zooming in
+      const float zoomOffset = 0.3;  // offset zoom pivot
+      float zoom = projectionMatrix[0][0] + zoomOffset;  // zoom pivot
+      float scale = zoom < 1. ? 1. + outNorm * atan(outSpeed * (zoom - 1.)) :
+                    1. + 2. / PI * (maxScale - 1.) * atan(inSpeed * (zoom - 1.));
+      outputPointSize = pointSize * scale;
+    }
+
+    gl_PointSize =
+      max(outputPointSize * scaleFactor, ${MIN_POINT_SIZE.toFixed(1)});
+  }`;
+    const FRAGMENT_SHADER_POINT_TEST_CHUNK = `
+  bool point_in_unit_circle(vec2 spriteCoord) {
+    vec2 centerToP = spriteCoord - vec2(0.5, 0.5);
+    return dot(centerToP, centerToP) < (0.5 * 0.5);
+  }
+
+  bool point_in_unit_equilateral_triangle(vec2 spriteCoord) {
+    vec3 v0 = vec3(0, 1, 0);
+    vec3 v1 = vec3(0.5, 0, 0);
+    vec3 v2 = vec3(1, 1, 0);
+    vec3 p = vec3(spriteCoord, 0);
+    float p_in_v0_v1 = cross(v1 - v0, p - v0).z;
+    float p_in_v1_v2 = cross(v2 - v1, p - v1).z;
+    return (p_in_v0_v1 > 0.0) && (p_in_v1_v2 > 0.0);
+  }
+
+  bool point_in_unit_square(vec2 spriteCoord) {
+    return true;
+  }
+`;
+    const FRAGMENT_SHADER = `
+  varying vec2 xyIndex;
+  varying vec3 vColor;
+
+  uniform sampler2D texture;
+  uniform float spritesPerRow;
+  uniform float spritesPerColumn;
+  uniform bool isImage;
+
+  ${THREE.ShaderChunk['common']}
+  ${THREE.ShaderChunk['fog_pars_fragment']}
+  ${FRAGMENT_SHADER_POINT_TEST_CHUNK}
+
+  void main() {
+    if (isImage) {
+      // Coordinates of the vertex within the entire sprite image.
+      vec2 coords =
+        (gl_PointCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);
+      gl_FragColor = vec4(vColor, 1.0) * texture2D(texture, coords);
+    } else {
+      bool inside = point_in_unit_circle(gl_PointCoord);
+      if (!inside) {
+        discard;
+      }
+      gl_FragColor = vec4(vColor, 1);
+    }
+    ${THREE.ShaderChunk['fog_fragment']}
+  }`;
+    const FRAGMENT_SHADER_PICKING = `
+  varying vec2 xyIndex;
+  varying vec3 vColor;
+  uniform bool isImage;
+
+  ${FRAGMENT_SHADER_POINT_TEST_CHUNK}
+
+  void main() {
+    xyIndex; // Silence 'unused variable' warning.
+    if (isImage) {
+      gl_FragColor = vec4(vColor, 1);
+    } else {
+      bool inside = point_in_unit_circle(gl_PointCoord);
+      if (!inside) {
+        discard;
+      }
+      gl_FragColor = vec4(vColor, 1);
+    }
+  }`;
     /**
      * Uses GL point sprites to render the dataset.
      */
-    var ScatterPlotVisualizerSprites = /** @class */ (function () {
-        function ScatterPlotVisualizerSprites() {
+    class ScatterPlotVisualizerSprites {
+        constructor() {
             this.texture = null;
             this.standinTextureForPoints =
                 vz_projector.util.createTexture(document.createElement('canvas'));
             this.renderMaterial = this.createRenderMaterial(false);
             this.pickingMaterial = this.createPickingMaterial(false);
         }
-        ScatterPlotVisualizerSprites.prototype.createTextureFromSpriteAtlas = function (spriteAtlas, spriteDimensions, spriteIndices) {
+        createTextureFromSpriteAtlas(spriteAtlas, spriteDimensions, spriteIndices) {
             this.texture = vz_projector.util.createTexture(spriteAtlas);
             this.spritesPerRow = spriteAtlas.width / spriteDimensions[0];
             this.spritesPerColumn = spriteAtlas.height / spriteDimensions[1];
@@ -47,8 +163,8 @@ var vz_projector;
                 this.points.geometry
                     .addAttribute('spriteIndex', this.spriteIndexBufferAttribute);
             }
-        };
-        ScatterPlotVisualizerSprites.prototype.createUniforms = function () {
+        }
+        createUniforms() {
             return {
                 texture: { type: 't' },
                 spritesPerRow: { type: 'f' },
@@ -60,9 +176,9 @@ var vz_projector;
                 sizeAttenuation: { type: 'bool' },
                 pointSize: { type: 'f' }
             };
-        };
-        ScatterPlotVisualizerSprites.prototype.createRenderMaterial = function (haveImage) {
-            var uniforms = this.createUniforms();
+        }
+        createRenderMaterial(haveImage) {
+            const uniforms = this.createUniforms();
             return new THREE.ShaderMaterial({
                 uniforms: uniforms,
                 vertexShader: VERTEX_SHADER,
@@ -73,9 +189,9 @@ var vz_projector;
                 fog: true,
                 blending: THREE.MultiplyBlending,
             });
-        };
-        ScatterPlotVisualizerSprites.prototype.createPickingMaterial = function (haveImage) {
-            var uniforms = this.createUniforms();
+        }
+        createPickingMaterial(haveImage) {
+            const uniforms = this.createUniforms();
             return new THREE.ShaderMaterial({
                 uniforms: uniforms,
                 vertexShader: VERTEX_SHADER,
@@ -86,14 +202,14 @@ var vz_projector;
                 fog: false,
                 blending: THREE.NormalBlending,
             });
-        };
+        }
         /**
          * Create points, set their locations and actually instantiate the
          * geometry.
          */
-        ScatterPlotVisualizerSprites.prototype.createPointSprites = function (scene, positions) {
-            var pointCount = (positions != null) ? (positions.length / XYZ_NUM_ELEMENTS) : 0;
-            var geometry = this.createGeometry(pointCount);
+        createPointSprites(scene, positions) {
+            const pointCount = (positions != null) ? (positions.length / XYZ_NUM_ELEMENTS) : 0;
+            const geometry = this.createGeometry(pointCount);
             this.fog = new THREE.Fog(0xFFFFFF); // unused value, gets overwritten.
             this.points = new THREE.Points(geometry, this.renderMaterial);
             this.points.frustumCulled = false;
@@ -102,93 +218,93 @@ var vz_projector;
                     .addAttribute('spriteIndex', this.spriteIndexBufferAttribute);
             }
             scene.add(this.points);
-        };
-        ScatterPlotVisualizerSprites.prototype.calculatePointSize = function (sceneIs3D) {
+        }
+        calculatePointSize(sceneIs3D) {
             if (this.texture != null) {
                 return sceneIs3D ? IMAGE_SIZE : this.spriteDimensions[0];
             }
-            var n = (this.worldSpacePointPositions != null) ?
+            const n = (this.worldSpacePointPositions != null) ?
                 (this.worldSpacePointPositions.length / XYZ_NUM_ELEMENTS) :
                 1;
-            var SCALE = 200;
-            var LOG_BASE = 8;
-            var DIVISOR = 1.5;
+            const SCALE = 200;
+            const LOG_BASE = 8;
+            const DIVISOR = 1.5;
             // Scale point size inverse-logarithmically to the number of points.
-            var pointSize = SCALE / Math.log(n) / Math.log(LOG_BASE);
+            const pointSize = SCALE / Math.log(n) / Math.log(LOG_BASE);
             return sceneIs3D ? pointSize : (pointSize / DIVISOR);
-        };
+        }
         /**
          * Set up buffer attributes to be used for the points/images.
          */
-        ScatterPlotVisualizerSprites.prototype.createGeometry = function (pointCount) {
-            var n = pointCount;
+        createGeometry(pointCount) {
+            const n = pointCount;
             // Fill pickingColors with each point's unique id as its color.
             this.pickingColors = new Float32Array(n * RGB_NUM_ELEMENTS);
             {
-                var dst = 0;
-                for (var i = 0; i < n; i++) {
-                    var c = new THREE.Color(i);
+                let dst = 0;
+                for (let i = 0; i < n; i++) {
+                    const c = new THREE.Color(i);
                     this.pickingColors[dst++] = c.r;
                     this.pickingColors[dst++] = c.g;
                     this.pickingColors[dst++] = c.b;
                 }
             }
-            var geometry = new THREE.BufferGeometry();
+            const geometry = new THREE.BufferGeometry();
             geometry.addAttribute('position', new THREE.BufferAttribute(undefined, XYZ_NUM_ELEMENTS));
             geometry.addAttribute('color', new THREE.BufferAttribute(undefined, RGB_NUM_ELEMENTS));
             geometry.addAttribute('scaleFactor', new THREE.BufferAttribute(undefined, INDEX_NUM_ELEMENTS));
             return geometry;
-        };
-        ScatterPlotVisualizerSprites.prototype.setFogDistances = function (sceneIs3D, nearestPointZ, farthestPointZ) {
+        }
+        setFogDistances(sceneIs3D, nearestPointZ, farthestPointZ) {
             if (sceneIs3D) {
-                var n = this.worldSpacePointPositions.length / XYZ_NUM_ELEMENTS;
+                const n = this.worldSpacePointPositions.length / XYZ_NUM_ELEMENTS;
                 this.fog.near = nearestPointZ;
                 // If there are fewer points we want less fog. We do this
                 // by making the "far" value (that is, the distance from the camera to the
                 // far edge of the fog) proportional to the number of points.
-                var multiplier = 2 - Math.min(n, NUM_POINTS_FOG_THRESHOLD) / NUM_POINTS_FOG_THRESHOLD;
+                let multiplier = 2 - Math.min(n, NUM_POINTS_FOG_THRESHOLD) / NUM_POINTS_FOG_THRESHOLD;
                 this.fog.far = farthestPointZ * multiplier;
             }
             else {
                 this.fog.near = Infinity;
                 this.fog.far = Infinity;
             }
-        };
-        ScatterPlotVisualizerSprites.prototype.dispose = function () {
+        }
+        dispose() {
             this.disposeGeometry();
             this.disposeTextureAtlas();
-        };
-        ScatterPlotVisualizerSprites.prototype.disposeGeometry = function () {
+        }
+        disposeGeometry() {
             if (this.points != null) {
                 this.scene.remove(this.points);
                 this.points.geometry.dispose();
                 this.points = null;
                 this.worldSpacePointPositions = null;
             }
-        };
-        ScatterPlotVisualizerSprites.prototype.disposeTextureAtlas = function () {
+        }
+        disposeTextureAtlas() {
             if (this.texture != null) {
                 this.texture.dispose();
             }
             this.texture = null;
             this.renderMaterial = null;
             this.pickingMaterial = null;
-        };
-        ScatterPlotVisualizerSprites.prototype.setScene = function (scene) {
+        }
+        setScene(scene) {
             this.scene = scene;
-        };
-        ScatterPlotVisualizerSprites.prototype.setSpriteAtlas = function (spriteImage, spriteDimensions, spriteIndices) {
+        }
+        setSpriteAtlas(spriteImage, spriteDimensions, spriteIndices) {
             this.disposeTextureAtlas();
             this.createTextureFromSpriteAtlas(spriteImage, spriteDimensions, spriteIndices);
             this.renderMaterial = this.createRenderMaterial(true);
             this.pickingMaterial = this.createPickingMaterial(true);
-        };
-        ScatterPlotVisualizerSprites.prototype.clearSpriteAtlas = function () {
+        }
+        clearSpriteAtlas() {
             this.disposeTextureAtlas();
             this.renderMaterial = this.createRenderMaterial(false);
             this.pickingMaterial = this.createPickingMaterial(false);
-        };
-        ScatterPlotVisualizerSprites.prototype.onPointPositionsChanged = function (newPositions) {
+        }
+        onPointPositionsChanged(newPositions) {
             if ((newPositions == null) || (newPositions.length === 0)) {
                 this.dispose();
                 return;
@@ -202,36 +318,36 @@ var vz_projector;
             if (this.points == null) {
                 this.createPointSprites(this.scene, newPositions);
             }
-            var positions = this.points.geometry
+            const positions = this.points.geometry
                 .getAttribute('position');
             positions.setArray(newPositions);
             positions.needsUpdate = true;
-        };
-        ScatterPlotVisualizerSprites.prototype.onPickingRender = function (rc) {
+        }
+        onPickingRender(rc) {
             if (this.points == null) {
                 return;
             }
-            var sceneIs3D = (rc.cameraType === vz_projector.CameraType.Perspective);
+            const sceneIs3D = (rc.cameraType === vz_projector.CameraType.Perspective);
             this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerRow;
             this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerColumn;
             this.pickingMaterial.uniforms.sizeAttenuation.value = sceneIs3D;
             this.pickingMaterial.uniforms.pointSize.value =
                 this.calculatePointSize(sceneIs3D);
             this.points.material = this.pickingMaterial;
-            var colors = this.points.geometry
+            let colors = this.points.geometry
                 .getAttribute('color');
             colors.setArray(this.pickingColors);
             colors.needsUpdate = true;
-            var scaleFactors = this.points.geometry
+            let scaleFactors = this.points.geometry
                 .getAttribute('scaleFactor');
             scaleFactors.setArray(rc.pointScaleFactors);
             scaleFactors.needsUpdate = true;
-        };
-        ScatterPlotVisualizerSprites.prototype.onRender = function (rc) {
+        }
+        onRender(rc) {
             if (!this.points) {
                 return;
             }
-            var sceneIs3D = (rc.camera instanceof THREE.PerspectiveCamera);
+            const sceneIs3D = (rc.camera instanceof THREE.PerspectiveCamera);
             this.setFogDistances(sceneIs3D, rc.nearestCameraSpacePointZ, rc.farthestCameraSpacePointZ);
             this.scene.fog = this.fog;
             this.scene.fog.color = new THREE.Color(rc.backgroundColor);
@@ -247,18 +363,17 @@ var vz_projector;
             this.renderMaterial.uniforms.pointSize.value =
                 this.calculatePointSize(sceneIs3D);
             this.points.material = this.renderMaterial;
-            var colors = this.points.geometry
+            let colors = this.points.geometry
                 .getAttribute('color');
             this.renderColors = rc.pointColors;
             colors.setArray(this.renderColors);
             colors.needsUpdate = true;
-            var scaleFactors = this.points.geometry
+            let scaleFactors = this.points.geometry
                 .getAttribute('scaleFactor');
             scaleFactors.setArray(rc.pointScaleFactors);
             scaleFactors.needsUpdate = true;
-        };
-        ScatterPlotVisualizerSprites.prototype.onResize = function (newWidth, newHeight) { };
-        return ScatterPlotVisualizerSprites;
-    }());
+        }
+        onResize(newWidth, newHeight) { }
+    }
     vz_projector.ScatterPlotVisualizerSprites = ScatterPlotVisualizerSprites;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

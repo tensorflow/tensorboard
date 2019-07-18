@@ -30,19 +30,19 @@ var tf;
                 if (value === 'false') {
                     return false;
                 }
-                var firstChar = value[0];
+                let firstChar = value[0];
                 if (firstChar === '"') {
                     return value.substring(1, value.length - 1);
                 }
-                var num = parseFloat(value);
+                let num = parseFloat(value);
                 return isNaN(num) ? value : num;
             }
             /**
              * Fetches a text file and returns a promise of the result.
              */
             function fetchPbTxt(filepath) {
-                return new Promise(function (resolve, reject) {
-                    fetch(filepath).then(function (res) {
+                return new Promise((resolve, reject) => {
+                    fetch(filepath).then((res) => {
                         // Fetch does not reject for 400+.
                         if (res.ok) {
                             res.arrayBuffer().then(resolve, reject);
@@ -59,14 +59,14 @@ var tf;
              */
             function fetchAndParseMetadata(path, tracker) {
                 return tf.graph.util
-                    .runTask('Reading metadata pbtxt', 40, function () {
+                    .runTask('Reading metadata pbtxt', 40, () => {
                     if (path == null) {
                         return Promise.resolve(null);
                     }
                     return fetchPbTxt(path);
                 }, tracker)
-                    .then(function (arrayBuffer) {
-                    return tf.graph.util.runAsyncPromiseTask('Parsing metadata.pbtxt', 60, function () {
+                    .then((arrayBuffer) => {
+                    return tf.graph.util.runAsyncPromiseTask('Parsing metadata.pbtxt', 60, () => {
                         return arrayBuffer != null ? parseStatsPbTxt(arrayBuffer) :
                             Promise.resolve(null);
                     }, tracker);
@@ -79,12 +79,12 @@ var tf;
              */
             function fetchAndParseGraphData(path, pbTxtFile, tracker) {
                 return tf.graph.util
-                    .runAsyncPromiseTask('Reading graph pbtxt', 40, function () {
+                    .runAsyncPromiseTask('Reading graph pbtxt', 40, () => {
                     if (pbTxtFile) {
                         return new Promise(function (resolve, reject) {
-                            var fileReader = new FileReader();
-                            fileReader.onload = function () { return resolve(fileReader.result); };
-                            fileReader.onerror = function () { return reject(fileReader.error); };
+                            let fileReader = new FileReader();
+                            fileReader.onload = () => resolve(fileReader.result);
+                            fileReader.onerror = () => reject(fileReader.error);
                             fileReader.readAsArrayBuffer(pbTxtFile);
                         });
                     }
@@ -92,8 +92,8 @@ var tf;
                         return fetchPbTxt(path);
                     }
                 }, tracker)
-                    .then(function (arrayBuffer) {
-                    return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, function () {
+                    .then((arrayBuffer) => {
+                    return tf.graph.util.runAsyncPromiseTask('Parsing graph.pbtxt', 60, () => {
                         return parseGraphPbTxt(arrayBuffer);
                     }, tracker);
                 });
@@ -108,19 +108,16 @@ var tf;
              * @param delim The delimiter used to split a line. (optional)
              * @returns Promise that resolves with true when it is finished.
              */
-            function streamParse(arrayBuffer, callback, chunkSize, delim) {
-                if (chunkSize === void 0) { chunkSize = 1000000; }
-                if (delim === void 0) { delim = '\n'; }
+            function streamParse(arrayBuffer, callback, chunkSize = 1000000, delim = '\n') {
                 return new Promise(function (resolve, reject) {
                     function readChunk(oldData, newData, offset) {
-                        var doneReading = offset >= arrayBuffer.byteLength;
-                        var parts = newData.split(delim);
+                        const doneReading = offset >= arrayBuffer.byteLength;
+                        const parts = newData.split(delim);
                         parts[0] = oldData + parts[0];
                         // The last part may be part of a longer string that got cut off
                         // due to the chunking.
-                        var remainder = doneReading ? '' : parts.pop();
-                        for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                            var part = parts_1[_i];
+                        const remainder = doneReading ? '' : parts.pop();
+                        for (let part of parts) {
                             try {
                                 callback(part);
                             }
@@ -133,8 +130,8 @@ var tf;
                             resolve(true);
                             return;
                         }
-                        var nextChunk = new Blob([arrayBuffer.slice(offset, offset + chunkSize)]);
-                        var file = new FileReader();
+                        const nextChunk = new Blob([arrayBuffer.slice(offset, offset + chunkSize)]);
+                        const file = new FileReader();
                         file.onload = function (e) {
                             readChunk(remainder, e.target.result, offset + chunkSize);
                         };
@@ -154,7 +151,7 @@ var tf;
              * dependencies.
              * See https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/framework/graph.proto
              */
-            var GRAPH_REPEATED_FIELDS = {
+            const GRAPH_REPEATED_FIELDS = {
                 'library.function': true,
                 'library.function.node_def': true,
                 'library.function.node_def.input': true,
@@ -190,7 +187,7 @@ var tf;
                 'node.attr.value.tensor.string_val': true,
                 'node.attr.value.tensor.tensor_shape.dim': true,
             };
-            var METADATA_REPEATED_FIELDS = {
+            const METADATA_REPEATED_FIELDS = {
                 'step_stats.dev_stats': true,
                 'step_stats.dev_stats.node_stats': true,
                 'step_stats.dev_stats.node_stats.output': true,
@@ -209,7 +206,7 @@ var tf;
              */
             function parseStatsPbTxt(input) {
                 return parsePbtxtFile(input, METADATA_REPEATED_FIELDS)
-                    .then(function (obj) { return obj['step_stats']; });
+                    .then(obj => obj['step_stats']);
             }
             parser.parseStatsPbTxt = parseStatsPbTxt;
             /**
@@ -221,14 +218,14 @@ var tf;
              * @returns The parsed object.
              */
             function parsePbtxtFile(input, repeatedFields) {
-                var output = {};
-                var stack = [];
-                var path = [];
-                var current = output;
+                let output = {};
+                let stack = [];
+                let path = [];
+                let current = output;
                 function splitNameAndValueInAttribute(line) {
-                    var colonIndex = line.indexOf(':');
-                    var name = line.substring(0, colonIndex).trim();
-                    var value = parseValue(line.substring(colonIndex + 2).trim());
+                    let colonIndex = line.indexOf(':');
+                    let name = line.substring(0, colonIndex).trim();
+                    let value = parseValue(line.substring(colonIndex + 2).trim());
                     return {
                         name: name,
                         value: value
@@ -247,7 +244,7 @@ var tf;
                  */
                 function addAttribute(obj, name, value, path) {
                     // We treat 'node' specially since it is done so often.
-                    var existingValue = obj[name];
+                    let existingValue = obj[name];
                     if (existingValue == null) {
                         obj[name] = path.join('.') in repeatedFields ? [value] : value;
                     }
@@ -266,11 +263,11 @@ var tf;
                     line = line.trim();
                     switch (line[line.length - 1]) {
                         case '{': // create new object
-                            var name_1 = line.substring(0, line.length - 2).trim();
-                            var newValue = {};
+                            let name = line.substring(0, line.length - 2).trim();
+                            let newValue = {};
                             stack.push(current);
-                            path.push(name_1);
-                            addAttribute(current, name_1, newValue, path);
+                            path.push(name);
+                            addAttribute(current, name, newValue, path);
                             current = newValue;
                             break;
                         case '}':
@@ -278,7 +275,7 @@ var tf;
                             path.pop();
                             break;
                         default:
-                            var x = splitNameAndValueInAttribute(line);
+                            let x = splitNameAndValueInAttribute(line);
                             addAttribute(current, x.name, x.value, path.concat(x.name));
                             break;
                     }

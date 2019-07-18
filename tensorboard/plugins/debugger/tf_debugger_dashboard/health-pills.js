@@ -17,7 +17,7 @@ var tf_debugger_dashboard;
 (function (tf_debugger_dashboard) {
     function checkRefValue(refValue, condition) {
         if (refValue == null) {
-            throw new Error("Missing refValue for condition (" + condition + ").");
+            throw new Error(`Missing refValue for condition (${condition}).`);
         }
     }
     function isHealthPillUninitializedOrUnsupported(healthPill) {
@@ -29,91 +29,91 @@ var tf_debugger_dashboard;
      * With the human-readable description and the predicate function for each
      *   condition.
      */
-    var tensorConditions = {
+    const tensorConditions = {
         INF_OR_NAN: {
             description: 'Contains +/-∞ or NaN',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 return healthPill[2] > 0 || healthPill[3] > 0 || healthPill[7] > 0;
             },
         },
         INF: {
             description: 'Contains +/-∞',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 return healthPill[3] > 0 || healthPill[7] > 0;
             },
         },
         NAN: {
             description: 'Contains NaN',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 return healthPill[2] > 0;
             },
         },
         MAX_GT: {
             description: 'Max >',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MAX_GT');
                 return healthPill[9] > refValue;
             },
         },
         MAX_LT: {
             description: 'Max <',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MAX_LT');
                 return healthPill[9] < refValue;
             },
         },
         MIN_GT: {
             description: 'Min >',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MIN_GT');
                 return healthPill[8] > refValue;
             },
         },
         MIN_LT: {
             description: 'Min <',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MIN_LT');
                 return healthPill[8] < refValue;
             },
         },
         MEAN_GT: {
             description: 'Mean >',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MEAN_GT');
                 return healthPill[10] > refValue;
             },
         },
         MEAN_LT: {
             description: 'Mean <',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'MEAN_LT');
                 return healthPill[10] < refValue;
             },
         },
         RANGE_GT: {
             description: 'Max - Min >',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'RANGE_GT');
                 return healthPill[9] - healthPill[8] > refValue;
             },
         },
         RANGE_LT: {
             description: 'Max - Min <',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'RANGE_LT');
                 return healthPill[9] - healthPill[8] < refValue;
             },
         },
         STDDEV_GT: {
             description: 'Standard deviation >',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'STDDEV_GT');
                 return Math.sqrt(healthPill[11]) > refValue;
             },
         },
         STDDEV_LT: {
             description: 'Standard deviation <',
-            predicate: function (healthPill, refValue) {
+            predicate: (healthPill, refValue) => {
                 checkRefValue(refValue, 'STDDEV_LT');
                 return Math.sqrt(healthPill[11]) < refValue;
             },
@@ -125,7 +125,7 @@ var tf_debugger_dashboard;
      * @returns The key, if exists. Else, `null`.
      */
     function tensorConditionDescription2Key(description) {
-        for (var key in tensorConditions) {
+        for (const key in tensorConditions) {
             if (!tensorConditions.hasOwnProperty(key)) {
                 continue;
             }
@@ -150,7 +150,7 @@ var tf_debugger_dashboard;
         if (isHealthPillUninitializedOrUnsupported(healthPill)) {
             return false;
         }
-        var predicate = tensorConditions[key].predicate;
+        const predicate = tensorConditions[key].predicate;
         return predicate(healthPill, refValue);
     }
     tf_debugger_dashboard.checkHealthPillAgainstTensorConditionKey = checkHealthPillAgainstTensorConditionKey;

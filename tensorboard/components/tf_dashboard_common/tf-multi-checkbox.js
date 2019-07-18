@@ -19,12 +19,12 @@ var tf_dashboard_common;
         properties: {
             names: {
                 type: Array,
-                value: function () { return []; },
+                value: () => [],
             },
             coloring: {
                 type: Object,
                 value: {
-                    getColor: function () { return ''; },
+                    getColor: () => '',
                 },
             },
             regex: {
@@ -42,7 +42,7 @@ var tf_dashboard_common;
                 // if undefined, default value (enable for first k names, disable after).
                 type: Object,
                 notify: true,
-                value: function () { return ({}); },
+                value: () => ({}),
             },
             // (Allows state to persist across regex filtering)
             outSelected: {
@@ -63,18 +63,16 @@ var tf_dashboard_common;
                 // this while the user is typing, as it may make a bad, laggy UI.
                 // So we debounce the updates that come from user typing.
                 value: function () {
-                    var _this = this;
-                    var debounced = _.debounce(function (r) {
-                        _this.regex = r;
+                    var debounced = _.debounce(r => {
+                        this.regex = r;
                     }, 150, { leading: false });
                     return function () {
-                        var _this = this;
                         var r = this.$$('#names-regex').value;
                         if (r == '') {
                             // If the user cleared the field, they may be done typing, so
                             // update more quickly.
-                            this.async(function () {
-                                _this.regex = r;
+                            this.async(() => {
+                                this.regex = r;
                             }, 30);
                         }
                         else {
@@ -102,7 +100,7 @@ var tf_dashboard_common;
         _setIsolatorIcon: function () {
             var selectionMap = this.selectionState;
             var numChecked = _.filter(_.values(selectionMap)).length;
-            var buttons = Array.prototype.slice.call(this.querySelectorAll('.isolator'));
+            var buttons = Array.prototype.slice.call(this.root.querySelectorAll('.isolator'));
             buttons.forEach(function (b) {
                 if (numChecked === 1 && selectionMap[b.name]) {
                     b.icon = 'radio-button-checked';
@@ -113,39 +111,40 @@ var tf_dashboard_common;
             });
         },
         computeNamesMatchingRegex: function (__, ___) {
-            var regex = this._regex;
-            return regex ? this.names.filter(function (n) { return regex.test(n); }) : this.names;
+            const regex = this._regex;
+            return regex ? this.names.filter(n => regex.test(n)) : this.names;
         },
         computeOutSelected: function (__, ___) {
             var selectionState = this.selectionState;
             var num = this.maxNamesToEnableByDefault;
             var allEnabled = this.namesMatchingRegex.length <= num;
             return this.namesMatchingRegex
-                .filter(function (n) {
+                .filter(n => {
                 return selectionState[n] == null ? allEnabled : selectionState[n];
             });
         },
         synchronizeColors: function (e) {
-            var _this = this;
             this._setIsolatorIcon();
-            var checkboxes = this.querySelectorAll('paper-checkbox');
-            checkboxes.forEach(function (p) {
-                var color = _this.coloring.getColor(p.name);
-                p.customStyle['--paper-checkbox-checked-color'] = color;
-                p.customStyle['--paper-checkbox-checked-ink-color'] = color;
-                p.customStyle['--paper-checkbox-unchecked-color'] = color;
-                p.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
+            const checkboxes = this.root.querySelectorAll('paper-checkbox');
+            checkboxes.forEach(p => {
+                const color = this.coloring.getColor(p.name);
+                p.updateStyles({
+                    '--paper-checkbox-checked-color': color,
+                    '--paper-checkbox-checked-ink-color': color,
+                    '--paper-checkbox-unchecked-color': color,
+                    '--paper-checkbox-unchecked-ink-color': color,
+                });
             });
-            var buttons = this.querySelectorAll('.isolator');
-            buttons.forEach(function (p) {
-                var color = _this.coloring.getColor(p.name);
+            const buttons = this.root.querySelectorAll('.isolator');
+            buttons.forEach(p => {
+                const color = this.coloring.getColor(p.name);
                 p.style['color'] = color;
             });
             // The updateStyles call fails silently if the browser doesn't have focus,
             // e.g. if TensorBoard was opened into a new tab that isn't visible.
             // So we wait for requestAnimationFrame.
-            window.requestAnimationFrame(function () {
-                _this.updateStyles();
+            window.requestAnimationFrame(() => {
+                this.updateStyles();
             });
         },
         _isolateName: function (e) {
@@ -160,7 +159,7 @@ var tf_dashboard_common;
         },
         _checkboxChange: function (e) {
             var target = Polymer.dom(e).localTarget;
-            var newSelectionState = _.clone(this.selectionState);
+            const newSelectionState = _.clone(this.selectionState);
             newSelectionState[target.name] = target.checked;
             // n.b. notifyPath won't work because names may have periods.
             this.selectionState = newSelectionState;
@@ -169,9 +168,8 @@ var tf_dashboard_common;
             return this.outSelected.indexOf(item) != -1;
         },
         toggleAll: function () {
-            var _this = this;
             var anyToggledOn = this.namesMatchingRegex
-                .some(function (n) { return _this.selectionState[n]; });
+                .some((n) => this.selectionState[n]);
             var selectionStateIsDefault = Object.keys(this.selectionState).length == 0;
             var defaultOff = this.namesMatchingRegex.length > this.maxRunsToEnableByDefault;
             // We have names toggled either if some were explicitly toggled on, or if

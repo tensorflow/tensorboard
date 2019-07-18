@@ -18,7 +18,7 @@ var vz_line_chart;
      * The maximum number of marker symbols within any line for a data series. Too
      * many markers clutter the chart.
      */
-    var _MAX_MARKERS = 20;
+    const _MAX_MARKERS = 20;
     Polymer({
         is: 'vz-line-chart',
         properties: {
@@ -108,7 +108,7 @@ var vz_line_chart;
              * outer function to compute the value. We actually want the value of this
              * property to be the inner function.
              */
-            yValueAccessor: { type: Object, value: function () { return (function (d) { return d.scalar; }); } },
+            yValueAccessor: { type: Object, value: () => (d => d.scalar) },
             /**
              * An array of ChartHelper.TooltipColumn objects. Used to populate the table
              * within the tooltip. The table contains 1 row per run.
@@ -121,35 +121,35 @@ var vz_line_chart;
             tooltipColumns: {
                 type: Array,
                 value: function () {
-                    var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-                    var formatValueOrNaN = function (x) { return isNaN(x) ? 'NaN' : valueFormatter(x); };
+                    const valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+                    const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
                     return [
                         {
                             title: 'Name',
-                            evaluate: function (d) { return d.dataset.metadata().name; },
+                            evaluate: (d) => d.dataset.metadata().name,
                         },
                         {
                             title: 'Smoothed',
-                            evaluate: function (d, statusObject) {
-                                var smoothingEnabled = statusObject && statusObject.smoothingEnabled;
+                            evaluate: (d, statusObject) => {
+                                const smoothingEnabled = statusObject && statusObject.smoothingEnabled;
                                 return formatValueOrNaN(smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
                             },
                         },
                         {
                             title: 'Value',
-                            evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+                            evaluate: (d) => formatValueOrNaN(d.datum.scalar),
                         },
                         {
                             title: 'Step',
-                            evaluate: function (d) { return vz_chart_helpers.stepFormatter(d.datum.step); },
+                            evaluate: (d) => vz_chart_helpers.stepFormatter(d.datum.step),
                         },
                         {
                             title: 'Time',
-                            evaluate: function (d) { return vz_chart_helpers.timeFormatter(d.datum.wall_time); },
+                            evaluate: (d) => vz_chart_helpers.timeFormatter(d.datum.wall_time),
                         },
                         {
                             title: 'Relative',
-                            evaluate: function (d) { return vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)); },
+                            evaluate: (d) => vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
                         },
                     ];
                 }
@@ -219,7 +219,7 @@ var vz_line_chart;
              */
             seriesWithoutTooltips: {
                 type: Array,
-                value: function () { return ([]); }
+                value: () => ([])
             },
             _attached: Boolean,
             _chart: Object,
@@ -315,9 +315,7 @@ var vz_line_chart;
                 xComponentsCreationMethod = vz_chart_helpers.stepX;
             }
             else if (xType) {
-                xComponentsCreationMethod = function () {
-                    return vz_chart_helpers.getXComponents(xType);
-                };
+                xComponentsCreationMethod = () => vz_chart_helpers.getXComponents(xType);
             }
             if (this._makeChartAsyncCallbackId !== null) {
                 this.cancelAsync(this._makeChartAsyncCallbackId);
@@ -378,20 +376,19 @@ var vz_line_chart;
                 this._chart.setTooltipPosition(this.tooltipPosition);
             }
         },
-        _computeTooltipTableHeaderHtml: function (tooltipColumns) {
-            var _this = this;
+        _computeTooltipTableHeaderHtml(tooltipColumns) {
             // The first column contains the circle with the color of the run.
-            var titles = [""].concat(_.map(tooltipColumns, 'title'));
-            return titles.map(function (title) { return "<th>" + _this._sanitize(title) + "</th>"; }).join('');
+            const titles = ["", ..._.map(tooltipColumns, 'title')];
+            return titles.map(title => `<th>${this._sanitize(title)}</th>`).join('');
         },
-        _sanitize: function (value) {
+        _sanitize(value) {
             return value.replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;') // for symmetry :-)
                 .replace(/&/g, '&amp;');
         },
     });
-    var LineChart = /** @class */ (function () {
-        function LineChart(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter, yAxisFormatter, seriesWithoutTooltips) {
+    class LineChart {
+        constructor(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter, yAxisFormatter, seriesWithoutTooltips) {
             this.seriesNames = [];
             this.name2datasets = {};
             this.colorScale = colorScale;
@@ -415,11 +412,11 @@ var vz_line_chart;
             this.seriesWithoutTooltips = seriesWithoutTooltips;
             this.buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter);
         }
-        LineChart.prototype.buildChart = function (xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter) {
+        buildChart(xComponentsCreationMethod, yValueAccessor, yScaleType, fillArea, xAxisFormatter, yAxisFormatter) {
             if (this.outer) {
                 this.outer.destroy();
             }
-            var xComponents = xComponentsCreationMethod();
+            const xComponents = xComponentsCreationMethod();
             this.xAccessor = xComponents.accessor;
             this.xScale = xComponents.scale;
             this.xAxis = xComponents.axis;
@@ -437,59 +434,50 @@ var vz_line_chart;
             this.dzl = new vz_line_chart.DragZoomLayer(this.xScale, this.yScale, this.resetYDomain.bind(this));
             this.tooltipInteraction = this.createTooltipInteraction(this.dzl);
             this.tooltipPointsComponent = new Plottable.Component();
-            var plot = this.buildPlot(this.xScale, this.yScale, fillArea);
+            const plot = this.buildPlot(this.xScale, this.yScale, fillArea);
             this.gridlines =
                 new Plottable.Components.Gridlines(this.xScale, this.yScale);
-            var xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
+            let xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
             xZeroLine.scale(this.yScale).value(0);
-            var yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
+            let yZeroLine = new Plottable.Components.GuideLineLayer('vertical');
             yZeroLine.scale(this.xScale).value(0);
             this.center = new Plottable.Components.Group([
                 this.gridlines, xZeroLine, yZeroLine, plot,
                 this.dzl, this.tooltipPointsComponent
             ]);
             this.outer = new Plottable.Components.Table([[this.yAxis, this.center], [null, this.xAxis]]);
-        };
-        LineChart.prototype.buildPlot = function (xScale, yScale, fillArea) {
-            var _this = this;
+        }
+        buildPlot(xScale, yScale, fillArea) {
             if (fillArea) {
                 this.marginAreaPlot = new Plottable.Plots.Area();
                 this.marginAreaPlot.x(this.xAccessor, xScale);
                 this.marginAreaPlot.y(fillArea.higherAccessor, yScale);
                 this.marginAreaPlot.y0(fillArea.lowerAccessor);
-                this.marginAreaPlot.attr('fill', function (d, i, dataset) {
-                    return _this.colorScale.scale(dataset.metadata().name);
-                });
+                this.marginAreaPlot.attr('fill', (d, i, dataset) => this.colorScale.scale(dataset.metadata().name));
                 this.marginAreaPlot.attr('fill-opacity', 0.3);
                 this.marginAreaPlot.attr('stroke-width', 0);
             }
-            this.smoothedAccessor = function (d) { return d.smoothed; };
-            var linePlot = new Plottable.Plots.Line();
+            this.smoothedAccessor = (d) => d.smoothed;
+            let linePlot = new Plottable.Plots.Line();
             linePlot.x(this.xAccessor, xScale);
             linePlot.y(this.yValueAccessor, yScale);
-            linePlot.attr('stroke', function (d, i, dataset) {
-                return _this.colorScale.scale(dataset.metadata().name);
-            });
+            linePlot.attr('stroke', (d, i, dataset) => this.colorScale.scale(dataset.metadata().name));
             this.linePlot = linePlot;
             this.setupTooltips(linePlot);
-            var smoothLinePlot = new Plottable.Plots.Line();
+            let smoothLinePlot = new Plottable.Plots.Line();
             smoothLinePlot.x(this.xAccessor, xScale);
             smoothLinePlot.y(this.smoothedAccessor, yScale);
-            smoothLinePlot.attr('stroke', function (d, i, dataset) {
-                return _this.colorScale.scale(dataset.metadata().name);
-            });
+            smoothLinePlot.attr('stroke', (d, i, dataset) => this.colorScale.scale(dataset.metadata().name));
             this.smoothLinePlot = smoothLinePlot;
             if (this.symbolFunction) {
-                var markersScatterPlot = new Plottable.Plots.Scatter();
+                const markersScatterPlot = new Plottable.Plots.Scatter();
                 markersScatterPlot.x(this.xAccessor, xScale);
                 markersScatterPlot.y(this.yValueAccessor, yScale);
-                markersScatterPlot.attr('fill', function (d, i, dataset) {
-                    return _this.colorScale.scale(dataset.metadata().name);
-                });
+                markersScatterPlot.attr('fill', (d, i, dataset) => this.colorScale.scale(dataset.metadata().name));
                 markersScatterPlot.attr('opacity', 1);
                 markersScatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
-                markersScatterPlot.symbol(function (d, i, dataset) {
-                    return _this.symbolFunction(dataset.metadata().name);
+                markersScatterPlot.symbol((d, i, dataset) => {
+                    return this.symbolFunction(dataset.metadata().name);
                 });
                 // Use a special dataset because this scatter plot should use the accesor
                 // that depends on whether smoothing is enabled.
@@ -498,24 +486,24 @@ var vz_line_chart;
             // The scatterPlot will display the last point for each dataset.
             // This way, if there is only one datum for the series, it is still
             // visible. We hide it when tooltips are active to keep things clean.
-            var scatterPlot = new Plottable.Plots.Scatter();
+            let scatterPlot = new Plottable.Plots.Scatter();
             scatterPlot.x(this.xAccessor, xScale);
             scatterPlot.y(this.yValueAccessor, yScale);
-            scatterPlot.attr('fill', function (d) { return _this.colorScale.scale(d.name); });
+            scatterPlot.attr('fill', (d) => this.colorScale.scale(d.name));
             scatterPlot.attr('opacity', 1);
             scatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
             scatterPlot.datasets([this.lastPointsDataset]);
             this.scatterPlot = scatterPlot;
-            var nanDisplay = new Plottable.Plots.Scatter();
+            let nanDisplay = new Plottable.Plots.Scatter();
             nanDisplay.x(this.xAccessor, xScale);
-            nanDisplay.y(function (x) { return x.displayY; }, yScale);
-            nanDisplay.attr('fill', function (d) { return _this.colorScale.scale(d.name); });
+            nanDisplay.y((x) => x.displayY, yScale);
+            nanDisplay.attr('fill', (d) => this.colorScale.scale(d.name));
             nanDisplay.attr('opacity', 1);
             nanDisplay.size(vz_chart_helpers.NAN_SYMBOL_SIZE * 2);
             nanDisplay.datasets([this.nanDataset]);
             nanDisplay.symbol(Plottable.SymbolFactories.triangle);
             this.nanDisplay = nanDisplay;
-            var groups = [nanDisplay, scatterPlot, smoothLinePlot, linePlot];
+            const groups = [nanDisplay, scatterPlot, smoothLinePlot, linePlot];
             if (this.marginAreaPlot) {
                 groups.push(this.marginAreaPlot);
             }
@@ -523,44 +511,44 @@ var vz_line_chart;
                 groups.push(this.markersScatterPlot);
             }
             return new Plottable.Components.Group(groups);
-        };
+        }
         /** Updates the chart when a dataset changes. Called every time the data of
          * a dataset changes to update the charts.
          */
-        LineChart.prototype._onDatasetChanged = function (dataset) {
+        _onDatasetChanged(dataset) {
             if (this.smoothingEnabled) {
                 this.resmoothDataset(dataset);
             }
             this.updateSpecialDatasets();
-        };
-        LineChart.prototype.ignoreYOutliers = function (ignoreYOutliers) {
+        }
+        ignoreYOutliers(ignoreYOutliers) {
             if (ignoreYOutliers !== this._ignoreYOutliers) {
                 this._ignoreYOutliers = ignoreYOutliers;
                 this.updateSpecialDatasets();
                 this.resetYDomain();
             }
-        };
+        }
         /** Constructs special datasets. Each special dataset contains exceptional
          * values from all of the regular datasets, e.g. last points in series, or
          * NaN values. Those points will have a `name` and `relative` property added
          * (since usually those are context in the surrounding dataset).
          */
-        LineChart.prototype.updateSpecialDatasets = function () {
-            var accessor = this.getYAxisAccessor();
-            var lastPointsData = this.datasets
-                .map(function (d) {
-                var datum = null;
+        updateSpecialDatasets() {
+            const accessor = this.getYAxisAccessor();
+            let lastPointsData = this.datasets
+                .map((d) => {
+                let datum = null;
                 // filter out NaNs to ensure last point is a clean one
-                var nonNanData = d.data().filter(function (x) { return !isNaN(accessor(x, -1, d)); });
+                let nonNanData = d.data().filter((x) => !isNaN(accessor(x, -1, d)));
                 if (nonNanData.length > 0) {
-                    var idx = nonNanData.length - 1;
+                    let idx = nonNanData.length - 1;
                     datum = nonNanData[idx];
                     datum.name = d.metadata().name;
                     datum.relative = vz_chart_helpers.relativeAccessor(datum, -1, d);
                 }
                 return datum;
             })
-                .filter(function (x) { return x != null; });
+                .filter((x) => x != null);
             this.lastPointsDataset.data(lastPointsData);
             if (this.markersScatterPlot) {
                 this.markersScatterPlot.datasets(this.datasets.map(this.createSampledDatasetForMarkers));
@@ -568,10 +556,10 @@ var vz_line_chart;
             // Take a dataset, return an array of NaN data points
             // the NaN points will have a "displayY" property which is the
             // y-value of a nearby point that was not NaN (0 if all points are NaN)
-            var datasetToNaNData = function (d) {
-                var displayY = null;
-                var data = d.data();
-                var i = 0;
+            let datasetToNaNData = (d) => {
+                let displayY = null;
+                let data = d.data();
+                let i = 0;
                 while (i < data.length && displayY == null) {
                     if (!isNaN(accessor(data[i], -1, d))) {
                         displayY = accessor(data[i], -1, d);
@@ -581,7 +569,7 @@ var vz_line_chart;
                 if (displayY == null) {
                     displayY = 0;
                 }
-                var nanData = [];
+                let nanData = [];
                 for (i = 0; i < data.length; i++) {
                     if (!isNaN(accessor(data[i], -1, d))) {
                         displayY = accessor(data[i], -1, d);
@@ -595,142 +583,137 @@ var vz_line_chart;
                 }
                 return nanData;
             };
-            var nanData = _.flatten(this.datasets.map(datasetToNaNData));
+            let nanData = _.flatten(this.datasets.map(datasetToNaNData));
             this.nanDataset.data(nanData);
-        };
-        LineChart.prototype.resetDomain = function () {
+        }
+        resetDomain() {
             this.resetXDomain();
             this.resetYDomain();
-        };
-        LineChart.prototype.resetXDomain = function () {
-            var xDomain;
+        }
+        resetXDomain() {
+            let xDomain;
             if (this._defaultXRange != null) {
                 // Use the range specified by the caller.
                 xDomain = this._defaultXRange;
             }
             else {
                 // (Copied from DragZoomLayer.unzoom.)
-                var xScale = this.xScale;
+                const xScale = this.xScale;
                 xScale._domainMin = null;
                 xScale._domainMax = null;
                 xDomain = xScale._getExtent();
             }
             this.xScale.domain(xDomain);
-        };
-        LineChart.prototype.resetYDomain = function () {
-            var yDomain;
+        }
+        resetYDomain() {
+            let yDomain;
             if (this._defaultYRange != null) {
                 // Use the range specified by the caller.
                 yDomain = this._defaultYRange;
             }
             else {
                 // Generate a reasonable range.
-                var accessors_1 = this.getAccessorsForComputingYRange();
-                var datasetToValues = function (d) {
-                    return accessors_1.map(function (accessor) { return d.data().map(function (x) { return accessor(x, -1, d); }); });
+                const accessors = this.getAccessorsForComputingYRange();
+                let datasetToValues = (d) => {
+                    return accessors.map(accessor => d.data().map(x => accessor(x, -1, d)));
                 };
-                var vals = _.flattenDeep(this.datasets.map(datasetToValues))
+                const vals = _.flattenDeep(this.datasets.map(datasetToValues))
                     .filter(isFinite);
                 yDomain = vz_chart_helpers.computeDomain(vals, this._ignoreYOutliers);
             }
             this.yScale.domain(yDomain);
-        };
-        LineChart.prototype.getAccessorsForComputingYRange = function () {
-            var accessors = [this.getYAxisAccessor()];
+        }
+        getAccessorsForComputingYRange() {
+            const accessors = [this.getYAxisAccessor()];
             if (this.fillArea) {
                 // Make the Y domain take margins into account.
                 accessors.push(this.fillArea.lowerAccessor, this.fillArea.higherAccessor);
             }
             return accessors;
-        };
-        LineChart.prototype.getYAxisAccessor = function () {
+        }
+        getYAxisAccessor() {
             return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
-        };
-        LineChart.prototype.createTooltipInteraction = function (dzl) {
-            var _this = this;
-            var pi = new Plottable.Interactions.Pointer();
+        }
+        createTooltipInteraction(dzl) {
+            const pi = new Plottable.Interactions.Pointer();
             // Disable interaction while drag zooming.
-            dzl.interactionStart(function () {
+            dzl.interactionStart(() => {
                 pi.enabled(false);
-                _this.hideTooltips();
+                this.hideTooltips();
             });
-            dzl.interactionEnd(function () { return pi.enabled(true); });
-            pi.onPointerMove(function (p) {
+            dzl.interactionEnd(() => pi.enabled(true));
+            pi.onPointerMove((p) => {
                 // Line plot must be initialized to draw.
-                if (!_this.linePlot)
+                if (!this.linePlot)
                     return;
-                var target = {
+                let target = {
                     x: p.x,
                     y: p.y,
                     datum: null,
                     dataset: null,
                 };
-                var bbox = _this.gridlines.content().node().getBBox();
+                let bbox = this.gridlines.content().node().getBBox();
                 // pts is the closets point to the tooltip for each dataset
-                var pts = _this.linePlot.datasets()
-                    .map(function (dataset) { return _this.findClosestPoint(target, dataset); })
+                let pts = this.linePlot.datasets()
+                    .map((dataset) => this.findClosestPoint(target, dataset))
                     .filter(Boolean);
-                var intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
+                let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
                 // We draw tooltips for points that are not explicity ignored,
                 // and are NaN or are currently visible.
-                var ptsForTooltips = pts.filter(function (p) { return (intersectsBBox(p.x, p.y, bbox) ||
-                    isNaN(_this.yValueAccessor(p.datum, 0, p.dataset))) &&
-                    (!_this.seriesWithoutTooltips ||
-                        _this.seriesWithoutTooltips.indexOf(p.dataset.metadata().name) == -1); });
+                let ptsForTooltips = pts.filter((p) => (intersectsBBox(p.x, p.y, bbox) ||
+                    isNaN(this.yValueAccessor(p.datum, 0, p.dataset))) &&
+                    (!this.seriesWithoutTooltips ||
+                        this.seriesWithoutTooltips.indexOf(p.dataset.metadata().name) == -1));
                 // Only draw little indicator circles for the non-NaN points
-                var ptsToCircle = ptsForTooltips.filter(function (p) { return !isNaN(_this.yValueAccessor(p.datum, 0, p.dataset)); });
-                var ptsSelection = _this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, function (p) { return p.dataset.metadata().name; });
+                let ptsToCircle = ptsForTooltips.filter((p) => !isNaN(this.yValueAccessor(p.datum, 0, p.dataset)));
+                let ptsSelection = this.tooltipPointsComponent.content().selectAll('.point').data(ptsToCircle, (p) => p.dataset.metadata().name);
                 if (pts.length !== 0) {
                     ptsSelection.enter().append('circle').classed('point', true);
                     ptsSelection.attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
-                        .attr('cx', function (p) { return p.x; })
-                        .attr('cy', function (p) { return p.y; })
+                        .attr('cx', (p) => p.x)
+                        .attr('cy', (p) => p.y)
                         .style('stroke', 'none')
-                        .attr('fill', function (p) { return _this.colorScale.scale(p.dataset.metadata().name); });
+                        .attr('fill', (p) => this.colorScale.scale(p.dataset.metadata().name));
                     ptsSelection.exit().remove();
-                    _this.drawTooltips(ptsForTooltips, target, _this.tooltipColumns);
+                    this.drawTooltips(ptsForTooltips, target, this.tooltipColumns);
                 }
                 else {
-                    _this.hideTooltips();
+                    this.hideTooltips();
                 }
             });
-            pi.onPointerExit(function () { return _this.hideTooltips(); });
+            pi.onPointerExit(() => this.hideTooltips());
             return pi;
-        };
-        LineChart.prototype.hideTooltips = function () {
+        }
+        hideTooltips() {
             this.tooltip.style('opacity', 0);
             this.scatterPlot.attr('opacity', 1);
             this.tooltipPointsComponent.content().selectAll('.point').remove();
-        };
-        LineChart.prototype.setupTooltips = function (plot) {
-            var _this = this;
-            plot.onDetach(function () {
-                _this.tooltipInteraction.detachFrom(plot);
-                _this.tooltipInteraction.enabled(false);
+        }
+        setupTooltips(plot) {
+            plot.onDetach(() => {
+                this.tooltipInteraction.detachFrom(plot);
+                this.tooltipInteraction.enabled(false);
             });
-            plot.onAnchor(function () {
-                _this.tooltipInteraction.attachTo(plot);
-                _this.tooltipInteraction.enabled(true);
+            plot.onAnchor(() => {
+                this.tooltipInteraction.attachTo(plot);
+                this.tooltipInteraction.enabled(true);
             });
-        };
-        LineChart.prototype.drawTooltips = function (points, target, tooltipColumns) {
-            var _this = this;
+        }
+        drawTooltips(points, target, tooltipColumns) {
             // Formatters for value, step, and wall_time
             this.scatterPlot.attr('opacity', 0);
-            var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-            var dist = function (p) {
-                return Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
-            };
-            var closestDist = _.min(points.map(dist));
-            var valueSortMethod = this.yValueAccessor;
+            let valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+            let dist = (p) => Math.pow(p.x - target.x, 2) + Math.pow(p.y - target.y, 2);
+            let closestDist = _.min(points.map(dist));
+            let valueSortMethod = this.yValueAccessor;
             if (this.smoothingEnabled) {
                 valueSortMethod = this.smoothedAccessor;
             }
             if (this.tooltipSortingMethod === 'ascending') {
-                points = _.sortBy(points, function (d) { return valueSortMethod(d.datum, -1, d.dataset); });
+                points = _.sortBy(points, (d) => valueSortMethod(d.datum, -1, d.dataset));
             }
             else if (this.tooltipSortingMethod === 'descending') {
-                points = _.sortBy(points, function (d) { return valueSortMethod(d.datum, -1, d.dataset); })
+                points = _.sortBy(points, (d) => valueSortMethod(d.datum, -1, d.dataset))
                     .reverse();
             }
             else if (this.tooltipSortingMethod === 'nearest') {
@@ -742,7 +725,7 @@ var vz_line_chart;
                 // datasets. So we must call reverse again to restore the order.
                 points = points.slice(0).reverse();
             }
-            var rows = this.tooltip.select('tbody')
+            let rows = this.tooltip.select('tbody')
                 .html('')
                 .selectAll('tr')
                 .data(points)
@@ -751,16 +734,16 @@ var vz_line_chart;
             // Grey out the point if any of the following are true:
             // - The cursor is outside of the x-extent of the dataset
             // - The point's y value is NaN
-            rows.classed('distant', function (d) {
-                var firstPoint = d.dataset.data()[0];
-                var lastPoint = _.last(d.dataset.data());
-                var firstX = _this.xScale.scale(_this.xAccessor(firstPoint, 0, d.dataset));
-                var lastX = _this.xScale.scale(_this.xAccessor(lastPoint, 0, d.dataset));
-                var s = _this.smoothingEnabled ?
-                    d.datum.smoothed : _this.yValueAccessor(d.datum, 0, d.dataset);
+            rows.classed('distant', (d) => {
+                let firstPoint = d.dataset.data()[0];
+                let lastPoint = _.last(d.dataset.data());
+                let firstX = this.xScale.scale(this.xAccessor(firstPoint, 0, d.dataset));
+                let lastX = this.xScale.scale(this.xAccessor(lastPoint, 0, d.dataset));
+                let s = this.smoothingEnabled ?
+                    d.datum.smoothed : this.yValueAccessor(d.datum, 0, d.dataset);
                 return target.x < firstX || target.x > lastX || isNaN(s);
             });
-            rows.classed('closest', function (p) { return dist(p) === closestDist; });
+            rows.classed('closest', (p) => dist(p) === closestDist);
             // It is a bit hacky that we are manually applying the width to the swatch
             // and the nowrap property to the text here. The reason is as follows:
             // the style gets updated asynchronously by Polymer scopeSubtree observer.
@@ -772,19 +755,19 @@ var vz_line_chart;
             rows.append('td')
                 .append('span')
                 .classed('swatch', true)
-                .style('background-color', function (d) { return _this.colorScale.scale(d.dataset.metadata().name); });
-            _.each(tooltipColumns, function (column) {
-                rows.append('td').text(function (d) { return column.evaluate(d, {
-                    smoothingEnabled: _this.smoothingEnabled,
-                }); });
+                .style('background-color', (d) => this.colorScale.scale(d.dataset.metadata().name));
+            _.each(tooltipColumns, (column) => {
+                rows.append('td').text((d) => column.evaluate(d, {
+                    smoothingEnabled: this.smoothingEnabled,
+                }));
             });
             // compute left position
-            var documentWidth = document.body.clientWidth;
-            var node = this.tooltip.node();
-            var parentRect = node.parentElement.getBoundingClientRect();
-            var nodeRect = node.getBoundingClientRect();
+            let documentWidth = document.body.clientWidth;
+            let node = this.tooltip.node();
+            let parentRect = node.parentElement.getBoundingClientRect();
+            let nodeRect = node.getBoundingClientRect();
             // prevent it from falling off the right side of the screen
-            var left = documentWidth - parentRect.left - nodeRect.width - 60, top = 0;
+            let left = documentWidth - parentRect.left - nodeRect.width - 60, top = 0;
             if (this.tooltipPosition === 'right') {
                 left = Math.min(parentRect.width, left);
             }
@@ -794,21 +777,20 @@ var vz_line_chart;
             }
             this.tooltip.style('transform', 'translate(' + left + 'px,' + top + 'px)');
             this.tooltip.style('opacity', 1);
-        };
-        LineChart.prototype.findClosestPoint = function (target, dataset) {
-            var _this = this;
-            var points = dataset.data().map(function (d, i) {
-                var x = _this.xAccessor(d, i, dataset);
-                var y = _this.smoothingEnabled ? _this.smoothedAccessor(d, i, dataset) :
-                    _this.yValueAccessor(d, i, dataset);
+        }
+        findClosestPoint(target, dataset) {
+            let points = dataset.data().map((d, i) => {
+                let x = this.xAccessor(d, i, dataset);
+                let y = this.smoothingEnabled ? this.smoothedAccessor(d, i, dataset) :
+                    this.yValueAccessor(d, i, dataset);
                 return {
-                    x: _this.xScale.scale(x),
-                    y: _this.yScale.scale(y),
+                    x: this.xScale.scale(x),
+                    y: this.yScale.scale(y),
                     datum: d,
                     dataset: dataset,
                 };
             });
-            var idx = sortedIndexBy(points, target, function (p) { return p.x; });
+            let idx = sortedIndexBy(points, target, (p) => p.x);
             if (idx === points.length) {
                 return points[points.length - 1];
             }
@@ -816,26 +798,25 @@ var vz_line_chart;
                 return points[0];
             }
             else {
-                var prev = points[idx - 1];
-                var next = points[idx];
-                var prevDist = Math.abs(prev.x - target.x);
-                var nextDist = Math.abs(next.x - target.x);
+                let prev = points[idx - 1];
+                let next = points[idx];
+                let prevDist = Math.abs(prev.x - target.x);
+                let nextDist = Math.abs(next.x - target.x);
                 return prevDist < nextDist ? prev : next;
             }
-        };
-        LineChart.prototype.resmoothDataset = function (dataset) {
-            var _this = this;
-            var data = dataset.data();
-            var smoothingWeight = this.smoothingWeight;
+        }
+        resmoothDataset(dataset) {
+            let data = dataset.data();
+            const smoothingWeight = this.smoothingWeight;
             // 1st-order IIR low-pass filter to attenuate the higher-
             // frequency components of the time-series.
-            var last = data.length > 0 ? 0 : NaN;
-            var numAccum = 0;
-            var yValues = data.map(function (d, i) { return _this.yValueAccessor(d, i, dataset); });
+            let last = data.length > 0 ? 0 : NaN;
+            let numAccum = 0;
+            const yValues = data.map((d, i) => this.yValueAccessor(d, i, dataset));
             // See #786.
-            var isConstant = yValues.every(function (v) { return v == yValues[0]; });
-            data.forEach(function (d, i) {
-                var nextVal = yValues[i];
+            const isConstant = yValues.every((v) => v == yValues[0]);
+            data.forEach((d, i) => {
+                const nextVal = yValues[i];
                 if (isConstant || !Number.isFinite(nextVal)) {
                     d.smoothed = nextVal;
                 }
@@ -852,21 +833,21 @@ var vz_line_chart;
                     // If initialized with `0`, dividing by (1 - s^t) is enough to debias
                     // the moving average. We count the number of finite data points and
                     // divide appropriately before storing the data.
-                    var debiasWeight = 1;
+                    let debiasWeight = 1;
                     if (smoothingWeight !== 1.0) {
                         debiasWeight = 1.0 - Math.pow(smoothingWeight, numAccum);
                     }
                     d.smoothed = last / debiasWeight;
                 }
             });
-        };
-        LineChart.prototype.getDataset = function (name) {
+        }
+        getDataset(name) {
             if (this.name2datasets[name] === undefined) {
                 this.name2datasets[name] = new Plottable.Dataset([], { name: name });
             }
             return this.name2datasets[name];
-        };
-        LineChart.getYScaleFromType = function (yScaleType) {
+        }
+        static getYScaleFromType(yScaleType) {
             if (yScaleType === 'log') {
                 return new Plottable.Scales.ModifiedLog();
             }
@@ -876,18 +857,17 @@ var vz_line_chart;
             else {
                 throw new Error('Unrecognized yScale type ' + yScaleType);
             }
-        };
+        }
         /**
          * Update the selected series on the chart.
          */
-        LineChart.prototype.setVisibleSeries = function (names) {
-            var _this = this;
+        setVisibleSeries(names) {
             names = names.sort();
             this.seriesNames = names;
             names.reverse(); // draw first series on top
-            this.datasets.forEach(function (d) { return d.offUpdate(_this.onDatasetChanged); });
-            this.datasets = names.map(function (r) { return _this.getDataset(r); });
-            this.datasets.forEach(function (d) { return d.onUpdate(_this.onDatasetChanged); });
+            this.datasets.forEach((d) => d.offUpdate(this.onDatasetChanged));
+            this.datasets = names.map((r) => this.getDataset(r));
+            this.datasets.forEach((d) => d.onUpdate(this.onDatasetChanged));
             this.linePlot.datasets(this.datasets);
             if (this.smoothingEnabled) {
                 this.smoothLinePlot.datasets(this.datasets);
@@ -896,36 +876,35 @@ var vz_line_chart;
                 this.marginAreaPlot.datasets(this.datasets);
             }
             this.updateSpecialDatasets();
-        };
+        }
         /**
          * Samples a dataset so that it contains no more than _MAX_MARKERS number of
          * data points. This function returns the original dataset if it does not
          * exceed that many points.
          */
-        LineChart.prototype.createSampledDatasetForMarkers = function (original) {
-            var originalData = original.data();
+        createSampledDatasetForMarkers(original) {
+            const originalData = original.data();
             if (originalData.length <= _MAX_MARKERS) {
                 // This dataset is small enough. Do not sample.
                 return original;
             }
             // Downsample the data. Otherwise, too many markers clutter the chart.
-            var skipLength = Math.ceil(originalData.length / _MAX_MARKERS);
-            var data = new Array(Math.floor(originalData.length / skipLength));
-            for (var i = 0, j = 0; i < data.length; i++, j += skipLength) {
+            const skipLength = Math.ceil(originalData.length / _MAX_MARKERS);
+            const data = new Array(Math.floor(originalData.length / skipLength));
+            for (let i = 0, j = 0; i < data.length; i++, j += skipLength) {
                 data[i] = originalData[j];
             }
             return new Plottable.Dataset(data, original.metadata());
-        };
+        }
         /**
          * Set the data of a series on the chart.
          */
-        LineChart.prototype.setSeriesData = function (name, data) {
+        setSeriesData(name, data) {
             this.getDataset(name).data(data);
-        };
-        LineChart.prototype.smoothingUpdate = function (weight) {
-            var _this = this;
+        }
+        smoothingUpdate(weight) {
             this.smoothingWeight = weight;
-            this.datasets.forEach(function (d) { return _this.resmoothDataset(d); });
+            this.datasets.forEach((d) => this.resmoothDataset(d));
             if (!this.smoothingEnabled) {
                 this.linePlot.addClass('ghost');
                 this.scatterPlot.y(this.smoothedAccessor, this.yScale);
@@ -937,8 +916,8 @@ var vz_line_chart;
                 this.markersScatterPlot.y(this.getYAxisAccessor(), this.yScale);
             }
             this.updateSpecialDatasets();
-        };
-        LineChart.prototype.smoothingDisable = function () {
+        }
+        smoothingDisable() {
             if (this.smoothingEnabled) {
                 this.linePlot.removeClass('ghost');
                 this.scatterPlot.y(this.yValueAccessor, this.yScale);
@@ -951,14 +930,14 @@ var vz_line_chart;
                 // enabled) for marker positioning.
                 this.markersScatterPlot.y(this.getYAxisAccessor(), this.yScale);
             }
-        };
-        LineChart.prototype.setTooltipSortingMethod = function (method) {
+        }
+        setTooltipSortingMethod(method) {
             this.tooltipSortingMethod = method;
-        };
-        LineChart.prototype.setTooltipPosition = function (position) {
+        }
+        setTooltipPosition(position) {
             this.tooltipPosition = position;
-        };
-        LineChart.prototype.renderTo = function (targetSVG) {
+        }
+        renderTo(targetSVG) {
             this.targetSVG = targetSVG;
             this.outer.renderTo(targetSVG);
             if (this._defaultXRange != null) {
@@ -971,17 +950,16 @@ var vz_line_chart;
                 // Start with that range.
                 this.resetYDomain();
             }
-        };
-        LineChart.prototype.redraw = function () {
+        }
+        redraw() {
             this.outer.redraw();
-        };
-        LineChart.prototype.destroy = function () {
+        }
+        destroy() {
             // Destroying outer destroys all subcomponents recursively.
             if (this.outer)
                 this.outer.destroy();
-        };
-        return LineChart;
-    }());
+        }
+    }
     /**
      * Binary searches and finds "closest" index of a value in an array. As the name
      * indicates, `array` must be sorted. When there is no exact match, it returns
@@ -990,12 +968,12 @@ var vz_line_chart;
      * TODO(stephanwlee): Use _.sortedIndexBy when types are migrated to v4.
      */
     function sortedIndexBy(array, value, iteratee) {
-        var query = iteratee(value);
-        var low = 0;
-        var high = array.length;
+        const query = iteratee(value);
+        let low = 0;
+        let high = array.length;
         while (low < high) {
-            var mid = Math.floor((low + high) / 2);
-            var midVal = iteratee(array[mid]);
+            const mid = Math.floor((low + high) / 2);
+            const midVal = iteratee(array[mid]);
             if (midVal < query) {
                 low = mid + 1;
             }

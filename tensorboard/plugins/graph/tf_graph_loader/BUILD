@@ -14,8 +14,8 @@ tf_web_library(
     path = "/tf-graph-loader",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/graph/tf_graph_common",
     ],
 )
 
@@ -39,9 +39,9 @@ tf_web_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_controls",
-        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 

@@ -34,7 +34,7 @@ var tf;
              * strategy, if the line density is large, gray lines may overlap non
              * gray lines and cause parts of them to be gray as well.
              */
-            var LineType;
+            let LineType;
             (function (LineType) {
                 LineType[LineType["FOREGROUND"] = 0] = "FOREGROUND";
                 LineType[LineType["BACKGROUND"] = 1] = "BACKGROUND";
@@ -49,14 +49,14 @@ var tf;
              * won't need to search the DOM for the <path> representing the session group;
              * instead the (foreground) <path> element is stored in the handle.
              */
-            var SessionGroupHandle = /** @class */ (function () {
+            class SessionGroupHandle {
                 /**
                  * Constructs a session group handle from a D3 selection of the path
                  * element representing the sessionGroup. This should only be called by the
                  * 'LinesCollection' class below. If sessionGroupSel is empty or undefined, a
                  * "null" handle will be constructed.
                  */
-                function SessionGroupHandle(sessionGroupSel) {
+                constructor(sessionGroupSel) {
                     if (sessionGroupSel === undefined) {
                         sessionGroupSel = d3.selectAll(null);
                     }
@@ -67,27 +67,27 @@ var tf;
                  * @return the sessionGroup object this handle references or null if
                  * this is a "null" reference.
                  */
-                SessionGroupHandle.prototype.sessionGroup = function () {
+                sessionGroup() {
                     return this._sessionGroupSel.size() === 1
                         ? this._sessionGroupSel.datum()
                         : null;
-                };
-                SessionGroupHandle.prototype.isNull = function () {
+                }
+                isNull() {
                     return this.sessionGroup() === null;
-                };
+                }
                 /**
                  * Should only be called by the 'LinesCollection' class below.
                  * @return the d3-selection given on construction.
                  */
-                SessionGroupHandle.prototype.selection = function () {
+                selection() {
                     return this._sessionGroupSel;
-                };
+                }
                 /**
                  * Compares this handle to 'otherHandle' and returns true if both are null
                  * or both are not null and they reference equal session groups.
                  * Session group equality is determined by their names.
                  */
-                SessionGroupHandle.prototype.equalsTo = function (otherHandle) {
+                equalsTo(otherHandle) {
                     if (this.isNull()) {
                         return otherHandle.isNull();
                     }
@@ -95,9 +95,8 @@ var tf;
                         return false;
                     }
                     return otherHandle.sessionGroup().name == this.sessionGroup().name;
-                };
-                return SessionGroupHandle;
-            }());
+                }
+            }
             parallel_coords_plot.SessionGroupHandle = SessionGroupHandle;
             ;
             /**
@@ -125,8 +124,8 @@ var tf;
              * by clicking the mouse pointer. The currently selected session group is
              * referenced by the selectedSessionGroupHandle.
              */
-            var LinesCollection = /** @class */ (function () {
-                function LinesCollection(svgProps, schema, axesCollection) {
+            class LinesCollection {
+                constructor(svgProps, schema, axesCollection) {
                     this._svgProps = svgProps;
                     this._schema = schema;
                     this._axesCollection = axesCollection;
@@ -148,24 +147,24 @@ var tf;
                  * @return a SessionGroupHandle referencing the given sessionGroup. If the
                  * given sessionGroup is null or undefined returns a "null" handle.
                  */
-                LinesCollection.prototype.getSessionGroupHandle = function (sessionGroup) {
+                getSessionGroupHandle(sessionGroup) {
                     if (sessionGroup === null || sessionGroup === undefined) {
                         return new SessionGroupHandle();
                     }
-                    return new SessionGroupHandle(this._fgPathsSel.filter(function (sg) { return sg.name === sessionGroup.name; }));
-                };
-                LinesCollection.prototype.hideBackgroundLines = function () {
+                    return new SessionGroupHandle(this._fgPathsSel.filter(sg => sg.name === sessionGroup.name));
+                }
+                hideBackgroundLines() {
                     this._bgPathsSel.attr("visibility", "hidden");
-                };
-                LinesCollection.prototype.showBackgroundLines = function () {
+                }
+                showBackgroundLines() {
                     this._bgPathsSel.attr("visibility", null);
-                };
-                LinesCollection.prototype.peakedSessionGroupHandle = function () {
+                }
+                peakedSessionGroupHandle() {
                     return this._peakedSessionGroupHandle;
-                };
-                LinesCollection.prototype.selectedSessionGroupHandle = function () {
+                }
+                selectedSessionGroupHandle() {
                     return this._selectedSessionGroupHandle;
-                };
+                }
                 /**
                  * Recomputes the control points of the lines with the given 'type'
                  * (foreground or background) to correspond to the current state of the
@@ -176,39 +175,32 @@ var tf;
                  *     their new state. This specifies the duration of that transition. 0
                  *     means no animation.
                  */
-                LinesCollection.prototype.recomputeControlPoints = function (lineType, transitionDuration) {
-                    var _this_1 = this;
-                    if (transitionDuration === void 0) { transitionDuration = 0; }
-                    var pathSel = (lineType === LineType.FOREGROUND
+                recomputeControlPoints(lineType, transitionDuration = 0) {
+                    const pathSel = (lineType === LineType.FOREGROUND
                         ? this._fgPathsSel : this._bgPathsSel);
                     pathSel
                         .transition().duration(transitionDuration)
-                        .attr("d", function (sessionGroup) { return _this_1._pathDAttribute(sessionGroup); });
+                        .attr("d", sessionGroup => this._pathDAttribute(sessionGroup));
                     if (lineType === LineType.FOREGROUND) {
                         // Update the control points property, if we're updating the foreground
                         // lines.
-                        window.setTimeout(function () {
-                            var _this = _this_1;
-                            _this_1._fgPathsSel.each(function (sessionGroup) {
+                        window.setTimeout(() => {
+                            const _this = this;
+                            this._fgPathsSel.each(function (sessionGroup) {
                                 // '_this' refers to the 'LinesCollection' instance.
                                 _this._setControlPointsProperty(this, sessionGroup);
                             });
                         });
                     }
-                };
+                }
                 /**
                  * Rerenders the foreground lines so that their visibility matches the
                  * current brush filters.
                  */
-                LinesCollection.prototype.recomputeForegroundLinesVisibility = function () {
-                    var _this_1 = this;
-                    this._fgPathsSel.classed("invisible-path", function (sessionGroup) {
-                        return !_this_1._axesCollection.allVisibleAxesSatisfy(function (xPosition, axis) {
-                            return axis.brushFilter().isPassing(tf.hparams.utils.columnValueByIndex(_this_1._schema, sessionGroup, axis.colIndex()));
-                        });
-                    });
+                recomputeForegroundLinesVisibility() {
+                    this._fgPathsSel.classed("invisible-path", sessionGroup => !this._axesCollection.allVisibleAxesSatisfy((xPosition, axis) => axis.brushFilter().isPassing(tf.hparams.utils.columnValueByIndex(this._schema, sessionGroup, axis.colIndex()))));
                     this._updateVisibleFgPathsSel();
-                };
+                }
                 /**
                  * Sets the coloring scheme of the (visible) foreground lines.
                  * A foreground line will be colored by a color corresponding to the value
@@ -216,17 +208,17 @@ var tf;
                  * represented by the line. The color corresponding to a value is
                  * interpolated between minColor and maxColor.
                  */
-                LinesCollection.prototype.setForegroundLinesColor = function (colorByColumnIndex, minColor, maxColor) {
-                    var lineColorFunction = this._createLineColorFunction(colorByColumnIndex, minColor, maxColor);
+                setForegroundLinesColor(colorByColumnIndex, minColor, maxColor) {
+                    const lineColorFunction = this._createLineColorFunction(colorByColumnIndex, minColor, maxColor);
                     this._fgPathsSel.attr("stroke", lineColorFunction);
-                };
+                }
                 /**
                  * Updates the sessionGroups, colorByColumnIndex, minColor and maxColor and
                  * redraws the lines.
                  */
-                LinesCollection.prototype.redraw = function (sessionGroups, colorByColumnIndex, minColor, maxColor) {
-                    var peakedSG = this._peakedSessionGroupHandle.sessionGroup();
-                    var selectedSG = this._selectedSessionGroupHandle.sessionGroup();
+                redraw(sessionGroups, colorByColumnIndex, minColor, maxColor) {
+                    const peakedSG = this._peakedSessionGroupHandle.sessionGroup();
+                    const selectedSG = this._selectedSessionGroupHandle.sessionGroup();
                     this._sessionGroups = sessionGroups;
                     this._fgPathsSel = this._recomputePathSelection(this._fgPathsSel);
                     this._bgPathsSel = this._recomputePathSelection(this._bgPathsSel);
@@ -236,79 +228,76 @@ var tf;
                     this.recomputeControlPoints(LineType.BACKGROUND);
                     this.recomputeForegroundLinesVisibility();
                     this.setForegroundLinesColor(colorByColumnIndex, minColor, maxColor);
-                };
-                LinesCollection.prototype.updatePeakedSessionGroup = function (newHandle) {
+                }
+                updatePeakedSessionGroup(newHandle) {
                     this._peakedSessionGroupHandle.selection().classed("peaked-path", false);
                     this._peakedSessionGroupHandle = newHandle;
                     this._peakedSessionGroupHandle.selection().classed("peaked-path", true);
-                };
-                LinesCollection.prototype.clearPeakedSessionGroup = function () {
+                }
+                clearPeakedSessionGroup() {
                     this.updatePeakedSessionGroup(new SessionGroupHandle());
-                };
-                LinesCollection.prototype.updateSelectedSessionGroup = function (newHandle) {
+                }
+                updateSelectedSessionGroup(newHandle) {
                     this._selectedSessionGroupHandle.selection().classed("selected-path", false);
                     this._selectedSessionGroupHandle = newHandle;
                     this._selectedSessionGroupHandle.selection().classed("selected-path", true);
-                };
+                }
                 /**
                  * Returns a handle referencing the closest session group to a given point
                  * in the SVG or a null handle if the closest session group is
                  * too far away.
                  */
-                LinesCollection.prototype.findClosestSessionGroup = function (x, y) {
-                    var axesPositions = this._axesCollection.mapVisibleAxes(function (xPosition, axis) { return xPosition; });
-                    var closestFgPath = tf.hparams.parallel_coords_plot.findClosestPath(this._visibleFgPathsSel.nodes(), axesPositions, [x, y], 
+                findClosestSessionGroup(x, y) {
+                    const axesPositions = this._axesCollection.mapVisibleAxes((xPosition, axis) => xPosition);
+                    const closestFgPath = tf.hparams.parallel_coords_plot.findClosestPath(this._visibleFgPathsSel.nodes(), axesPositions, [x, y], 
                     /* threshold */ 100);
                     if (closestFgPath === null) {
                         return new SessionGroupHandle();
                     }
                     return new SessionGroupHandle(d3.select(closestFgPath));
-                };
-                LinesCollection.prototype._createLineColorFunction = function (colorByColumnIndex, minColor, maxColor) {
-                    var _this_1 = this;
+                }
+                _createLineColorFunction(colorByColumnIndex, minColor, maxColor) {
                     if (colorByColumnIndex === null) {
                         /* Use a default color if no color-by column is selected. */
-                        return function () { return "red"; };
+                        return () => "red";
                     }
-                    var colorScale = d3.scaleLinear()
+                    const colorScale = d3.scaleLinear()
                         .domain(tf.hparams.utils.numericColumnExtent(this._schema, this._sessionGroups, colorByColumnIndex))
                         .range([minColor, maxColor])
                         .interpolate(d3.interpolateLab);
-                    return function (sessionGroup) { return colorScale(tf.hparams.utils.columnValueByIndex(_this_1._schema, sessionGroup, colorByColumnIndex)); };
-                };
-                LinesCollection.prototype._recomputePathSelection = function (currentPathSel /* d3 selection */) {
+                    return sessionGroup => colorScale(tf.hparams.utils.columnValueByIndex(this._schema, sessionGroup, colorByColumnIndex));
+                }
+                _recomputePathSelection(currentPathSel /* d3 selection */) {
                     currentPathSel = currentPathSel
-                        .data(this._sessionGroups, /*key=*/ (function (sessionGroup) { return sessionGroup.name; }));
+                        .data(this._sessionGroups, /*key=*/ (sessionGroup => sessionGroup.name));
                     currentPathSel.exit().remove();
                     return currentPathSel.enter().append("path").merge(currentPathSel);
-                };
+                }
                 /** Sets the controlPoints property of 'pathElement' to the control-points
                  * array of the given sessionGroup with respect to the current state of
                  * the axesCollection.
                  */
-                LinesCollection.prototype._setControlPointsProperty = function (pathElement, sessionGroup) {
+                _setControlPointsProperty(pathElement, sessionGroup) {
                     pathElement.controlPoints = this._computeControlPoints(sessionGroup);
-                };
+                }
                 /**
                  * @return an array of 2-tuples--each representing a control point for
                  * a line representing the given 'sessionGroup'. The control points are
                  * computed with respect to the current state of the axesCollection.
                  */
-                LinesCollection.prototype._computeControlPoints = function (sessionGroup) {
-                    var _this_1 = this;
-                    return this._axesCollection.mapVisibleAxes(function (xPosition, axis) { return [
+                _computeControlPoints(sessionGroup) {
+                    return this._axesCollection.mapVisibleAxes((xPosition, axis) => [
                         xPosition,
-                        axis.yScale()(tf.hparams.utils.columnValueByIndex(_this_1._schema, sessionGroup, axis.colIndex()))
-                    ]; });
-                };
-                LinesCollection.prototype._pathDAttribute = function (sessionGroup) {
+                        axis.yScale()(tf.hparams.utils.columnValueByIndex(this._schema, sessionGroup, axis.colIndex()))
+                    ]);
+                }
+                _pathDAttribute(sessionGroup) {
                     return this._d3line(this._computeControlPoints(sessionGroup));
-                };
-                LinesCollection.prototype._updateVisibleFgPathsSel = function () {
+                }
+                _updateVisibleFgPathsSel() {
                     this._visibleFgPathsSel = this._fgPathsSel.filter(":not(.invisible-path)");
-                };
-                return LinesCollection;
-            }());
+                }
+            }
             parallel_coords_plot.LinesCollection = LinesCollection;
             function _isInteractiveD3Event(d3Event) {
                 return d3.event.sourceEvent !== null;

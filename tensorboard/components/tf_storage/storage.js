@@ -1,11 +1,3 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,37 +37,35 @@ var tf_storage;
      * across the codebase.
      */
     tf_storage.DISAMBIGUATOR = 'disambiguator';
-    _a = makeBindings(function (x) { return x; }, function (x) { return x; }), tf_storage.getString = _a.get, tf_storage.setString = _a.set, tf_storage.getStringInitializer = _a.getInitializer, tf_storage.getStringObserver = _a.getObserver, tf_storage.disposeStringBinding = _a.disposeBinding;
-    _b = makeBindings(function (s) { return (s === 'true' ? true : s === 'false' ? false : undefined); }, function (b) { return b.toString(); }), tf_storage.getBoolean = _b.get, tf_storage.setBoolean = _b.set, tf_storage.getBooleanInitializer = _b.getInitializer, tf_storage.getBooleanObserver = _b.getObserver, tf_storage.disposeBooleanBinding = _b.disposeBinding;
-    _c = makeBindings(function (s) { return +s; }, function (n) { return n.toString(); }), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver, tf_storage.disposeNumberBinding = _c.disposeBinding;
-    _d = makeBindings(function (s) { return JSON.parse(atob(s)); }, function (o) { return btoa(JSON.stringify(o)); }), tf_storage.getObject = _d.get, tf_storage.setObject = _d.set, tf_storage.getObjectInitializer = _d.getInitializer, tf_storage.getObjectObserver = _d.getObserver, tf_storage.disposeObjectBinding = _d.disposeBinding;
+    _a = makeBindings(x => x, x => x), tf_storage.getString = _a.get, tf_storage.setString = _a.set, tf_storage.getStringInitializer = _a.getInitializer, tf_storage.getStringObserver = _a.getObserver, tf_storage.disposeStringBinding = _a.disposeBinding;
+    _b = makeBindings(s => (s === 'true' ? true : s === 'false' ? false : undefined), b => b.toString()), tf_storage.getBoolean = _b.get, tf_storage.setBoolean = _b.set, tf_storage.getBooleanInitializer = _b.getInitializer, tf_storage.getBooleanObserver = _b.getObserver, tf_storage.disposeBooleanBinding = _b.disposeBinding;
+    _c = makeBindings(s => +s, n => n.toString()), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver, tf_storage.disposeNumberBinding = _c.disposeBinding;
+    _d = makeBindings(s => JSON.parse(atob(s)), o => btoa(JSON.stringify(o))), tf_storage.getObject = _d.get, tf_storage.setObject = _d.set, tf_storage.getObjectInitializer = _d.getInitializer, tf_storage.getObjectObserver = _d.getObserver, tf_storage.disposeObjectBinding = _d.disposeBinding;
     function makeBindings(fromString, toString) {
-        var hashListeners = [];
-        var storageListeners = [];
-        function get(key, options) {
-            if (options === void 0) { options = {}; }
-            var defaultValue = options.defaultValue, _a = options.useLocalStorage, useLocalStorage = _a === void 0 ? false : _a;
-            var value = useLocalStorage ?
+        const hashListeners = [];
+        const storageListeners = [];
+        function get(key, options = {}) {
+            const { defaultValue, useLocalStorage = false, } = options;
+            const value = useLocalStorage ?
                 window.localStorage.getItem(key) :
                 componentToDict(readComponent())[key];
             return value == undefined ? _.cloneDeep(defaultValue) : fromString(value);
         }
-        function set(key, value, options) {
-            if (options === void 0) { options = {}; }
-            var defaultValue = options.defaultValue, _a = options.useLocalStorage, useLocalStorage = _a === void 0 ? false : _a, _b = options.useLocationReplace, useLocationReplace = _b === void 0 ? false : _b;
-            var stringValue = toString(value);
+        function set(key, value, options = {}) {
+            const { defaultValue, useLocalStorage = false, useLocationReplace = false, } = options;
+            const stringValue = toString(value);
             if (useLocalStorage) {
                 window.localStorage.setItem(key, stringValue);
                 // Because of listeners.ts:[1], we need to manually notify all UI elements
                 // listening to storage within the tab of a change.
                 tf_storage.fireStorageChanged();
             }
-            else if (!_.isEqual(value, get(key, { useLocalStorage: useLocalStorage }))) {
+            else if (!_.isEqual(value, get(key, { useLocalStorage }))) {
                 if (_.isEqual(value, defaultValue)) {
                     unsetFromURI(key);
                 }
                 else {
-                    var items = componentToDict(readComponent());
+                    const items = componentToDict(readComponent());
                     items[key] = stringValue;
                     writeComponent(dictToComponent(items), useLocationReplace);
                 }
@@ -88,28 +78,27 @@ var tf_storage;
          * when `useLocalStorage=false`, it listens to hashchange.
          */
         function getInitializer(key, options) {
-            var fullOptions = __assign({ defaultValue: options.defaultValue, polymerProperty: key, useLocalStorage: false }, options);
+            const fullOptions = Object.assign({ defaultValue: options.defaultValue, polymerProperty: key, useLocalStorage: false }, options);
             return function () {
-                var _this = this;
-                var uriStorageName = getURIStorageName(this, key);
+                const uriStorageName = getURIStorageName(this, key);
                 // setComponentValue will be called every time the underlying storage
                 // changes and is responsible for ensuring that new state will propagate
                 // to the component with specified property. It is important that this
                 // function does not re-assign needlessly, to avoid Polymer observer
                 // churn.
-                var setComponentValue = function () {
-                    var storedValue = get(uriStorageName, fullOptions);
-                    var currentValue = _this[fullOptions.polymerProperty];
+                const setComponentValue = () => {
+                    const storedValue = get(uriStorageName, fullOptions);
+                    const currentValue = this[fullOptions.polymerProperty];
                     if (!_.isEqual(storedValue, currentValue)) {
-                        _this[fullOptions.polymerProperty] = storedValue;
+                        this[fullOptions.polymerProperty] = storedValue;
                     }
                 };
-                var addListener = fullOptions.useLocalStorage ?
+                const addListener = fullOptions.useLocalStorage ?
                     tf_storage.addStorageListener :
                     tf_storage.addHashListener;
                 // TODO(stephanwlee): When using fakeHash, it _should not_ listen to the
                 //                    window.hashchange.
-                var listenKey = addListener(function () { return setComponentValue(); });
+                const listenKey = addListener(() => setComponentValue());
                 if (fullOptions.useLocalStorage) {
                     storageListeners.push(listenKey);
                 }
@@ -122,18 +111,18 @@ var tf_storage;
             };
         }
         function disposeBinding() {
-            hashListeners.forEach(function (key) { return tf_storage.removeHashListenerByKey(key); });
-            storageListeners.forEach(function (key) { return tf_storage.removeStorageListenerByKey(key); });
+            hashListeners.forEach(key => tf_storage.removeHashListenerByKey(key));
+            storageListeners.forEach(key => tf_storage.removeStorageListenerByKey(key));
         }
         function getObserver(key, options) {
-            var fullOptions = __assign({ defaultValue: options.defaultValue, polymerProperty: key, useLocalStorage: false }, options);
+            const fullOptions = Object.assign({ defaultValue: options.defaultValue, polymerProperty: key, useLocalStorage: false }, options);
             return function () {
-                var uriStorageName = getURIStorageName(this, key);
-                var newVal = this[fullOptions.polymerProperty];
+                const uriStorageName = getURIStorageName(this, key);
+                const newVal = this[fullOptions.polymerProperty];
                 set(uriStorageName, newVal, fullOptions);
             };
         }
-        return { get: get, set: set, getInitializer: getInitializer, getObserver: getObserver, disposeBinding: disposeBinding };
+        return { get, set, getInitializer, getObserver, disposeBinding };
     }
     tf_storage.makeBindings = makeBindings;
     /**
@@ -143,8 +132,8 @@ var tf_storage;
      * same propertyName.
      */
     function getURIStorageName(component, propertyName) {
-        var d = component[tf_storage.DISAMBIGUATOR];
-        var components = d == null ? [propertyName] : [d, propertyName];
+        const d = component[tf_storage.DISAMBIGUATOR];
+        const components = d == null ? [propertyName] : [d, propertyName];
         return components.join('.');
     }
     /**
@@ -156,8 +145,7 @@ var tf_storage;
     /**
      * Write component to URI.
      */
-    function writeComponent(component, useLocationReplace) {
-        if (useLocationReplace === void 0) { useLocationReplace = false; }
+    function writeComponent(component, useLocationReplace = false) {
         if (tf_globals.useHash()) {
             if (useLocationReplace) {
                 window.location.replace('#' + component);
@@ -178,17 +166,17 @@ var tf_storage;
      * reasons.
      */
     function dictToComponent(items) {
-        var component = '';
+        let component = '';
         // Add the tab name e.g. 'events', 'images', 'histograms' as a prefix
         // for backwards compatbility.
         if (items[tf_storage.TAB] !== undefined) {
             component += items[tf_storage.TAB];
         }
         // Join other strings with &key=value notation
-        var nonTab = Object.keys(items)
-            .map(function (key) { return [key, items[key]]; })
-            .filter(function (pair) { return pair[0] !== tf_storage.TAB; })
-            .map(function (pair) {
+        const nonTab = Object.keys(items)
+            .map(key => [key, items[key]])
+            .filter((pair) => pair[0] !== tf_storage.TAB)
+            .map((pair) => {
             return encodeURIComponent(pair[0]) + '=' +
                 encodeURIComponent(pair[1]);
         })
@@ -203,10 +191,10 @@ var tf_storage;
      * dict[TAB] = tabName
      */
     function componentToDict(component) {
-        var items = {};
-        var tokens = component.split('&');
-        tokens.forEach(function (token) {
-            var kv = token.split('=');
+        const items = {};
+        const tokens = component.split('&');
+        tokens.forEach((token) => {
+            const kv = token.split('=');
             // Special backwards compatibility for URI components like #scalars.
             if (kv.length === 1) {
                 items[tf_storage.TAB] = kv[0];
@@ -221,7 +209,7 @@ var tf_storage;
      * Delete a key from the URI.
      */
     function unsetFromURI(key) {
-        var items = componentToDict(readComponent());
+        const items = componentToDict(readComponent());
         delete items[key];
         writeComponent(dictToComponent(items));
     }

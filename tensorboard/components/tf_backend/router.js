@@ -15,27 +15,26 @@ limitations under the License.
 var tf_backend;
 (function (tf_backend) {
     ;
-    var _router = createRouter();
+    let _router = createRouter();
     /**
      * Create a router for communicating with the TensorBoard backend. You
      * can pass this to `setRouter` to make it the global router.
      *
      * @param dataDir {string=} The base prefix for data endpoints.
      */
-    function createRouter(dataDir) {
-        if (dataDir === void 0) { dataDir = "data"; }
+    function createRouter(dataDir = "data") {
         if (dataDir[dataDir.length - 1] === "/") {
             dataDir = dataDir.slice(0, dataDir.length - 1);
         }
         return {
-            environment: function () { return createDataPath(dataDir, "/environment"); },
-            experiments: function () { return createDataPath(dataDir, "/experiments"); },
-            pluginRoute: function (pluginName, route, params) {
-                return createDataPath(dataDir + "/plugin", "/" + pluginName + route, params);
+            environment: () => createDataPath(dataDir, "/environment"),
+            experiments: () => createDataPath(dataDir, "/experiments"),
+            pluginRoute: (pluginName, route, params) => {
+                return createDataPath(dataDir + "/plugin", `/${pluginName}${route}`, params);
             },
-            pluginsListing: function () { return createDataPath(dataDir, "/plugins_listing"); },
-            runs: function () { return createDataPath(dataDir, "/runs"); },
-            runsForExperiment: function (id) {
+            pluginsListing: () => createDataPath(dataDir, "/plugins_listing"),
+            runs: () => createDataPath(dataDir, "/runs"),
+            runsForExperiment: (id) => {
                 return createDataPath(dataDir, "/experiment_runs", createSearchParam({ experiment: String(id) }));
             },
         };
@@ -63,23 +62,21 @@ var tf_backend;
         _router = router;
     }
     tf_backend.setRouter = setRouter;
-    function createDataPath(dataDir, route, params) {
-        if (params === void 0) { params = new URLSearchParams(); }
-        var relativePath = dataDir + route;
+    function createDataPath(dataDir, route, params = new URLSearchParams()) {
+        let relativePath = dataDir + route;
         if (String(params)) {
-            var delimiter = route.includes("?") ? "&" : "?";
+            const delimiter = route.includes("?") ? "&" : "?";
             relativePath += delimiter + String(params);
         }
         return relativePath;
     }
-    function createSearchParam(params) {
-        if (params === void 0) { params = {}; }
-        var keys = Object.keys(params).sort().filter(function (k) { return params[k]; });
-        var searchParams = new URLSearchParams();
-        keys.forEach(function (key) {
-            var values = params[key];
-            var array = Array.isArray(values) ? values : [values];
-            array.forEach(function (val) { return searchParams.append(key, val); });
+    function createSearchParam(params = {}) {
+        const keys = Object.keys(params).sort().filter(k => params[k]);
+        const searchParams = new URLSearchParams();
+        keys.forEach(key => {
+            const values = params[key];
+            const array = Array.isArray(values) ? values : [values];
+            array.forEach(val => searchParams.append(key, val));
         });
         return searchParams;
     }

@@ -40,7 +40,7 @@ var vz_chart_helpers;
         },
     ];
     /** X axis choices for TensorBoard charts. */
-    var XType;
+    let XType;
     (function (XType) {
         /** Linear scale using the "step" property of the datum. */
         XType["STEP"] = "step";
@@ -63,13 +63,13 @@ var vz_chart_helpers;
      * and show `digits` significant digits.
      */
     function multiscaleFormatter(digits) {
-        return function (v) {
-            var absv = Math.abs(v);
+        return (v) => {
+            let absv = Math.abs(v);
             if (absv < 1E-15) {
                 // Sometimes zero-like values get an annoying representation
                 absv = 0;
             }
-            var f;
+            let f;
             if (absv >= 1E4) {
                 f = d3.format('.' + digits + '~e');
             }
@@ -91,14 +91,14 @@ var vz_chart_helpers;
      */
     function computeDomain(values, ignoreOutliers) {
         // Don't include infinities and NaNs in the domain computation.
-        values = values.filter(function (z) { return isFinite(z); });
+        values = values.filter(z => isFinite(z));
         if (values.length === 0) {
             return [-0.1, 1.1];
         }
-        var a;
-        var b;
+        let a;
+        let b;
         if (ignoreOutliers) {
-            var sorted = _.sortBy(values);
+            let sorted = _.sortBy(values);
             a = d3.quantile(sorted, 0.05);
             b = d3.quantile(sorted, 0.95);
         }
@@ -106,8 +106,8 @@ var vz_chart_helpers;
             a = d3.min(values);
             b = d3.max(values);
         }
-        var padding;
-        var span = b - a;
+        let padding;
+        let span = b - a;
         if (span === 0) {
             // If b===a, we would create an empty range. We instead select the range
             // [0, 2*a] if a > 0, or [-2*a, 0] if a < 0, plus a little bit of
@@ -117,7 +117,7 @@ var vz_chart_helpers;
         else {
             padding = span * 0.2;
         }
-        var lower;
+        let lower;
         if (a >= 0 && a < span) {
             // We include the intercept (y = 0) if doing so less than doubles the span
             // of the y-axis. (We actually select a lower bound that's slightly less
@@ -128,80 +128,80 @@ var vz_chart_helpers;
         else {
             lower = a - padding;
         }
-        var domain = [lower, b + padding];
+        let domain = [lower, b + padding];
         domain = d3.scaleLinear().domain(domain).nice().domain();
         return domain;
     }
     vz_chart_helpers.computeDomain = computeDomain;
     function accessorize(key) {
         // tslint:disable-next-line:no-any be quiet tsc
-        return function (d, index, dataset) { return d[key]; };
+        return (d, index, dataset) => d[key];
     }
     vz_chart_helpers.accessorize = accessorize;
-    vz_chart_helpers.stepFormatter = d3.format("." + vz_chart_helpers.STEP_FORMATTER_PRECISION + "~s");
+    vz_chart_helpers.stepFormatter = d3.format(`.${vz_chart_helpers.STEP_FORMATTER_PRECISION}~s`);
     function stepX() {
-        var scale = new Plottable.Scales.Linear();
+        let scale = new Plottable.Scales.Linear();
         scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
-        var axis = new Plottable.Axes.Numeric(scale, 'bottom');
+        let axis = new Plottable.Axes.Numeric(scale, 'bottom');
         axis.formatter(vz_chart_helpers.stepFormatter);
         return {
             scale: scale,
             axis: axis,
-            accessor: function (d) { return d.step; },
+            accessor: (d) => d.step,
         };
     }
     vz_chart_helpers.stepX = stepX;
     vz_chart_helpers.timeFormatter = Plottable.Formatters.time('%a %b %e, %H:%M:%S');
     function wallX() {
-        var scale = new Plottable.Scales.Time();
+        let scale = new Plottable.Scales.Time();
         return {
             scale: scale,
             axis: new Plottable.Axes.Time(scale, 'bottom'),
-            accessor: function (d) { return d.wall_time; },
+            accessor: (d) => d.wall_time,
         };
     }
     vz_chart_helpers.wallX = wallX;
     vz_chart_helpers.relativeAccessor = 
     // tslint:disable-next-line:no-any be quiet tsc
-    function (d, index, dataset) {
+    (d, index, dataset) => {
         // We may be rendering the final-point datum for scatterplot.
         // If so, we will have already provided the 'relative' property
         if (d.relative != null) {
             return d.relative;
         }
-        var data = dataset.data();
+        let data = dataset.data();
         // I can't imagine how this function would be called when the data is
         // empty (after all, it iterates over the data), but lets guard just
         // to be safe.
-        var first = data.length > 0 ? +data[0].wall_time : 0;
+        let first = data.length > 0 ? +data[0].wall_time : 0;
         return (+d.wall_time - first) / (60 * 60 * 1000); // ms to hours
     };
-    vz_chart_helpers.relativeFormatter = function (n) {
+    vz_chart_helpers.relativeFormatter = (n) => {
         // we will always show 2 units of precision, e.g days and hours, or
         // minutes and seconds, but not hours and minutes and seconds
-        var ret = '';
-        var days = Math.floor(n / 24);
+        let ret = '';
+        let days = Math.floor(n / 24);
         n -= (days * 24);
         if (days) {
             ret += days + 'd ';
         }
-        var hours = Math.floor(n);
+        let hours = Math.floor(n);
         n -= hours;
         n *= 60;
         if (hours || days) {
             ret += hours + 'h ';
         }
-        var minutes = Math.floor(n);
+        let minutes = Math.floor(n);
         n -= minutes;
         n *= 60;
         if (minutes || hours || days) {
             ret += minutes + 'm ';
         }
-        var seconds = Math.floor(n);
+        let seconds = Math.floor(n);
         return ret + seconds + 's';
     };
     function relativeX() {
-        var scale = new Plottable.Scales.Linear();
+        let scale = new Plottable.Scales.Linear();
         return {
             scale: scale,
             axis: new Plottable.Axes.Numeric(scale, 'bottom'),

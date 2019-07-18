@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,23 +25,19 @@ var vz_projector;
             label: String
         }
     });
-    var MetadataCard = /** @class */ (function (_super) {
-        __extends(MetadataCard, _super);
-        function MetadataCard() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
+    class MetadataCard extends vz_projector.MetadataCardPolymer {
         /** Handles toggle of metadata-container. */
-        MetadataCard.prototype._toggleMetadataContainer = function () {
+        _toggleMetadataContainer() {
             this.$$('#metadata-container').toggle();
             this.isCollapsed = !this.isCollapsed;
             this.set('collapseIcon', this.isCollapsed ? 'expand-more' : 'expand-less');
-        };
-        MetadataCard.prototype.updateMetadata = function (pointMetadata) {
+        }
+        updateMetadata(pointMetadata) {
             this.pointMetadata = pointMetadata;
             this.hasMetadata = (pointMetadata != null);
             if (pointMetadata) {
-                var metadata = [];
-                for (var metadataKey in pointMetadata) {
+                let metadata = [];
+                for (let metadataKey in pointMetadata) {
                     if (!pointMetadata.hasOwnProperty(metadataKey)) {
                         continue;
                     }
@@ -60,15 +46,14 @@ var vz_projector;
                 this.metadata = metadata;
                 this.label = '' + this.pointMetadata[this.labelOption];
             }
-        };
-        MetadataCard.prototype.setLabelOption = function (labelOption) {
+        }
+        setLabelOption(labelOption) {
             this.labelOption = labelOption;
             if (this.pointMetadata) {
                 this.label = '' + this.pointMetadata[this.labelOption];
             }
-        };
-        return MetadataCard;
-    }(vz_projector.MetadataCardPolymer));
+        }
+    }
     vz_projector.MetadataCard = MetadataCard;
-    document.registerElement(MetadataCard.prototype.is, MetadataCard);
+    customElements.define(MetadataCard.prototype.is, MetadataCard);
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

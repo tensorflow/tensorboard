@@ -21,12 +21,12 @@ var vz_projector;
          * The duration was empirically found so that it leaves enough time for the
          * browser to update its UI state before starting an expensive UI-blocking task.
          */
-        var TASK_DELAY_MS = 200;
+        const TASK_DELAY_MS = 200;
         /** Shuffles the array in-place in O(n) time using Fisher-Yates algorithm. */
         function shuffle(array) {
-            var m = array.length;
-            var t;
-            var i;
+            let m = array.length;
+            let t;
+            let i;
             // While there remain elements to shuffle.
             while (m) {
                 // Pick a remaining element
@@ -40,15 +40,15 @@ var vz_projector;
         }
         util.shuffle = shuffle;
         function range(count) {
-            var rangeOutput = [];
-            for (var i = 0; i < count; i++) {
+            const rangeOutput = [];
+            for (let i = 0; i < count; i++) {
                 rangeOutput.push(i);
             }
             return rangeOutput;
         }
         util.range = range;
         function classed(element, className, enabled) {
-            var classNames = element.className.split(' ');
+            const classNames = element.className.split(' ');
             if (enabled) {
                 if (className in classNames) {
                     return;
@@ -58,7 +58,7 @@ var vz_projector;
                 }
             }
             else {
-                var index = classNames.indexOf(className);
+                const index = classNames.indexOf(className);
                 if (index === -1) {
                     return;
                 }
@@ -69,16 +69,16 @@ var vz_projector;
         util.classed = classed;
         /** Projects a 3d point into screen space */
         function vector3DToScreenCoords(cam, w, h, v) {
-            var dpr = window.devicePixelRatio;
-            var pv = new THREE.Vector3().copy(v).project(cam);
+            let dpr = window.devicePixelRatio;
+            let pv = new THREE.Vector3().copy(v).project(cam);
             // The screen-space origin is at the middle of the screen, with +y up.
-            var coords = [((pv.x + 1) / 2 * w) * dpr, -((pv.y - 1) / 2 * h) * dpr];
+            let coords = [((pv.x + 1) / 2 * w) * dpr, -((pv.y - 1) / 2 * h) * dpr];
             return coords;
         }
         util.vector3DToScreenCoords = vector3DToScreenCoords;
         /** Loads 3 contiguous elements from a packed xyz array into a Vector3. */
         function vector3FromPackedArray(a, pointIndex) {
-            var offset = pointIndex * 3;
+            const offset = pointIndex * 3;
             return new THREE.Vector3(a[offset], a[offset + 1], a[offset + 2]);
         }
         util.vector3FromPackedArray = vector3FromPackedArray;
@@ -87,21 +87,21 @@ var vz_projector;
          * Ignores points that are behind the camera.
          */
         function getNearFarPoints(worldSpacePoints, cameraPos, cameraTarget) {
-            var shortestDist = Infinity;
-            var furthestDist = 0;
-            var camToTarget = new THREE.Vector3().copy(cameraTarget).sub(cameraPos);
-            var camPlaneNormal = new THREE.Vector3().copy(camToTarget).normalize();
-            var n = worldSpacePoints.length / 3;
-            var src = 0;
-            var p = new THREE.Vector3();
-            var camToPoint = new THREE.Vector3();
-            for (var i = 0; i < n; i++) {
+            let shortestDist = Infinity;
+            let furthestDist = 0;
+            const camToTarget = new THREE.Vector3().copy(cameraTarget).sub(cameraPos);
+            const camPlaneNormal = new THREE.Vector3().copy(camToTarget).normalize();
+            const n = worldSpacePoints.length / 3;
+            let src = 0;
+            let p = new THREE.Vector3();
+            let camToPoint = new THREE.Vector3();
+            for (let i = 0; i < n; i++) {
                 p.x = worldSpacePoints[src];
                 p.y = worldSpacePoints[src + 1];
                 p.z = worldSpacePoints[src + 2];
                 src += 3;
                 camToPoint.copy(p).sub(cameraPos);
-                var dist = camPlaneNormal.dot(camToPoint);
+                const dist = camPlaneNormal.dot(camToPoint);
                 if (dist < 0) {
                     continue;
                 }
@@ -115,7 +115,7 @@ var vz_projector;
          * Generate a texture for the points/images and sets some initial params
          */
         function createTexture(image) {
-            var tex = new THREE.Texture(image);
+            let tex = new THREE.Texture(image);
             tex.needsUpdate = true;
             // Used if the texture isn't a power of 2.
             tex.minFilter = THREE.LinearFilter;
@@ -136,16 +136,16 @@ var vz_projector;
         }
         util.assert = assert;
         function getSearchPredicate(query, inRegexMode, fieldName) {
-            var predicate;
+            let predicate;
             if (inRegexMode) {
-                var regExp_1 = new RegExp(query, 'i');
-                predicate = function (p) { return regExp_1.test(p.metadata[fieldName].toString()); };
+                let regExp = new RegExp(query, 'i');
+                predicate = p => regExp.test(p.metadata[fieldName].toString());
             }
             else {
                 // Doing a case insensitive substring match.
                 query = query.toLowerCase();
-                predicate = function (p) {
-                    var label = p.metadata[fieldName].toString().toLowerCase();
+                predicate = p => {
+                    let label = p.metadata[fieldName].toString().toLowerCase();
                     return label.indexOf(query) >= 0;
                 };
             }
@@ -163,15 +163,13 @@ var vz_projector;
          *     task is done.
          * @return The value returned by the task.
          */
-        function runAsyncTask(message, task, msgId, taskDelay) {
-            if (msgId === void 0) { msgId = null; }
-            if (taskDelay === void 0) { taskDelay = TASK_DELAY_MS; }
-            var autoClear = (msgId == null);
+        function runAsyncTask(message, task, msgId = null, taskDelay = TASK_DELAY_MS) {
+            let autoClear = (msgId == null);
             msgId = vz_projector.logging.setModalMessage(message, msgId);
-            return new Promise(function (resolve, reject) {
-                setTimeout(function () {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
                     try {
-                        var result = task();
+                        let result = task();
                         // Clearing the old message.
                         if (autoClear) {
                             vz_projector.logging.setModalMessage(null, msgId);
@@ -196,14 +194,14 @@ var vz_projector;
             if (!url) {
                 return {};
             }
-            var queryString = url.indexOf('?') !== -1 ? url.split('?')[1] : url;
+            let queryString = url.indexOf('?') !== -1 ? url.split('?')[1] : url;
             if (queryString.indexOf('#')) {
                 queryString = queryString.split('#')[0];
             }
-            var queryEntries = queryString.split('&');
-            var queryParams = {};
-            for (var i = 0; i < queryEntries.length; i++) {
-                var queryEntryComponents = queryEntries[i].split('=');
+            const queryEntries = queryString.split('&');
+            let queryParams = {};
+            for (let i = 0; i < queryEntries.length; i++) {
+                let queryEntryComponents = queryEntries[i].split('=');
                 queryParams[queryEntryComponents[0].toLowerCase()] =
                     decodeURIComponent(queryEntryComponents[1]);
             }
@@ -211,10 +209,10 @@ var vz_projector;
         }
         util.getURLParams = getURLParams;
         /** List of substrings that auto generated tensors have in their name. */
-        var SUBSTR_GEN_TENSORS = ['/Adagrad'];
+        const SUBSTR_GEN_TENSORS = ['/Adagrad'];
         /** Returns true if the tensor was automatically generated by TF API calls. */
         function tensorIsGenerated(tensorName) {
-            for (var i = 0; i < SUBSTR_GEN_TENSORS.length; i++) {
+            for (let i = 0; i < SUBSTR_GEN_TENSORS.length; i++) {
                 if (tensorName.indexOf(SUBSTR_GEN_TENSORS[i]) >= 0) {
                     return true;
                 }
@@ -229,8 +227,8 @@ var vz_projector;
         /** Checks to see if the browser supports webgl. */
         function hasWebGLSupport() {
             try {
-                var c = document.createElement('canvas');
-                var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+                let c = document.createElement('canvas');
+                let gl = c.getContext('webgl') || c.getContext('experimental-webgl');
                 return gl != null && typeof weblas !== 'undefined';
             }
             catch (e) {

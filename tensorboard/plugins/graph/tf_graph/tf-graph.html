@@ -20,7 +20,7 @@ limitations under the License.
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-graph-common/tf-graph-common.html">
 <link rel="import" href="tf-graph-scene.html">
 
@@ -69,6 +69,7 @@ paper-button {
           node-names-to-health-pills="[[nodeNamesToHealthPills]]"
           health-pill-step-index="{{healthPillStepIndex}}"
           handle-edge-selected="[[handleEdgeSelected]]"
+          trace-inputs="[[traceInputs]]"
     ></tf-graph-scene>
   </div>
 </div>
@@ -122,6 +123,7 @@ Polymer({
       readOnly: true,
       notify: true,
     },
+    traceInputs: Boolean,
     // An array of ContextMenuItem objects. Items that appear in the context
     // menu for a node.
     nodeContextMenuItems: Array,
@@ -207,6 +209,7 @@ Polymer({
     this.$$('tf-graph-scene').panToNode(nodeName);
   },
   _buildNewRenderHierarchy(graphHierarchy) {
+    if (!graphHierarchy) return;
     this._buildRenderHierarchy(graphHierarchy);
   },
   _statsChanged: function(stats, devicesForStats) {
@@ -300,6 +303,9 @@ Polymer({
     'annotation-highlight': '_nodeHighlighted',
     'annotation-unhighlight': '_nodeUnhighlighted',
   },
+  fit: function() {
+    this.$.scene.fit();
+  },
   _graphChanged: function() {
     // When a new graph is loaded, fire this event so that there is no
     // info-card being displayed for the previously-loaded graph.
@@ -392,12 +398,15 @@ Polymer({
     // the visual effect of selecting that node, before the expansion is
     // done.
     this.async(function() {
-      this.querySelector('#scene').setNodeExpanded(renderNode);
+      this.$.scene.setNodeExpanded(renderNode);
     }, 75);
   },
   _nodeToggleExtract: function(event) {
     // Toggle the include setting of the specified node appropriately.
     var nodeName = event.detail.name;
+    this.nodeToggleExtract(nodeName);
+  },
+  nodeToggleExtract: function(nodeName) {
     var renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
     if (renderNode.node.include == tf.graph.InclusionType.INCLUDE) {
       renderNode.node.include = tf.graph.InclusionType.EXCLUDE;
@@ -408,13 +417,16 @@ Polymer({
        this.renderHierarchy.isNodeAuxiliary(renderNode)
           ? tf.graph.InclusionType.INCLUDE : tf.graph.InclusionType.EXCLUDE;
     }
-
     // Rebuild the render hierarchy.
     this._buildRenderHierarchy(this.graphHierarchy);
   },
   _nodeToggleSeriesGroup: function(event) {
     // Toggle the group setting of the specified node appropriately.
     var nodeName = event.detail.name;
+    this.nodeToggleSeriesGroup(nodeName);
+  },
+  nodeToggleSeriesGroup: function(nodeName) {
+    // Toggle the group setting of the specified node appropriately.
     tf.graph.toggleNodeSeriesGroup(this.hierarchyParams.seriesMap, nodeName);
 
     // Rebuild the render hierarchy with the updated series grouping map.
@@ -460,7 +472,7 @@ Polymer({
 
         if (!selectedMarker) {
           // The marker for a selected edge of this size does not exist yet. Create it.
-          const originalMarker = this.$$('tf-graph-scene').querySelector('#' + markerId);
+          const originalMarker = this.$.scene.querySelector('#' + markerId);
           selectedMarker = originalMarker.cloneNode(true);
           selectedMarker.setAttribute('id', selectedMarkerId);
           selectedMarker.classList.add('selected-arrowhead');

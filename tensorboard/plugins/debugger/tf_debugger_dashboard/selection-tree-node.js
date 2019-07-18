@@ -22,7 +22,7 @@ var tf_debugger_dashboard;
     tf_debugger_dashboard.DEVICE_NAME_PATTERN = /^\/job:[A-Za-z0-9_]+\/replica:[0-9_]+\/task:[0-9]+\/device:[A-Za-z0-9_]+:[0-9]+/;
     // A checkbox is partially checked if it is a checkbox for a non-leaf node and
     // some (but not all) of its children are checked.
-    var CheckboxState;
+    let CheckboxState;
     (function (CheckboxState) {
         CheckboxState[CheckboxState["EMPTY"] = 0] = "EMPTY";
         CheckboxState[CheckboxState["CHECKED"] = 1] = "CHECKED";
@@ -36,9 +36,9 @@ var tf_debugger_dashboard;
      * @return Split items. The device name, if present, will be the first item.
      */
     function splitNodeName(name) {
-        var items = [];
-        var deviceNameMatches = name.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN);
-        var nodeName = name;
+        let items = [];
+        const deviceNameMatches = name.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN);
+        let nodeName = name;
         if (deviceNameMatches != null) {
             items.push(deviceNameMatches[0]);
             // Expect there to be a slash after the device name, and skip it.
@@ -58,8 +58,8 @@ var tf_debugger_dashboard;
      *   E.g., 'Dense/BiasAdd'
      */
     function getCleanNodeName(name) {
-        var cleanName = name;
-        var deviceNameMatches = name.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN);
+        let cleanName = name;
+        const deviceNameMatches = name.match(tf_debugger_dashboard.DEVICE_NAME_PATTERN);
         if (deviceNameMatches != null) {
             if (cleanName.length > deviceNameMatches[0].length &&
                 cleanName[deviceNameMatches[0].length] != '/') {
@@ -88,7 +88,7 @@ var tf_debugger_dashboard;
      */
     function sortAndBaseExpandDebugWatches(debugWatches) {
         // Sort the debug watches.
-        debugWatches.sort(function (watch1, watch2) {
+        debugWatches.sort((watch1, watch2) => {
             if (watch1.node_name < watch2.node_name) {
                 return -1;
             }
@@ -101,17 +101,17 @@ var tf_debugger_dashboard;
         });
         // Find leaf nodes that need to be base-expanded due to their names being a
         // prefix of other nodes.
-        for (var i = 0; i < debugWatches.length; ++i) {
-            var withSlashSuffix = debugWatches[i].node_name + '/';
-            var toBaseExpandLeaf = false;
-            for (var j = i + 1; j < debugWatches.length; ++j) {
+        for (let i = 0; i < debugWatches.length; ++i) {
+            const withSlashSuffix = debugWatches[i].node_name + '/';
+            let toBaseExpandLeaf = false;
+            for (let j = i + 1; j < debugWatches.length; ++j) {
                 if (debugWatches[j].node_name.indexOf(withSlashSuffix) === 0) {
                     toBaseExpandLeaf = true;
                     break;
                 }
             }
             if (toBaseExpandLeaf) {
-                var items = debugWatches[i].node_name.split('/');
+                const items = debugWatches[i].node_name.split('/');
                 debugWatches[i].node_name += '/(' + items[items.length - 1] + ')';
             }
         }
@@ -133,9 +133,9 @@ var tf_debugger_dashboard;
     }
     tf_debugger_dashboard.removeNodeNameBaseExpansion = removeNodeNameBaseExpansion;
     function assembleDeviceAndNodeNames(nameItems) {
-        var deviceAndNodeNames = [null, null];
+        const deviceAndNodeNames = [null, null];
         if (nameItems[0].match(tf_debugger_dashboard.DEVICE_NAME_PATTERN)) {
-            var deviceName = nameItems[0];
+            let deviceName = nameItems[0];
             if (deviceName[deviceName.length - 1] === '/') {
                 deviceName = deviceName.slice(0, deviceName.length - 1);
             }
@@ -148,7 +148,7 @@ var tf_debugger_dashboard;
         return deviceAndNodeNames;
     }
     tf_debugger_dashboard.assembleDeviceAndNodeNames = assembleDeviceAndNodeNames;
-    var DebugWatchFilterMode;
+    let DebugWatchFilterMode;
     (function (DebugWatchFilterMode) {
         DebugWatchFilterMode[DebugWatchFilterMode["NodeName"] = 0] = "NodeName";
         DebugWatchFilterMode[DebugWatchFilterMode["OpType"] = 1] = "OpType";
@@ -164,16 +164,15 @@ var tf_debugger_dashboard;
      */
     function filterDebugWatches(debugWatches, filterMode, filterRegex) {
         if (filterMode === DebugWatchFilterMode.NodeName) {
-            return debugWatches.filter(function (debugWatch) { return debugWatch.node_name.match(filterRegex); });
+            return debugWatches.filter(debugWatch => debugWatch.node_name.match(filterRegex));
         }
         else if (filterMode === DebugWatchFilterMode.OpType) {
-            return debugWatches.filter(function (debugWatch) { return debugWatch.op_type.match(filterRegex); });
+            return debugWatches.filter(debugWatch => debugWatch.op_type.match(filterRegex));
         }
     }
     tf_debugger_dashboard.filterDebugWatches = filterDebugWatches;
-    var SelectionTreeNode = /** @class */ (function () {
-        function SelectionTreeNode(name, debugWatchChange, parent, debugWatch) {
-            var _this = this;
+    class SelectionTreeNode {
+        constructor(name, debugWatchChange, parent, debugWatch) {
             this.debugWatchChange = debugWatchChange;
             this.debugWatch = debugWatch;
             this.name = name;
@@ -183,11 +182,11 @@ var tf_debugger_dashboard;
             this.parent = parent;
             this.children = {};
             this.checkbox = document.createElement('paper-checkbox');
-            this.checkbox.addEventListener('change', function () {
-                _this._handleChange();
+            this.checkbox.addEventListener('change', () => {
+                this._handleChange();
             }, false);
         }
-        SelectionTreeNode.prototype._handleChange = function () {
+        _handleChange() {
             if (this.avoidPropagation) {
                 // Do not propagate.
                 if (this.debugWatch) {
@@ -218,10 +217,10 @@ var tf_debugger_dashboard;
                     CheckboxState.CHECKED : CheckboxState.EMPTY, true);
                 if (this.isCheckboxChecked()) {
                     // Check all the nodes under it.
-                    var descendants_1 = _.values(this.children);
-                    while (descendants_1.length) {
-                        var node = descendants_1.pop();
-                        _.forEach(node.children, function (child) { return descendants_1.push(child); });
+                    const descendants = _.values(this.children);
+                    while (descendants.length) {
+                        let node = descendants.pop();
+                        _.forEach(node.children, child => descendants.push(child));
                         node.setCheckboxState(CheckboxState.CHECKED, true);
                     }
                     // Reconcile nodes above.
@@ -229,25 +228,25 @@ var tf_debugger_dashboard;
                 }
                 else {
                     // Uncheck all the nodes under it.
-                    var descendants_2 = _.values(this.children);
-                    while (descendants_2.length) {
-                        var node = descendants_2.pop();
-                        _.forEach(node.children, function (child) { return descendants_2.push(child); });
+                    const descendants = _.values(this.children);
+                    while (descendants.length) {
+                        let node = descendants.pop();
+                        _.forEach(node.children, child => descendants.push(child));
                         node.setCheckboxState(CheckboxState.EMPTY, true);
                     }
                     // Reconcile nodes above.
                     this.setNodesAboveToEmpty();
                 }
             }
-        };
-        SelectionTreeNode.prototype.isLeaf = function () {
+        }
+        isLeaf() {
             return !!this.debugWatch;
-        };
-        SelectionTreeNode.prototype.setToAllCheckedExternally = function () {
+        }
+        setToAllCheckedExternally() {
             this.setCheckboxState(CheckboxState.CHECKED);
             this._handleChange();
-        };
-        SelectionTreeNode.prototype.setCheckboxState = function (state, avoidPropagation) {
+        }
+        setCheckboxState(state, avoidPropagation) {
             this.avoidPropagation = avoidPropagation;
             this.checkboxState = state;
             this.checkbox.classList.toggle('partial-checkbox', state === CheckboxState.PARTIAL);
@@ -258,13 +257,13 @@ var tf_debugger_dashboard;
                 this.checkbox.removeAttribute('checked');
             }
             this.avoidPropagation = false;
-        };
-        SelectionTreeNode.prototype.isCheckboxChecked = function () {
+        }
+        isCheckboxChecked() {
             return this.checkbox.hasAttribute('checked');
-        };
-        SelectionTreeNode.prototype.setNodesAboveToChecked = function () {
-            var currentNode = this.parent;
-            var partialFound = false;
+        }
+        setNodesAboveToChecked() {
+            let currentNode = this.parent;
+            let partialFound = false;
             while (currentNode) {
                 if (partialFound) {
                     // We found a PARTIAL checkbox lower in the tree. Higher up ones
@@ -272,7 +271,7 @@ var tf_debugger_dashboard;
                     currentNode.setCheckboxState(CheckboxState.PARTIAL, true);
                 }
                 else {
-                    var index = _.findIndex(_.values(currentNode.children), function (child) { return (child.checkboxState !== CheckboxState.CHECKED); });
+                    const index = _.findIndex(_.values(currentNode.children), child => (child.checkboxState !== CheckboxState.CHECKED));
                     // Either all or only some of the children were checked.
                     partialFound = index !== -1;
                     currentNode.setCheckboxState(partialFound ? CheckboxState.PARTIAL : CheckboxState.CHECKED, true);
@@ -280,10 +279,10 @@ var tf_debugger_dashboard;
                 // Move up the tree.
                 currentNode = currentNode.parent;
             }
-        };
-        SelectionTreeNode.prototype.setNodesAboveToEmpty = function () {
-            var currentNode = this.parent;
-            var partialFound = false;
+        }
+        setNodesAboveToEmpty() {
+            let currentNode = this.parent;
+            let partialFound = false;
             while (currentNode) {
                 if (partialFound) {
                     // We found a PARTIAL checkbox lower in the tree. Higher up ones
@@ -291,7 +290,7 @@ var tf_debugger_dashboard;
                     currentNode.setCheckboxState(CheckboxState.PARTIAL, true);
                 }
                 else {
-                    var index = _.findIndex(_.values(currentNode.children), function (child) { return (child.checkboxState !== CheckboxState.EMPTY); });
+                    const index = _.findIndex(_.values(currentNode.children), child => (child.checkboxState !== CheckboxState.EMPTY));
                     // Either all or only some of the children were empty.
                     partialFound = index !== -1;
                     currentNode.setCheckboxState(partialFound ? CheckboxState.PARTIAL : CheckboxState.EMPTY, true);
@@ -299,11 +298,10 @@ var tf_debugger_dashboard;
                 // Move up the tree.
                 currentNode = currentNode.parent;
             }
-        };
-        SelectionTreeNode.prototype.setLevelDom = function (levelDom) {
+        }
+        setLevelDom(levelDom) {
             this.levelDom = levelDom;
-        };
-        return SelectionTreeNode;
-    }());
+        }
+    }
     tf_debugger_dashboard.SelectionTreeNode = SelectionTreeNode;
 })(tf_debugger_dashboard || (tf_debugger_dashboard = {})); // namespace tf_debugger_dashboard

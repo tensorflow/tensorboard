@@ -32,7 +32,7 @@ var tf;
                     selectedFile: Object,
                     compatibilityProvider: {
                         type: Object,
-                        value: function () { return new tf.graph.op.TpuCompatibilityProvider(); },
+                        value: () => new tf.graph.op.TpuCompatibilityProvider(),
                     },
                     /**
                      * If this optional object is provided, graph logic will override
@@ -43,7 +43,7 @@ var tf;
                      */
                     overridingHierarchyParams: {
                         type: Object,
-                        value: function () { return ({}); }
+                        value: () => ({})
                     },
                     /**
                      * @type {{value: number, msg: string}}
@@ -75,37 +75,34 @@ var tf;
                     '_loadData(datasets, selectedData, overridingHierarchyParams, compatibilityProvider)',
                     '_loadFile(selectedFile, overridingHierarchyParams, compatibilityProvider)',
                 ],
-                _loadData: function () {
-                    var _this = this;
+                _loadData() {
                     // Input can change a lot within a microtask.
                     // Don't fetch too much too fast and introduce race condition.
-                    this.debounce('load', function () {
-                        var dataset = _this.datasets[_this.selectedData];
+                    this.debounce('load', () => {
+                        const dataset = this.datasets[this.selectedData];
                         if (!dataset)
                             return;
-                        _this._parseAndConstructHierarchicalGraph(dataset.path);
+                        this._parseAndConstructHierarchicalGraph(dataset.path);
                     });
                 },
-                _parseAndConstructHierarchicalGraph: function (path, pbTxtFile) {
-                    var _this = this;
-                    var _a = this, overridingHierarchyParams = _a.overridingHierarchyParams, compatibilityProvider = _a.compatibilityProvider;
+                _parseAndConstructHierarchicalGraph(path, pbTxtFile) {
+                    const { overridingHierarchyParams, compatibilityProvider, } = this;
                     // Reset the progress bar to 0.
                     this.progress = { value: 0, msg: '' };
-                    var tracker = tf.graph.util.getTracker(this);
-                    var hierarchyParams = Object.assign({}, tf.graph.hierarchy.DefaultHierarchyParams, overridingHierarchyParams);
-                    tf.graph.loader.fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, compatibilityProvider, hierarchyParams).then(function (_a) {
-                        var graph = _a.graph, graphHierarchy = _a.graphHierarchy;
-                        _this._setOutHierarchyParams(hierarchyParams);
-                        _this._setOutGraph(graph);
-                        _this._setOutGraphHierarchy(graphHierarchy);
+                    const tracker = tf.graph.util.getTracker(this);
+                    const hierarchyParams = Object.assign({}, tf.graph.hierarchy.DefaultHierarchyParams, overridingHierarchyParams);
+                    tf.graph.loader.fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, compatibilityProvider, hierarchyParams).then(({ graph, graphHierarchy }) => {
+                        this._setOutHierarchyParams(hierarchyParams);
+                        this._setOutGraph(graph);
+                        this._setOutGraphHierarchy(graphHierarchy);
                     });
                 },
-                _loadFile: function (e) {
+                _loadFile(e) {
                     if (!e) {
                         return;
                     }
-                    var target = e.target;
-                    var file = target.files[0];
+                    const target = e.target;
+                    const file = target.files[0];
                     if (!file) {
                         return;
                     }

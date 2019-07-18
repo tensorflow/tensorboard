@@ -79,8 +79,8 @@ var tf;
             /**
              * The dimensions of the minimap including padding and margin.
              */
-            var MINIMAP_BOX_WIDTH = 320;
-            var MINIMAP_BOX_HEIGHT = 150;
+            const MINIMAP_BOX_WIDTH = 320;
+            const MINIMAP_BOX_HEIGHT = 150;
             scene.healthPillEntries = [
                 {
                     background_color: '#CC2F2C',
@@ -116,8 +116,8 @@ var tf;
              * @param callback Called when the fitting is done.
              */
             function fit(svg, zoomG, d3zoom, callback) {
-                var svgRect = svg.getBoundingClientRect();
-                var sceneSize = null;
+                let svgRect = svg.getBoundingClientRect();
+                let sceneSize = null;
                 try {
                     sceneSize = zoomG.getBBox();
                     if (sceneSize.width === 0) {
@@ -130,17 +130,17 @@ var tf;
                     // detached from the dom.
                     return;
                 }
-                var scale = 0.9 *
+                let scale = 0.9 *
                     Math.min(svgRect.width / sceneSize.width, svgRect.height / sceneSize.height, 2);
-                var params = graph.layout.PARAMS.graph;
-                var transform = d3.zoomIdentity
+                let params = graph.layout.PARAMS.graph;
+                const transform = d3.zoomIdentity
                     .scale(scale)
                     .translate(params.padding.paddingLeft, params.padding.paddingTop);
                 d3.select(svg)
                     .transition()
                     .duration(500)
                     .call(d3zoom.transform, transform)
-                    .on('end.fitted', function () {
+                    .on('end.fitted', () => {
                     // Remove the listener for the zoomend event,
                     // so we don't get called at the end of regular zoom events,
                     // just those that fit the graph to screen.
@@ -162,7 +162,7 @@ var tf;
              *            provided node.
              */
             function panToNode(nodeName, svg, zoomG, d3zoom) {
-                var node = d3
+                let node = d3
                     .select('[data-name="' + nodeName + '"].' + scene.Class.Node.GROUP)
                     .node();
                 if (!node) {
@@ -170,24 +170,24 @@ var tf;
                 }
                 // Check if the selected node is off-screen in either
                 // X or Y dimension in either direction.
-                var nodeBox = node.getBBox();
-                var nodeCtm = node.getScreenCTM();
-                var pointTL = svg.createSVGPoint();
-                var pointBR = svg.createSVGPoint();
+                let nodeBox = node.getBBox();
+                let nodeCtm = node.getScreenCTM();
+                let pointTL = svg.createSVGPoint();
+                let pointBR = svg.createSVGPoint();
                 pointTL.x = nodeBox.x;
                 pointTL.y = nodeBox.y;
                 pointBR.x = nodeBox.x + nodeBox.width;
                 pointBR.y = nodeBox.y + nodeBox.height;
                 pointTL = pointTL.matrixTransform(nodeCtm);
                 pointBR = pointBR.matrixTransform(nodeCtm);
-                var isOutsideOfBounds = function (start, end, lowerBound, upperBound) {
+                let isOutsideOfBounds = (start, end, lowerBound, upperBound) => {
                     // Return if even a part of the interval is out of bounds.
                     return !(start > lowerBound && end < upperBound);
                 };
-                var svgRect = svg.getBoundingClientRect();
+                let svgRect = svg.getBoundingClientRect();
                 // Subtract to make sure that the node is not hidden behind the minimap.
-                var horizontalBound = svgRect.left + svgRect.width - MINIMAP_BOX_WIDTH;
-                var verticalBound = svgRect.top + svgRect.height - MINIMAP_BOX_HEIGHT;
+                const horizontalBound = svgRect.left + svgRect.width - MINIMAP_BOX_WIDTH;
+                const verticalBound = svgRect.top + svgRect.height - MINIMAP_BOX_HEIGHT;
                 if (isOutsideOfBounds(pointTL.x, pointBR.x, svgRect.left, horizontalBound) ||
                     isOutsideOfBounds(pointTL.y, pointBR.y, svgRect.top, verticalBound)) {
                     // Determine the amount to translate the graph in both X and Y dimensions in
@@ -195,13 +195,13 @@ var tf;
                     // of the node, the size of the svg scene, the amount the scene has been
                     // scaled by through zooming, and any previous transforms already performed
                     // by this logic.
-                    var centerX = (pointTL.x + pointBR.x) / 2;
-                    var centerY = (pointTL.y + pointBR.y) / 2;
-                    var dx = svgRect.left + svgRect.width / 2 - centerX;
-                    var dy = svgRect.top + svgRect.height / 2 - centerY;
+                    let centerX = (pointTL.x + pointBR.x) / 2;
+                    let centerY = (pointTL.y + pointBR.y) / 2;
+                    let dx = svgRect.left + svgRect.width / 2 - centerX;
+                    let dy = svgRect.top + svgRect.height / 2 - centerY;
                     // We translate by this amount. We divide the X and Y translations by the
                     // scale to undo how translateBy scales the translations (in d3 v4).
-                    var svgTransform = d3.zoomTransform(svg);
+                    const svgTransform = d3.zoomTransform(svg);
                     d3.select(svg).transition().duration(500).call(d3zoom.translateBy, dx / svgTransform.k, dy / svgTransform.k);
                     return true;
                 }
@@ -221,13 +221,13 @@ var tf;
              * @return selection of the element
              */
             function selectOrCreateChild(container, tagName, className, before) {
-                var child = selectChild(container, tagName, className);
+                let child = selectChild(container, tagName, className);
                 if (!child.empty()) {
                     return child;
                 }
-                var newElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+                let newElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
                 if (className instanceof Array) {
-                    for (var i = 0; i < className.length; i++) {
+                    for (let i = 0; i < className.length; i++) {
                         newElement.classList.add(className[i]);
                     }
                 }
@@ -257,13 +257,13 @@ var tf;
              * @return selection of the element, or an empty selection
              */
             function selectChild(container, tagName, className) {
-                var children = container.node().childNodes;
-                for (var i = 0; i < children.length; i++) {
-                    var child = children[i];
+                let children = container.node().childNodes;
+                for (let i = 0; i < children.length; i++) {
+                    let child = children[i];
                     if (child.tagName === tagName) {
                         if (className instanceof Array) {
-                            var hasAllClasses = true;
-                            for (var j = 0; j < className.length; j++) {
+                            let hasAllClasses = true;
+                            for (let j = 0; j < className.length; j++) {
                                 hasAllClasses =
                                     hasAllClasses && child.classList.contains(className[j]);
                             }
@@ -313,12 +313,12 @@ var tf;
              */
             function buildGroup(container, renderNode, sceneElement, sceneClass) {
                 sceneClass = sceneClass || scene.Class.Scene.GROUP;
-                var isNewSceneGroup = selectChild(container, 'g', sceneClass).empty();
-                var sceneGroup = selectOrCreateChild(container, 'g', sceneClass);
+                let isNewSceneGroup = selectChild(container, 'g', sceneClass).empty();
+                let sceneGroup = selectOrCreateChild(container, 'g', sceneClass);
                 // core
-                var coreGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.CORE);
-                var coreNodes = _.reduce(renderNode.coreGraph.nodes(), function (nodes, name) {
-                    var node = renderNode.coreGraph.node(name);
+                let coreGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.CORE);
+                let coreNodes = _.reduce(renderNode.coreGraph.nodes(), (nodes, name) => {
+                    let node = renderNode.coreGraph.node(name);
                     if (!node.excluded) {
                         nodes.push(node);
                     }
@@ -336,7 +336,7 @@ var tf;
                 scene.node.buildGroup(coreGroup, coreNodes, sceneElement);
                 // In-extract
                 if (renderNode.isolatedInExtract.length > 0) {
-                    var inExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.INEXTRACT);
+                    let inExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.INEXTRACT);
                     scene.node.buildGroup(inExtractGroup, renderNode.isolatedInExtract, sceneElement);
                 }
                 else {
@@ -344,7 +344,7 @@ var tf;
                 }
                 // Out-extract
                 if (renderNode.isolatedOutExtract.length > 0) {
-                    var outExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.OUTEXTRACT);
+                    let outExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.OUTEXTRACT);
                     scene.node.buildGroup(outExtractGroup, renderNode.isolatedOutExtract, sceneElement);
                 }
                 else {
@@ -352,7 +352,7 @@ var tf;
                 }
                 // Library functions
                 if (renderNode.libraryFunctionsExtract.length > 0) {
-                    var outExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.FUNCTION_LIBRARY);
+                    let outExtractGroup = selectOrCreateChild(sceneGroup, 'g', scene.Class.Scene.FUNCTION_LIBRARY);
                     scene.node.buildGroup(outExtractGroup, renderNode.libraryFunctionsExtract, sceneElement);
                 }
                 else {
@@ -379,16 +379,16 @@ var tf;
                 // expanded metanodes, the graphs are below the labels.  Do not shift them
                 // down for series nodes as series nodes don't have labels inside of their
                 // bounding boxes.
-                var yTranslate = renderNode.node.type === graph.NodeType.SERIES ?
+                let yTranslate = renderNode.node.type === graph.NodeType.SERIES ?
                     0 : graph.layout.PARAMS.subscene.meta.labelHeight;
                 // core
                 translate(selectChild(sceneGroup, 'g', scene.Class.Scene.CORE), 0, yTranslate);
                 // in-extract
-                var hasInExtract = renderNode.isolatedInExtract.length > 0;
-                var hasOutExtract = renderNode.isolatedOutExtract.length > 0;
-                var hasLibraryFunctions = renderNode.libraryFunctionsExtract.length > 0;
-                var offset = graph.layout.PARAMS.subscene.meta.extractXOffset;
-                var auxWidth = 0;
+                let hasInExtract = renderNode.isolatedInExtract.length > 0;
+                let hasOutExtract = renderNode.isolatedOutExtract.length > 0;
+                let hasLibraryFunctions = renderNode.libraryFunctionsExtract.length > 0;
+                let offset = graph.layout.PARAMS.subscene.meta.extractXOffset;
+                let auxWidth = 0;
                 if (hasInExtract) {
                     auxWidth += renderNode.outExtractBox.width;
                 }
@@ -396,7 +396,7 @@ var tf;
                     auxWidth += renderNode.outExtractBox.width;
                 }
                 if (hasInExtract) {
-                    var inExtractX = renderNode.coreBox.width;
+                    let inExtractX = renderNode.coreBox.width;
                     if (auxWidth < graph.layout.MIN_AUX_WIDTH) {
                         inExtractX = inExtractX - graph.layout.MIN_AUX_WIDTH +
                             renderNode.inExtractBox.width / 2;
@@ -413,7 +413,7 @@ var tf;
                 }
                 // out-extract
                 if (hasOutExtract) {
-                    var outExtractX = renderNode.coreBox.width;
+                    let outExtractX = renderNode.coreBox.width;
                     if (auxWidth < graph.layout.MIN_AUX_WIDTH) {
                         outExtractX = outExtractX - graph.layout.MIN_AUX_WIDTH +
                             renderNode.outExtractBox.width / 2;
@@ -427,7 +427,7 @@ var tf;
                     translate(selectChild(sceneGroup, 'g', scene.Class.Scene.OUTEXTRACT), outExtractX, yTranslate);
                 }
                 if (hasLibraryFunctions) {
-                    var libraryFunctionsExtractX = renderNode.coreBox.width -
+                    let libraryFunctionsExtractX = renderNode.coreBox.width -
                         renderNode.libraryFunctionsBox.width / 2;
                     translate(selectChild(sceneGroup, 'g', scene.Class.Scene.FUNCTION_LIBRARY), libraryFunctionsExtractX, yTranslate);
                 }
@@ -435,7 +435,7 @@ var tf;
             ;
             /** Adds a click listener to a group that fires a graph-select event */
             function addGraphClickListener(graphGroup, sceneElement) {
-                d3.select(graphGroup).on('click', function () {
+                d3.select(graphGroup).on('click', () => {
                     sceneElement.fire('graph-select');
                 });
             }
@@ -477,14 +477,14 @@ var tf;
              * @param height Height of bounding box for triangle.
              */
             function positionTriangle(polygon, cx, cy, width, height) {
-                var halfHeight = height / 2;
-                var halfWidth = width / 2;
-                var points = [
+                const halfHeight = height / 2;
+                const halfWidth = width / 2;
+                const points = [
                     [cx, cy - halfHeight],
                     [cx + halfWidth, cy + halfHeight],
                     [cx - halfWidth, cy + halfHeight]
                 ];
-                polygon.transition().attr('points', points.map(function (point) { return point.join(','); }).join(' '));
+                polygon.transition().attr('points', points.map(point => point.join(',')).join(' '));
             }
             scene.positionTriangle = positionTriangle;
             ;
@@ -495,22 +495,22 @@ var tf;
              *        the button on.
              */
             function positionButton(button, renderNode) {
-                var cx = graph.layout.computeCXPositionOfNodeShape(renderNode);
+                let cx = graph.layout.computeCXPositionOfNodeShape(renderNode);
                 // Position the button in the top-right corner of the group node,
                 // with space given the draw the button inside of the corner.
-                var width = renderNode.expanded ?
+                let width = renderNode.expanded ?
                     renderNode.width : renderNode.coreBox.width;
-                var height = renderNode.expanded ?
+                let height = renderNode.expanded ?
                     renderNode.height : renderNode.coreBox.height;
-                var x = cx + width / 2 - 6;
-                var y = renderNode.y - height / 2 + 6;
+                let x = cx + width / 2 - 6;
+                let y = renderNode.y - height / 2 + 6;
                 // For unexpanded series nodes, the button has special placement due
                 // to the unique visuals of this group node.
                 if (renderNode.node.type === graph.NodeType.SERIES && !renderNode.expanded) {
                     x += 10;
                     y -= 2;
                 }
-                var translateStr = 'translate(' + x + ',' + y + ')';
+                let translateStr = 'translate(' + x + ',' + y + ')';
                 button.selectAll('path').transition().attr('transform', translateStr);
                 button.select('circle').transition().attr({ cx: x, cy: y, r: graph.layout.PARAMS.nodeSize.meta.expandButtonRadius });
             }
@@ -553,16 +553,16 @@ var tf;
              * Get text content describing a health pill.
              */
             function _getHealthPillTextContent(healthPill, totalCount, elementsBreakdown, numericStats) {
-                var text = 'Device: ' + healthPill.device_name + '\n';
+                let text = 'Device: ' + healthPill.device_name + '\n';
                 text += 'dtype: ' + healthPill.dtype + '\n';
-                var shapeStr = '(scalar)';
+                let shapeStr = '(scalar)';
                 if (healthPill.shape.length > 0) {
                     shapeStr = '(' + healthPill.shape.join(',') + ')';
                 }
                 text += '\nshape: ' + shapeStr + '\n\n';
                 text += '#(elements): ' + totalCount + '\n';
-                var breakdownItems = [];
-                for (var i = 0; i < elementsBreakdown.length; i++) {
+                const breakdownItems = [];
+                for (let i = 0; i < elementsBreakdown.length; i++) {
                     if (elementsBreakdown[i] > 0) {
                         breakdownItems.push('#(' + scene.healthPillEntries[i].label + '): ' + elementsBreakdown[i]);
                     }
@@ -590,24 +590,21 @@ var tf;
              *   relative to the left edge of the health pill. If not provided, will
              *   default to `healthPillWidth / 2`.
              */
-            function addHealthPill(nodeGroupElement, healthPill, nodeInfo, healthPillId, healthPillWidth, healthPillHeight, healthPillYOffset, textXOffset) {
-                if (healthPillWidth === void 0) { healthPillWidth = 60; }
-                if (healthPillHeight === void 0) { healthPillHeight = 10; }
-                if (healthPillYOffset === void 0) { healthPillYOffset = 0; }
+            function addHealthPill(nodeGroupElement, healthPill, nodeInfo, healthPillId, healthPillWidth = 60, healthPillHeight = 10, healthPillYOffset = 0, textXOffset) {
                 // Check if text already exists at location.
                 d3.select(nodeGroupElement.parentNode).selectAll('.health-pill').remove();
                 if (!healthPill) {
                     return;
                 }
-                var lastHealthPillData = healthPill.value;
+                const lastHealthPillData = healthPill.value;
                 // For now, we only visualize the 6 values that summarize counts of tensor
                 // elements of various categories: -Inf, negative, 0, positive, Inf, and NaN.
-                var lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
-                var nanCount = lastHealthPillElementsBreakdown[0];
-                var negInfCount = lastHealthPillElementsBreakdown[1];
-                var posInfCount = lastHealthPillElementsBreakdown[5];
-                var totalCount = lastHealthPillData[1];
-                var numericStats = {
+                const lastHealthPillElementsBreakdown = lastHealthPillData.slice(2, 8);
+                const nanCount = lastHealthPillElementsBreakdown[0];
+                const negInfCount = lastHealthPillElementsBreakdown[1];
+                const posInfCount = lastHealthPillElementsBreakdown[5];
+                let totalCount = lastHealthPillData[1];
+                const numericStats = {
                     min: lastHealthPillData[8],
                     max: lastHealthPillData[9],
                     mean: lastHealthPillData[10],
@@ -627,30 +624,30 @@ var tf;
                     healthPillWidth /= 2;
                     healthPillHeight /= 2;
                 }
-                var healthPillGroup = document.createElementNS(scene.SVG_NAMESPACE, 'g');
+                let healthPillGroup = document.createElementNS(scene.SVG_NAMESPACE, 'g');
                 healthPillGroup.classList.add('health-pill');
                 // Define the gradient for the health pill.
-                var healthPillDefs = document.createElementNS(scene.SVG_NAMESPACE, 'defs');
+                let healthPillDefs = document.createElementNS(scene.SVG_NAMESPACE, 'defs');
                 healthPillGroup.appendChild(healthPillDefs);
-                var healthPillGradient = document.createElementNS(scene.SVG_NAMESPACE, 'linearGradient');
+                let healthPillGradient = document.createElementNS(scene.SVG_NAMESPACE, 'linearGradient');
                 // Every element in a web page must have a unique ID.
-                var healthPillGradientId = 'health-pill-gradient-' + healthPillId;
+                const healthPillGradientId = 'health-pill-gradient-' + healthPillId;
                 healthPillGradient.setAttribute('id', healthPillGradientId);
-                var cumulativeCount = 0;
-                var previousOffset = '0%';
-                for (var i = 0; i < lastHealthPillElementsBreakdown.length; i++) {
+                let cumulativeCount = 0;
+                let previousOffset = '0%';
+                for (let i = 0; i < lastHealthPillElementsBreakdown.length; i++) {
                     if (!lastHealthPillElementsBreakdown[i]) {
                         // Exclude empty categories.
                         continue;
                     }
                     cumulativeCount += lastHealthPillElementsBreakdown[i];
                     // Create a color interval using 2 stop elements.
-                    var stopElement0 = document.createElementNS(scene.SVG_NAMESPACE, 'stop');
+                    let stopElement0 = document.createElementNS(scene.SVG_NAMESPACE, 'stop');
                     stopElement0.setAttribute('offset', previousOffset);
                     stopElement0.setAttribute('stop-color', scene.healthPillEntries[i].background_color);
                     healthPillGradient.appendChild(stopElement0);
-                    var stopElement1 = document.createElementNS(scene.SVG_NAMESPACE, 'stop');
-                    var percent = (cumulativeCount * 100 / totalCount) + '%';
+                    let stopElement1 = document.createElementNS(scene.SVG_NAMESPACE, 'stop');
+                    let percent = (cumulativeCount * 100 / totalCount) + '%';
                     stopElement1.setAttribute('offset', percent);
                     stopElement1.setAttribute('stop-color', scene.healthPillEntries[i].background_color);
                     healthPillGradient.appendChild(stopElement1);
@@ -658,21 +655,21 @@ var tf;
                 }
                 healthPillDefs.appendChild(healthPillGradient);
                 // Create the rectangle for the health pill.
-                var rect = document.createElementNS(scene.SVG_NAMESPACE, 'rect');
+                let rect = document.createElementNS(scene.SVG_NAMESPACE, 'rect');
                 rect.setAttribute('fill', 'url(#' + healthPillGradientId + ')');
                 rect.setAttribute('width', String(healthPillWidth));
                 rect.setAttribute('height', String(healthPillHeight));
                 rect.setAttribute('y', String(healthPillYOffset));
                 healthPillGroup.appendChild(rect);
                 // Show a title with specific counts on hover.
-                var titleSvg = document.createElementNS(scene.SVG_NAMESPACE, 'title');
+                let titleSvg = document.createElementNS(scene.SVG_NAMESPACE, 'title');
                 titleSvg.textContent = _getHealthPillTextContent(healthPill, totalCount, lastHealthPillElementsBreakdown, numericStats);
                 healthPillGroup.appendChild(titleSvg);
                 // Center this health pill just right above the node for the op.
-                var shouldRoundOnesDigit = false;
+                let shouldRoundOnesDigit = false;
                 if (nodeInfo != null) {
-                    var healthPillX = nodeInfo.x - healthPillWidth / 2;
-                    var healthPillY = nodeInfo.y - healthPillHeight - nodeInfo.height / 2 - 2;
+                    let healthPillX = nodeInfo.x - healthPillWidth / 2;
+                    let healthPillY = nodeInfo.y - healthPillHeight - nodeInfo.height / 2 - 2;
                     if (nodeInfo.labelOffset < 0) {
                         // The label is positioned above the node. Do not occlude the label.
                         healthPillY += nodeInfo.labelOffset;
@@ -684,14 +681,14 @@ var tf;
                         // At least 1 "non-Inf and non-NaN" value exists (a -, 0, or + value). Show
                         // stats on tensor values.
                         // Determine if we should display the output range as integers.
-                        var node_1 = nodeInfo.node;
-                        var attributes = node_1.attr;
+                        let node = nodeInfo.node;
+                        let attributes = node.attr;
                         if (attributes && attributes.length) {
                             // Find the attribute for output type if there is one.
-                            for (var i = 0; i < attributes.length; i++) {
+                            for (let i = 0; i < attributes.length; i++) {
                                 if (attributes[i].key === 'T') {
                                     // Note whether the output type is an integer.
-                                    var outputType = attributes[i].value['type'];
+                                    let outputType = attributes[i].value['type'];
                                     shouldRoundOnesDigit =
                                         outputType && /^DT_(BOOL|INT|UINT)/.test(outputType);
                                     break;
@@ -700,10 +697,10 @@ var tf;
                         }
                     }
                 }
-                var statsSvg = document.createElementNS(scene.SVG_NAMESPACE, 'text');
+                let statsSvg = document.createElementNS(scene.SVG_NAMESPACE, 'text');
                 if (Number.isFinite(numericStats.min) && Number.isFinite(numericStats.max)) {
-                    var minString = humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
-                    var maxString = humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
+                    const minString = humanizeHealthPillStat(numericStats.min, shouldRoundOnesDigit);
+                    const maxString = humanizeHealthPillStat(numericStats.max, shouldRoundOnesDigit);
                     if (totalCount > 1) {
                         statsSvg.textContent = minString + ' ~ ' + maxString;
                     }
@@ -712,15 +709,15 @@ var tf;
                     }
                     if (nanCount > 0 || negInfCount > 0 || posInfCount > 0) {
                         statsSvg.textContent += ' (';
-                        var badValueStrings = [];
+                        const badValueStrings = [];
                         if (nanCount > 0) {
-                            badValueStrings.push("NaN\u00D7" + nanCount);
+                            badValueStrings.push(`NaN×${nanCount}`);
                         }
                         if (negInfCount > 0) {
-                            badValueStrings.push("-\u221E\u00D7" + negInfCount);
+                            badValueStrings.push(`-∞×${negInfCount}`);
                         }
                         if (posInfCount > 0) {
-                            badValueStrings.push("+\u221E\u00D7" + posInfCount);
+                            badValueStrings.push(`+∞×${posInfCount}`);
                         }
                         statsSvg.textContent += badValueStrings.join('; ') + ')';
                     }
@@ -752,13 +749,13 @@ var tf;
                 // We generate a unique ID for each health pill because the ID of each element
                 // in a web page must be unique, and each health pill generates a gradient
                 // that its code later refers to.
-                var healthPillId = 1;
-                var svgRootSelection = d3.select(svgRoot);
+                let healthPillId = 1;
+                let svgRootSelection = d3.select(svgRoot);
                 svgRootSelection.selectAll('g.nodeshape')
                     .each(function (nodeInfo) {
                     // Only show health pill data for this node if it is available.
-                    var healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
-                    var healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
+                    const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
+                    const healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
                     addHealthPill(this, healthPill, nodeInfo, healthPillId++);
                 });
             }

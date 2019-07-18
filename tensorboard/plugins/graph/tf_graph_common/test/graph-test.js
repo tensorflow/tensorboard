@@ -16,41 +16,69 @@ var tf;
 (function (tf) {
     var graph;
     (function (graph_1) {
-        describe('graph', function () {
-            var assert = chai.assert;
-            it('graphlib exists', function () { assert.isTrue(graphlib != null); });
-            it('simple graph contruction', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("\n      node {\n        name: \"Q\"\n        op: \"Input\"\n      }\n      node {\n        name: \"W\"\n        op: \"Input\"\n      }\n      node {\n        name: \"X\"\n        op: \"MatMul\"\n        input: \"Q:2\"\n        input: \"W\"\n      }");
-                var statsPbtxt = tf.graph.test.util.stringToArrayBuffer("step_stats {\n      dev_stats {\n        device: \"cpu\"\n        node_stats {\n          node_name: \"Q\"\n          all_start_micros: 10\n          all_end_rel_micros: 4\n        }\n        node_stats {\n          node_name: \"Q\"\n          all_start_micros: 12\n          all_end_rel_micros: 4\n        }\n      }\n    }");
-                var buildParams = {
+        describe('graph', () => {
+            let assert = chai.assert;
+            it('graphlib exists', () => { assert.isTrue(graphlib != null); });
+            it('simple graph contruction', () => {
+                let pbtxt = tf.graph.test.util.stringToArrayBuffer(`
+      node {
+        name: "Q"
+        op: "Input"
+      }
+      node {
+        name: "W"
+        op: "Input"
+      }
+      node {
+        name: "X"
+        op: "MatMul"
+        input: "Q:2"
+        input: "W"
+      }`);
+                let statsPbtxt = tf.graph.test.util.stringToArrayBuffer(`step_stats {
+      dev_stats {
+        device: "cpu"
+        node_stats {
+          node_name: "Q"
+          all_start_micros: 10
+          all_end_rel_micros: 4
+        }
+        node_stats {
+          node_name: "Q"
+          all_start_micros: 12
+          all_end_rel_micros: 4
+        }
+      }
+    }`);
+                let buildParams = {
                     enableEmbedding: true,
                     inEmbeddingTypes: ['Const'],
                     outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
                     refEdges: {}
                 };
-                var dummyTracker = tf.graph.util.getTracker({ set: function () { return; }, progress: 0 });
-                var slimGraph;
+                let dummyTracker = tf.graph.util.getTracker({ set: () => { return; }, progress: 0 });
+                let slimGraph;
                 return tf.graph.parser.parseGraphPbTxt(pbtxt)
-                    .then(function (nodes) { return tf.graph.build(nodes, buildParams, dummyTracker); })
-                    .then(function (graph) { return slimGraph = graph; })
-                    .then(function () {
+                    .then(nodes => tf.graph.build(nodes, buildParams, dummyTracker))
+                    .then((graph) => slimGraph = graph)
+                    .then(() => {
                     assert.isTrue(slimGraph.nodes['X'] != null);
                     assert.isTrue(slimGraph.nodes['W'] != null);
                     assert.isTrue(slimGraph.nodes['Q'] != null);
-                    var firstInputOfX = slimGraph.nodes['X'].inputs[0];
+                    let firstInputOfX = slimGraph.nodes['X'].inputs[0];
                     assert.equal(firstInputOfX.name, 'Q');
                     assert.equal(firstInputOfX.outputTensorKey, '2');
-                    var secondInputOfX = slimGraph.nodes['X'].inputs[1];
+                    let secondInputOfX = slimGraph.nodes['X'].inputs[1];
                     assert.equal(secondInputOfX.name, 'W');
                     assert.equal(secondInputOfX.outputTensorKey, '0');
                 })
-                    .then(function () { return tf.graph.parser.parseStatsPbTxt(statsPbtxt); })
-                    .then(function (stepStats) {
+                    .then(() => tf.graph.parser.parseStatsPbTxt(statsPbtxt))
+                    .then(stepStats => {
                     tf.graph.joinStatsInfoWithGraph(slimGraph, stepStats);
                     assert.equal(slimGraph.nodes['Q'].stats.getTotalMicros(), 6);
                 });
             });
-            it('health pill numbers round correctly', function () {
+            it('health pill numbers round correctly', () => {
                 // Integers are rounded to the ones place.
                 assert.equal(tf.graph.scene.humanizeHealthPillStat(42.0, true), '42');
                 // Numbers with magnitude >= 1 are rounded to the tenths place.

@@ -19,6 +19,10 @@ var tf_dashboard_common;
      */
     tf_dashboard_common.DataLoaderBehavior = {
         properties: {
+            active: {
+                type: Boolean,
+                observer: '_loadDataIfActive',
+            },
             /**
              * A unique identifiable string. When changes, it expunges the data
              * cache.
@@ -32,7 +36,7 @@ var tf_dashboard_common;
             // `loadDataCallback` with the datum and its response.
             dataToLoad: {
                 type: Array,
-                value: function () { return []; }
+                value: () => []
             },
             /**
              * A function that takes a datum as an input and returns a unique
@@ -40,7 +44,7 @@ var tf_dashboard_common;
              */
             getDataLoadName: {
                 type: Function,
-                value: function () { return function (datum) { return String(datum); }; },
+                value: () => (datum) => String(datum),
             },
             /**
              * A function that takes as inputs:
@@ -65,8 +69,7 @@ var tf_dashboard_common;
             requestData: {
                 type: Function,
                 value: function () {
-                    var _this = this;
-                    return function (datum) { return _this.requestManager.request(_this.getDataLoadUrl(datum)); };
+                    return (datum) => this.requestManager.request(this.getDataLoadUrl(datum));
                 },
             },
             // A function that takes a datum and returns a string URL for fetching
@@ -85,24 +88,24 @@ var tf_dashboard_common;
              */
             _loadedData: {
                 type: Object,
-                value: function () { return new Set(); },
+                value: () => new Set(),
             },
             _canceller: {
                 type: Object,
-                value: function () { return new tf_backend.Canceller(); },
+                value: () => new tf_backend.Canceller(),
             },
         },
         observers: [
             '_dataToLoadChanged(isAttached, dataToLoad.*)',
         ],
-        onLoadFinish: function () {
+        onLoadFinish() {
             // Override to do something useful.
         },
-        reload: function () {
+        reload() {
             this._loadedData.clear();
             this._loadData();
         },
-        reset: function () {
+        reset() {
             // https://github.com/tensorflow/tensorboard/issues/1499
             // Cannot use the observer to observe `loadKey` changes directly.
             if (this._canceller)
@@ -112,47 +115,51 @@ var tf_dashboard_common;
             if (this.isAttached)
                 this._loadData();
         },
-        _dataToLoadChanged: function () {
+        _dataToLoadChanged() {
             if (this.isAttached)
                 this._loadData();
         },
-        created: function () {
+        created() {
             this._loadData = _.debounce(this._loadDataImpl, 100, { leading: true, trailing: true });
         },
-        detached: function () {
+        detached() {
             this._canceller.cancelAll();
             this.cancelAsync(this._loadDataAsync);
         },
-        _loadDataImpl: function () {
-            var _this = this;
-            this.cancelAsync(this._loadDataAsync);
-            if (!this.isAttached)
+        _loadDataIfActive() {
+            if (this.active) {
+                this._loadData();
+            }
+        },
+        _loadDataImpl() {
+            if (!this.active)
                 return;
-            this._loadDataAsync = this.async(function () {
+            this.cancelAsync(this._loadDataAsync);
+            this._loadDataAsync = this.async(() => {
                 // Read-only property have a special setter.
-                _this._setDataLoading(true);
+                this._setDataLoading(true);
                 // Before updating, cancel any network-pending updates, to
                 // prevent race conditions where older data stomps newer data.
-                _this._canceller.cancelAll();
-                var promises = _this.dataToLoad.filter(function (datum) {
-                    var name = _this.getDataLoadName(datum);
-                    return !_this._loadedData.has(name);
-                }).map(function (datum) {
-                    var name = _this.getDataLoadName(datum);
-                    var updateSeries = _this._canceller.cancellable(function (result) {
+                this._canceller.cancelAll();
+                const promises = this.dataToLoad.filter(datum => {
+                    const name = this.getDataLoadName(datum);
+                    return !this._loadedData.has(name);
+                }).map(datum => {
+                    const name = this.getDataLoadName(datum);
+                    const updateSeries = this._canceller.cancellable(result => {
                         if (result.cancelled)
                             return;
-                        _this._loadedData.add(name);
-                        _this.loadDataCallback(_this, datum, result.value);
+                        this._loadedData.add(name);
+                        this.loadDataCallback(this, datum, result.value);
                     });
-                    return _this.requestData(datum).then(updateSeries);
+                    return this.requestData(datum).then(updateSeries);
                 });
-                return Promise.all(promises).then(_this._canceller.cancellable(function (result) {
+                return Promise.all(promises).then(this._canceller.cancellable(result => {
                     // Read-only property have a special setter.
-                    _this._setDataLoading(false);
+                    this._setDataLoading(false);
                     if (result.cancelled)
                         return;
-                    _this.onLoadFinish();
+                    this.onLoadFinish();
                 }));
             });
         },

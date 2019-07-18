@@ -6,33 +6,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,11 +49,11 @@ var tf;
                     selectedFile: Object,
                     compatibilityProvider: {
                         type: Object,
-                        value: function () { return new tf.graph.op.TpuCompatibilityProvider(); },
+                        value: () => new tf.graph.op.TpuCompatibilityProvider(),
                     },
                     hierarchyParams: {
                         type: Object,
-                        value: function () { return tf.graph.hierarchy.DefaultHierarchyParams; },
+                        value: () => tf.graph.hierarchy.DefaultHierarchyParams,
                     },
                     outGraphHierarchy: {
                         type: Object,
@@ -107,64 +80,58 @@ var tf;
                     '_selectionChanged(selection, compatibilityProvider)',
                     '_selectedFileChanged(selectedFile, compatibilityProvider)',
                 ],
-                _selectionChanged: function () {
-                    var _this = this;
+                _selectionChanged() {
                     // selection can change a lot within a microtask.
                     // Don't fetch too much too fast and introduce race condition.
-                    this.debounce('selectionchange', function () {
-                        _this._load(_this.selection);
+                    this.debounce('selectionchange', () => {
+                        this._load(this.selection);
                     });
                 },
                 _load: function (selection) {
-                    var _this = this;
-                    var run = selection.run, tag = selection.tag, selectionType = selection.type;
+                    const { run, tag, type: selectionType } = selection;
                     switch (selectionType) {
                         case tf.graph.SelectionType.OP_GRAPH:
                         case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
                             // Clear stats about the previous graph.
                             this._setOutStats(null);
-                            var params = new URLSearchParams();
+                            const params = new URLSearchParams();
                             params.set('run', run);
                             params.set('conceptual', String(selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH));
                             if (tag)
                                 params.set('tag', tag);
-                            var graphPath = tf_backend.getRouter().pluginRoute('graphs', '/graph', params);
-                            return this._fetchAndConstructHierarchicalGraph(graphPath).then(function () {
-                                _this._graphRunTag = { run: run, tag: tag };
+                            const graphPath = tf_backend.getRouter().pluginRoute('graphs', '/graph', params);
+                            return this._fetchAndConstructHierarchicalGraph(graphPath).then(() => {
+                                this._graphRunTag = { run, tag };
                             });
                         }
                         case tf.graph.SelectionType.PROFILE: {
-                            var tags = this.datasets.find(function (_a) {
-                                var name = _a.name;
-                                return name === run;
-                            }).tags;
-                            var tagMeta = tags.find(function (t) { return t.tag === tag; });
+                            const { tags } = this.datasets.find(({ name }) => name === run);
+                            const tagMeta = tags.find(t => t.tag === tag);
                             // In case current tag misses opGraph but has profile information,
                             // we fallback to the v1 behavior of fetching the run graph.
-                            var requiredOpGraphTag_1 = tagMeta.opGraph ? tag : null;
-                            console.assert(tags.find(function (t) { return t.tag === requiredOpGraphTag_1; }), "Required tag (" + requiredOpGraphTag_1 + ") is missing.");
-                            var shouldFetchGraph = !this._graphRunTag ||
+                            const requiredOpGraphTag = tagMeta.opGraph ? tag : null;
+                            console.assert(tags.find(t => t.tag === requiredOpGraphTag), `Required tag (${requiredOpGraphTag}) is missing.`);
+                            const shouldFetchGraph = !this._graphRunTag ||
                                 this._graphRunTag.run !== run ||
-                                this._graphRunTag.tag !== requiredOpGraphTag_1;
-                            var maybeFetchGraphPromise = shouldFetchGraph ?
+                                this._graphRunTag.tag !== requiredOpGraphTag;
+                            const maybeFetchGraphPromise = shouldFetchGraph ?
                                 this._load({
-                                    run: run,
-                                    tag: requiredOpGraphTag_1,
+                                    run,
+                                    tag: requiredOpGraphTag,
                                     type: tf.graph.SelectionType.OP_GRAPH,
                                 }) : Promise.resolve();
-                            var params = new URLSearchParams();
+                            const params = new URLSearchParams();
                             params.set('tag', tag);
                             params.set('run', run);
-                            var metadataPath_1 = tf_backend.getRouter().pluginRoute('graphs', '/run_metadata', params);
+                            const metadataPath = tf_backend.getRouter().pluginRoute('graphs', '/run_metadata', params);
                             return maybeFetchGraphPromise
-                                .then(function () { return _this._readAndParseMetadata(metadataPath_1); });
+                                .then(() => this._readAndParseMetadata(metadataPath));
                         }
                         default:
-                            return Promise.reject(new Error("Unknown selection type: " + selectionType));
+                            return Promise.reject(new Error(`Unknown selection type: ${selectionType}`));
                     }
                 },
                 _readAndParseMetadata: function (path) {
-                    var _this = this;
                     // Reset the progress bar to 0.
                     this.set('progress', {
                         value: 0,
@@ -172,26 +139,21 @@ var tf;
                     });
                     var tracker = tf.graph.util.getTracker(this);
                     tf.graph.parser.fetchAndParseMetadata(path, tracker)
-                        .then(function (stats) {
-                        _this._setOutStats(stats);
+                        .then((stats) => {
+                        this._setOutStats(stats);
                     });
                 },
                 _fetchAndConstructHierarchicalGraph: function (path, pbTxtFile) {
-                    return __awaiter(this, void 0, void 0, function () {
-                        var tracker;
-                        var _this = this;
-                        return __generator(this, function (_a) {
-                            // Reset the progress bar to 0.
-                            this.set('progress', {
-                                value: 0,
-                                msg: '',
-                            });
-                            tracker = tf.graph.util.getTracker(this);
-                            return [2 /*return*/, tf.graph.loader.fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, this.compatibilityProvider, this.hierarchyParams).then(function (_a) {
-                                    var graph = _a.graph, graphHierarchy = _a.graphHierarchy;
-                                    _this._setOutGraph(graph);
-                                    _this._setOutGraphHierarchy(graphHierarchy);
-                                })];
+                    return __awaiter(this, void 0, void 0, function* () {
+                        // Reset the progress bar to 0.
+                        this.set('progress', {
+                            value: 0,
+                            msg: '',
+                        });
+                        const tracker = tf.graph.util.getTracker(this);
+                        return tf.graph.loader.fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, this.compatibilityProvider, this.hierarchyParams).then(({ graph, graphHierarchy }) => {
+                            this._setOutGraph(graph);
+                            this._setOutGraphHierarchy(graphHierarchy);
                         });
                     });
                 },
@@ -199,8 +161,8 @@ var tf;
                     if (!e) {
                         return;
                     }
-                    var target = e.target;
-                    var file = target.files[0];
+                    const target = e.target;
+                    const file = target.files[0];
                     if (!file) {
                         return;
                     }

@@ -240,8 +240,8 @@ var tf;
                 renderInfo.coreBox.width = renderInfo.width;
                 renderInfo.coreBox.height = renderInfo.height;
                 // TODO: Account for font width rather than using a magic number.
-                var labelLength = renderInfo.displayName.length;
-                var charWidth = 3; // 3 pixels per character.
+                let labelLength = renderInfo.displayName.length;
+                let charWidth = 3; // 3 pixels per character.
                 // Compute the total width of the node.
                 renderInfo.width = Math.max(renderInfo.coreBox.width +
                     renderInfo.inboxWidth + renderInfo.outboxWidth, labelLength * charWidth);
@@ -250,10 +250,10 @@ var tf;
              * Update layout, size, and annotations of its children nodes and edges.
              */
             function layoutChildren(renderNodeInfo) {
-                var children = renderNodeInfo.coreGraph.nodes().map(function (n) {
+                let children = renderNodeInfo.coreGraph.nodes().map(n => {
                     return renderNodeInfo.coreGraph.node(n);
                 }).concat(renderNodeInfo.isolatedInExtract, renderNodeInfo.isolatedOutExtract, renderNodeInfo.libraryFunctionsExtract);
-                _.each(children, function (childNodeInfo) {
+                _.each(children, childNodeInfo => {
                     // Set size of each child
                     switch (childNodeInfo.node.type) {
                         case graph_1.NodeType.OP:
@@ -270,19 +270,19 @@ var tf;
                                     layout.PARAMS.nodeSize.meta.height(childNodeInfo.node.cardinality);
                             }
                             else {
-                                var childGroupNodeInfo = childNodeInfo;
+                                let childGroupNodeInfo = childNodeInfo;
                                 layoutScene(childGroupNodeInfo); // Recursively layout its subscene.
                             }
                             break;
                         case graph_1.NodeType.SERIES:
                             if (childNodeInfo.expanded) {
                                 _.extend(childNodeInfo, layout.PARAMS.nodeSize.series.expanded);
-                                var childGroupNodeInfo = childNodeInfo;
+                                let childGroupNodeInfo = childNodeInfo;
                                 layoutScene(childGroupNodeInfo); // Recursively layout its subscene.
                             }
                             else {
-                                var childGroupNodeInfo = childNodeInfo;
-                                var seriesParams = childGroupNodeInfo.node.hasNonControlEdges ?
+                                let childGroupNodeInfo = childNodeInfo;
+                                let seriesParams = childGroupNodeInfo.node.hasNonControlEdges ?
                                     layout.PARAMS.nodeSize.series.vertical :
                                     layout.PARAMS.nodeSize.series.horizontal;
                                 _.extend(childNodeInfo, seriesParams);
@@ -312,12 +312,12 @@ var tf;
                     ranksep: params.rankSep,
                     edgesep: params.edgeSep
                 });
-                var bridgeNodeNames = [];
-                var nonBridgeNodeNames = [];
+                let bridgeNodeNames = [];
+                let nonBridgeNodeNames = [];
                 // Split out nodes into bridge and non-bridge nodes, and calculate the total
                 // width we should use for bridge nodes.
-                _.each(graph.nodes(), function (nodeName) {
-                    var nodeInfo = graph.node(nodeName);
+                _.each(graph.nodes(), nodeName => {
+                    let nodeInfo = graph.node(nodeName);
                     if (nodeInfo.node.type === graph_1.NodeType.BRIDGE) {
                         bridgeNodeNames.push(nodeName);
                     }
@@ -337,26 +337,26 @@ var tf;
                 // edges rather than accepting dagre's word for it. In particular, we should
                 // ignore the extra-wide bridge nodes and bridge edges, and allow for
                 // annotation boxes and labels.
-                var minX = Infinity;
-                var minY = Infinity;
-                var maxX = -Infinity;
-                var maxY = -Infinity;
-                _.each(nonBridgeNodeNames, function (nodeName) {
-                    var nodeInfo = graph.node(nodeName);
-                    var w = 0.5 * nodeInfo.width;
-                    var x1 = nodeInfo.x - w;
-                    var x2 = nodeInfo.x + w;
+                let minX = Infinity;
+                let minY = Infinity;
+                let maxX = -Infinity;
+                let maxY = -Infinity;
+                _.each(nonBridgeNodeNames, nodeName => {
+                    let nodeInfo = graph.node(nodeName);
+                    let w = 0.5 * nodeInfo.width;
+                    let x1 = nodeInfo.x - w;
+                    let x2 = nodeInfo.x + w;
                     minX = x1 < minX ? x1 : minX;
                     maxX = x2 > maxX ? x2 : maxX;
                     // TODO: Account for the height of labels above op nodes here.
-                    var h = 0.5 * nodeInfo.height;
-                    var y1 = nodeInfo.y - h;
-                    var y2 = nodeInfo.y + h;
+                    let h = 0.5 * nodeInfo.height;
+                    let y1 = nodeInfo.y - h;
+                    let y2 = nodeInfo.y + h;
                     minY = y1 < minY ? y1 : minY;
                     maxY = y2 > maxY ? y2 : maxY;
                 });
-                _.each(graph.edges(), function (edgeObj) {
-                    var edgeInfo = graph.edge(edgeObj);
+                _.each(graph.edges(), edgeObj => {
+                    let edgeInfo = graph.edge(edgeObj);
                     if (edgeInfo.structural) {
                         return; // Skip structural edges from min/max calculations.
                     }
@@ -366,20 +366,20 @@ var tf;
                     // end-points by finding the intersection of a line between the
                     // next-to-last (next-to-first) point and the destination (source)
                     // rectangle.
-                    var sourceNode = graph.node(edgeInfo.metaedge.v);
-                    var destNode = graph.node(edgeInfo.metaedge.w);
+                    let sourceNode = graph.node(edgeInfo.metaedge.v);
+                    let destNode = graph.node(edgeInfo.metaedge.w);
                     // Straight 3-points edges are special case, since they are curved after
                     // our default correction. To keep them straight, we remove the mid point
                     // and correct the first and the last point to be the center of the
                     // source and destination node respectively.
                     if (edgeInfo.points.length === 3 && isStraightLine(edgeInfo.points)) {
                         if (sourceNode != null) {
-                            var cxSource = sourceNode.expanded ?
+                            let cxSource = sourceNode.expanded ?
                                 sourceNode.x : computeCXPositionOfNodeShape(sourceNode);
                             edgeInfo.points[0].x = cxSource;
                         }
                         if (destNode != null) {
-                            var cxDest = destNode.expanded ?
+                            let cxDest = destNode.expanded ?
                                 destNode.x : computeCXPositionOfNodeShape(destNode);
                             edgeInfo.points[2].x = cxDest;
                         }
@@ -387,19 +387,19 @@ var tf;
                         edgeInfo.points = [edgeInfo.points[0], edgeInfo.points[1]];
                     }
                     // Correct the destination endpoint of the edge.
-                    var nextToLastPoint = edgeInfo.points[edgeInfo.points.length - 2];
+                    let nextToLastPoint = edgeInfo.points[edgeInfo.points.length - 2];
                     // The destination node might be null if this is a bridge edge.
                     if (destNode != null) {
                         edgeInfo.points[edgeInfo.points.length - 1] =
                             intersectPointAndNode(nextToLastPoint, destNode);
                     }
                     // Correct the source endpoint of the edge.
-                    var secondPoint = edgeInfo.points[1];
+                    let secondPoint = edgeInfo.points[1];
                     // The source might be null if this is a bridge edge.
                     if (sourceNode != null) {
                         edgeInfo.points[0] = intersectPointAndNode(secondPoint, sourceNode);
                     }
-                    _.each(edgeInfo.points, function (point) {
+                    _.each(edgeInfo.points, (point) => {
                         minX = point.x < minX ? point.x : minX;
                         maxX = point.x > maxX ? point.x : maxX;
                         minY = point.y < minY ? point.y : minY;
@@ -408,13 +408,13 @@ var tf;
                 });
                 // Shift all nodes and edge points to account for the left-padding amount,
                 // and the invisible bridge nodes.
-                _.each(graph.nodes(), function (nodeName) {
-                    var nodeInfo = graph.node(nodeName);
+                _.each(graph.nodes(), nodeName => {
+                    let nodeInfo = graph.node(nodeName);
                     nodeInfo.x -= minX;
                     nodeInfo.y -= minY;
                 });
-                _.each(graph.edges(), function (edgeObj) {
-                    _.each(graph.edge(edgeObj).points, function (point) {
+                _.each(graph.edges(), edgeObj => {
+                    _.each(graph.edge(edgeObj).points, (point) => {
                         point.x -= minX;
                         point.y -= minY;
                     });
@@ -427,7 +427,7 @@ var tf;
             /** Layout a metanode. Only called for an expanded node. */
             function layoutMetanode(renderNodeInfo) {
                 // First, copy params specific to meta nodes onto this render info object.
-                var params = layout.PARAMS.subscene.meta;
+                let params = layout.PARAMS.subscene.meta;
                 _.extend(renderNodeInfo, params);
                 // Invoke dagre.layout() on the core graph and record the bounding box
                 // dimensions.
@@ -435,13 +435,13 @@ var tf;
                 // Calculate the position of nodes in isolatedInExtract relative to the
                 // top-left corner of inExtractBox (the bounding box for all inExtract nodes)
                 // and calculate the size of the inExtractBox.
-                var maxInExtractWidth = renderNodeInfo.isolatedInExtract.length ?
-                    _.max(renderNodeInfo.isolatedInExtract, function (renderNode) { return renderNode.width; }).width : null;
+                let maxInExtractWidth = renderNodeInfo.isolatedInExtract.length ?
+                    _.max(renderNodeInfo.isolatedInExtract, renderNode => renderNode.width).width : null;
                 renderNodeInfo.inExtractBox.width = maxInExtractWidth != null ?
                     maxInExtractWidth : 0;
                 renderNodeInfo.inExtractBox.height =
-                    _.reduce(renderNodeInfo.isolatedInExtract, function (height, child, i) {
-                        var yOffset = i > 0 ? params.extractYOffset : 0;
+                    _.reduce(renderNodeInfo.isolatedInExtract, (height, child, i) => {
+                        let yOffset = i > 0 ? params.extractYOffset : 0;
                         // use width/height here to avoid overlaps between extracts
                         child.x = 0;
                         child.y = height + yOffset + child.height / 2;
@@ -450,13 +450,13 @@ var tf;
                 // Calculate the position of nodes in isolatedOutExtract relative to the
                 // top-left corner of outExtractBox (the bounding box for all outExtract
                 // nodes) and calculate the size of the outExtractBox.
-                var maxOutExtractWidth = renderNodeInfo.isolatedOutExtract.length ?
-                    _.max(renderNodeInfo.isolatedOutExtract, function (renderNode) { return renderNode.width; }).width : null;
+                let maxOutExtractWidth = renderNodeInfo.isolatedOutExtract.length ?
+                    _.max(renderNodeInfo.isolatedOutExtract, renderNode => renderNode.width).width : null;
                 renderNodeInfo.outExtractBox.width = maxOutExtractWidth != null ?
                     maxOutExtractWidth : 0;
                 renderNodeInfo.outExtractBox.height =
-                    _.reduce(renderNodeInfo.isolatedOutExtract, function (height, child, i) {
-                        var yOffset = i > 0 ? params.extractYOffset : 0;
+                    _.reduce(renderNodeInfo.isolatedOutExtract, (height, child, i) => {
+                        let yOffset = i > 0 ? params.extractYOffset : 0;
                         // use width/height here to avoid overlaps between extracts
                         child.x = 0;
                         child.y = height + yOffset + child.height / 2;
@@ -465,13 +465,13 @@ var tf;
                 // Calculate the position of nodes in libraryFunctionsExtract relative to the
                 // top-left corner of libraryFunctionsBox (the bounding box for all library
                 // function nodes) and calculate the size of the libraryFunctionsBox.
-                var maxLibraryFunctionsWidth = renderNodeInfo.libraryFunctionsExtract.length ?
-                    _.max(renderNodeInfo.libraryFunctionsExtract, function (renderNode) { return renderNode.width; }).width : null;
+                let maxLibraryFunctionsWidth = renderNodeInfo.libraryFunctionsExtract.length ?
+                    _.max(renderNodeInfo.libraryFunctionsExtract, renderNode => renderNode.width).width : null;
                 renderNodeInfo.libraryFunctionsBox.width = maxLibraryFunctionsWidth != null ?
                     maxLibraryFunctionsWidth : 0;
                 renderNodeInfo.libraryFunctionsBox.height =
-                    _.reduce(renderNodeInfo.libraryFunctionsExtract, function (height, child, i) {
-                        var yOffset = i > 0 ? params.extractYOffset : 0;
+                    _.reduce(renderNodeInfo.libraryFunctionsExtract, (height, child, i) => {
+                        let yOffset = i > 0 ? params.extractYOffset : 0;
                         // use width/height here to avoid overlaps between extracts
                         child.x = 0;
                         child.y = height + yOffset + child.height / 2;
@@ -479,7 +479,7 @@ var tf;
                     }, 0);
                 // Compute the total padding between the core graph, in-extract and
                 // out-extract boxes.
-                var numParts = 0;
+                let numParts = 0;
                 if (renderNodeInfo.isolatedInExtract.length > 0) {
                     numParts++;
                 }
@@ -492,11 +492,11 @@ var tf;
                 if (renderNodeInfo.coreGraph.nodeCount() > 0) {
                     numParts++;
                 }
-                var offset = layout.PARAMS.subscene.meta.extractXOffset;
-                var padding = numParts <= 1 ? 0 : (numParts * offset);
+                let offset = layout.PARAMS.subscene.meta.extractXOffset;
+                let padding = numParts <= 1 ? 0 : (numParts * offset);
                 // Add the in-extract and out-extract width to the core box width. Do not let
                 // the auxiliary width be too small, lest it be smaller than the title.
-                var auxWidth = Math.max(layout.MIN_AUX_WIDTH, renderNodeInfo.inExtractBox.width + renderNodeInfo.outExtractBox.width);
+                const auxWidth = Math.max(layout.MIN_AUX_WIDTH, renderNodeInfo.inExtractBox.width + renderNodeInfo.outExtractBox.width);
                 renderNodeInfo.coreBox.width += auxWidth + padding +
                     renderNodeInfo.libraryFunctionsBox.width + padding;
                 renderNodeInfo.coreBox.height =
@@ -516,12 +516,12 @@ var tf;
              * series.
              */
             function layoutSeriesNode(node) {
-                var graph = node.coreGraph;
-                var params = layout.PARAMS.subscene.series;
+                let graph = node.coreGraph;
+                let params = layout.PARAMS.subscene.series;
                 _.extend(node, params);
                 // Layout the core.
                 _.extend(node.coreBox, dagreLayout(node.coreGraph, layout.PARAMS.graph.series));
-                _.each(graph.nodes(), function (nodeName) {
+                _.each(graph.nodes(), nodeName => {
                     graph.node(nodeName).excluded = false;
                 });
                 // Series do not have in/outExtractBox so no need to include them here.
@@ -542,24 +542,24 @@ var tf;
                 if (renderNodeInfo.expanded) {
                     return;
                 }
-                var inAnnotations = renderNodeInfo.inAnnotations.list;
-                var outAnnotations = renderNodeInfo.outAnnotations.list;
+                let inAnnotations = renderNodeInfo.inAnnotations.list;
+                let outAnnotations = renderNodeInfo.outAnnotations.list;
                 // Calculate size for in-annotations
-                _.each(inAnnotations, function (a) { return sizeAnnotation(a); });
+                _.each(inAnnotations, a => sizeAnnotation(a));
                 // Calculate size for out-annotations
-                _.each(outAnnotations, function (a) { return sizeAnnotation(a); });
-                var params = layout.PARAMS.annotations;
+                _.each(outAnnotations, a => sizeAnnotation(a));
+                let params = layout.PARAMS.annotations;
                 // Calculate annotation node position (a.dx, a.dy)
                 // and total height for in-annotations
                 // After this chunk of code:
                 // inboxHeight = sum of annotation heights+ (annotation.length - 1 * yOffset)
-                var inboxHeight = _.reduce(inAnnotations, function (height, a, i) {
-                    var yOffset = i > 0 ? params.yOffset : 0;
+                let inboxHeight = _.reduce(inAnnotations, (height, a, i) => {
+                    let yOffset = i > 0 ? params.yOffset : 0;
                     a.dx = -(renderNodeInfo.coreBox.width + a.width) / 2 - params.xOffset;
                     a.dy = height + yOffset + a.height / 2;
                     return height + yOffset + a.height;
                 }, 0);
-                _.each(inAnnotations, function (a) {
+                _.each(inAnnotations, a => {
                     a.dy -= inboxHeight / 2;
                     a.labelOffset = params.labelOffset;
                 });
@@ -568,13 +568,13 @@ var tf;
                 // After this chunk of code:
                 // outboxHeight = sum of annotation heights +
                 //                (annotation.length - 1 * yOffset)
-                var outboxHeight = _.reduce(outAnnotations, function (height, a, i) {
-                    var yOffset = i > 0 ? params.yOffset : 0;
+                let outboxHeight = _.reduce(outAnnotations, (height, a, i) => {
+                    let yOffset = i > 0 ? params.yOffset : 0;
                     a.dx = (renderNodeInfo.coreBox.width + a.width) / 2 + params.xOffset;
                     a.dy = height + yOffset + a.height / 2;
                     return height + yOffset + a.height;
                 }, 0);
-                _.each(outAnnotations, function (a) {
+                _.each(outAnnotations, a => {
                     // adjust by (half of ) the total height
                     // so dy is relative to the host node's center.
                     a.dy -= outboxHeight / 2;
@@ -582,13 +582,13 @@ var tf;
                 });
                 // Creating scales for touch point between the in-annotation edges
                 // and their hosts.
-                var inTouchHeight = Math.min(renderNodeInfo.height / 2 - renderNodeInfo.radius, inboxHeight / 2);
+                let inTouchHeight = Math.min(renderNodeInfo.height / 2 - renderNodeInfo.radius, inboxHeight / 2);
                 inTouchHeight = inTouchHeight < 0 ? 0 : inTouchHeight;
-                var inY = d3.scaleLinear()
+                let inY = d3.scaleLinear()
                     .domain([0, inAnnotations.length - 1])
                     .range([-inTouchHeight, inTouchHeight]);
                 // Calculate annotation edge position
-                _.each(inAnnotations, function (a, i) {
+                _.each(inAnnotations, (a, i) => {
                     a.points = [
                         // The annotation node end
                         {
@@ -606,12 +606,12 @@ var tf;
                 });
                 // Creating scales for touch point between the out-annotation edges
                 // and their hosts.
-                var outTouchHeight = Math.min(renderNodeInfo.height / 2 - renderNodeInfo.radius, outboxHeight / 2);
+                let outTouchHeight = Math.min(renderNodeInfo.height / 2 - renderNodeInfo.radius, outboxHeight / 2);
                 outTouchHeight = outTouchHeight < 0 ? 0 : outTouchHeight;
-                var outY = d3.scaleLinear()
+                let outY = d3.scaleLinear()
                     .domain([0, outAnnotations.length - 1])
                     .range([-outTouchHeight, outTouchHeight]);
-                _.each(outAnnotations, function (a, i) {
+                _.each(outAnnotations, (a, i) => {
                     // Add point from the border of the annotation node
                     a.points = [
                         // The host node end
@@ -666,24 +666,24 @@ var tf;
                 if (renderInfo.expanded) {
                     return renderInfo.x;
                 }
-                var dx = renderInfo.inAnnotations.list.length ? renderInfo.inboxWidth : 0;
+                let dx = renderInfo.inAnnotations.list.length ? renderInfo.inboxWidth : 0;
                 return renderInfo.x - renderInfo.width / 2 + dx +
                     renderInfo.coreBox.width / 2;
             }
             layout.computeCXPositionOfNodeShape = computeCXPositionOfNodeShape;
             /** Returns the angle (in degrees) between two points. */
             function angleBetweenTwoPoints(a, b) {
-                var dx = b.x - a.x;
-                var dy = b.y - a.y;
+                let dx = b.x - a.x;
+                let dy = b.y - a.y;
                 return 180 * Math.atan(dy / dx) / Math.PI;
             }
             /**
              * Returns if a line going through the specified points is a straight line.
              */
             function isStraightLine(points) {
-                var angle = angleBetweenTwoPoints(points[0], points[1]);
-                for (var i = 1; i < points.length - 1; i++) {
-                    var newAngle = angleBetweenTwoPoints(points[i], points[i + 1]);
+                let angle = angleBetweenTwoPoints(points[0], points[1]);
+                for (let i = 1; i < points.length - 1; i++) {
+                    let newAngle = angleBetweenTwoPoints(points[i], points[i + 1]);
                     // Have a tolerance of 1 degree.
                     if (Math.abs(newAngle - angle) > 1) {
                         return false;
@@ -698,15 +698,15 @@ var tf;
              */
             function intersectPointAndNode(point, node) {
                 // cx and cy are the center of the rectangle.
-                var cx = node.expanded ?
+                let cx = node.expanded ?
                     node.x : computeCXPositionOfNodeShape(node);
-                var cy = node.y;
+                let cy = node.y;
                 // Calculate the slope
-                var dx = point.x - cx;
-                var dy = point.y - cy;
-                var w = node.expanded ? node.width : node.coreBox.width;
-                var h = node.expanded ? node.height : node.coreBox.height;
-                var deltaX, deltaY;
+                let dx = point.x - cx;
+                let dy = point.y - cy;
+                let w = node.expanded ? node.width : node.coreBox.width;
+                let h = node.expanded ? node.height : node.coreBox.height;
+                let deltaX, deltaY;
                 if (Math.abs(dy) * w / 2 > Math.abs(dx) * h / 2) {
                     // The intersection is above or below the rectangle.
                     if (dy < 0) {

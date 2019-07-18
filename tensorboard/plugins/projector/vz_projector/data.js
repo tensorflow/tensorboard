@@ -6,33 +6,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,27 +22,26 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
+    const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
     /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
-    var KNN_GPU_ENABLED = vz_projector.util.hasWebGLSupport() && !IS_FIREFOX;
+    const KNN_GPU_ENABLED = vz_projector.util.hasWebGLSupport() && !IS_FIREFOX;
     vz_projector.TSNE_SAMPLE_SIZE = 10000;
     vz_projector.UMAP_SAMPLE_SIZE = 5000;
     vz_projector.PCA_SAMPLE_SIZE = 50000;
     /** Number of dimensions to sample when doing approximate PCA. */
     vz_projector.PCA_SAMPLE_DIM = 200;
     /** Number of pca components to compute. */
-    var NUM_PCA_COMPONENTS = 10;
+    const NUM_PCA_COMPONENTS = 10;
     /** Id of message box used for umap optimization progress bar. */
-    var UMAP_MSG_ID = 'umap-optimization';
+    const UMAP_MSG_ID = 'umap-optimization';
     /**
      * Reserved metadata attributes used for sequence information
      * NOTE: Use "__seq_next__" as "__next__" is deprecated.
      */
-    var SEQUENCE_METADATA_ATTRS = ['__next__', '__seq_next__'];
+    const SEQUENCE_METADATA_ATTRS = ['__next__', '__seq_next__'];
     function getSequenceNextPointIndex(pointMetadata) {
-        var sequenceAttr = null;
-        for (var _i = 0, SEQUENCE_METADATA_ATTRS_1 = SEQUENCE_METADATA_ATTRS; _i < SEQUENCE_METADATA_ATTRS_1.length; _i++) {
-            var metadataAttr = SEQUENCE_METADATA_ATTRS_1[_i];
+        let sequenceAttr = null;
+        for (let metadataAttr of SEQUENCE_METADATA_ATTRS) {
             if (metadataAttr in pointMetadata && pointMetadata[metadataAttr] !== '') {
                 sequenceAttr = pointMetadata[metadataAttr];
                 break;
@@ -87,9 +59,9 @@ var vz_projector;
      * requires normalizing and shifting the vector space, we make a copy of the
      * data so we can still always create new subsets based on the original data.
      */
-    var DataSet = /** @class */ (function () {
+    class DataSet {
         /** Creates a new Dataset */
-        function DataSet(points, spriteAndMetadataInfo) {
+        constructor(points, spriteAndMetadataInfo) {
             this.shuffledDataIndices = [];
             /**
              * This keeps a list of all current projections so you can easily test to see
@@ -109,41 +81,41 @@ var vz_projector;
             this.dim = [this.points.length, this.points[0].vector.length];
             this.spriteAndMetadataInfo = spriteAndMetadataInfo;
         }
-        DataSet.prototype.computeSequences = function (points) {
+        computeSequences(points) {
             // Keep a list of indices seen so we don't compute sequences for a given
             // point twice.
-            var indicesSeen = new Int8Array(points.length);
+            let indicesSeen = new Int8Array(points.length);
             // Compute sequences.
-            var indexToSequence = {};
-            var sequences = [];
-            for (var i = 0; i < points.length; i++) {
+            let indexToSequence = {};
+            let sequences = [];
+            for (let i = 0; i < points.length; i++) {
                 if (indicesSeen[i]) {
                     continue;
                 }
                 indicesSeen[i] = 1;
                 // Ignore points without a sequence attribute.
-                var next = getSequenceNextPointIndex(points[i].metadata);
+                let next = getSequenceNextPointIndex(points[i].metadata);
                 if (next == null) {
                     continue;
                 }
                 if (next in indexToSequence) {
-                    var existingSequence = indexToSequence[next];
+                    let existingSequence = indexToSequence[next];
                     // Pushing at the beginning of the array.
                     existingSequence.pointIndices.unshift(i);
                     indexToSequence[i] = existingSequence;
                     continue;
                 }
                 // The current point is pointing to a new/unseen sequence.
-                var newSequence = { pointIndices: [] };
+                let newSequence = { pointIndices: [] };
                 indexToSequence[i] = newSequence;
                 sequences.push(newSequence);
-                var currentIndex = i;
+                let currentIndex = i;
                 while (points[currentIndex]) {
                     newSequence.pointIndices.push(currentIndex);
-                    var next_1 = getSequenceNextPointIndex(points[currentIndex].metadata);
-                    if (next_1 != null) {
-                        indicesSeen[next_1] = 1;
-                        currentIndex = next_1;
+                    let next = getSequenceNextPointIndex(points[currentIndex].metadata);
+                    if (next != null) {
+                        indicesSeen[next] = 1;
+                        currentIndex = next;
                     }
                     else {
                         currentIndex = -1;
@@ -151,13 +123,13 @@ var vz_projector;
                 }
             }
             return sequences;
-        };
-        DataSet.prototype.projectionCanBeRendered = function (projection) {
+        }
+        projectionCanBeRendered(projection) {
             if (projection !== 'tsne') {
                 return true;
             }
             return this.tSNEIteration > 0;
-        };
+        }
         /**
          * Returns a new subset dataset by copying out data. We make a copy because
          * we have to modify the vectors by normalizing them.
@@ -166,12 +138,11 @@ var vz_projector;
          *
          * @return A subset of the original dataset.
          */
-        DataSet.prototype.getSubset = function (subset) {
-            var _this = this;
-            var pointsSubset = ((subset != null) && (subset.length > 0)) ?
-                subset.map(function (i) { return _this.points[i]; }) :
+        getSubset(subset) {
+            const pointsSubset = ((subset != null) && (subset.length > 0)) ?
+                subset.map(i => this.points[i]) :
                 this.points;
-            var points = pointsSubset.map(function (dp) {
+            let points = pointsSubset.map(dp => {
                 return {
                     metadata: dp.metadata,
                     index: dp.index,
@@ -180,20 +151,20 @@ var vz_projector;
                 };
             });
             return new DataSet(points, this.spriteAndMetadataInfo);
-        };
+        }
         /**
          * Computes the centroid, shifts all points to that centroid,
          * then makes them all unit norm.
          */
-        DataSet.prototype.normalize = function () {
+        normalize() {
             // Compute the centroid of all data points.
-            var centroid = vz_projector.vector.centroid(this.points, function (a) { return a.vector; });
+            let centroid = vz_projector.vector.centroid(this.points, a => a.vector);
             if (centroid == null) {
                 throw Error('centroid should not be null');
             }
             // Shift all points by the centroid and make them unit norm.
-            for (var id = 0; id < this.points.length; ++id) {
-                var dataPoint = this.points[id];
+            for (let id = 0; id < this.points.length; ++id) {
+                let dataPoint = this.points[id];
                 dataPoint.vector = vz_projector.vector.sub(dataPoint.vector, centroid);
                 if (vz_projector.vector.norm2(dataPoint.vector) > 0) {
                     // If we take the unit norm of a vector of all 0s, we get a vector of
@@ -201,238 +172,214 @@ var vz_projector;
                     vz_projector.vector.unit(dataPoint.vector);
                 }
             }
-        };
+        }
         /** Projects the dataset onto a given vector and caches the result. */
-        DataSet.prototype.projectLinear = function (dir, label) {
+        projectLinear(dir, label) {
             this.projections[label] = true;
-            this.points.forEach(function (dataPoint) {
+            this.points.forEach(dataPoint => {
                 dataPoint.projections[label] = vz_projector.vector.dot(dataPoint.vector, dir);
             });
-        };
+        }
         /** Projects the dataset along the top 10 principal components. */
-        DataSet.prototype.projectPCA = function () {
-            var _this = this;
+        projectPCA() {
             if (this.projections['pca-0'] != null) {
                 return Promise.resolve(null);
             }
-            return vz_projector.util.runAsyncTask('Computing PCA...', function () {
+            return vz_projector.util.runAsyncTask('Computing PCA...', () => {
                 // Approximate pca vectors by sampling the dimensions.
-                var dim = _this.points[0].vector.length;
-                var vectors = _this.shuffledDataIndices.map(function (i) { return _this.points[i].vector; });
+                let dim = this.points[0].vector.length;
+                let vectors = this.shuffledDataIndices.map(i => this.points[i].vector);
                 if (dim > vz_projector.PCA_SAMPLE_DIM) {
                     vectors = vz_projector.vector.projectRandom(vectors, vz_projector.PCA_SAMPLE_DIM);
                 }
-                var sampledVectors = vectors.slice(0, vz_projector.PCA_SAMPLE_SIZE);
-                var dot = numeric.dot, transpose = numeric.transpose, numericSvd = numeric.svd;
+                const sampledVectors = vectors.slice(0, vz_projector.PCA_SAMPLE_SIZE);
+                const { dot, transpose, svd: numericSvd } = numeric;
                 // numeric dynamically generates `numeric.div` and Closure compiler has
                 // incorrectly compiles `numeric.div` property accessor. We use below
                 // signature to prevent Closure from mangling and guessing.
-                var div = numeric['div'];
-                var scalar = dot(transpose(sampledVectors), sampledVectors);
-                var sigma = div(scalar, sampledVectors.length);
-                var svd = numericSvd(sigma);
-                var variances = svd.S;
-                var totalVariance = 0;
-                for (var i = 0; i < variances.length; ++i) {
+                const div = numeric['div'];
+                const scalar = dot(transpose(sampledVectors), sampledVectors);
+                const sigma = div(scalar, sampledVectors.length);
+                const svd = numericSvd(sigma);
+                const variances = svd.S;
+                let totalVariance = 0;
+                for (let i = 0; i < variances.length; ++i) {
                     totalVariance += variances[i];
                 }
-                for (var i = 0; i < variances.length; ++i) {
+                for (let i = 0; i < variances.length; ++i) {
                     variances[i] /= totalVariance;
                 }
-                _this.fracVariancesExplained = variances;
-                var U = svd.U;
-                var pcaVectors = vectors.map(function (vector) {
-                    var newV = new Float32Array(NUM_PCA_COMPONENTS);
-                    for (var newDim = 0; newDim < NUM_PCA_COMPONENTS; newDim++) {
-                        var dot_1 = 0;
-                        for (var oldDim = 0; oldDim < vector.length; oldDim++) {
-                            dot_1 += vector[oldDim] * U[oldDim][newDim];
+                this.fracVariancesExplained = variances;
+                let U = svd.U;
+                let pcaVectors = vectors.map(vector => {
+                    let newV = new Float32Array(NUM_PCA_COMPONENTS);
+                    for (let newDim = 0; newDim < NUM_PCA_COMPONENTS; newDim++) {
+                        let dot = 0;
+                        for (let oldDim = 0; oldDim < vector.length; oldDim++) {
+                            dot += vector[oldDim] * U[oldDim][newDim];
                         }
-                        newV[newDim] = dot_1;
+                        newV[newDim] = dot;
                     }
                     return newV;
                 });
-                for (var d = 0; d < NUM_PCA_COMPONENTS; d++) {
-                    var label = 'pca-' + d;
-                    _this.projections[label] = true;
-                    for (var i = 0; i < pcaVectors.length; i++) {
-                        var pointIndex = _this.shuffledDataIndices[i];
-                        _this.points[pointIndex].projections[label] = pcaVectors[i][d];
+                for (let d = 0; d < NUM_PCA_COMPONENTS; d++) {
+                    let label = 'pca-' + d;
+                    this.projections[label] = true;
+                    for (let i = 0; i < pcaVectors.length; i++) {
+                        let pointIndex = this.shuffledDataIndices[i];
+                        this.points[pointIndex].projections[label] = pcaVectors[i][d];
                     }
                 }
             });
-        };
+        }
         /** Runs tsne on the data. */
-        DataSet.prototype.projectTSNE = function (perplexity, learningRate, tsneDim, stepCallback) {
-            var _this = this;
+        projectTSNE(perplexity, learningRate, tsneDim, stepCallback) {
             this.hasTSNERun = true;
-            var k = Math.floor(3 * perplexity);
-            var opt = { epsilon: learningRate, perplexity: perplexity, dim: tsneDim };
+            let k = Math.floor(3 * perplexity);
+            let opt = { epsilon: learningRate, perplexity: perplexity, dim: tsneDim };
             this.tsne = new vz_projector.TSNE(opt);
             this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
             this.tsne.setSuperviseFactor(this.superviseFactor);
             this.tSNEShouldPause = false;
             this.tSNEShouldStop = false;
             this.tSNEIteration = 0;
-            var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
-            var step = function () {
-                if (_this.tSNEShouldStop) {
-                    _this.projections['tsne'] = false;
+            let sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
+            let step = () => {
+                if (this.tSNEShouldStop) {
+                    this.projections['tsne'] = false;
                     stepCallback(null);
-                    _this.tsne = null;
-                    _this.hasTSNERun = false;
+                    this.tsne = null;
+                    this.hasTSNERun = false;
                     return;
                 }
-                if (!_this.tSNEShouldPause) {
-                    _this.tsne.step();
-                    var result_1 = _this.tsne.getSolution();
-                    sampledIndices.forEach(function (index, i) {
-                        var dataPoint = _this.points[index];
-                        dataPoint.projections['tsne-0'] = result_1[i * tsneDim + 0];
-                        dataPoint.projections['tsne-1'] = result_1[i * tsneDim + 1];
+                if (!this.tSNEShouldPause) {
+                    this.tsne.step();
+                    let result = this.tsne.getSolution();
+                    sampledIndices.forEach((index, i) => {
+                        let dataPoint = this.points[index];
+                        dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+                        dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
                         if (tsneDim === 3) {
-                            dataPoint.projections['tsne-2'] = result_1[i * tsneDim + 2];
+                            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
                         }
                     });
-                    _this.projections['tsne'] = true;
-                    _this.tSNEIteration++;
-                    stepCallback(_this.tSNEIteration);
+                    this.projections['tsne'] = true;
+                    this.tSNEIteration++;
+                    stepCallback(this.tSNEIteration);
                 }
                 requestAnimationFrame(step);
             };
-            var sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
-            var knnComputation = this.computeKnn(sampledData, k);
-            knnComputation.then(function (nearest) {
-                vz_projector.util.runAsyncTask('Initializing T-SNE...', function () {
-                    _this.tsne.initDataDist(nearest);
+            const sampledData = sampledIndices.map(i => this.points[i]);
+            const knnComputation = this.computeKnn(sampledData, k);
+            knnComputation.then(nearest => {
+                vz_projector.util.runAsyncTask('Initializing T-SNE...', () => {
+                    this.tsne.initDataDist(nearest);
                 }).then(step);
             });
-        };
+        }
         /** Runs UMAP on the data. */
-        DataSet.prototype.projectUmap = function (nComponents, nNeighbors, stepCallback) {
-            return __awaiter(this, void 0, void 0, function () {
-                var currentEpoch, epochStepSize, sampledIndices, sampledData, X, nearest, nEpochs;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            this.hasUmapRun = true;
-                            this.umap = new UMAP({ nComponents: nComponents, nNeighbors: nNeighbors });
-                            currentEpoch = 0;
-                            epochStepSize = 10;
-                            sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.UMAP_SAMPLE_SIZE);
-                            sampledData = sampledIndices.map(function (i) { return _this.points[i]; });
-                            X = sampledData.map(function (x) { return Array.from(x.vector); });
-                            return [4 /*yield*/, this.computeKnn(sampledData, nNeighbors)];
-                        case 1:
-                            nearest = _a.sent();
-                            return [4 /*yield*/, vz_projector.util.runAsyncTask('Initializing UMAP...', function () {
-                                    var knnIndices = nearest.map(function (row) { return row.map(function (entry) { return entry.index; }); });
-                                    var knnDistances = nearest.map(function (row) {
-                                        return row.map(function (entry) { return entry.dist; });
-                                    });
-                                    // Initialize UMAP and return the number of epochs.
-                                    _this.umap.setPrecomputedKNN(knnIndices, knnDistances);
-                                    return _this.umap.initializeFit(X);
-                                }, UMAP_MSG_ID)];
-                        case 2:
-                            nEpochs = _a.sent();
-                            // Now, iterate through all epoch batches of the UMAP optimization, updating
-                            // the modal window with the progress rather than animating each step since
-                            // the UMAP animation is not nearly as informative as t-SNE.
-                            return [2 /*return*/, new Promise(function (resolve, reject) {
-                                    var step = function () {
-                                        // Compute a batch of epochs since we don't want to update the UI
-                                        // on every epoch.
-                                        var epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
-                                        for (var i = 0; i < epochsBatch; i++) {
-                                            currentEpoch = _this.umap.step();
-                                        }
-                                        var progressMsg = "Optimizing UMAP (epoch " + currentEpoch + " of " + nEpochs + ")";
-                                        // Wrap the logic in a util.runAsyncTask in order to correctly update
-                                        // the modal with the progress of the optimization.
-                                        vz_projector.util.runAsyncTask(progressMsg, function () {
-                                            if (currentEpoch < nEpochs) {
-                                                requestAnimationFrame(step);
-                                            }
-                                            else {
-                                                var result_2 = _this.umap.getEmbedding();
-                                                sampledIndices.forEach(function (index, i) {
-                                                    var dataPoint = _this.points[index];
-                                                    dataPoint.projections['umap-0'] = result_2[i][0];
-                                                    dataPoint.projections['umap-1'] = result_2[i][1];
-                                                    if (nComponents === 3) {
-                                                        dataPoint.projections['umap-2'] = result_2[i][2];
-                                                    }
-                                                });
-                                                _this.projections['umap'] = true;
-                                                vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
-                                                _this.hasUmapRun = true;
-                                                stepCallback(currentEpoch);
-                                                resolve();
-                                            }
-                                        }, UMAP_MSG_ID, 0).catch(function (error) {
-                                            vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
-                                            reject(error);
-                                        });
-                                    };
-                                    requestAnimationFrame(step);
-                                })];
-                    }
+        projectUmap(nComponents, nNeighbors, stepCallback) {
+            return __awaiter(this, void 0, void 0, function* () {
+                this.hasUmapRun = true;
+                this.umap = new UMAP({ nComponents, nNeighbors });
+                let currentEpoch = 0;
+                const epochStepSize = 10;
+                const sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.UMAP_SAMPLE_SIZE);
+                const sampledData = sampledIndices.map(i => this.points[i]);
+                // TODO: Switch to a Float32-based UMAP internal
+                const X = sampledData.map(x => Array.from(x.vector));
+                const nearest = yield this.computeKnn(sampledData, nNeighbors);
+                const nEpochs = yield vz_projector.util.runAsyncTask('Initializing UMAP...', () => {
+                    const knnIndices = nearest.map(row => row.map(entry => entry.index));
+                    const knnDistances = nearest.map(row => row.map(entry => entry.dist));
+                    // Initialize UMAP and return the number of epochs.
+                    this.umap.setPrecomputedKNN(knnIndices, knnDistances);
+                    return this.umap.initializeFit(X);
+                }, UMAP_MSG_ID);
+                // Now, iterate through all epoch batches of the UMAP optimization, updating
+                // the modal window with the progress rather than animating each step since
+                // the UMAP animation is not nearly as informative as t-SNE.
+                return new Promise((resolve, reject) => {
+                    const step = () => {
+                        // Compute a batch of epochs since we don't want to update the UI
+                        // on every epoch.
+                        const epochsBatch = Math.min(epochStepSize, nEpochs - currentEpoch);
+                        for (let i = 0; i < epochsBatch; i++) {
+                            currentEpoch = this.umap.step();
+                        }
+                        const progressMsg = `Optimizing UMAP (epoch ${currentEpoch} of ${nEpochs})`;
+                        // Wrap the logic in a util.runAsyncTask in order to correctly update
+                        // the modal with the progress of the optimization.
+                        vz_projector.util.runAsyncTask(progressMsg, () => {
+                            if (currentEpoch < nEpochs) {
+                                requestAnimationFrame(step);
+                            }
+                            else {
+                                const result = this.umap.getEmbedding();
+                                sampledIndices.forEach((index, i) => {
+                                    const dataPoint = this.points[index];
+                                    dataPoint.projections['umap-0'] = result[i][0];
+                                    dataPoint.projections['umap-1'] = result[i][1];
+                                    if (nComponents === 3) {
+                                        dataPoint.projections['umap-2'] = result[i][2];
+                                    }
+                                });
+                                this.projections['umap'] = true;
+                                vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
+                                this.hasUmapRun = true;
+                                stepCallback(currentEpoch);
+                                resolve();
+                            }
+                        }, UMAP_MSG_ID, 0).catch(error => {
+                            vz_projector.logging.setModalMessage(null, UMAP_MSG_ID);
+                            reject(error);
+                        });
+                    };
+                    requestAnimationFrame(step);
                 });
             });
-        };
+        }
         /** Computes KNN to provide to the UMAP and t-SNE algorithms. */
-        DataSet.prototype.computeKnn = function (data, nNeighbors) {
-            return __awaiter(this, void 0, void 0, function () {
-                var previouslyComputedNNeighbors, result;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            previouslyComputedNNeighbors = this.nearest && this.nearest.length ?
-                                this.nearest[0].length : 0;
-                            if (!(this.nearest != null && previouslyComputedNNeighbors >= nNeighbors)) return [3 /*break*/, 1];
-                            return [2 /*return*/, Promise.resolve(this.nearest.map(function (neighbors) {
-                                    return neighbors.slice(0, nNeighbors);
-                                }))];
-                        case 1: return [4 /*yield*/, (KNN_GPU_ENABLED ?
-                                vz_projector.knn.findKNNGPUCosine(data, nNeighbors, (function (d) { return d.vector; })) :
-                                vz_projector.knn.findKNN(data, nNeighbors, (function (d) { return d.vector; }), function (a, b) { return vz_projector.vector.cosDistNorm(a, b); }))];
-                        case 2:
-                            result = _a.sent();
-                            this.nearest = result;
-                            return [2 /*return*/, Promise.resolve(result)];
-                    }
-                });
+        computeKnn(data, nNeighbors) {
+            return __awaiter(this, void 0, void 0, function* () {
+                // Handle the case where we've previously found the nearest neighbors.
+                const previouslyComputedNNeighbors = this.nearest && this.nearest.length ?
+                    this.nearest[0].length : 0;
+                if (this.nearest != null && previouslyComputedNNeighbors >= nNeighbors) {
+                    return Promise.resolve(this.nearest.map(neighbors => neighbors.slice(0, nNeighbors)));
+                }
+                else {
+                    const result = yield (KNN_GPU_ENABLED ?
+                        vz_projector.knn.findKNNGPUCosine(data, nNeighbors, (d => d.vector)) :
+                        vz_projector.knn.findKNN(data, nNeighbors, (d => d.vector), (a, b) => vz_projector.vector.cosDistNorm(a, b)));
+                    this.nearest = result;
+                    return Promise.resolve(result);
+                }
             });
-        };
+        }
         /* Perturb TSNE and update dataset point coordinates. */
-        DataSet.prototype.perturbTsne = function () {
-            var _this = this;
+        perturbTsne() {
             if (this.hasTSNERun && this.tsne) {
                 this.tsne.perturb();
-                var tsneDim_1 = this.tsne.getDim();
-                var result_3 = this.tsne.getSolution();
-                var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
-                sampledIndices.forEach(function (index, i) {
-                    var dataPoint = _this.points[index];
-                    dataPoint.projections['tsne-0'] = result_3[i * tsneDim_1 + 0];
-                    dataPoint.projections['tsne-1'] = result_3[i * tsneDim_1 + 1];
-                    if (tsneDim_1 === 3) {
-                        dataPoint.projections['tsne-2'] = result_3[i * tsneDim_1 + 2];
+                let tsneDim = this.tsne.getDim();
+                let result = this.tsne.getSolution();
+                let sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
+                sampledIndices.forEach((index, i) => {
+                    let dataPoint = this.points[index];
+                    dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
+                    dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
+                    if (tsneDim === 3) {
+                        dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
                     }
                 });
             }
-        };
-        DataSet.prototype.setSupervision = function (superviseColumn, superviseInput) {
-            var _this = this;
+        }
+        setSupervision(superviseColumn, superviseInput) {
             if (superviseColumn != null) {
-                var sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
-                var labels_1 = new Array(sampledIndices.length);
-                sampledIndices.forEach(function (index, i) {
-                    return labels_1[i] = _this.points[index].metadata[superviseColumn].toString();
-                });
-                this.superviseLabels = labels_1;
+                let sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
+                let labels = new Array(sampledIndices.length);
+                sampledIndices.forEach((index, i) => labels[i] = this.points[index].metadata[superviseColumn].toString());
+                this.superviseLabels = labels;
             }
             if (superviseInput != null) {
                 this.superviseInput = superviseInput;
@@ -440,24 +387,23 @@ var vz_projector;
             if (this.tsne) {
                 this.tsne.setSupervision(this.superviseLabels, this.superviseInput);
             }
-        };
-        DataSet.prototype.setSuperviseFactor = function (superviseFactor) {
+        }
+        setSuperviseFactor(superviseFactor) {
             if (superviseFactor != null) {
                 this.superviseFactor = superviseFactor;
                 if (this.tsne) {
                     this.tsne.setSuperviseFactor(superviseFactor);
                 }
             }
-        };
+        }
         /**
          * Merges metadata to the dataset and returns whether it succeeded.
          */
-        DataSet.prototype.mergeMetadata = function (metadata) {
-            var _this = this;
+        mergeMetadata(metadata) {
             if (metadata.pointsInfo.length !== this.points.length) {
-                var errorMessage = "Number of tensors (" + this.points.length + ") do not" +
-                    " match the number of lines in metadata" +
-                    (" (" + metadata.pointsInfo.length + ").");
+                let errorMessage = `Number of tensors (${this.points.length}) do not` +
+                    ` match the number of lines in metadata` +
+                    ` (${metadata.pointsInfo.length}).`;
                 if (metadata.stats.length === 1 &&
                     this.points.length + 1 === metadata.pointsInfo.length) {
                     // If there is only one column of metadata and the number of points is
@@ -481,55 +427,53 @@ var vz_projector;
             }
             this.spriteAndMetadataInfo = metadata;
             metadata.pointsInfo.slice(0, this.points.length)
-                .forEach(function (m, i) { return _this.points[i].metadata = m; });
+                .forEach((m, i) => this.points[i].metadata = m);
             return true;
-        };
-        DataSet.prototype.stopTSNE = function () {
+        }
+        stopTSNE() {
             this.tSNEShouldStop = true;
-        };
+        }
         /**
          * Finds the nearest neighbors of the query point using a
          * user-specified distance metric.
          */
-        DataSet.prototype.findNeighbors = function (pointIndex, distFunc, numNN) {
+        findNeighbors(pointIndex, distFunc, numNN) {
             // Find the nearest neighbors of a particular point.
-            var neighbors = vz_projector.knn.findKNNofPoint(this.points, pointIndex, numNN, (function (d) { return d.vector; }), distFunc);
+            let neighbors = vz_projector.knn.findKNNofPoint(this.points, pointIndex, numNN, (d => d.vector), distFunc);
             // TODO(@dsmilkov): Figure out why we slice.
-            var result = neighbors.slice(0, numNN);
+            let result = neighbors.slice(0, numNN);
             return result;
-        };
+        }
         /**
          * Search the dataset based on a metadata field.
          */
-        DataSet.prototype.query = function (query, inRegexMode, fieldName) {
-            var predicate = vz_projector.util.getSearchPredicate(query, inRegexMode, fieldName);
-            var matches = [];
-            this.points.forEach(function (point, id) {
+        query(query, inRegexMode, fieldName) {
+            let predicate = vz_projector.util.getSearchPredicate(query, inRegexMode, fieldName);
+            let matches = [];
+            this.points.forEach((point, id) => {
                 if (predicate(point)) {
                     matches.push(id);
                 }
             });
             return matches;
-        };
-        return DataSet;
-    }());
+        }
+    }
     vz_projector.DataSet = DataSet;
-    var Projection = /** @class */ (function () {
-        function Projection(projectionType, projectionComponents, dimensionality, dataSet) {
+    class Projection {
+        constructor(projectionType, projectionComponents, dimensionality, dataSet) {
             this.projectionType = projectionType;
             this.projectionComponents = projectionComponents;
             this.dimensionality = dimensionality;
             this.dataSet = dataSet;
         }
-        return Projection;
-    }());
+    }
     vz_projector.Projection = Projection;
     /**
      * An interface that holds all the data for serializing the current state of
      * the world.
      */
-    var State = /** @class */ (function () {
-        function State() {
+    class State {
+        constructor() {
             /** A label identifying this state. */
             this.label = '';
             /** Whether this State is selected in the bookmarks pane. */
@@ -549,16 +493,15 @@ var vz_projector;
             /** The indices of selected points. */
             this.selectedPoints = [];
         }
-        return State;
-    }());
+    }
     vz_projector.State = State;
     function getProjectionComponents(projection, components) {
         if (components.length > 3) {
             throw new RangeError('components length must be <= 3');
         }
-        var projectionComponents = [null, null, null];
-        var prefix = (projection === 'custom') ? 'linear' : projection;
-        for (var i = 0; i < components.length; ++i) {
+        const projectionComponents = [null, null, null];
+        const prefix = (projection === 'custom') ? 'linear' : projection;
+        for (let i = 0; i < components.length; ++i) {
             if (components[i] == null) {
                 continue;
             }
@@ -568,7 +511,7 @@ var vz_projector;
     }
     vz_projector.getProjectionComponents = getProjectionComponents;
     function stateGetAccessorDimensions(state) {
-        var dimensions;
+        let dimensions;
         switch (state.selectedProjection) {
             case 'pca':
                 dimensions = state.pcaComponentDimensions.slice();

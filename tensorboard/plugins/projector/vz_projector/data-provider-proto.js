@@ -14,14 +14,14 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var ProtoDataProvider = /** @class */ (function () {
-        function ProtoDataProvider(dataProto) {
+    class ProtoDataProvider {
+        constructor(dataProto) {
             this.dataProto = dataProto;
         }
-        ProtoDataProvider.prototype.retrieveRuns = function (callback) {
+        retrieveRuns(callback) {
             callback(['proto']);
-        };
-        ProtoDataProvider.prototype.retrieveProjectorConfig = function (run, callback) {
+        }
+        retrieveProjectorConfig(run, callback) {
             callback({
                 modelCheckpointPath: 'proto',
                 embeddings: [{
@@ -30,58 +30,57 @@ var vz_projector;
                         metadataPath: 'proto'
                     }]
             });
-        };
-        ProtoDataProvider.prototype.retrieveTensor = function (run, tensorName, callback) {
+        }
+        retrieveTensor(run, tensorName, callback) {
             callback(this.flatArrayToDataset(this.dataProto.tensor));
-        };
-        ProtoDataProvider.prototype.retrieveSpriteAndMetadata = function (run, tensorName, callback) {
-            var _this = this;
-            var columnNames = this.dataProto.metadata.columns.map(function (c) { return c.name; });
-            var n = this.dataProto.shape[0];
-            var pointsMetadata = new Array(n);
-            this.dataProto.metadata.columns.forEach(function (c) {
-                var values = c.numericValues || c.stringValues;
-                for (var i = 0; i < n; i++) {
+        }
+        retrieveSpriteAndMetadata(run, tensorName, callback) {
+            let columnNames = this.dataProto.metadata.columns.map(c => c.name);
+            let n = this.dataProto.shape[0];
+            let pointsMetadata = new Array(n);
+            this.dataProto.metadata.columns.forEach(c => {
+                let values = c.numericValues || c.stringValues;
+                for (let i = 0; i < n; i++) {
                     pointsMetadata[i] = pointsMetadata[i] || {};
                     pointsMetadata[i][c.name] = values[i];
                 }
             });
-            var spritesPromise = Promise.resolve(null);
+            let spritesPromise = Promise.resolve(null);
             if (this.dataProto.metadata.sprite != null) {
-                spritesPromise = new Promise(function (resolve, reject) {
-                    var image = new Image();
-                    image.onload = function () { return resolve(image); };
-                    image.onerror = function () { return reject('Failed converting base64 to an image'); };
-                    image.src = _this.dataProto.metadata.sprite.imageBase64;
+                spritesPromise = new Promise((resolve, reject) => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = () => reject('Failed converting base64 to an image');
+                    image.src = this.dataProto.metadata.sprite.imageBase64;
                 });
             }
-            spritesPromise.then(function (image) {
-                var result = {
+            spritesPromise.then(image => {
+                const result = {
                     stats: vz_projector.analyzeMetadata(columnNames, pointsMetadata),
                     pointsInfo: pointsMetadata
                 };
                 if (image != null) {
                     result.spriteImage = image;
                     result.spriteMetadata = {
-                        singleImageDim: _this.dataProto.metadata.sprite.singleImageDim,
+                        singleImageDim: this.dataProto.metadata.sprite.singleImageDim,
                         imagePath: 'proto'
                     };
                 }
                 callback(result);
             });
-        };
-        ProtoDataProvider.prototype.getBookmarks = function (run, tensorName, callback) {
+        }
+        getBookmarks(run, tensorName, callback) {
             return callback([]);
-        };
-        ProtoDataProvider.prototype.flatArrayToDataset = function (tensor) {
-            var points = [];
-            var n = this.dataProto.shape[0];
-            var d = this.dataProto.shape[1];
+        }
+        flatArrayToDataset(tensor) {
+            let points = [];
+            let n = this.dataProto.shape[0];
+            let d = this.dataProto.shape[1];
             if (n * d !== tensor.length) {
                 throw 'The shape doesn\'t match the length of the flattened array';
             }
-            for (var i = 0; i < n; i++) {
-                var offset = i * d;
+            for (let i = 0; i < n; i++) {
+                let offset = i * d;
                 points.push({
                     vector: new Float32Array(tensor.slice(offset, offset + d)),
                     metadata: {},
@@ -90,8 +89,7 @@ var vz_projector;
                 });
             }
             return new vz_projector.DataSet(points);
-        };
-        return ProtoDataProvider;
-    }());
+        }
+    }
     vz_projector.ProtoDataProvider = ProtoDataProvider;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

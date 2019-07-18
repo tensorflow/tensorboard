@@ -20,16 +20,16 @@ var vz_projector;
      * Data provider that loads data provided by a python server (usually backed
      * by a checkpoint file).
      */
-    var ServerDataProvider = /** @class */ (function () {
-        function ServerDataProvider(routePrefix) {
+    class ServerDataProvider {
+        constructor(routePrefix) {
             this.runProjectorConfigCache = {};
             this.routePrefix = routePrefix;
         }
-        ServerDataProvider.prototype.getEmbeddingInfo = function (run, tensorName, callback) {
-            this.retrieveProjectorConfig(run, function (config) {
-                var embeddings = config.embeddings;
-                for (var i = 0; i < embeddings.length; i++) {
-                    var embedding = embeddings[i];
+        getEmbeddingInfo(run, tensorName, callback) {
+            this.retrieveProjectorConfig(run, config => {
+                const embeddings = config.embeddings;
+                for (let i = 0; i < embeddings.length; i++) {
+                    const embedding = embeddings[i];
                     if (embedding.tensorName === tensorName) {
                         callback(embedding);
                         return;
@@ -37,80 +37,76 @@ var vz_projector;
                 }
                 callback(null);
             });
-        };
-        ServerDataProvider.prototype.retrieveRuns = function (callback) {
-            var msgId = vz_projector.logging.setModalMessage('Fetching runs...');
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', this.routePrefix + "/runs");
-            xhr.onerror = function (err) {
+        }
+        retrieveRuns(callback) {
+            const msgId = vz_projector.logging.setModalMessage('Fetching runs...');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${this.routePrefix}/runs`);
+            xhr.onerror = (err) => {
                 vz_projector.logging.setErrorMessage(xhr.responseText, 'fetching runs');
             };
-            xhr.onload = function () {
-                var runs = JSON.parse(xhr.responseText);
+            xhr.onload = () => {
+                const runs = JSON.parse(xhr.responseText);
                 vz_projector.logging.setModalMessage(null, msgId);
                 callback(runs);
             };
             xhr.send();
-        };
-        ServerDataProvider.prototype.retrieveProjectorConfig = function (run, callback) {
-            var _this = this;
+        }
+        retrieveProjectorConfig(run, callback) {
             if (run in this.runProjectorConfigCache) {
                 callback(this.runProjectorConfigCache[run]);
                 return;
             }
-            var msgId = vz_projector.logging.setModalMessage('Fetching projector config...');
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', this.routePrefix + "/info?run=" + run);
-            xhr.onerror = function (err) {
+            const msgId = vz_projector.logging.setModalMessage('Fetching projector config...');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${this.routePrefix}/info?run=${run}`);
+            xhr.onerror = (err) => {
                 vz_projector.logging.setErrorMessage(xhr.responseText, 'fetching projector config');
             };
-            xhr.onload = function () {
-                var config = JSON.parse(xhr.responseText);
+            xhr.onload = () => {
+                const config = JSON.parse(xhr.responseText);
                 vz_projector.logging.setModalMessage(null, msgId);
-                _this.runProjectorConfigCache[run] = config;
+                this.runProjectorConfigCache[run] = config;
                 callback(config);
             };
             xhr.send();
-        };
-        ServerDataProvider.prototype.retrieveTensor = function (run, tensorName, callback) {
-            var _this = this;
-            this.getEmbeddingInfo(run, tensorName, function (embedding) {
-                vz_projector.retrieveTensorAsBytes(_this, embedding, run, tensorName, _this.routePrefix + "/tensor?run=" + run + "&name=" + tensorName +
-                    ("&num_rows=" + vz_projector.LIMIT_NUM_POINTS), callback);
+        }
+        retrieveTensor(run, tensorName, callback) {
+            this.getEmbeddingInfo(run, tensorName, embedding => {
+                vz_projector.retrieveTensorAsBytes(this, embedding, run, tensorName, `${this.routePrefix}/tensor?run=${run}&name=${tensorName}` +
+                    `&num_rows=${vz_projector.LIMIT_NUM_POINTS}`, callback);
             });
-        };
-        ServerDataProvider.prototype.retrieveSpriteAndMetadata = function (run, tensorName, callback) {
-            var _this = this;
-            this.getEmbeddingInfo(run, tensorName, function (embedding) {
-                var metadataPath = null;
+        }
+        retrieveSpriteAndMetadata(run, tensorName, callback) {
+            this.getEmbeddingInfo(run, tensorName, embedding => {
+                let metadataPath = null;
                 if (embedding.metadataPath) {
                     metadataPath =
-                        _this.routePrefix + "/metadata?" +
-                            ("run=" + run + "&name=" + tensorName + "&num_rows=" + vz_projector.LIMIT_NUM_POINTS);
+                        `${this.routePrefix}/metadata?` +
+                            `run=${run}&name=${tensorName}&num_rows=${vz_projector.LIMIT_NUM_POINTS}`;
                 }
-                var spriteImagePath = null;
+                let spriteImagePath = null;
                 if (embedding.sprite && embedding.sprite.imagePath) {
                     spriteImagePath =
-                        _this.routePrefix + "/sprite_image?run=" + run + "&name=" + tensorName;
+                        `${this.routePrefix}/sprite_image?run=${run}&name=${tensorName}`;
                 }
                 vz_projector.retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath, embedding.sprite, callback);
             });
-        };
-        ServerDataProvider.prototype.getBookmarks = function (run, tensorName, callback) {
-            var msgId = vz_projector.logging.setModalMessage('Fetching bookmarks...');
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', this.routePrefix + "/bookmarks?run=" + run + "&name=" + tensorName);
-            xhr.onerror = function (err) {
+        }
+        getBookmarks(run, tensorName, callback) {
+            const msgId = vz_projector.logging.setModalMessage('Fetching bookmarks...');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${this.routePrefix}/bookmarks?run=${run}&name=${tensorName}`);
+            xhr.onerror = (err) => {
                 vz_projector.logging.setErrorMessage(xhr.responseText, 'fetching bookmarks');
             };
-            xhr.onload = function () {
+            xhr.onload = () => {
                 vz_projector.logging.setModalMessage(null, msgId);
-                var bookmarks = JSON.parse(xhr.responseText);
+                const bookmarks = JSON.parse(xhr.responseText);
                 callback(bookmarks);
             };
             xhr.send();
-        };
-        return ServerDataProvider;
-    }());
+        }
+    }
     vz_projector.ServerDataProvider = ServerDataProvider;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,99 +47,90 @@ var vz_projector;
             '_generateUiForNewCheckpointForRun(selectedRun)',
         ],
     });
-    var DataPanel = /** @class */ (function (_super) {
-        __extends(DataPanel, _super);
-        function DataPanel() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.forceCategoricalColoring = false;
-            return _this;
+    class DataPanel extends vz_projector.DataPanelPolymer {
+        constructor() {
+            super(...arguments);
+            this.forceCategoricalColoring = false;
         }
-        DataPanel.prototype.ready = function () {
+        ready() {
+            super.ready();
             this.normalizeData = true;
             this.superviseInputSelected = '';
-        };
-        DataPanel.prototype.initialize = function (projector, dp) {
-            var _this = this;
+        }
+        initialize(projector, dp) {
             this.projector = projector;
             this.dataProvider = dp;
             this.setupUploadButtons();
             // Tell the projector whenever the data normalization changes.
             // Unknown why, but the polymer checkbox button stops working as soon as
             // you do d3.select() on it.
-            this.querySelector('#normalize-data-checkbox')
-                .addEventListener('change', function () {
-                _this.projector.setNormalizeData(_this.normalizeData);
+            this.$$('#normalize-data-checkbox')
+                .addEventListener('change', () => {
+                this.projector.setNormalizeData(this.normalizeData);
             });
-            var forceCategoricalColoringCheckbox = this.querySelector('#force-categorical-checkbox');
-            forceCategoricalColoringCheckbox.addEventListener('change', function () {
-                _this.setForceCategoricalColoring(forceCategoricalColoringCheckbox.checked);
+            let forceCategoricalColoringCheckbox = this.$$('#force-categorical-checkbox');
+            forceCategoricalColoringCheckbox.addEventListener('change', () => {
+                this.setForceCategoricalColoring(forceCategoricalColoringCheckbox.checked);
             });
             // Get all the runs.
-            this.dataProvider.retrieveRuns(function (runs) {
-                _this.runNames = runs;
+            this.dataProvider.retrieveRuns(runs => {
+                this.runNames = runs;
                 // Choose the first run by default.
-                if (_this.runNames.length > 0) {
-                    if (_this.selectedRun != runs[0]) {
+                if (this.runNames.length > 0) {
+                    if (this.selectedRun != runs[0]) {
                         // This set operation will automatically trigger the observer.
-                        _this.selectedRun = runs[0];
+                        this.selectedRun = runs[0];
                     }
                     else {
                         // Explicitly load the projector config. We explicitly load because
                         // the run name stays the same, which means that the observer won't
                         // actually be triggered by setting the selected run.
-                        _this._generateUiForNewCheckpointForRun(_this.selectedRun);
+                        this._generateUiForNewCheckpointForRun(this.selectedRun);
                     }
                 }
             });
-        };
-        DataPanel.prototype.setForceCategoricalColoring = function (forceCategoricalColoring) {
+        }
+        setForceCategoricalColoring(forceCategoricalColoring) {
             this.forceCategoricalColoring = forceCategoricalColoring;
-            this.querySelector('#force-categorical-checkbox')
+            this.$$('#force-categorical-checkbox')
                 .checked = this.forceCategoricalColoring;
             this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
             // The selected color option name doesn't change when we switch to using
             // categorical coloring for stats with too many unique values, so we
             // manually call this polymer observer so that we update the UI.
             this._selectedColorOptionNameChanged();
-        };
-        DataPanel.prototype.getSeparatorClass = function (isSeparator) {
+        }
+        getSeparatorClass(isSeparator) {
             return isSeparator ? 'separator' : null;
-        };
-        DataPanel.prototype.metadataChanged = function (spriteAndMetadata, metadataFile) {
-            var _this = this;
+        }
+        metadataChanged(spriteAndMetadata, metadataFile) {
             this.spriteAndMetadata = spriteAndMetadata;
             if (metadataFile != null) {
                 this.metadataFile = metadataFile;
             }
             this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
-            if (this.selectedColorOptionName == null || this.colorOptions.filter(function (c) {
-                return c.name === _this.selectedColorOptionName;
-            }).length === 0) {
+            if (this.selectedColorOptionName == null || this.colorOptions.filter(c => c.name === this.selectedColorOptionName).length === 0) {
                 this.selectedColorOptionName = this.colorOptions[0].name;
             }
-            var labelIndex = -1;
-            this.metadataFields = spriteAndMetadata.stats.map(function (stats, i) {
+            let labelIndex = -1;
+            this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
                 if (!stats.isNumeric && labelIndex === -1) {
                     labelIndex = i;
                 }
                 return stats.name;
             });
-            if (this.metadataEditorColumn == null || this.metadataFields.filter(function (name) {
-                return name === _this.metadataEditorColumn;
-            }).length === 0) {
+            if (this.metadataEditorColumn == null || this.metadataFields.filter(name => name === this.metadataEditorColumn).length === 0) {
                 // Make the default label the first non-numeric column.
                 this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
             }
-            if (this.superviseColumn == null || this.metadataFields.filter(function (name) {
-                return name === _this.superviseColumn;
-            }).length === 0) {
+            if (this.superviseColumn == null || this.metadataFields.filter(name => name === this.superviseColumn).length === 0) {
                 // Make the default supervise class the first non-numeric column.
                 this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
                 this.superviseInput = '';
             }
             this.superviseInputChange();
-        };
-        DataPanel.prototype.projectionChanged = function (projection) {
+        }
+        projectionChanged(projection) {
             if (projection) {
                 switch (projection.projectionType) {
                     case 'tsne':
@@ -159,70 +140,65 @@ var vz_projector;
                         this.set('showSuperviseSettings', false);
                 }
             }
-        };
-        DataPanel.prototype.onProjectorSelectionChanged = function (selectedPointIndices, neighborsOfFirstPoint) {
+        }
+        onProjectorSelectionChanged(selectedPointIndices, neighborsOfFirstPoint) {
             this.selectedPointIndices = selectedPointIndices;
             this.neighborsOfFirstPoint = neighborsOfFirstPoint;
             this.metadataEditorInputChange();
-        };
-        DataPanel.prototype.addWordBreaks = function (longString) {
+        }
+        addWordBreaks(longString) {
             if (longString == null) {
                 return '';
             }
             return longString.replace(/([\/=-_,])/g, '$1<wbr>');
-        };
-        DataPanel.prototype.updateMetadataUI = function (columnStats, metadataFile) {
-            var _this = this;
-            var metadataFileElement = this.querySelector('#metadata-file');
+        }
+        updateMetadataUI(columnStats, metadataFile) {
+            const metadataFileElement = this.$$('#metadata-file');
             metadataFileElement.innerHTML = this.addWordBreaks(metadataFile);
             metadataFileElement.title = metadataFile;
             // Label by options.
-            var labelIndex = -1;
-            this.labelOptions = columnStats.map(function (stats, i) {
+            let labelIndex = -1;
+            this.labelOptions = columnStats.map((stats, i) => {
                 // Make the default label by the first non-numeric column.
                 if (!stats.isNumeric && labelIndex === -1) {
                     labelIndex = i;
                 }
                 return stats.name;
             });
-            if (this.selectedLabelOption == null || this.labelOptions.filter(function (name) {
-                return name === _this.selectedLabelOption;
-            }).length === 0) {
+            if (this.selectedLabelOption == null || this.labelOptions.filter(name => name === this.selectedLabelOption).length === 0) {
                 this.selectedLabelOption = this.labelOptions[Math.max(0, labelIndex)];
             }
-            if (this.metadataEditorColumn == null || this.labelOptions.filter(function (name) {
-                return name === _this.metadataEditorColumn;
-            }).length === 0) {
+            if (this.metadataEditorColumn == null || this.labelOptions.filter(name => name === this.metadataEditorColumn).length === 0) {
                 this.metadataEditorColumn = this.labelOptions[Math.max(0, labelIndex)];
             }
             // Color by options.
-            var standardColorOption = [
+            const standardColorOption = [
                 { name: 'No color map' },
             ];
-            var metadataColorOption = columnStats
-                .filter(function (stats) {
+            const metadataColorOption = columnStats
+                .filter(stats => {
                 return !stats.tooManyUniqueValues || stats.isNumeric;
             })
-                .map(function (stats) {
-                var map;
-                var items;
-                var thresholds;
-                var isCategorical = _this.forceCategoricalColoring || !stats.tooManyUniqueValues;
-                var desc;
+                .map(stats => {
+                let map;
+                let items;
+                let thresholds;
+                let isCategorical = this.forceCategoricalColoring || !stats.tooManyUniqueValues;
+                let desc;
                 if (isCategorical) {
-                    var scale = d3.scaleOrdinal(d3.schemeCategory10);
-                    var range_1 = scale.range();
+                    const scale = d3.scaleOrdinal(d3.schemeCategory10);
+                    let range = scale.range();
                     // Re-order the range.
-                    var newRange = range_1.map(function (color, i) {
-                        var index = (i * 3) % range_1.length;
-                        return range_1[index];
+                    let newRange = range.map((color, i) => {
+                        let index = (i * 3) % range.length;
+                        return range[index];
                     });
                     items = stats.uniqueEntries;
-                    scale.range(newRange).domain(items.map(function (x) { return x.label; }));
+                    scale.range(newRange).domain(items.map(x => x.label));
                     map = scale;
-                    var len = stats.uniqueEntries.length;
-                    desc = len + " " + (len > range_1.length ? ' non-unique' : '') + " " +
-                        "colors";
+                    const len = stats.uniqueEntries.length;
+                    desc = `${len} ${len > range.length ? ' non-unique' : ''} ` +
+                        `colors`;
                 }
                 else {
                     thresholds = [
@@ -230,8 +206,8 @@ var vz_projector;
                         { color: '#1f2d86', value: stats.max },
                     ];
                     map = d3.scaleLinear()
-                        .domain(thresholds.map(function (t) { return t.value; }))
-                        .range(thresholds.map(function (t) { return t.color; }));
+                        .domain(thresholds.map(t => t.value))
+                        .range(thresholds.map(t => t.color));
                     desc = 'gradient';
                 }
                 return {
@@ -249,35 +225,33 @@ var vz_projector;
                 standardColorOption.push({ name: 'Metadata', isSeparator: true });
             }
             this.colorOptions = standardColorOption.concat(metadataColorOption);
-        };
-        DataPanel.prototype.metadataEditorContext = function (enabled) {
+        }
+        metadataEditorContext(enabled) {
             this.metadataEditorButtonDisabled = !enabled;
             if (this.projector) {
                 this.projector.metadataEditorContext(enabled, this.metadataEditorColumn);
             }
-        };
-        DataPanel.prototype.metadataEditorInputChange = function () {
-            var col = this.metadataEditorColumn;
-            var value = this.metadataEditorInput;
-            var selectionSize = this.selectedPointIndices.length +
+        }
+        metadataEditorInputChange() {
+            let col = this.metadataEditorColumn;
+            let value = this.metadataEditorInput;
+            let selectionSize = this.selectedPointIndices.length +
                 this.neighborsOfFirstPoint.length;
             if (selectionSize > 0) {
                 if (value != null && value.trim() !== '') {
-                    if (this.spriteAndMetadata.stats.filter(function (s) { return s.name === col; })[0].isNumeric
+                    if (this.spriteAndMetadata.stats.filter(s => s.name === col)[0].isNumeric
                         && isNaN(+value)) {
-                        this.metadataEditorInputLabel = "Label must be numeric";
+                        this.metadataEditorInputLabel = `Label must be numeric`;
                         this.metadataEditorContext(false);
                     }
                     else {
-                        var numMatches = this.projector.dataSet.points.filter(function (p) {
-                            return p.metadata[col].toString() === value.trim();
-                        }).length;
+                        let numMatches = this.projector.dataSet.points.filter(p => p.metadata[col].toString() === value.trim()).length;
                         if (numMatches === 0) {
                             this.metadataEditorInputLabel =
-                                "Tag " + selectionSize + " with new label";
+                                `Tag ${selectionSize} with new label`;
                         }
                         else {
-                            this.metadataEditorInputLabel = "Tag " + selectionSize + " points as";
+                            this.metadataEditorInputLabel = `Tag ${selectionSize} points as`;
                         }
                         this.metadataEditorContext(true);
                     }
@@ -296,77 +270,71 @@ var vz_projector;
                     this.metadataEditorInputLabel = 'Tag selection as';
                 }
             }
-        };
-        DataPanel.prototype.metadataEditorInputKeydown = function (e) {
+        }
+        metadataEditorInputKeydown(e) {
             // Check if 'Enter' was pressed
             if (e.keyCode === 13) {
                 this.metadataEditorButtonClicked();
             }
             e.stopPropagation();
-        };
-        DataPanel.prototype.metadataEditorColumnChange = function () {
+        }
+        metadataEditorColumnChange() {
             this.metadataEditorInputChange();
-        };
-        DataPanel.prototype.metadataEditorButtonClicked = function () {
+        }
+        metadataEditorButtonClicked() {
             if (!this.metadataEditorButtonDisabled) {
-                var value = this.metadataEditorInput.trim();
-                var selectionSize = this.selectedPointIndices.length +
+                let value = this.metadataEditorInput.trim();
+                let selectionSize = this.selectedPointIndices.length +
                     this.neighborsOfFirstPoint.length;
                 this.projector.metadataEdit(this.metadataEditorColumn, value);
                 this.projector.metadataEditorContext(true, this.metadataEditorColumn);
-                this.metadataEditorInputLabel = selectionSize + " labeled as '" + value + "'";
+                this.metadataEditorInputLabel = `${selectionSize} labeled as '${value}'`;
             }
-        };
-        DataPanel.prototype.downloadMetadataClicked = function () {
+        }
+        downloadMetadataClicked() {
             if (this.projector && this.projector.dataSet
                 && this.projector.dataSet.spriteAndMetadataInfo) {
-                var tsvFile_1 = this.projector.dataSet.spriteAndMetadataInfo.stats.map(function (s) {
-                    return s.name;
-                }).join('\t');
-                this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(function (p) {
-                    var vals = [];
-                    for (var column in p) {
+                let tsvFile = this.projector.dataSet.spriteAndMetadataInfo.stats.map(s => s.name).join('\t');
+                this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach(p => {
+                    let vals = [];
+                    for (const column in p) {
                         vals.push(p[column]);
                     }
-                    tsvFile_1 += '\n' + vals.join('\t');
+                    tsvFile += '\n' + vals.join('\t');
                 });
-                var textBlob = new Blob([tsvFile_1], { type: 'text/plain' });
+                const textBlob = new Blob([tsvFile], { type: 'text/plain' });
                 this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
                 this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
                 this.$.downloadMetadataLink.click();
             }
-        };
-        DataPanel.prototype.superviseInputTyping = function () {
-            var _this = this;
-            var value = this.superviseInput.trim();
+        }
+        superviseInputTyping() {
+            let value = this.superviseInput.trim();
             if (value == null || value.trim() === '') {
                 if (this.superviseInputSelected === '') {
                     this.superviseInputLabel = 'No ignored label';
                 }
                 else {
                     this.superviseInputLabel =
-                        "Supervising without '" + this.superviseInputSelected + "'";
+                        `Supervising without '${this.superviseInputSelected}'`;
                 }
                 return;
             }
             if (this.projector && this.projector.dataSet) {
-                var numMatches = this.projector.dataSet.points.filter(function (p) {
-                    return p.metadata[_this.superviseColumn].toString().trim() === value;
-                }).length;
+                let numMatches = this.projector.dataSet.points.filter(p => p.metadata[this.superviseColumn].toString().trim() === value).length;
                 if (numMatches === 0) {
                     this.superviseInputLabel = 'Label not found';
                 }
                 else {
                     if (this.projector.dataSet.superviseInput != value) {
                         this.superviseInputLabel =
-                            "Supervise without '" + value + "' [" + numMatches + " points]";
+                            `Supervise without '${value}' [${numMatches} points]`;
                     }
                 }
             }
-        };
-        DataPanel.prototype.superviseInputChange = function () {
-            var _this = this;
-            var value = this.superviseInput.trim();
+        }
+        superviseInputChange() {
+            let value = this.superviseInput.trim();
             if (value == null || value.trim() === '') {
                 this.superviseInputSelected = '';
                 this.superviseInputLabel = 'No ignored label';
@@ -374,105 +342,101 @@ var vz_projector;
                 return;
             }
             if (this.projector && this.projector.dataSet) {
-                var numMatches = this.projector.dataSet.points.filter(function (p) {
-                    return p.metadata[_this.superviseColumn].toString().trim() === value;
-                }).length;
+                let numMatches = this.projector.dataSet.points.filter(p => p.metadata[this.superviseColumn].toString().trim() === value).length;
                 if (numMatches === 0) {
                     this.superviseInputLabel =
-                        "Supervising without '" + this.superviseInputSelected + "'";
+                        `Supervising without '${this.superviseInputSelected}'`;
                 }
                 else {
                     this.superviseInputSelected = value;
                     this.superviseInputLabel =
-                        "Supervising without '" + value + "' [" + numMatches + " points]";
+                        `Supervising without '${value}' [${numMatches} points]`;
                     this.setSupervision(this.superviseColumn, value);
                 }
             }
-        };
-        DataPanel.prototype.superviseColumnChanged = function () {
+        }
+        superviseColumnChanged() {
             this.superviseInput = '';
             this.superviseInputChange();
-        };
-        DataPanel.prototype.setSupervision = function (superviseColumn, superviseInput) {
+        }
+        setSupervision(superviseColumn, superviseInput) {
             if (this.projector && this.projector.dataSet) {
                 this.projector.dataSet.setSupervision(superviseColumn, superviseInput);
             }
-        };
-        DataPanel.prototype.setNormalizeData = function (normalizeData) {
+        }
+        setNormalizeData(normalizeData) {
             this.normalizeData = normalizeData;
-        };
-        DataPanel.prototype._selectedTensorChanged = function () {
-            var _this = this;
+        }
+        _selectedTensorChanged() {
             this.projector.updateDataSet(null, null, null);
             if (this.selectedTensor == null) {
                 return;
             }
-            this.dataProvider.retrieveTensor(this.selectedRun, this.selectedTensor, function (ds) {
-                var metadataFile = _this.getEmbeddingInfoByName(_this.selectedTensor).metadataPath;
-                _this.dataProvider.retrieveSpriteAndMetadata(_this.selectedRun, _this.selectedTensor, function (metadata) {
-                    _this.projector.updateDataSet(ds, metadata, metadataFile);
+            this.dataProvider.retrieveTensor(this.selectedRun, this.selectedTensor, ds => {
+                let metadataFile = this.getEmbeddingInfoByName(this.selectedTensor).metadataPath;
+                this.dataProvider.retrieveSpriteAndMetadata(this.selectedRun, this.selectedTensor, metadata => {
+                    this.projector.updateDataSet(ds, metadata, metadataFile);
                 });
             });
             this.projector.setSelectedTensor(this.selectedRun, this.getEmbeddingInfoByName(this.selectedTensor));
-        };
-        DataPanel.prototype._generateUiForNewCheckpointForRun = function (selectedRun) {
-            var _this = this;
-            this.dataProvider.retrieveProjectorConfig(selectedRun, function (info) {
-                _this.projectorConfig = info;
-                var names = _this.projectorConfig.embeddings.map(function (e) { return e.tensorName; })
-                    .filter(function (name) {
-                    var shape = _this.getEmbeddingInfoByName(name).tensorShape;
+        }
+        _generateUiForNewCheckpointForRun(selectedRun) {
+            this.dataProvider.retrieveProjectorConfig(selectedRun, info => {
+                this.projectorConfig = info;
+                let names = this.projectorConfig.embeddings.map(e => e.tensorName)
+                    .filter(name => {
+                    let shape = this.getEmbeddingInfoByName(name).tensorShape;
                     return shape.length === 2 && shape[0] > 1 && shape[1] > 1;
                 })
-                    .sort(function (a, b) {
-                    var embA = _this.getEmbeddingInfoByName(a);
-                    var embB = _this.getEmbeddingInfoByName(b);
+                    .sort((a, b) => {
+                    let embA = this.getEmbeddingInfoByName(a);
+                    let embB = this.getEmbeddingInfoByName(b);
                     // Prefer tensors with metadata.
                     if (vz_projector.util.xor(!!embA.metadataPath, !!embB.metadataPath)) {
                         return embA.metadataPath ? -1 : 1;
                     }
                     // Prefer non-generated tensors.
-                    var isGenA = vz_projector.util.tensorIsGenerated(a);
-                    var isGenB = vz_projector.util.tensorIsGenerated(b);
+                    let isGenA = vz_projector.util.tensorIsGenerated(a);
+                    let isGenB = vz_projector.util.tensorIsGenerated(b);
                     if (vz_projector.util.xor(isGenA, isGenB)) {
                         return isGenB ? -1 : 1;
                     }
                     // Prefer bigger tensors.
-                    var sizeA = embA.tensorShape[0];
-                    var sizeB = embB.tensorShape[0];
+                    let sizeA = embA.tensorShape[0];
+                    let sizeB = embB.tensorShape[0];
                     if (sizeA !== sizeB) {
                         return sizeB - sizeA;
                     }
                     // Sort alphabetically by tensor name.
                     return a <= b ? -1 : 1;
                 });
-                _this.tensorNames = names.map(function (name) {
-                    return { name: name, shape: _this.getEmbeddingInfoByName(name).tensorShape };
+                this.tensorNames = names.map(name => {
+                    return { name, shape: this.getEmbeddingInfoByName(name).tensorShape };
                 });
-                var wordBreakablePath = _this.addWordBreaks(_this.projectorConfig.modelCheckpointPath);
-                var checkpointFile = _this.querySelector('#checkpoint-file');
+                const wordBreakablePath = this.addWordBreaks(this.projectorConfig.modelCheckpointPath);
+                const checkpointFile = this.$$('#checkpoint-file');
                 checkpointFile.innerHTML = wordBreakablePath;
-                checkpointFile.title = _this.projectorConfig.modelCheckpointPath;
+                checkpointFile.title = this.projectorConfig.modelCheckpointPath;
                 // If in demo mode, let the order decide which tensor to load by default.
-                var defaultTensor = _this.projector.servingMode === 'demo' ?
-                    _this.projectorConfig.embeddings[0].tensorName :
+                const defaultTensor = this.projector.servingMode === 'demo' ?
+                    this.projectorConfig.embeddings[0].tensorName :
                     names[0];
-                if (_this.selectedTensor === defaultTensor) {
+                if (this.selectedTensor === defaultTensor) {
                     // Explicitly call the observer. Polymer won't call it if the previous
                     // string matches the current string.
-                    _this._selectedTensorChanged();
+                    this._selectedTensorChanged();
                 }
                 else {
-                    _this.selectedTensor = defaultTensor;
+                    this.selectedTensor = defaultTensor;
                 }
             });
-        };
-        DataPanel.prototype._selectedLabelOptionChanged = function () {
+        }
+        _selectedLabelOptionChanged() {
             this.projector.setSelectedLabelOption(this.selectedLabelOption);
-        };
-        DataPanel.prototype._selectedColorOptionNameChanged = function () {
-            var colorOption;
-            for (var i = 0; i < this.colorOptions.length; i++) {
+        }
+        _selectedColorOptionNameChanged() {
+            let colorOption;
+            for (let i = 0; i < this.colorOptions.length; i++) {
                 if (this.colorOptions[i].name === this.selectedColorOptionName) {
                     colorOption = this.colorOptions[i];
                     break;
@@ -486,14 +450,14 @@ var vz_projector;
                 this.colorLegendRenderInfo = null;
             }
             else if (colorOption.items) {
-                var items = colorOption.items.map(function (item) {
+                let items = colorOption.items.map(item => {
                     return {
                         color: colorOption.map(item.label),
                         label: item.label,
                         count: item.count
                     };
                 });
-                this.colorLegendRenderInfo = { items: items, thresholds: null };
+                this.colorLegendRenderInfo = { items, thresholds: null };
             }
             else {
                 this.colorLegendRenderInfo = {
@@ -502,66 +466,63 @@ var vz_projector;
                 };
             }
             this.projector.setSelectedColorOption(colorOption);
-        };
-        DataPanel.prototype.tensorWasReadFromFile = function (rawContents, fileName) {
-            var _this = this;
-            vz_projector.parseRawTensors(rawContents, function (ds) {
-                var checkpointFile = _this.querySelector('#checkpoint-file');
+        }
+        tensorWasReadFromFile(rawContents, fileName) {
+            vz_projector.parseRawTensors(rawContents, ds => {
+                const checkpointFile = this.$$('#checkpoint-file');
                 checkpointFile.innerText = fileName;
                 checkpointFile.title = fileName;
-                _this.projector.updateDataSet(ds);
+                this.projector.updateDataSet(ds);
             });
-        };
-        DataPanel.prototype.metadataWasReadFromFile = function (rawContents, fileName) {
-            var _this = this;
-            vz_projector.parseRawMetadata(rawContents, function (metadata) {
-                _this.projector.updateDataSet(_this.projector.dataSet, metadata, fileName);
+        }
+        metadataWasReadFromFile(rawContents, fileName) {
+            vz_projector.parseRawMetadata(rawContents, metadata => {
+                this.projector.updateDataSet(this.projector.dataSet, metadata, fileName);
             });
-        };
-        DataPanel.prototype.getEmbeddingInfoByName = function (tensorName) {
-            for (var i = 0; i < this.projectorConfig.embeddings.length; i++) {
-                var e = this.projectorConfig.embeddings[i];
+        }
+        getEmbeddingInfoByName(tensorName) {
+            for (let i = 0; i < this.projectorConfig.embeddings.length; i++) {
+                const e = this.projectorConfig.embeddings[i];
                 if (e.tensorName === tensorName) {
                     return e;
                 }
             }
-        };
-        DataPanel.prototype.setupUploadButtons = function () {
-            var _this = this;
+        }
+        setupUploadButtons() {
             // Show and setup the upload button.
-            var fileInput = this.querySelector('#file');
-            fileInput.onchange = function () {
-                var file = fileInput.files[0];
+            const fileInput = this.$$('#file');
+            fileInput.onchange = () => {
+                const file = fileInput.files[0];
                 // Clear out the value of the file chooser. This ensures that if the user
                 // selects the same file, we'll re-read it.
                 fileInput.value = '';
-                var fileReader = new FileReader();
-                fileReader.onload = function (evt) {
-                    var content = fileReader.result;
-                    _this.tensorWasReadFromFile(content, file.name);
+                const fileReader = new FileReader();
+                fileReader.onload = evt => {
+                    const content = fileReader.result;
+                    this.tensorWasReadFromFile(content, file.name);
                 };
                 fileReader.readAsArrayBuffer(file);
             };
-            var uploadButton = this.querySelector('#upload-tensors');
-            uploadButton.onclick = function () {
+            const uploadButton = this.$$('#upload-tensors');
+            uploadButton.onclick = () => {
                 fileInput.click();
             };
             // Show and setup the upload metadata button.
-            var fileMetadataInput = this.querySelector('#file-metadata');
-            fileMetadataInput.onchange = function () {
-                var file = fileMetadataInput.files[0];
+            const fileMetadataInput = this.$$('#file-metadata');
+            fileMetadataInput.onchange = () => {
+                const file = fileMetadataInput.files[0];
                 // Clear out the value of the file chooser. This ensures that if the user
                 // selects the same file, we'll re-read it.
                 fileMetadataInput.value = '';
-                var fileReader = new FileReader();
-                fileReader.onload = function (evt) {
-                    var contents = fileReader.result;
-                    _this.metadataWasReadFromFile(contents, file.name);
+                const fileReader = new FileReader();
+                fileReader.onload = evt => {
+                    const contents = fileReader.result;
+                    this.metadataWasReadFromFile(contents, file.name);
                 };
                 fileReader.readAsArrayBuffer(file);
             };
-            var uploadMetadataButton = this.querySelector('#upload-metadata');
-            uploadMetadataButton.onclick = function () {
+            const uploadMetadataButton = this.$$('#upload-metadata');
+            uploadMetadataButton.onclick = () => {
                 fileMetadataInput.click();
             };
             if (this.projector.servingMode !== 'demo') {
@@ -573,8 +534,8 @@ var vz_projector;
             this.$$('#demo-data-buttons-container').style.display =
                 'flex';
             // Fill out the projector config.
-            var projectorConfigTemplate = this.$$('#projector-config-template');
-            var projectorConfigTemplateJson = {
+            const projectorConfigTemplate = this.$$('#projector-config-template');
+            const projectorConfigTemplateJson = {
                 embeddings: [{
                         tensorName: 'My tensor',
                         tensorShape: [1000, 50],
@@ -584,8 +545,8 @@ var vz_projector;
             };
             this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
             // Set up optional field checkboxes.
-            var spriteFieldCheckbox = this.$$('#config-sprite-checkbox');
-            spriteFieldCheckbox.onchange = function () {
+            const spriteFieldCheckbox = this.$$('#config-sprite-checkbox');
+            spriteFieldCheckbox.onchange = () => {
                 if (spriteFieldCheckbox.checked) {
                     projectorConfigTemplateJson.embeddings[0].sprite = {
                         imagePath: 'https://github.com/.../optional.sprite.png',
@@ -595,10 +556,10 @@ var vz_projector;
                 else {
                     delete projectorConfigTemplateJson.embeddings[0].sprite;
                 }
-                _this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
+                this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
             };
-            var bookmarksFieldCheckbox = this.$$('#config-bookmarks-checkbox');
-            bookmarksFieldCheckbox.onchange = function () {
+            const bookmarksFieldCheckbox = this.$$('#config-bookmarks-checkbox');
+            bookmarksFieldCheckbox.onchange = () => {
                 if (bookmarksFieldCheckbox.checked) {
                     projectorConfigTemplateJson.embeddings[0].bookmarksPath =
                         'https://raw.githubusercontent.com/.../bookmarks.txt';
@@ -606,10 +567,10 @@ var vz_projector;
                 else {
                     delete projectorConfigTemplateJson.embeddings[0].bookmarksPath;
                 }
-                _this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
+                this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
             };
-            var metadataFieldCheckbox = this.$$('#config-metadata-checkbox');
-            metadataFieldCheckbox.onchange = function () {
+            const metadataFieldCheckbox = this.$$('#config-metadata-checkbox');
+            metadataFieldCheckbox.onchange = () => {
                 if (metadataFieldCheckbox.checked) {
                     projectorConfigTemplateJson.embeddings[0].metadataPath =
                         'https://raw.githubusercontent.com/.../optional.metadata.tsv';
@@ -617,41 +578,46 @@ var vz_projector;
                 else {
                     delete projectorConfigTemplateJson.embeddings[0].metadataPath;
                 }
-                _this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
+                this.setProjectorConfigTemplateJson(projectorConfigTemplate, projectorConfigTemplateJson);
             };
             // Update the link and the readonly shareable URL.
-            var projectorConfigUrlInput = this.$$('#projector-config-url');
-            var projectorConfigDemoUrlInput = this.$$('#projector-share-url');
-            var projectorConfigDemoUrlLink = this.$$('#projector-share-url-link');
-            projectorConfigUrlInput.onchange = function () {
-                var projectorDemoUrl = location.protocol + '//' + location.host +
+            const projectorConfigUrlInput = this.$$('#projector-config-url');
+            const projectorConfigDemoUrlInput = this.$$('#projector-share-url');
+            const projectorConfigDemoUrlLink = this.$$('#projector-share-url-link');
+            projectorConfigUrlInput.onchange = () => {
+                let projectorDemoUrl = location.protocol + '//' + location.host +
                     location.pathname +
                     '?config=' + projectorConfigUrlInput.value;
                 projectorConfigDemoUrlInput.value =
                     projectorDemoUrl;
                 projectorConfigDemoUrlLink.href = projectorDemoUrl;
             };
-        };
-        DataPanel.prototype.setProjectorConfigTemplateJson = function (projectorConfigTemplate, config) {
+        }
+        setProjectorConfigTemplateJson(projectorConfigTemplate, config) {
             projectorConfigTemplate.value =
                 JSON.stringify(config, null, /** replacer */ 2 /** white space */);
-        };
-        DataPanel.prototype._getNumTensorsLabel = function () {
+        }
+        _getNumTensorsLabel() {
             return this.tensorNames.length === 1 ? '1 tensor' :
                 this.tensorNames.length + ' tensors';
-        };
-        DataPanel.prototype._getNumRunsLabel = function () {
+        }
+        _getNumRunsLabel() {
             return this.runNames.length === 1 ? '1 run' :
                 this.runNames.length + ' runs';
-        };
-        DataPanel.prototype._hasChoice = function (choices) {
+        }
+        _hasChoice(choices) {
             return choices.length > 0;
-        };
-        DataPanel.prototype._hasChoices = function (choices) {
+        }
+        _hasChoices(choices) {
             return choices.length > 1;
-        };
-        return DataPanel;
-    }(vz_projector.DataPanelPolymer));
+        }
+        _openDataDialog() {
+            this.$.dataDialog.open();
+        }
+        _openConfigDialog() {
+            this.$.projectorConfigDialog.open();
+        }
+    }
     vz_projector.DataPanel = DataPanel;
-    document.registerElement(DataPanel.prototype.is, DataPanel);
+    customElements.define(DataPanel.prototype.is, DataPanel);
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

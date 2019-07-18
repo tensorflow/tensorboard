@@ -35,8 +35,8 @@ var tf_backend;
      *     canceller.cancelAll();
      *     // If `myPromise` is resolved now, then `cancelled` will be `true`.
      */
-    var Canceller = /** @class */ (function () {
-        function Canceller() {
+    class Canceller {
+        constructor() {
             /**
              * How many times has `cancelAll` been called?
              */
@@ -48,22 +48,20 @@ var tf_backend;
          * a `cancelled` argument. This argument will be `false` unless and
          * until `cancelAll` is invoked after the creation of this task.
          */
-        Canceller.prototype.cancellable = function (f) {
-            var _this = this;
-            var originalCancellationCount = this.cancellationCount;
-            return function (value) {
-                var cancelled = _this.cancellationCount !== originalCancellationCount;
-                return f({ value: value, cancelled: cancelled });
+        cancellable(f) {
+            const originalCancellationCount = this.cancellationCount;
+            return (value) => {
+                const cancelled = this.cancellationCount !== originalCancellationCount;
+                return f({ value, cancelled });
             };
-        };
+        }
         /**
          * Mark all outstanding tasks as cancelled. Tasks not yet created will
          * not be affected.
          */
-        Canceller.prototype.cancelAll = function () {
+        cancelAll() {
             this.cancellationCount++;
-        };
-        return Canceller;
-    }());
+        }
+    }
     tf_backend.Canceller = Canceller;
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

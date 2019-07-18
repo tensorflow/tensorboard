@@ -18,7 +18,7 @@ limitations under the License.
 <!-- A control-panel for selecting the scale for each column (Linear, Log or
 Quantile), and the column to use for coloring. This panel is used for several
 visualizations such as parallel coordinates and scatter plot matrix. -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
@@ -269,7 +269,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       },
 
       _allowLogScale(column) {
-        if (!this._isNumericColumn(column.index)) {
+        if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
           return false;
         }
         const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(

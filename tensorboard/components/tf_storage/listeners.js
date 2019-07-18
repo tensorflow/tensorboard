@@ -17,37 +17,36 @@ var tf_storage;
     // TODO(stephanwlee): Combine this with tf_backend.ListenKey and put it in a
     // sensible place.
     // A unique reference to a listener for an easier dereferencing.
-    var ListenKey = /** @class */ (function () {
-        function ListenKey(listener) {
+    class ListenKey {
+        constructor(listener) {
             this.listener = listener;
         }
-        return ListenKey;
-    }());
+    }
     tf_storage.ListenKey = ListenKey;
-    var hashListeners = new Set();
-    var storageListeners = new Set();
-    window.addEventListener('hashchange', function () {
-        hashListeners.forEach(function (listenKey) { return listenKey.listener(); });
+    const hashListeners = new Set();
+    const storageListeners = new Set();
+    window.addEventListener('hashchange', () => {
+        hashListeners.forEach(listenKey => listenKey.listener());
     });
     // [1]: The event only triggers when another tab edits the storage. Changing a
     // value in current browser tab will NOT trigger below event.
-    window.addEventListener('storage', function () {
-        storageListeners.forEach(function (listenKey) { return listenKey.listener(); });
+    window.addEventListener('storage', () => {
+        storageListeners.forEach(listenKey => listenKey.listener());
     });
     function addHashListener(fn) {
-        var key = new ListenKey(fn);
+        const key = new ListenKey(fn);
         hashListeners.add(key);
         return key;
     }
     tf_storage.addHashListener = addHashListener;
     function addStorageListener(fn) {
-        var key = new ListenKey(fn);
+        const key = new ListenKey(fn);
         storageListeners.add(key);
         return key;
     }
     tf_storage.addStorageListener = addStorageListener;
     function fireStorageChanged() {
-        storageListeners.forEach(function (listenKey) { return listenKey.listener(); });
+        storageListeners.forEach(listenKey => listenKey.listener());
     }
     tf_storage.fireStorageChanged = fireStorageChanged;
     function removeHashListenerByKey(key) {

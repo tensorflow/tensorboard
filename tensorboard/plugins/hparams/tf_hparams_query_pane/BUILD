@@ -30,7 +30,7 @@ tf_web_library(
         "@org_polymer_paper_dropdown_menu",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
-        "@org_polymer_paper_menu",
+        "@org_polymer_paper_listbox",
     ],
 )
 
@@ -49,8 +49,8 @@ tf_web_library(
     path = "/tf-hparams-query-pane",
     deps = [
         ":tf_hparams_query_pane",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
         "//tensorboard/plugins/hparams/tf_hparams_backend",
     ],
 )
@@ -67,7 +67,7 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
         "//third_party/javascript/polymer/v1/paper-input:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
-        "//third_party/javascript/polymer/v1/paper-menu:lib",
+        "//third_party/javascript/polymer/v1/paper-listbox:lib",
         "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

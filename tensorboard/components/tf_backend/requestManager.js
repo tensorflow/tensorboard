@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -33,46 +23,37 @@ var tf_backend;
      * When a request is made, a Promise is returned which resolves with the
      * parsed JSON result from the request.
      */
-    var RequestCancellationError = /** @class */ (function (_super) {
-        __extends(RequestCancellationError, _super);
-        function RequestCancellationError() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.name = 'RequestCancellationError';
-            return _this;
+    class RequestCancellationError extends Error {
+        constructor() {
+            super(...arguments);
+            this.name = 'RequestCancellationError';
         }
-        return RequestCancellationError;
-    }(Error));
+    }
     tf_backend.RequestCancellationError = RequestCancellationError;
-    var InvalidRequestOptionsError = /** @class */ (function (_super) {
-        __extends(InvalidRequestOptionsError, _super);
-        function InvalidRequestOptionsError(msg) {
-            var _this = _super.call(this, msg) || this;
-            _this.name = 'InvalidRequestOptionsError';
+    class InvalidRequestOptionsError extends Error {
+        constructor(msg) {
+            super(msg);
+            this.name = 'InvalidRequestOptionsError';
             // The following is needed due to a limitation of TypeScript when
             // extending 'Error'. See: https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
-            Object.setPrototypeOf(_this, InvalidRequestOptionsError.prototype);
-            return _this;
+            Object.setPrototypeOf(this, InvalidRequestOptionsError.prototype);
         }
-        return InvalidRequestOptionsError;
-    }(Error));
+    }
     tf_backend.InvalidRequestOptionsError = InvalidRequestOptionsError;
-    var RequestNetworkError = /** @class */ (function (_super) {
-        __extends(RequestNetworkError, _super);
-        function RequestNetworkError(req, url) {
-            var _this = _super.call(this) || this;
-            _this.message = "RequestNetworkError: " + req.status + " at " + url;
-            _this.name = 'RequestNetworkError';
-            _this.req = req;
-            _this.url = url;
-            return _this;
+    class RequestNetworkError extends Error {
+        constructor(req, url) {
+            super();
+            this.message = `RequestNetworkError: ${req.status} at ${url}`;
+            this.name = 'RequestNetworkError';
+            this.req = req;
+            this.url = url;
         }
-        return RequestNetworkError;
-    }(Error));
+    }
     tf_backend.RequestNetworkError = RequestNetworkError;
     /** The HTTP method-type to use. Currently only 'GET' and 'POST' are
      * supported.
      */
-    var HttpMethodType;
+    let HttpMethodType;
     (function (HttpMethodType) {
         HttpMethodType["GET"] = "GET";
         HttpMethodType["POST"] = "POST";
@@ -80,11 +61,9 @@ var tf_backend;
     /**
      * Holds options that can be used to configure the HTTP request.
      */
-    var RequestOptions = /** @class */ (function () {
-        function RequestOptions() {
-        }
+    class RequestOptions {
         // Validates this object. Throws InvalidRequestOptionsError on error.
-        RequestOptions.prototype.validate = function () {
+        validate() {
             if (this.methodType === HttpMethodType.GET) {
                 // We don't allow a body for a GET.
                 if (this.body) {
@@ -93,14 +72,11 @@ var tf_backend;
             }
             // We allow body-less or contentType-less POSTs even if they don't
             // make much sense.
-        };
-        return RequestOptions;
-    }());
+        }
+    }
     tf_backend.RequestOptions = RequestOptions;
-    var RequestManager = /** @class */ (function () {
-        function RequestManager(nSimultaneousRequests, maxRetries) {
-            if (nSimultaneousRequests === void 0) { nSimultaneousRequests = 10; }
-            if (maxRetries === void 0) { maxRetries = 3; }
+    class RequestManager {
+        constructor(nSimultaneousRequests = 10, maxRetries = 3) {
             this._queue = [];
             this._nActiveRequests = 0;
             this._nSimultaneousRequests = nSimultaneousRequests;
@@ -111,85 +87,83 @@ var tf_backend;
          * postData is provided, this request will use POST, not GET. This is an
          * object mapping POST keys to string values.
          */
-        RequestManager.prototype.request = function (url, postData) {
-            var requestOptions = requestOptionsFromPostData(postData);
+        request(url, postData) {
+            const requestOptions = requestOptionsFromPostData(postData);
             return this.requestWithOptions(url, requestOptions);
-        };
-        RequestManager.prototype.requestWithOptions = function (url, requestOptions) {
-            var _this = this;
+        }
+        requestWithOptions(url, requestOptions) {
             requestOptions.validate();
-            var promise = new Promise(function (resolve, reject) {
-                var resolver = { resolve: resolve, reject: reject };
-                _this._queue.push(resolver);
-                _this.launchRequests();
+            const promise = new Promise((resolve, reject) => {
+                const resolver = { resolve: resolve, reject: reject };
+                this._queue.push(resolver);
+                this.launchRequests();
             })
-                .then(function () {
-                return _this.promiseWithRetries(url, _this._maxRetries, requestOptions);
+                .then(() => {
+                return this.promiseWithRetries(url, this._maxRetries, requestOptions);
             })
-                .then(function (response) {
+                .then((response) => {
                 // Success - Let's free space for another active
                 // request, and launch it
-                _this._nActiveRequests--;
-                _this.launchRequests();
+                this._nActiveRequests--;
+                this.launchRequests();
                 return response;
-            }, function (rejection) {
+            }, (rejection) => {
                 if (rejection.name === 'RequestNetworkError') {
                     // If we failed due to network error, we should
                     // decrement
                     // _nActiveRequests because this request was
                     // active
-                    _this._nActiveRequests--;
-                    _this.launchRequests();
+                    this._nActiveRequests--;
+                    this.launchRequests();
                 }
                 return Promise.reject(rejection);
             });
             return promise;
-        };
-        RequestManager.prototype.fetch = function (url, fetchOptions) {
-            var _this = this;
-            return new Promise(function (resolve, reject) {
-                var resolver = { resolve: resolve, reject: reject };
-                _this._queue.push(resolver);
-                _this.launchRequests();
-            }).then(function () {
-                var numTries = 1;
-                return new Promise(function (resolve) {
-                    var retryFetch = function () {
-                        fetch(url, fetchOptions).then(function (response) {
-                            if (!response.ok && _this._maxRetries > numTries) {
+        }
+        fetch(url, fetchOptions) {
+            return new Promise((resolve, reject) => {
+                const resolver = { resolve: resolve, reject: reject };
+                this._queue.push(resolver);
+                this.launchRequests();
+            }).then(() => {
+                let numTries = 1;
+                return new Promise((resolve) => {
+                    const retryFetch = () => {
+                        fetch(url, fetchOptions).then((response) => {
+                            if (!response.ok && this._maxRetries > numTries) {
                                 numTries++;
                                 retryFetch();
                                 return;
                             }
                             resolve(response);
-                            _this._nActiveRequests--;
-                            _this.launchRequests();
+                            this._nActiveRequests--;
+                            this.launchRequests();
                         });
                     };
                     retryFetch();
                 });
             });
-        };
-        RequestManager.prototype.clearQueue = function () {
+        }
+        clearQueue() {
             while (this._queue.length > 0) {
                 this._queue.pop().reject(new RequestCancellationError('Request cancelled by clearQueue'));
             }
-        };
+        }
         /* Return number of currently pending requests */
-        RequestManager.prototype.activeRequests = function () {
+        activeRequests() {
             return this._nActiveRequests;
-        };
+        }
         /* Return total number of outstanding requests (includes queue) */
-        RequestManager.prototype.outstandingRequests = function () {
+        outstandingRequests() {
             return this._nActiveRequests + this._queue.length;
-        };
-        RequestManager.prototype.launchRequests = function () {
+        }
+        launchRequests() {
             while (this._nActiveRequests < this._nSimultaneousRequests &&
                 this._queue.length > 0) {
                 this._nActiveRequests++;
                 this._queue.pop().resolve();
             }
-        };
+        }
         /**
          * Try to request a given URL using overwritable _promiseFromUrl method.
          * If the request fails for any reason, we will retry up to maxRetries
@@ -200,23 +174,22 @@ var tf_backend;
          * is a feature, if the request failures and retries are causing any
          * pain to users, they can see it and file issues.
          */
-        RequestManager.prototype.promiseWithRetries = function (url, maxRetries, requestOptions) {
-            var _this = this;
-            var success = function (x) { return x; };
-            var failure = function (x) {
+        promiseWithRetries(url, maxRetries, requestOptions) {
+            var success = (x) => x;
+            var failure = (x) => {
                 if (maxRetries > 0) {
-                    return _this.promiseWithRetries(url, maxRetries - 1, requestOptions);
+                    return this.promiseWithRetries(url, maxRetries - 1, requestOptions);
                 }
                 else {
                     return Promise.reject(x);
                 }
             };
             return this._promiseFromUrl(url, requestOptions).then(success, failure);
-        };
+        }
         /* Actually get promise from url using XMLHttpRequest */
-        RequestManager.prototype._promiseFromUrl = function (url, requestOptions) {
-            return new Promise(function (resolve, reject) {
-                var req = buildXMLHttpRequest(requestOptions.methodType, url, requestOptions.withCredentials, requestOptions.contentType);
+        _promiseFromUrl(url, requestOptions) {
+            return new Promise((resolve, reject) => {
+                const req = buildXMLHttpRequest(requestOptions.methodType, url, requestOptions.withCredentials, requestOptions.contentType);
                 req.onload = function () {
                     if (req.status === 200) {
                         resolve(JSON.parse(req.responseText));
@@ -235,12 +208,11 @@ var tf_backend;
                     req.send();
                 }
             });
-        };
-        return RequestManager;
-    }());
+        }
+    }
     tf_backend.RequestManager = RequestManager;
     function buildXMLHttpRequest(methodType, url, withCredentials, contentType) {
-        var req = new XMLHttpRequest();
+        const req = new XMLHttpRequest();
         req.open(methodType, url);
         if (withCredentials) {
             req.withCredentials = withCredentials;
@@ -251,7 +223,7 @@ var tf_backend;
         return req;
     }
     function requestOptionsFromPostData(postData) {
-        var result = new RequestOptions();
+        const result = new RequestOptions();
         if (!postData) {
             result.methodType = HttpMethodType.GET;
             return result;
@@ -261,8 +233,8 @@ var tf_backend;
         return result;
     }
     function formDataFromDictionary(postData) {
-        var formData = new FormData();
-        for (var postKey in postData) {
+        const formData = new FormData();
+        for (let postKey in postData) {
             if (postKey) {
                 // The linter requires 'for in' loops to be filtered by an if
                 // condition.

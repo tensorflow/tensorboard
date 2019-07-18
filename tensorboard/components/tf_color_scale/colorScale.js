@@ -20,14 +20,13 @@ var tf_color_scale;
     // ccs.domain(runs);
     // ccs.getColor("train");
     // ccs.getColor("test1");
-    var ColorScale = /** @class */ (function () {
+    class ColorScale {
         /**
          * Creates a color scale with optional custom palette.
          * @param {Array<string>} palette The color palette to use, as an
          *   Array of hex strings. Defaults to the standard palette.
          */
-        function ColorScale(palette) {
-            if (palette === void 0) { palette = tf_color_scale.standard; }
+        constructor(palette = tf_color_scale.standard) {
             this.palette = palette;
             this.identifiers = d3.map();
         }
@@ -36,47 +35,42 @@ var tf_color_scale;
          * @param {Array<string>} strings - An array of possible strings to use as the
          *     domain for your scale.
          */
-        ColorScale.prototype.setDomain = function (strings) {
-            var _this = this;
+        setDomain(strings) {
             this.identifiers = d3.map();
-            strings.forEach(function (s, i) {
-                _this.identifiers.set(s, _this.palette[i % _this.palette.length]);
+            strings.forEach((s, i) => {
+                this.identifiers.set(s, this.palette[i % this.palette.length]);
             });
             return this;
-        };
+        }
         /**
          * Use the color scale to transform an element in the domain into a color.
          * @param {string} The input string to map to a color.
          * @return {string} The color corresponding to that input string.
          * @throws Will error if input string is not in the scale's domain.
          */
-        ColorScale.prototype.getColor = function (s) {
+        getColor(s) {
             if (!this.identifiers.has(s)) {
-                throw new Error("String " + s + " was not in the domain.");
+                throw new Error(`String ${s} was not in the domain.`);
             }
             return this.identifiers.get(s);
-        };
-        return ColorScale;
-    }());
+        }
+    }
     tf_color_scale.ColorScale = ColorScale;
     /**
      * A color scale of a domain from a store.  Automatically updated when the store
      * emits a change.
      */
     function createAutoUpdateColorScale(store, getDomain) {
-        var colorScale = new ColorScale();
+        const colorScale = new ColorScale();
         function updateRunsColorScale() {
             colorScale.setDomain(getDomain());
         }
         store.addListener(updateRunsColorScale);
         updateRunsColorScale();
-        return function (domain) { return colorScale.getColor(domain); };
+        return (domain) => colorScale.getColor(domain);
     }
-    tf_color_scale.runsColorScale = createAutoUpdateColorScale(tf_backend.runsStore, function () { return tf_backend.runsStore.getRuns(); });
-    tf_color_scale.experimentsColorScale = createAutoUpdateColorScale(tf_backend.experimentsStore, function () {
-        return tf_backend.experimentsStore.getExperiments().map(function (_a) {
-            var name = _a.name;
-            return name;
-        });
+    tf_color_scale.runsColorScale = createAutoUpdateColorScale(tf_backend.runsStore, () => tf_backend.runsStore.getRuns());
+    tf_color_scale.experimentsColorScale = createAutoUpdateColorScale(tf_backend.experimentsStore, () => {
+        return tf_backend.experimentsStore.getExperiments().map(({ name }) => name);
     });
 })(tf_color_scale || (tf_color_scale = {})); // tf_color_scale

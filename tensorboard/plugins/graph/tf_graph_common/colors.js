@@ -97,7 +97,7 @@ var tf;
             'active': '#424242',
             'disabled': 'F5F5F5' // 100
         }
-    ].reduce(function (m, c) {
+    ].reduce((m, c) => {
         m[c.name] = c;
         return m;
     }, {});
@@ -122,7 +122,7 @@ var tf;
         { color: 'Teal', groups: ['control_flow_ops', 'data_flow_ops'] },
         { color: 'Pink', groups: ['summary_ops'] },
         { color: 'Deep Pink', groups: ['io_ops'] }
-    ].reduce(function (m, c) {
+    ].reduce((m, c) => {
         c.groups.forEach(function (group) { m[group] = c.color; });
         return m;
     }, {});

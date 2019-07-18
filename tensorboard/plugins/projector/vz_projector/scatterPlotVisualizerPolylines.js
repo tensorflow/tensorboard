@@ -14,66 +14,66 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var RGB_NUM_ELEMENTS = 3;
-    var XYZ_NUM_ELEMENTS = 3;
+    const RGB_NUM_ELEMENTS = 3;
+    const XYZ_NUM_ELEMENTS = 3;
     /**
      * Renders polylines that connect multiple points in the dataset.
      */
-    var ScatterPlotVisualizerPolylines = /** @class */ (function () {
-        function ScatterPlotVisualizerPolylines() {
+    class ScatterPlotVisualizerPolylines {
+        constructor() {
             this.polylinePositionBuffer = {};
             this.polylineColorBuffer = {};
         }
-        ScatterPlotVisualizerPolylines.prototype.updateSequenceIndicesInDataSet = function (ds) {
-            for (var i = 0; i < ds.sequences.length; i++) {
-                var sequence = ds.sequences[i];
-                for (var j = 0; j < sequence.pointIndices.length - 1; j++) {
+        updateSequenceIndicesInDataSet(ds) {
+            for (let i = 0; i < ds.sequences.length; i++) {
+                const sequence = ds.sequences[i];
+                for (let j = 0; j < sequence.pointIndices.length - 1; j++) {
                     ds.points[sequence.pointIndices[j]].sequenceIndex = i;
                     ds.points[sequence.pointIndices[j + 1]].sequenceIndex = i;
                 }
             }
-        };
-        ScatterPlotVisualizerPolylines.prototype.createPolylines = function (scene) {
+        }
+        createPolylines(scene) {
             if (!this.dataSet || !this.dataSet.sequences) {
                 return;
             }
             this.updateSequenceIndicesInDataSet(this.dataSet);
             this.polylines = [];
-            for (var i = 0; i < this.dataSet.sequences.length; i++) {
-                var geometry = new THREE.BufferGeometry();
+            for (let i = 0; i < this.dataSet.sequences.length; i++) {
+                const geometry = new THREE.BufferGeometry();
                 geometry.addAttribute('position', this.polylinePositionBuffer[i]);
                 geometry.addAttribute('color', this.polylineColorBuffer[i]);
-                var material = new THREE.LineBasicMaterial({
+                const material = new THREE.LineBasicMaterial({
                     linewidth: 1,
                     opacity: 1.0,
                     transparent: true,
                     vertexColors: THREE.VertexColors
                 });
-                var polyline = new THREE.LineSegments(geometry, material);
+                const polyline = new THREE.LineSegments(geometry, material);
                 polyline.frustumCulled = false;
                 this.polylines.push(polyline);
                 scene.add(polyline);
             }
-        };
-        ScatterPlotVisualizerPolylines.prototype.dispose = function () {
+        }
+        dispose() {
             if (this.polylines == null) {
                 return;
             }
-            for (var i = 0; i < this.polylines.length; i++) {
+            for (let i = 0; i < this.polylines.length; i++) {
                 this.scene.remove(this.polylines[i]);
                 this.polylines[i].geometry.dispose();
             }
             this.polylines = null;
             this.polylinePositionBuffer = {};
             this.polylineColorBuffer = {};
-        };
-        ScatterPlotVisualizerPolylines.prototype.setScene = function (scene) {
+        }
+        setScene(scene) {
             this.scene = scene;
-        };
-        ScatterPlotVisualizerPolylines.prototype.setDataSet = function (dataSet) {
+        }
+        setDataSet(dataSet) {
             this.dataSet = dataSet;
-        };
-        ScatterPlotVisualizerPolylines.prototype.onPointPositionsChanged = function (newPositions) {
+        }
+        onPointPositionsChanged(newPositions) {
             if ((newPositions == null) || (this.polylines != null)) {
                 this.dispose();
             }
@@ -81,24 +81,24 @@ var vz_projector;
                 return;
             }
             // Set up the position buffer arrays for each polyline.
-            for (var i = 0; i < this.dataSet.sequences.length; i++) {
-                var sequence = this.dataSet.sequences[i];
-                var vertexCount = 2 * (sequence.pointIndices.length - 1);
-                var polylines = new Float32Array(vertexCount * XYZ_NUM_ELEMENTS);
+            for (let i = 0; i < this.dataSet.sequences.length; i++) {
+                let sequence = this.dataSet.sequences[i];
+                const vertexCount = 2 * (sequence.pointIndices.length - 1);
+                let polylines = new Float32Array(vertexCount * XYZ_NUM_ELEMENTS);
                 this.polylinePositionBuffer[i] =
                     new THREE.BufferAttribute(polylines, XYZ_NUM_ELEMENTS);
-                var colors = new Float32Array(vertexCount * RGB_NUM_ELEMENTS);
+                let colors = new Float32Array(vertexCount * RGB_NUM_ELEMENTS);
                 this.polylineColorBuffer[i] =
                     new THREE.BufferAttribute(colors, RGB_NUM_ELEMENTS);
             }
-            for (var i = 0; i < this.dataSet.sequences.length; i++) {
-                var sequence = this.dataSet.sequences[i];
-                var src = 0;
-                for (var j = 0; j < sequence.pointIndices.length - 1; j++) {
-                    var p1Index = sequence.pointIndices[j];
-                    var p2Index = sequence.pointIndices[j + 1];
-                    var p1 = vz_projector.util.vector3FromPackedArray(newPositions, p1Index);
-                    var p2 = vz_projector.util.vector3FromPackedArray(newPositions, p2Index);
+            for (let i = 0; i < this.dataSet.sequences.length; i++) {
+                const sequence = this.dataSet.sequences[i];
+                let src = 0;
+                for (let j = 0; j < sequence.pointIndices.length - 1; j++) {
+                    const p1Index = sequence.pointIndices[j];
+                    const p2Index = sequence.pointIndices[j + 1];
+                    const p1 = vz_projector.util.vector3FromPackedArray(newPositions, p1Index);
+                    const p2 = vz_projector.util.vector3FromPackedArray(newPositions, p2Index);
                     this.polylinePositionBuffer[i].setXYZ(src, p1.x, p1.y, p1.z);
                     this.polylinePositionBuffer[i].setXYZ(src + 1, p2.x, p2.y, p2.z);
                     src += 2;
@@ -108,12 +108,12 @@ var vz_projector;
             if (this.polylines == null) {
                 this.createPolylines(this.scene);
             }
-        };
-        ScatterPlotVisualizerPolylines.prototype.onRender = function (renderContext) {
+        }
+        onRender(renderContext) {
             if (this.polylines == null) {
                 return;
             }
-            for (var i = 0; i < this.polylines.length; i++) {
+            for (let i = 0; i < this.polylines.length; i++) {
                 this.polylines[i].material.opacity = renderContext.polylineOpacities[i];
                 this.polylines[i].material.linewidth =
                     renderContext.polylineWidths[i];
@@ -121,10 +121,9 @@ var vz_projector;
                     .setArray(renderContext.polylineColors[i]);
                 this.polylineColorBuffer[i].needsUpdate = true;
             }
-        };
-        ScatterPlotVisualizerPolylines.prototype.onPickingRender = function (renderContext) { };
-        ScatterPlotVisualizerPolylines.prototype.onResize = function (newWidth, newHeight) { };
-        return ScatterPlotVisualizerPolylines;
-    }());
+        }
+        onPickingRender(renderContext) { }
+        onResize(newWidth, newHeight) { }
+    }
     vz_projector.ScatterPlotVisualizerPolylines = ScatterPlotVisualizerPolylines;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

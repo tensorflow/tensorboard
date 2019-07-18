@@ -12,13 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-describe('parser', function () {
-    var assert = chai.assert, expect = chai.expect;
-    describe('parsing GraphDef pbtxt', function () {
-        it('parses a simple pbtxt', function () {
-            var pbtxt = tf.graph.test.util.stringToArrayBuffer("node {\n        name: \"Q\"\n        op: \"Input\"\n      }\n      node {\n        name: \"W\"\n        op: \"Input\"\n      }\n      node {\n        name: \"X\"\n        op: \"MatMul\"\n        input: \"Q\"\n        input: \"W\"\n      }");
-            return tf.graph.parser.parseGraphPbTxt(pbtxt).then(function (graph) {
-                var nodes = graph.node;
+describe('parser', () => {
+    const { assert, expect } = chai;
+    describe('parsing GraphDef pbtxt', () => {
+        it('parses a simple pbtxt', () => {
+            const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+        name: "Q"
+        op: "Input"
+      }
+      node {
+        name: "W"
+        op: "Input"
+      }
+      node {
+        name: "X"
+        op: "MatMul"
+        input: "Q"
+        input: "W"
+      }`);
+            return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+                let nodes = graph.node;
                 assert.isTrue(nodes != null && nodes.length === 3);
                 assert.equal('Q', nodes[0].name);
                 assert.equal('Input', nodes[0].op);
@@ -30,14 +43,64 @@ describe('parser', function () {
                 assert.equal('W', nodes[2].input[1]);
             });
         });
-        it('parses function def library', function () {
-            var pbtxt = tf.graph.test.util.stringToArrayBuffer("library {\n        function {\n          signature {\n            name: \"foo\"\n            input_arg {\n              name: \"placeholder_1\"\n              type: DT_INT32\n            }\n            input_arg {\n              name: \"placeholder_2\"\n              type: DT_BOOL\n            }\n            output_arg {\n              name: \"identity\"\n              type: DT_BOOL\n            }\n          }\n          node_def {\n            name: \"NoOp\"\n            op: \"NoOp\"\n            attr {\n              key: \"_output_shapes\"\n              value {\n                list {\n                }\n              }\n            }\n          }\n          node_def {\n            name: \"Identity\"\n            op: \"Identity\"\n            input: \"placeholder_1\"\n            input: \"^NoOp\"\n            attr {\n              key: \"T\"\n              value {\n                type: DT_BOOL\n              }\n            }\n            attr {\n              key: \"_output_shapes\"\n              value {\n                list {\n                  shape {\n                  }\n                }\n              }\n            }\n          }\n        }\n      }");
-            return tf.graph.parser.parseGraphPbTxt(pbtxt).then(function (graph) {
+        it('parses function def library', () => {
+            const pbtxt = tf.graph.test.util.stringToArrayBuffer(`library {
+        function {
+          signature {
+            name: "foo"
+            input_arg {
+              name: "placeholder_1"
+              type: DT_INT32
+            }
+            input_arg {
+              name: "placeholder_2"
+              type: DT_BOOL
+            }
+            output_arg {
+              name: "identity"
+              type: DT_BOOL
+            }
+          }
+          node_def {
+            name: "NoOp"
+            op: "NoOp"
+            attr {
+              key: "_output_shapes"
+              value {
+                list {
+                }
+              }
+            }
+          }
+          node_def {
+            name: "Identity"
+            op: "Identity"
+            input: "placeholder_1"
+            input: "^NoOp"
+            attr {
+              key: "T"
+              value {
+                type: DT_BOOL
+              }
+            }
+            attr {
+              key: "_output_shapes"
+              value {
+                list {
+                  shape {
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`);
+            return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
                 expect(graph).to.have.property('library')
                     .that.has.property('function')
                     .that.is.an('array')
                     .and.that.has.length(1);
-                var firstFunc = graph.library.function[0];
+                const firstFunc = graph.library.function[0];
                 expect(firstFunc).to.have.property('signature')
                     .that.has.property('name', 'foo');
                 expect(firstFunc).to.have.property('node_def')
@@ -61,53 +124,89 @@ describe('parser', function () {
         // Expected it to fail but our parser currently handles it in
         // unpredictable way...
         // These specs are describing behavior as implemented.
-        describe('malformed cases', function () {
+        describe('malformed cases', () => {
             // Then it becomes unpredictable.
-            it('parses upto an empty node', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("node {\n          name: \"Q\"\n          op: \"Input\"\n        }\n        node {}");
-                return tf.graph.parser.parseGraphPbTxt(pbtxt).then(function (graph) {
-                    var nodes = graph.node;
+            it('parses upto an empty node', () => {
+                const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input"
+        }
+        node {}`);
+                return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+                    const nodes = graph.node;
                     assert.isArray(nodes);
                     assert.lengthOf(nodes, 1);
                     assert.equal('Q', nodes[0].name);
                     assert.equal('Input', nodes[0].op);
                 });
             });
-            it('fails to parse a node when an empty node appears before', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("node {}\n        node {\n          name: \"Q\"\n          op: \"Input\"\n        }");
+            it('fails to parse a node when an empty node appears before', () => {
+                const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {}
+        node {
+          name: "Q"
+          op: "Input"
+        }`);
                 return tf.graph.parser.parseGraphPbTxt(pbtxt)
-                    .then(function () { return assert.fail('Should NOT resolve'); }, function () {
+                    .then(() => assert.fail('Should NOT resolve'), () => {
                     // Expected to fail and reject the promise.
                 });
             });
-            it('parses pbtxt without newlines as errorneously empty', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("node { name: \"Q\" op: \"Input\" } node { name: \"A\" op: \"Input\" }");
-                return tf.graph.parser.parseGraphPbTxt(pbtxt).then(function (graph) {
+            it('parses pbtxt without newlines as errorneously empty', () => {
+                const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node { name: "Q" op: "Input" } node { name: "A" op: "Input" }`);
+                return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
                     assert.notProperty(graph, 'node');
                 });
             });
-            it('parses malformed pbtxt upto the correct declaration', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("node {\n          name: \"Q\"\n          op: \"Input\"\n        }\n        node { name: \"W\" op: \"Input\" }\n        node { name: \"X\" op: \"MatMul\" input: \"Q\" input: \"W\" }");
-                return tf.graph.parser.parseGraphPbTxt(pbtxt).then(function (graph) {
-                    var nodes = graph.node;
+            it('parses malformed pbtxt upto the correct declaration', () => {
+                const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input"
+        }
+        node { name: "W" op: "Input" }
+        node { name: "X" op: "MatMul" input: "Q" input: "W" }`);
+                return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+                    const nodes = graph.node;
                     assert.isArray(nodes);
                     assert.lengthOf(nodes, 1);
                     assert.equal('Q', nodes[0].name);
                     assert.equal('Input', nodes[0].op);
                 });
             });
-            it('cannot parse when pbtxt is malformed', function () {
-                var pbtxt = tf.graph.test.util.stringToArrayBuffer("node {\n          name: \"Q\"\n          op: \"Input\n        }\n        node { name: \"W\" op: \"Input\"\n        node { name: \"X\" op: \"MatMul\" input: \"Q\" input: \"W\" }\n        node {\n          name: A\"\n          op: \"Input\"\n        }");
+            it('cannot parse when pbtxt is malformed', () => {
+                const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
+          name: "Q"
+          op: "Input
+        }
+        node { name: "W" op: "Input"
+        node { name: "X" op: "MatMul" input: "Q" input: "W" }
+        node {
+          name: A"
+          op: "Input"
+        }`);
                 return tf.graph.parser.parseGraphPbTxt(pbtxt)
-                    .then(function () { return assert.fail('Should NOT resolve'); }, function () {
+                    .then(() => assert.fail('Should NOT resolve'), () => {
                     // Expected to fail and reject the promise.
                 });
             });
         });
     });
-    it('parses stats pbtxt', function () {
-        var statsPbtxt = tf.graph.test.util.stringToArrayBuffer("step_stats {\n      dev_stats {\n        device: \"cpu\"\n        node_stats {\n          node_name: \"Q\"\n          all_start_micros: 10\n          all_end_rel_micros: 4\n        }\n        node_stats {\n          node_name: \"Q\"\n          all_start_micros: 12\n          all_end_rel_micros: 4\n        }\n      }\n    }");
-        return tf.graph.parser.parseStatsPbTxt(statsPbtxt).then(function (stepStats) {
+    it('parses stats pbtxt', () => {
+        let statsPbtxt = tf.graph.test.util.stringToArrayBuffer(`step_stats {
+      dev_stats {
+        device: "cpu"
+        node_stats {
+          node_name: "Q"
+          all_start_micros: 10
+          all_end_rel_micros: 4
+        }
+        node_stats {
+          node_name: "Q"
+          all_start_micros: 12
+          all_end_rel_micros: 4
+        }
+      }
+    }`);
+        return tf.graph.parser.parseStatsPbTxt(statsPbtxt).then(stepStats => {
             assert.equal(stepStats.dev_stats.length, 1);
             assert.equal(stepStats.dev_stats[0].device, 'cpu');
             assert.equal(stepStats.dev_stats[0].node_stats.length, 2);
@@ -116,7 +215,7 @@ describe('parser', function () {
             assert.equal(stepStats.dev_stats[0].node_stats[1].all_end_rel_micros, 4);
         });
     });
-    it('d3 exists', function () {
+    it('d3 exists', () => {
         assert.isTrue(d3 != null);
     });
     // TODO(nsthorat): write tests.

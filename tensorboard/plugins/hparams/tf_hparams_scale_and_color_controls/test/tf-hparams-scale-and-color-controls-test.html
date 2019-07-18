@@ -19,7 +19,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="../../tf-imports/polymer.html">
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../tf-hparams-scale-and-color-controls.html">
   </head>
@@ -242,13 +242,9 @@ limitations under the License.
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -262,13 +258,9 @@ limitations under the License.
           // remove 'Delta T'
           element.pop("configuration.visibleSchema.metricInfos");
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -284,13 +276,9 @@ limitations under the License.
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Difference To Ambient Temp.",
@@ -386,6 +374,14 @@ limitations under the License.
             done();
           });
         });
+
+        function getColumnTitles() {
+          const columnTitlesNodes = Array.from(
+              element.root.querySelectorAll(".column-title"));
+          return columnTitlesNodes
+              .map(n => n.textContent)
+              .map(s => s.replace(/^\s*/,"").replace(/\s*$/,""));
+        }
       });
     </script>
   </body>

@@ -14,41 +14,35 @@ limitations under the License.
 ==============================================================================*/
 var vz_line_chart2;
 (function (vz_line_chart2) {
-    var valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-    var formatValueOrNaN = function (x) { return isNaN(x) ? 'NaN' : valueFormatter(x); };
+    const valueFormatter = vz_chart_helpers.multiscaleFormatter(vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
+    const formatValueOrNaN = (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
     vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS = [
         {
             title: 'Name',
-            evaluate: function (d) { return d.dataset.metadata().name; },
+            evaluate: (d) => d.dataset.metadata().name,
         },
         {
             title: 'Smoothed',
-            evaluate: function (d, statusObject) {
-                var smoothingEnabled = statusObject.smoothingEnabled;
+            evaluate(d, statusObject) {
+                const { smoothingEnabled } = statusObject;
                 return formatValueOrNaN(smoothingEnabled ? d.datum.smoothed : d.datum.scalar);
             },
         },
         {
             title: 'Value',
-            evaluate: function (d) { return formatValueOrNaN(d.datum.scalar); },
+            evaluate: (d) => formatValueOrNaN(d.datum.scalar),
         },
         {
             title: 'Step',
-            evaluate: function (d) {
-                return vz_chart_helpers.stepFormatter(d.datum.step);
-            },
+            evaluate: (d) => vz_chart_helpers.stepFormatter(d.datum.step),
         },
         {
             title: 'Time',
-            evaluate: function (d) {
-                return vz_chart_helpers.timeFormatter(d.datum.wall_time);
-            },
+            evaluate: (d) => vz_chart_helpers.timeFormatter(d.datum.wall_time),
         },
         {
             title: 'Relative',
-            evaluate: function (d) {
-                return vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset));
-            },
+            evaluate: (d) => vz_chart_helpers.relativeFormatter(vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
         },
     ];
     Polymer({
@@ -133,7 +127,7 @@ var vz_line_chart2;
              * outer function to compute the value. We actually want the value of this
              * property to be the inner function.
              */
-            yValueAccessor: { type: Object, value: function () { return (function (d) { return d.scalar; }); } },
+            yValueAccessor: { type: Object, value: () => (d => d.scalar) },
             /**
              * An array of ChartHelper.TooltipColumn objects. Used to populate the table
              * within the tooltip. The table contains 1 row per run.
@@ -145,7 +139,7 @@ var vz_line_chart2;
              */
             tooltipColumns: {
                 type: Array,
-                value: function () { return vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS; },
+                value: () => vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS,
             },
             /**
              * An optional FillArea object. If provided, the chart will
@@ -205,15 +199,15 @@ var vz_line_chart2;
             _chart: Object,
             _visibleSeriesCache: {
                 type: Array,
-                value: function () { return []; },
+                value: () => [],
             },
             _seriesDataCache: {
                 type: Object,
-                value: function () { return ({}); },
+                value: () => ({}),
             },
             _seriesMetadataCache: {
                 type: Object,
-                value: function () { return ({}); },
+                value: () => ({}),
             },
             _makeChartAsyncCallbackId: { type: Number, value: null },
         },
@@ -225,48 +219,46 @@ var vz_line_chart2;
             '_tooltipSortingMethodChanged(tooltipSortingMethod, _chart)',
             '_outliersChanged(ignoreYOutliers, _chart)',
         ],
-        ready: function () {
+        ready() {
             this.scopeSubtree(this.$.chartdiv, true);
         },
-        attached: function () {
+        attached() {
             // `capture` ensures that no handler can stop propagation and break the
             // handler. `passive` ensures that browser does not wait renderer thread
             // on JS handler (which can prevent default and impact rendering).
-            var option = { capture: true, passive: true };
+            const option = { capture: true, passive: true };
             this._listen(this, 'mousedown', this._onMouseDown.bind(this), option);
             this._listen(this, 'mouseup', this._onMouseUp.bind(this), option);
             this._listen(window, 'keydown', this._onKeyDown.bind(this), option);
             this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
         },
-        detached: function () {
+        detached() {
             this.cancelAsync(this._makeChartAsyncCallbackId);
             if (this._chart)
                 this._chart.destroy();
             if (this._listeners) {
-                this._listeners.forEach(function (_a) {
-                    var node = _a.node, eventName = _a.eventName, func = _a.func, option = _a.option;
+                this._listeners.forEach(({ node, eventName, func, option }) => {
                     node.removeEventListener(eventName, func, option);
                 });
                 this._listeners.clear();
             }
         },
-        _listen: function (node, eventName, func, option) {
-            if (option === void 0) { option = {}; }
+        _listen(node, eventName, func, option = {}) {
             if (!this._listeners)
                 this._listeners = new Set();
-            this._listeners.add({ node: node, eventName: eventName, func: func, option: option });
+            this._listeners.add({ node, eventName, func, option });
             node.addEventListener(eventName, func, option);
         },
-        _onKeyDown: function (event) {
+        _onKeyDown(event) {
             this.toggleClass('pankey', vz_line_chart2.PanZoomDragLayer.isPanKey(event));
         },
-        _onKeyUp: function (event) {
+        _onKeyUp(event) {
             this.toggleClass('pankey', vz_line_chart2.PanZoomDragLayer.isPanKey(event));
         },
-        _onMouseDown: function (event) {
+        _onMouseDown(event) {
             this.toggleClass('mousedown', true);
         },
-        _onMouseUp: function (event) {
+        _onMouseUp(event) {
             this.toggleClass('mousedown', false);
         },
         /**
@@ -304,7 +296,7 @@ var vz_line_chart2;
          * @param {string} name Name of the series.
          * @param {*} meta Metadata of the dataset used for later
          */
-        setSeriesMetadata: function (name, meta) {
+        setSeriesMetadata(name, meta) {
             this._seriesMetadataCache[name] = meta;
             if (this._chart) {
                 this._chart.setSeriesMetadata(name, meta);
@@ -337,16 +329,13 @@ var vz_line_chart2;
                 xComponentsCreationMethod = vz_chart_helpers.stepX;
             }
             else if (xType) {
-                xComponentsCreationMethod = function () {
-                    return vz_chart_helpers.getXComponents(xType);
-                };
+                xComponentsCreationMethod = () => vz_chart_helpers.getXComponents(xType);
             }
             if (this._makeChartAsyncCallbackId !== null) {
                 this.cancelAsync(this._makeChartAsyncCallbackId);
                 this._makeChartAsyncCallbackId = null;
             }
             this._makeChartAsyncCallbackId = this.async(function () {
-                var _this = this;
                 this._makeChartAsyncCallbackId = null;
                 if (!xComponentsCreationMethod ||
                     !this.yValueAccessor ||
@@ -362,20 +351,19 @@ var vz_line_chart2;
                 if (this._chart)
                     this._chart.destroy();
                 this._chart = chart;
-                this._chart.onAnchor(function () { return _this.fire('chart-attached'); });
+                this._chart.onAnchor(() => this.fire('chart-attached'));
             }, 350);
         },
         _reloadFromCache: function () {
-            var _this = this;
             if (!this._chart)
                 return;
-            this._visibleSeriesCache.forEach(function (name) {
-                _this._chart.setSeriesData(name, _this._seriesDataCache[name] || []);
+            this._visibleSeriesCache.forEach(name => {
+                this._chart.setSeriesData(name, this._seriesDataCache[name] || []);
             });
             this._visibleSeriesCache
-                .filter(function (name) { return _this._seriesMetadataCache[name]; })
-                .forEach(function (name) {
-                _this._chart.setSeriesMetadata(name, _this._seriesMetadataCache[name]);
+                .filter(name => this._seriesMetadataCache[name])
+                .forEach(name => {
+                this._chart.setSeriesMetadata(name, this._seriesMetadataCache[name]);
             });
             this._chart.setVisibleSeries(this._visibleSeriesCache);
         },
@@ -399,7 +387,7 @@ var vz_line_chart2;
                 return;
             this._chart.setTooltipSortingMethod(this.tooltipSortingMethod);
         },
-        getExporter: function () {
+        getExporter() {
             return new vz_line_chart2.LineChartExporter(this.$.chartdiv);
         },
     });

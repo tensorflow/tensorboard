@@ -29,17 +29,17 @@ var tf_backend;
      * argument.
      */
     function addParams(baseURL, params) {
-        var keys = Object.keys(params).sort().filter(function (k) { return params[k] !== undefined; });
+        const keys = Object.keys(params).sort().filter(k => params[k] !== undefined);
         if (!keys.length) {
             return baseURL; // no need to change '/foo' to '/foo?'
         }
-        var delimiter = baseURL.indexOf('?') !== -1 ? '&' : '?';
-        var parts = [].concat.apply([], keys.map(function (key) {
-            var rawValue = params[key];
-            var values = Array.isArray(rawValue) ? rawValue : [rawValue];
-            return values.map(function (value) { return key + "=" + _encodeURIComponent(value); });
+        const delimiter = baseURL.indexOf('?') !== -1 ? '&' : '?';
+        const parts = [].concat(...keys.map(key => {
+            const rawValue = params[key];
+            const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+            return values.map(value => `${key}=${_encodeURIComponent(value)}`);
         }));
-        var query = parts.join('&');
+        const query = parts.join('&');
         return baseURL + delimiter + query;
     }
     tf_backend.addParams = addParams;

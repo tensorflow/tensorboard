@@ -36,17 +36,17 @@ limitations under the License.
 <link rel="import" href="../paper-tabs/paper-tab.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="./tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
@@ -76,6 +76,10 @@ limitations under the License.
         font-family: 'Roboto', 'Noto', sans-serif;
         --paper-tab-ink: var(--tb-orange-dark);
         --wit-color-gray300: #DADCE0;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       #classification {
@@ -417,7 +421,7 @@ limitations under the License.
         background: white;
       }
 
-      :host vz-line-chart {
+      :host vz-line-chart2 {
         margin: 12px 12px 12px 24px;
         height: 180px;
         width: 300px;
@@ -1276,7 +1280,7 @@ limitations under the License.
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
       <paper-dropdown-menu label="Apply to datapoints visualization" class="threshold-dropdown distance-vis-dropdown">
-        <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
+        <paper-listbox slot="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
           <paper-item name="colorBy">Color By</paper-item>
           <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
           <paper-item name="verticalFacet">Y-Axis Binning</paper-item>
@@ -1409,7 +1413,7 @@ limitations under the License.
                             <paper-input value="{{featureSearchValue}}" label="Search features"
                                 class="datapoint-control-filter-input feature-search-input"
                                 disabled$="[[!hasSelected(selectedExampleAndInference)]]" no-label-float>
-                              <iron-icon icon="icons:search" prefix></iron-icon>
+                              <iron-icon icon="icons:search" slot="prefix"></iron-icon>
                             </paper-input>
                           </div>
                           <div class="datapoint-right-controls-holder">
@@ -1488,7 +1492,7 @@ limitations under the License.
                       <iron-icon icon="av:pause" class="resize-icon"></iron-icon>
                     </div>
                   </div>
-                  <div class="center" id="center">
+                  <div class="center" slot="center" id="center">
                     <facets-dive id="dive" data="[[visdata]]"
                                 selected-indices="[[selected]]"
                                 compared-indices="[[comparedIndices]]"
@@ -1598,7 +1602,7 @@ limitations under the License.
                         <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                           <div class="flex">
                             <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
-                              <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                              <paper-listbox slot="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                                 <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                   <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                 </template>
@@ -1648,7 +1652,7 @@ limitations under the License.
                           <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                             <div class="flex">
                               <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
-                                <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
+                                <paper-listbox slot="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
                                   <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                     <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                   </template>
@@ -1664,7 +1668,7 @@ limitations under the License.
                             <div class="flex">
                               <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
                                 <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
-                                  <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                                  <paper-listbox slot="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
                                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                       <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                     </template>
@@ -1793,7 +1797,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -1844,7 +1848,7 @@ limitations under the License.
                               <div class="perf-table-threshold">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                     <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-immediate-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                     </paper-slider>
                                 </template>
                               </div>
@@ -1898,10 +1902,10 @@ limitations under the License.
                                   </div>
                                   <div class="roc-x-label">False positive rate</div>
                                   <div class="roc-y-label">True positive rate</div>
-                                  <vz-line-chart id="[[getRocChartId(index)]]" class="pr-line-chart"
+                                  <vz-line-chart2 id="[[getRocChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                                 <div class="curve-holder">
                                   <div class="roc-text">PR curve
@@ -1916,10 +1920,10 @@ limitations under the License.
                                   </div>
                                   <div class="pr-x-label">Recall</div>
                                   <div class="pr-y-label">Precision</div>
-                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                  <vz-line-chart2 id="[[getPrChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                               </div>
                             </template>
@@ -1942,7 +1946,7 @@ limitations under the License.
                             <div class="perf-table-threshold">
                               <template is="dom-repeat" items="{{overallThresholds}}">
                                   <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
+                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-immediate-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                   </paper-slider>
                               </template>
                             </div>
@@ -1995,10 +1999,10 @@ limitations under the License.
                                 </div>
                                 <div class="roc-x-label">False positive rate</div>
                                 <div class="roc-y-label">True positive rate</div>
-                                <vz-line-chart id="rocchart" class="pr-line-chart"
+                                <vz-line-chart2 id="rocchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
+                                </vz-line-chart2>
                               </div>
                               <div class="curve-holder">
                                 <div class="roc-text">PR curve
@@ -2013,10 +2017,10 @@ limitations under the License.
                                 </div>
                                 <div class="pr-x-label">Recall</div>
                                 <div class="pr-y-label">Precision</div>
-                                <vz-line-chart id="prchart" class="pr-line-chart"
+                                <vz-line-chart2 id="prchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
+                                </vz-line-chart2>
                               </div>
                             </div>
                           </template>
@@ -2046,7 +2050,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -2160,7 +2164,7 @@ limitations under the License.
                         </paper-dialog>
                       </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                        <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                             <paper-item name="[[item]]">[[item]]</paper-item>
                           </template>
@@ -3693,6 +3697,7 @@ limitations under the License.
         else if (selection == 'equalopp') {
           this.equalOppoClicked_();
         }
+        this.updateInferenceStats_(true);
       },
 
       costRatioChanged_: function() {
@@ -5298,7 +5303,7 @@ limitations under the License.
 
         const holder = document.createElement('div');
         holder.classList.add('pd-holder');
-        const chart = document.createElement('vz-line-chart');
+        const chart = document.createElement('vz-line-chart2');
         const colorScale = [];
         const thresholdSeries = [];
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(

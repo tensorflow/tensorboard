@@ -39,17 +39,17 @@ var tf_dashboard_common;
             },
             items: {
                 type: Array,
-                value: function () { return []; },
+                value: () => [],
             },
             maxItemsToEnableByDefault: Number,
             selectionState: {
                 type: Object,
-                value: function () { return ({}); },
+                value: () => ({}),
             },
             selectedItems: {
                 type: Array,
                 notify: true,
-                value: function () { return []; },
+                value: () => [],
             },
             // ====== Others ======
             _opened: {
@@ -58,24 +58,21 @@ var tf_dashboard_common;
             },
         },
         // ====================== COMPUTED ======================
-        _getValueLabel: function (_) {
+        _getValueLabel(_) {
             if (this.selectedItems.length == this.items.length) {
-                return "All " + this.label + "s";
+                return `All ${this.label}s`;
             }
             else if (!this.selectedItems.length) {
                 return '';
             }
             else if (this.selectedItems.length <= 3) {
-                var titles = this.selectedItems.map(function (_a) {
-                    var title = _a.title;
-                    return title;
-                });
-                var uniqueNames = new Set(titles);
+                const titles = this.selectedItems.map(({ title }) => title);
+                const uniqueNames = new Set(titles);
                 return Array.from(uniqueNames).join(', ');
             }
-            return this.selectedItems.length + " Selected";
+            return `${this.selectedItems.length} Selected`;
         },
-        _computeColoring: function () {
+        _computeColoring() {
             return Object.assign({}, this.coloring);
         },
     });

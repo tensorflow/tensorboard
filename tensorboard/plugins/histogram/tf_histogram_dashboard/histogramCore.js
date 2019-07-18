@@ -15,22 +15,13 @@ limitations under the License.
 var tf_histogram_dashboard;
 (function (tf_histogram_dashboard) {
     function backendToIntermediate(histogram) {
-        var wall_time = histogram[0], step = histogram[1], buckets = histogram[2];
+        const [wall_time, step, buckets] = histogram;
         return {
-            wall_time: wall_time,
-            step: step,
-            min: d3.min(buckets.map(function (_a) {
-                var left = _a[0];
-                return left;
-            })),
-            max: d3.max(buckets.map(function (_a) {
-                var right = _a[1];
-                return right;
-            })),
-            buckets: buckets.map(function (_a) {
-                var left = _a[0], right = _a[1], count = _a[2];
-                return ({ left: left, right: right, count: count });
-            }),
+            wall_time,
+            step,
+            min: d3.min(buckets.map(([left, ,]) => left)),
+            max: d3.max(buckets.map(([, right,]) => right)),
+            buckets: buckets.map(([left, right, count]) => ({ left, right, count })),
         };
     }
     tf_histogram_dashboard.backendToIntermediate = backendToIntermediate;
@@ -55,8 +46,7 @@ var tf_histogram_dashboard;
      *     right edges are inclusive, then these left edges (`x`) are
      *     exclusive.
      */
-    function intermediateToD3(histogram, min, max, numBins) {
-        if (numBins === void 0) { numBins = 30; }
+    function intermediateToD3(histogram, min, max, numBins = 30) {
         if (max === min) {
             // Create bins even if all the data has a single value.
             max = min * 1.1 + 1;
@@ -64,22 +54,22 @@ var tf_histogram_dashboard;
         }
         // Terminology note: _buckets_ are the input to this function,
         // while _bins_ are our output.
-        var binWidth = (max - min) / numBins;
-        var bucketIndex = 0;
-        return d3.range(min, max, binWidth).map(function (binLeft) {
-            var binRight = binLeft + binWidth;
+        const binWidth = (max - min) / numBins;
+        let bucketIndex = 0;
+        return d3.range(min, max, binWidth).map((binLeft) => {
+            const binRight = binLeft + binWidth;
             // Take the count of each existing bucket, multiply it by the
             // proportion of overlap with the new bin, then sum and store as the
             // count for the new bin. If no overlap, will add to zero; if 100%
             // overlap, will include the full count into new bin.
-            var binY = 0;
+            let binY = 0;
             while (bucketIndex < histogram.buckets.length) {
                 // Clip the right edge because right-most edge can be
                 // infinite-sized.
-                var bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
-                var bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
-                var intersect = Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
-                var count = (intersect / (bucketRight - bucketLeft)) *
+                const bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
+                const bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
+                const intersect = Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
+                const count = (intersect / (bucketRight - bucketLeft)) *
                     histogram.buckets[bucketIndex].count;
                 binY += intersect > 0 ? count : 0;
                 // If `bucketRight` is bigger than `binRight`, then this bin is
@@ -95,14 +85,14 @@ var tf_histogram_dashboard;
     }
     tf_histogram_dashboard.intermediateToD3 = intermediateToD3;
     function backendToVz(histograms) {
-        var intermediateHistograms = histograms.map(backendToIntermediate);
-        var minmin = d3.min(intermediateHistograms, function (h) { return h.min; });
-        var maxmax = d3.max(intermediateHistograms, function (h) { return h.max; });
-        return intermediateHistograms.map(function (h) { return ({
+        const intermediateHistograms = histograms.map(backendToIntermediate);
+        const minmin = d3.min(intermediateHistograms, h => h.min);
+        const maxmax = d3.max(intermediateHistograms, h => h.max);
+        return intermediateHistograms.map(h => ({
             wall_time: h.wall_time,
             step: h.step,
             bins: intermediateToD3(h, minmin, maxmax),
-        }); });
+        }));
     }
     tf_histogram_dashboard.backendToVz = backendToVz;
 })(tf_histogram_dashboard || (tf_histogram_dashboard = {})); // namespace tf_histogram_dashboard

@@ -15,42 +15,40 @@
 var tf_backend;
 (function (tf_backend) {
     // A unique reference to a listener for an easier dereferencing.
-    var ListenKey = /** @class */ (function () {
-        function ListenKey(listener) {
+    class ListenKey {
+        constructor(listener) {
             this.listener = listener;
         }
-        return ListenKey;
-    }());
+    }
     tf_backend.ListenKey = ListenKey;
-    var BaseStore = /** @class */ (function () {
-        function BaseStore() {
+    class BaseStore {
+        constructor() {
             this.requestManager = new tf_backend.RequestManager(1 /* simultaneous request */);
             this._listeners = new Set();
             this.initialized = false;
         }
-        BaseStore.prototype.refresh = function () {
-            var _this = this;
-            return this.load().then(function () {
-                _this.initialized = true;
+        refresh() {
+            return this.load().then(() => {
+                this.initialized = true;
             });
-        };
+        }
         /**
          * Register a listener (nullary function) to be called when new runs are
          * available.
          */
-        BaseStore.prototype.addListener = function (listener) {
-            var key = new ListenKey(listener);
+        addListener(listener) {
+            const key = new ListenKey(listener);
             this._listeners.add(key);
             return key;
-        };
+        }
         /**
          * Remove a listener registered with `addListener`.
          */
-        BaseStore.prototype.removeListenerByKey = function (listenKey) {
+        removeListenerByKey(listenKey) {
             this._listeners.delete(listenKey);
-        };
-        BaseStore.prototype.emitChange = function () {
-            this._listeners.forEach(function (listenKey) {
+        }
+        emitChange() {
+            this._listeners.forEach(listenKey => {
                 try {
                     listenKey.listener();
                 }
@@ -58,8 +56,7 @@ var tf_backend;
                     // ignore exceptions on the listener side.
                 }
             });
-        };
-        return BaseStore;
-    }());
+        }
+    }
     tf_backend.BaseStore = BaseStore;
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

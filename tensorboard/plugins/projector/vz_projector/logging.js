@@ -17,10 +17,10 @@ var vz_projector;
     var logging;
     (function (logging) {
         /** Duration in ms for showing warning messages to the user */
-        var WARNING_DURATION_MS = 10000;
-        var dom = null;
-        var msgId = 0;
-        var numActiveMessages = 0;
+        const WARNING_DURATION_MS = 10000;
+        let dom = null;
+        let msgId = 0;
+        let numActiveMessages = 0;
         function setDomContainer(domElement) {
             dom = domElement;
         }
@@ -36,10 +36,7 @@ var vz_projector;
          *                   close button.
          * @return The id of the message.
          */
-        function setModalMessage(msg, id, title, isErrorMsg) {
-            if (id === void 0) { id = null; }
-            if (title === void 0) { title = null; }
-            if (isErrorMsg === void 0) { isErrorMsg = false; }
+        function setModalMessage(msg, id = null, title = null, isErrorMsg = false) {
             if (dom == null) {
                 console.warn('Can\'t show modal message before the dom is initialized');
                 return;
@@ -47,25 +44,25 @@ var vz_projector;
             if (id == null) {
                 id = (msgId++).toString();
             }
-            var dialog = dom.querySelector('#notification-dialog');
+            let dialog = dom.shadowRoot.querySelector('#notification-dialog');
             dialog.querySelector('.close-button').style.display =
                 isErrorMsg ? null : 'none';
-            var spinner = dialog.querySelector('.progress');
+            let spinner = dialog.querySelector('.progress');
             spinner.style.display = isErrorMsg ? 'none' : null;
             spinner.active = isErrorMsg ? null : true;
             dialog.querySelector('#notification-title').innerHTML = title;
-            var msgsContainer = dialog.querySelector('#notify-msgs');
+            let msgsContainer = dialog.querySelector('#notify-msgs');
             if (isErrorMsg) {
                 msgsContainer.innerHTML = '';
             }
             else {
-                var errors = msgsContainer.querySelectorAll('.error');
-                for (var i = 0; i < errors.length; i++) {
+                const errors = msgsContainer.querySelectorAll('.error');
+                for (let i = 0; i < errors.length; i++) {
                     msgsContainer.removeChild(errors[i]);
                 }
             }
-            var divId = "notify-msg-" + id;
-            var msgDiv = dialog.querySelector('#' + divId);
+            let divId = `notify-msg-${id}`;
+            let msgDiv = dialog.querySelector('#' + divId);
             if (msgDiv == null) {
                 msgDiv = document.createElement('div');
                 msgDiv.className = 'notify-msg ' + (isErrorMsg ? 'error' : '');
@@ -100,7 +97,7 @@ var vz_projector;
          * Shows a warning message to the user for a certain amount of time.
          */
         function setWarningMessage(msg) {
-            var toast = dom.querySelector('#toast');
+            let toast = dom.shadowRoot.querySelector('#toast');
             toast.text = msg;
             toast.duration = WARNING_DURATION_MS;
             toast.open();

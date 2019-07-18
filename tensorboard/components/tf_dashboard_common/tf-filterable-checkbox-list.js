@@ -25,13 +25,13 @@ var tf_dashboard_common;
             coloring: {
                 type: Object,
                 value: {
-                    getColor: function (item) { return ''; },
+                    getColor: (item) => '',
                 },
             },
             // `items` are Array of {id: string, title: string, subtitle: ?string}.
             items: {
                 type: Array,
-                value: function () { return []; },
+                value: () => [],
                 observer: '_pruneSelectionState',
             },
             _regexString: {
@@ -47,7 +47,7 @@ var tf_dashboard_common;
                 // if an item is explicitly enabled, True, if explicitly disabled, False.
                 // if undefined, default value (enable for first k items, disable after).
                 type: Object,
-                value: function () { return ({}); },
+                value: () => ({}),
             },
             selectedItems: {
                 type: Array,
@@ -72,11 +72,11 @@ var tf_dashboard_common;
             '_synchronizeColors(useCheckboxColors)',
             '_synchronizeColors(coloring)',
         ],
-        detached: function () {
+        detached() {
             this.cancelDebouncer('_setRegex');
         },
         // ====================== COMPUTED ======================
-        _makeRegex: function (regexString) {
+        _makeRegex(regexString) {
             try {
                 return new RegExp(regexString);
             }
@@ -84,48 +84,46 @@ var tf_dashboard_common;
                 return null;
             }
         },
-        computeItemsMatchingRegex: function (__, ___) {
-            var regex = this._regex;
-            return regex ? this.items.filter(function (n) { return regex.test(n.title); }) : this.items;
+        computeItemsMatchingRegex(__, ___) {
+            const regex = this._regex;
+            return regex ? this.items.filter(n => regex.test(n.title)) : this.items;
         },
-        _computeSelectedItems: function (__, ___) {
-            var selectionState = this.selectionState;
-            var num = this.maxItemsToEnableByDefault;
-            var allEnabled = this._itemsMatchingRegex.length <= num;
+        _computeSelectedItems(__, ___) {
+            const selectionState = this.selectionState;
+            const num = this.maxItemsToEnableByDefault;
+            const allEnabled = this._itemsMatchingRegex.length <= num;
             return this._itemsMatchingRegex
-                .filter(function (n) {
+                .filter(n => {
                 return selectionState[n.id] == null ?
                     allEnabled : selectionState[n.id];
             });
         },
-        _isChecked: function (item, _) {
+        _isChecked(item, _) {
             return this.selectedItems.indexOf(item) != -1;
         },
         // ================== EVENT LISTENERS ===================
-        _debouncedRegexChange: function () {
-            var _this = this;
-            var val = this.$.input.value;
+        _debouncedRegexChange() {
+            const val = this.$.input.value;
             if (val == '') {
                 // If the user cleared the field, they may be done typing, so
                 // update more quickly.
-                window.requestAnimationFrame(function () {
-                    _this._regexString = val;
+                window.requestAnimationFrame(() => {
+                    this._regexString = val;
                 });
             }
             else {
-                this.debounce('_setRegex', function () {
-                    _this._regexString = val;
+                this.debounce('_setRegex', () => {
+                    this._regexString = val;
                 }, 150);
             }
             ;
         },
-        _synchronizeColors: function (e) {
-            var _this = this;
-            var checkboxes = this.querySelectorAll('paper-checkbox');
-            checkboxes.forEach(function (cb) {
+        _synchronizeColors(e) {
+            const checkboxes = this.root.querySelectorAll('paper-checkbox');
+            checkboxes.forEach(cb => {
                 // Setting the null value will clear previously set color.
-                var color = _this.useCheckboxColors ?
-                    _this.coloring.getColor(cb.name) :
+                const color = this.useCheckboxColors ?
+                    this.coloring.getColor(cb.name) :
                     null;
                 cb.customStyle['--paper-checkbox-checked-color'] = color;
                 cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
@@ -135,39 +133,37 @@ var tf_dashboard_common;
             // The updateStyles call fails silently if the browser does not have focus,
             // e.g., if TensorBoard was opened into a new tab that is not visible.
             // So we wait for requestAnimationFrame.
-            window.requestAnimationFrame(function () { return _this.updateStyles(); });
+            window.requestAnimationFrame(() => this.updateStyles());
         },
-        _checkboxTapped: function (e) {
-            var _a;
-            var checkbox = e.currentTarget;
-            var newSelectedNames = Object.assign({}, this.selectionState, (_a = {},
-                _a[checkbox.name.id] = checkbox.checked,
-                _a));
+        _checkboxTapped(e) {
+            const checkbox = e.currentTarget;
+            const newSelectedNames = Object.assign({}, this.selectionState, {
+                [checkbox.name.id]: checkbox.checked,
+            });
             // If user presses alt while toggling checkbox, it deselects all items but
             // the clicked one.
             if (e.detail.sourceEvent instanceof MouseEvent &&
                 e.detail.sourceEvent.altKey) {
-                Object.keys(newSelectedNames).forEach(function (key) {
+                Object.keys(newSelectedNames).forEach(key => {
                     newSelectedNames[key] = key == checkbox.name.id;
                 });
             }
             // n.b. notifyPath won't work because names may have periods.
             this.selectionState = newSelectedNames;
         },
-        _toggleAll: function () {
-            var _this = this;
-            var anyToggledOn = this._itemsMatchingRegex
-                .some(function (n) { return _this.selectionState[n.id]; });
-            var selectionStateIsDefault = Object.keys(this.selectionState).length == 0;
-            var defaultOff = this._itemsMatchingRegex.length > this.maxItemsToEnableByDefault;
+        _toggleAll() {
+            let anyToggledOn = this._itemsMatchingRegex
+                .some((n) => this.selectionState[n.id]);
+            const selectionStateIsDefault = Object.keys(this.selectionState).length == 0;
+            const defaultOff = this._itemsMatchingRegex.length > this.maxItemsToEnableByDefault;
             // We have names toggled either if some were explicitly toggled on, or if
             // we are in the default state, and there are few enough that we default
             // to toggling on.
             anyToggledOn = anyToggledOn || selectionStateIsDefault && !defaultOff;
             // If any are toggled on, we turn everything off. Or, if none are toggled
             // on, we turn everything on.
-            var newSelection = {};
-            this.items.forEach(function (n) {
+            const newSelection = {};
+            this.items.forEach((n) => {
                 newSelection[n.id] = !anyToggledOn;
             });
             this.selectionState = newSelection;
@@ -175,14 +171,11 @@ var tf_dashboard_common;
         /**
          * Remove selection state of an item that no longer exists in the `items`.
          */
-        _pruneSelectionState: function () {
+        _pruneSelectionState() {
             // Object key turns numbered keys into string.
-            var itemIds = new Set(this.items.map(function (_a) {
-                var id = _a.id;
-                return String(id);
-            }));
-            var newSelection = Object.assign({}, this.selectionState);
-            Object.keys(newSelection).forEach(function (key) {
+            const itemIds = new Set(this.items.map(({ id }) => String(id)));
+            const newSelection = Object.assign({}, this.selectionState);
+            Object.keys(newSelection).forEach(key => {
                 if (!itemIds.has(key))
                     delete newSelection[key];
             });

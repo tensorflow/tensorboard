@@ -58,22 +58,24 @@ var memory_viewer_line_chart;
                 notify: true,
                 observer: '_selectedEntityChanged',
             },
+            _symbolToEventCallback: {
+                type: Object,
+                value: () => new Map(),
+            },
         },
-        _makeChartDataset: function () {
+        _makeChartDataset() {
             if (!this.data) {
                 return;
             }
-            this.bufferSizes = this.data.heapSizes.map(function (val, index) { return [index, val]; });
-            this.unpaddedBufferSizes = this.data.unpaddedHeapSizes.map(function (val, index) {
-                return [index, val];
-            });
-            var maxHeap = this.data.maxHeap;
+            this.bufferSizes = this.data.heapSizes.map((val, index) => [index, val]);
+            this.unpaddedBufferSizes = this.data.unpaddedHeapSizes.map((val, index) => [index, val]);
+            let maxHeap = this.data.maxHeap;
             this.data.maxHeap.reduce(function (sum, item, i) {
                 maxHeap[i]['offset'] = sum;
                 return sum + item.sizeMiB;
             }, 0);
             this.maxHeap = maxHeap;
-            var maxHeapBySize = this.data.maxHeapBySize;
+            let maxHeapBySize = this.data.maxHeapBySize;
             this.data.maxHeapBySize.reduce(function (sum, item, i) {
                 maxHeapBySize[i]['offsetBySize'] = sum;
                 return sum + item.sizeMiB;
@@ -87,28 +89,28 @@ var memory_viewer_line_chart;
          * additional span is plotted to indicate the life range of the logical buffer
          * allocation.
          */
-        _drawProgramOrder: function () {
+        _drawProgramOrder() {
             if (!this.data) {
                 return;
             }
-            var xScale = new Plottable.Scales.Linear();
-            var yScale = new Plottable.Scales.Linear();
-            var xAxis = new Plottable.Axes.Numeric(xScale, "bottom");
-            var yAxis = new Plottable.Axes.Numeric(yScale, "left");
+            let xScale = new Plottable.Scales.Linear();
+            let yScale = new Plottable.Scales.Linear();
+            let xAxis = new Plottable.Axes.Numeric(xScale, "bottom");
+            let yAxis = new Plottable.Axes.Numeric(yScale, "left");
             // Draw buffer sizes line.
-            var bufferSizesLine = new Plottable.Plots.Line();
+            let bufferSizesLine = new Plottable.Plots.Line();
             bufferSizesLine.addDataset(new Plottable.Dataset(this.bufferSizes));
             bufferSizesLine.x(function (d) { return d[0]; }, xScale)
                 .y(function (d) { return d[1]; }, yScale)
                 .attr("stroke", "red");
-            var unpaddedBufferSizesLine = new Plottable.Plots.Line();
+            let unpaddedBufferSizesLine = new Plottable.Plots.Line();
             unpaddedBufferSizesLine.addDataset(new Plottable.Dataset(this.unpaddedBufferSizes));
             unpaddedBufferSizesLine.x(function (d) { return d[0]; }, xScale)
                 .y(function (d) { return d[1]; }, yScale)
                 .attr("stroke", "grey");
             // Draw a band of width 10 to indicate the peak heap size location.
-            var bandPlot = new Plottable.Plots.Rectangle();
-            var bandWidth = this.bufferSizes.length / 40.0;
+            let bandPlot = new Plottable.Plots.Rectangle();
+            let bandWidth = this.bufferSizes.length / 40.0;
             bandPlot.addDataset(new Plottable.Dataset([this.bufferSizes[this.data.peakHeapSizePosition]]));
             bandPlot.x(function (d) { return d[0] - bandWidth / 2.0; }, xScale)
                 .y(function (d) { return 0; }, yScale)
@@ -117,11 +119,11 @@ var memory_viewer_line_chart;
                 .attr("fill", "red")
                 .attr("opacity", 0.3);
             // Draw a span to indicate the life range of this buffer allocation.
-            var colorScale = this.colorScale;
-            var spanPlot = new Plottable.Plots.Rectangle();
-            var logicalBufferSpans = this.data.logicalBufferSpans;
-            var spans = this.maxHeap.map(function (item) {
-                var span = logicalBufferSpans[item.logicalBufferId];
+            let colorScale = this.colorScale;
+            let spanPlot = new Plottable.Plots.Rectangle();
+            let logicalBufferSpans = this.data.logicalBufferSpans;
+            let spans = this.maxHeap.map((item) => {
+                const span = logicalBufferSpans[item.logicalBufferId];
                 if (!span)
                     return null;
                 return { 'id': item.logicalBufferId,
@@ -129,7 +131,7 @@ var memory_viewer_line_chart;
                     'size': item.sizeMiB,
                     'color': item.color };
             });
-            spans = spans.filter(function (d) { return d !== null; });
+            spans = spans.filter(d => d !== null);
             spanPlot.addDataset(new Plottable.Dataset(spans));
             spanPlot.x(function (d) { return d.span[0]; }, xScale)
                 .y(function (d) { return 0; }, yScale)
@@ -138,33 +140,41 @@ var memory_viewer_line_chart;
                 .attr('fill', function (d) { return (d.color % 10).toString(); }, colorScale)
                 .attr('fill-opacity', 0);
             this.spanPlot = spanPlot;
-            var cs = new Plottable.Scales.Color();
+            let cs = new Plottable.Scales.Color();
             cs.range(["red", "grey"]);
             cs.domain(["Sizes", "Unpadded Sizes"]);
-            var legend = new Plottable.Components.Legend(cs);
+            let legend = new Plottable.Components.Legend(cs);
             legend.maxEntriesPerRow(2);
-            var gridlines = new Plottable.Components.Gridlines(xScale, yScale);
-            var plots = new Plottable.Components.Group([bandPlot, bufferSizesLine, unpaddedBufferSizesLine,
+            let gridlines = new Plottable.Components.Gridlines(xScale, yScale);
+            let plots = new Plottable.Components.Group([bandPlot, bufferSizesLine, unpaddedBufferSizesLine,
                 gridlines, spanPlot]);
-            var table = new Plottable.Components.Table([[null, legend],
+            let table = new Plottable.Components.Table([[null, legend],
                 [yAxis, plots],
                 [null, xAxis]]);
-            var chartSelection = d3.select(this.$.chartdiv);
+            let chartSelection = d3.select(this.$.chartdiv);
             chartSelection.selectAll('.component').remove();
             table.renderTo(chartSelection);
         },
         /**
          * Draw maxHeap stack boxes and add the interactions.
          */
-        _drawMaxHeap: function () {
-            var yScale = new Plottable.Scales.Linear();
-            var xScale = new Plottable.Scales.Linear();
-            var xAxis = new Plottable.Axes.Numeric(xScale, "top");
-            var yAxis = new Plottable.Axes.Numeric(yScale, "left");
-            var cs = this.colorScale;
+        _drawMaxHeap() {
+            let yScale = new Plottable.Scales.Linear();
+            let xScale = new Plottable.Scales.Linear();
+            let xAxis = new Plottable.Axes.Numeric(xScale, "top");
+            let yAxis = new Plottable.Axes.Numeric(yScale, "left");
+            let cs = this.colorScale;
             d3.select(this.$.maxheapchart).selectAll('.component').remove();
             d3.select(this.$.maxheapsizechart).selectAll('.component').remove();
-            var maxHeapChart = new Plottable.Plots.Rectangle();
+            if (this._maxHeapChartMouseMoveKey) {
+                this._unlisten(this._maxHeapChartMouseMoveKey);
+                this._maxHeapChartMouseMoveKey = null;
+            }
+            if (this._maxHeapSizeChartMouseMoveKey) {
+                this._unlisten(this._maxHeapSizeChartMouseMoveKey);
+                this._maxHeapSizeChartMouseMoveKey = null;
+            }
+            let maxHeapChart = new Plottable.Plots.Rectangle();
             maxHeapChart.addDataset(new Plottable.Dataset(this.maxHeap))
                 .x(function (d) { return d.offset; }, xScale)
                 .y(function (d) { return 0; }, yScale)
@@ -175,7 +185,7 @@ var memory_viewer_line_chart;
             }, cs)
                 .attr('opacity', '0.6')
                 .renderTo(d3.select(this.$.maxheapchart));
-            var maxHeapSizeChart = new Plottable.Plots.Rectangle();
+            let maxHeapSizeChart = new Plottable.Plots.Rectangle();
             maxHeapSizeChart.addDataset(new Plottable.Dataset(this.maxHeapBySize))
                 .x(function (d) { return d.offsetBySize; }, xScale)
                 .y(function (d) { return 0; }, yScale)
@@ -186,39 +196,53 @@ var memory_viewer_line_chart;
             }, cs)
                 .attr('opacity', '0.6')
                 .renderTo(d3.select(this.$.maxheapsizechart));
-            var parent = this;
-            new Plottable.Interactions.Pointer()
-                .attachTo(maxHeapChart)
-                .onPointerMove(function (p) {
-                parent._onHoverInteraction(p, maxHeapChart, maxHeapSizeChart, parent.data.maxHeapToBySize);
-            });
-            new Plottable.Interactions.Pointer()
-                .attachTo(maxHeapSizeChart)
-                .onPointerMove(function (p) {
-                parent._onHoverInteraction(p, maxHeapSizeChart, maxHeapChart, parent.data.bySizeToMaxHeap);
-            });
+            this._maxHeapChartMouseMoveKey = this._listen(this.$.maxheapchart, 'mousemove', (event) => {
+                this._onHoverInteraction(event, maxHeapChart, maxHeapSizeChart, this.data.maxHeapToBySize);
+            }, { passive: true });
+            this._maxHeapSizeChartMouseMoveKey = this._listen(this.$.maxheapsizechart, 'mousemove', (event) => {
+                this._onHoverInteraction(event, maxHeapSizeChart, maxHeapChart, this.data.bySizeToMaxHeap);
+            }, { passive: true });
+        },
+        _listen(node, eventName, callback, options = null) {
+            const symbol = Symbol();
+            node.addEventListener(eventName, callback, options);
+            this._symbolToEventCallback.set(symbol, { eventName, node, callback, options });
+            return symbol;
+        },
+        _unlisten(symbol) {
+            console.assert(this._symbolToEventCallback.has(symbol), 'Cannot unlisten an unknown event');
+            const listenerKey = this._symbolToEventCallback.get(symbol);
+            const { callback, eventName, node, options } = listenerKey;
+            node.removeEventListener(eventName, callback, options);
         },
         /**
          * Highlights the item when mouse hovering over an item in the srcChart.
          * Also highlight the item in the other chart. Renders the buffer details.
          */
-        _onHoverInteraction: function (point, srcChart, dstChart, map) {
-            var entities = srcChart.entitiesAt(point);
-            if (entities.length === 0) {
+        _onHoverInteraction(event, srcChart, dstChart, map) {
+            const srcRootElement = srcChart.rootElement().node();
+            const { left } = srcRootElement.getBoundingClientRect();
+            const relativeX = event.clientX - left;
+            const entities = srcChart.entities();
+            const entity = entities.find((entity) => {
+                const { x, width } = entity.bounds;
+                return x <= relativeX && (x + width) >= relativeX;
+            });
+            if (!entity) {
                 this._selectedEntityInSrcChart = null;
                 this._selectedEntityInDstChart = null;
                 this.active = null;
-                return;
             }
-            var entity = entities[0];
-            this.active = entity.datum;
-            this._selectedEntityInSrcChart = entity;
-            this._selectedEntityInDstChart = dstChart.entities()[map[entity.index]];
+            else {
+                this.active = entity.datum;
+                this._selectedEntityInSrcChart = entity;
+                this._selectedEntityInDstChart = dstChart.entities()[map[entity.index]];
+            }
         },
         /**
          * Highlights the newly selected entity and unhighlights the old one.
          */
-        _selectedEntityChanged: function (newValue, oldValue) {
+        _selectedEntityChanged(newValue, oldValue) {
             if (oldValue) {
                 oldValue.selection.attr('opacity', '0.6');
             }
@@ -229,7 +253,7 @@ var memory_viewer_line_chart;
         /**
          * Render the buffer life span on the line charts for the selected buffer.
          */
-        _renderSpans: function (item) {
+        _renderSpans(item) {
             if (!this.spanPlot) {
                 return;
             }
@@ -255,7 +279,7 @@ var memory_viewer_line_chart;
         /**
          * Redraw the chart when data changes.
          */
-        _dataChanged: function (newData) {
+        _dataChanged(newData) {
             if (!newData) {
                 return;
             }

@@ -33,12 +33,12 @@ var tf_card_heading;
      * @return {string}
      */
     function pickTextColor(background) {
-        var rgb = convertHexToRgb(background);
+        const rgb = convertHexToRgb(background);
         if (!rgb) {
             return 'inherit';
         }
         // See: http://www.w3.org/TR/AERT#color-contrast
-        var brightness = Math.round((rgb[0] * 299 +
+        const brightness = Math.round((rgb[0] * 299 +
             rgb[1] * 587 +
             rgb[2] * 114) / 1000);
         return brightness > 125 ? 'inherit' : '#eee';
@@ -53,7 +53,7 @@ var tf_card_heading;
         if (!color) {
             return null;
         }
-        var m = color.match(/^#([0-9a-f]{1,2})([0-9a-f]{1,2})([0-9a-f]{1,2})$/);
+        let m = color.match(/^#([0-9a-f]{1,2})([0-9a-f]{1,2})([0-9a-f]{1,2})$/);
         if (!m) {
             return null;
         }

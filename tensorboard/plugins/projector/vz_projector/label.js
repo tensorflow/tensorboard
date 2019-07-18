@@ -19,7 +19,7 @@ var vz_projector;
      * Labels only need to be tested for collision with other labels that overlap
      * the same grid cells. This is a fork of {@code amoeba.CollisionGrid}.
      */
-    var CollisionGrid = /** @class */ (function () {
+    class CollisionGrid {
         /**
          * Constructs a new Collision grid.
          *
@@ -27,7 +27,7 @@ var vz_projector;
          * @param cellWidth Width of a cell in the grid.
          * @param cellHeight Height of a cell in the grid.
          */
-        function CollisionGrid(bound, cellWidth, cellHeight) {
+        constructor(bound, cellWidth, cellHeight) {
             /** The bound of the grid. Labels out of bounds will be rejected. */
             this.bound = bound;
             /** Width of a cell in the grid. */
@@ -44,11 +44,11 @@ var vz_projector;
              */
             this.grid = new Array(this.numHorizCells * this.numVertCells);
         }
-        CollisionGrid.prototype.boundWidth = function (bound) { return bound.hiX - bound.loX; };
-        CollisionGrid.prototype.boundHeight = function (bound) { return bound.hiY - bound.loY; };
-        CollisionGrid.prototype.boundsIntersect = function (a, b) {
+        boundWidth(bound) { return bound.hiX - bound.loX; }
+        boundHeight(bound) { return bound.hiY - bound.loY; }
+        boundsIntersect(a, b) {
             return !(a.loX > b.hiX || a.loY > b.hiY || a.hiX < b.loX || a.hiY < b.loY);
-        };
+        }
         /**
          * Checks if a given bounding box has any conflicts in the grid and inserts it
          * if none are found.
@@ -58,25 +58,24 @@ var vz_projector;
          * @return True if the bound was successfully inserted; false if it
          *         could not be inserted due to a conflict.
          */
-        CollisionGrid.prototype.insert = function (bound, justTest) {
-            if (justTest === void 0) { justTest = false; }
+        insert(bound, justTest = false) {
             // Reject if the label is out of bounds.
             if ((bound.hiX < this.bound.loX) || (bound.loX > this.bound.hiX) ||
                 (bound.hiY < this.bound.loY) || (bound.loY > this.bound.hiY)) {
                 return false;
             }
-            var minCellX = this.getCellX(bound.loX);
-            var maxCellX = this.getCellX(bound.hiX);
-            var minCellY = this.getCellY(bound.loY);
-            var maxCellY = this.getCellY(bound.hiY);
+            let minCellX = this.getCellX(bound.loX);
+            let maxCellX = this.getCellX(bound.hiX);
+            let minCellY = this.getCellY(bound.loY);
+            let maxCellY = this.getCellY(bound.hiY);
             // Check all overlapped cells to verify that we can insert.
-            var baseIdx = minCellY * this.numHorizCells + minCellX;
-            var idx = baseIdx;
-            for (var j = minCellY; j <= maxCellY; j++) {
-                for (var i = minCellX; i <= maxCellX; i++) {
-                    var cell = this.grid[idx++];
+            let baseIdx = minCellY * this.numHorizCells + minCellX;
+            let idx = baseIdx;
+            for (let j = minCellY; j <= maxCellY; j++) {
+                for (let i = minCellX; i <= maxCellX; i++) {
+                    let cell = this.grid[idx++];
                     if (cell) {
-                        for (var k = 0; k < cell.length; k++) {
+                        for (let k = 0; k < cell.length; k++) {
                             if (this.boundsIntersect(bound, cell[k])) {
                                 return false;
                             }
@@ -90,8 +89,8 @@ var vz_projector;
             }
             // Insert into the overlapped cells.
             idx = baseIdx;
-            for (var j = minCellY; j <= maxCellY; j++) {
-                for (var i = minCellX; i <= maxCellX; i++) {
+            for (let j = minCellY; j <= maxCellY; j++) {
+                for (let i = minCellX; i <= maxCellX; i++) {
                     if (!this.grid[idx]) {
                         this.grid[idx] = [bound];
                     }
@@ -103,16 +102,16 @@ var vz_projector;
                 idx += this.numHorizCells - (maxCellX - minCellX + 1);
             }
             return true;
-        };
+        }
         /**
          * Returns the x index of the grid cell where the given x coordinate falls.
          *
          * @param x the coordinate, in world space.
          * @return the x index of the cell.
          */
-        CollisionGrid.prototype.getCellX = function (x) {
+        getCellX(x) {
             return Math.floor((x - this.bound.loX) / this.cellWidth);
-        };
+        }
         ;
         /**
          * Returns the y index of the grid cell where the given y coordinate falls.
@@ -120,11 +119,10 @@ var vz_projector;
          * @param y the coordinate, in world space.
          * @return the y index of the cell.
          */
-        CollisionGrid.prototype.getCellY = function (y) {
+        getCellY(y) {
             return Math.floor((y - this.bound.loY) / this.cellHeight);
-        };
+        }
         ;
-        return CollisionGrid;
-    }());
+    }
     vz_projector.CollisionGrid = CollisionGrid;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

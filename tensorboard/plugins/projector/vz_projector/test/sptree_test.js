@@ -16,19 +16,19 @@ var vz_projector;
 (function (vz_projector) {
     var test;
     (function (test) {
-        it('simple 2D data', function () {
-            var data = [
+        it('simple 2D data', () => {
+            let data = [
                 [0, 1],
                 [1, 0],
                 [1, 1],
                 [0, 0],
             ];
-            var tree = new vz_projector.SPTree(data);
+            let tree = new vz_projector.SPTree(data);
             // Check that each point is within the bound.
-            tree.visit(function (node, low, high) {
+            tree.visit((node, low, high) => {
                 test.assert.equal(low.length, 2);
                 test.assert.equal(high.length, 2);
-                var point = node.point;
+                let point = node.point;
                 test.assert.equal(point.length, 2);
                 // Each point should be in the node's bounding box.
                 test.assert.equal(point[0] >= low[0] && point[0] <= high[0] && point[1] >= low[1] &&
@@ -36,19 +36,19 @@ var vz_projector;
                 return false;
             });
         });
-        it('simple 3D data', function () {
-            var data = [
+        it('simple 3D data', () => {
+            let data = [
                 [0, 1, 0],
                 [1, 0.4, 2],
                 [1, 1, 3],
                 [0, 0, 5],
             ];
-            var tree = new vz_projector.SPTree(data);
+            let tree = new vz_projector.SPTree(data);
             // Check that each point is within the bound.
-            tree.visit(function (node, low, high) {
+            tree.visit((node, low, high) => {
                 test.assert.equal(low.length, 3);
                 test.assert.equal(high.length, 3);
-                var point = node.point;
+                let point = node.point;
                 test.assert.equal(point.length, 3);
                 // Each point should be in the node's bounding box.
                 test.assert.equal(point[0] >= low[0] && point[0] <= high[0] && point[1] >= low[1] &&
@@ -56,38 +56,38 @@ var vz_projector;
                 return false;
             });
         });
-        it('Only visit root', function () {
-            var data = [
+        it('Only visit root', () => {
+            let data = [
                 [0, 1, 0],
                 [1, 0.4, 2],
                 [1, 1, 3],
                 [0, 0, 5],
             ];
-            var tree = new vz_projector.SPTree(data);
-            var numVisits = 0;
-            tree.visit(function (node, low, high) {
+            let tree = new vz_projector.SPTree(data);
+            let numVisits = 0;
+            tree.visit((node, low, high) => {
                 numVisits++;
                 return true;
             });
             test.assert.equal(numVisits, 1);
         });
-        it('Search in random data', function () {
-            var N = 10000;
-            var data = new Array(N);
-            for (var i = 0; i < N; i++) {
+        it('Search in random data', () => {
+            let N = 10000;
+            let data = new Array(N);
+            for (let i = 0; i < N; i++) {
                 data[i] = [Math.random(), Math.random()];
             }
-            var tree = new vz_projector.SPTree(data);
-            var numVisits = 0;
-            var query = data[Math.floor(Math.random() * N)];
-            var found = false;
-            tree.visit(function (node, low, high) {
+            let tree = new vz_projector.SPTree(data);
+            let numVisits = 0;
+            let query = data[Math.floor(Math.random() * N)];
+            let found = false;
+            tree.visit((node, low, high) => {
                 numVisits++;
                 if (node.point === query) {
                     found = true;
                     return true;
                 }
-                var outOfBounds = query[0] < low[0] || query[0] > high[0] ||
+                let outOfBounds = query[0] < low[0] || query[0] > high[0] ||
                     query[1] < low[1] || query[1] > high[1];
                 return outOfBounds;
             });

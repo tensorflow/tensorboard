@@ -14,14 +14,14 @@ limitations under the License.
 ==============================================================================*/
 var vz_line_chart2;
 (function (vz_line_chart2) {
-    var expect = chai.expect;
-    describe('LogScale', function () {
+    const { expect } = chai;
+    describe('LogScale', () => {
         beforeEach(function () {
             this.scale = new vz_line_chart2.LogScale();
             this.scale.range([0, 1]);
-            this.scale.setValueProviderForDomain(function () { return [1, 1000]; });
+            this.scale.setValueProviderForDomain(() => [1, 1000]);
         });
-        describe('manual domain', function () {
+        describe('manual domain', () => {
             beforeEach(function () {
                 this.scale.domain([1, 1000]);
             });
@@ -51,11 +51,11 @@ var vz_line_chart2;
                 expect(this.scale.scale(1000)).to.equal(1);
             });
         });
-        describe('auto domain', function () {
+        describe('auto domain', () => {
             beforeEach(function () {
                 this.scale.autoDomain();
             });
-            describe('padding-less', function () {
+            describe('padding-less', () => {
                 beforeEach(function () {
                     this.scale.padProportion(0);
                 });
@@ -77,7 +77,7 @@ var vz_line_chart2;
                     expect(this.scale.scale(NaN)).to.be.NaN;
                 });
             });
-            describe('padding-full', function () {
+            describe('padding-full', () => {
                 beforeEach(function () {
                     // Spread is 3 = log_10(1000) - log_10(1) and since we want 33% of the
                     // spread to be the padding, pad = 3 * .33333 ~ 1, the domain should be
@@ -89,19 +89,19 @@ var vz_line_chart2;
                     expect(this.scale.invert(1)).to.be.closeTo(1e4, 10);
                 });
                 it('puts some padding even if there is no spread', function () {
-                    this.scale.setValueProviderForDomain(function () { return [1, 1]; });
+                    this.scale.setValueProviderForDomain(() => [1, 1]);
                     this.scale.autoDomain();
                     expect(this.scale.invert(0)).to.equal(.1);
                     expect(this.scale.invert(1)).to.equal(10);
-                    this.scale.setValueProviderForDomain(function () { return [1000, 1000]; });
+                    this.scale.setValueProviderForDomain(() => [1000, 1000]);
                     this.scale.autoDomain();
                     expect(this.scale.invert(0)).to.equal(100);
                     expect(this.scale.invert(1)).to.equal(10000);
-                    this.scale.setValueProviderForDomain(function () { return [.01, .01]; });
+                    this.scale.setValueProviderForDomain(() => [.01, .01]);
                     this.scale.autoDomain();
                     expect(this.scale.invert(0)).to.equal(.001);
                     expect(this.scale.invert(1)).to.equal(.1);
-                    this.scale.setValueProviderForDomain(function () { return [vz_line_chart2.MIN_POSITIVE_VALUE, vz_line_chart2.MIN_POSITIVE_VALUE]; });
+                    this.scale.setValueProviderForDomain(() => [vz_line_chart2.MIN_POSITIVE_VALUE, vz_line_chart2.MIN_POSITIVE_VALUE]);
                     this.scale.autoDomain();
                     expect(this.scale.invert(0)).to.be.equal(5e-324);
                     expect(this.scale.invert(1)).to.be.equal(5e-323);

@@ -15,8 +15,8 @@ var memory_viewer_xla_hi;
      * HLO instructions are the IR used by the high-level XLA compiler.
      * @final
      */
-    var HloInstruction = /** @class */ (function () {
-        function HloInstruction(inst) {
+    class HloInstruction {
+        constructor(inst) {
             this.name = inst.name ? inst.name : '';
             this.opcode = inst.opcode ? inst.opcode : '';
             this.shape = inst.shape ? new memory_viewer_xla_s.Shape(inst.shape) : null;
@@ -24,7 +24,6 @@ var memory_viewer_xla_hi;
                 this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
             }
         }
-        return HloInstruction;
-    }());
+    }
     memory_viewer_xla_hi.HloInstruction = HloInstruction;
 })(memory_viewer_xla_hi || (memory_viewer_xla_hi = {})); // namespace memory_viewer_xla_hi

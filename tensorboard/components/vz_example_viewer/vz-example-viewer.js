@@ -23,33 +23,33 @@ import Int64List from 'goog:proto.tensorflow.Int64List';
 import SequenceExample from 'goog:proto.tensorflow.SequenceExample';
 var vz_example_viewer;
 (function (vz_example_viewer) {
-    var INT_FEATURE_NAME = 'int';
-    var FLOAT_FEATURE_NAME = 'float';
-    var BASE_64_IMAGE_ENCODING_PREFIX = 'base64,';
-    var LEGEND_WIDTH_PX = 260;
-    var LEGEND_HEIGHT_PX = 20;
-    var CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
-    var clipSaliencyRatio = .95;
+    const INT_FEATURE_NAME = 'int';
+    const FLOAT_FEATURE_NAME = 'float';
+    const BASE_64_IMAGE_ENCODING_PREFIX = 'base64,';
+    const LEGEND_WIDTH_PX = 260;
+    const LEGEND_HEIGHT_PX = 20;
+    const CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
+    const clipSaliencyRatio = .95;
     // Colors for the saliency color scale.
-    var posSaliencyColor = '#007B83';
-    var negSaliencyColor = '#FF847C';
-    var neutralSaliencyColor = '#fff';
-    var COLOR_INTERPOLATOR = d3.interpolateRgb;
+    const posSaliencyColor = '#007B83';
+    const negSaliencyColor = '#FF847C';
+    const neutralSaliencyColor = '#fff';
+    const COLOR_INTERPOLATOR = d3.interpolateRgb;
     // Regex to find bytes features that are encoded images. Follows the guide at
     // go/tf-example.
-    var IMG_FEATURE_REGEX = /^image\/([^\/]+\/)*encoded$/;
+    const IMG_FEATURE_REGEX = /^image\/([^\/]+\/)*encoded$/;
     // Corresponds to a length of a Uint8Array of size 250MB. Above this size we
     // will not decode a bytes list into a string.
-    var MAX_BYTES_LIST_LENGTH = 1024 * 1024 * 250 / 8;
+    const MAX_BYTES_LIST_LENGTH = 1024 * 1024 * 250 / 8;
     // The max ratio to blend saliency map colors with a grayscaled version of an
     // image feature, to create a visually-useful saliency mask on an image.
-    var IMG_SALIENCY_MAX_COLOR_RATIO = 0.5;
+    const IMG_SALIENCY_MAX_COLOR_RATIO = 0.5;
     // String returned when a decoded string feature is too large to display.
-    var MAX_STRING_INDICATION = 'String too large to display';
+    const MAX_STRING_INDICATION = 'String too large to display';
     // D3 zoom extent range for image zooming.
-    var ZOOM_EXTENT = [1, 20];
-    var DEFAULT_WINDOW_WIDTH = 256;
-    var DEFAULT_WINDOW_CENTER = 128;
+    const ZOOM_EXTENT = [1, 20];
+    const DEFAULT_WINDOW_WIDTH = 256;
+    const DEFAULT_WINDOW_CENTER = 128;
     Polymer({
         is: 'vz-example-viewer',
         properties: {
@@ -134,7 +134,7 @@ var vz_example_viewer;
             if (this.ignoreChange) {
                 return;
             }
-            var bytes = this.decodedStringToCharCodes(atob(serializedProto));
+            const bytes = this.decodedStringToCharCodes(atob(serializedProto));
             this.example = deserializer(bytes);
         },
         /** A computed map of all standard features in an example. */
@@ -165,20 +165,26 @@ var vz_example_viewer;
          * display.
          */
         getFeaturesList: function (features, compareFeatures) {
-            var featuresList = [];
-            var featureSet = {};
-            var it = features.keys();
+            if (features == null) {
+                return [];
+            }
+            const featuresList = [];
+            const featureSet = {};
+            let it = features.keys();
             if (it) {
-                var next = it.next();
+                let next = it.next();
                 while (!next.done) {
                     featuresList.push({ name: next.value, feature: features.get(next.value) });
                     featureSet[next.value] = true;
                     next = it.next();
                 }
             }
+            if (compareFeatures == null) {
+                return featuresList;
+            }
             it = compareFeatures.keys();
             if (it) {
-                var next = it.next();
+                let next = it.next();
                 while (!next.done) {
                     if (next.value in featureSet) {
                         next = it.next();
@@ -208,29 +214,27 @@ var vz_example_viewer;
             this.filteredSeqFeaturesList = this.getFilteredFeaturesList(seqFeatureList, searchValue, saliency);
         },
         getFilteredFeaturesList: function (featureList, searchValue, saliency) {
-            var _this = this;
-            var filtered = featureList;
-            var checkSal = saliency && Object.keys(saliency).length > 0;
+            if (featureList == null) {
+                return;
+            }
+            let filtered = featureList;
+            const checkSal = saliency && Object.keys(saliency).length > 0;
             // Create a dict of feature names to the total saliency of all
             // its feature values, to sort salient features at the top.
-            var saliencyTotals = checkSal ? Object.assign.apply(Object, [{}].concat(Object.keys(saliency).map(function (name) {
-                var _a;
-                return (_a = {}, _a[name] = typeof saliency[name] == 'number' ?
-                    saliency[name] :
-                    saliency[name].reduce(function (total, cur) {
-                        return total + cur;
-                    }, 0), _a);
-            }))) :
+            const saliencyTotals = checkSal ?
+                Object.assign({}, ...Object.keys(saliency).map(name => ({ [name]: typeof saliency[name] == 'number' ?
+                        saliency[name] :
+                        saliency[name].reduce((total, cur) => total + cur, 0) }))) :
                 {};
             if (searchValue != '') {
-                var re_1 = new RegExp(searchValue, 'i');
-                filtered = featureList.filter(function (feature) { return re_1.test(feature.name); });
+                const re = new RegExp(searchValue, 'i');
+                filtered = featureList.filter(feature => re.test(feature.name));
             }
-            var sorted = filtered.sort(function (a, b) {
-                if (_this.isImage(a.name) && !_this.isImage(b.name)) {
+            const sorted = filtered.sort((a, b) => {
+                if (this.isImage(a.name) && !this.isImage(b.name)) {
                     return -1;
                 }
-                else if (_this.isImage(b.name) && !_this.isImage(a.name)) {
+                else if (this.isImage(b.name) && !this.isImage(a.name)) {
                     return 1;
                 }
                 else {
@@ -242,7 +246,7 @@ var vz_example_viewer;
                             return 1;
                         }
                         else {
-                            var diff = saliencyTotals[b.name] - saliencyTotals[a.name];
+                            const diff = saliencyTotals[b.name] - saliencyTotals[a.name];
                             if (diff != 0) {
                                 return diff;
                             }
@@ -258,10 +262,9 @@ var vz_example_viewer;
          * there are no sequences.
          */
         getMaxSeqNumber: function () {
-            var max = -1;
-            for (var _i = 0, _a = this.seqFeaturesList; _i < _a.length; _i++) {
-                var feat = _a[_i];
-                var list = feat.feature;
+            let max = -1;
+            for (const feat of this.seqFeaturesList) {
+                const list = feat.feature;
                 if (list && list.getFeatureList().length - 1 > max) {
                     max = list.getFeatureList().length - 1;
                 }
@@ -272,8 +275,7 @@ var vz_example_viewer;
             this.saliency = JSON.parse(this.saliencyJsonString);
         },
         getColors: function () {
-            var _a;
-            _a = this.getMinMaxSaliency(this.saliency), this.minSal = _a[0], this.maxSal = _a[1];
+            [this.minSal, this.maxSal] = this.getMinMaxSaliency(this.saliency);
             return d3.scaleLinear()
                 .domain([this.minSal, 0, this.maxSal])
                 .interpolate(COLOR_INTERPOLATOR)
@@ -287,53 +289,46 @@ var vz_example_viewer;
             return d3.selectAll(Polymer.dom(this.root).querySelectorAll(query));
         },
         haveSaliency: function () {
-            var _this = this;
             // Saliency-coloring waits until the display elements have been updated
             // to avoid coloring divs that are then re-ordered/re-used/re-named by
             // the dom-repeat of feature divs.
-            requestAnimationFrame(function () { return _this._haveSaliencyImpl(); });
+            requestAnimationFrame(() => this._haveSaliencyImpl());
         },
         _haveSaliencyImpl: function () {
-            var _this = this;
             // Reset all backgrounds to the neutral color.
             this.selectAll('.value-pill').style('background', neutralSaliencyColor);
             if (!this.filteredFeaturesList || !this.saliency ||
                 Object.keys(this.saliency).length === 0 || !this.colors) {
                 return;
             }
-            var _loop_1 = function (feat) {
-                var val = this_1.saliency[feat.name];
+            // Color the text of each input element of each feature according to the
+            // provided saliency information.
+            for (const feat of this.filteredFeaturesList) {
+                const val = this.saliency[feat.name];
                 // If there is no saliency information for the feature, do not color it.
                 if (!val) {
-                    return "continue";
+                    continue;
                 }
-                var colorFn = Array.isArray(val) ?
-                    function (d, i) { return _this.getColorForSaliency(val[i]); } :
-                    function () { return _this.getColorForSaliency(val); };
-                this_1.selectAll("." + this_1.sanitizeFeature(feat.name) + ".value-pill")
-                    .style('background', this_1.showSaliency ? colorFn : function () { return neutralSaliencyColor; });
+                const colorFn = Array.isArray(val) ?
+                    (d, i) => this.getColorForSaliency(val[i]) :
+                    () => this.getColorForSaliency(val);
+                this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`)
+                    .style('background', this.showSaliency ? colorFn : () => neutralSaliencyColor);
                 // Color the "more feature values" button with the most extreme saliency
                 // of any of the feature values hidden behind the button.
                 if (Array.isArray(val)) {
-                    var valArray = val;
-                    var moreButton = this_1.selectAll("paper-button." + this_1.sanitizeFeature(feat.name) + ".value-pill");
-                    var mostExtremeSal_1 = 0;
-                    for (var i = 1; i < valArray.length; i++) {
-                        if (Math.abs(valArray[i]) > Math.abs(mostExtremeSal_1)) {
-                            mostExtremeSal_1 = valArray[i];
+                    const valArray = val;
+                    const moreButton = this.selectAll(`paper-button.${this.sanitizeFeature(feat.name)}.value-pill`);
+                    let mostExtremeSal = 0;
+                    for (let i = 1; i < valArray.length; i++) {
+                        if (Math.abs(valArray[i]) > Math.abs(mostExtremeSal)) {
+                            mostExtremeSal = valArray[i];
                         }
                     }
-                    moreButton.style('background', this_1.showSaliency ?
-                        function () { return _this.getColorForSaliency(mostExtremeSal_1); } :
-                        function () { return neutralSaliencyColor; });
+                    moreButton.style('background', this.showSaliency ?
+                        () => this.getColorForSaliency(mostExtremeSal) :
+                        () => neutralSaliencyColor);
                 }
-            };
-            var this_1 = this;
-            // Color the text of each input element of each feature according to the
-            // provided saliency information.
-            for (var _i = 0, _a = this.filteredFeaturesList; _i < _a.length; _i++) {
-                var feat = _a[_i];
-                _loop_1(feat);
             }
         },
         /**
@@ -344,7 +339,6 @@ var vz_example_viewer;
             this.seqSaliency();
         },
         seqSaliency: function () {
-            var _this = this;
             if (!this.seqFeaturesList || !this.saliency ||
                 Object.keys(this.saliency).length === 0 || !this.colors) {
                 return;
@@ -353,28 +347,23 @@ var vz_example_viewer;
             // If the paper-inputs for the features have yet to be rendered, wait to
             // perform this processing.
             if (this.selectAll('.value input').size() < this.seqFeaturesList.length) {
-                requestAnimationFrame(function () { return _this.seqSaliency(); });
+                requestAnimationFrame(() => this.seqSaliency());
                 return;
             }
-            var _loop_2 = function (feat) {
-                var vals = this_2.saliency[feat.name];
-                // If there is no saliency information for the feature, do not color it.
-                if (!vals) {
-                    return "continue";
-                }
-                var val = vals[this_2.seqNumber];
-                var colorFn = Array.isArray(val) ?
-                    function (d, i) { return _this.getColorForSaliency(val[i]); } :
-                    function () { return _this.getColorForSaliency(val); };
-                this_2.selectAll("." + this_2.sanitizeFeature(feat.name) + " input")
-                    .style('color', this_2.showSaliency ? colorFn : function () { return 'black'; });
-            };
-            var this_2 = this;
             // Color the text of each input element of each feature according to the
             // provided saliency information for the current sequence number.
-            for (var _i = 0, _a = this.seqFeaturesList; _i < _a.length; _i++) {
-                var feat = _a[_i];
-                _loop_2(feat);
+            for (const feat of this.seqFeaturesList) {
+                const vals = this.saliency[feat.name];
+                // If there is no saliency information for the feature, do not color it.
+                if (!vals) {
+                    continue;
+                }
+                const val = vals[this.seqNumber];
+                const colorFn = Array.isArray(val) ?
+                    (d, i) => this.getColorForSaliency(val[i]) :
+                    () => this.getColorForSaliency(val);
+                this.selectAll(`.${this.sanitizeFeature(feat.name)} input`)
+                    .style('color', this.showSaliency ? colorFn : () => 'black');
             }
         },
         /**
@@ -382,12 +371,11 @@ var vz_example_viewer;
          * saliency ratio.
          */
         getMinMaxSaliency: function (saliency) {
-            var min = Infinity;
-            var max = -Infinity;
-            var checkSaliencies = function (saliencies) {
+            let min = Infinity;
+            let max = -Infinity;
+            const checkSaliencies = (saliencies) => {
                 if (Array.isArray(saliencies)) {
-                    for (var _i = 0, saliencies_1 = saliencies; _i < saliencies_1.length; _i++) {
-                        var s = saliencies_1[_i];
+                    for (const s of saliencies) {
                         checkSaliencies(s);
                     }
                 }
@@ -400,7 +388,7 @@ var vz_example_viewer;
                     }
                 }
             };
-            for (var feat in saliency) {
+            for (const feat in saliency) {
                 if (saliency.hasOwnProperty(feat)) {
                     checkSaliencies(saliency[feat]);
                 }
@@ -423,8 +411,7 @@ var vz_example_viewer;
          * then return the raw bytes. Otherwise convert them to a readable string.
          */
         getFeatureValues: function (feature, keepBytes, isImage, compareValues) {
-            var _this = this;
-            var feat = compareValues ?
+            const feat = compareValues ?
                 this.compareFeatures.get(feature) :
                 this.features.get(feature);
             if (!feat) {
@@ -432,7 +419,7 @@ var vz_example_viewer;
             }
             if (feat.getBytesList()) {
                 if (!keepBytes) {
-                    var vals = feat.getBytesList().getValueList_asU8().map(function (u8array) { return _this.decodeBytesListString(u8array, isImage); });
+                    const vals = feat.getBytesList().getValueList_asU8().map(u8array => this.decodeBytesListString(u8array, isImage));
                     return vals;
                 }
                 return feat.getBytesList().getValueList().slice();
@@ -477,27 +464,26 @@ var vz_example_viewer;
          * convert them to a readable string.
          */
         getSeqFeatureValues: function (feature, seqNum, keepBytes, isImage, compareValues) {
-            var _this = this;
-            var featlistholder = compareValues ?
+            const featlistholder = compareValues ?
                 this.compareSeqFeatures.get(feature) :
                 this.seqFeatures.get(feature);
             if (!featlistholder) {
                 return [];
             }
-            var featlist = featlistholder.getFeatureList();
+            const featlist = featlistholder.getFeatureList();
             // It is possible that there are features that do not have sequence lengths
             // as long as the longest sequence length in the example.  In this case,
             // show an empty feature value list for that feature.
             if (!featlist || featlist.length <= seqNum) {
                 return [];
             }
-            var feat = featlist[seqNum];
+            const feat = featlist[seqNum];
             if (!feat) {
                 return [];
             }
             if (feat.getBytesList()) {
                 if (!keepBytes) {
-                    return feat.getBytesList().getValueList_asU8().map(function (u8array) { return _this.decodeBytesListString(u8array, isImage); });
+                    return feat.getBytesList().getValueList_asU8().map(u8array => this.decodeBytesListString(u8array, isImage));
                 }
                 return feat.getBytesList().getValueList();
             }
@@ -550,13 +536,13 @@ var vz_example_viewer;
                 new window.TextDecoder().decode(bytes);
         },
         isBytesFeature: function (feature) {
-            var feat = this.features.get(feature);
+            const feat = this.features.get(feature);
             if (feat) {
                 if (feat.hasBytesList()) {
                     return true;
                 }
             }
-            var seqfeat = this.seqFeatures.get(feature);
+            const seqfeat = this.seqFeatures.get(feature);
             if (seqfeat) {
                 if (seqfeat.getFeatureList()[0].hasBytesList()) {
                     return true;
@@ -573,13 +559,13 @@ var vz_example_viewer;
                 return null;
             }
             if (this.json.features && this.json.features.feature) {
-                var jsonFeature = this.json.features.feature[feat];
+                const jsonFeature = this.json.features.feature[feat];
                 if (jsonFeature) {
                     return jsonFeature;
                 }
             }
             if (this.json.context && this.json.context.feature) {
-                var jsonFeature = this.json.context.feature[feat];
+                const jsonFeature = this.json.context.feature[feat];
                 if (jsonFeature) {
                     return jsonFeature;
                 }
@@ -596,7 +582,7 @@ var vz_example_viewer;
          */
         getJsonValueList: function (feat, seqNum) {
             // Get the feature object for the feature name provided.
-            var feature = this.getJsonFeature(feat);
+            let feature = this.getJsonFeature(feat);
             if (!feature) {
                 return null;
             }
@@ -605,7 +591,7 @@ var vz_example_viewer;
             if (!isNaN(seqNum)) {
                 feature = feature.feature[seqNum];
             }
-            var valueList = feature.bytesList || feature.int64List || feature.floatList;
+            const valueList = feature.bytesList || feature.int64List || feature.floatList;
             return valueList ? valueList.value : null;
         },
         /**
@@ -613,7 +599,7 @@ var vz_example_viewer;
          * that the event corresponds to.
          */
         getDataFromEvent: function (event) {
-            var elem = event.target;
+            let elem = event.target;
             // Get the control that contains the event target. The control will have its
             // data-feature attribute set.
             while (elem.dataFeature == null) {
@@ -636,11 +622,11 @@ var vz_example_viewer;
                 return this.features.get(data.feature);
             }
             else {
-                var featureLists = this.seqFeatures.get(data.feature);
+                const featureLists = this.seqFeatures.get(data.feature);
                 if (!featureLists) {
                     return undefined;
                 }
-                var featureList = featureLists.getFeatureList();
+                const featureList = featureLists.getFeatureList();
                 if (!featureList) {
                     return undefined;
                 }
@@ -660,9 +646,9 @@ var vz_example_viewer;
         },
         /** Sets the value list on the provided feature. */
         setFeatureValues: function (feat, values) {
-            var bytesList = feat.getBytesList();
-            var int64List = feat.getInt64List();
-            var floatList = feat.getFloatList();
+            const bytesList = feat.getBytesList();
+            const int64List = feat.getInt64List();
+            const floatList = feat.getFloatList();
             if (bytesList) {
                 bytesList.setValueList(values);
             }
@@ -678,15 +664,15 @@ var vz_example_viewer;
          * appropriately.
          */
         onValueChanged: function (event) {
-            var inputControl = event.target;
-            var data = this.getDataFromEvent(event);
-            var feat = this.getFeatureFromData(data);
-            var values = this.getValueListFromData(data);
+            const inputControl = event.target;
+            const data = this.getDataFromEvent(event);
+            const feat = this.getFeatureFromData(data);
+            const values = this.getValueListFromData(data);
             if (feat) {
                 if (this.isBytesFeature(data.feature)) {
                     // For string features, convert the string into the char code array
                     // for storage in the proto.
-                    var cc = this.stringToUint8Array(inputControl.value);
+                    const cc = this.stringToUint8Array(inputControl.value);
                     // tslint:disable-next-line:no-any cast due to tf.Example typing.
                     values[data.valueIndex] = cc;
                     // If the example was provided as json, update the byteslist in the
@@ -695,14 +681,14 @@ var vz_example_viewer;
                     // as the json value list for that case (shallow copy). The byteslist
                     // case is different as the json base64 encoded string is converted to
                     // a list of bytes, one per character.
-                    var jsonList = this.getJsonValueList(data.feature, data.seqNum);
+                    const jsonList = this.getJsonValueList(data.feature, data.seqNum);
                     if (jsonList) {
                         jsonList[data.valueIndex] = btoa(inputControl.value);
                     }
                 }
                 else {
                     values[data.valueIndex] = +inputControl.value;
-                    var jsonList = this.getJsonValueList(data.feature, data.seqNum);
+                    const jsonList = this.getJsonValueList(data.feature, data.seqNum);
                     if (jsonList) {
                         jsonList[data.valueIndex] = +inputControl.value;
                     }
@@ -712,8 +698,8 @@ var vz_example_viewer;
             }
         },
         onInputFocus: function (event) {
-            var inputControl = event.target;
-            var data = this.getDataFromEvent(event);
+            const inputControl = event.target;
+            const data = this.getDataFromEvent(event);
             this.focusedFeatureName = data.feature;
             this.focusedFeatureValueIndex = data.valueIndex;
             this.focusedSeqNumber = data.seqNum;
@@ -730,7 +716,7 @@ var vz_example_viewer;
          * When a feature is deleted, updates the example proto appropriately.
          */
         deleteFeature: function (event) {
-            var data = this.getDataFromEvent(event);
+            const data = this.getDataFromEvent(event);
             if (this.features.del) {
                 this.features.del(data.feature);
             }
@@ -762,9 +748,9 @@ var vz_example_viewer;
          * When a feature value is deleted, updates the example proto appropriately.
          */
         deleteValue: function (event) {
-            var data = this.getDataFromEvent(event);
-            var feat = this.getFeatureFromData(data);
-            var values = this.getValueListFromData(data);
+            const data = this.getDataFromEvent(event);
+            const feat = this.getFeatureFromData(data);
+            const values = this.getValueListFromData(data);
             if (feat) {
                 if (this.isBytesFeature(data.feature)) {
                     // If the example was provided as json, update the byteslist in the
@@ -773,7 +759,7 @@ var vz_example_viewer;
                     // case (shallow copy). The byteslist case is different as the json
                     // base64 encoded string is converted to a list of bytes, one per
                     // character.
-                    var jsonList = this.getJsonValueList(data.feature, data.seqNum);
+                    const jsonList = this.getJsonValueList(data.feature, data.seqNum);
                     if (jsonList) {
                         jsonList.splice(data.valueIndex, 1);
                     }
@@ -794,26 +780,26 @@ var vz_example_viewer;
             if (!this.json) {
                 return;
             }
-            var feat = new Feature();
+            const feat = new Feature();
             // tslint:disable-next-line:no-any Using arbitrary json.
-            var jsonFeat;
+            let jsonFeat;
             if (this.newFeatureType === INT_FEATURE_NAME) {
-                var valueList = [];
-                var ints = new Int64List();
+                const valueList = [];
+                const ints = new Int64List();
                 ints.setValueList(valueList);
                 feat.setInt64List(ints);
                 jsonFeat = { int64List: { value: valueList } };
             }
             else if (this.newFeatureType === FLOAT_FEATURE_NAME) {
-                var valueList = [];
-                var floats = new FloatList();
+                const valueList = [];
+                const floats = new FloatList();
                 floats.setValueList(valueList);
                 feat.setFloatList(floats);
                 jsonFeat = { floatList: { value: valueList } };
             }
             else {
-                var valueList = [];
-                var bytes = new BytesList();
+                const valueList = [];
+                const bytes = new BytesList();
                 bytes.setValueList(valueList);
                 feat.setBytesList(bytes);
                 jsonFeat = { bytesList: { value: valueList } };
@@ -841,9 +827,9 @@ var vz_example_viewer;
          * When a feature value is added, updates the example proto appropriately.
          */
         addValue: function (event) {
-            var data = this.getDataFromEvent(event);
-            var feat = this.getFeatureFromData(data);
-            var values = this.getValueListFromData(data);
+            const data = this.getDataFromEvent(event);
+            const feat = this.getFeatureFromData(data);
+            const values = this.getValueListFromData(data);
             if (feat) {
                 if (this.isBytesFeature(data.feature)) {
                     values.push('');
@@ -861,18 +847,17 @@ var vz_example_viewer;
          * example.
          */
         refreshExampleViewer: function () {
-            var _this = this;
             // In order for iron-lists to be properly updated based on proto changes,
             // need to bind the example to another (blank) example, and then back the
             // the proper example after that change has been processed.
             // TODO(jwexler): Find better way to update the visuals on proto changes.
-            var temp = this.example;
+            const temp = this.example;
             this.ignoreChange = true;
             this.example = new Example();
             this.ignoreChange = false;
-            setTimeout(function () {
-                _this.example = temp;
-                _this.haveSaliency();
+            setTimeout(() => {
+                this.example = temp;
+                this.haveSaliency();
             }, 0);
         },
         exampleChanged: function () {
@@ -903,11 +888,11 @@ var vz_example_viewer;
                 (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
         },
         getCompareInputClass: function (feat, displayMode, index) {
-            var str = 'value-compare' +
+            let str = 'value-compare' +
                 (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
             if (index != null) {
-                var values = this.getFeatureValues(feat, true);
-                var compValues = this.getCompareFeatureValues(feat, true);
+                const values = this.getFeatureValues(feat, true);
+                const compValues = this.getCompareFeatureValues(feat, true);
                 if (index >= values.length || index >= compValues.length ||
                     values[index] != compValues[index]) {
                     str += ' value-different';
@@ -919,11 +904,11 @@ var vz_example_viewer;
             return str;
         },
         getSeqCompareInputClass: function (feat, displayMode, seqNumber, index) {
-            var str = 'value-compare' +
+            let str = 'value-compare' +
                 (displayMode == 'grid' ? ' value-pill-grid' : ' value-pill-stacked');
             if (index != null) {
-                var values = this.getSeqFeatureValues(feat, seqNumber, true);
-                var compValues = this.getCompareSeqFeatureValues(feat, seqNumber, true);
+                const values = this.getSeqFeatureValues(feat, seqNumber, true);
+                const compValues = this.getCompareSeqFeatureValues(feat, seqNumber, true);
                 if (index >= values.length || index >= compValues.length ||
                     values[index] != compValues[index]) {
                     str += ' value-different';
@@ -939,7 +924,7 @@ var vz_example_viewer;
          * be used in css classes/ids.
          */
         sanitizeFeature: function (feat) {
-            var sanitized = feat.trim();
+            let sanitized = feat.trim();
             if (!sanitized.match(/^[A-Za-z].*$/)) {
                 sanitized = '_' + sanitized;
             }
@@ -952,7 +937,7 @@ var vz_example_viewer;
             return saliency && Object.keys(saliency).length > 0;
         },
         // tslint:disable-next-line:no-unused-variable called as computed property
-        getSaliencyControlsHolderClass: function (saliency) {
+        getSaliencyControlsHolderClass(saliency) {
             return this.shouldShowSaliencyLegend(saliency) ?
                 'saliency-controls-holder' :
                 'hide-saliency-controls';
@@ -960,8 +945,8 @@ var vz_example_viewer;
         /** Creates an svg legend for the saliency color mapping. */
         createLegend: function () {
             d3.select(this.$.saliencyLegend).selectAll('*').remove();
-            var legendSvg = d3.select(this.$.saliencyLegend).append('g');
-            var gradient = legendSvg.append('defs')
+            const legendSvg = d3.select(this.$.saliencyLegend).append('g');
+            const gradient = legendSvg.append('defs')
                 .append('linearGradient')
                 .attr('id', 'vzexampleviewergradient')
                 .attr("x1", "0%")
@@ -969,10 +954,10 @@ var vz_example_viewer;
                 .attr("x2", "100%")
                 .attr("y2", "0%")
                 .attr('spreadMethod', 'pad');
-            var linspace = function (start, end, n) {
-                var out = [];
-                var delta = (end - start) / (n - 1);
-                var i = 0;
+            const linspace = (start, end, n) => {
+                const out = [];
+                const delta = (end - start) / (n - 1);
+                let i = 0;
                 while (i < (n - 1)) {
                     out.push(start + (i * delta));
                     i++;
@@ -982,7 +967,7 @@ var vz_example_viewer;
             };
             // Create the correct color scale for the legend depending on minimum
             // and maximum saliency for this example.
-            var scale = [];
+            const scale = [];
             if (this.minSal < 0) {
                 scale.push(negSaliencyColor);
             }
@@ -992,11 +977,11 @@ var vz_example_viewer;
             }
             // Creates an array of [pct, colour] pairs as stop
             // values for legend
-            var pct = linspace(0, 100, scale.length).map(function (d) {
+            const pct = linspace(0, 100, scale.length).map((d) => {
                 return Math.round(d) + '%';
             });
-            var colourPct = d3.zip(pct, scale);
-            colourPct.forEach(function (d) {
+            const colourPct = d3.zip(pct, scale);
+            colourPct.forEach((d) => {
                 gradient.append('stop')
                     .attr('offset', d[0])
                     .attr('stop-color', d[1])
@@ -1008,13 +993,13 @@ var vz_example_viewer;
                 .attr('width', LEGEND_WIDTH_PX)
                 .attr('height', LEGEND_HEIGHT_PX)
                 .style('fill', 'url(#vzexampleviewergradient)');
-            var legendScale = d3.scaleLinear().domain([this.minSal, this.maxSal]).range([
+            const legendScale = d3.scaleLinear().domain([this.minSal, this.maxSal]).range([
                 0, LEGEND_WIDTH_PX
             ]);
-            var legendAxis = d3.axisBottom(legendScale).ticks(5);
+            const legendAxis = d3.axisBottom(legendScale).ticks(5);
             legendSvg.append('g')
                 .attr('class', 'legend axis')
-                .attr('transform', "translate(0," + LEGEND_HEIGHT_PX + ")")
+                .attr('transform', `translate(0,${LEGEND_HEIGHT_PX})`)
                 .call(legendAxis);
         },
         isImage: function (feat) {
@@ -1057,38 +1042,37 @@ var vz_example_viewer;
          * is rendered before setting up the onload function.
          */
         setupOnloadCallback: function (feat, compare) {
-            var _this = this;
-            requestAnimationFrame(function () {
-                var img = _this.$$('#' + _this.getImageId(feat, compare));
-                img.onload = _this.getOnLoadForImage(feat, img, compare);
+            requestAnimationFrame(() => {
+                const img = this.$$('#' + this.getImageId(feat, compare));
+                img.onload = this.getOnLoadForImage(feat, img, compare);
             });
         },
         /** Helper method used by getImageSrc and getSeqImageSrc. */
         getImageSrcForData: function (feat, imageData, compare) {
             // Get the format of the encoded image, according to the feature name
             // specified by go/tf-example. Defaults to jpeg as specified in the doc.
-            var regExResult = IMG_FEATURE_REGEX.exec(feat);
+            const regExResult = IMG_FEATURE_REGEX.exec(feat);
             if (regExResult == null) {
                 return null;
             }
-            var featureMiddle = regExResult[1] || '';
-            var formatVals = compare ?
+            const featureMiddle = regExResult[1] || '';
+            const formatVals = compare ?
                 this.getCompareFeatureValues('image' + featureMiddle + '/format', false) :
                 this.getFeatureValues('image' + featureMiddle + '/format', false);
-            var format = 'jpeg';
+            let format = 'jpeg';
             if (formatVals.length > 0) {
                 format = formatVals[0].toLowerCase();
             }
-            var src = 'data:image/' + format + ';base64,';
+            let src = 'data:image/' + format + ';base64,';
             // Encode the image data in base64.
             src = src + btoa(decodeURIComponent(encodeURIComponent(imageData)));
             return src;
         },
         /** Returns the length of an iterator. */
         getIterLength: function (it) {
-            var len = 0;
+            let len = 0;
             if (it) {
-                var next = it.next();
+                let next = it.next();
                 while (!next.done) {
                     len++;
                     next = it.next();
@@ -1100,7 +1084,7 @@ var vz_example_viewer;
          * Updates the compare mode based off of the compared example.
          */
         updateCompareMode: function () {
-            var compareMode = false;
+            let compareMode = false;
             if ((this.compareFeatures &&
                 this.getIterLength(this.compareFeatures.keys()) > 0) ||
                 (this.compareSeqFeatures &&
@@ -1137,12 +1121,12 @@ var vz_example_viewer;
                 json = JSON.parse(this.json);
             }
             if (json.features) {
-                var ex = new Example();
+                const ex = new Example();
                 ex.setFeatures(this.parseFeatures(json.features));
                 return ex;
             }
             else if (json.context || json.featureLists) {
-                var seqex = new SequenceExample();
+                const seqex = new SequenceExample();
                 if (json.context) {
                     seqex.setContext(this.parseFeatures(json.context));
                 }
@@ -1157,10 +1141,10 @@ var vz_example_viewer;
         },
         // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeatures: function (features) {
-            var feats = new Features();
-            for (var fname in features.feature) {
+            const feats = new Features();
+            for (const fname in features.feature) {
                 if (features.feature.hasOwnProperty(fname)) {
-                    var featentry = features.feature[fname];
+                    const featentry = features.feature[fname];
                     feats.getFeatureMap().set(fname, this.parseFeature(featentry, this.isImage(fname)));
                 }
             }
@@ -1168,15 +1152,15 @@ var vz_example_viewer;
         },
         // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeatureLists: function (features) {
-            var feats = new FeatureLists();
-            for (var fname in features.featureList) {
+            const feats = new FeatureLists();
+            for (const fname in features.featureList) {
                 if (features.featureList.hasOwnProperty(fname)) {
-                    var featlistentry = features.featureList[fname];
-                    var featList = new FeatureList();
-                    var featureList = [];
-                    for (var featentry in featlistentry.feature) {
+                    const featlistentry = features.featureList[fname];
+                    const featList = new FeatureList();
+                    const featureList = [];
+                    for (const featentry in featlistentry.feature) {
                         if (featlistentry.feature.hasOwnProperty(featentry)) {
-                            var feat = featlistentry.feature[featentry];
+                            const feat = featlistentry.feature[featentry];
                             featureList.push(this.parseFeature(feat, this.isImage(fname)));
                         }
                     }
@@ -1188,23 +1172,23 @@ var vz_example_viewer;
         },
         // tslint:disable-next-line:no-any Parsing arbitrary json.
         parseFeature: function (featentry, isImage) {
-            var feat = new Feature();
+            const feat = new Feature();
             if (featentry.floatList) {
-                var floats = new FloatList();
+                const floats = new FloatList();
                 floats.setValueList(featentry.floatList.value);
                 feat.setFloatList(floats);
             }
             else if (featentry.bytesList) {
                 // Json byteslist entries are base64.  The JSPB generated Feature class
                 // will marshall this to U8 automatically.
-                var bytes = new BytesList();
+                const bytes = new BytesList();
                 if (featentry.bytesList.value) {
                     bytes.setValueList(featentry.bytesList.value);
                 }
                 feat.setBytesList(bytes);
             }
             else if (featentry.int64List) {
-                var ints = new Int64List();
+                const ints = new Int64List();
                 ints.setValueList(featentry.int64List.value);
                 feat.setInt64List(ints);
             }
@@ -1241,20 +1225,20 @@ var vz_example_viewer;
             return this.sanitizeFeature(feat) + '_dialog';
         },
         featureMoreClicked: function (event) {
-            var button = event.srcElement.parentElement;
-            var feature = button.dataFeature;
-            var dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
+            const button = event.srcElement;
+            const feature = button.dataFeature;
+            const dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
             dialog.positionTarget = button;
             dialog.open();
         },
         expandFeature: function (event) {
-            var feature = event.srcElement.dataFeature;
+            const feature = event.srcElement.dataFeature;
             this.set('expandedFeatures.' + this.sanitizeFeature(feature), true);
             this.refreshExampleViewer();
         },
         decodedStringToCharCodes: function (str) {
-            var cc = new Uint8Array(str.length);
-            for (var i = 0; i < str.length; ++i) {
+            const cc = new Uint8Array(str.length);
+            for (let i = 0; i < str.length; ++i) {
                 cc[i] = str.charCodeAt(i);
             }
             return cc;
@@ -1265,10 +1249,10 @@ var vz_example_viewer;
         // Handle upload image paper button click by delegating to appropriate
         // paper-input file chooser.
         uploadImageClicked: function (event) {
-            var data = this.getDataFromEvent(event);
-            var inputs = Polymer.dom(this.root).querySelectorAll('paper-input');
-            var inputElem = null;
-            for (var i = 0; i < inputs.length; i++) {
+            const data = this.getDataFromEvent(event);
+            const inputs = Polymer.dom(this.root).querySelectorAll('paper-input');
+            let inputElem = null;
+            for (let i = 0; i < inputs.length; i++) {
                 if (inputs[i].dataFeature == data.feature) {
                     inputElem = inputs[i];
                     break;
@@ -1282,22 +1266,22 @@ var vz_example_viewer;
         handleFileSelect: function (event, self) {
             event.stopPropagation();
             event.preventDefault();
-            var reader = new FileReader();
-            var eventAny = event;
-            var files = eventAny.dataTransfer ? eventAny.dataTransfer.files : eventAny.target.files;
+            const reader = new FileReader();
+            const eventAny = event;
+            const files = eventAny.dataTransfer ? eventAny.dataTransfer.files : eventAny.target.files;
             if (files.length === 0) {
                 return;
             }
-            reader.addEventListener('load', function () {
+            reader.addEventListener('load', () => {
                 // Get the image data from the loaded image and convert to a char
                 // code array for use in the features value list.
-                var index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
+                const index = +reader.result.indexOf(BASE_64_IMAGE_ENCODING_PREFIX) +
                     BASE_64_IMAGE_ENCODING_PREFIX.length;
-                var encodedImageData = reader.result.substring(index);
-                var cc = self.decodedStringToCharCodes(atob(encodedImageData));
-                var data = self.getDataFromEvent(event);
-                var feat = self.getFeatureFromData(data);
-                var values = self.getValueListFromData(data);
+                const encodedImageData = reader.result.substring(index);
+                const cc = self.decodedStringToCharCodes(atob(encodedImageData));
+                const data = self.getDataFromEvent(event);
+                const feat = self.getFeatureFromData(data);
+                const values = self.getValueListFromData(data);
                 if (feat) {
                     // Replace the old image data in the feature value list with the new
                     // image data.
@@ -1306,36 +1290,36 @@ var vz_example_viewer;
                     feat.getBytesList().setValueList(values);
                     // If the example was provided as json, update the byteslist in the
                     // json with the base64 encoded string.
-                    var jsonList = self.getJsonValueList(data.feature, data.seqNum);
+                    const jsonList = self.getJsonValueList(data.feature, data.seqNum);
                     if (jsonList) {
                         jsonList[0] = encodedImageData;
                     }
                     // Load the image data into an image element to begin the process
                     // of rendering that image to a canvas for display.
-                    var img_1 = new Image();
-                    self.addImageElement(data.feature, img_1);
-                    img_1.addEventListener('load', function () {
+                    const img = new Image();
+                    self.addImageElement(data.feature, img);
+                    img.addEventListener('load', () => {
                         // Runs the apppriate onload processing for the new image.
-                        self.getOnLoadForImage(data.feature, img_1);
+                        self.getOnLoadForImage(data.feature, img);
                         // If the example contains appropriately-named features describing
                         // the image width and height then update those feature values for
                         // the new image width and height.
-                        var featureMiddle = IMG_FEATURE_REGEX.exec(data.feature)[1] || '';
-                        var widthFeature = 'image' + featureMiddle + '/width';
-                        var heightFeature = 'image' + featureMiddle + '/height';
-                        var widths = self.getFeatureValues(widthFeature, false);
-                        var heights = self.getFeatureValues(heightFeature, false);
+                        const featureMiddle = IMG_FEATURE_REGEX.exec(data.feature)[1] || '';
+                        const widthFeature = 'image' + featureMiddle + '/width';
+                        const heightFeature = 'image' + featureMiddle + '/height';
+                        const widths = self.getFeatureValues(widthFeature, false);
+                        const heights = self.getFeatureValues(heightFeature, false);
                         if (widths.length > 0) {
-                            widths[0] = +img_1.width;
+                            widths[0] = +img.width;
                             self.features.get(widthFeature).getInt64List().setValueList(widths);
                         }
                         if (heights.length > 0) {
-                            heights[0] = +img_1.height;
+                            heights[0] = +img.height;
                             self.features.get(heightFeature).getInt64List().setValueList(heights);
                         }
                         self.exampleChanged();
                     });
-                    img_1.src = reader.result;
+                    img.src = reader.result;
                 }
             }, false);
             // Read the image file as a data URL.
@@ -1343,7 +1327,7 @@ var vz_example_viewer;
         },
         // Add drag-and-drop image replacement behavior to the canvas.
         addDragDropBehaviorToCanvas: function (canvas) {
-            var self = this;
+            const self = this;
             // Handle drag event for drag-and-drop image replacement.
             function handleDragOver(event) {
                 event.stopPropagation();
@@ -1364,23 +1348,22 @@ var vz_example_viewer;
          * canvas if it exists.
          */
         getOnLoadForImage: function (feat, image, compare) {
-            var _this = this;
-            var f = function (feat, image, compare) {
-                var canvas = _this.$$('#' + _this.getCanvasId(feat, compare));
+            const f = (feat, image, compare) => {
+                const canvas = this.$$('#' + this.getCanvasId(feat, compare));
                 if (!compare) {
-                    _this.addDragDropBehaviorToCanvas(canvas);
+                    this.addDragDropBehaviorToCanvas(canvas);
                 }
                 if (image && canvas) {
                     // Draw the image to the canvas and size the canvas.
                     // Set d3.zoom on the canvas to enable zooming and scaling interactions.
-                    var context_1 = canvas.getContext('2d');
-                    var imageScaleFactor = _this.imageScalePercentage / 100;
+                    const context = canvas.getContext('2d');
+                    let imageScaleFactor = this.imageScalePercentage / 100;
                     // If not using image controls then scale the image to match the
                     // available width in the container, considering padding.
-                    if (!_this.allowImageControls) {
-                        var holder = _this.$$('#' +
-                            _this.getImageCardId(feat, compare)).parentElement;
-                        var cardWidthForScaling = holder.getBoundingClientRect().width / 2;
+                    if (!this.allowImageControls) {
+                        const holder = this.$$('#' +
+                            this.getImageCardId(feat, compare)).parentElement;
+                        let cardWidthForScaling = holder.getBoundingClientRect().width / 2;
                         if (cardWidthForScaling > 16) {
                             cardWidthForScaling -= 16;
                         }
@@ -1390,42 +1373,42 @@ var vz_example_viewer;
                     }
                     canvas.width = image.width * imageScaleFactor;
                     canvas.height = image.height * imageScaleFactor;
-                    var transformFn_1 = function (transform) {
-                        context_1.save();
-                        context_1.clearRect(0, 0, canvas.width, canvas.height);
-                        context_1.translate(transform.x, transform.y);
-                        context_1.scale(transform.k, transform.k);
-                        _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat, compare);
-                        context_1.restore();
+                    const transformFn = (transform) => {
+                        context.save();
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.translate(transform.x, transform.y);
+                        context.scale(transform.k, transform.k);
+                        this.renderImageOnCanvas(context, canvas.width, canvas.height, feat, compare);
+                        context.restore();
                     };
-                    var zoom = function () {
-                        var transform = d3.event.transform;
-                        _this.addImageTransform(feat, transform, compare);
-                        transformFn_1(d3.event.transform);
+                    const zoom = () => {
+                        const transform = d3.event.transform;
+                        this.addImageTransform(feat, transform, compare);
+                        transformFn(d3.event.transform);
                     };
-                    var d3zoom_1 = d3.zoom().scaleExtent(ZOOM_EXTENT).on('zoom', zoom);
-                    d3.select(canvas).call(d3zoom_1).on('dblclick.zoom', function () { return d3.select(canvas).call(d3zoom_1.transform, d3.zoomIdentity); });
-                    context_1.save();
-                    context_1.scale(imageScaleFactor, imageScaleFactor);
-                    context_1.drawImage(image, 0, 0);
-                    context_1.restore();
-                    _this.setImageDatum(context_1, canvas.width, canvas.height, feat, compare);
-                    _this.renderImageOnCanvas(context_1, canvas.width, canvas.height, feat, compare);
+                    const d3zoom = d3.zoom().scaleExtent(ZOOM_EXTENT).on('zoom', zoom);
+                    d3.select(canvas).call(d3zoom).on('dblclick.zoom', () => d3.select(canvas).call(d3zoom.transform, d3.zoomIdentity));
+                    context.save();
+                    context.scale(imageScaleFactor, imageScaleFactor);
+                    context.drawImage(image, 0, 0);
+                    context.restore();
+                    this.setImageDatum(context, canvas.width, canvas.height, feat, compare);
+                    this.renderImageOnCanvas(context, canvas.width, canvas.height, feat, compare);
                     if (compare) {
-                        if (_this.compareImageInfo[feat].transform) {
-                            transformFn_1(_this.compareImageInfo[feat].transform);
+                        if (this.compareImageInfo[feat].transform) {
+                            transformFn(this.compareImageInfo[feat].transform);
                         }
                     }
                     else {
-                        if (_this.imageInfo[feat].transform) {
-                            transformFn_1(_this.imageInfo[feat].transform);
+                        if (this.imageInfo[feat].transform) {
+                            transformFn(this.imageInfo[feat].transform);
                         }
                     }
                 }
                 else {
                     // If the image and canvas are not yet rendered, wait to perform this
                     // processing.
-                    requestAnimationFrame(function () { return f(feat, image, compare); });
+                    requestAnimationFrame(() => f(feat, image, compare));
                 }
             };
             this.addImageElement(feat, image, compare);
@@ -1504,18 +1487,18 @@ var vz_example_viewer;
             if (!width || !height) {
                 return;
             }
-            var contextData = context.getImageData(0, 0, width, height);
-            var imageData = Uint8ClampedArray.from(contextData.data);
+            const contextData = context.getImageData(0, 0, width, height);
+            const imageData = Uint8ClampedArray.from(contextData.data);
             this.addImageData(feat, imageData, compare);
             if (!this.saliency || !this.showSaliency || !this.saliency[feat] ||
                 compare) {
                 return;
             }
             // Grayscale the image for later use with a saliency mask.
-            var salData = Uint8ClampedArray.from(imageData);
-            for (var i = 0; i < imageData.length; i += 4) {
+            const salData = Uint8ClampedArray.from(imageData);
+            for (let i = 0; i < imageData.length; i += 4) {
                 // Average pixel color value for grayscaling the pixel.
-                var avg = (imageData[i] + imageData[i + 1] + imageData[i + 2]) / 3;
+                const avg = (imageData[i] + imageData[i + 1] + imageData[i + 2]) / 3;
                 salData[i] = avg;
                 salData[i + 1] = avg;
                 salData[i + 2] = avg;
@@ -1525,14 +1508,14 @@ var vz_example_viewer;
         /** Updates image data pixels based on windowing parameters. */
         contrastImage: function (d, windowWidth, windowCenter) {
             // See https://www.dabsoft.ch/dicom/3/C.11.2.1.2/ for algorithm description.
-            var contrastScale = d3.scaleLinear()
+            const contrastScale = d3.scaleLinear()
                 .domain([
                 windowCenter - .5 - (windowWidth / 2),
                 windowCenter - .5 + ((windowWidth - 1) / 2)
             ])
                 .clamp(true)
                 .range([0, 255]);
-            for (var i = 0; i < d.length; i++) {
+            for (let i = 0; i < d.length; i++) {
                 // Skip alpha channel.
                 if (i % 4 !== 3) {
                     d[i] = contrastScale(d[i]);
@@ -1544,7 +1527,7 @@ var vz_example_viewer;
          * saliency cutoff, under which saliency values aren't displayed.
          */
         showSaliencyForValue: function (salVal) {
-            var salExtremeToCompare = salVal >= 0 ? this.maxSal : this.minSal;
+            const salExtremeToCompare = salVal >= 0 ? this.maxSal : this.minSal;
             return Math.abs(salVal) >=
                 (Math.abs(salExtremeToCompare) * this.saliencyCutoff / 100.);
         },
@@ -1571,12 +1554,12 @@ var vz_example_viewer;
             // saliency value for each pixel given that the image may have been scaled,
             // meaning that the canvas image data array would not have a one-to-one
             // correspondence with the per-original-image-pixel saliency data.
-            var salScaleAdjustment = 1 / Math.pow(this.imageScalePercentage / 100, 2);
-            for (var i = 0; i < d.length; i += 4) {
+            const salScaleAdjustment = 1 / Math.pow(this.imageScalePercentage / 100, 2);
+            for (let i = 0; i < d.length; i += 4) {
                 // Get the saliency value for the pixel. If the saliency map contains only
                 // a single value for the image, use it for all pixels.
-                var salVal = 0;
-                var salIndex = Math.floor(i / 4 * salScaleAdjustment);
+                let salVal = 0;
+                const salIndex = Math.floor(i / 4 * salScaleAdjustment);
                 if (Array.isArray(sal)) {
                     if (sal.length > salIndex) {
                         salVal = sal[salIndex];
@@ -1590,12 +1573,12 @@ var vz_example_viewer;
                 }
                 // Blend the grayscale pixel with the saliency mask color for the pixel
                 // to get the final r, g, b values for the pixel.
-                var ratioToSaliencyExtreme = this.showSaliencyForValue(salVal) ?
+                const ratioToSaliencyExtreme = this.showSaliencyForValue(salVal) ?
                     (salVal >= 0 ? this.maxSal === 0 ? 0 : salVal / this.maxSal :
                         salVal / this.minSal) :
                     0;
-                var blendRatio = IMG_SALIENCY_MAX_COLOR_RATIO * ratioToSaliencyExtreme;
-                var _a = d3.rgb(salVal > 0 ? posSaliencyColor : negSaliencyColor), r = _a.r, g = _a.g, b = _a.b;
+                const blendRatio = IMG_SALIENCY_MAX_COLOR_RATIO * ratioToSaliencyExtreme;
+                const { r, g, b } = d3.rgb(salVal > 0 ? posSaliencyColor : negSaliencyColor);
                 d[i] = d[i] * (1 - blendRatio) + r * blendRatio;
                 d[i + 1] = d[i + 1] * (1 - blendRatio) + g * blendRatio;
                 d[i + 2] = d[i + 2] * (1 - blendRatio) + b * blendRatio;
@@ -1606,7 +1589,7 @@ var vz_example_viewer;
                 return;
             }
             // Set the correct image data array.
-            var id = context.getImageData(0, 0, width, height);
+            const id = context.getImageData(0, 0, width, height);
             if (compare) {
                 id.data.set(this.compareImageInfo[feat].imageData);
             }
@@ -1627,10 +1610,10 @@ var vz_example_viewer;
             // on-screen canvas as an image. This allows for the zoom/translate logic
             // to function correctly. If the image data is directly applied to the
             // on-screen canvas then the zoom/translate does not apply correctly.
-            var inMemoryCanvas = document.createElement('canvas');
+            const inMemoryCanvas = document.createElement('canvas');
             inMemoryCanvas.width = width;
             inMemoryCanvas.height = height;
-            var inMemoryContext = inMemoryCanvas.getContext('2d');
+            const inMemoryContext = inMemoryCanvas.getContext('2d');
             inMemoryContext.putImageData(id, 0, 0);
             context.clearRect(0, 0, width, height);
             context.drawImage(inMemoryCanvas, 0, 0);
@@ -1643,7 +1626,7 @@ var vz_example_viewer;
          * image on the canvas.
          */
         updateImages: function () {
-            for (var feat in this.imageInfo) {
+            for (const feat in this.imageInfo) {
                 if (this.imageInfo.hasOwnProperty(feat)) {
                     this.imageInfo[feat].onload(feat, this.imageInfo[feat].imageElement);
                 }
@@ -1680,9 +1663,9 @@ var vz_example_viewer;
         decodeBytesListToString: function (bytes) {
             // Decode strings in 16K chunks to avoid stack error with use of
             // fromCharCode.apply.
-            var decodeChunkBytes = 16 * 1024;
-            var res = '';
-            var i = 0;
+            const decodeChunkBytes = 16 * 1024;
+            let res = '';
+            let i = 0;
             // Decode in chunks to avoid stack error with use of fromCharCode.apply.
             for (i = 0; i < bytes.length / decodeChunkBytes; i++) {
                 res += String.fromCharCode.apply(null, bytes.slice(i * decodeChunkBytes, (i + 1) * decodeChunkBytes));

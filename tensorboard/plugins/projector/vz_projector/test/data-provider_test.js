@@ -20,10 +20,10 @@ var vz_projector;
          * Converts a string to an ArrayBuffer.
          */
         function stringToArrayBuffer(str) {
-            return new Promise(function (resolve, reject) {
-                var blob = new Blob([str]);
-                var file = new FileReader();
-                file.onload = function (e) {
+            return new Promise((resolve, reject) => {
+                let blob = new Blob([str]);
+                let file = new FileReader();
+                file.onload = (e) => {
                     resolve(e.target.result);
                 };
                 file.readAsArrayBuffer(blob);
@@ -33,19 +33,19 @@ var vz_projector;
          * Converts an data array to TSV format.
          */
         function dataToTsv(data) {
-            var lines = [];
-            for (var i = 0; i < data.length; i++) {
+            let lines = [];
+            for (let i = 0; i < data.length; i++) {
                 lines.push(data[i].join('\t'));
             }
             return lines.join('\n');
         }
-        describe('parse tensors', function () {
-            it('parseTensors', function (doneFn) {
-                var tensors = [[1.0, 2.0], [2.0, 3.0]];
+        describe('parse tensors', () => {
+            it('parseTensors', (doneFn) => {
+                let tensors = [[1.0, 2.0], [2.0, 3.0]];
                 stringToArrayBuffer(dataToTsv(tensors))
-                    .then(function (tensorsArrayBuffer) {
+                    .then((tensorsArrayBuffer) => {
                     vz_projector.parseTensors(tensorsArrayBuffer)
-                        .then(function (data) {
+                        .then((data) => {
                         test.assert.equal(2, data.length);
                         test.assert.deepEqual(new Float32Array(tensors[0]), data[0].vector);
                         test.assert.equal(0, data[0].index);
@@ -57,12 +57,12 @@ var vz_projector;
                     });
                 });
             });
-            it('parseMetadata', function (doneFn) {
-                var metadata = [['label', 'fakecol'], ['Г', '0'], ['label1', '1']];
+            it('parseMetadata', (doneFn) => {
+                let metadata = [['label', 'fakecol'], ['Г', '0'], ['label1', '1']];
                 stringToArrayBuffer(dataToTsv(metadata))
-                    .then(function (metadataArrayBuffer) {
+                    .then((metadataArrayBuffer) => {
                     vz_projector.parseMetadata(metadataArrayBuffer)
-                        .then(function (spriteAndMetadataInfo) {
+                        .then((spriteAndMetadataInfo) => {
                         test.assert.equal(2, spriteAndMetadataInfo.stats.length);
                         test.assert.equal(metadata[0][0], spriteAndMetadataInfo.stats[0].name);
                         test.assert.isFalse(spriteAndMetadataInfo.stats[0].isNumeric);

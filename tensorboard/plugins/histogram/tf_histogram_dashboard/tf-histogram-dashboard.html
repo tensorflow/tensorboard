@@ -18,15 +18,14 @@ limitations under the License.
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view2.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-histogram-loader.html">
@@ -40,7 +39,7 @@ limitations under the License.
 <dom-module id="tf-histogram-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div slot="sidebar">
         <div class="sidebar-section">
           <tf-option-selector
             id="histogramModeSelector"
@@ -68,7 +67,7 @@ limitations under the License.
         </div>
        </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No histogram data was found.</h3>
@@ -91,28 +90,22 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane
+            <tf-category-paginated-view
               category="[[category]]"
-              opened="[[_shouldOpen(index)]]"
-              restamp="[[_restamp]]"
+              initial-opened="[[_shouldOpen(index)]]"
             >
-              <tf-paginated-view2
-                items="[[category.items]]"
-                get-item-key="[[_getItemKey]]"
-                pages="{{category._pages}}"
-              >
-                <template>
-                  <tf-histogram-loader
-                    run="[[item.run]]"
-                    tag="[[item.tag]]"
-                    tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                    time-property="[[_timeProperty]]"
-                    histogram-mode="[[_histogramMode]]"
-                    request-manager="[[_requestManager]]"
-                  ></tf-histogram-loader>
-                </template>
-              </tf-paginated-view2>
-            </tf-category-pane>
+              <template>
+                <tf-histogram-loader
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  active="[[active]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  time-property="[[_timeProperty]]"
+                  histogram-mode="[[_histogramMode]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-histogram-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -166,13 +159,6 @@ limitations under the License.
           type: Object,
           value: () => new tf_backend.RequestManager(),
         },
-
-        _getItemKey: {
-          type: Function,
-          value: function() {
-            return item => JSON.stringify([item.run, item.tag]);
-          },
-        },
       },
 
       listeners: {
@@ -212,7 +198,7 @@ limitations under the License.
         });
       },
       _reloadHistograms() {
-        this.querySelectorAll('tf-histogram-loader').forEach(histogram => {
+        this.root.querySelectorAll('tf-histogram-loader').forEach(histogram => {
           histogram.reload();
         });
       },

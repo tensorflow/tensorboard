@@ -15,29 +15,29 @@ limitations under the License.
 var vz_projector;
 (function (vz_projector) {
     /** Maximum number of colors supported in the color map. */
-    var NUM_COLORS_COLOR_MAP = 50;
-    var MAX_SPRITE_IMAGE_SIZE_PX = 8192;
+    const NUM_COLORS_COLOR_MAP = 50;
+    const MAX_SPRITE_IMAGE_SIZE_PX = 8192;
     vz_projector.METADATA_MSG_ID = 'metadata';
     vz_projector.TENSORS_MSG_ID = 'tensors';
     function retrieveTensorAsBytes(dp, embedding, run, tensorName, tensorsPath, callback) {
         // Get the tensor.
         vz_projector.logging.setModalMessage('Fetching tensor values...', vz_projector.TENSORS_MSG_ID);
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('GET', tensorsPath);
         xhr.responseType = 'arraybuffer';
-        xhr.onprogress = function (ev) {
+        xhr.onprogress = (ev) => {
             if (ev.lengthComputable) {
-                var percent = (ev.loaded * 100 / ev.total).toFixed(1);
+                let percent = (ev.loaded * 100 / ev.total).toFixed(1);
                 vz_projector.logging.setModalMessage('Fetching tensor values: ' + percent + '%', vz_projector.TENSORS_MSG_ID);
             }
         };
-        xhr.onload = function () {
+        xhr.onload = () => {
             if (xhr.status !== 200) {
-                var msg = String.fromCharCode.apply(null, new Uint8Array(xhr.response));
+                let msg = String.fromCharCode.apply(null, new Uint8Array(xhr.response));
                 vz_projector.logging.setErrorMessage(msg, 'fetching tensors');
                 return;
             }
-            var data;
+            let data;
             try {
                 data = new Float32Array(xhr.response);
             }
@@ -45,13 +45,13 @@ var vz_projector;
                 vz_projector.logging.setErrorMessage(e, 'parsing tensor bytes');
                 return;
             }
-            var dim = embedding.tensorShape[1];
-            var N = data.length / dim;
+            let dim = embedding.tensorShape[1];
+            let N = data.length / dim;
             if (embedding.tensorShape[0] > N) {
-                vz_projector.logging.setWarningMessage("Showing the first " + N.toLocaleString() +
-                    (" of " + embedding.tensorShape[0].toLocaleString() + " data points"));
+                vz_projector.logging.setWarningMessage(`Showing the first ${N.toLocaleString()}` +
+                    ` of ${embedding.tensorShape[0].toLocaleString()} data points`);
             }
-            parseTensorsFromFloat32Array(data, dim).then(function (dataPoints) {
+            parseTensorsFromFloat32Array(data, dim).then(dataPoints => {
                 callback(new vz_projector.DataSet(dataPoints));
             });
         };
@@ -59,13 +59,13 @@ var vz_projector;
     }
     vz_projector.retrieveTensorAsBytes = retrieveTensorAsBytes;
     function parseRawTensors(content, callback) {
-        parseTensors(content).then(function (data) {
+        parseTensors(content).then(data => {
             callback(new vz_projector.DataSet(data));
         });
     }
     vz_projector.parseRawTensors = parseRawTensors;
     function parseRawMetadata(contents, callback) {
-        parseMetadata(contents).then(function (result) { return callback(result); });
+        parseMetadata(contents).then(result => callback(result));
     }
     vz_projector.parseRawMetadata = parseRawMetadata;
     /**
@@ -78,17 +78,15 @@ var vz_projector;
      * @param delim The delimiter used to split a line, defaults to '\n'. (optional)
      * @returns A promise for when it is finished.
      */
-    function streamParse(content, callback, chunkSize, delim) {
-        if (chunkSize === void 0) { chunkSize = 1000000; }
-        if (delim === void 0) { delim = '\n'; }
-        return new Promise(function (resolve, reject) {
-            var offset = 0;
-            var bufferSize = content.byteLength - 1;
-            var data = '';
+    function streamParse(content, callback, chunkSize = 1000000, delim = '\n') {
+        return new Promise((resolve, reject) => {
+            let offset = 0;
+            let bufferSize = content.byteLength - 1;
+            let data = '';
             function readHandler(str) {
                 offset += chunkSize;
-                var parts = str.split(delim);
-                var first = data + parts[0];
+                let parts = str.split(delim);
+                let first = data + parts[0];
                 if (parts.length === 1) {
                     data = first;
                     readChunk(offset, chunkSize);
@@ -96,7 +94,7 @@ var vz_projector;
                 }
                 data = parts[parts.length - 1];
                 callback(first);
-                for (var i = 1; i < parts.length - 1; i++) {
+                for (let i = 1; i < parts.length - 1; i++) {
                     callback(parts[i]);
                 }
                 if (offset >= bufferSize) {
@@ -109,29 +107,28 @@ var vz_projector;
                 readChunk(offset, chunkSize);
             }
             function readChunk(offset, size) {
-                var contentChunk = content.slice(offset, offset + size);
-                var blob = new Blob([contentChunk]);
-                var file = new FileReader();
-                file.onload = function (e) { return readHandler(e.target.result); };
+                const contentChunk = content.slice(offset, offset + size);
+                const blob = new Blob([contentChunk]);
+                const file = new FileReader();
+                file.onload = (e) => readHandler(e.target.result);
                 file.readAsText(blob);
             }
             readChunk(offset, chunkSize);
         });
     }
     /** Parses a tsv text file. */
-    function parseTensors(content, valueDelim) {
-        if (valueDelim === void 0) { valueDelim = '\t'; }
+    function parseTensors(content, valueDelim = '\t') {
         vz_projector.logging.setModalMessage('Parsing tensors...', vz_projector.TENSORS_MSG_ID);
-        return new Promise(function (resolve, reject) {
-            var data = [];
-            var numDim;
-            streamParse(content, function (line) {
+        return new Promise((resolve, reject) => {
+            const data = [];
+            let numDim;
+            streamParse(content, (line) => {
                 line = line.trim();
                 if (line === '') {
                     return;
                 }
-                var row = line.split(valueDelim);
-                var dataPoint = {
+                const row = line.split(valueDelim);
+                const dataPoint = {
                     metadata: {},
                     vector: null,
                     index: data.length,
@@ -157,7 +154,7 @@ var vz_projector;
                     vz_projector.logging.setModalMessage('Parsing failed. Found a vector with only one dimension?');
                     throw Error('Parsing failed');
                 }
-            }).then(function () {
+            }).then(() => {
                 vz_projector.logging.setModalMessage(null, vz_projector.TENSORS_MSG_ID);
                 resolve(data);
             });
@@ -166,11 +163,11 @@ var vz_projector;
     vz_projector.parseTensors = parseTensors;
     /** Parses a tsv text file. */
     function parseTensorsFromFloat32Array(data, dim) {
-        return vz_projector.util.runAsyncTask('Parsing tensors...', function () {
-            var N = data.length / dim;
-            var dataPoints = [];
-            var offset = 0;
-            for (var i = 0; i < N; ++i) {
+        return vz_projector.util.runAsyncTask('Parsing tensors...', () => {
+            const N = data.length / dim;
+            const dataPoints = [];
+            let offset = 0;
+            for (let i = 0; i < N; ++i) {
                 dataPoints.push({
                     metadata: {},
                     vector: data.subarray(offset, offset + dim),
@@ -180,14 +177,14 @@ var vz_projector;
                 offset += dim;
             }
             return dataPoints;
-        }, vz_projector.TENSORS_MSG_ID).then(function (dataPoints) {
+        }, vz_projector.TENSORS_MSG_ID).then(dataPoints => {
             vz_projector.logging.setModalMessage(null, vz_projector.TENSORS_MSG_ID);
             return dataPoints;
         });
     }
     vz_projector.parseTensorsFromFloat32Array = parseTensorsFromFloat32Array;
     function analyzeMetadata(columnNames, pointsMetadata) {
-        var columnStats = columnNames.map(function (name) {
+        const columnStats = columnNames.map(name => {
             return {
                 name: name,
                 isNumeric: true,
@@ -196,12 +193,12 @@ var vz_projector;
                 max: Number.NEGATIVE_INFINITY
             };
         });
-        var mapOfValues = columnNames.map(function () { return new Object(); });
-        pointsMetadata.forEach(function (metadata) {
-            columnNames.forEach(function (name, colIndex) {
-                var stats = columnStats[colIndex];
-                var map = mapOfValues[colIndex];
-                var value = metadata[name];
+        const mapOfValues = columnNames.map(() => new Object());
+        pointsMetadata.forEach(metadata => {
+            columnNames.forEach((name, colIndex) => {
+                const stats = columnStats[colIndex];
+                const map = mapOfValues[colIndex];
+                const value = metadata[name];
                 // Skip missing values.
                 if (value == null) {
                     return;
@@ -227,9 +224,9 @@ var vz_projector;
                 }
             });
         });
-        columnStats.forEach(function (stats, colIndex) {
-            stats.uniqueEntries = Object.keys(mapOfValues[colIndex]).map(function (label) {
-                return { label: label, count: mapOfValues[colIndex][label] };
+        columnStats.forEach((stats, colIndex) => {
+            stats.uniqueEntries = Object.keys(mapOfValues[colIndex]).map(label => {
+                return { label, count: mapOfValues[colIndex][label] };
             });
         });
         return columnStats;
@@ -237,12 +234,12 @@ var vz_projector;
     vz_projector.analyzeMetadata = analyzeMetadata;
     function parseMetadata(content) {
         vz_projector.logging.setModalMessage('Parsing metadata...', vz_projector.METADATA_MSG_ID);
-        return new Promise(function (resolve, reject) {
-            var pointsMetadata = [];
-            var hasHeader = false;
-            var lineNumber = 0;
-            var columnNames = ['label'];
-            streamParse(content, function (line) {
+        return new Promise((resolve, reject) => {
+            let pointsMetadata = [];
+            let hasHeader = false;
+            let lineNumber = 0;
+            let columnNames = ['label'];
+            streamParse(content, (line) => {
                 if (line.trim().length === 0) {
                     return;
                 }
@@ -257,16 +254,16 @@ var vz_projector;
                     }
                 }
                 lineNumber++;
-                var rowValues = line.split('\t');
-                var metadata = {};
+                let rowValues = line.split('\t');
+                let metadata = {};
                 pointsMetadata.push(metadata);
-                columnNames.forEach(function (name, colIndex) {
-                    var value = rowValues[colIndex];
+                columnNames.forEach((name, colIndex) => {
+                    let value = rowValues[colIndex];
                     // Normalize missing values.
                     value = (value === '' ? null : value);
                     metadata[name] = value;
                 });
-            }).then(function () {
+            }).then(() => {
                 vz_projector.logging.setModalMessage(null, vz_projector.METADATA_MSG_ID);
                 resolve({
                     stats: analyzeMetadata(columnNames, pointsMetadata),
@@ -277,24 +274,24 @@ var vz_projector;
     }
     vz_projector.parseMetadata = parseMetadata;
     function fetchImage(url) {
-        return new Promise(function (resolve, reject) {
-            var image = new Image();
-            image.onload = function () { return resolve(image); };
-            image.onerror = function (err) { return reject(err); };
+        return new Promise((resolve, reject) => {
+            let image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = (err) => reject(err);
             image.crossOrigin = '';
             image.src = url;
         });
     }
     vz_projector.fetchImage = fetchImage;
     function retrieveSpriteAndMetadataInfo(metadataPath, spriteImagePath, spriteMetadata, callback) {
-        var metadataPromise = Promise.resolve({});
+        let metadataPromise = Promise.resolve({});
         if (metadataPath) {
-            metadataPromise = new Promise(function (resolve, reject) {
+            metadataPromise = new Promise((resolve, reject) => {
                 vz_projector.logging.setModalMessage('Fetching metadata...', vz_projector.METADATA_MSG_ID);
-                var request = new XMLHttpRequest();
+                const request = new XMLHttpRequest();
                 request.open('GET', metadataPath);
                 request.responseType = 'arraybuffer';
-                request.onreadystatechange = function () {
+                request.onreadystatechange = () => {
                     if (request.readyState === 4) {
                         if (request.status === 200) {
                             // The metadata was successfully retrieved. Parse it.
@@ -303,35 +300,35 @@ var vz_projector;
                         else {
                             // The response contains the error message, but we must convert it
                             // to a string.
-                            var errorReader_1 = new FileReader();
-                            errorReader_1.onload = function () {
-                                vz_projector.logging.setErrorMessage(errorReader_1.result, 'fetching metadata');
+                            const errorReader = new FileReader();
+                            errorReader.onload = () => {
+                                vz_projector.logging.setErrorMessage(errorReader.result, 'fetching metadata');
                                 reject();
                             };
-                            errorReader_1.readAsText(new Blob([request.response]));
+                            errorReader.readAsText(new Blob([request.response]));
                         }
                     }
                 };
                 request.send(null);
             });
         }
-        var spriteMsgId = null;
-        var spritesPromise = null;
+        let spriteMsgId = null;
+        let spritesPromise = null;
         if (spriteImagePath) {
             spriteMsgId = vz_projector.logging.setModalMessage('Fetching sprite image...');
             spritesPromise = fetchImage(spriteImagePath);
         }
         // Fetch the metadata and the image in parallel.
-        Promise.all([metadataPromise, spritesPromise]).then(function (values) {
+        Promise.all([metadataPromise, spritesPromise]).then(values => {
             if (spriteMsgId) {
                 vz_projector.logging.setModalMessage(null, spriteMsgId);
             }
-            var metadata = values[0], spriteImage = values[1];
+            const [metadata, spriteImage] = values;
             if (spriteImage && (spriteImage.height > MAX_SPRITE_IMAGE_SIZE_PX ||
                 spriteImage.width > MAX_SPRITE_IMAGE_SIZE_PX)) {
-                vz_projector.logging.setModalMessage("Error: Sprite image of dimensions " + spriteImage.width + "px x " +
-                    (spriteImage.height + "px exceeds maximum dimensions ") +
-                    (MAX_SPRITE_IMAGE_SIZE_PX + "px x " + MAX_SPRITE_IMAGE_SIZE_PX + "px"));
+                vz_projector.logging.setModalMessage(`Error: Sprite image of dimensions ${spriteImage.width}px x ` +
+                    `${spriteImage.height}px exceeds maximum dimensions ` +
+                    `${MAX_SPRITE_IMAGE_SIZE_PX}px x ${MAX_SPRITE_IMAGE_SIZE_PX}px`);
             }
             else {
                 metadata.spriteImage = spriteImage;

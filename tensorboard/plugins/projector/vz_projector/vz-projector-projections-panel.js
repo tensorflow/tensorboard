@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var vz_projector;
 (function (vz_projector) {
-    var NUM_PCA_COMPONENTS = 10;
+    const NUM_PCA_COMPONENTS = 10;
     // tslint:disable-next-line
     vz_projector.ProjectionsPanelPolymer = vz_projector.PolymerElement({
         is: 'vz-projector-projections-panel',
@@ -50,12 +40,8 @@ var vz_projector;
     /**
      * A polymer component which handles the projection tabs in the projector.
      */
-    var ProjectionsPanel = /** @class */ (function (_super) {
-        __extends(ProjectionsPanel, _super);
-        function ProjectionsPanel() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        ProjectionsPanel.prototype.initialize = function (projector) {
+    class ProjectionsPanel extends vz_projector.ProjectionsPanelPolymer {
+        initialize(projector) {
             this.polymerChangesTriggerReprojection = true;
             this.projector = projector;
             // Set up TSNE projections.
@@ -65,109 +51,109 @@ var vz_projector;
             this.centroidValues = { xLeft: null, xRight: null, yUp: null, yDown: null };
             this.clearCentroids();
             this.setupUIControls();
-        };
-        ProjectionsPanel.prototype.ready = function () {
-            this.zDropdown = this.querySelector('#z-dropdown');
-            this.runTsneButton = this.querySelector('.run-tsne');
+        }
+        ready() {
+            super.ready();
+            this.zDropdown = this.$$('#z-dropdown');
+            this.runTsneButton = this.$$('.run-tsne');
             this.pauseTsneButton =
-                this.querySelector('.pause-tsne');
+                this.$$('.pause-tsne');
             this.perturbTsneButton =
-                this.querySelector('.perturb-tsne');
+                this.$$('.perturb-tsne');
             this.perplexitySlider =
-                this.querySelector('#perplexity-slider');
+                this.$$('#perplexity-slider');
             this.learningRateInput =
-                this.querySelector('#learning-rate-slider');
+                this.$$('#learning-rate-slider');
             this.superviseFactorInput =
-                this.querySelector('#supervise-factor-slider');
-            this.iterationLabelTsne = this.querySelector('.run-tsne-iter');
-            this.runUmapButton = this.querySelector('#run-umap');
-        };
-        ProjectionsPanel.prototype.disablePolymerChangesTriggerReprojection = function () {
+                this.$$('#supervise-factor-slider');
+            this.iterationLabelTsne = this.$$('.run-tsne-iter');
+            this.runUmapButton = this.$$('#run-umap');
+        }
+        disablePolymerChangesTriggerReprojection() {
             this.polymerChangesTriggerReprojection = false;
-        };
-        ProjectionsPanel.prototype.enablePolymerChangesTriggerReprojection = function () {
+        }
+        enablePolymerChangesTriggerReprojection() {
             this.polymerChangesTriggerReprojection = true;
-        };
-        ProjectionsPanel.prototype.updateTSNEPerplexityFromSliderChange = function () {
+        }
+        updateTSNEPerplexityFromSliderChange() {
             if (this.perplexitySlider) {
                 this.perplexity = +this.perplexitySlider.value;
             }
-            this.querySelector('.tsne-perplexity span').innerText =
+            this.$$('.tsne-perplexity span').innerText =
                 '' + this.perplexity;
-        };
-        ProjectionsPanel.prototype.updateTSNELearningRateFromUIChange = function () {
+        }
+        updateTSNELearningRateFromUIChange() {
             if (this.learningRateInput) {
                 this.learningRate = Math.pow(10, +this.learningRateInput.value);
             }
-            this.querySelector('.tsne-learning-rate span')
+            this.$$('.tsne-learning-rate span')
                 .innerText = '' + this.learningRate;
-        };
-        ProjectionsPanel.prototype.updateTSNESuperviseFactorFromUIChange = function () {
-            this.querySelector('.tsne-supervise-factor span')
+        }
+        updateTSNESuperviseFactorFromUIChange() {
+            this.$$('.tsne-supervise-factor span')
                 .innerText = ('' + this.superviseFactor);
             if (this.dataSet) {
                 this.dataSet.setSuperviseFactor(this.superviseFactor);
             }
-        };
-        ProjectionsPanel.prototype.setupUIControls = function () {
-            var _this = this;
+        }
+        setupUIControls() {
             {
-                var self_1 = this;
-                var inkTabs = this.querySelectorAll('.ink-tab');
-                for (var i = 0; i < inkTabs.length; i++) {
+                const self = this;
+                const inkTabs = this.root.querySelectorAll('.ink-tab');
+                for (let i = 0; i < inkTabs.length; i++) {
                     inkTabs[i].addEventListener('click', function () {
-                        var id = this.getAttribute('data-tab');
-                        self_1.showTab(id);
+                        let id = this.getAttribute('data-tab');
+                        self.showTab(id);
                     });
                 }
             }
-            this.runTsneButton.addEventListener('click', function () {
-                if (_this.dataSet.hasTSNERun) {
-                    _this.dataSet.stopTSNE();
+            this.runTsneButton.addEventListener('click', () => {
+                if (this.dataSet.hasTSNERun) {
+                    this.dataSet.stopTSNE();
                 }
                 else {
-                    _this.runTSNE();
+                    this.runTSNE();
                 }
             });
-            this.pauseTsneButton.addEventListener('click', function () {
-                if (_this.dataSet.tSNEShouldPause) {
-                    _this.dataSet.tSNEShouldPause = false;
-                    _this.pauseTsneButton.innerText = 'Pause';
+            this.pauseTsneButton.addEventListener('click', () => {
+                if (this.dataSet.tSNEShouldPause) {
+                    this.dataSet.tSNEShouldPause = false;
+                    this.pauseTsneButton.innerText = 'Pause';
                 }
                 else {
-                    _this.dataSet.tSNEShouldPause = true;
-                    _this.pauseTsneButton.innerText = 'Resume';
+                    this.dataSet.tSNEShouldPause = true;
+                    this.pauseTsneButton.innerText = 'Resume';
                 }
             });
-            this.perturbTsneButton.addEventListener('mousedown', function () {
-                if (_this.dataSet && _this.projector) {
-                    _this.dataSet.perturbTsne();
-                    _this.projector.notifyProjectionPositionsUpdated();
-                    _this.perturbInterval = setInterval(function () {
-                        _this.dataSet.perturbTsne();
-                        _this.projector.notifyProjectionPositionsUpdated();
+            this.perturbTsneButton.addEventListener('mousedown', () => {
+                if (this.dataSet && this.projector) {
+                    this.dataSet.perturbTsne();
+                    this.projector.notifyProjectionPositionsUpdated();
+                    this.perturbInterval = setInterval(() => {
+                        this.dataSet.perturbTsne();
+                        this.projector.notifyProjectionPositionsUpdated();
                     }, 100);
                 }
             });
-            this.perturbTsneButton.addEventListener('mouseup', function () {
-                clearInterval(_this.perturbInterval);
+            this.perturbTsneButton.addEventListener('mouseup', () => {
+                clearInterval(this.perturbInterval);
             });
             this.perplexitySlider.value = this.perplexity.toString();
-            this.perplexitySlider.addEventListener('change', function () { return _this.updateTSNEPerplexityFromSliderChange(); });
+            this.perplexitySlider.addEventListener('change', () => this.updateTSNEPerplexityFromSliderChange());
             this.updateTSNEPerplexityFromSliderChange();
-            this.learningRateInput.addEventListener('change', function () { return _this.updateTSNELearningRateFromUIChange(); });
+            this.learningRateInput.addEventListener('change', () => this.updateTSNELearningRateFromUIChange());
             this.updateTSNELearningRateFromUIChange();
-            this.superviseFactorInput.addEventListener('change', function () { return _this.updateTSNESuperviseFactorFromUIChange(); });
+            this.superviseFactorInput.addEventListener('change', () => this.updateTSNESuperviseFactorFromUIChange());
             this.updateTSNESuperviseFactorFromUIChange();
             this.setupCustomProjectionInputFields();
             // TODO: figure out why `--paper-input-container-input` css mixin didn't
             // work.
-            var inputs = this.querySelectorAll('paper-dropdown-menu paper-input input');
-            for (var i = 0; i < inputs.length; i++) {
+            const inputs = this.root.querySelectorAll('paper-dropdown-menu paper-input input');
+            for (let i = 0; i < inputs.length; i++) {
                 inputs[i].style.fontSize = '14px';
             }
-        };
-        ProjectionsPanel.prototype.restoreUIFromBookmark = function (bookmark) {
+        }
+        restoreUIFromBookmark(bookmark) {
             this.disablePolymerChangesTriggerReprojection();
             // PCA
             this.pcaX = bookmark.pcaComponentDimensions[0];
@@ -213,8 +199,8 @@ var vz_projector;
                 this.showTab(bookmark.selectedProjection);
             }
             this.enablePolymerChangesTriggerReprojection();
-        };
-        ProjectionsPanel.prototype.populateBookmarkFromUI = function (bookmark) {
+        }
+        populateBookmarkFromUI(bookmark) {
             this.disablePolymerChangesTriggerReprojection();
             // PCA
             bookmark.pcaComponentDimensions = [this.pcaX, this.pcaY];
@@ -254,12 +240,12 @@ var vz_projector;
                     this.customProjectionYDownInput.getInRegexMode();
             }
             this.enablePolymerChangesTriggerReprojection();
-        };
+        }
         // This method is marked as public as it is used as the view method that
         // abstracts DOM manipulation so we can stub it in a test.
         // TODO(nsthorat): Move this to its own class as the glue between this class
         // and the DOM.
-        ProjectionsPanel.prototype.setZDropdownEnabled = function (enabled) {
+        setZDropdownEnabled(enabled) {
             if (this.zDropdown) {
                 if (enabled) {
                     this.zDropdown.removeAttribute('disabled');
@@ -268,38 +254,38 @@ var vz_projector;
                     this.zDropdown.setAttribute('disabled', 'true');
                 }
             }
-        };
-        ProjectionsPanel.prototype.dataSetUpdated = function (dataSet, originalDataSet, dim) {
+        }
+        dataSetUpdated(dataSet, originalDataSet, dim) {
             this.dataSet = dataSet;
             this.originalDataSet = originalDataSet;
             this.dim = dim;
-            var pointCount = (dataSet == null) ? 0 : dataSet.points.length;
-            var perplexity = Math.max(5, Math.ceil(Math.sqrt(pointCount) / 4));
+            const pointCount = (dataSet == null) ? 0 : dataSet.points.length;
+            const perplexity = Math.max(5, Math.ceil(Math.sqrt(pointCount) / 4));
             this.perplexitySlider.value = perplexity.toString();
             this.updateTSNEPerplexityFromSliderChange();
             this.clearCentroids();
-            this.querySelector('#tsne-sampling').style.display =
+            this.$$('#tsne-sampling').style.display =
                 pointCount > vz_projector.TSNE_SAMPLE_SIZE ? null : 'none';
-            var wasSampled = (dataSet == null) ? false : (dataSet.dim[0] > vz_projector.PCA_SAMPLE_DIM ||
+            const wasSampled = (dataSet == null) ? false : (dataSet.dim[0] > vz_projector.PCA_SAMPLE_DIM ||
                 dataSet.dim[1] > vz_projector.PCA_SAMPLE_DIM);
-            this.querySelector('#pca-sampling').style.display =
+            this.$$('#pca-sampling').style.display =
                 wasSampled ? null : 'none';
             this.showTab('pca');
-        };
-        ProjectionsPanel.prototype._pcaDimensionToggleObserver = function () {
+        }
+        _pcaDimensionToggleObserver() {
             this.setZDropdownEnabled(this.pcaIs3d);
             this.beginProjection(this.currentProjection);
-        };
-        ProjectionsPanel.prototype._tsneDimensionToggleObserver = function () {
+        }
+        _tsneDimensionToggleObserver() {
             this.beginProjection(this.currentProjection);
-        };
-        ProjectionsPanel.prototype._umapDimensionToggleObserver = function () {
+        }
+        _umapDimensionToggleObserver() {
             this.beginProjection(this.currentProjection);
-        };
-        ProjectionsPanel.prototype.metadataChanged = function (spriteAndMetadata) {
+        }
+        metadataChanged(spriteAndMetadata) {
             // Project by options for custom projections.
-            var searchByMetadataIndex = -1;
-            this.searchByMetadataOptions = spriteAndMetadata.stats.map(function (stats, i) {
+            let searchByMetadataIndex = -1;
+            this.searchByMetadataOptions = spriteAndMetadata.stats.map((stats, i) => {
                 // Make the default label by the first non-numeric column.
                 if (!stats.isNumeric && searchByMetadataIndex === -1) {
                     searchByMetadataIndex = i;
@@ -308,33 +294,32 @@ var vz_projector;
             });
             this.customSelectedSearchByMetadataOption =
                 this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
-        };
-        ProjectionsPanel.prototype.showTab = function (id) {
-            var _this = this;
+        }
+        showTab(id) {
             this.currentProjection = id;
-            var tab = this.querySelector('.ink-tab[data-tab="' + id + '"]');
-            var allTabs = this.querySelectorAll('.ink-tab');
-            for (var i = 0; i < allTabs.length; i++) {
+            const tab = this.$$('.ink-tab[data-tab="' + id + '"]');
+            const allTabs = this.root.querySelectorAll('.ink-tab');
+            for (let i = 0; i < allTabs.length; i++) {
                 vz_projector.util.classed(allTabs[i], 'active', false);
             }
             vz_projector.util.classed(tab, 'active', true);
-            var allTabContent = this.querySelectorAll('.ink-panel-content');
-            for (var i = 0; i < allTabContent.length; i++) {
+            const allTabContent = this.root.querySelectorAll('.ink-panel-content');
+            for (let i = 0; i < allTabContent.length; i++) {
                 vz_projector.util.classed(allTabContent[i], 'active', false);
             }
-            vz_projector.util.classed(this.querySelector('.ink-panel-content[data-panel="' + id + '"]'), 'active', true);
+            vz_projector.util.classed(this.$$('.ink-panel-content[data-panel="' + id + '"]'), 'active', true);
             // guard for unit tests, where polymer isn't attached and $ doesn't exist.
             if (this.$ != null) {
-                var main_1 = this.$['main'];
+                const main = this.$['main'];
                 // In order for the projections panel to animate its height, we need to
                 // set it explicitly.
-                requestAnimationFrame(function () {
-                    _this.style.height = main_1.clientHeight + 'px';
+                requestAnimationFrame(() => {
+                    this.style.height = main.clientHeight + 'px';
                 });
             }
             this.beginProjection(id);
-        };
-        ProjectionsPanel.prototype.beginProjection = function (projection) {
+        }
+        beginProjection(projection) {
             if (this.polymerChangesTriggerReprojection === false) {
                 return;
             }
@@ -357,15 +342,15 @@ var vz_projector;
                 this.computeAllCentroids();
                 this.reprojectCustom();
             }
-        };
-        ProjectionsPanel.prototype.showTSNE = function () {
-            var dataSet = this.dataSet;
+        }
+        showTSNE() {
+            const dataSet = this.dataSet;
             if (dataSet == null) {
                 return;
             }
-            var accessors = vz_projector.getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
-            var dimensionality = this.tSNEis3d ? 3 : 2;
-            var projection = new vz_projector.Projection('tsne', accessors, dimensionality, dataSet);
+            const accessors = vz_projector.getProjectionComponents('tsne', [0, 1, this.tSNEis3d ? 2 : null]);
+            const dimensionality = this.tSNEis3d ? 3 : 2;
+            const projection = new vz_projector.Projection('tsne', accessors, dimensionality, dataSet);
             this.projector.setProjection(projection);
             if (!this.dataSet.hasTSNERun) {
                 this.runTSNE();
@@ -373,44 +358,43 @@ var vz_projector;
             else {
                 this.projector.notifyProjectionPositionsUpdated();
             }
-        };
-        ProjectionsPanel.prototype.runTSNE = function () {
-            var _this = this;
-            var projectionChangeNotified = false;
+        }
+        runTSNE() {
+            let projectionChangeNotified = false;
             this.runTsneButton.innerText = 'Stop';
             this.runTsneButton.disabled = true;
             this.pauseTsneButton.innerText = 'Pause';
             this.pauseTsneButton.disabled = true;
             this.perturbTsneButton.disabled = false;
-            this.dataSet.projectTSNE(this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2, function (iteration) {
+            this.dataSet.projectTSNE(this.perplexity, this.learningRate, this.tSNEis3d ? 3 : 2, (iteration) => {
                 if (iteration != null) {
-                    _this.runTsneButton.disabled = false;
-                    _this.pauseTsneButton.disabled = false;
-                    _this.iterationLabelTsne.innerText = '' + iteration;
-                    _this.projector.notifyProjectionPositionsUpdated();
-                    if (!projectionChangeNotified && _this.dataSet.projections['tsne']) {
-                        _this.projector.onProjectionChanged();
+                    this.runTsneButton.disabled = false;
+                    this.pauseTsneButton.disabled = false;
+                    this.iterationLabelTsne.innerText = '' + iteration;
+                    this.projector.notifyProjectionPositionsUpdated();
+                    if (!projectionChangeNotified && this.dataSet.projections['tsne']) {
+                        this.projector.onProjectionChanged();
                         projectionChangeNotified = true;
                     }
                 }
                 else {
-                    _this.runTsneButton.innerText = 'Re-run';
-                    _this.runTsneButton.disabled = false;
-                    _this.pauseTsneButton.innerText = 'Pause';
-                    _this.pauseTsneButton.disabled = true;
-                    _this.perturbTsneButton.disabled = true;
-                    _this.projector.onProjectionChanged();
+                    this.runTsneButton.innerText = 'Re-run';
+                    this.runTsneButton.disabled = false;
+                    this.pauseTsneButton.innerText = 'Pause';
+                    this.pauseTsneButton.disabled = true;
+                    this.perturbTsneButton.disabled = true;
+                    this.projector.onProjectionChanged();
                 }
             });
-        };
-        ProjectionsPanel.prototype.showUmap = function () {
-            var dataSet = this.dataSet;
+        }
+        showUmap() {
+            const dataSet = this.dataSet;
             if (dataSet == null) {
                 return;
             }
-            var accessors = vz_projector.getProjectionComponents('umap', [0, 1, this.umapIs3d ? 2 : null]);
-            var dimensionality = this.umapIs3d ? 3 : 2;
-            var projection = new vz_projector.Projection('umap', accessors, dimensionality, dataSet);
+            const accessors = vz_projector.getProjectionComponents('umap', [0, 1, this.umapIs3d ? 2 : null]);
+            const dimensionality = this.umapIs3d ? 3 : 2;
+            const projection = new vz_projector.Projection('umap', accessors, dimensionality, dataSet);
             this.projector.setProjection(projection);
             if (!this.dataSet.hasUmapRun) {
                 this.runUmap();
@@ -418,60 +402,58 @@ var vz_projector;
             else {
                 this.projector.notifyProjectionPositionsUpdated();
             }
-        };
-        ProjectionsPanel.prototype.runUmap = function () {
-            var _this = this;
-            var projectionChangeNotified = false;
+        }
+        runUmap() {
+            let projectionChangeNotified = false;
             this.runUmapButton.disabled = true;
-            var nComponents = this.umapIs3d ? 3 : 2;
-            var nNeighbors = this.umapNeighbors;
-            this.dataSet.projectUmap(nComponents, nNeighbors, function (iteration) {
+            const nComponents = this.umapIs3d ? 3 : 2;
+            const nNeighbors = this.umapNeighbors;
+            this.dataSet.projectUmap(nComponents, nNeighbors, (iteration) => {
                 if (iteration != null) {
-                    _this.runUmapButton.disabled = false;
-                    _this.projector.notifyProjectionPositionsUpdated();
-                    if (!projectionChangeNotified && _this.dataSet.projections['umap']) {
-                        _this.projector.onProjectionChanged();
+                    this.runUmapButton.disabled = false;
+                    this.projector.notifyProjectionPositionsUpdated();
+                    if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+                        this.projector.onProjectionChanged();
                         projectionChangeNotified = true;
                     }
                 }
                 else {
-                    _this.runUmapButton.innerText = 'Re-run';
-                    _this.runUmapButton.disabled = false;
-                    _this.projector.onProjectionChanged();
+                    this.runUmapButton.innerText = 'Re-run';
+                    this.runUmapButton.disabled = false;
+                    this.projector.onProjectionChanged();
                 }
             });
-        };
+        }
         // tslint:disable-next-line:no-unused-variable
-        ProjectionsPanel.prototype.showPCAIfEnabled = function () {
+        showPCAIfEnabled() {
             if (this.polymerChangesTriggerReprojection) {
                 this.showPCA();
             }
-        };
-        ProjectionsPanel.prototype.updateTotalVarianceMessage = function () {
-            var variances = this.dataSet.fracVariancesExplained;
-            var totalVariance = variances[this.pcaX] + variances[this.pcaY];
-            var msg = 'Total variance described: ';
+        }
+        updateTotalVarianceMessage() {
+            let variances = this.dataSet.fracVariancesExplained;
+            let totalVariance = variances[this.pcaX] + variances[this.pcaY];
+            let msg = 'Total variance described: ';
             if (this.pcaIs3d) {
                 totalVariance += variances[this.pcaZ];
             }
             msg += (totalVariance * 100).toFixed(1) + '%.';
-            this.querySelector('#total-variance').innerHTML = msg;
-        };
-        ProjectionsPanel.prototype.showPCA = function () {
-            var _this = this;
+            this.$$('#total-variance').innerHTML = msg;
+        }
+        showPCA() {
             if (this.dataSet == null) {
                 return;
             }
-            this.dataSet.projectPCA().then(function () {
+            this.dataSet.projectPCA().then(() => {
                 // Polymer properties are 1-based.
-                var accessors = vz_projector.getProjectionComponents('pca', [_this.pcaX, _this.pcaY, _this.pcaZ]);
-                var dimensionality = _this.pcaIs3d ? 3 : 2;
-                var projection = new vz_projector.Projection('pca', accessors, dimensionality, _this.dataSet);
-                _this.projector.setProjection(projection);
-                var numComponents = Math.min(NUM_PCA_COMPONENTS, _this.dataSet.dim[1]);
-                _this.updateTotalVarianceMessage();
-                _this.pcaComponents = vz_projector.util.range(numComponents).map(function (i) {
-                    var fracVariance = _this.dataSet.fracVariancesExplained[i];
+                const accessors = vz_projector.getProjectionComponents('pca', [this.pcaX, this.pcaY, this.pcaZ]);
+                const dimensionality = this.pcaIs3d ? 3 : 2;
+                const projection = new vz_projector.Projection('pca', accessors, dimensionality, this.dataSet);
+                this.projector.setProjection(projection);
+                let numComponents = Math.min(NUM_PCA_COMPONENTS, this.dataSet.dim[1]);
+                this.updateTotalVarianceMessage();
+                this.pcaComponents = vz_projector.util.range(numComponents).map(i => {
+                    let fracVariance = this.dataSet.fracVariancesExplained[i];
                     return {
                         id: i,
                         componentNumber: i + 1,
@@ -479,26 +461,26 @@ var vz_projector;
                     };
                 });
             });
-        };
-        ProjectionsPanel.prototype.reprojectCustom = function () {
+        }
+        reprojectCustom() {
             if (this.centroids == null || this.centroids.xLeft == null ||
                 this.centroids.xRight == null || this.centroids.yUp == null ||
                 this.centroids.yDown == null) {
                 return;
             }
-            var xDir = vz_projector.vector.sub(this.centroids.xRight, this.centroids.xLeft);
+            const xDir = vz_projector.vector.sub(this.centroids.xRight, this.centroids.xLeft);
             this.dataSet.projectLinear(xDir, 'linear-x');
-            var yDir = vz_projector.vector.sub(this.centroids.yUp, this.centroids.yDown);
+            const yDir = vz_projector.vector.sub(this.centroids.yUp, this.centroids.yDown);
             this.dataSet.projectLinear(yDir, 'linear-y');
-            var accessors = vz_projector.getProjectionComponents('custom', ['x', 'y']);
-            var projection = new vz_projector.Projection('custom', accessors, 2, this.dataSet);
+            const accessors = vz_projector.getProjectionComponents('custom', ['x', 'y']);
+            const projection = new vz_projector.Projection('custom', accessors, 2, this.dataSet);
             this.projector.setProjection(projection);
-        };
-        ProjectionsPanel.prototype.clearCentroids = function () {
+        }
+        clearCentroids() {
             this.centroids = { xLeft: null, xRight: null, yUp: null, yDown: null };
             this.allCentroid = null;
-        };
-        ProjectionsPanel.prototype._customSelectedSearchByMetadataOptionChanged = function (newVal, oldVal) {
+        }
+        _customSelectedSearchByMetadataOptionChanged(newVal, oldVal) {
             if (this.polymerChangesTriggerReprojection === false) {
                 return;
             }
@@ -506,8 +488,8 @@ var vz_projector;
                 this.computeAllCentroids();
                 this.reprojectCustom();
             }
-        };
-        ProjectionsPanel.prototype.setupCustomProjectionInputFields = function () {
+        }
+        setupCustomProjectionInputFields() {
             this.customProjectionXLeftInput =
                 this.setupCustomProjectionInputField('xLeft');
             this.customProjectionXRightInput =
@@ -515,71 +497,68 @@ var vz_projector;
             this.customProjectionYUpInput = this.setupCustomProjectionInputField('yUp');
             this.customProjectionYDownInput =
                 this.setupCustomProjectionInputField('yDown');
-        };
-        ProjectionsPanel.prototype.computeAllCentroids = function () {
+        }
+        computeAllCentroids() {
             this.computeCentroid('xLeft');
             this.computeCentroid('xRight');
             this.computeCentroid('yUp');
             this.computeCentroid('yDown');
-        };
-        ProjectionsPanel.prototype.computeCentroid = function (name) {
-            var input = this.querySelector('#' + name);
+        }
+        computeCentroid(name) {
+            const input = this.$$('#' + name);
             if (input == null) {
                 return;
             }
-            var value = input.getValue();
+            const value = input.getValue();
             if (value == null) {
                 return;
             }
-            var inRegexMode = input.getInRegexMode();
-            var result = this.getCentroid(value, inRegexMode);
+            let inRegexMode = input.getInRegexMode();
+            let result = this.getCentroid(value, inRegexMode);
             if (result.numMatches === 0) {
                 input.message = '0 matches. Using a random vector.';
                 result.centroid = vz_projector.vector.rn(this.dim);
             }
             else {
-                input.message = result.numMatches + " matches.";
+                input.message = `${result.numMatches} matches.`;
             }
             this.centroids[name] = result.centroid;
             this.centroidValues[name] = value;
-        };
-        ProjectionsPanel.prototype.setupCustomProjectionInputField = function (name) {
-            var _this = this;
-            var input = this.querySelector('#' + name);
-            input.registerInputChangedListener(function (input, inRegexMode) {
-                if (_this.polymerChangesTriggerReprojection) {
-                    _this.computeCentroid(name);
-                    _this.reprojectCustom();
+        }
+        setupCustomProjectionInputField(name) {
+            let input = this.$$('#' + name);
+            input.registerInputChangedListener((input, inRegexMode) => {
+                if (this.polymerChangesTriggerReprojection) {
+                    this.computeCentroid(name);
+                    this.reprojectCustom();
                 }
             });
             return input;
-        };
-        ProjectionsPanel.prototype.getCentroid = function (pattern, inRegexMode) {
-            var _this = this;
+        }
+        getCentroid(pattern, inRegexMode) {
             if (pattern == null || pattern === '') {
                 return { numMatches: 0 };
             }
             // Search by the original dataset since we often want to filter and project
             // only the nearest neighbors of A onto B-C where B and C are not nearest
             // neighbors of A.
-            var accessor = function (i) { return _this.originalDataSet.points[i].vector; };
-            var r = this.originalDataSet.query(pattern, inRegexMode, this.customSelectedSearchByMetadataOption);
+            let accessor = (i) => this.originalDataSet.points[i].vector;
+            let r = this.originalDataSet.query(pattern, inRegexMode, this.customSelectedSearchByMetadataOption);
             return { centroid: vz_projector.vector.centroid(r, accessor), numMatches: r.length };
-        };
-        ProjectionsPanel.prototype.getPcaSampledDimText = function () {
+        }
+        getPcaSampledDimText() {
             return vz_projector.PCA_SAMPLE_DIM.toLocaleString();
-        };
-        ProjectionsPanel.prototype.getPcaSampleSizeText = function () {
+        }
+        getPcaSampleSizeText() {
             return vz_projector.PCA_SAMPLE_SIZE.toLocaleString();
-        };
-        ProjectionsPanel.prototype.getTsneSampleSizeText = function () {
+        }
+        getTsneSampleSizeText() {
             return vz_projector.TSNE_SAMPLE_SIZE.toLocaleString();
-        };
-        ProjectionsPanel.prototype.getUmapSampleSizeText = function () {
+        }
+        getUmapSampleSizeText() {
             return vz_projector.UMAP_SAMPLE_SIZE.toLocaleString();
-        };
-        return ProjectionsPanel;
-    }(vz_projector.ProjectionsPanelPolymer));
+        }
+    }
     vz_projector.ProjectionsPanel = ProjectionsPanel;
-    document.registerElement(ProjectionsPanel.prototype.is, ProjectionsPanel);
+    customElements.define(ProjectionsPanel.prototype.is, ProjectionsPanel);
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

@@ -31,8 +31,8 @@ var tf_backend;
      * Sorted, deduplicated.
      */
     function filterTags(r, runs) {
-        var result = [];
-        runs.forEach(function (x) { return result = result.concat(r[x]); });
+        let result = [];
+        runs.forEach((x) => result = result.concat(r[x]));
         return _.uniq(result).sort(vz_sorting.compareTagNames);
     }
     tf_backend.filterTags = filterTags;
@@ -55,7 +55,7 @@ var tf_backend;
     function detupler(xform) {
         return function (x) {
             // Create a G, assert it has type <G & Datum>
-            var obj = xform(x[2]);
+            let obj = xform(x[2]);
             // ... patch in the properties of datum
             obj.wall_time = timeToDate(x[0]);
             obj.step = x[1];

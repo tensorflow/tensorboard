@@ -15,8 +15,8 @@ var memory_viewer_xla_lb;
      * HLO logical buffer representation.
      * @final
      */
-    var LogicalBuffer = /** @class */ (function () {
-        function LogicalBuffer(buffer) {
+    class LogicalBuffer {
+        constructor(buffer) {
             this.computationName = '';
             this.instructionName = '';
             this.shapeIndex = [];
@@ -28,15 +28,14 @@ var memory_viewer_xla_lb;
          * Constructs the computation, instruction and its shape index, which
          * uniquely identifies a point where a buffer is defined.
          */
-        LogicalBuffer.prototype.initBufferLocation_ = function (location) {
+        initBufferLocation_(location) {
             if (!location) {
                 return;
             }
             this.computationName = location.computationName;
             this.instructionName = location.instructionName;
-            this.shapeIndex = location.shapeIndex.map(function (item) { return parseInt(item, 10); });
-        };
-        return LogicalBuffer;
-    }());
+            this.shapeIndex = location.shapeIndex.map((item) => parseInt(item, 10));
+        }
+    }
     memory_viewer_xla_lb.LogicalBuffer = LogicalBuffer;
 })(memory_viewer_xla_lb || (memory_viewer_xla_lb = {})); // namespace memory_viewer_xla_lb

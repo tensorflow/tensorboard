@@ -11,21 +11,21 @@ limitations under the License.
 ==============================================================================*/
 var pod_viewer_topology_graph;
 (function (pod_viewer_topology_graph) {
-    var MAIN_COLORS = [
+    const MAIN_COLORS = [
         '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0',
         '#225ea8', '#253494', '#081d58'
     ];
-    var COLOR_SCALE = d3.scaleQuantile().domain([0, 1.0]).range(MAIN_COLORS);
-    var SVG_WIDTH = 1620;
-    var SVG_MARGIN = { top: 50, right: 0, bottom: 100, left: 30 };
-    var CHIP_GRID_SIZE = 30;
-    var CHIP_TO_CHIP_MARGIN = 10;
-    var HOST_TO_CHIP_MARGIN = 15;
-    var HOST_TO_HOST_MARGIN = 10;
-    var HOST_Y_STRIDE = 2;
-    var NODES_PER_CHIP = 2;
-    var TOOLTIP_HORIZONTAL_MARGIN = 5;
-    var TRANSITION_DURATION = 1000;
+    const COLOR_SCALE = d3.scaleQuantile().domain([0, 1.0]).range(MAIN_COLORS);
+    const SVG_WIDTH = 1620;
+    const SVG_MARGIN = { top: 50, right: 0, bottom: 100, left: 30 };
+    const CHIP_GRID_SIZE = 30;
+    const CHIP_TO_CHIP_MARGIN = 10;
+    const HOST_TO_CHIP_MARGIN = 15;
+    const HOST_TO_HOST_MARGIN = 10;
+    const HOST_Y_STRIDE = 2;
+    const NODES_PER_CHIP = 2;
+    const TOOLTIP_HORIZONTAL_MARGIN = 5;
+    const TRANSITION_DURATION = 1000;
     ;
     ;
     ;
@@ -40,7 +40,7 @@ var pod_viewer_topology_graph;
             },
             metrics: {
                 type: Array,
-                value: function () { return []; },
+                value: () => [],
             },
             activeBar: {
                 type: Object,
@@ -99,10 +99,10 @@ var pod_viewer_topology_graph;
             if (!data || !runEnvironment || !runEnvironment.topology || !metrics) {
                 return;
             }
-            var xdim = parseInt(runEnvironment.topology.xDimension, 10);
-            return Object.keys(data.podStatsPerCore).map(function (core) {
-                var podStats = data.podStatsPerCore[core];
-                var breakdown = metrics.map(function (item) {
+            const xdim = parseInt(runEnvironment.topology.xDimension, 10);
+            return Object.keys(data.podStatsPerCore).map((core) => {
+                const podStats = data.podStatsPerCore[core];
+                let breakdown = metrics.map((item) => {
                     return podStats[item.key] ? podStats[item.key] : 0;
                 });
                 return {
@@ -146,10 +146,10 @@ var pod_viewer_topology_graph;
             this._hostGridHeight = this.getHostGridSize(HOST_Y_STRIDE);
             this._nodeGridWidth = CHIP_GRID_SIZE / NODES_PER_CHIP;
             this._nodeGridHeight = CHIP_GRID_SIZE;
-            var hostXDim = this._xDimension / this._hostXStride;
-            var hostYDim = this._yDimension / HOST_Y_STRIDE;
-            var chipXDims = Array.from(Array(this._xDimension).keys());
-            var chipYDims = Array.from(Array(this._yDimension).keys());
+            const hostXDim = this._xDimension / this._hostXStride;
+            const hostYDim = this._yDimension / HOST_Y_STRIDE;
+            const chipXDims = Array.from(Array(this._xDimension).keys());
+            const chipYDims = Array.from(Array(this._yDimension).keys());
             if (!this._gSVG) {
                 this._gSVG = d3.select(this.$.tpgraph)
                     .append('svg')
@@ -174,12 +174,12 @@ var pod_viewer_topology_graph;
                     .style('fill', 'red')
                     .attr('d', 'M0,-5L10,0L0,5');
             }
-            var svg = this._gSVG.select('.graph');
-            var hostData = this.createHostData(hostXDim, hostYDim);
+            let svg = this._gSVG.select('.graph');
+            const hostData = this.createHostData(hostXDim, hostYDim);
             this.drawHostCards(svg, hostData, this._hostGridWidth, this._hostGridHeight);
             this.drawNodeCards(svg, data, COLOR_SCALE);
             this.drawLabels(svg, chipXDims, chipYDims);
-            var legendYLoc = this._hostGridHeight * Math.ceil(this._yDimension / HOST_Y_STRIDE) +
+            const legendYLoc = this._hostGridHeight * Math.ceil(this._yDimension / HOST_Y_STRIDE) +
                 HOST_TO_HOST_MARGIN;
             this.drawLegend(svg, legendYLoc, COLOR_SCALE);
         },
@@ -187,7 +187,7 @@ var pod_viewer_topology_graph;
          * Returns the size of host grid, including the host card size and the margin
          * between two hosts.
          */
-        getHostGridSize: function (stride) {
+        getHostGridSize(stride) {
             return HOST_TO_CHIP_MARGIN * 2 + CHIP_TO_CHIP_MARGIN * (stride - 1) +
                 CHIP_GRID_SIZE * stride + HOST_TO_HOST_MARGIN;
         },
@@ -216,9 +216,9 @@ var pod_viewer_topology_graph;
          * Returns the location for each host in the system.
          */
         createHostData: function (hostXDim, hostYDim) {
-            var hostData = [];
-            for (var i = 0; i < hostXDim; i++) {
-                for (var j = 0; j < hostYDim; j++) {
+            let hostData = [];
+            for (let i = 0; i < hostXDim; i++) {
+                for (let j = 0; j < hostYDim; j++) {
                     hostData.push({ xdim: i, ydim: j });
                 }
             }
@@ -228,12 +228,11 @@ var pod_viewer_topology_graph;
          * Draw the labels on x-axis and y-axis.
          */
         drawLabels: function (svg, xdims, ydims) {
-            var _this = this;
             // Draw label on x axis.
-            var xLabel = svg.selectAll('.x-label').data(xdims);
+            let xLabel = svg.selectAll('.x-label').data(xdims);
             xLabel.enter().append('text').merge(xLabel)
-                .text(function (d) { return d; })
-                .attr('x', function (d, i) { return _this.getChipXLoc(Math.floor(i / _this._hostXStride), i % _this._hostXStride); })
+                .text((d) => d)
+                .attr('x', (d, i) => this.getChipXLoc(Math.floor(i / this._hostXStride), i % this._hostXStride))
                 .attr('y', 0)
                 .style('text-anchor', 'middle')
                 .attr('transform', 'translate(' + CHIP_GRID_SIZE / 2 + ', -6)')
@@ -242,11 +241,11 @@ var pod_viewer_topology_graph;
                 .duration(TRANSITION_DURATION);
             xLabel.exit().remove();
             // Draw label on y axis.
-            var yLabel = svg.selectAll('.y-label').data(ydims);
+            let yLabel = svg.selectAll('.y-label').data(ydims);
             yLabel.enter().append('text').merge(yLabel)
-                .text(function (d) { return d; })
+                .text((d) => d)
                 .attr('x', 0)
-                .attr('y', function (d, i) { return _this.getChipYLoc(Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE); })
+                .attr('y', (d, i) => this.getChipYLoc(Math.floor(i / HOST_Y_STRIDE), i % HOST_Y_STRIDE))
                 .style('text-anchor', 'middle')
                 .attr('transform', 'translate(-12,' + CHIP_GRID_SIZE / 2 + ')')
                 .attr('class', 'y-label')
@@ -258,10 +257,10 @@ var pod_viewer_topology_graph;
          * Draw the UI of host cards.
          */
         drawHostCards: function (svg, data, gridWidth, gridHeight) {
-            var cards = svg.selectAll('.host').data(data);
+            let cards = svg.selectAll('.host').data(data);
             cards.enter().append('rect').merge(cards)
-                .attr('x', function (d) { return d.xdim * gridWidth; })
-                .attr('y', function (d) { return d.ydim * gridHeight; })
+                .attr('x', (d) => d.xdim * gridWidth)
+                .attr('y', (d) => d.ydim * gridHeight)
                 .attr('rx', 4 * gridWidth / gridHeight)
                 .attr('ry', 4)
                 .attr('class', 'host bordered')
@@ -279,17 +278,16 @@ var pod_viewer_topology_graph;
          * Draw the UI of node cards.
          */
         drawNodeCards: function (svg, data, colorScale) {
-            var _this = this;
-            var cards = svg.selectAll('.node').data(data);
-            var parent = this;
-            var metricIdx = Math.max(this.selectedMetricIdx, 0);
+            let cards = svg.selectAll('.node').data(data);
+            let parent = this;
+            let metricIdx = Math.max(this.selectedMetricIdx, 0);
             cards.enter().append('rect').merge(cards)
-                .attr('id', function (d) { return 'rid' + d.rid; })
-                .attr('x', function (d) {
-                return _this.getNodeXLoc(Math.floor(d.xdim / _this._hostXStride), d.xdim % _this._hostXStride, d.nid);
+                .attr('id', (d) => 'rid' + d.rid)
+                .attr('x', (d) => {
+                return this.getNodeXLoc(Math.floor(d.xdim / this._hostXStride), d.xdim % this._hostXStride, d.nid);
             })
-                .attr('y', function (d) {
-                return _this.getChipYLoc(Math.floor(d.ydim / HOST_Y_STRIDE), d.ydim % HOST_Y_STRIDE);
+                .attr('y', (d) => {
+                return this.getChipYLoc(Math.floor(d.ydim / HOST_Y_STRIDE), d.ydim % HOST_Y_STRIDE);
             })
                 .attr('rx', 4 / NODES_PER_CHIP)
                 .attr('ry', 4)
@@ -299,18 +297,18 @@ var pod_viewer_topology_graph;
                 .attr('border', 1)
                 .style('stroke', 'black')
                 .style('stroke-width', 1)
-                .style('fill', function (d) { return colorScale(d.values[metricIdx] / d.total); })
+                .style('fill', (d) => colorScale(d.values[metricIdx] / d.total))
                 .on('mouseover', function (d) {
                 // highlight text
                 d3.select(this).classed('cell-hover', true).style('opacity', 0.5);
-                var tpuRect = this.getBoundingClientRect();
-                var containerRect = parent.$.container.getBoundingClientRect();
+                const tpuRect = this.getBoundingClientRect();
+                const containerRect = parent.$.container.getBoundingClientRect();
                 // Tooltip should appear to right of the TPU rect.
-                var x = tpuRect.x + tpuRect.width + TOOLTIP_HORIZONTAL_MARGIN;
-                var y = tpuRect.y;
+                const x = tpuRect.x + tpuRect.width + TOOLTIP_HORIZONTAL_MARGIN;
+                const y = tpuRect.y;
                 // Tooltip should position w.r.t. the container.
-                var relativeX = x - containerRect.x;
-                var relativeY = y - containerRect.y;
+                const relativeX = x - containerRect.x;
+                const relativeY = y - containerRect.y;
                 // Update the tooltip position and value
                 d3.select(parent.$.tooltip)
                     .style('left', relativeX + 'px')
@@ -331,11 +329,10 @@ var pod_viewer_topology_graph;
          * Draw the UI of chip to chip links.
          */
         drawLinks: function (svg, linkData) {
-            var _this = this;
             if (!linkData || !linkData.length || !svg) {
                 return;
             }
-            var links = svg.select('.link').selectAll('path').data(linkData);
+            let links = svg.select('.link').selectAll('path').data(linkData);
             // Draw a link from each srcCoreId to each dstCoreId,
             // with an arrow from defs attached.
             links.enter().append('svg:path').merge(links)
@@ -343,7 +340,7 @@ var pod_viewer_topology_graph;
                 .attr('stroke', 'red')
                 .attr('fill', 'none')
                 .attr('marker-end', 'url(#arrow)')
-                .attr('d', function (d) { return _this.linkToPath(d[0], d[1]); });
+                .attr('d', (d) => this.linkToPath(d[0], d[1]));
             // Handle deleted links.
             links.exit().remove();
         },
@@ -352,13 +349,13 @@ var pod_viewer_topology_graph;
          * graph.
          */
         coreIdToPos: function (id) {
-            var chipId = Math.floor(id / 2);
-            var nodeId = id & 1;
-            var xDim = chipId % this._xDimension;
-            var yDim = Math.floor(chipId / this._xDimension);
-            var x = CHIP_GRID_SIZE / NODES_PER_CHIP / 2 +
+            const chipId = Math.floor(id / 2);
+            const nodeId = id & 1;
+            const xDim = chipId % this._xDimension;
+            const yDim = Math.floor(chipId / this._xDimension);
+            const x = CHIP_GRID_SIZE / NODES_PER_CHIP / 2 +
                 this.getNodeXLoc(Math.floor(xDim / this._hostXStride), xDim % this._hostXStride, nodeId);
-            var y = this.getChipYLoc(Math.floor(yDim / HOST_Y_STRIDE), yDim % HOST_Y_STRIDE)
+            const y = this.getChipYLoc(Math.floor(yDim / HOST_Y_STRIDE), yDim % HOST_Y_STRIDE)
                 + CHIP_GRID_SIZE / 2;
             return { x: x, y: y };
         },
@@ -367,9 +364,9 @@ var pod_viewer_topology_graph;
          * @return Path in svg format.
          */
         linkToPath: function (srcCoreId, dstCoreId) {
-            var src = this.coreIdToPos(srcCoreId ? srcCoreId : 0);
-            var dst = this.coreIdToPos(dstCoreId ? dstCoreId : 0);
-            var path = 'M ' + src.x + ' ' + src.y + 'L ' + dst.x + ' ' + dst.y;
+            const src = this.coreIdToPos(srcCoreId ? srcCoreId : 0);
+            const dst = this.coreIdToPos(dstCoreId ? dstCoreId : 0);
+            const path = 'M ' + src.x + ' ' + src.y + 'L ' + dst.x + ' ' + dst.y;
             return path;
         },
         /**
@@ -377,33 +374,39 @@ var pod_viewer_topology_graph;
          * @return String to render in tool tips.
          */
         _getToolTipText: function (data) {
-            var label = this.selectedMetricIdx >= 0 ?
+            const label = this.selectedMetricIdx >= 0 ?
                 this.metrics[this.selectedMetricIdx].label : '';
-            var value = this.selectedMetricIdx >= 0 ?
+            const value = this.selectedMetricIdx >= 0 ?
                 data.values[this.selectedMetricIdx] : 0;
-            var nf = new Intl.NumberFormat(navigator.language, { style: 'percent', minimumFractionDigits: 2 });
-            var res = "pos: (" + data.ydim + ", " + data.xdim + "),\n        host: " + data.host + ",\n        chip id: " + data.cid + ",\n        core id: " + data.nid + ",\n        replica id: " + data.rid + "\n        " + (label ? label + " spends " + value.toFixed(2) + "\u00B5s in total,\n            taking " + nf.format(value / data.total) + " of a step." : '');
+            const nf = new Intl.NumberFormat(navigator.language, { style: 'percent', minimumFractionDigits: 2 });
+            const res = `pos: (${data.ydim}, ${data.xdim}),
+        host: ${data.host},
+        chip id: ${data.cid},
+        core id: ${data.nid},
+        replica id: ${data.rid}
+        ${label ? `${label} spends ${value.toFixed(2)}µs in total,
+            taking ${nf.format(value / data.total)} of a step.` : ''}`;
             return res;
         },
         /**
          * Draw the legend of the graph.
          */
         drawLegend: function (svg, height, colorScale) {
-            var legendElementWidth = CHIP_GRID_SIZE * 2;
-            var legend = svg.selectAll('.legend').data([0].concat(colorScale.quantiles()), function (d) { return d; });
+            const legendElementWidth = CHIP_GRID_SIZE * 2;
+            let legend = svg.selectAll('.legend').data([0].concat(colorScale.quantiles()), (d) => d);
             legend.exit().remove();
-            var legendEnter = legend.enter().append('g').attr('class', 'legend');
+            let legendEnter = legend.enter().append('g').attr('class', 'legend');
             legendEnter.append('rect')
                 .attr('width', legendElementWidth)
                 .attr('height', CHIP_GRID_SIZE)
                 .merge(legend.select('rect'))
-                .attr('x', function (d, i) { return legendElementWidth * i; })
+                .attr('x', (d, i) => legendElementWidth * i)
                 .attr('y', height)
-                .style('fill', function (d, i) { return MAIN_COLORS[i]; });
+                .style('fill', (d, i) => MAIN_COLORS[i]);
             legendEnter.append('text')
                 .merge(legend.select('text'))
-                .text(function (d) { return '\u2265 0.' + Math.round(d * 10); })
-                .attr('x', function (d, i) { return legendElementWidth * i; })
+                .text((d) => '\u2265 0.' + Math.round(d * 10))
+                .attr('x', (d, i) => legendElementWidth * i)
                 .attr('y', height + CHIP_GRID_SIZE * 2);
         },
         /**
@@ -424,22 +427,22 @@ var pod_viewer_topology_graph;
         _selectedMetricIdxChanged: function (newIdx) {
             if (newIdx < 0)
                 return;
-            d3.select(this.$.tpgraph).selectAll('.node').style('fill', function (d) { return COLOR_SCALE(d['values'][newIdx] / d['total']); });
+            d3.select(this.$.tpgraph).selectAll('.node').style('fill', (d) => COLOR_SCALE(d['values'][newIdx] / d['total']));
         },
         /**
          * Updates the topology color coding or selected channel id when the
          * activeBar changed.
          */
         _activeBarChanged: function (newData) {
-            var colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
                 .domain(d3.range(0, 19));
             if (!newData)
                 return;
             if (newData.replicaGroups && newData.replicaGroups.length > 0) {
                 // Colors the nodes within the same replica group to the same color.
-                for (var i = 0; i < newData.replicaGroups.length; i++) {
-                    var group = newData.replicaGroups[i].replicaIds;
-                    for (var j = 0; j < group.length; j++) {
+                for (let i = 0; i < newData.replicaGroups.length; i++) {
+                    const group = newData.replicaGroups[i].replicaIds;
+                    for (let j = 0; j < group.length; j++) {
                         d3.select(this.$.tpgraph).selectAll('#rid' + group[j])
                             .style('fill', colorScale(i % 20));
                     }
@@ -447,7 +450,7 @@ var pod_viewer_topology_graph;
                 this.selectedMetricIdx = -1;
             }
             else if (newData.srcCoreIds) {
-                var links = newData.srcCoreIds.map(function (src, i) { return [src, newData.dstCoreIds[i]]; });
+                const links = newData.srcCoreIds.map((src, i) => [src, newData.dstCoreIds[i]]);
                 this.drawLinks(this._gSVG, links);
             }
         },

@@ -55,7 +55,7 @@ var pod_viewer_dashboard;
             },
             _stepBreakdownLayers: {
                 type: Object,
-                value: function () { return [
+                value: () => [
                     { key: 'highFlopsComputeUs', label: 'High flops compute' },
                     { key: 'lowFlopsComputeUs', label: 'Low flops compute' },
                     { key: 'hostInfeedDurationUs', label: 'Infeed' },
@@ -64,7 +64,7 @@ var pod_viewer_dashboard;
                     { key: 'allReduceSyncDurationUs', label: 'AllReduce sync' },
                     { key: 'sendDurationUs', label: 'Send' },
                     { key: 'recvDurationUs', label: 'Recv' },
-                ]; },
+                ],
             },
             _podStatsMap: {
                 type: Object,
@@ -87,48 +87,48 @@ var pod_viewer_dashboard;
             },
             _channelLayers: {
                 type: Array,
-                value: function () { return [
+                value: () => [
                     { key: 'durationUs', label: 'Duration (s)' },
-                ]; },
+                ],
             },
             _allReduceLayers: {
                 type: Array,
-                value: function () { return [
+                value: () => [
                     { key: 'durationUs', label: 'Duration (µs)' },
-                ]; },
+                ],
             },
             _stepBreakdownFunc: {
                 type: Object,
-                value: function () { return function (d) { return "(" + d.chipId + ", " + d.nodeId + ")"; }; },
+                value: () => (d) => `(${d.chipId}, ${d.nodeId})`,
             },
             _channelFunc: {
                 type: Object,
-                value: function () { return function (d) { return d.channelId; }; },
+                value: () => (d) => d.channelId,
             },
             _allReduceFunc: {
                 type: Object,
-                value: function () { return function (d) {
+                value: () => function (d) {
                     if (!d.name)
                         return;
-                    var res = d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
+                    const res = d.name.replace(/ll-reduce.|usion.|ll-reduce|usion/, '');
                     return res.length > 1 ? res : res + '0';
-                }; },
+                },
             },
         },
-        _computePodStatsMaps: function (data) {
+        _computePodStatsMaps(data) {
             if (!data)
                 return [];
             return data.podStatsSequence.podStatsMap;
         },
-        _computeRunEnvironment: function (data) {
+        _computeRunEnvironment(data) {
             if (!data)
                 return;
             return data.runEnvironment;
         },
-        _computeMaxStepId: function (podStatsMaps) {
+        _computeMaxStepId(podStatsMaps) {
             return podStatsMaps.length - 1;
         },
-        _computeErrorMessage: function (maxStepId) {
+        _computeErrorMessage(maxStepId) {
             if (maxStepId >= 0)
                 return '';
             return "WARNING: No step time measured. "
@@ -141,18 +141,18 @@ var pod_viewer_dashboard;
          * Calculate the lowFlopsComputeUs by deducting all other breakdown from the
          * total duration.
          */
-        _populateLowFlopsCompute: function (podStatsMap, layers) {
+        _populateLowFlopsCompute(podStatsMap, layers) {
             if (!podStatsMap || !layers)
                 return;
-            var podStatsPerCore = podStatsMap.podStatsPerCore;
-            for (var coreId in podStatsPerCore) {
-                var val = podStatsPerCore[coreId];
+            let podStatsPerCore = podStatsMap.podStatsPerCore;
+            for (let coreId in podStatsPerCore) {
+                let val = podStatsPerCore[coreId];
                 if (val.hasOwnProperty('lowFlopsComputeUs')) {
                     // already populated.
                     return podStatsMap;
                 }
                 val['lowFlopsComputeUs'] = val.totalDurationUs;
-                for (var j = 0; j < layers.length; j++) {
+                for (let j = 0; j < layers.length; j++) {
                     if (j == 1) {
                         continue;
                     }
@@ -166,35 +166,39 @@ var pod_viewer_dashboard;
             }
             return podStatsMap;
         },
-        _computePodStatsMap: function (podStatsMaps, curStepId, layers) {
-            if (curStepId < 0 || curStepId >= podStatsMaps.length || !layers)
+        _computePodStatsMap(podStatsMaps, curStepId, layers) {
+            if (!podStatsMaps ||
+                curStepId < 0 ||
+                curStepId >= podStatsMaps.length ||
+                !layers) {
                 return;
+            }
             return this._populateLowFlopsCompute(podStatsMaps[curStepId], layers);
         },
-        _computeStepStats: function (podStatsMap) {
+        _computeStepStats(podStatsMap) {
             if (!podStatsMap || !podStatsMap.podStatsPerCore)
                 return;
-            var obj = podStatsMap.podStatsPerCore;
-            return Object.keys(obj).map(function (key) { return obj[key]; })
-                .sort(function (a, b) { return a.chipId - b.chipId; });
+            const obj = podStatsMap.podStatsPerCore;
+            return Object.keys(obj).map((key) => obj[key])
+                .sort((a, b) => a.chipId - b.chipId);
         },
-        _computeChannelDb: function (podStatsMap) {
+        _computeChannelDb(podStatsMap) {
             if (!podStatsMap || !podStatsMap.channelDb
                 || podStatsMap.channelDb.length <= 0) {
                 return;
             }
             return podStatsMap.channelDb.slice()
-                .sort(function (a, b) { return b.durationUs - a.durationUs; });
+                .sort((a, b) => b.durationUs - a.durationUs);
         },
-        _computeAllReduceDb: function (podStatsMap) {
+        _computeAllReduceDb(podStatsMap) {
             if (!podStatsMap || !podStatsMap.allReduceOpDb
                 || podStatsMap.allReduceOpDb.length <= 0) {
                 return;
             }
             return podStatsMap.allReduceOpDb.slice()
-                .sort(function (a, b) { return b.durationUs - a.durationUs; });
+                .sort((a, b) => b.durationUs - a.durationUs);
         },
-        _dataChanged: function (newData) {
+        _dataChanged(newData) {
             if (!newData)
                 return;
             this.curStepId = 0;
@@ -204,7 +208,7 @@ var pod_viewer_dashboard;
          * AllReduceOpInfo. Reuse the details_card component to show any of these
          * details.
          */
-        _activeBarChanged: function (newBar) {
+        _activeBarChanged(newBar) {
             if (newBar) {
                 this.activeDetails = [newBar];
             }
@@ -212,7 +216,7 @@ var pod_viewer_dashboard;
         /**
          * Returns the step number of the current step.
          */
-        _getStepNum: function (podStatsMap) {
+        _getStepNum(podStatsMap) {
             return podStatsMap ? podStatsMap.stepNum : 0;
         },
     });

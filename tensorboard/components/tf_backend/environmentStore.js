@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,42 +14,36 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
-    var Mode;
+    let Mode;
     (function (Mode) {
         Mode[Mode["DB"] = 0] = "DB";
         Mode[Mode["LOGDIR"] = 1] = "LOGDIR";
     })(Mode = tf_backend.Mode || (tf_backend.Mode = {}));
-    var EnvironmentStore = /** @class */ (function (_super) {
-        __extends(EnvironmentStore, _super);
-        function EnvironmentStore() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        EnvironmentStore.prototype.load = function () {
-            var _this = this;
-            var url = tf_backend.getRouter().environment();
-            return this.requestManager.request(url).then(function (result) {
-                var environment = {
+    class EnvironmentStore extends tf_backend.BaseStore {
+        load() {
+            const url = tf_backend.getRouter().environment();
+            return this.requestManager.request(url).then(result => {
+                const environment = {
                     dataLocation: result.data_location,
                     mode: result.mode == 'db' ? Mode.DB : Mode.LOGDIR,
                     windowTitle: result.window_title,
                 };
-                if (_.isEqual(_this.environment, environment))
+                if (_.isEqual(this.environment, environment))
                     return;
-                _this.environment = environment;
-                _this.emitChange();
+                this.environment = environment;
+                this.emitChange();
             });
-        };
-        EnvironmentStore.prototype.getDataLocation = function () {
+        }
+        getDataLocation() {
             return this.environment ? this.environment.dataLocation : '';
-        };
-        EnvironmentStore.prototype.getMode = function () {
+        }
+        getMode() {
             return this.environment ? this.environment.mode : null;
-        };
-        EnvironmentStore.prototype.getWindowTitle = function () {
+        }
+        getWindowTitle() {
             return this.environment ? this.environment.windowTitle : '';
-        };
-        return EnvironmentStore;
-    }(tf_backend.BaseStore));
+        }
+    }
     tf_backend.EnvironmentStore = EnvironmentStore;
     tf_backend.environmentStore = new EnvironmentStore();
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

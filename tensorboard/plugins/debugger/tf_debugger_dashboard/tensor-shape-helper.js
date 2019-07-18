@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 var tf_debugger_dashboard;
 (function (tf_debugger_dashboard) {
-    var maxElements1D = 1000;
-    var maxElements2D = 250;
+    const maxElements1D = 1000;
+    const maxElements2D = 250;
     /**
      * Get a Python-style slicing string representing strided slicing.
      * @param size Total size along the dimension being sliced.
@@ -59,8 +59,8 @@ var tf_debugger_dashboard;
                 getStridedSlicing(shape[2], maxElements2D) + ', 0]';
         }
         else {
-            var slicing = '[';
-            for (var i = 0; i < shape.length; ++i) {
+            let slicing = '[';
+            for (let i = 0; i < shape.length; ++i) {
                 if (i < shape.length - 2) {
                     slicing += '0';
                 }
@@ -90,12 +90,11 @@ var tf_debugger_dashboard;
             return 0;
         }
         else {
-            var slicingElements = slicing.split(',');
-            var rank = slicingElements.length;
+            const slicingElements = slicing.split(',');
+            let rank = slicingElements.length;
             // Examine how many of the slicing elements are single numbers, which leads
             // to a decrement in rank.
-            for (var _i = 0, slicingElements_1 = slicingElements; _i < slicingElements_1.length; _i++) {
-                var element = slicingElements_1[_i];
+            for (const element of slicingElements) {
                 if (!isNaN(Number(element))) {
                     rank--;
                 }

@@ -1,11 +1,3 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -22,132 +14,132 @@ limitations under the License.
 ==============================================================================*/
 var tf_categorization_utils;
 (function (tf_categorization_utils) {
-    var assert = chai.assert, expect = chai.expect;
-    describe('categorizationUtils', function () {
-        var CategoryType = tf_categorization_utils.CategoryType;
-        describe('categorizeByPrefix', function () {
-            var categorizeByPrefix = tf_categorization_utils.categorizeByPrefix;
-            var metadata = { type: CategoryType.PREFIX_GROUP };
-            it('returns empty array on empty tags', function () {
+    const { assert, expect } = chai;
+    describe('categorizationUtils', () => {
+        const { CategoryType } = tf_categorization_utils;
+        describe('categorizeByPrefix', () => {
+            const { categorizeByPrefix } = tf_categorization_utils;
+            const metadata = { type: CategoryType.PREFIX_GROUP };
+            it('returns empty array on empty tags', () => {
                 assert.lengthOf(categorizeByPrefix([]), 0);
             });
-            it('handles the singleton case', function () {
-                var input = ['a'];
-                var actual = categorizeByPrefix(input);
-                var expected = [{
+            it('handles the singleton case', () => {
+                const input = ['a'];
+                const actual = categorizeByPrefix(input);
+                const expected = [{
                         name: 'a',
-                        metadata: metadata,
+                        metadata,
                         items: ['a'],
                     }];
                 assert.deepEqual(categorizeByPrefix(input), expected);
             });
-            it('handles a simple case', function () {
-                var input = [
+            it('handles a simple case', () => {
+                const input = [
                     'foo1/bar', 'foo1/zod', 'foo2/bar', 'foo2/zod', 'gosh/lod/mar',
                     'gosh/lod/ned',
                 ];
-                var actual = categorizeByPrefix(input);
-                var expected = [
-                    { name: 'foo1', metadata: metadata, items: ['foo1/bar', 'foo1/zod'] },
-                    { name: 'foo2', metadata: metadata, items: ['foo2/bar', 'foo2/zod'] },
-                    { name: 'gosh', metadata: metadata, items: ['gosh/lod/mar', 'gosh/lod/ned'] },
+                const actual = categorizeByPrefix(input);
+                const expected = [
+                    { name: 'foo1', metadata, items: ['foo1/bar', 'foo1/zod'] },
+                    { name: 'foo2', metadata, items: ['foo2/bar', 'foo2/zod'] },
+                    { name: 'gosh', metadata, items: ['gosh/lod/mar', 'gosh/lod/ned'] },
                 ];
                 assert.deepEqual(actual, expected);
             });
-            it('presents categories in first-occurrence order', function () {
-                var input = ['e', 'f/1', 'g', 'a', 'f/2', 'b', 'c'];
-                var actual = categorizeByPrefix(input);
-                var expected = [
-                    { name: 'e', metadata: metadata, items: ['e'] },
-                    { name: 'f', metadata: metadata, items: ['f/1', 'f/2'] },
-                    { name: 'g', metadata: metadata, items: ['g'] },
-                    { name: 'a', metadata: metadata, items: ['a'] },
-                    { name: 'b', metadata: metadata, items: ['b'] },
-                    { name: 'c', metadata: metadata, items: ['c'] },
+            it('presents categories in first-occurrence order', () => {
+                const input = ['e', 'f/1', 'g', 'a', 'f/2', 'b', 'c'];
+                const actual = categorizeByPrefix(input);
+                const expected = [
+                    { name: 'e', metadata, items: ['e'] },
+                    { name: 'f', metadata, items: ['f/1', 'f/2'] },
+                    { name: 'g', metadata, items: ['g'] },
+                    { name: 'a', metadata, items: ['a'] },
+                    { name: 'b', metadata, items: ['b'] },
+                    { name: 'c', metadata, items: ['c'] },
                 ];
                 assert.deepEqual(actual, expected);
             });
-            it('handles cases where category names overlap item names', function () {
-                var input = ['a', 'a/a', 'a/b', 'a/c', 'b', 'b/a'];
-                var actual = categorizeByPrefix(input);
-                var expected = [
-                    { name: 'a', metadata: metadata, items: ['a', 'a/a', 'a/b', 'a/c'] },
-                    { name: 'b', metadata: metadata, items: ['b', 'b/a'] },
+            it('handles cases where category names overlap item names', () => {
+                const input = ['a', 'a/a', 'a/b', 'a/c', 'b', 'b/a'];
+                const actual = categorizeByPrefix(input);
+                const expected = [
+                    { name: 'a', metadata, items: ['a', 'a/a', 'a/b', 'a/c'] },
+                    { name: 'b', metadata, items: ['b', 'b/a'] },
                 ];
                 assert.deepEqual(actual, expected);
             });
         });
-        describe('categorizeBySearchQuery', function () {
-            var categorizeBySearchQuery = tf_categorization_utils.categorizeBySearchQuery;
-            var baseMetadata = {
+        describe('categorizeBySearchQuery', () => {
+            const { categorizeBySearchQuery } = tf_categorization_utils;
+            const baseMetadata = {
                 type: CategoryType.SEARCH_RESULTS,
                 validRegex: true,
                 universalRegex: false,
             };
-            it('properly selects just the items matching the query', function () {
-                var query = 'cd';
-                var items = ['def', 'cde', 'bcd', 'abc'];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = {
+            it('properly selects just the items matching the query', () => {
+                const query = 'cd';
+                const items = ['def', 'cde', 'bcd', 'abc'];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = {
                     name: query,
                     metadata: baseMetadata,
                     items: ['cde', 'bcd'],
                 };
                 assert.deepEqual(actual, expected);
             });
-            it('treats the query as a regular expression', function () {
-                var query = 'ba(?:na){2,}s';
-                var items = ['apples', 'bananas', 'pears', 'more bananananas more fun'];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = {
+            it('treats the query as a regular expression', () => {
+                const query = 'ba(?:na){2,}s';
+                const items = ['apples', 'bananas', 'pears', 'more bananananas more fun'];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = {
                     name: query,
                     metadata: baseMetadata,
                     items: ['bananas', 'more bananananas more fun'],
                 };
                 assert.deepEqual(actual, expected);
             });
-            it('yields an empty category when there are no items', function () {
-                var query = 'ba(?:na){2,}s';
-                var items = [];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = { name: query, metadata: baseMetadata, items: [] };
+            it('yields an empty category when there are no items', () => {
+                const query = 'ba(?:na){2,}s';
+                const items = [];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = { name: query, metadata: baseMetadata, items: [] };
                 assert.deepEqual(actual, expected);
             });
-            it('yields a universal category when the query is empty', function () {
-                var query = '';
-                var items = ['apples', 'bananas', 'pears', 'bananananas'];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = { name: query, metadata: baseMetadata, items: items };
+            it('yields a universal category when the query is empty', () => {
+                const query = '';
+                const items = ['apples', 'bananas', 'pears', 'bananananas'];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = { name: query, metadata: baseMetadata, items };
                 assert.deepEqual(actual, expected);
             });
-            it('notes when the query is invalid', function () {
-                var query = ')))';
-                var items = ['abc', 'bar', 'zod'];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = {
+            it('notes when the query is invalid', () => {
+                const query = ')))';
+                const items = ['abc', 'bar', 'zod'];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = {
                     name: query,
-                    metadata: __assign({}, baseMetadata, { validRegex: false }),
+                    metadata: Object.assign({}, baseMetadata, { validRegex: false }),
                     items: [],
                 };
                 assert.deepEqual(actual, expected);
             });
-            it('notes when the query is ".*"', function () {
-                var query = '.*';
-                var items = ['abc', 'bar', 'zod'];
-                var actual = categorizeBySearchQuery(items, query);
-                var expected = {
+            it('notes when the query is ".*"', () => {
+                const query = '.*';
+                const items = ['abc', 'bar', 'zod'];
+                const actual = categorizeBySearchQuery(items, query);
+                const expected = {
                     name: query,
-                    metadata: __assign({}, baseMetadata, { universalRegex: true }),
-                    items: items,
+                    metadata: Object.assign({}, baseMetadata, { universalRegex: true }),
+                    items,
                 };
                 assert.deepEqual(actual, expected);
             });
         });
-        describe('categorize', function () {
-            var categorize = tf_categorization_utils.categorize;
-            it('merges the results of the query and the prefix groups', function () {
-                var query = 'ba(?:na){2,}s';
-                var items = [
+        describe('categorize', () => {
+            const { categorize } = tf_categorization_utils;
+            it('merges the results of the query and the prefix groups', () => {
+                const query = 'ba(?:na){2,}s';
+                const items = [
                     'vegetable/asparagus',
                     'vegetable/broccoli',
                     'fruit/apples',
@@ -156,8 +148,8 @@ var tf_categorization_utils;
                     'fruit/pears',
                     'singleton',
                 ];
-                var actual = categorize(items, query);
-                var expected = [{
+                const actual = categorize(items, query);
+                const expected = [{
                         name: query,
                         metadata: {
                             type: CategoryType.SEARCH_RESULTS,

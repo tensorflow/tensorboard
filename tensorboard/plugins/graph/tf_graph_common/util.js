@@ -25,13 +25,13 @@ var tf;
              * Recommended delay (ms) when running an expensive task asynchronously
              * that gives enough time for the progress bar to update its UI.
              */
-            var ASYNC_TASK_DELAY = 20;
+            const ASYNC_TASK_DELAY = 20;
             /**
              * Measure and log a synchronous task.
              */
             function time(msg, task) {
-                var start = Date.now();
-                var result = task();
+                let start = Date.now();
+                let result = task();
                 /* tslint:disable */
                 console.log(msg, ':', Date.now() - start, 'ms');
                 /* tslint:enable */
@@ -103,7 +103,7 @@ var tf;
                 // Run the expensive task with a delay that gives enough time for the
                 // UI to update.
                 try {
-                    var result = tf.graph.util.time(msg, task);
+                    let result = tf.graph.util.time(msg, task);
                     // Update the progress value.
                     tracker.updateProgress(incProgressValue);
                     // Return the result to be used by other tasks.
@@ -120,14 +120,14 @@ var tf;
              * Runs an expensive task asynchronously and returns a promise of the result.
              */
             function runAsyncTask(msg, incProgressValue, task, tracker) {
-                return new Promise(function (resolve, reject) {
+                return new Promise((resolve, reject) => {
                     // Update the progress message to say the current running task.
                     tracker.setMessage(msg);
                     // Run the expensive task with a delay that gives enough time for the
                     // UI to update.
                     setTimeout(function () {
                         try {
-                            var result = tf.graph.util.time(msg, task);
+                            let result = tf.graph.util.time(msg, task);
                             // Update the progress value.
                             tracker.updateProgress(incProgressValue);
                             // Return the result to be used by other tasks.
@@ -148,8 +148,8 @@ var tf;
              * resolves after the progress is updated.
              */
             function runAsyncPromiseTask(msg, incProgressValue, task, tracker) {
-                return new Promise(function (resolve, reject) {
-                    var handleError = function (e) {
+                return new Promise((resolve, reject) => {
+                    let handleError = function (e) {
                         // Errors that happen inside asynchronous tasks are
                         // reported to the tracker using a user-friendly message.
                         tracker.reportError('Failed ' + msg, e);
@@ -161,11 +161,11 @@ var tf;
                     // UI to update.
                     setTimeout(function () {
                         try {
-                            var start_1 = Date.now();
+                            let start = Date.now();
                             task()
                                 .then(function (value) {
                                 /* tslint:disable */
-                                console.log(msg, ':', Date.now() - start_1, 'ms');
+                                console.log(msg, ':', Date.now() - start, 'ms');
                                 // Update the progress value.
                                 tracker.updateProgress(incProgressValue);
                                 // Return the result to be used by other tasks.
@@ -209,8 +209,7 @@ var tf;
              * Returns the human readable version of the unit.
              * (e.g. 1.35 GB, 23 MB, 34 ms, 6.53 min etc).
              */
-            function convertUnitsToHumanReadable(value, units, unitIndex) {
-                if (unitIndex === void 0) { unitIndex = 0; }
+            function convertUnitsToHumanReadable(value, units, unitIndex = 0) {
                 if (unitIndex + 1 < units.length &&
                     value >= units[unitIndex + 1].numUnits) {
                     return tf.graph.util.convertUnitsToHumanReadable(value / units[unitIndex + 1].numUnits, units, unitIndex + 1);
@@ -243,34 +242,29 @@ var tf;
                 if (strings.length < 2) {
                     return strings;
                 }
-                var index = 0;
-                var largestIndex = 0;
+                let index = 0;
+                let largestIndex = 0;
                 // Find the shortest name across all strings.
-                var minLength = _.min(_.map(strings, function (str) { return str.length; }));
-                var _loop_1 = function () {
+                let minLength = _.min(_.map(strings, str => str.length));
+                while (true) {
                     index++;
-                    var prefixes = _.map(strings, function (str) { return str.substring(0, index); });
-                    var allTheSame = prefixes.every(function (prefix, i) {
+                    let prefixes = _.map(strings, str => str.substring(0, index));
+                    let allTheSame = prefixes.every((prefix, i) => {
                         return (i === 0 ? true : prefix === prefixes[i - 1]);
                     });
                     if (allTheSame) {
                         if (index >= minLength) {
-                            return { value: strings };
+                            // There is a string whose whole name is a prefix to other string.
+                            // In this case, we return the original list of string.
+                            return strings;
                         }
                         largestIndex = index;
                     }
                     else {
-                        return "break";
-                    }
-                };
-                while (true) {
-                    var state_1 = _loop_1();
-                    if (typeof state_1 === "object")
-                        return state_1.value;
-                    if (state_1 === "break")
                         break;
+                    }
                 }
-                return _.map(strings, function (str) { return str.substring(largestIndex); });
+                return _.map(strings, str => str.substring(largestIndex));
             }
             util.removeCommonPrefix = removeCommonPrefix;
             /**

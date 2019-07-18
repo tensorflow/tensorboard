@@ -22,8 +22,8 @@ var tf;
         var util;
         (function (util) {
             function time(msg, task) {
-                var start = Date.now();
-                var result = task();
+                let start = Date.now();
+                let result = task();
                 /* tslint:disable */
                 console.log(msg, ':', Date.now() - start, 'ms');
                 /* tslint:enable */
@@ -66,7 +66,7 @@ var tf;
                 // Run the expensive task with a delay that gives enough time for the
                 // UI to update.
                 try {
-                    var result = tf.profile.util.time(msg, task);
+                    let result = tf.profile.util.time(msg, task);
                     // Update the progress value.
                     tracker.updateProgress(incProgressValue);
                     // Return the result to be used by other tasks.

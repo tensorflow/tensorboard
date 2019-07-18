@@ -21,14 +21,14 @@ var vz_projector;
      * 3 dimensional respectively. One usage is in t-SNE in order to do Barnes-Hut
      * approximation.
      */
-    var SPTree = /** @class */ (function () {
+    class SPTree {
         /**
          * Constructs a new tree with the provided data.
          *
          * @param data List of n-dimensional data points.
          * @param capacity Number of data points to store in a single node.
          */
-        function SPTree(data) {
+        constructor(data) {
             if (data.length < 1) {
                 throw new Error('There should be at least 1 data point');
             }
@@ -39,31 +39,31 @@ var vz_projector;
             // which child (e.g. quadron in 2D) the new point is going to be assigned.
             // For more details, see the insert() method and its comments.
             this.masks = new Array(Math.pow(2, this.dim));
-            for (var d = 0; d < this.masks.length; ++d) {
+            for (let d = 0; d < this.masks.length; ++d) {
                 this.masks[d] = (1 << d);
             }
-            var min = new Array(this.dim);
+            let min = new Array(this.dim);
             fillArray(min, Number.POSITIVE_INFINITY);
-            var max = new Array(this.dim);
+            let max = new Array(this.dim);
             fillArray(max, Number.NEGATIVE_INFINITY);
-            for (var i = 0; i < data.length; ++i) {
+            for (let i = 0; i < data.length; ++i) {
                 // For each dim get the min and max.
                 // E.g. For 2-D, get the x_min, x_max, y_min, y_max.
-                for (var d = 0; d < this.dim; ++d) {
+                for (let d = 0; d < this.dim; ++d) {
                     min[d] = Math.min(min[d], data[i][d]);
                     max[d] = Math.max(max[d], data[i][d]);
                 }
             }
             // Create a bounding box with the center of the largest span.
-            var center = new Array(this.dim);
-            var halfDim = 0;
-            for (var d = 0; d < this.dim; ++d) {
-                var span = max[d] - min[d];
+            let center = new Array(this.dim);
+            let halfDim = 0;
+            for (let d = 0; d < this.dim; ++d) {
+                let span = max[d] - min[d];
                 center[d] = min[d] + span / 2;
                 halfDim = Math.max(halfDim, span / 2);
             }
             this.root = { box: { center: center, halfDim: halfDim }, point: data[0] };
-            for (var i = 1; i < data.length; ++i) {
+            for (let i = 1; i < data.length; ++i) {
                 this.insert(this.root, data[i]);
             }
         }
@@ -76,19 +76,18 @@ var vz_projector;
          * the low and high points will be the lower-left corner and the upper-right
          * corner.
          */
-        SPTree.prototype.visit = function (accessor, noBox) {
-            if (noBox === void 0) { noBox = false; }
+        visit(accessor, noBox = false) {
             this.visitNode(this.root, accessor, noBox);
-        };
-        SPTree.prototype.visitNode = function (node, accessor, noBox) {
-            var skipChildren;
+        }
+        visitNode(node, accessor, noBox) {
+            let skipChildren;
             if (noBox) {
                 skipChildren = accessor(node);
             }
             else {
-                var lowPoint = new Array(this.dim);
-                var highPoint = new Array(this.dim);
-                for (var d = 0; d < this.dim; ++d) {
+                let lowPoint = new Array(this.dim);
+                let highPoint = new Array(this.dim);
+                for (let d = 0; d < this.dim; ++d) {
                     lowPoint[d] = node.box.center[d] - node.box.halfDim;
                     highPoint[d] = node.box.center[d] + node.box.halfDim;
                 }
@@ -97,14 +96,14 @@ var vz_projector;
             if (!node.children || skipChildren) {
                 return;
             }
-            for (var i = 0; i < node.children.length; ++i) {
-                var child = node.children[i];
+            for (let i = 0; i < node.children.length; ++i) {
+                let child = node.children[i];
                 if (child) {
                     this.visitNode(child, accessor, noBox);
                 }
             }
-        };
-        SPTree.prototype.insert = function (node, p) {
+        }
+        insert(node, p) {
             // Subdivide and then add the point to whichever node will accept it.
             if (node.children == null) {
                 node.children = new Array(this.masks.length);
@@ -114,8 +113,8 @@ var vz_projector;
             // coordinate is greater than the node's k-th coordinate, 0 otherwise.
             // Then the binary signature in decimal system gives us the index of the
             // child where the new point should be.
-            var index = 0;
-            for (var d = 0; d < this.dim; ++d) {
+            let index = 0;
+            for (let d = 0; d < this.dim; ++d) {
                 if (p[d] > node.box.center[d]) {
                     index |= this.masks[d];
                 }
@@ -126,21 +125,20 @@ var vz_projector;
             else {
                 this.insert(node.children[index], p);
             }
-        };
-        SPTree.prototype.makeChild = function (node, index, p) {
-            var oldC = node.box.center;
-            var h = node.box.halfDim / 2;
-            var newC = new Array(this.dim);
-            for (var d = 0; d < this.dim; ++d) {
+        }
+        makeChild(node, index, p) {
+            let oldC = node.box.center;
+            let h = node.box.halfDim / 2;
+            let newC = new Array(this.dim);
+            for (let d = 0; d < this.dim; ++d) {
                 newC[d] = (index & (1 << d)) ? oldC[d] + h : oldC[d] - h;
             }
             node.children[index] = { box: { center: newC, halfDim: h }, point: p };
-        };
-        return SPTree;
-    }());
+        }
+    }
     vz_projector.SPTree = SPTree;
     function fillArray(arr, value) {
-        for (var i = 0; i < arr.length; ++i) {
+        for (let i = 0; i < arr.length; ++i) {
             arr[i] = value;
         }
     }

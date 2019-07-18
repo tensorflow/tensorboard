@@ -18,8 +18,8 @@ var vz_projector;
      * LabelRenderParams describes the set of points that should have labels
      * rendered next to them.
      */
-    var LabelRenderParams = /** @class */ (function () {
-        function LabelRenderParams(pointIndices, labelStrings, scaleFactors, useSceneOpacityFlags, defaultFontSize, fillColors, strokeColors) {
+    class LabelRenderParams {
+        constructor(pointIndices, labelStrings, scaleFactors, useSceneOpacityFlags, defaultFontSize, fillColors, strokeColors) {
             this.pointIndices = pointIndices;
             this.labelStrings = labelStrings;
             this.scaleFactors = scaleFactors;
@@ -28,11 +28,10 @@ var vz_projector;
             this.fillColors = fillColors;
             this.strokeColors = strokeColors;
         }
-        return LabelRenderParams;
-    }());
+    }
     vz_projector.LabelRenderParams = LabelRenderParams;
     /** Details about the camera projection being used to render the scene. */
-    var CameraType;
+    let CameraType;
     (function (CameraType) {
         CameraType[CameraType["Perspective"] = 0] = "Perspective";
         CameraType[CameraType["Orthographic"] = 1] = "Orthographic";
@@ -45,8 +44,8 @@ var vz_projector;
      * each frame. Data like colors / scale factors / labels should be reapplied
      * only when they change.
      */
-    var RenderContext = /** @class */ (function () {
-        function RenderContext(camera, cameraType, cameraTarget, screenWidth, screenHeight, nearestCameraSpacePointZ, farthestCameraSpacePointZ, backgroundColor, pointColors, pointScaleFactors, labels, polylineColors, polylineOpacities, polylineWidths) {
+    class RenderContext {
+        constructor(camera, cameraType, cameraTarget, screenWidth, screenHeight, nearestCameraSpacePointZ, farthestCameraSpacePointZ, backgroundColor, pointColors, pointScaleFactors, labels, polylineColors, polylineOpacities, polylineWidths) {
             this.camera = camera;
             this.cameraType = cameraType;
             this.cameraTarget = cameraTarget;
@@ -62,7 +61,6 @@ var vz_projector;
             this.polylineOpacities = polylineOpacities;
             this.polylineWidths = polylineWidths;
         }
-        return RenderContext;
-    }());
+    }
     vz_projector.RenderContext = RenderContext;
 })(vz_projector || (vz_projector = {})); // namespace vz_projector

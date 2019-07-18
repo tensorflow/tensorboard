@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-describe('layout', function () {
-    var assert = chai.assert;
-    it('dagre exists', function () { assert.isTrue(dagre != null); });
+describe('layout', () => {
+    let assert = chai.assert;
+    it('dagre exists', () => { assert.isTrue(dagre != null); });
     // TODO: write tests.
 });

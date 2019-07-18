@@ -33,16 +33,16 @@ var tf;
                 // - metanode nodes - some of them have only one member (singular metanode)
                 //                    and some have multiple members (non-singular metanode)
                 // First, generate a nearest neighbor hash of metanode nodes.
-                var nnGroups = clusterSimilarSubgraphs(h);
+                let nnGroups = clusterSimilarSubgraphs(h);
                 // For each metanode, compare its subgraph (starting from shallower groups)
                 // and assign template id.
-                var templates = groupTemplateAndAssignId(nnGroups, verifyTemplate);
+                let templates = groupTemplateAndAssignId(nnGroups, verifyTemplate);
                 // Sort the templates by minimum level in the graph at which they appear,
                 // as this leads to optimal setting of the colors of each template for
                 // maximum differentiation.
                 return Object.keys(templates)
-                    .sort(function (key) { return templates[key].level; })
-                    .reduce(function (obj, key) {
+                    .sort(key => templates[key].level)
+                    .reduce((obj, key) => {
                     obj[key] = templates[key];
                     return obj;
                 }, {});
@@ -55,14 +55,14 @@ var tf;
              */
             function getSignature(metanode) {
                 // depth=<number> |V|=<number> |E|=<number>
-                var props = _.map({
+                let props = _.map({
                     'depth': metanode.depth,
                     '|V|': metanode.metagraph.nodes().length,
                     '|E|': metanode.metagraph.edges().length
                 }, function (v, k) { return k + '=' + v; })
                     .join(' ');
                 // optype1=count1,optype2=count2
-                var ops = _.map(metanode.opHistogram, function (count, op) {
+                let ops = _.map(metanode.opHistogram, function (count, op) {
                     return op + '=' + count;
                 }).join(',');
                 return props + ' [ops] ' + ops;
@@ -78,15 +78,15 @@ var tf;
              */
             function clusterSimilarSubgraphs(h) {
                 /** a dict from metanode.signature() => Array of tf.graph.Groups */
-                var map = h.getNodeMap();
-                var hashDict = Object.keys(map).reduce(function (reduced, name) {
-                    var node = map[name];
+                const map = h.getNodeMap();
+                let hashDict = Object.keys(map).reduce((reduced, name) => {
+                    const node = map[name];
                     if (node.type !== graph_1.NodeType.META) {
                         return reduced;
                     }
-                    var levelOfMetaNode = name.split('/').length - 1;
-                    var signature = getSignature(node);
-                    var templateInfo = reduced[signature] ||
+                    let levelOfMetaNode = name.split('/').length - 1;
+                    let signature = getSignature(node);
+                    let templateInfo = reduced[signature] ||
                         { nodes: [], level: levelOfMetaNode };
                     reduced[signature] = templateInfo;
                     templateInfo.nodes.push(node);
@@ -96,10 +96,9 @@ var tf;
                     return reduced;
                 }, {});
                 return Object.keys(hashDict)
-                    .map(function (key) { return [key, hashDict[key]]; })
-                    .filter(function (_a) {
-                    var _ = _a[0], subGraph = _a[1];
-                    var nodes = subGraph.nodes;
+                    .map(key => [key, hashDict[key]])
+                    .filter(([_, subGraph]) => {
+                    const { nodes } = subGraph;
                     if (nodes.length > 1) {
                         // There is more than 1 node with this template. It is worth assigning
                         // a unique color to this template.
@@ -108,12 +107,11 @@ var tf;
                     // If there is only 1 node with this template, only make a template for
                     // it if it represents a function. In that case, the graph explorer may
                     // add more nodes with the template later.
-                    var node = nodes[0];
+                    const node = nodes[0];
                     return node.type === graph_1.NodeType.META &&
                         node.associatedFunction;
                 })
-                    .sort(function (_a) {
-                    var _ = _a[0], subGraph = _a[1];
+                    .sort(([_, subGraph]) => {
                     // sort by depth
                     // (all members in the same nnGroup has equal depth)
                     return subGraph.nodes[0].depth;
@@ -122,13 +120,13 @@ var tf;
             function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
                 // For each metanode, compare its subgraph (starting from shallower groups)
                 // and assign template id.
-                var result = {};
+                let result = {};
                 return _.reduce(nnGroups, function (templates, nnGroupPair) {
-                    var signature = nnGroupPair[0], nnGroup = nnGroupPair[1].nodes, clusters = [];
+                    let signature = nnGroupPair[0], nnGroup = nnGroupPair[1].nodes, clusters = [];
                     nnGroup.forEach(function (metanode) {
                         // check with each existing cluster
-                        for (var i = 0; i < clusters.length; i++) {
-                            var similar = !verifyTemplate ||
+                        for (let i = 0; i < clusters.length; i++) {
+                            let similar = !verifyTemplate ||
                                 isSimilarSubgraph(clusters[i].metanode.metagraph, metanode.metagraph);
                             // if similar, just add this metanode to the cluster
                             if (similar) {
@@ -156,12 +154,12 @@ var tf;
             }
             function sortNodes(names, graph, prefix) {
                 return _.sortBy(names, [
-                    function (name) { return graph.node(name).op; },
-                    function (name) { return graph.node(name).templateId; },
-                    function (name) { return graph.neighbors(name).length; },
-                    function (name) { return graph.predecessors(name).length; },
-                    function (name) { return graph.successors(name).length; },
-                    function (name) { return name.substr(prefix.length); },
+                    (name) => graph.node(name).op,
+                    (name) => graph.node(name).templateId,
+                    (name) => graph.neighbors(name).length,
+                    (name) => graph.predecessors(name).length,
+                    (name) => graph.successors(name).length,
+                    (name) => name.substr(prefix.length),
                 ]);
             }
             function isSimilarSubgraph(g1, g2) {
@@ -171,17 +169,17 @@ var tf;
                 // if we want to skip, just return true here.
                 // return true;
                 // Verify sequence by running DFS
-                var g1prefix = g1.graph().name;
-                var g2prefix = g2.graph().name;
-                var visited1 = {};
-                var visited2 = {};
-                var stack = [];
+                let g1prefix = g1.graph().name;
+                let g2prefix = g2.graph().name;
+                let visited1 = {};
+                let visited2 = {};
+                let stack = [];
                 /**
                  * push sources or successors into the stack
                  * if the visiting pattern has been similar.
                  */
                 function stackPushIfNotDifferent(n1, n2) {
-                    var sub1 = n1.substr(g1prefix.length), sub2 = n2.substr(g2prefix.length);
+                    let sub1 = n1.substr(g1prefix.length), sub2 = n2.substr(g2prefix.length);
                     /* tslint:disable */
                     if (visited1[sub1] ^ visited2[sub2]) {
                         console.warn('different visit pattern', '[' + g1prefix + ']', sub1, '[' + g2prefix + ']', sub2);
@@ -195,8 +193,8 @@ var tf;
                     return false;
                 }
                 // check if have same # of sources then sort and push
-                var sources1 = g1.sources();
-                var sources2 = g2.sources();
+                let sources1 = g1.sources();
+                let sources2 = g2.sources();
                 if (sources1.length !== sources2.length) {
                     /* tslint:disable */
                     console.log('different source length');
@@ -205,21 +203,21 @@ var tf;
                 }
                 sources1 = sortNodes(sources1, g1, g1prefix);
                 sources2 = sortNodes(sources2, g2, g2prefix);
-                for (var i = 0; i < sources1.length; i++) {
-                    var different = stackPushIfNotDifferent(sources1[i], sources2[i]);
+                for (let i = 0; i < sources1.length; i++) {
+                    let different = stackPushIfNotDifferent(sources1[i], sources2[i]);
                     if (different) {
                         return false;
                     }
                 }
                 while (stack.length > 0) {
-                    var cur = stack.pop();
+                    let cur = stack.pop();
                     // check node
-                    var similar = isSimilarNode(g1.node(cur.n1), g2.node(cur.n2));
+                    let similar = isSimilarNode(g1.node(cur.n1), g2.node(cur.n2));
                     if (!similar) {
                         return false;
                     }
                     // check if have same # of successors then sort and push
-                    var succ1 = g1.successors(cur.n1), succ2 = g2.successors(cur.n2);
+                    let succ1 = g1.successors(cur.n1), succ2 = g2.successors(cur.n2);
                     if (succ1.length !== succ2.length) {
                         /* tslint:disable */
                         console.log('# of successors mismatch', succ1, succ2);
@@ -228,8 +226,8 @@ var tf;
                     }
                     succ1 = sortNodes(succ1, g1, g1prefix);
                     succ2 = sortNodes(succ2, g2, g2prefix);
-                    for (var j = 0; j < succ1.length; j++) {
-                        var different = stackPushIfNotDifferent(succ1[j], succ2[j]);
+                    for (let j = 0; j < succ1.length; j++) {
+                        let different = stackPushIfNotDifferent(succ1[j], succ2[j]);
                         if (different) {
                             return false;
                         }
@@ -243,8 +241,8 @@ var tf;
             function isSimilarNode(n1, n2) {
                 if (n1.type === graph_1.NodeType.META) {
                     // compare metanode
-                    var metanode1 = n1;
-                    var metanode2 = n2;
+                    let metanode1 = n1;
+                    let metanode2 = n2;
                     return metanode1.templateId && metanode2.templateId &&
                         metanode1.templateId === metanode2.templateId;
                 }
@@ -255,9 +253,9 @@ var tf;
                 else if (n1.type === graph_1.NodeType.SERIES && n2.type === graph_1.NodeType.SERIES) {
                     // compare series node sizes and operations
                     // (only need to check one op as all op nodes are identical in series)
-                    var sn1 = n1;
-                    var sn2 = n2;
-                    var seriesnode1Count = sn1.metagraph.nodeCount();
+                    let sn1 = n1;
+                    let sn2 = n2;
+                    let seriesnode1Count = sn1.metagraph.nodeCount();
                     return (seriesnode1Count === sn2.metagraph.nodeCount() &&
                         (seriesnode1Count === 0 ||
                             (sn1.metagraph.node(sn1.metagraph.nodes()[0]).op ===

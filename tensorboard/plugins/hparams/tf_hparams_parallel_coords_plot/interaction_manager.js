@@ -26,13 +26,13 @@ var tf;
              * used for rendering the parallel coordinates plot. Also contains the top-level
              * DOM <g> element underwhich the plot will be rendered.
              */
-            var SVGProperties = /** @class */ (function () {
+            class SVGProperties {
                 /**
                  * Computes the width and height of the SVG element based on the number of
                  * columns in the schema. Adds some margins and adds a top-level <g> element
                  * underwhich the plot should be rendered.
                  */
-                function SVGProperties(svg, numColumns) {
+                constructor(svg, numColumns) {
                     // We use the following algorithm for laying out our SVG:
                     // We compute a minimum size for the SVG based on the number columns
                     // and some margins. We set the svg "width" and "height" styles
@@ -42,12 +42,12 @@ var tf;
                     // If the parent is larger than the minimum size, we use its
                     // preserveAspectRatio attr to scale the contents to fit the larger size.
                     this.svg = d3.select(svg);
-                    var margin = { top: 30, right: 10, bottom: 10, left: 10 };
-                    var COL_WIDTH = 100;
-                    var COL_HEIGHT = 200;
-                    var totalWidth = numColumns * COL_WIDTH + margin.left + margin.right;
-                    var totalHeight = COL_HEIGHT + margin.top + margin.bottom;
-                    this.svg.attr("viewBox", "0 0 " + totalWidth + " " + totalHeight);
+                    const margin = { top: 30, right: 10, bottom: 10, left: 10 };
+                    const COL_WIDTH = 100;
+                    const COL_HEIGHT = 200;
+                    const totalWidth = numColumns * COL_WIDTH + margin.left + margin.right;
+                    const totalHeight = COL_HEIGHT + margin.top + margin.bottom;
+                    this.svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
                     this.svg.attr("preserveAspectRatio", "xMidYMid");
                     // Set a minimum width so scale factor want be less than 1
                     // (but if size of '#container' is larger then we'll scale up
@@ -61,8 +61,7 @@ var tf;
                         .append("g")
                         .attr("transform", tf.hparams.utils.translateStr(margin.left, margin.top));
                 }
-                return SVGProperties;
-            }());
+            }
             parallel_coords_plot.SVGProperties = SVGProperties;
             /**
              * Orchastrates the behavior of the parallel coordinates plot. This is the
@@ -79,9 +78,8 @@ var tf;
              *      // Do something with the newSessionGroup.
              *    }
              */
-            var InteractionManager = /** @class */ (function () {
-                function InteractionManager(svgProps, schema, peakedSessionGroupChangedCallback, selectedSessionChangedCallback) {
-                    var _this = this;
+            class InteractionManager {
+                constructor(svgProps, schema, peakedSessionGroupChangedCallback, selectedSessionChangedCallback) {
                     this._svgProps = svgProps;
                     this._schema = schema;
                     this._peakedSessionGroupChangedCB = peakedSessionGroupChangedCallback;
@@ -90,45 +88,44 @@ var tf;
                     /*interactionManager=*/ this);
                     this._linesCollection = new parallel_coords_plot.LinesCollection(svgProps, schema, this._axesCollection);
                     this._svgProps.svg
-                        .on("click", function () { return _this.onClick(); })
-                        .on("mousemove mouseenter", function () {
-                        var _a = d3.mouse(_this._svgProps.svgG.node()), x = _a[0], y = _a[1];
-                        _this.onMouseMoved(x, y);
+                        .on("click", () => this.onClick())
+                        .on("mousemove mouseenter", () => {
+                        const [x, y] = d3.mouse(this._svgProps.svgG.node());
+                        this.onMouseMoved(x, y);
                     })
-                        .on("mouseleave", function () { return _this.onMouseLeave(); });
+                        .on("mouseleave", () => this.onMouseLeave());
                 }
-                InteractionManager.prototype.onDragStart = function (colIndex) {
+                onDragStart(colIndex) {
                     this._axesCollection.dragStart(colIndex);
                     this._linesCollection.hideBackgroundLines();
-                };
-                InteractionManager.prototype.onDrag = function (newX) {
+                }
+                onDrag(newX) {
                     this._axesCollection.drag(newX);
                     this._linesCollection.recomputeControlPoints(parallel_coords_plot.LineType.FOREGROUND);
-                };
-                InteractionManager.prototype.onDragEnd = function () {
-                    var _this = this;
+                }
+                onDragEnd() {
                     this._axesCollection.dragEnd(/*transitionDuration=*/ 500);
                     this._linesCollection.recomputeControlPoints(parallel_coords_plot.LineType.FOREGROUND, /* transitionDuration=*/ 500);
-                    window.setTimeout(function () {
-                        _this._linesCollection.recomputeControlPoints(parallel_coords_plot.LineType.BACKGROUND);
-                        _this._linesCollection.showBackgroundLines();
+                    window.setTimeout(() => {
+                        this._linesCollection.recomputeControlPoints(parallel_coords_plot.LineType.BACKGROUND);
+                        this._linesCollection.showBackgroundLines();
                     }, 500);
-                };
-                InteractionManager.prototype.onBrushChanged = function (colIndex, newBrushSelection) {
+                }
+                onBrushChanged(colIndex, newBrushSelection) {
                     this._axesCollection.getAxisForColIndex(colIndex).setBrushSelection(newBrushSelection);
                     this._linesCollection.recomputeForegroundLinesVisibility();
-                };
-                InteractionManager.prototype.onMouseMoved = function (newX, newY) {
+                }
+                onMouseMoved(newX, newY) {
                     this._linesCollection.updatePeakedSessionGroup(this._linesCollection.findClosestSessionGroup(newX, newY));
                     this._peakedSessionGroupChangedCB(this._linesCollection.peakedSessionGroupHandle().sessionGroup());
-                };
-                InteractionManager.prototype.onMouseLeave = function () {
+                }
+                onMouseLeave() {
                     if (!this._linesCollection.peakedSessionGroupHandle().isNull()) {
                         this._linesCollection.clearPeakedSessionGroup();
                         this._peakedSessionGroupChangedCB(null);
                     }
-                };
-                InteractionManager.prototype.onClick = function () {
+                }
+                onClick() {
                     if (this._linesCollection.peakedSessionGroupHandle().sessionGroup() ===
                         this._linesCollection.selectedSessionGroupHandle().sessionGroup()) {
                         /* If the selected session group is the same as the "peaked" one,
@@ -139,11 +136,11 @@ var tf;
                         this._linesCollection.updateSelectedSessionGroup(this._linesCollection.peakedSessionGroupHandle());
                     }
                     this._selectedSessionGroupChangedCB(this._linesCollection.selectedSessionGroupHandle().sessionGroup());
-                };
-                InteractionManager.prototype.onOptionsOrSessionGroupsChanged = function (newOptions, newSessionGroups) {
+                }
+                onOptionsOrSessionGroupsChanged(newOptions, newSessionGroups) {
                     this._axesCollection.updateAxes(newOptions, newSessionGroups);
-                    var oldPeakedSessionGroupHandle = this._linesCollection.peakedSessionGroupHandle();
-                    var oldSelectedSessionGroupHandle = this._linesCollection.selectedSessionGroupHandle();
+                    const oldPeakedSessionGroupHandle = this._linesCollection.peakedSessionGroupHandle();
+                    const oldSelectedSessionGroupHandle = this._linesCollection.selectedSessionGroupHandle();
                     this._linesCollection.redraw(newSessionGroups, newOptions.colorByColumnIndex !== undefined
                         ? newOptions.columns[newOptions.colorByColumnIndex].absoluteIndex
                         : null, newOptions.minColor, newOptions.maxColor);
@@ -155,12 +152,11 @@ var tf;
                     if (!oldSelectedSessionGroupHandle.equalsTo(this._linesCollection.selectedSessionGroupHandle())) {
                         this._selectedSessionGroupChangedCB(this._linesCollection.selectedSessionGroupHandle().sessionGroup());
                     }
-                };
-                InteractionManager.prototype.schema = function () {
+                }
+                schema() {
                     return this._schema;
-                };
-                return InteractionManager;
-            }());
+                }
+            }
             parallel_coords_plot.InteractionManager = InteractionManager;
             ;
         })(parallel_coords_plot = hparams.parallel_coords_plot || (hparams.parallel_coords_plot = {}));

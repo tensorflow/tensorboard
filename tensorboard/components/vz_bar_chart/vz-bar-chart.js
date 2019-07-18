@@ -52,7 +52,7 @@ var vz_bar_chart;
              */
             lines: {
                 type: Object,
-                value: function () { return ({}); }
+                value: () => ({})
             },
             /**
              * Scale that maps series names to colors. The default colors are from
@@ -160,8 +160,8 @@ var vz_bar_chart;
             this._chart = chart;
         },
     });
-    var BarChart = /** @class */ (function () {
-        function BarChart(data, lines, colorScale, linesColorScale, tooltip, tooltipColumns) {
+    class BarChart {
+        constructor(data, lines, colorScale, linesColorScale, tooltip, tooltipColumns) {
             // Assign each class a color.
             colorScale.domain(_.sortBy(_.keys(data)));
             // Assign arguments passed in constructor for future use.
@@ -176,134 +176,127 @@ var vz_bar_chart;
             this.buildChart(data, lines, colorScale, linesColorScale);
             this.setupTooltips(tooltipColumns);
         }
-        BarChart.prototype.buildChart = function (data, lines, colorScale, linesColorScale) {
-            var _this = this;
+        buildChart(data, lines, colorScale, linesColorScale) {
             if (this.outer) {
                 this.outer.destroy();
             }
-            var xScale = new Plottable.Scales.Category();
-            var yScale = new Plottable.Scales.Linear();
-            var xAxis = new Plottable.Axes.Category(xScale, 'bottom');
-            var yAxis = new Plottable.Axes.Numeric(yScale, 'left');
-            var plot = new Plottable.Plots.ClusteredBar();
+            const xScale = new Plottable.Scales.Category();
+            const yScale = new Plottable.Scales.Linear();
+            const xAxis = new Plottable.Axes.Category(xScale, 'bottom');
+            const yAxis = new Plottable.Axes.Numeric(yScale, 'left');
+            const plot = new Plottable.Plots.ClusteredBar();
             plot.x(function (d) {
                 return d.x;
             }, xScale);
             plot.y(function (d) {
                 return d.y;
             }, yScale);
-            var seriesNames = _.keys(data);
-            seriesNames.forEach(function (seriesName) { return plot.addDataset(new Plottable.Dataset(data[seriesName]).metadata(seriesName)); });
+            const seriesNames = _.keys(data);
+            seriesNames.forEach(seriesName => plot.addDataset(new Plottable.Dataset(data[seriesName]).metadata(seriesName)));
             plot.attr('fill', function (d, i, dataset) {
                 return colorScale.scale(dataset.metadata());
             });
             this.plot = plot;
             // If lines have been provided to overlay on the bar chart, then
             // create a line plot and put it in a group with the bar chart.
-            var lineNames = _.keys(lines);
+            const lineNames = _.keys(lines);
             if (lineNames.length > 0) {
-                var linePlot_1 = new Plottable.Plots.Line();
-                linePlot_1.x(function (d) {
+                const linePlot = new Plottable.Plots.Line();
+                linePlot.x(function (d) {
                     return d.x;
                 }, xScale);
-                linePlot_1.y(function (d) {
+                linePlot.y(function (d) {
                     return d.y;
                 }, yScale);
-                lineNames.forEach(function (lineName) { return linePlot_1.addDataset(new Plottable.Dataset(lines[lineName]).metadata(lineName)); });
-                linePlot_1.attr('stroke', function (d, i, dataset) {
-                    return _this.linesColorScale.scale(dataset.metadata());
-                });
-                var group = new Plottable.Components.Group([plot, linePlot_1]);
+                lineNames.forEach(lineName => linePlot.addDataset(new Plottable.Dataset(lines[lineName]).metadata(lineName)));
+                linePlot.attr('stroke', (d, i, dataset) => this.linesColorScale.scale(dataset.metadata()));
+                const group = new Plottable.Components.Group([plot, linePlot]);
                 this.outer = new Plottable.Components.Table([[yAxis, group], [null, xAxis]]);
             }
             else {
                 this.outer = new Plottable.Components.Table([[yAxis, plot], [null, xAxis]]);
             }
-        };
-        BarChart.prototype.setupTooltips = function (tooltipColumns) {
-            var _this = this;
+        }
+        setupTooltips(tooltipColumns) {
             // Set up tooltip column headers.
-            var tooltipHeaderRow = this.tooltip.select('thead tr');
+            const tooltipHeaderRow = this.tooltip.select('thead tr');
             tooltipHeaderRow
                 .selectAll('th')
                 .data(tooltipColumns)
                 .enter()
                 .append('th')
-                .text(function (d) { return d.title; });
+                .text(d => d.title);
             // Prepend empty header cell for the data series colored circle icon.
             tooltipHeaderRow.insert('th', ':first-child');
-            var plot = this.plot;
-            var pointer = new Plottable.Interactions.Pointer();
+            const plot = this.plot;
+            const pointer = new vz_chart_helpers.PointerInteraction();
             pointer.attachTo(plot);
-            var hideTooltips = function () {
-                _this.tooltip.style('opacity', 0);
+            var hideTooltips = () => {
+                this.tooltip.style('opacity', 0);
             };
-            pointer.onPointerMove(function (p) {
-                var target = plot.entityNearest(p);
+            pointer.onPointerMove((p) => {
+                const target = plot.entityNearest(p);
                 if (target) {
-                    _this.drawTooltips(target, tooltipColumns);
+                    this.drawTooltips(target, tooltipColumns);
                 }
             });
             pointer.onPointerExit(hideTooltips);
-        };
-        BarChart.prototype.drawTooltips = function (target, tooltipColumns) {
-            var hoveredClass = target.datum.x;
-            var hoveredSeries = target.dataset.metadata();
+        }
+        drawTooltips(target, tooltipColumns) {
+            const hoveredClass = target.datum.x;
+            const hoveredSeries = target.dataset.metadata();
             // The data is formatted in the way described on the  main element.
             // e.g. {'series0': [{ x: 'a', y: 1 }, { x: 'c', y: 3 },
             //       'series1': [{ x: 'a', y: 4 }, { x: 'g', y: 3 }, { x: 'e', y: 5 }]}
             // Filter down the data so each value contains 0 or 1 elements in the array,
             // which correspond to the value of the closest clustered bar (e.g. 'c').
             // This generates {series0: Array(1), series1: Array(0)}.
-            var bars = _.mapValues(this.data, function (allValuesForSeries) {
-                return _.filter(allValuesForSeries, function (elt) { return elt.x == hoveredClass; });
-            });
+            let bars = _.mapValues(this.data, allValuesForSeries => _.filter(allValuesForSeries, elt => elt.x == hoveredClass));
             // Remove the keys that map to an empty array, and unpack the array.
             // This generates {series0: { x: 'c', y: 3 }}
-            bars = _.pickBy(bars, function (val) { return val.length > 0; });
-            var singleBars = _.mapValues(bars, function (val) { return val[0]; });
+            bars = _.pickBy(bars, val => val.length > 0);
+            const singleBars = _.mapValues(bars, val => val[0]);
             // Rearrange the object for convenience.
             // This yields: [{key: 'series0', value: { x: 'c', y: 3 }}, ]
-            var barEntries = d3.entries(singleBars);
+            const barEntries = d3.entries(singleBars);
             // Bind the bars data structure to the tooltip.
-            var rows = this.tooltip.select('tbody')
+            const rows = this.tooltip.select('tbody')
                 .html('')
                 .selectAll('tr')
                 .data(barEntries)
                 .enter()
                 .append('tr');
             rows.style('white-space', 'nowrap');
-            rows.classed('closest', function (d) { return d.key == hoveredSeries; });
-            var colorScale = this.colorScale;
+            rows.classed('closest', d => d.key == hoveredSeries);
+            const colorScale = this.colorScale;
             rows.append('td')
                 .append('div')
                 .classed('swatch', true)
-                .style('background-color', function (d) { return colorScale.scale(d.key); });
-            _.each(tooltipColumns, function (column) {
-                rows.append('td').text(function (d) {
+                .style('background-color', d => colorScale.scale(d.key));
+            _.each(tooltipColumns, (column) => {
+                rows.append('td').text((d) => {
                     // Convince TypeScript to let us pass off a key-value entry of value
                     // type Bar as a Point since that's what TooltipColumn.evaluate wants.
                     // TODO(nickfelt): reconcile the incompatible typing here
-                    var barEntryAsPoint = d;
+                    const barEntryAsPoint = d;
                     return column.evaluate(barEntryAsPoint);
                 });
             });
-            var left = target.position.x;
-            var top = target.position.y;
+            const left = target.position.x;
+            const top = target.position.y;
             this.tooltip.style('transform', 'translate(' + left + 'px,' + top + 'px)');
             this.tooltip.style('opacity', 1);
-        };
-        BarChart.prototype.renderTo = function (targetSVG) {
+        }
+        renderTo(targetSVG) {
             // TODO(chihuahua): Figure out why we store targetSVG as a property.
             this.targetSVG = targetSVG;
             this.outer.renderTo(targetSVG);
-        };
-        BarChart.prototype.redraw = function () {
+        }
+        redraw() {
             this.outer.redraw();
-        };
-        BarChart.prototype.destroy = function () {
+        }
+        destroy() {
             this.outer.destroy();
-        };
-        return BarChart;
-    }());
+        }
+    }
 })(vz_bar_chart || (vz_bar_chart = {})); // namespace vz_bar_chart
