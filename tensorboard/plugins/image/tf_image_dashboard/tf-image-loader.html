@@ -18,7 +18,7 @@ limitations under the License.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
@@ -117,17 +117,17 @@ future for loading older images.
       }
 
       /** When actual size shown is on, use the actual image width. */
-      :host[actual-size] {
+      :host([actual-size]) {
         max-width: 100%;
         width: auto;
       }
 
-      :host[actual-size] #main-image-container {
+      :host([actual-size]) #main-image-container {
         max-height: none;
         width: auto;
       }
 
-      :host[actual-size] #main-image-container img {
+      :host([actual-size]) #main-image-container img {
         width: auto;
       }
 
@@ -181,6 +181,9 @@ future for loading older images.
       }
       paper-icon-button[selected] {
         background: var(--tb-ui-light-accent);
+      }
+      [hidden] {
+        display: none;
       }
     </style>
   </template>

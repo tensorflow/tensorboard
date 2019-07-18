@@ -161,7 +161,6 @@ Polymer({
      */
     renderHierarchy: {
       type: Object,
-      notify: true,
     },
     /**
      * @type {!Selection}
@@ -180,6 +179,11 @@ Polymer({
       type: Number,
       value: 0,
       observer: '_selectedRunIndexChanged',
+    },
+    traceInputs: {
+      type: Boolean,
+      notify: true,
+      value: false,
     },
     _selectedTagIndex: {
       type: Number,
@@ -233,17 +237,6 @@ Polymer({
       type: Boolean,
       value: true,
     },
-  },
-
-  listeners: {
-    'trace-inputs.change': '_traceInputToggleChanged',
-  },
-
-  _traceInputToggleChanged: function(event: Event): void {
-    // Flip the state of the trace inputs flag.
-    const toggleButton: any = event.target;
-    this.renderHierarchy.traceInputs = toggleButton.active;
-    tf.graph.scene.node.traceInputs(this.renderHierarchy);
   },
 
   _xlaClustersProvided: function(
@@ -339,14 +332,8 @@ Polymer({
     return datasets[_selectedRunIndex].tags;
   },
 
-  fit: function(): void {
-    // TODO(stephanwlee): document -> this. A WebComponent should not use
-    // document.querySelector. tf-graph renders tf-graph-scene#scene
-    // which means this component has an incomplete API and encapsulation is
-    // leaking in a bad way.
-    // Constructor is not exported and is not typed.
-    const tfGraphScene: any = document.querySelector('#scene');
-    tfGraphScene.fit();
+  _fit: function(): void {
+    this.fire('fit-tap');
   },
 
   _isGradientColoring: function(
@@ -466,7 +453,7 @@ Polymer({
     this.colorBy = ColorBy.STRUCTURE;
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
-    this.$['trace-inputs'].active = false; // Set trace input to off-state.
+    this.traceInputs = false; // Set trace input to off-state.
     this._setDownloadFilename(
         this.datasets[runIndex] ? this.datasets[runIndex].name : '');
   },

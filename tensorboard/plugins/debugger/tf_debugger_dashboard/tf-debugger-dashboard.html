@@ -21,11 +21,11 @@ limitations under the License.
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
@@ -51,13 +51,16 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar" id="left-pane">
+      <div class="sidebar" slot="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Runtime Node List</div>
           <div class="toggle-source-code">
             Show Code:
-            <paper-toggle-button class="toggle-source-code" id="show-source-code">
-            </paper-toggle-button>
+            <paper-toggle-button
+              class="toggle-source-code"
+              id="show-source-code"
+              checked="{{_sourceCodeShown}}"
+            ></paper-toggle-button>
           </div>
           <tf-op-selector
               debug-watches=[[_debugWatches]]
@@ -112,33 +115,35 @@ limitations under the License.
           ></tf-graph-loader>
         </div>
       </div>
-      <div class="center" id="center-content">
+      <div class="center" slot="center" id="center-content">
         <div id="top-right-quadrant">
           <paper-tabs selected="0" selected="{{_topRightSelected}}">
             <template is="dom-repeat" items="[[_topRightTabs]]">
               <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
             </template>
           </paper-tabs>
-          <span id="runtime-graph-device-name">
-          </span>
-          <paper-dropdown-menu
-            id="active-runtime-graph-device-name"
-            no-label-float="true"
-            label="Device name"
-            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-          >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
-              </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <paper-spinner-lite
-            class="spinner"
-            id="top-right-spinner"
-            hidden="[[!_busy]]"
-            active="[[_busy]]">
-          </paper-spinner-lite>
+          <div class="runtime-graph-device">
+            <span id="runtime-graph-device-name">
+            </span>
+            <paper-dropdown-menu
+              id="active-runtime-graph-device-name"
+              no-label-float="true"
+              label="Device name"
+              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+            >
+              <paper-listbox class="dropdown-content" slot="dropdown-content">
+                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                  <paper-item no-label-float=true>[[item]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <paper-spinner-lite
+              class="spinner"
+              id="top-right-spinner"
+              hidden="[[!_busy]]"
+              active="[[_busy]]">
+            </paper-spinner-lite>
+          </div>
           <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
@@ -196,7 +201,7 @@ limitations under the License.
         bottom: 0;
         overflow: hidden;
       }
-      :host paper-toast {
+      paper-toast {
         text-align: center;
         font-size: 110%;
         width: 40vw;
@@ -204,8 +209,8 @@ limitations under the License.
       }
       tf-dashboard-layout {
         --tf-dashboard-layout-sidebar-basis: auto;
-        --tf-dashboard-layout-sidebar-max-width: unset;
-        --tf-dashboard-layout-sidebar-min-width: unset;
+        --tf-dashboard-layout-sidebar-max-width: none;
+        --tf-dashboard-layout-sidebar-min-width: none;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -251,6 +256,11 @@ limitations under the License.
       }
       #x-type-selector paper-button {
         margin: 5px 3px;
+      }
+      .runtime-graph-device {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
       }
       #runtime-graph-device-name {
         font-size: 85%;
@@ -365,16 +375,16 @@ limitations under the License.
         font-size: 80%;
         float: right;
       }
-      /deep/ .context-menu ul {
+      .context-menu ul {
         list-style-type: none;
         margin: 0;
         padding: 0;
         cursor: default;
       }
-      /deep/ .context-menu ul li {
+      .context-menu ul li {
         padding: 4px 16px;
       }
-      /deep/ .context-menu ul li:hover {
+      .context-menu ul li:hover {
         background-color: #f3913e;
         color: white;
       }
@@ -389,6 +399,9 @@ limitations under the License.
       vz-line-chart {
         height: 300px;
         position: relative;
+      }
+      [hidden] {
+        display: none;
       }
     </style>
   </template>
@@ -547,6 +560,7 @@ limitations under the License.
         _sourceCodeShown: {
           type: Boolean,
           value: false,
+          observer: '_showSourceCodeChanged',
         },
 
         _graphProgress: {
@@ -641,9 +655,6 @@ limitations under the License.
         "_sizeDashboardRegions(_leftPaneWidth, _topRightQuadrantHeight, _windowWidth)",
         "_graphProgressUpdated(_graphProgress)",
       ],
-      listeners: {
-        'show-source-code.change': '_showSourceCodeChanged',
-      },
 
       ready() {
         this._handleWindowResize();
@@ -856,7 +867,6 @@ limitations under the License.
       },
 
       _showSourceCodeChanged(event) {
-        this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
           this.$$('#node-entries').style.height = '40%';
           this.$.sourceCodeView.render();

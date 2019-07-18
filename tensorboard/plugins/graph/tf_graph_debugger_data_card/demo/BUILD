@@ -10,10 +10,9 @@ tf_web_library(
     srcs = ["index.html"] + glob(["data/**"]),
     path = "/tf-graph-debugger-data-card/demo",
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_debugger_data_card",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
         "@org_polymer_iron_demo_helpers",
         "@org_polymer_paper_styles",
     ],
 )
-

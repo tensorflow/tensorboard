@@ -69,6 +69,6 @@ export class MetadataCard extends MetadataCardPolymer {
   }
 }
 
-document.registerElement(MetadataCard.prototype.is, MetadataCard);
+customElements.define(MetadataCard.prototype.is, MetadataCard);
 
 }  // namespace vz_projector

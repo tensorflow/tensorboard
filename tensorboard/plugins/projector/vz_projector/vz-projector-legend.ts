@@ -71,13 +71,13 @@ export class Legend extends LegendPolymer {
 
   private setupLinearGradient() {
     const linearGradient =
-        this.querySelector('#gradient') as SVGLinearGradientElement;
+        this.$$('#gradient') as SVGLinearGradientElement;
 
     const width =
-        (this.querySelector('svg.gradient') as SVGElement).clientWidth;
+        (this.$$('svg.gradient') as SVGElement).clientWidth;
 
     // Set the svg <rect> to be the width of its <svg> parent.
-    (this.querySelector('svg.gradient rect') as SVGRectElement).style.width =
+    (this.$$('svg.gradient rect') as SVGRectElement).style.width =
         width + 'px';
 
     // Remove all <stop> children from before.
@@ -93,6 +93,6 @@ export class Legend extends LegendPolymer {
   }
 }
 
-document.registerElement(Legend.prototype.is, Legend);
+customElements.define(Legend.prototype.is, Legend);
 
 }  // namespace vz_projector

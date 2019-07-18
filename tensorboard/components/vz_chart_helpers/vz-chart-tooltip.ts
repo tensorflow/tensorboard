@@ -33,12 +33,26 @@ export enum TooltipPosition {
 export interface VzChartTooltip extends Element {
   content(): Element;
   hide(): void;
-  updateAndPosition(anchorNode: Element, newDom: Array<any>): void;
+  updateAndPosition(anchorNode: Element): void;
 }
+
+const DEFAULT_TOOLTIP_STYLE = {
+  boxShadow: '0 1px 4px rgba(0, 0, 0, .3)',
+  opacity: 0,
+  position: 'fixed',
+  willChange: 'transform',
+  zIndex: 5,
+};
 
 Polymer({
   is: 'vz-chart-tooltip',
   properties: {
+    /**
+     * Required prop for specifying name of the WebComponent for tooltip
+     * content.
+     */
+    contentComponentName: String,
+
     /**
      * Possible values are TooltipPosition.BOTTOM and TooltipPosition.RIGHT.
      */
@@ -54,6 +68,7 @@ Polymer({
       type: Number,
       value: 15,
     },
+
   },
 
   ready() {
@@ -64,22 +79,27 @@ Polymer({
 
   attached() {
     this._tunnel = this._createTunnel();
+    this._hideOnBlur = () => {
+      if (document.hidden) this.hide();
+    };
+    window.addEventListener('visibilitychange', this._hideOnBlur);
   },
 
   detached() {
     this.hide();
     this._removeTunnel(this._tunnel);
     this._tunnel = null;
+    window.removeEventListener('visibilitychange', this._hideOnBlur);
+  },
+
+  content(): Element {
+    return this._tunnel.shadowRoot;
   },
 
   hide() {
     window.cancelAnimationFrame(this._raf);
     this._styleCache = null;
-    this.content().style.opacity = 0;
-  },
-
-  content(): Element {
-    return this._tunnel.firstElementChild;
+    this._tunnel.style.opacity = 0;
   },
 
   /**
@@ -87,9 +107,7 @@ Polymer({
    * invariable, only newly added rows are necessary to be scoped) and positions
    * the tooltip with respect to the anchorNode.
    */
-  updateAndPosition(anchorNode: Element, newDom: Element[]) {
-    newDom.forEach(row => this.scopeSubtree(row));
-
+  updateAndPosition(anchorNode: Element) {
     window.cancelAnimationFrame(this._raf);
     this._raf = window.requestAnimationFrame(() => {
       if (!this.isAttached) return;
@@ -98,7 +116,7 @@ Polymer({
   },
 
   _repositionImpl(anchorNode: Element) {
-    const tooltipContent = this.content();
+    const tooltipContent = this._tunnel;
 
     const nodeRect = anchorNode.getBoundingClientRect();
     const tooltipRect = tooltipContent.getBoundingClientRect();
@@ -156,13 +174,14 @@ Polymer({
   },
 
   _createTunnel(): Element {
-    const div = document.createElement('div');
-    div.classList.add(`${this.is}-tunnel`);
-    const template = this.instanceTemplate(this.$.template);
-    this.scopeSubtree(template);
-    div.appendChild(template);
-    document.body.appendChild(div);
-    return div;
+    if (!this.contentComponentName) {
+      throw new RangeError(
+         'Require `contentComponentName` to be a name of a Polymer component');
+    }
+    const tunnel = document.createElement(this.contentComponentName);
+    Object.assign(tunnel.style, DEFAULT_TOOLTIP_STYLE);
+    document.body.appendChild(tunnel);
+    return tunnel;
   },
 
   _removeTunnel(tunnel: Element) {

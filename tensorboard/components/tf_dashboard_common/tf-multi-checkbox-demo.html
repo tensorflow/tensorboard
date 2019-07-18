@@ -90,25 +90,25 @@ function random() {
 </dom-module>
 
 <dom-module id="x-demo">
-<style>
-.small {
-  width: 200px;
-  height: 500px;
-}
-.large {
-  width: 500px;
-  height: 900px;
-}
-html,body {
-  height: 100%;
-}
-mc-demo {
-  padding: 5px;
-  border: 1px solid var(--paper-red-500);
-  display: inline-block;
-}
-</style>
 <template>
+  <style>
+    .small {
+      width: 200px;
+      height: 500px;
+    }
+    .large {
+      width: 500px;
+      height: 900px;
+    }
+    html,body {
+      height: 100%;
+    }
+    mc-demo {
+      padding: 5px;
+      border: 1px solid var(--paper-red-500);
+      display: inline-block;
+    }
+  </style>
   <div class="demo-block">
     <mc-demo id="demo1" class="small" names="[[long_names]]"></mc-demo>
     <mc-demo class="small" names="[[many_names]]"></mc-demo>

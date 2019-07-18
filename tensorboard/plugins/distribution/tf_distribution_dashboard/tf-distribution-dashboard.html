@@ -18,16 +18,15 @@ limitations under the License.
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
 <link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-distribution-loader.html">
@@ -41,7 +40,7 @@ limitations under the License.
 <dom-module id="tf-distribution-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <tf-option-selector
             id="xTypeSelector"
@@ -59,7 +58,7 @@ limitations under the License.
         </div>
       </div>
 
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No distribution data was found.</h3>
@@ -84,28 +83,21 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-distribution-loader
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                          x-type="[[_xType]]"
-                          request-manager="[[_requestManager]]"
-                        ></tf-distribution-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-distribution-loader
+                  active="[[active]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  x-type="[[_xType]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-distribution-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -179,15 +171,13 @@ limitations under the License.
         });
       },
       _reloadDistributions() {
-        this.querySelectorAll('tf-distribution-loader').forEach(loader => {
+        this.root.querySelectorAll('tf-distribution-loader').forEach(loader => {
           loader.reload();
         });
       },
-
       _shouldOpen(index) {
         return index <= 2;
       },
-
       _makeCategories(runToTag, selectedRuns, tagFilter, categoriesDomReady) {
         return tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
       },

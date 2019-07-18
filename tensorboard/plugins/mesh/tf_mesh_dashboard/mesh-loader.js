@@ -108,8 +108,8 @@ Polymer({
   },
 
   observers: [
-    'reload(run, tag, active, _dataProvider)',
-    '_updateScene(_currentStep.*)',
+    'reload(run, tag, active, _dataProvider, _meshViewer)',
+    '_updateScene(_currentStep.*, _meshViewer)',
     '_debouncedFetchMesh(_currentStep)',
     '_updateView(selectedView)'
   ],
@@ -128,12 +128,12 @@ Polymer({
     // sometimes)
     this._dataProvider = new vz_mesh.ArrayBufferDataProvider(
         this.requestManager);
-    this._meshViewer = new vz_mesh.MeshViewer(this._runColor);
-    this._meshViewer.addEventListener(
+    const meshViewer = new vz_mesh.MeshViewer(this._runColor);
+    meshViewer.addEventListener(
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
-    this._meshViewer.addEventListener(
+    meshViewer.addEventListener(
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
-    this.reload();
+    this._meshViewer = meshViewer;
   },
 
   /**
@@ -164,7 +164,7 @@ Polymer({
   _updateScene: function() {
     const currentStep = this._currentStep;
     // Mesh data is not fetched yet. Please see `_maybeFetchMesh`.
-    if (!currentStep.mesh) return;
+    if (!currentStep || !currentStep.mesh) return;
 
     this._meshViewer.updateScene(currentStep, this);
     if (!this._cameraPositionInitialized) {
@@ -173,7 +173,7 @@ Polymer({
     }
     if (!this._meshViewerAttached) {
       // Mesh viewer should be added to the dom once.
-      this.appendChild(this._meshViewer.getRenderer().domElement);
+      this.root.appendChild(this._meshViewer.getRenderer().domElement);
       this._meshViewerAttached = true;
     }
   },
@@ -184,7 +184,7 @@ Polymer({
 
   async _maybeFetchMesh() {
     const currentStep = this._currentStep;
-    if (currentStep.mesh || currentStep.meshFetching) return;
+    if (!currentStep || currentStep.mesh || currentStep.meshFetching) return;
     currentStep.meshFetching = true;
     this._isMeshLoading = true;
 

@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="tf-interactive-inference-dashboard.html">
 <script src="tf.min.js"></script>
 <dom-module id='tf-interactive-inference-image-demo'>
@@ -35,7 +34,7 @@ limitations under the License.
       }
     </style>
     <canvas id="spritecanvas"></canvas>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]" model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]">
     </tf-interactive-inference-dashboard>
   </template>
   <script>
@@ -52,6 +51,8 @@ limitations under the License.
         images: Array,
       },
       ready: async function() {
+        this.$.dash.modelName = "demo";
+        this.$.dash.inferenceAddress = "demo";
         this.$.dash.updateNumberOfModels();
         this.model = await tf.loadModel(tf.io.browserHTTPRequest(
           'data/images/model.json', {credentials: 'include'}));

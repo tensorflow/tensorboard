@@ -8,6 +8,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_chart_helpers",
     srcs = [
+        "plottable-interactions.d.ts",
+        "plottable-interactions.js",
         "vz-chart-helpers.html",
         "vz-chart-helpers.ts",
         "vz-chart-tooltip.html",

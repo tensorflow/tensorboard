@@ -26,7 +26,7 @@ limitations under the License.
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/d3.html">
 <link rel="import" href="bundle.html">
 <link rel="import" href="styles.html">
@@ -148,6 +148,10 @@ paper-dropdown-menu paper-item {
 
 #colorby {
   width: calc(100% - 110px);
+}
+
+[hidden] {
+  display: none;
 }
 
 .supervise-settings paper-dropdown-menu {
@@ -366,13 +370,13 @@ paper-dropdown-menu paper-item {
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
         Load data from your computer
       </paper-tooltip>
-      <paper-button id="upload" class="ink-button" onclick="dataDialog.open()">Load</paper-button>
+      <paper-button id="upload" class="ink-button" on-tap="_openDataDialog">Load</paper-button>
     </span>
     <span id="publish-container" class="button-container">
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
         Publish your embedding visualization and data
       </paper-tooltip>
-      <paper-button id="host-embedding" class="ink-button" onclick="projectorConfigDialog.open()">Publish</paper-button>
+      <paper-button id="host-embedding" class="ink-button" on-tap="_openConfigDialog">Publish</paper-button>
     </span>
     <span class="button-container">
       <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>

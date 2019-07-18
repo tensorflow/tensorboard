@@ -59,6 +59,10 @@ Polymer({
       notify:true,
       observer: '_selectedEntityChanged',
     },
+    _symbolToEventCallback: {
+      type: Object,
+      value: () => new Map(),
+    },
   },
   _makeChartDataset() {
     if (!this.data) { return;}
@@ -176,6 +180,15 @@ Polymer({
 
     d3.select(this.$.maxheapchart).selectAll('.component').remove();
     d3.select(this.$.maxheapsizechart).selectAll('.component').remove();
+    if (this._maxHeapChartMouseMoveKey) {
+      this._unlisten(this._maxHeapChartMouseMoveKey);
+      this._maxHeapChartMouseMoveKey = null;
+    }
+
+    if (this._maxHeapSizeChartMouseMoveKey) {
+      this._unlisten(this._maxHeapSizeChartMouseMoveKey);
+      this._maxHeapSizeChartMouseMoveKey = null;
+    }
 
     let maxHeapChart = new Plottable.Plots.Rectangle();
     maxHeapChart.addDataset(new Plottable.Dataset(this.maxHeap))
@@ -199,37 +212,65 @@ Polymer({
                 .attr('opacity', '0.6')
                 .renderTo(d3.select(this.$.maxheapsizechart));
 
-    let parent = this;
-    new Plottable.Interactions.Pointer()
-    .attachTo(maxHeapChart)
-    .onPointerMove(function(p) {
-      parent._onHoverInteraction(p, maxHeapChart, maxHeapSizeChart,
-                                 parent.data.maxHeapToBySize);
-    });
+    this._maxHeapChartMouseMoveKey = this._listen(
+        this.$.maxheapchart,
+        'mousemove',
+        (event: MouseEvent) => {
+          this._onHoverInteraction(event, maxHeapChart, maxHeapSizeChart,
+              this.data.maxHeapToBySize);
+        }, {passive: true});
 
-    new Plottable.Interactions.Pointer()
-    .attachTo(maxHeapSizeChart)
-    .onPointerMove(function(p) {
-      parent._onHoverInteraction(p, maxHeapSizeChart, maxHeapChart,
-                                 parent.data.bySizeToMaxHeap);
-    });
+    this._maxHeapSizeChartMouseMoveKey = this._listen(
+        this.$.maxheapsizechart,
+        'mousemove',
+        (event: MouseEvent) => {
+          this._onHoverInteraction(event, maxHeapSizeChart, maxHeapChart,
+              this.data.bySizeToMaxHeap);
+        }, {passive: true});
   },
+
+  _listen(node: Node, eventName: string, callback: (event: MouseEvent) => void,
+      options = null): Symbol {
+    const symbol = Symbol();
+    node.addEventListener(eventName, callback, options);
+    this._symbolToEventCallback.set(
+        symbol, {eventName, node, callback, options});
+    return symbol;
+  },
+
+  _unlisten(symbol: Symbol): void {
+    console.assert(
+        this._symbolToEventCallback.has(symbol),
+        'Cannot unlisten an unknown event');
+    const listenerKey = this._symbolToEventCallback.get(symbol);
+    const {callback, eventName, node, options} = listenerKey;
+    node.removeEventListener(eventName, callback, options);
+  },
+
   /**
    * Highlights the item when mouse hovering over an item in the srcChart.
    * Also highlight the item in the other chart. Renders the buffer details.
    */
-  _onHoverInteraction(point, srcChart, dstChart, map) {
-    let entities = srcChart.entitiesAt(point);
-    if (entities.length === 0) {
-        this._selectedEntityInSrcChart = null;
-        this._selectedEntityInDstChart = null;
-        this.active = null;
-        return;
+  _onHoverInteraction(event: MouseEvent,
+      srcChart: Plottable.Plots.Rectangle<number, number>,
+      dstChart: Plottable.Plots.Rectangle<number, number>, map): void {
+    const srcRootElement = srcChart.rootElement().node() as Element;
+    const {left} = srcRootElement.getBoundingClientRect();
+    const relativeX: number = event.clientX - left;
+    const entities = srcChart.entities();
+    const entity = entities.find((entity) => {
+      const {x, width} = entity.bounds;
+      return x <= relativeX && (x + width) >= relativeX;
+    });
+    if (!entity) {
+      this._selectedEntityInSrcChart = null;
+      this._selectedEntityInDstChart = null;
+      this.active = null;
+    } else {
+      this.active = entity.datum;
+      this._selectedEntityInSrcChart = entity;
+      this._selectedEntityInDstChart = dstChart.entities()[map[entity.index]];
     }
-    let entity = entities[0];
-    this.active = entity.datum;
-    this._selectedEntityInSrcChart = entity;
-    this._selectedEntityInDstChart = dstChart.entities()[map[entity.index]];
   },
   /**
    * Highlights the newly selected entity and unhighlights the old one.

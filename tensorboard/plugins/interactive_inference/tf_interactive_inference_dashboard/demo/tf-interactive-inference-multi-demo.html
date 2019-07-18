@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="tf-interactive-inference-dashboard.html">
 <script src="tf.min.js"></script>
 <dom-module id='tf-interactive-inference-demo'>
@@ -30,7 +29,7 @@ limitations under the License.
         width: 100%;
       }
     </style>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]"  model-name="1, 2" inference-address="demo1, demo2">
+    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]">
     </tf-interactive-inference-dashboard>
   </template>
   <script>
@@ -45,6 +44,8 @@ limitations under the License.
         labelVocab: {type: Array, value: ['<=50k', '>50k']},
       },
       ready: async function() {
+        this.$.dash.modelName = "1, 2";
+        this.$.dash.inferenceAddress = "demo1, demo2";
         this.$.dash.updateNumberOfModels();
         this.means = {
           'age': 38.64358543876172,
