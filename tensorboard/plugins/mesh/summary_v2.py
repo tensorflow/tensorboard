@@ -52,7 +52,7 @@ def _write_summary(
       not be None.
 
   Returns:
-    Tensor summary with metadata.
+    A boolean indicating if summary was saved successfully or not.
   """
   tensor = tf.convert_to_tensor(value=tensor)
   shape = tensor.shape.as_list()
@@ -109,7 +109,8 @@ def mesh(name, vertices, faces=None, colors=None, display_name=None,
       not be None.
 
   Returns:
-    Merged summary for mesh/point cloud representation.
+    True if all components of the mesh were saved successfully and False
+      otherwise.
   """
   display_name = _get_display_name(name, display_name)
   json_config = _get_json_config(config_dict)

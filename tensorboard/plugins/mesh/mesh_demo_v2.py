@@ -27,26 +27,31 @@ import tensorflow.compat.v2 as tf
 from tensorboard.plugins.mesh import summary_v2 as mesh_summary
 from tensorboard.plugins.mesh import demo_utils
 
+
 flags.DEFINE_string('logdir', '/tmp/mesh_demo',
                     'Directory to write event logs to.')
 flags.DEFINE_string('mesh_path', None, 'Path to PLY file to visualize.')
 
 FLAGS = flags.FLAGS
 
-tf.enable_v2_behavior()  # pylint: disable=invalid-import
+tf.enable_v2_behavior()
 
 # Max number of steps to run training with.
 _MAX_STEPS = 10
 
 
 def train_step(vertices, faces, colors, config_dict, step):
+  """Executes summary as a train step."""
+  # Change colors over time.
+  t = float(step) / _MAX_STEPS
+  transformed_colors = t * (255 - colors) + (1 - t) * colors
   mesh_summary.mesh(
       'mesh_color_tensor', vertices=vertices, faces=faces,
-      colors=colors, config_dict=config_dict, step=step)
+      colors=transformed_colors, config_dict=config_dict, step=step)
 
 
 def run():
-  """Runs session with a mesh summary."""
+  """Runs training steps with a mesh summary."""
   # Mesh summaries only work on TensorFlow 2.x.
   if int(tf.__version__.split('.')[0]) < 1:
     raise ImportError('TensorFlow 2.x is required to run this demo.')
@@ -67,17 +72,12 @@ def run():
   faces = np.expand_dims(faces, 0)
   colors = np.expand_dims(colors, 0)
 
-  # Create summary writer and session.
-  #writer = tf.summary.FileWriter(FLAGS.logdir)
+  # Create summary writer.
   writer = tf.summary.create_file_writer(FLAGS.logdir)
-  #sess = tf.Session()
 
   with writer.as_default():
     for step in range(_MAX_STEPS):
-      # Change colors over time.
-      t = float(step) / _MAX_STEPS
-      transformed_colors = t * (255 - colors) + (1 - t) * colors
-      train_step(vertices, faces, transformed_colors, config_dict, step)
+      train_step(vertices, faces, colors, config_dict, step)
 
 
 def main(unused_argv):
