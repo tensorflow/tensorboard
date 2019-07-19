@@ -102,6 +102,7 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
     ],
@@ -125,6 +126,19 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        ":test_utils",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
+    ],
+)
+
+py_test(
+    name = "summary_v2_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":summary",

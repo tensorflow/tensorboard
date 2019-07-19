@@ -39,7 +39,6 @@ tf.enable_v2_behavior()  # pylint: disable=invalid-import
 _MAX_STEPS = 10
 
 
-@tf.function
 def train_step(vertices, faces, colors, config_dict, step):
   mesh_summary.mesh(
       'mesh_color_tensor', vertices=vertices, faces=faces,

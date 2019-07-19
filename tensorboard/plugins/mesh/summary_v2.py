@@ -20,8 +20,10 @@ from __future__ import print_function
 import json
 
 from tensorboard.compat import tf2 as tf
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
+from tensorboard.util import tensor_util
 
 PLUGIN_NAME = 'mesh'
 
@@ -63,11 +65,6 @@ def _write_summary(
       shape,
       description,
       json_config=json_config)
-  # tensor_summary = tf.summary.tensor_summary(
-  #     metadata.get_instance_name(name, content_type),
-  #     tensor,
-  #     summary_metadata=tensor_metadata,
-  #     collections=collections)
   return tf.summary.write(
         tag=metadata.get_instance_name(name, content_type),
         tensor=tensor,
@@ -91,7 +88,7 @@ def _get_json_config(config_dict):
 
 
 def mesh(name, vertices, faces=None, colors=None, display_name=None,
-       description=None, collections=None, config_dict=None, step=None):
+       description=None, config_dict=None, step=None):
   """Writes a TensorFlow mesh summary.
 
   Args:
@@ -106,8 +103,6 @@ def mesh(name, vertices, faces=None, colors=None, display_name=None,
       Defaults to `name`.
     description: A longform readable description of the summary data. Markdown
       is supported.
-    collections: Which TensorFlow graph collections to add the summary op to.
-      Defaults to `['summaries']`. Can usually be ignored.
     config_dict: Dictionary with ThreeJS classes names and configuration.
     step: Explicit `int64`-castable monotonic step value for this summary. If
       omitted, this defaults to `tf.summary.experimental.get_step()`, which must
@@ -147,7 +142,7 @@ def mesh(name, vertices, faces=None, colors=None, display_name=None,
   return all_success
 
 
-def pb(name,
+def mesh_pb(name,
        vertices,
        faces=None,
        colors=None,
@@ -190,7 +185,7 @@ def pb(name,
   for tensor in tensors:
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
-    tensor_proto = tf.compat.v1.make_tensor_proto(
+    tensor_proto = tensor_util.make_tensor_proto(
         tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
@@ -203,9 +198,9 @@ def pb(name,
     tag = metadata.get_instance_name(name, tensor.content_type)
     summaries.append((tag, summary_metadata, tensor_proto))
 
-  summary = tf.Summary()
+  summary = summary_pb2.Summary()
   for tag, summary_metadata, tensor_proto in summaries:
-    tf_summary_metadata = tf.SummaryMetadata.FromString(
+    tf_summary_metadata = summary_pb2.SummaryMetadata.FromString(
         summary_metadata.SerializeToString())
     summary.value.add(
       tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
