@@ -1231,6 +1231,15 @@ limitations under the License.
         --paper-toggle-button-checked-button-color: white;
         --paper-toggle-button-label-color: #3C4043;
       }
+      .button-and-spinner-holder {
+        margin-top: 4px;
+        position: relative;
+      }
+      .sort-spinner {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+      }
     </style>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <paper-dialog id="inferencesettings" class="inference-settings" opened="[[!local]]">
@@ -1528,6 +1537,15 @@ limitations under the License.
                               effect of a repeatedly changing a single feature on the selected datapoint.
                             </div>
                           </paper-dialog>
+                        </div>
+                        <div class="button-and-spinner-holder">
+                          <paper-button class="control-button datapoint-button"
+                            disabled$="[[shouldDisableSortFeaturesButton(partialDepPlotEligibleFeatures, isSortingEligibleFeatures)]]"
+                            on-tap="sortPdFeatures_" alt="Sort features by interestingness"
+                            title="Sort features by interestingness">
+                            Sort features by interestingness
+                          </paper-button>
+                          <paper-spinner-lite class="sort-spinner" hidden="[[!isSortingEligibleFeatures]]" active></paper-spinner-lite>
                         </div>
                         <paper-toggle-button class="pd-toggle" checked="{{globalPdPlots}}"
                             on-change="hideAllPdElements_" disabled$="[[!hasSelected(selectedExampleAndInference)]]">
@@ -2657,6 +2675,10 @@ limitations under the License.
         spinnerHidden_: {
           type: Boolean,
           value: true,
+        },
+        isSortingEligibleFeatures: {
+          type: Boolean,
+          value: false,
         },
       },
 
@@ -4719,6 +4741,7 @@ limitations under the License.
         this.showToast_(errorStr);
         this.exampleStatusStr = errorStr;
         this.spinnerHidden_ = true;
+        this.isSortingEligibleFeatures = false;
       },
 
       makeAsyncRequest_: function(
@@ -5534,6 +5557,7 @@ limitations under the License.
       },
 
       partialDepPlotEligibleFeaturesSet: function(features) {
+        this.isSortingEligibleFeatures = false;
         if (!features || features.length == 0) {
           return;
         }
@@ -5664,6 +5688,41 @@ limitations under the License.
         } else {
           this.fire('get-eligible-features');
         }
+      },
+
+      sortPdFeatures_: function() {
+        // First hide all existing PD plots before refreshing.
+        this.hideAllPdElements_();
+
+        const urlParams = {
+          features: this.partialDepPlotEligibleFeatures,
+          example_index: this.globalPdPlots ? -1 : this.selected[0],
+        };
+
+        this.isSortingEligibleFeatures = true;
+        // Call into the backend to sort the possible features to show plots for.
+        if (!this.local) {
+          const url =
+              tf_backend.addParams(
+                '/data/plugin/whatif/sort_eligible_features', urlParams);
+          const setEligibleFields = result => {
+            this.set('partialDepPlotEligibleFeatures', result.value);
+          };
+          const sortErrorCallback = () => {
+            this.isSortingEligibleFeatures = false;
+          }
+          this.makeAsyncRequest_(url,
+            setEligibleFields, null, 'plot ordering', sortErrorCallback.bind(this));
+        } else {
+          this.fire('sort-eligible-features', urlParams);
+        }
+      },
+
+      shouldDisableSortFeaturesButton: function(
+          partialDepPlotEligibleFeatures, isSortingEligibleFeatures) {
+        return isSortingEligibleFeatures ||
+          partialDepPlotEligibleFeatures == null ||
+          partialDepPlotEligibleFeatures.length == 0;
       },
 
       toggleTrueLabelSetup: function() {
