@@ -80,9 +80,13 @@ limitations under the License.
     <template is="dom-if" if="[[_isType(type, 'CONST')]]">
       <svg height$="[[height]]"
           preserveAspectRatio="xMinYMid meet" viewBox="0 0 10 10">
-        <circle cx="5" cy="5" r="3"
-            fill$="[[_fill]]"
-            stroke$="[[_stroke]]">
+        <circle
+          cx="5"
+          cy="5"
+          r="3"
+          fill$="[[_fill]]"
+          stroke$="[[_stroke]]"
+        />
       </svg>
     </template>
     <template is="dom-if" if="[[_isType(type, 'SUMMARY')]]">
