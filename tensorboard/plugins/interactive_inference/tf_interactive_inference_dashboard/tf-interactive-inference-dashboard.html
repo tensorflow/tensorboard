@@ -5695,8 +5695,15 @@ limitations under the License.
         this.hideAllPdElements_();
 
         const urlParams = {
-          features: this.partialDepPlotEligibleFeatures,
           example_index: this.globalPdPlots ? -1 : this.selected[0],
+          inference_address: this.inferenceAddress,
+          model_name: this.modelName,
+          model_type: this.modelType,
+          model_version: this.modelVersion,
+          model_signature: this.modelSignature,
+          use_predict: this.usePredictApi,
+          predict_output_tensor: this.predictOutputTensor,
+          predict_input_tensor: this.predictInputTensor,
         };
 
         this.isSortingEligibleFeatures = true;

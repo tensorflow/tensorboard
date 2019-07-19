@@ -652,19 +652,28 @@ def get_eligible_features(examples, num_mutants):
     features_list.append(v)
   return features_list
 
-import json
 def sort_eligible_features(features_list, chart_data):
   measures = {}
   for name, charts in iteritems(chart_data):
     max_measure = 0
+    is_numeric = charts['chartType'] == 'numeric'
     for models in charts['data']:
       for chart in models:
         for series in chart.values():
-          measure = 0
-          for i in range(len(series) - 1):
-            measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
-          if measure > 0:
-            measure /= (len(series) - 1)
+          if is_numeric:
+            measure = 0
+            for i in range(len(series) - 1):
+              measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
+          else:
+            min_y = 1
+            max_y = 0
+            for i in range(len(series)):
+              val = series[i]['scalar']
+              if val < min_y:
+                min_y = val
+              if val > max_y:
+                max_y = val
+            measure = max_y - min_y
           if measure > max_measure:
             max_measure = measure
     measures[name] = max_measure
