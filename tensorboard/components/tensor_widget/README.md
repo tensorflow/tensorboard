@@ -3,7 +3,7 @@
 Tensor Widget is a DOM library for flexible, interactive, and efficient
 display of values of tensors, i.e., typed n-dimensional arrays.
 
-Feature
+Features
 
 - The header region displays the dtype, shape and optionally the name of
   the tensor.

@@ -26,14 +26,8 @@ export interface TensorView {
   /** Data type of the underlying tensor. */
   dtype: string;
 
-  /** Rank of the underlying tensor. */
-  rank: number;
-
   /** Shape of the underlying tensor. */
   shape: number[];
-
-  /** Total number of elements in the underlying tensor. */
-  size: number;
 
   /** Get a specific element. */
   get: (...indices: number[]) => Promise<boolean|number|string>;
@@ -63,6 +57,26 @@ export type SlicedValues =
  * A data structure that keeps track of how an n-dimensional array (tensor)
  * is sliced down to a smaller number of dimensions for visualization
  * in the tensor widget.
+ *
+ * For example, suppose there is a 4D tensor of shape [16, 128, 128, 3]
+ * representing a NHWC image batch. If you'd like to get the 4-by-3 top-left
+ * corner of the first image of the last color channel  displayed in the tensor widgete, this interface
+ * should have the following concrete value:
+ *
+ * ```
+ * {
+ *   slicingDimsAndIndices: [{
+ *     dim: 0,
+ *     index: 0
+ *   }, {
+ *     dim: 3,
+ *     index: 2
+ *   }],
+ *   viewingDims: [1, 2],
+ *   verticalRange: [0, 4],
+ *   horizontalRange: [0, 3]
+ * }
+ * ```
  */
 export interface TensorViewNavigationStatus {
   /**
@@ -105,7 +119,7 @@ export interface TensorViewNavigationStatus {
 }
 
 /** Options used during the creation of a single-tensor tensor widget. */
-export interface SingleTensorViewerOptions {
+export interface SingleTensorWidgetOptions {
   /**
    * Name of the tenosr.
    *
@@ -135,4 +149,48 @@ export interface SingleTensorViewerOptions {
   decimalPlaces?: number;
 
   /** TODO(cais): Add support for custom tensor renderers. */
+}
+
+/**
+ * A TensorWidget that interactively visuzlies a single tensor.
+ */
+export interface SingleTensorWidget {
+  /**
+   * Renders the GUI of the tensor widget.
+   *
+   * This method should be called only once after the tensor widget is
+   * instantiated, or when the content of the underlying tensor has
+   * changed.
+   */
+  render: () => Promise<void>;
+
+  /** Clears the GUI. */
+  clear: () => Promise<void>;
+
+  /**
+   * Scroll along the horizontal dimension.
+   *
+   * I.e., whichever dimension that's selected as the horizontal viewing
+   * dimension at the current time.
+   */
+  scrollHorizontally: (offset: number) => Promise<void>;
+
+  /**
+   * Scroll along the vertical dimension.
+   *
+   * I.e., whichever dimension that's selected as the vertical viewing
+   * dimension at the current time.
+   */
+  scrollVertically: (offset: number) => Promise<void>;
+
+  /**
+   * Navigate to specified indices.
+   *
+   * This is done without changing the slicing and viewing dimensions.
+   * Throws Error if indices is out of bounds.
+   */
+  navigateToIndices: (indices: number[]) => Promise<void>;
+
+  // TODO(cais): Add API for programmatically changing navigation status.
+  // TODO(cais): Add event listeners for navigation status changes.
 }

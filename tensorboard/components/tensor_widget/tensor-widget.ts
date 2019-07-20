@@ -14,11 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {SingleTensorViewerOptions, TensorView} from "./types";
+import {SingleTensorWidget, SingleTensorWidgetOptions, TensorView} from "./types";
 
+/**
+ * Create an instance of tensor widiget.
+ *
+ * @param rootElement The div element in which the tensor widget will be
+ *   rendered.
+ * @param tensor The tensor view of which the content is to be rendered
+ *   in the tensor widget.
+ * @param options Optional configurations.
+ * @returns An instance of a single-tensor tensor widget.
+ */
 export function tensorWidget(
     rootElement: HTMLDivElement, tensor: TensorView,
-    options?: SingleTensorViewerOptions) {
+    options?: SingleTensorWidgetOptions): SingleTensorWidget {
   throw new Error(
        'tensorWidget() factory method has not been implemented yet.');
 }
