@@ -114,24 +114,6 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
-      name = "org_polymer_hydrolysis",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "c404d453a31082c023457f2635ef4019bfd9e9fbb11c0d186ef55cda15bcab67",
-      urls = [
-          "http://mirror.tensorflow.org/github.com/Polymer/polymer-analyzer/archive/v1.24.1.tar.gz",
-          "https://github.com/Polymer/polymer-analyzer/archive/v1.24.1.tar.gz",
-      ],
-      strip_prefix = "polymer-analyzer-1.24.1",
-      path = "/hydrolysis",
-      srcs = [
-          "hydrolysis-analyzer.html",
-          "hydrolysis.html",
-          "hydrolysis.js",
-      ],
-      deps = ["@org_polymer"],
-  )
-
-  web_library_external(
       name = "org_polymer_iron_a11y_announcer",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "355f9a0b0509acbe9abb0aaab4cdd3d8621a56ca55a9bbf696dde9c68a2ff304",
@@ -236,34 +218,6 @@ def tensorboard_polymer_workspace():
       ],
   )
 
-  # TODO(stephanwlee): Consider deprecating usage of iron_component_page which
-  # is only used by the graph app and needlessly complicates things like
-  # Polymer Analyzer dependency.
-  web_library_external(
-      name = "org_polymer_iron_component_page",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "d26b9bf200fedc76a9bac54da95e84b5d06b37598fdf99e18c3b943d737aff75",
-      urls = [
-          "http://mirror.tensorflow.org/github.com/PolymerElements/iron-component-page/archive/v1.1.9.tar.gz",
-          "https://github.com/PolymerElements/iron-component-page/archive/v1.1.9.tar.gz",
-      ],
-      strip_prefix = "iron-component-page-1.1.9",
-      path = "/iron-component-page",
-      srcs = ["iron-component-page.html"],
-      deps = [
-          "@org_polymer",
-          "@org_polymer_hydrolysis",
-          "@org_polymer_iron_ajax",
-          "@org_polymer_iron_doc_viewer",
-          "@org_polymer_iron_flex_layout",
-          "@org_polymer_iron_icons",
-          "@org_polymer_iron_selector",
-          "@org_polymer_paper_header_panel",
-          "@org_polymer_paper_styles",
-          "@org_polymer_paper_toolbar",
-      ],
-  )
-
   web_library_external(
       name = "org_polymer_iron_collapse",
       licenses = ["notice"],  # BSD-3-Clause
@@ -302,31 +256,6 @@ def tensorboard_polymer_workspace():
           "@org_polymer_iron_icons",
           "@org_polymer_marked_element",
           "@org_polymer_paper_icon_button",
-          "@org_polymer_paper_styles",
-          "@org_polymer_prism_element",
-      ],
-  )
-
-  web_library_external(
-      name = "org_polymer_iron_doc_viewer",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "5d487c99dd0cf626c800ae8667b0c8c88095f4482a68e837a1d3f58484ca8fb4",
-      urls = [
-          "http://mirror.tensorflow.org/github.com/PolymerElements/iron-doc-viewer/archive/v2.0.0.tar.gz",
-          "https://github.com/PolymerElements/iron-doc-viewer/archive/v2.0.0.tar.gz",
-      ],
-      strip_prefix = "iron-doc-viewer-2.0.0",
-      path = "/iron-doc-viewer",
-      srcs = [
-          "iron-doc-property-styles.html",
-          "iron-doc-property.html",
-          "iron-doc-viewer-styles.html",
-          "iron-doc-viewer.html",
-      ],
-      deps = [
-          "@org_polymer",
-          "@org_polymer_marked_element",
-          "@org_polymer_paper_button",
           "@org_polymer_paper_styles",
           "@org_polymer_prism_element",
       ],
