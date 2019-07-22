@@ -1070,6 +1070,10 @@ limitations under the License.
         border-bottom: solid 1px var(--wit-color-gray300);
       }
 
+      .perf-table-entry.perf-table-entry-trivial {
+        background: #f4f4f4;
+      }
+
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
@@ -1558,7 +1562,7 @@ limitations under the License.
                       <div class="pdplots-holder">
                         <template is="dom-repeat" items="[[partialDepPlotEligibleFeatures]]">
                           <div class="feature-container" data-feature-name$="[[item.name]]">
-                            <div class="perf-table-entry perf-table-row">
+                            <div class$="[[getPerfTableEntryClass(item)]]">
                               <div class="perf-table-arrow">
                                 <paper-icon-button class="pd-row-arrow rotated-icon" icon="arrow-drop-down" on-tap="categoryPaneClicked"></paper-icon-button>
                               </div>
@@ -5721,6 +5725,7 @@ limitations under the License.
           this.makeAsyncRequest_(url,
             setEligibleFields, null, 'plot ordering', sortErrorCallback.bind(this));
         } else {
+          urlParams['features'] = this.partialDepPlotEligibleFeatures;
           this.fire('sort-eligible-features', urlParams);
         }
       },
@@ -5892,36 +5897,45 @@ limitations under the License.
           this.regressionEntries_ = [];
           this.regressionEntries_ = this.sortRegressionEntries(temp);
         }
-       },
+      },
 
-       getSliderClass: function(index) {
-         let str = 'slider ';
-         str += (index == 0 ? 'slider-model-one' : 'slider-model-two');
-         return str;
-       },
+      getSliderClass: function(index) {
+        let str = 'slider ';
+        str += (index == 0 ? 'slider-model-one' : 'slider-model-two');
+        return str;
+      },
 
-       formatError: function(error) {
-        return d3.format('.3f')(error);
-       },
+      formatError: function(error) {
+       return d3.format('.3f')(error);
+      },
 
-       expandAllPerformance: function() {
-         if (this.featureValueThresholds == null) {
-           return;
-         }
-         for (let i = 0; i < this.featureValueThresholds.length; i++) {
-           this.set('featureValueThresholds.' + i + '.opened', true);
-         }
-         requestAnimationFrame(() => this.updateInferenceStats_(true));
-       },
+      expandAllPerformance: function() {
+        if (this.featureValueThresholds == null) {
+          return;
+        }
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          this.set('featureValueThresholds.' + i + '.opened', true);
+        }
+        requestAnimationFrame(() => this.updateInferenceStats_(true));
+      },
 
-       collapseAllPerformance: function() {
-         if (this.featureValueThresholds == null) {
-           return;
-         }
-         for (let i = 0; i < this.featureValueThresholds.length; i++) {
-           this.set('featureValueThresholds.' + i + '.opened', false);
-         }
-       },
+      collapseAllPerformance: function() {
+        if (this.featureValueThresholds == null) {
+          return;
+        }
+        for (let i = 0; i < this.featureValueThresholds.length; i++) {
+          this.set('featureValueThresholds.' + i + '.opened', false);
+        }
+      },
+
+      getPerfTableEntryClass: function(eligibleFeature) {
+        let str = 'perf-table-entry perf-table-row ';
+        if ('interestingness' in eligibleFeature &&
+            eligibleFeature['interestingness'] == 0) {
+          str += 'perf-table-entry-trivial';
+        }
+        return str;
+      },
     });
 
     // TODO(#2338): Remove this, and set up a "no TF" message properly.

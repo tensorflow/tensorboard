@@ -653,8 +653,9 @@ def get_eligible_features(examples, num_mutants):
   return features_list
 
 def sort_eligible_features(features_list, chart_data):
-  measures = {}
-  for name, charts in iteritems(chart_data):
+  for feature in features_list:
+    name = feature['name']
+    charts = chart_data[name]
     max_measure = 0
     is_numeric = charts['chartType'] == 'numeric'
     for models in charts['data']:
@@ -676,11 +677,10 @@ def sort_eligible_features(features_list, chart_data):
             measure = max_y - min_y
           if measure > max_measure:
             max_measure = measure
-    measures[name] = max_measure
+    feature['interestingness'] = max_measure
 
-  def key_fn(item):
-    return measures[item['name']]
-  return sorted(features_list, key=key_fn, reverse=True)
+  return sorted(
+      features_list, key=lambda x: x['interestingness'], reverse=True)
 
 def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
