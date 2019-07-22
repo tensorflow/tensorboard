@@ -37,8 +37,7 @@ export interface TensorView {
    * slicing and viewing dimensions, as well as the ranges
    * within the viewing dimensions.
    */
-  view: (navigation: TensorViewNavigationStatus) =>
-      Promise<SlicedValues>;
+  view: (navigation: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
   /** Get the health pill of the underlying tensor. */
   getHealthPill: () => Promise<BaseTensorHealthPill>;
@@ -60,8 +59,8 @@ export type SlicedValues =
  *
  * For example, suppose there is a 4D tensor of shape [16, 128, 128, 3]
  * representing a NHWC image batch. If you'd like to get the 4-by-3 top-left
- * corner of the first image of the last color channel  displayed in the tensor widgete, this interface
- * should have the following concrete value:
+ * corner of the first image of the last color channel  displayed in the tensor
+ * widget, this interface should have the following concrete value:
  *
  * ```
  * {
@@ -78,7 +77,7 @@ export type SlicedValues =
  * }
  * ```
  */
-export interface TensorViewNavigationStatus {
+export interface TensorViewSlicingSpec {
   /**
    * Which dimensions of the tensor are sliced down to a slice of 1.
    *
@@ -88,8 +87,13 @@ export interface TensorViewNavigationStatus {
   slicingDimsAndIndices: Array<{dim: number, index: number}>;
 
   /**
-   * Which dimensoins are used for viewing (i.e., rendered in the
+   * Which dimensions are used for viewing (i.e., rendered in the
    * tensor widget, as a table, by default.)
+   *
+   * Possible lengths of this array field:
+   * - 0 for scalar tensors.
+   * - 1 for 1D tensors.
+   * - 2 for 2D+ tensors.
    */
   viewingDims: number[];
 
@@ -107,7 +111,7 @@ export interface TensorViewNavigationStatus {
    * The two numbers are beginning index (inclusive) and ending index
    * (exclusive).
    */
-  horizontalRange: [number, number];
+  horizontalRange?: [number, number];
 
   /**
    * Optional dimension for depth.
@@ -119,7 +123,7 @@ export interface TensorViewNavigationStatus {
 }
 
 /** Options used during the creation of a single-tensor tensor widget. */
-export interface SingleTensorWidgetOptions {
+export interface TensorWidgetOptions {
   /**
    * Name of the tenosr.
    *
@@ -152,9 +156,9 @@ export interface SingleTensorWidgetOptions {
 }
 
 /**
- * A TensorWidget that interactively visuzlies a single tensor.
+ * A TensorWidget that interactively visualizes a single tensor.
  */
-export interface SingleTensorWidget {
+export interface TensorWidget {
   /**
    * Renders the GUI of the tensor widget.
    *
@@ -172,6 +176,9 @@ export interface SingleTensorWidget {
    *
    * I.e., whichever dimension that's selected as the horizontal viewing
    * dimension at the current time.
+   *
+   * `offset` will become the first element in the view, regardless of
+   * whether the element is already in the view.
    */
   scrollHorizontally: (offset: number) => Promise<void>;
 
@@ -180,13 +187,21 @@ export interface SingleTensorWidget {
    *
    * I.e., whichever dimension that's selected as the vertical viewing
    * dimension at the current time.
+   *
+   * `offset` will become the first element in the view, regardless of
+   * whether the element is already in the view.
    */
   scrollVertically: (offset: number) => Promise<void>;
 
   /**
    * Navigate to specified indices.
    *
-   * This is done without changing the slicing and viewing dimensions.
+   * This is for the case in which the user wants to bring a specific
+   * element of  given indices into the view, without the potentially tedious
+   * process of selecting the slices and scrolling. Yes, this automatically
+   * changes the scroll position and `slicingDimsAndIndices`.
+   * Added info to doc string.
+   *
    * Throws Error if indices is out of bounds.
    */
   navigateToIndices: (indices: number[]) => Promise<void>;

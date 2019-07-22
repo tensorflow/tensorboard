@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {SingleTensorWidget, SingleTensorWidgetOptions, TensorView} from "./types";
+import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
 
 /**
  * Create an instance of tensor widiget.
@@ -28,7 +28,7 @@ import {SingleTensorWidget, SingleTensorWidgetOptions, TensorView} from "./types
  */
 export function tensorWidget(
     rootElement: HTMLDivElement, tensor: TensorView,
-    options?: SingleTensorWidgetOptions): SingleTensorWidget {
+    options?: TensorWidgetOptions): TensorWidget {
   throw new Error(
        'tensorWidget() factory method has not been implemented yet.');
 }
