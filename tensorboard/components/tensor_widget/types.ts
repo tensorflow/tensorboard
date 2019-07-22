@@ -7,7 +7,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
+distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -125,7 +125,7 @@ export interface TensorViewSlicingSpec {
 /** Options used during the creation of a single-tensor tensor widget. */
 export interface TensorWidgetOptions {
   /**
-   * Name of the tenosr.
+   * Name of the tensor.
    *
    * Optional. If provided, it will be shown on the widget.
    * If not provided, no name will be shown.
@@ -168,9 +168,6 @@ export interface TensorWidget {
    */
   render: () => Promise<void>;
 
-  /** Clears the GUI. */
-  clear: () => Promise<void>;
-
   /**
    * Scroll along the horizontal dimension.
    *
@@ -200,7 +197,6 @@ export interface TensorWidget {
    * element of  given indices into the view, without the potentially tedious
    * process of selecting the slices and scrolling. Yes, this automatically
    * changes the scroll position and `slicingDimsAndIndices`.
-   * Added info to doc string.
    *
    * Throws Error if indices is out of bounds.
    */
