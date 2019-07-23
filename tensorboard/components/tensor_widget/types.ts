@@ -15,19 +15,29 @@ limitations under the License.
 
 import {BaseTensorHealthPill} from "./health-pill-types";
 
+/** The basic specifications of a tensor. */
+export interface TensorSpec {
+  /** Data type of the underlying tensor. */
+  dtype: string;
+
+  /** Shape of the underlying tensor. */
+  shape: ReadonlyArray<number>;
+}
+
 /**
  * The specs for deferred view into a tensor.
  *
  * A tensor is a typed, multi-dimensional array.
  * This interface abstracts away the backing storage of the tensor value.
- * It allows on-demand retrieval into any element or sub-array of the tensor.
+ *
+ * It allows *on-demand* retrieval of any element or sub-array of the tensor,
+ * which is important for the cases in which the underlying tensor is held
+ * at a backend process (e.g., a TensorFlow GPU training job) and is too
+ * large to fit into JavaScript memory as a whole.
  */
 export interface TensorView {
-  /** Data type of the underlying tensor. */
-  dtype: string;
-
-  /** Shape of the underlying tensor. */
-  shape: number[];
+  /** The basic immutable aspects of the tensor: dtype and shape. */
+  spec: TensorSpec;
 
   /**
    * Get a specific element.
@@ -175,10 +185,15 @@ export interface TensorWidget {
    * I.e., whichever dimension that's selected as the horizontal viewing
    * dimension at the current time.
    *
-   * `offset` will become the first element in the view, regardless of
-   * whether the element is already in the view.
+   * The element at specified `index` will become the first element in the
+   * horizontal dimension of th eview, regardless of whether the element
+   * is already in the view.
+   *
+   * @param index The index of the tensor view along the first
+   *   dimensionas specified by the `viewingDims` of the tensor widget's
+   *   current slicing spec.
    */
-  scrollHorizontally: (offset: number) => Promise<void>;
+  scrollHorizontally: (index: number) => Promise<void>;
 
   /**
    * Scroll along the vertical dimension.
@@ -186,10 +201,14 @@ export interface TensorWidget {
    * I.e., whichever dimension that's selected as the vertical viewing
    * dimension at the current time.
    *
-   * `offset` will become the first element in the view, regardless of
+   * `index` will become the first element in the view, regardless of
    * whether the element is already in the view.
+   *
+   * @param index The index of the tensor view along the second
+   *   dimensionas specified by the `viewingDims` of the tensor widget's
+   *   current slicing spec.
    */
-  scrollVertically: (offset: number) => Promise<void>;
+  scrollVertically: (index: number) => Promise<void>;
 
   /**
    * Navigate to specified indices.
