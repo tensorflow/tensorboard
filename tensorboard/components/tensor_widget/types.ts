@@ -29,7 +29,13 @@ export interface TensorView {
   /** Shape of the underlying tensor. */
   shape: number[];
 
-  /** Get a specific element. */
+  /**
+   * Get a specific element.
+   * @param indices Coordinates of the element. n indices (length-n array of
+   * number) is required to specify an element in an n-dimensional tensor, n
+   * being a non-negative integer.
+   * @return The value of the element at the specified indices.
+   */
   get: (...indices: number[]) => Promise<boolean|number|string>;
 
   /**
@@ -124,12 +130,7 @@ export interface TensorViewSlicingSpec {
 
 /** Options used during the creation of a single-tensor tensor widget. */
 export interface TensorWidgetOptions {
-  /**
-   * Name of the tensor.
-   *
-   * Optional. If provided, it will be shown on the widget.
-   * If not provided, no name will be shown.
-   */
+  /** Name of the tensor (optional). */
   name?: string;
 
   /**
