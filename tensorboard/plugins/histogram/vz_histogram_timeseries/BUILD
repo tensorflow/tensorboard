@@ -34,7 +34,7 @@ tensorboard_webcomponent_library(
     visibility = ["//learning/vis/vz_elements/catalog:__pkg__"],
     destdir = "vz-histogram-timeseries",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

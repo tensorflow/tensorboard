@@ -24,6 +24,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_app"],
     destdir = "tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//tensorboard/plugins/graph/tf_graph_loader:legacy",

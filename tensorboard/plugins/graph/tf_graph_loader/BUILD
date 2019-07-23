@@ -24,8 +24,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_loader"],
     destdir = "tf-graph-loader",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
 
@@ -51,8 +51,8 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-loader",
     deps = [
         "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

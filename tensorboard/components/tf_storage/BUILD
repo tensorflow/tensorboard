@@ -26,7 +26,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-storage",
     deps = [
         "//tensorboard/components/tf_globals:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

@@ -35,6 +35,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-controls",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_node_search:legacy",
         "//third_party/javascript/polymer/v1/paper-button:lib",
@@ -45,6 +46,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
         "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
         "//third_party/javascript/polymer/v1/paper-tooltip:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

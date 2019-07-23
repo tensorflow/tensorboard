@@ -31,8 +31,8 @@ tensorboard_webcomponent_library(
     visibility = ["//visibility:public"],
     destdir = "vz-chart-helpers",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_sorting:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

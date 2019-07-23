@@ -61,6 +61,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-hparams-query-pane",
     deps = [
         "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//third_party/javascript/polymer/v1/paper-checkbox:lib",
@@ -68,6 +69,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-input:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/paper-listbox:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
