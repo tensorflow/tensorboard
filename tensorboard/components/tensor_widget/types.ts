@@ -186,7 +186,7 @@ export interface TensorWidget {
    * dimension at the current time.
    *
    * The element at specified `index` will become the first element in the
-   * horizontal dimension of th eview, regardless of whether the element
+   * horizontal dimension of the view, regardless of whether the element
    * is already in the view.
    *
    * @param index The index of the tensor view along the first
@@ -201,8 +201,9 @@ export interface TensorWidget {
    * I.e., whichever dimension that's selected as the vertical viewing
    * dimension at the current time.
    *
-   * `index` will become the first element in the view, regardless of
-   * whether the element is already in the view.
+   * The element at specified `index` will become the first element in the
+   * vertical dimension of the view, regardless of whether the element
+   * is already in the view.
    *
    * @param index The index of the tensor view along the second
    *   dimensionas specified by the `viewingDims` of the tensor widget's
