@@ -31,11 +31,11 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/vz_sorting:legacy",
         "//tensorboard/plugins/graph/tf_graph:legacy",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//tensorboard/plugins/graph/tf_graph_loader:legacy_dashboard_loader",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

@@ -68,12 +68,12 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_card_heading:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_line_chart_data_loader:legacy",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",
         "//third_party/javascript/polymer/v1/paper-item:lib",
         "//third_party/javascript/polymer/v1/paper-listbox:lib",
         "//third_party/javascript/polymer/v1/paper-menu-button:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )
