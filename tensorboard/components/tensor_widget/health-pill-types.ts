@@ -30,5 +30,63 @@ export interface BaseTensorHealthPill {
   elementCount: number;
 }
 
+/**
+ * A health pill for integer-type and float-type tensors
+ * (e.g., int32, uint64, float32, float64).
+ */
+export interface IntFloatTensorHealthPill extends BaseTensorHealthPill {
+  /** Number of elements that are zero. */
+  zeroCount: number;
+
+  /** Number of elements that are negative. */
+  negativeCount: number;
+
+  /** Number of elements that are positive. */
+  positiveCount: number;
+
+  /** Number of elements that are -Infinity. */
+  negativeInfinityCount: number;
+
+  /** Number of elements that are +Infinity. */
+  positiveInfinityCount: number;
+
+  /** Number of elements that are NaN. */
+  nanCount: number;
+
+  /**
+   * Arithmetic mean of the elements.
+   *
+   * If there are Infinity or NaN elements in the tensor, those are
+   * excluded from the calculation of the mean.
+   * In the case there are no finite (i.e., non-Infinity and non-NaN)
+   * elements, `mean` will be `null`.
+   */
+  mean: number|null;
+
+  /**
+   * Standard deviation of the elements.
+   *
+   * If there are Infinity or NaN elements in the tensor, those are
+   * excluded from the calculation of the standard deviatoin.
+   * In the case there are less than 2 finite (i.e., non-Infinity and non-NaN)
+   * elements, `stdDev` will be `null`.
+   */
+  stdDev: number|null;
+
+  /**
+   * Minimum value of all non-NaN elements.
+   *
+   * If there are no non-NaN elements, minimum will be `null`.
+   */
+  minimum: number|null;
+
+  /**
+   * Minimum value of all non-NaN elements.
+   *
+   * If there are no non-NaN elements, maximum will be `null`.
+   */
+  maximum: number|null;
+}
+
 // TODO(cais): Add sub-interfaces of `BaseTensorHealthPill` for other tensor
 // dtypes.

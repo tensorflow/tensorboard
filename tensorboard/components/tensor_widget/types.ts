@@ -53,7 +53,7 @@ export interface TensorView {
    * slicing and viewing dimensions, as well as the ranges
    * within the viewing dimensions.
    */
-  view: (navigation: TensorViewSlicingSpec) => Promise<SlicedValues>;
+  view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
   /** Get the health pill of the underlying tensor. */
   getHealthPill: () => Promise<BaseTensorHealthPill>;
@@ -142,6 +142,14 @@ export interface TensorViewSlicingSpec {
 export interface TensorWidgetOptions {
   /** Name of the tensor (optional). */
   name?: string;
+
+  /**
+   * Device on which the tensor is located of the tensor.
+   *
+   * E.g., 'gpu:0'.
+   * Optional.
+   */
+  device?: string;
 
   /**
    * Whether the health-pill portion of the tensor widget is to be

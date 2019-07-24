@@ -14,18 +14,19 @@ limitations under the License.
 ==============================================================================*/
 
 import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
+import {TensorWidgetImpl} from "./tensor-widget-impl";
 
 /**
  * Create an instance of tensor widiget.
  * @param rootElement The element in which the tensor widget will be endered.
- * @param tensor The tensor view of which the content is to be rendered
+ * @param tensorView The tensor view of which the content is to be rendered
  *   in the tensor widget.
  * @param options Optional configurations.
  * @returns An instance of a single-tensor tensor widget.
  */
 export function tensorWidget(
-    rootElement: HTMLDivElement, tensor: TensorView,
+    rootElement: HTMLDivElement, tensorView: TensorView,
     options?: TensorWidgetOptions): TensorWidget {
-  throw new Error(
-       'tensorWidget() factory method has not been implemented yet.');
+  console.log('In tensorWidget');  // DEBUG
+  return new TensorWidgetImpl(rootElement, tensorView, options);
 }

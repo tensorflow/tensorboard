@@ -1,0 +1,72 @@
+.tensor-widget {
+  font-family: monospace;
+  font-size: 14px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.tensor-widget-dtype-tag {
+  position: relative;
+  /* width: 100px; */
+  height: 48px;
+  max-height: 22px;
+  line-height: 22px;
+  display: inline-block;
+  align-content: center;
+  vertical-align: middle;
+  padding-left: 14px;
+  padding-right: 10px;
+  color: rgb(60, 60, 60);
+  font-size: 8pt;
+}
+
+.tensor-widget-dtype-tag-label {
+  color: rgb(128, 128, 128);
+}
+
+.tensor-widget-header {
+  background-color: rgb(252, 252, 252);
+  box-shadow: 2px 2px 2px #b0b0b0;
+  height: 40px;
+  line-height: 40px;
+  max-height: 40px;
+  position: relative;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.tensor-widget-info-control {
+  align-content: center;
+  color: rgb(0, 0, 255);
+  display: inline-block;
+  font-size: 8pt;
+  height: 22px;
+  line-height: 22px;
+  margin-left: 8px;
+  max-height: 22px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.tensor-widget-shape-tag {
+  color: rgb(60, 60, 60);
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.tensor-widget-shape-tag-label {
+  color: rgb(128, 128, 128);
+  display: inline-block;
+}
+
+.tensor-widget-shape-tag-value {
+  display: inline-block;
+}
+
+.tensor-widget-tensor-name {
+  color: black;
+  display: inline-block;
+  font-weight: bold;
+  text-decoration: underline;
+}
