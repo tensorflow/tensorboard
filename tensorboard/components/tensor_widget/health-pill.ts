@@ -20,44 +20,43 @@ import { isIntegerDType } from './dtype-helper';
 
 /** An entry of health pill in the GUI. */
 export interface HealthPillEntry {
-  background_color: string;
+  backgroundColor: string;
   label: string;
-  key: string;
+  key: 'nanCount' | 'negativeInfinityCount' | 'negativeCount' | 'zeroCount' |
+       'positiveCount' | 'positiveInfinityCount';
 }
 
-/**
- * All types of of numeric values in health pills.
- */
+/** All types of of numeric values in health pills. */
 export const healthPillEntries: HealthPillEntry[] = [
   {
-    background_color: '#CC2F2C',
+    backgroundColor: '#CC2F2C',
     label: 'NaN',
-    key: 'numNaN'
+    key: 'nanCount'
   },
   {
-    background_color: '#FF8D00',
+    backgroundColor: '#FF8D00',
     label: '-∞',
-    key: 'numNegativeInfinity'
+    key: 'negativeInfinityCount'
   },
   {
-    background_color: '#EAEAEA',
+    backgroundColor: '#EAEAEA',
     label: '-',
-    key: 'numNegative'
+    key: 'negativeCount'
   },
   {
-    background_color: '#A5A5A5',
+    backgroundColor: '#A5A5A5',
     label: '0',
-    key: 'numZero'
+    key: 'zeroCount'
   },
   {
-    background_color: '#262626',
+    backgroundColor: '#262626',
     label: '+',
-    key: 'numPositive'
+    key: 'positiveCount'
   },
   {
-    background_color: '#003ED4',
+    backgroundColor: '#003ED4',
     label: '+∞',
-    key: 'numPositiveInfinity'
+    key: 'positiveInfinityCount'
   },
 ];
 
@@ -104,33 +103,25 @@ export async function drawHealthPill(
 
   let cumulativeCount = 0;
   let previousOffset = '0%';
-
-  // TODO(cais): Use keys instead.
-  const lastHealthPillElementsBreakdown: number[] = [
-      pillData.nanCount, pillData.negativeInfinityCount,
-      pillData.negativeCount, pillData.zeroCount, pillData.positiveCount,
-      pillData.positiveInfinityCount];
-  for (let i = 0; i < lastHealthPillElementsBreakdown.length; i++) {
-    if (!lastHealthPillElementsBreakdown[i]) {
-      // Exclude empty categories.
-      continue;
+  healthPillEntries.forEach(entry => {
+    if (pillData[entry.key] == null) {
+      // Skip nonexistent category.
+      return;
     }
-    cumulativeCount += lastHealthPillElementsBreakdown[i];
+    cumulativeCount += pillData[entry.key];
     // Create a color interval using 2 stop elements.
     const stopElement0 = document.createElementNS(SVG_NAMESPACE, 'stop');
     stopElement0.setAttribute('offset', previousOffset);
-    stopElement0.setAttribute(
-        'stop-color', healthPillEntries[i].background_color);
+    stopElement0.setAttribute('stop-color', entry.backgroundColor);
     healthPillGradient.appendChild(stopElement0);
 
     const stopElement1 = document.createElementNS(SVG_NAMESPACE, 'stop');
     const percent = `${cumulativeCount * 100 / data.elementCount}%`;
     stopElement1.setAttribute('offset', percent);
-    stopElement1.setAttribute(
-        'stop-color', healthPillEntries[i].background_color);
+    stopElement1.setAttribute('stop-color', entry.backgroundColor);
     healthPillGradient.appendChild(stopElement1);
     previousOffset = percent;
-  }
+  });
   healthPillDefs.appendChild(healthPillGradient);
 
   const rect = document.createElementNS(SVG_NAMESPACE, 'rect');
@@ -149,8 +140,7 @@ export async function drawHealthPill(
   healthPillGroup.appendChild(titleSvg);
 
   // Center this health pill just right above the node for the op.
-  healthPillGroup.setAttribute(
-      'transform', `translate(0, ${boxHeight * 0.1})`);
+  healthPillGroup.setAttribute('transform', `translate(0, ${boxHeight * 0.1})`);
 
   svg.appendChild(healthPillGroup);
 
@@ -222,4 +212,3 @@ function generateUUID(): string {
     return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
 }
-
