@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
-import {TensorWidgetImpl} from "./tensor-widget-impl";
+import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
+import {TensorWidgetImpl} from './tensor-widget-impl';
 
 /**
  * Create an instance of tensor widiget.

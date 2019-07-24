@@ -1,10 +1,12 @@
 {
   "name": "tensor-widget",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "main": "dist/tensor-widget.js",
   "types": "dist/tensor-widget.d.ts",
   "scripts": {
     "build": "tsc",
+    "lint": "tslint -p . -t verbose",
     "test": "karma start",
     "watch": "parcel serve src/index.html --no-hmr --open"
   },
@@ -17,6 +19,8 @@
     "karma-firefox-launcher": "~1.1.0",
     "karma-jasmine": "~1.1.1",
     "karma-typescript": "~4.0.0",
+    "tslint": "^5.18.0",
+    "tslint-no-circular-imports": "^0.5.0",
     "typescript": "3.3.3333"
   }
 }

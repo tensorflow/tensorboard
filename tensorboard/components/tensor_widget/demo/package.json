@@ -1,6 +1,7 @@
 {
   "name": "tensor-widget-demo",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
     "watch": "parcel serve ./index.html --no-hmr --open"

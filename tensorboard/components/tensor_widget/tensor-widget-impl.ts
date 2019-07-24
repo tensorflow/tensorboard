@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {isFloatDType} from "./dtype-helper";
-import {drawHealthPill} from "./health-pill";
-import {getDefaultSlicingSpec} from "./shape-helper";
-import {TensorWidget, TensorWidgetOptions, TensorView, TensorViewSlicingSpec} from "./types";
+import {isFloatDType} from './dtype-helper';
+import {drawHealthPill} from './health-pill';
+import {getDefaultSlicingSpec} from './shape-helper';
+import {TensorWidget, TensorWidgetOptions, TensorView, TensorViewSlicingSpec} from './types';
 
 const DEFAULT_DECIMAL_PLACES = 2;
 

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BaseTensorHealthPill} from "./health-pill-types";
+import {BaseTensorHealthPill} from './health-pill-types';
 
 /** The basic specifications of a tensor. */
 export interface TensorSpec {
