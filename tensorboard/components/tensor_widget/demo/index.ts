@@ -92,21 +92,21 @@ async function tensorViewFromTensorFlowJsTensor(x: tf.Tensor):
 }
 
 async function run() {
-  // // 1D tensor, int32.
-  // const tensor1 = tf.linspace(0, 9, 10).asType('int32').reshape([2, 5]);
-  // const widget1 = tensorWidget(
-  //     document.getElementById('tensor1') as HTMLDivElement,
-  //     await tensorViewFromTensorFlowJsTensor(tensor1),
-  //     {name: 'tensor1'});
-  // await widget1.render();
+  // 1D tensor, int32.
+  const tensor1 = tf.linspace(0, 9, 10).asType('int32').reshape([2, 5]);
+  const widget1 = tensorWidget(
+      document.getElementById('tensor1') as HTMLDivElement,
+      await tensorViewFromTensorFlowJsTensor(tensor1),
+      {name: 'tensor1'});
+  await widget1.render();
 
-  // // 2D tensor, float32.
-  // const tensor2 = tf.randomNormal([32, 40]);
-  // const widget2 = tensorWidget(
-  //     document.getElementById('tensor2') as HTMLDivElement,
-  //     await tensorViewFromTensorFlowJsTensor(tensor2),
-  //     {name: 'tensor2'});
-  // await widget2.render();
+  // 2D tensor, float32.
+  const tensor2 = tf.randomNormal([32, 40]);
+  const widget2 = tensorWidget(
+      document.getElementById('tensor2') as HTMLDivElement,
+      await tensorViewFromTensorFlowJsTensor(tensor2),
+      {name: 'tensor2'});
+  await widget2.render();
 
   // 2D tensor, float32, with pathological values (+/-Infinity and NaN).
   const tensor3 = tf.tensor2d([1, 2, -2, -Infinity, Infinity, 0], [3, 2])
