@@ -653,6 +653,22 @@ def get_eligible_features(examples, num_mutants):
   return features_list
 
 def sort_eligible_features(features_list, chart_data):
+  """Returns a sorted list of JSON objects for each feature in the examples.
+
+  The list is sorted by interestingness in terms of the resulting change in
+  inference values across feature values, for partial dependence plots.
+
+  Args:
+    features_list: A list of eligible features in the format of the return
+        from the get_eligible_features function.
+    chart_data: A dict of feature names to chart data, formatted as the
+        output from the mutant_charts_for_feature function.
+
+  Returns:
+    A sorted list of the inputted features_list, with the addition of
+    an 'interestingness' key with a calculated number for feature feature.
+    The list is sorted with the feature with highest interestingness first.
+  """
   for feature in features_list:
     name = feature['name']
     charts = chart_data[name]
@@ -662,10 +678,16 @@ def sort_eligible_features(features_list, chart_data):
       for chart in models:
         for series in chart.values():
           if is_numeric:
+            # For numeric features, interestingness is the total Y distance
+            # traveled across the line chart.
             measure = 0
             for i in range(len(series) - 1):
               measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
           else:
+            # For categorical features, interestingness is the difference
+            # between the min and max Y values in the chart. This is
+            # identical to total Y distance, as the entries in this chart
+            # are sorted by Y value.
             min_y = 1
             max_y = 0
             for i in range(len(series)):

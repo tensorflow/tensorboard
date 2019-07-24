@@ -5732,6 +5732,8 @@ limitations under the License.
 
       shouldDisableSortFeaturesButton: function(
           partialDepPlotEligibleFeatures, isSortingEligibleFeatures) {
+        // Do not show "sort features by interestingness" button if sorting is
+        // currently occuring or there are no features to sort.
         return isSortingEligibleFeatures ||
           partialDepPlotEligibleFeatures == null ||
           partialDepPlotEligibleFeatures.length == 0;
@@ -5930,6 +5932,8 @@ limitations under the License.
 
       getPerfTableEntryClass: function(eligibleFeature) {
         let str = 'perf-table-entry perf-table-row ';
+        // If interestingness is set to 0 then display this feature as
+        // trivial.
         if ('interestingness' in eligibleFeature &&
             eligibleFeature['interestingness'] == 0) {
           str += 'perf-table-entry-trivial';

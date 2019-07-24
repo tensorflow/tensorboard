@@ -335,8 +335,10 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
     Returns:
       A sorted list with a JSON object for each feature.
-      Numeric features are represented as {name: observedMin: observedMax:}.
-      Categorical features are repesented as {name: samples:[]}.
+      Numeric features are represented as
+      {name: observedMin: observedMax: interestingness:}.
+      Categorical features are repesented as
+      {name: samples:[] interestingness:}.
     """
     try:
       features_list = inference_utils.get_eligible_features(
