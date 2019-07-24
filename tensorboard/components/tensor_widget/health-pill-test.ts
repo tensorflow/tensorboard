@@ -33,6 +33,11 @@ describe('formatBreakdownText', () => {
     const pillData: IntOrFloatTensorHealthPill = {
       elementCount: 10,
       zeroCount: 10,
+      negativeCount: 0,
+      positiveCount: 0,
+      negativeInfinityCount: 0,
+      positiveInfinityCount: 0,
+      nanCount: 0,
       mean: 0,
       stdDev: 1,
       minimum: -2,
@@ -48,6 +53,9 @@ describe('formatBreakdownText', () => {
   it('NaNs and Infinities', () => {
     const pillData: IntOrFloatTensorHealthPill = {
       elementCount: 9,
+      zeroCount: 0,
+      negativeCount: 0,
+      positiveCount: 0,
       negativeInfinityCount: 2,
       positiveInfinityCount: 3,
       nanCount: 4,

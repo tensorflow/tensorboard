@@ -104,11 +104,13 @@ export async function drawHealthPill(
   let cumulativeCount = 0;
   let previousOffset = '0%';
   healthPillEntries.forEach(entry => {
-    if (pillData[entry.key] == null) {
+    const typeCount = pillData[entry.key];
+    // console.log(`key=${entry.key}: ${typeCount}`);
+    if (typeCount == null || typeCount === 0) {
       // Skip nonexistent category.
       return;
     }
-    cumulativeCount += pillData[entry.key];
+    cumulativeCount += typeCount;
     // Create a color interval using 2 stop elements.
     const stopElement0 = document.createElementNS(SVG_NAMESPACE, 'stop');
     stopElement0.setAttribute('offset', previousOffset);
@@ -167,29 +169,28 @@ export async function drawHealthPill(
 
 /**
  * TODO(cais): Add doc string.
- * TODO(cais): Add unit test.
  * @param pill
  */
 export function formatBreakdownText(pill: IntOrFloatTensorHealthPill): string {
   let str = '';
 
   str += '-------------------------------\n';
-  if (pill.zeroCount != null) {
+  if (pill.zeroCount > 0) {
     str += `#(zero): ${pill.zeroCount}\n`;
   }
-  if (pill.negativeCount != null) {
+  if (pill.negativeCount > 0) {
     str += `#(-): ${pill.negativeCount}\n`;
   }
-  if (pill.positiveCount != null) {
+  if (pill.positiveCount > 0) {
     str += `#(+): ${pill.positiveCount}\n`;
   }
-  if (pill.negativeInfinityCount != null) {
+  if (pill.negativeInfinityCount > 0) {
     str += `#(-∞): ${pill.negativeInfinityCount}\n`;
   }
-  if (pill.positiveInfinityCount != null) {
+  if (pill.positiveInfinityCount > 0) {
     str += `#(+∞): ${pill.positiveInfinityCount}\n`;
   }
-  if (pill.nanCount != null) {
+  if (pill.nanCount > 0) {
     str += `#(NaN): ${pill.nanCount}\n`;
   }
   str += '-------------------------------\n';

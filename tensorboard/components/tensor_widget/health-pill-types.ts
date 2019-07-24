@@ -89,4 +89,4 @@ export interface IntOrFloatTensorHealthPill extends BaseTensorHealthPill {
 }
 
 // TODO(cais): Add sub-interfaces of `BaseTensorHealthPill` for other tensor
-// dtypes.
+// dtypes including bool an string.

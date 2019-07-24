@@ -20,37 +20,36 @@ import {TensorWidget, TensorWidgetOptions, TensorView, TensorViewSlicingSpec} fr
 
 const DEFAULT_DECIMAL_PLACES = 2;
 
+// TODO(cais): Add tensorNameLengthCutoff to TensorWidgetOptions.
+const DEFAULT_TENSOR_NAME_LENGTH_CUTOFF = 20;
+
 /**
  * TODO(cais): Doc string.
  */
 export class TensorWidgetImpl implements TensorWidget {
-  private options: TensorWidgetOptions;
-  private readonly rank: number;
-  private readonly slicingSpec: TensorViewSlicingSpec;
-  private decimalPlaces: number;
+  protected options: TensorWidgetOptions;
+  protected readonly slicingSpec: TensorViewSlicingSpec;
+  // How many decimal places to show for each element.
+  protected decimalPlaces: number;
 
   // UI elements.
-  private header: HTMLDivElement;
-  private infoControl: HTMLDivElement;
-  private healthPillDiv: HTMLDivElement;
+  protected header: HTMLDivElement;
+  protected infoControl: HTMLDivElement;
+  protected healthPillDiv: HTMLDivElement;
 
   constructor(
       private readonly rootElement: HTMLDivElement,
       private readonly tensorView: TensorView,
       options?: TensorWidgetOptions) {
-    this.rank = this.tensorView.spec.shape.length;
     this.options = options || {};
-    console.log(`rank: ${this.rank}`);  // DEBUG
 
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
-    console.log(`slicingSpec = ${this.slicingSpec}`);  // DEBUG
 
     if (isFloatDType(this.tensorView.spec.dtype)) {
       this.decimalPlaces =
           this.options.decimalPlaces == null ?
           DEFAULT_DECIMAL_PLACES : this.options.decimalPlaces;
     }
-    console.log(`decimalPlaces = ${this.decimalPlaces}`);  // DEBUG
   }
 
   async render(): Promise<void> {
@@ -86,7 +85,7 @@ export class TensorWidgetImpl implements TensorWidget {
         this.healthPillDiv, this.tensorView.spec,
         await this.tensorView.getHealthPill());
 
-    // this.createInitialMenu();
+    // TODO(cais): Create menu.
   }
 
   private createInfoControl() {
@@ -105,8 +104,13 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.options.name != null && this.options.name.length > 0) {
       const nameTagDiv = document.createElement('div');
       nameTagDiv.classList.add('tensor-widget-tensor-name');
-      // TODO(cais): Cut off long names.
-      nameTagDiv.textContent = this.options.name;
+      const nameLength = this.options.name.length;
+      nameTagDiv.textContent =
+          nameLength > DEFAULT_TENSOR_NAME_LENGTH_CUTOFF ?
+          `...${this.options.name.slice(
+              nameLength - DEFAULT_TENSOR_NAME_LENGTH_CUTOFF, nameLength)}` :
+          this.options.name;
+
       this.infoControl.appendChild(nameTagDiv);
     }
 
@@ -114,8 +118,9 @@ export class TensorWidgetImpl implements TensorWidget {
     this.createShapeTag();
   }
 
+  /** Create the dtype tag in the info control. */
   private createDTypeTag() {
-    // Create the dtype tag.
+
     const dTypeControl = document.createElement('div');
     dTypeControl.classList.add('tensor-widget-dtype-tag');
 
@@ -131,8 +136,8 @@ export class TensorWidgetImpl implements TensorWidget {
     this.infoControl.appendChild(dTypeControl);
   }
 
+  /** Create the shape tag in the info control. */
   private createShapeTag() {
-    // Create the shape tag.
     const shapeTagDiv = document.createElement('div');
     shapeTagDiv.classList.add('tensor-widget-shape-tag');
     const shapeTagLabel = document.createElement('div');
