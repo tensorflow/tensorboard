@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {healthPillEntries} from './health-pill';
+import {formatBreakdownText, healthPillEntries} from './health-pill';
+import { IntOrFloatTensorHealthPill } from './health-pill-types';
 
 describe('healthPillEntries', () => {
   it('Correct entries', () => {
@@ -24,5 +25,43 @@ describe('healthPillEntries', () => {
     expect(labels.indexOf('-')).not.toEqual(-1);
     expect(labels.indexOf('0')).not.toEqual(-1);
     expect(labels.indexOf('+')).not.toEqual(-1);
+  });
+});
+
+describe('formatBreakdownText', () => {
+  it('Only zeros', () => {
+    const pillData: IntOrFloatTensorHealthPill = {
+      elementCount: 10,
+      zeroCount: 10,
+      mean: 0,
+      stdDev: 1,
+      minimum: -2,
+      maximum: 2,
+    };
+
+    const text = formatBreakdownText(pillData).split('\n');
+    expect(text.length).toEqual(4);
+    expect(text[1]).toEqual('#(zero): 10');
+    expect(text[3]).toEqual('#(total): 10');
+  });
+
+  it('NaNs and Infinities', () => {
+    const pillData: IntOrFloatTensorHealthPill = {
+      elementCount: 9,
+      negativeInfinityCount: 2,
+      positiveInfinityCount: 3,
+      nanCount: 4,
+      mean: null,
+      stdDev: null,
+      minimum: null,
+      maximum: null,
+    };
+
+    const text = formatBreakdownText(pillData).split('\n');
+    expect(text.length).toEqual(6);
+    expect(text[1]).toEqual('#(-∞): 2');
+    expect(text[2]).toEqual('#(+∞): 3');
+    expect(text[3]).toEqual('#(NaN): 4');
+    expect(text[5]).toEqual('#(total): 9');
   });
 });

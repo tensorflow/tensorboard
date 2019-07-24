@@ -36,22 +36,22 @@ export interface BaseTensorHealthPill {
  */
 export interface IntOrFloatTensorHealthPill extends BaseTensorHealthPill {
   /** Number of elements that are zero. */
-  zeroCount: number;
+  zeroCount?: number;
 
   /** Number of elements that are negative. */
-  negativeCount: number;
+  negativeCount?: number;
 
   /** Number of elements that are positive. */
-  positiveCount: number;
+  positiveCount?: number;
 
   /** Number of elements that are -Infinity. */
-  negativeInfinityCount: number;
+  negativeInfinityCount?: number;
 
   /** Number of elements that are +Infinity. */
-  positiveInfinityCount: number;
+  positiveInfinityCount?: number;
 
   /** Number of elements that are NaN. */
-  nanCount: number;
+  nanCount?: number;
 
   /**
    * Arithmetic mean of the elements.
