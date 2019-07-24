@@ -99,13 +99,13 @@ export async function drawHealthPill(
   const healthPillGradient =
       document.createElementNS(SVG_NAMESPACE, 'linearGradient');
 
-  // TODO(cais): Does every element in a web page must have a unique ID?
   const healthPillGradientId = `health-pill-gradient-${generateUUID()}`;
   healthPillGradient.setAttribute('id', healthPillGradientId);
 
   let cumulativeCount = 0;
   let previousOffset = '0%';
 
+  // TODO(cais): Use keys instead.
   const lastHealthPillElementsBreakdown: number[] = [
       pillData.nanCount, pillData.negativeInfinityCount,
       pillData.negativeCount, pillData.zeroCount, pillData.positiveCount,
@@ -157,7 +157,6 @@ export async function drawHealthPill(
   const text = document.createElementNS(SVG_NAMESPACE, 'text');
   const minMaxDecimalPlaces = isIntegerDType(tensorSpec.dtype) ? 0 : 2;
   const minMaxFormat = isIntegerDType(tensorSpec.dtype) ? 'fixed': undefined;
-  console.log('minMaxDecimalPlaces = ', minMaxDecimalPlaces);  // DEBUG
   text.textContent =
       `${numericValueToString(
           pillData.minimum, minMaxDecimalPlaces, minMaxFormat)}~` +
@@ -186,25 +185,25 @@ export function formatBreakdownText(pill: IntOrFloatTensorHealthPill): string {
 
   str += '-------------------------------\n';
   if (pill.zeroCount != null) {
-    str += `#(zero):${pill.zeroCount}\n`;
+    str += `#(zero): ${pill.zeroCount}\n`;
   }
   if (pill.negativeCount != null) {
-    str += `#(-):${pill.negativeCount}\n`;
+    str += `#(-): ${pill.negativeCount}\n`;
   }
   if (pill.positiveCount != null) {
-    str += `#(+):${pill.positiveCount}\n`;
+    str += `#(+): ${pill.positiveCount}\n`;
   }
   if (pill.negativeInfinityCount != null) {
-    str += `#(-∞):${pill.negativeInfinityCount}\n`;
+    str += `#(-∞): ${pill.negativeInfinityCount}\n`;
   }
   if (pill.positiveInfinityCount != null) {
-    str += `#(+∞):${pill.positiveInfinityCount}\n`;
+    str += `#(+∞): ${pill.positiveInfinityCount}\n`;
   }
   if (pill.nanCount != null) {
-    str += `#(NaN):${pill.nanCount}\n`;
+    str += `#(NaN): ${pill.nanCount}\n`;
   }
   str += '-------------------------------\n';
-  str += `#(total):${pill.elementCount}`;
+  str += `#(total): ${pill.elementCount}`;
   return str;
 }
 
