@@ -19,7 +19,7 @@ limitations under the License.
 
 import * as tf from '@tensorflow/tfjs-core';
 
-import {IntFloatTensorHealthPill} from '../health-pill-types';
+import {IntOrFloatTensorHealthPill} from '../health-pill-types';
 import {TensorView, TensorViewSlicingSpec} from '../types';
 import {tensorWidget} from '../tensor-widget';
 
@@ -87,13 +87,13 @@ async function tensorViewFromTensorFlowJsTensor(x: tf.Tensor):
         maximum,
         mean: mean.dataSync()[0],
         stdDev: Math.sqrt(variance.dataSync()[0]),
-      } as IntFloatTensorHealthPill;
+      } as IntOrFloatTensorHealthPill;
     }
   };
 }
 
 async function run() {
-  const tensor1 = tf.linspace(0, 9, 10).reshape([2, 5]);
+  const tensor1 = tf.linspace(0, 9, 10).asType('int32').reshape([2, 5]);
   tensor1.print();  // DEBUG
 
   const rootElement = document.getElementById('tensor1') as HTMLDivElement;

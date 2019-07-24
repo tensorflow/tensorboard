@@ -8,7 +8,6 @@
 
 .tensor-widget-dtype-tag {
   position: relative;
-  /* width: 100px; */
   height: 48px;
   max-height: 22px;
   line-height: 22px;
@@ -34,6 +33,20 @@
   position: relative;
   vertical-align: middle;
   width: 100%;
+}
+
+.tensor-widget-health-pill {
+  width: 200px;  /* TODO(cais): Set intelligently. */
+  height: 40px;
+  max-height: 40px;
+  line-height: 40px;
+  display: inline-block;
+  align-content: center;
+  vertical-align: middle;
+  margin-left: 20px;
+  padding-left: 4px;
+  padding-right: 4px;
+  font-size: 7pt;
 }
 
 .tensor-widget-info-control {

@@ -34,7 +34,7 @@ export interface BaseTensorHealthPill {
  * A health pill for integer-type and float-type tensors
  * (e.g., int32, uint64, float32, float64).
  */
-export interface IntFloatTensorHealthPill extends BaseTensorHealthPill {
+export interface IntOrFloatTensorHealthPill extends BaseTensorHealthPill {
   /** Number of elements that are zero. */
   zeroCount: number;
 

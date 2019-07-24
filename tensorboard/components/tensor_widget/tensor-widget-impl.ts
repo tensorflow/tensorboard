@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {isFloatDType} from "./dtype-helper";
 import {drawHealthPill} from "./health-pill";
 import {getDefaultSlicingSpec} from "./shape-helper";
 import {TensorWidget, TensorWidgetOptions, TensorView, TensorViewSlicingSpec} from "./types";
@@ -44,7 +45,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
     console.log(`slicingSpec = ${this.slicingSpec}`);  // DEBUG
 
-    if (this.tensorView.spec.dtype.match(/float(\d+)/)) {
+    if (isFloatDType(this.tensorView.spec.dtype)) {
       this.decimalPlaces =
           this.options.decimalPlaces == null ?
           DEFAULT_DECIMAL_PLACES : this.options.decimalPlaces;
@@ -79,9 +80,11 @@ export class TensorWidgetImpl implements TensorWidget {
 
     // Create div for health pill.
     this.healthPillDiv = document.createElement('div') as HTMLDivElement;
-    this.healthPillDiv.classList.add('health-pill-div');
+    this.healthPillDiv.classList.add('tensor-widget-health-pill');
     this.header.appendChild(this.healthPillDiv);
-    drawHealthPill(this.healthPillDiv, await this.tensorView.getHealthPill());
+    drawHealthPill(
+        this.healthPillDiv, this.tensorView.spec,
+        await this.tensorView.getHealthPill());
 
     // this.createInitialMenu();
   }
