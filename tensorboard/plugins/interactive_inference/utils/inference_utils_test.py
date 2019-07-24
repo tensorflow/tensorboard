@@ -520,6 +520,31 @@ class InferenceUtilsTest(tf.test.TestCase):
         feature_index_pattern='0-3-5')
     self.assertEqual([], viz_params.feature_indices)
 
+  def test_sort_eligible_features(self):
+    features_list = [{'name': 'feat1'}, {'name': 'feat2'}]
+    chart_data = {
+        'feat1': {
+            'chartType': 'numeric',
+            'data': [[
+               {'series1': [{'scalar': .2}, {'scalar': .1}, {'scalar': .3}]},
+               {'series2': [{'scalar': .2}, {'scalar': .1}, {'scalar': .4}]},
+            ]]
+        },
+        'feat2': {
+            'chartType': 'categorical',
+            'data': [[
+               {'series1': [{'scalar': .2}, {'scalar': .1}, {'scalar': .3}]},
+               {'series2': [{'scalar': .2}, {'scalar': .1}, {'scalar': .9}]},
+            ]]
+        }
+    }
+    sorted_list = inference_utils.sort_eligible_features(
+        features_list, chart_data)
+    print(sorted_list)
+    self.assertEqual('feat2', sorted_list[0]['name'])
+    self.assertEqual(.8, sorted_list[0]['interestingness'])
+    self.assertEqual('feat1', sorted_list[1]['name'])
+    self.assertEqual(.4, sorted_list[1]['interestingness'])
 
 if __name__ == '__main__':
   tf.test.main()

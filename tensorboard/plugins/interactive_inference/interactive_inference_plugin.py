@@ -342,7 +342,6 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
       features_list = inference_utils.get_eligible_features(
           self.examples[0: NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS)
       example_index = int(request.args.get('example_index', '0'))
-      feature_name = request.args.get('feature_name')
       (inference_addresses, model_names, model_versions,
           model_signatures) = self._parse_request_arguments(request)
       chart_data = {}
