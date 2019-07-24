@@ -23,9 +23,6 @@ import {IntOrFloatTensorHealthPill} from '../health-pill-types';
 import {TensorView, TensorViewSlicingSpec} from '../types';
 import {tensorWidget} from '../tensor-widget';
 
-console.log('In demo index.ts');  // DEBUG
-console.log(tensorWidget);  // DEBUG
-
 /**
  * TODO(cais): Doc string.
  */
@@ -48,61 +45,58 @@ async function tensorViewFromTensorFlowJsTensor(x: tf.Tensor):
       throw new Error('Not implemented.');
     },
     getHealthPill: async () => {
-      const isZero = tf.equal(x, 0);
-      const isNegative = tf.less(x, 0);
-      const isPositive = tf.greater(x, 0);
-      const isInfinite = tf.isInf(x);
-      const isNaN = tf.isNaN(x);
-      const isFinite = tf.logicalNot(isInfinite);
-      const zeroCount = isZero.asType('int32').sum().dataSync()[0];
-      const negativeCount = tf.logicalAnd(
-          isFinite, isNegative).asType('int32').sum().dataSync()[0];
-      const positiveCount = tf.logicalAnd(
-          isFinite, isPositive).asType('int32').sum().dataSync()[0];
+      return tf.tidy(() => {
+        const isZero = tf.equal(x, 0);
+        const isNegative = tf.less(x, 0);
+        const isPositive = tf.greater(x, 0);
+        const isInfinite = tf.isInf(x);
+        const isNaN = tf.isNaN(x);
+        const isFinite = tf.logicalNot(isInfinite);
+        const zeroCount = isZero.asType('int32').sum().dataSync()[0];
+        const negativeCount = tf.logicalAnd(
+            isFinite, isNegative).asType('int32').sum().dataSync()[0];
+        const positiveCount = tf.logicalAnd(
+            isFinite, isPositive).asType('int32').sum().dataSync()[0];
 
-      let negativeInfinityCount: number;
-      let positiveInfinityCount: number;
-      let nanCount: number;
-      if (x.dtype.startsWith('float')) {
-        negativeInfinityCount = tf.logicalAnd(
-            isInfinite, isNegative).asType('int32').sum().dataSync()[0];
-        positiveInfinityCount = tf.logicalAnd(
-            isInfinite, isPositive).asType('int32').sum().dataSync()[0];
-        nanCount = isNaN.asType('int32').sum().dataSync()[0];
-      }
+        let negativeInfinityCount: number;
+        let positiveInfinityCount: number;
+        let nanCount: number;
+        if (x.dtype.startsWith('float')) {
+          negativeInfinityCount = tf.logicalAnd(
+              isInfinite, isNegative).asType('int32').sum().dataSync()[0];
+          positiveInfinityCount = tf.logicalAnd(
+              isInfinite, isPositive).asType('int32').sum().dataSync()[0];
+          nanCount = isNaN.asType('int32').sum().dataSync()[0];
+        }
 
-      const minimum = tf.min(x).dataSync()[0];
-      const maximum = tf.max(x).dataSync()[0];
-      const {mean, variance} = tf.moments(x);
+        const minimum = tf.min(x).dataSync()[0];
+        const maximum = tf.max(x).dataSync()[0];
+        const {mean, variance} = tf.moments(x);
 
-      return {
-        elementCount: x.size,
-        zeroCount,
-        negativeCount,
-        positiveCount,
-        negativeInfinityCount,
-        positiveInfinityCount,
-        nanCount,
-        minimum,
-        maximum,
-        mean: mean.dataSync()[0],
-        stdDev: Math.sqrt(variance.dataSync()[0]),
-      } as IntOrFloatTensorHealthPill;
+        return {
+          elementCount: x.size,
+          zeroCount,
+          negativeCount,
+          positiveCount,
+          negativeInfinityCount,
+          positiveInfinityCount,
+          nanCount,
+          minimum,
+          maximum,
+          mean: mean.dataSync()[0],
+          stdDev: Math.sqrt(variance.dataSync()[0]),
+        } as IntOrFloatTensorHealthPill;
+      });
     }
-  };
+  }
 }
 
 async function run() {
   const tensor1 = tf.linspace(0, 9, 10).asType('int32').reshape([2, 5]);
-  tensor1.print();  // DEBUG
-
   const rootElement = document.getElementById('tensor1') as HTMLDivElement;
-  console.log(rootElement);  // DEBUG
-
   const widget1 = tensorWidget(
       rootElement, await tensorViewFromTensorFlowJsTensor(tensor1),
       {name: 'tensor1'});
-  console.log('Calling widget1.render()');  // DEBUG
   await widget1.render();
 }
 
