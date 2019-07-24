@@ -16,8 +16,14 @@ limitations under the License.
 import {TensorViewSlicingSpec} from './types';
 
 /**
- * TODO(cais): Doc string.
- * @param shape
+ * Get the default slicing spec given a tensor shape.
+ *
+ * For an N-dimensional tensor, where N > 2, the first N - 2 dimensions
+ * are each sliced down to a size of one, while the remaining 2 dimensions
+ * are used for viewing.
+ *
+ * @param shape Shape of the tensor in question.
+ * @return The default slicing spec.
  */
 export function getDefaultSlicingSpec(shape: ReadonlyArray<number>):
     TensorViewSlicingSpec {

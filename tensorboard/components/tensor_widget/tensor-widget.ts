@@ -27,6 +27,5 @@ import {TensorWidgetImpl} from './tensor-widget-impl';
 export function tensorWidget(
     rootElement: HTMLDivElement, tensorView: TensorView,
     options?: TensorWidgetOptions): TensorWidget {
-  console.log('In tensorWidget');  // DEBUG
   return new TensorWidgetImpl(rootElement, tensorView, options);
 }

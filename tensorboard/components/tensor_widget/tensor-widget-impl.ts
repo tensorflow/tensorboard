@@ -23,9 +23,7 @@ const DEFAULT_DECIMAL_PLACES = 2;
 // TODO(cais): Add tensorNameLengthCutoff to TensorWidgetOptions.
 const DEFAULT_TENSOR_NAME_LENGTH_CUTOFF = 20;
 
-/**
- * TODO(cais): Doc string.
- */
+/** An implementation of TensorWidget. */
 export class TensorWidgetImpl implements TensorWidget {
   protected options: TensorWidgetOptions;
   protected readonly slicingSpec: TensorViewSlicingSpec;

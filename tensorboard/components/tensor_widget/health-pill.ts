@@ -63,9 +63,11 @@ export const healthPillEntries: HealthPillEntry[] = [
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /**
- * TODO(cais): Add doc string.
- * @param element
- * @param x
+ * Draw the health pill in a designated div element
+ * @param element The element in which the health pill will be rendered.
+ * @param tensorSpec The basic immutable specs of the tensor, including its
+ *  shape.
+ * @param data Health-pill data to be rendered.
  */
 export async function drawHealthPill(
   element: HTMLDivElement, tensorSpec: TensorSpec,
@@ -105,7 +107,6 @@ export async function drawHealthPill(
   let previousOffset = '0%';
   healthPillEntries.forEach(entry => {
     const typeCount = pillData[entry.key];
-    // console.log(`key=${entry.key}: ${typeCount}`);
     if (typeCount == null || typeCount === 0) {
       // Skip nonexistent category.
       return;
@@ -168,33 +169,37 @@ export async function drawHealthPill(
 }
 
 /**
- * TODO(cais): Add doc string.
- * @param pill
+ * Generate a multi-line text that summarizes the types of numeric values
+ * in a tensor.
+ * The types are categories such as NaN, -Infinity, zero etc.
+ * @param pillData Health-pill data.
+ * @return The formatted multi-line string.
  */
-export function formatBreakdownText(pill: IntOrFloatTensorHealthPill): string {
+export function formatBreakdownText(
+    pillData: IntOrFloatTensorHealthPill): string {
   let str = '';
 
   str += '-------------------------------\n';
-  if (pill.zeroCount > 0) {
-    str += `#(zero): ${pill.zeroCount}\n`;
+  if (pillData.zeroCount > 0) {
+    str += `#(zero): ${pillData.zeroCount}\n`;
   }
-  if (pill.negativeCount > 0) {
-    str += `#(-): ${pill.negativeCount}\n`;
+  if (pillData.negativeCount > 0) {
+    str += `#(-): ${pillData.negativeCount}\n`;
   }
-  if (pill.positiveCount > 0) {
-    str += `#(+): ${pill.positiveCount}\n`;
+  if (pillData.positiveCount > 0) {
+    str += `#(+): ${pillData.positiveCount}\n`;
   }
-  if (pill.negativeInfinityCount > 0) {
-    str += `#(-∞): ${pill.negativeInfinityCount}\n`;
+  if (pillData.negativeInfinityCount > 0) {
+    str += `#(-∞): ${pillData.negativeInfinityCount}\n`;
   }
-  if (pill.positiveInfinityCount > 0) {
-    str += `#(+∞): ${pill.positiveInfinityCount}\n`;
+  if (pillData.positiveInfinityCount > 0) {
+    str += `#(+∞): ${pillData.positiveInfinityCount}\n`;
   }
-  if (pill.nanCount > 0) {
-    str += `#(NaN): ${pill.nanCount}\n`;
+  if (pillData.nanCount > 0) {
+    str += `#(NaN): ${pillData.nanCount}\n`;
   }
   str += '-------------------------------\n';
-  str += `#(total): ${pill.elementCount}`;
+  str += `#(total): ${pillData.elementCount}`;
   return str;
 }
 
