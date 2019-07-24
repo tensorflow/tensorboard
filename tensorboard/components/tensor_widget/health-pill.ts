@@ -156,10 +156,13 @@ export async function drawHealthPill(
 
   const text = document.createElementNS(SVG_NAMESPACE, 'text');
   const minMaxDecimalPlaces = isIntegerDType(tensorSpec.dtype) ? 0 : 2;
+  const minMaxFormat = isIntegerDType(tensorSpec.dtype) ? 'fixed': undefined;
   console.log('minMaxDecimalPlaces = ', minMaxDecimalPlaces);  // DEBUG
   text.textContent =
-      `${numericValueToString(pillData.minimum, minMaxDecimalPlaces)}~` +
-      `${numericValueToString(pillData.maximum, minMaxDecimalPlaces)}`;
+      `${numericValueToString(
+          pillData.minimum, minMaxDecimalPlaces, minMaxFormat)}~` +
+      `${numericValueToString(
+          pillData.maximum, minMaxDecimalPlaces, minMaxFormat)}`;
   if (pillData.mean != null) {
     text.textContent += ` | mean:${numericValueToString(pillData.mean)}`;
   }

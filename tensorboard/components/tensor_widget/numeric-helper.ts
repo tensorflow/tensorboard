@@ -15,26 +15,30 @@ limitations under the License.
 
 /**
  * Format a numeric value as a human-readable string.
- * TODO(cais): Add unit test.
  * @param num Numeric value t be formatted.
  * @param decimalPoints How many decimal points to use.
  */
 export function numericValueToString(
-    num: number, decimalPoints = 2): string {
+    num: number, decimalPoints = 2, format?: 'fixed' | 'exponential'): string {
   if (Number.isNaN(num)) {
     return 'NaN';
   } else if (num === -Infinity) {
     return '-∞';
   } else if (num === Infinity) {
-    return '∞';
-  } else if (num === 0) {
-    return num.toFixed(decimalPoints);
+    return '+∞';
   } else {
-    const absValue = Math.abs(num);
-    if (absValue < 1e3 && absValue >= 1e-2) {
-      return `${num.toFixed(decimalPoints)}`;
+    if (format == null) {
+      const absValue = Math.abs(num);
+      if (absValue < 1e3 && absValue >= 1e-2 || absValue === 0) {
+        format = 'fixed';
+      } else {
+        format = 'exponential';
+      }
+    }
+    if (format == null || format === 'fixed') {
+      return num.toFixed(decimalPoints);
     } else {
-      return `${num.toExponential(decimalPoints)}`;
+      return num.toExponential(decimalPoints);
     }
   }
 }

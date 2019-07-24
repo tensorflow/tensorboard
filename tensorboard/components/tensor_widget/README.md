@@ -19,3 +19,20 @@ Features
 
 *This component is in early stage of active development.*
 *Many of its features are still incomplete.*
+
+## Developer Workflow
+
+1. Run tslint: `yarn lint`
+2. Run tests using karma: `yarn test`
+3. (If applicable) make sure tensorboard builds. Do in the root directory of the
+   tensorboard directory: `bazel build -c opt tensorboard:tensorboard`
+
+### Running Demo
+
+The demo uses parcel-bundler. It constructs actual tensor objects in the
+frontend using TensorFlow.js.
+
+```sh
+cd demo
+yarn watch
+```
