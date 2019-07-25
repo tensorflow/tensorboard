@@ -38,10 +38,6 @@ module.exports = function(config) {
     karmaTypescriptConfig,
     reporters: ['progress', 'karma-typescript'],
     browsers: ['Chrome'],
-    browserStack: {
-      username: process.env.BROWSERSTACK_USERNAME,
-      accessKey: process.env.BROWSERSTACK_KEY
-    },
     reportSlowerThan: 500,
     browserNoActivityTimeout: 30000,
     client: {

@@ -16,7 +16,7 @@ limitations under the License.
 /**
  * Determine if a data type is an integer type.
  * @param dtype
- * @return Whether the dtype is an integre type.
+ * @return Whether the dtype is an integer type.
  */
 export function isIntegerDType(dtype: string) {
   return (dtype.match(/^int[0-9]+$/) != null ||

@@ -31,7 +31,7 @@ export interface BaseTensorHealthPill {
 }
 
 /**
- * A health pill for integer-type and float-type tensors
+ * Health-pill data for an integer-type or float-type tensor.
  * (e.g., int32, uint64, float32, float64).
  */
 export interface IntOrFloatTensorHealthPill extends BaseTensorHealthPill {

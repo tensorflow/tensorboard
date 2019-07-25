@@ -115,7 +115,7 @@ async function run() {
       {name: 'foo/tensorWithBadValues'});
   await widget3.render();
 
-  // 4D tensor, float32, with pathological values (+/-Infinity and NaN).
+  // 4D tensor, float32.
   const tensor4 = tf.randomUniform([2, 4, 6, 8]);
   const widget4 = tensorWidget(
       document.getElementById('tensor4') as HTMLDivElement,

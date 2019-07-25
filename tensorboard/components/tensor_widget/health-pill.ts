@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {isIntegerDType} from './dtype-helper';
 import {BaseTensorHealthPill, IntOrFloatTensorHealthPill} from './health-pill-types';
-import {TensorSpec} from './types';
 import {numericValueToString} from './numeric-helper';
-import { isIntegerDType } from './dtype-helper';
+import {TensorSpec} from './types';
 
 /** An entry of health pill in the GUI. */
 export interface HealthPillEntry {
