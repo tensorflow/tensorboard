@@ -52,13 +52,9 @@ main() {
   trap cleanup EXIT
 
   log_file="${workdir}/log"
-  suppress_log() {
-    rm "${workdir}/log" || true
-  }
-
-  build 3>&1 4>&2 1>"${log_file}" 2>&1
+  build >"${log_file}" 2>&1
   exit_code=$?
-  if [ "${exit_code}" -ne 0 ] && [ -f "${log_file}" ]; then
+  if [ "${exit_code}" -ne 0 ]; then
     cat "${log_file}" >&2
   fi
   return "${exit_code}"
@@ -127,8 +123,7 @@ build() (
       ;;
     *)
       if ! [ -d "${output}" ]; then
-        printf >&4 'fatal: no such output directory: %s\n' "${output}"
-        suppress_log
+        printf >&2 'fatal: no such output directory: %s\n' "${output}"
         return 1
       fi
       mv "${workdir}"/dist/*.whl "${output}"
