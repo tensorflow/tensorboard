@@ -1570,7 +1570,7 @@ limitations under the License.
                               </div>
                             </div>
                             <div class="pd-entry-container perf-table-entry-expanded" hidden>
-                              <div class="pd-input-container" hidden$="[[shouldHidePdInputContainer(item.samples, item.name, selected)]]">
+                              <div class="pd-input-container" hidden$="[[shouldHidePdInputContainer(item, selected)]]">
                                   <div class="range-input-container" hidden$="[[item.samples]]">
                                     <div class="info-text"
                                       title="The range of values to test (default values are automatically inferred).">
@@ -5532,9 +5532,9 @@ limitations under the License.
 
       /** Check if pd-input-container has any elements in it and hide it if it
         does not*/
-      shouldHidePdInputContainer: function(samples, featureName, selected) {
-        if (!this.shouldHideFeatureIndicesSelector(featureName, selected)
-            || !samples){
+      shouldHidePdInputContainer: function(item, selected) {
+        if (!this.shouldHideFeatureIndicesSelector(item.name, selected)
+            || !item.samples){
           return false;
         } else {
           return true;
