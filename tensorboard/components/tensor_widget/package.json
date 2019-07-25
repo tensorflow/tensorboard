@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "tslint -p . -t verbose",
-    "test": "karma start",
-    "watch": "parcel serve src/index.html --no-hmr --open"
+    "test": "karma start"
   },
   "devDependencies": {
     "@types/jasmine": "~2.5.53",
