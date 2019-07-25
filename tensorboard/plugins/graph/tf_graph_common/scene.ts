@@ -201,10 +201,10 @@ module tf.graph.scene {
  *            provided node.
  */
 export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
-  let node = <SVGAElement>d3
-                 .select('[data-name="' + nodeName + '"].' + Class.Node.GROUP)
-                 .node();
+  const node = <SVGAElement>d3
+                   .select(svg).select(`[data-name="${nodeName}"]`).node();
   if (!node) {
+    console.warn(`panToNode() failed for node name "${nodeName}"`);
     return false;
   }
 
