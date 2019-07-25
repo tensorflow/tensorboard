@@ -26,7 +26,9 @@ export interface HealthPillEntry {
        'positiveCount' | 'positiveInfinityCount';
 }
 
-/** All types of of numeric values in health pills. */
+/**
+ * Visual style of types of of numeric values in health pills.
+ */
 export const healthPillEntries: HealthPillEntry[] = [
   {
     backgroundColor: '#CC2F2C',
