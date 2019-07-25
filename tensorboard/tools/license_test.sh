@@ -18,7 +18,7 @@
 # tensorboard/plugins/beholder/colormaps.py has a different license.
 files=$(grep -rL "Copyright 20[0-9][0-9] The TensorFlow" \
     --include=*.* \
-    --exclude=*.{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb} \
+    --exclude=*.{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb,lock,gitignore} \
     tensorboard | \
     grep -v "tensorboard/components/tf_imports/.*.html\|tensorboard/plugins/beholder/colormaps.py" )
 
