@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu
-
 usage() {
   cat <<EOF
 usage: build_pip_package OUTPUT_DIR
@@ -29,93 +27,113 @@ Arguments:
 EOF
 }
 
-if [ $# -ne 1 ]; then
-  usage 2>&1
-  exit 1
-fi
-output="$1"
+main() {
+  if [ $# -ne 1 ]; then
+    usage 2>&1
+    return 1
+  fi
+  output="$1"
 
-if [ -z "${RUNFILES+set}" ]; then
-  RUNFILES="$(CDPATH="" cd -- "$0.runfiles" && pwd)"
-fi
+  if [ -z "${RUNFILES+set}" ]; then
+    RUNFILES="$(CDPATH="" cd -- "$0.runfiles" && pwd)"
+  fi
 
-if [ "$(uname)" = "Darwin" ]; then
-  sedi="sed -i ''"
-else
-  sedi="sed -i"
-fi
+  if [ "$(uname)" = "Darwin" ]; then
+    workdir="$(mktemp -d -t tensorboard-pip)"
+  else
+    workdir="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
+  fi
+  original_wd="${PWD}"
+  cd "${workdir}" || return 2
 
-command -v virtualenv >/dev/null
-[ -d "${RUNFILES}" ]
+  cleanup() {
+    rm -r "${workdir}"
+  }
+  trap cleanup EXIT
 
-if [ "$(uname)" = "Darwin" ]; then
-  workdir="$(mktemp -d -t tensorboard-pip)"
-else
-  workdir="$(mktemp -d -p /tmp -t tensorboard-pip.XXXXXXXXXX)"
-fi
-original_wd="${PWD}"
-cd "${workdir}"
+  log_file="${workdir}/log"
+  suppress_log() {
+    rm "${workdir}/log" || true
+  }
 
-cleanup() {
-  rm -r "${workdir}"
+  build 3>&1 4>&2 1>"${log_file}" 2>&1
+  exit_code=$?
+  if [ "${exit_code}" -ne 0 ] && [ -f "${log_file}" ]; then
+    cat "${log_file}" >&2
+  fi
+  return "${exit_code}"
 }
-trap cleanup EXIT
 
-cp -LR "${RUNFILES}/org_tensorflow_tensorboard/tensorboard" .
-mv -f "tensorboard/pip_package/LICENSE" .
-mv -f "tensorboard/pip_package/MANIFEST.in" .
-mv -f "tensorboard/pip_package/README.rst" .
-mv -f "tensorboard/pip_package/setup.cfg" .
-mv -f "tensorboard/pip_package/setup.py" .
-rm -rf "tensorboard/pip_package"
+build() (
+  set -eux
+  if [ "$(uname)" = "Darwin" ]; then
+    sedi="sed -i ''"
+  else
+    sedi="sed -i"
+  fi
 
-rm -f tensorboard/tensorboard  # bazel py_binary sh wrapper
-chmod -x LICENSE  # bazel symlinks confuse cp
-find . -name __init__.py -exec chmod -x {} +  # which goes for all genfiles
+  command -v virtualenv >/dev/null
+  [ -d "${RUNFILES}" ]
 
-mkdir -p tensorboard/_vendor
->tensorboard/_vendor/__init__.py
-cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
-cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
-# Vendor tensorflow-serving-api because it depends directly on TensorFlow.
-# TODO(nickfelt): de-vendor if they're able to relax that dependency.
-cp -LR "${RUNFILES}/org_tensorflow_serving_api/tensorflow_serving" tensorboard/_vendor
+  cp -LR "${RUNFILES}/org_tensorflow_tensorboard/tensorboard" .
+  mv -f "tensorboard/pip_package/LICENSE" .
+  mv -f "tensorboard/pip_package/MANIFEST.in" .
+  mv -f "tensorboard/pip_package/README.rst" .
+  mv -f "tensorboard/pip_package/setup.cfg" .
+  mv -f "tensorboard/pip_package/setup.py" .
+  rm -rf "tensorboard/pip_package"
 
-chmod -R u+w,go+r .
+  rm -f tensorboard/tensorboard  # bazel py_binary sh wrapper
+  chmod -x LICENSE  # bazel symlinks confuse cp
+  find . -name __init__.py -exec chmod -x {} +  # which goes for all genfiles
 
-find tensorboard -name \*.py -exec $sedi -e '
-    s/^import html5lib$/from tensorboard._vendor import html5lib/
-    s/^from html5lib/from tensorboard._vendor.html5lib/
-    s/^import bleach$/from tensorboard._vendor import bleach/
-    s/^from bleach/from tensorboard._vendor.bleach/
-    s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
-  ' {} +
+  mkdir -p tensorboard/_vendor
+  >tensorboard/_vendor/__init__.py
+  cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
+  cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
+  # Vendor tensorflow-serving-api because it depends directly on TensorFlow.
+  # TODO(nickfelt): de-vendor if they're able to relax that dependency.
+  cp -LR "${RUNFILES}/org_tensorflow_serving_api/tensorflow_serving" tensorboard/_vendor
 
-virtualenv -q venv
-export VIRTUAL_ENV=venv
-export PATH="${PWD}/venv/bin:${PATH}"
-unset PYTHON_HOME
+  chmod -R u+w,go+r .
 
-# Require wheel for bdist_wheel command, and setuptools 36.2.0+ so that
-# env markers are handled (https://github.com/pypa/setuptools/pull/1081)
-export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
-pip install -qU wheel 'setuptools>=36.2.0'
+  find tensorboard -name \*.py -exec $sedi -e '
+      s/^import html5lib$/from tensorboard._vendor import html5lib/
+      s/^from html5lib/from tensorboard._vendor.html5lib/
+      s/^import bleach$/from tensorboard._vendor import bleach/
+      s/^from bleach/from tensorboard._vendor.bleach/
+      s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
+    ' {} +
 
-python setup.py bdist_wheel --python-tag py2 >/dev/null
-python setup.py bdist_wheel --python-tag py3 >/dev/null
+  virtualenv -q venv
+  export VIRTUAL_ENV=venv
+  export PATH="${PWD}/venv/bin:${PATH}"
+  unset PYTHON_HOME
 
-cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>
-case "${output}" in
-  *.tar.gz)
-    mkdir -p "$(dirname "${output}")"
-    "${RUNFILES}/org_tensorflow_tensorboard/tensorboard/pip_package/deterministic_tar_gz" \
-        "${output}" "${workdir}"/dist/*.whl
-    ;;
-  *)
-    if ! [ -d "${output}" ]; then
-      printf >&2 'fatal: no such output directory: %s\n' "${output}"
-      exit 1
-    fi
-    mv "${workdir}"/dist/*.whl "${output}"
-    ;;
-esac
+  # Require wheel for bdist_wheel command, and setuptools 36.2.0+ so that
+  # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
+  export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
+  pip install -qU wheel 'setuptools>=36.2.0'
+
+  python setup.py bdist_wheel --python-tag py2 >/dev/null
+  python setup.py bdist_wheel --python-tag py3 >/dev/null
+
+  cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>
+  case "${output}" in
+    *.tar.gz)
+      mkdir -p "$(dirname "${output}")"
+      "${RUNFILES}/org_tensorflow_tensorboard/tensorboard/pip_package/deterministic_tar_gz" \
+          "${output}" "${workdir}"/dist/*.whl
+      ;;
+    *)
+      if ! [ -d "${output}" ]; then
+        printf >&4 'fatal: no such output directory: %s\n' "${output}"
+        suppress_log
+        return 1
+      fi
+      mv "${workdir}"/dist/*.whl "${output}"
+      ;;
+  esac
+)
+
+main "$@"
