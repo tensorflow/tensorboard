@@ -7,9 +7,11 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tensor_widget",
     srcs = [
-        "shape-helper.ts",
+        "dtype-helper.ts",
         "health-pill.ts",
         "health-pill-types.ts",
+        "numeric-helper.ts",
+        "shape-helper.ts",
         "tensor-widget.css",
         "tensor-widget.html",
         "tensor-widget.ts",
