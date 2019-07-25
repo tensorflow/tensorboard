@@ -264,6 +264,14 @@ class TensorBoardWSGI(object):
           path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
                   plugin.plugin_name + route)
         self.data_applications[path] = app
+    
+    # Wildcard routes will be checked in the given order, so we sort them
+    # longest to shortest so that a more specific route will take precedence
+    # over a more general one (e.g., a catchall route `/*` should come last).
+    self.prefix_routes = sorted(
+      [x for x in self.data_applications.keys() if x.endswith('*')],
+      key=len, reverse=True)
+      
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
@@ -328,7 +336,8 @@ class TensorBoardWSGI(object):
     """Central entry point for the TensorBoard application.
 
     This method handles routing to sub-applications. It does simple routing
-    using regular expression matching.
+    using strict string matching.  Regular expressions are not supported.
+    Wildcard routes such as `/foo/*` are supported as a special case.
 
     This __call__ method conforms to the WSGI spec, so that instances of this
     class are WSGI applications.
@@ -348,6 +357,10 @@ class TensorBoardWSGI(object):
     if clean_path in self.data_applications:
       return self.data_applications[clean_path](environ, start_response)
     else:
+      for path_prefix in self.prefix_routes:
+        if clean_path.startswith(path_prefix[:-1]):
+          return self.data_applications[path_prefix](environ, start_response)
+        
       logger.warn('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
           environ, start_response)

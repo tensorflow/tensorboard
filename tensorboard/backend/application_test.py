@@ -534,6 +534,9 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
+  
+  def testPluginRoutesActive(self):
+    self.assertEqual(True, False)
 
 
 class ApplicationConstructionTest(tb_test.TestCase):
