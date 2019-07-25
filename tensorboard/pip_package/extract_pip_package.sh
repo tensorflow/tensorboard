@@ -15,7 +15,30 @@
 
 set -eu
 
-tmpdir="$(mktemp -d)"
-tar xzf "$0.runfiles/org_tensorflow_tensorboard/tensorboard/pip_package/pip_packages.tar.gz" \
-    -C "${tmpdir}"
-find "${tmpdir}" | sort
+usage() {
+    cat <<'EOF'
+usage: extract_pip_package [OUTPUT_DIR]
+
+Extract TensorBoard wheel files into a given directory.
+
+If OUTPUT_DIR is omitted, a temporary directory will be created, and its
+path and contents printed to stdout.
+EOF
+}
+
+tarball="$0.runfiles/org_tensorflow_tensorboard/tensorboard/pip_package/pip_packages.tar.gz"
+
+case $# in
+    0)
+        tmpdir="$(mktemp -d)"
+        tar xzf "${tarball}" -C "${tmpdir}"
+        find "${tmpdir}"
+        ;;
+    1)
+        tar xzf "${tarball}" -C "$1"
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac

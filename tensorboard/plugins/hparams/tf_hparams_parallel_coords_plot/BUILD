@@ -44,8 +44,8 @@ tf_web_library(
     deps = [
         ":tf_hparams_parallel_coords_plot",
         "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 
@@ -54,9 +54,9 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_parallel_coords_plot"],
     destdir = "tf-hparams-parallel-coords-plot",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

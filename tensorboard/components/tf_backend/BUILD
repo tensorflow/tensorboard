@@ -45,8 +45,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_backend"],
     destdir = "tf-backend",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_sorting:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

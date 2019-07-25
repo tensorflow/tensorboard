@@ -22,7 +22,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_profile_common"],
     destdir = "tf-profile-common",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

@@ -18,15 +18,34 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
 
+MeshTensor = collections.namedtuple(
+    'MeshTensor', ('data', 'content_type', 'data_type'))
 PLUGIN_NAME = 'mesh'
 
 # The most recent value for the `version` field of the
 # `MeshPluginData` proto.
 _PROTO_VERSION = 0
+
+
+def get_components_bitmask(content_types):
+  """Creates bitmask for all existing components of the summary.
+
+  Args:
+    content_type: list of plugin_data_pb2.MeshPluginData.ContentType,
+      representing all components related to the summary.
+  Returns: bitmask based on passed tensors.
+  """
+  components = 0
+  for content_type in content_types:
+    if content_type == plugin_data_pb2.MeshPluginData.UNDEFINED:
+      raise ValueError('Cannot include UNDEFINED content type in mask.')
+    components = components | (1 << content_type)
+  return components
 
 
 def get_current_version():
@@ -44,6 +63,7 @@ def get_instance_name(name, content_type):
 def create_summary_metadata(name,
                             display_name,
                             content_type,
+                            components,
                             shape,
                             description=None,
                             json_config=None):
@@ -53,6 +73,8 @@ def create_summary_metadata(name,
     name: Original merged (summaries of different types) summary name.
     display_name: The display name used in TensorBoard.
     content_type: Value from MeshPluginData.ContentType enum describing data.
+    components: Bitmask representing present parts (vertices, colors, etc.) that
+      belong to the summary.
     shape: list of dimensions sizes of the tensor.
     description: The description to show in TensorBoard.
     json_config: A string, JSON-serialized dictionary of ThreeJS classes
@@ -64,11 +86,13 @@ def create_summary_metadata(name,
   # Shape should be at least BxNx3 where B represents the batch dimensions
   # and N - the number of points, each with x,y,z coordinates.
   if len(shape) != 3:
-    raise ValueError('Tensor shape should be of shape BxNx3, but got %s.' % str(shape))
+    raise ValueError(
+      'Tensor shape should be of shape BxNx3, but got %s.' % str(shape))
   mesh_plugin_data = plugin_data_pb2.MeshPluginData(
       version=get_current_version(),
       name=name,
       content_type=content_type,
+      components=components,
       shape=shape,
       json_config=json_config)
   content = mesh_plugin_data.SerializeToString()
@@ -94,8 +118,15 @@ def parse_plugin_metadata(content):
   if not isinstance(content, bytes):
     raise TypeError('Content type must be bytes.')
   result = plugin_data_pb2.MeshPluginData.FromString(content)
-  if result.version == get_current_version():
-    return result
-  raise ValueError('Unknown metadata version: %s. The latest version known to '
-                   'this build of TensorBoard is %s; perhaps a newer build is '
-                   'available?' % (result.version, get_current_version()))
+  if not 0 <= result.version <= get_current_version():
+    raise ValueError('Unknown metadata version: %s. The latest version known to '
+                     'this build of TensorBoard is %s; perhaps a newer build is '
+                     'available?' % (result.version, get_current_version()))
+  # Add components field to older version of the proto.
+  if result.components == 0:
+    result.components = get_components_bitmask([
+        plugin_data_pb2.MeshPluginData.VERTEX,
+        plugin_data_pb2.MeshPluginData.FACE,
+        plugin_data_pb2.MeshPluginData.COLOR,
+    ])
+  return result

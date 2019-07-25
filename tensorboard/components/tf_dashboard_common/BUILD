@@ -51,8 +51,8 @@ tf_web_library(
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_menu_button",
-        "@org_polymer_paper_menu",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
         "@org_polymer_paper_styles",
@@ -79,6 +79,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_dashboard_common"],
     destdir = "tf-dashboard-common",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/tf_storage:legacy",
         "//tensorboard/components/vz_sorting:legacy",
@@ -97,6 +98,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-spinner:lib",
         "//third_party/javascript/polymer/v1/paper-styles:lib",
         "//third_party/javascript/polymer/v1/paper-toggle-button:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

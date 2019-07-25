@@ -36,7 +36,7 @@ class Callback(tf.keras.callbacks.Callback):
   NOTE: This callback only works in TensorFlow eager mode.
   """
 
-  def __init__(self, writer, hparams):
+  def __init__(self, writer, hparams, trial_id=None):
     """Create a callback for logging hyperparameters to TensorBoard.
 
     As with the standard `tf.keras.callbacks.TensorBoard` class, each
@@ -51,6 +51,9 @@ class Callback(tf.keras.callbacks.Callback):
         in an experiment, or the `HParam` objects themselves. Values
         should be Python `bool`, `int`, `float`, or `string` values,
         depending on the type of the hyperparameter.
+      trial_id: An optional `str` ID for the set of hyperparameter
+        values used in this trial. Defaults to a hash of the
+        hyperparameters.
 
     Raises:
       ValueError: If two entries in `hparams` share the same
@@ -60,7 +63,8 @@ class Callback(tf.keras.callbacks.Callback):
     # timestamp is correct. But create a "dry-run" first to fail fast in
     # case the `hparams` are invalid.
     self._hparams = dict(hparams)
-    summary_v2.hparams_pb(self._hparams)
+    self._trial_id = trial_id
+    summary_v2.hparams_pb(self._hparams, trial_id=self._trial_id)
     if writer is None:
       raise TypeError("writer must be a `SummaryWriter` or `str`, not None")
     elif isinstance(writer, str):
@@ -82,7 +86,7 @@ class Callback(tf.keras.callbacks.Callback):
   def on_train_begin(self, logs=None):
     del logs  # unused
     with self._get_writer().as_default():
-      summary_v2.hparams(self._hparams)
+      summary_v2.hparams(self._hparams, trial_id=self._trial_id)
 
   def on_train_end(self, logs=None):
     del logs  # unused
