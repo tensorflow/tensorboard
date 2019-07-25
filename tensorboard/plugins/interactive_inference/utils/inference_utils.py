@@ -688,8 +688,8 @@ def sort_eligible_features(features_list, chart_data):
             # between the min and max Y values in the chart. This is
             # identical to total Y distance, as the entries in this chart
             # are sorted by Y value.
-            min_y = 1
-            max_y = 0
+            min_y = float("inf")
+            max_y = float("-inf")
             for i in range(len(series)):
               val = series[i]['scalar']
               if val < min_y:
