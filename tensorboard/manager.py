@@ -317,8 +317,12 @@ def get_all():
     try:
       info = _info_from_string(contents)
     except ValueError:
-      # Ignore unrecognized files.
-      pass
+      # Ignore unrecognized files, logging at debug only.
+      tb_logging.get_logger().debug(
+          "invalid info file: %r",
+          filepath,
+          exc_info=True,
+      )
     else:
       results.append(info)
   return results

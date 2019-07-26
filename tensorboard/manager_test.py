@@ -395,7 +395,9 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     with open(os.path.join(self.info_dir, "pid-9012.info"), "w") as outfile:
       outfile.write('if a tbinfo has st_mode==0, does it make a sound?\n')
     os.chmod(os.path.join(self.info_dir, "pid-9012.info"), 0o000)
-    self.assertEqual(manager.get_all(), [])
+    with mock.patch.object(tb_logging.get_logger(), "debug") as fn:
+      self.assertEqual(manager.get_all(), [])
+    self.assertEqual(fn.call_count, 2)  # 2 invalid, 1 unreadable (silent)
 
 
 if __name__ == "__main__":
