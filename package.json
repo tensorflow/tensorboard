@@ -2,6 +2,7 @@
   "name": "tensorboard",
   "version": "1.14.0",
   "description": "TensorFlow's visualization toolkit",
+  "private": true,
   "directories": {
     "doc": "docs"
   },
