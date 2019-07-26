@@ -162,10 +162,10 @@ var tf;
              *            provided node.
              */
             function panToNode(nodeName, svg, zoomG, d3zoom) {
-                let node = d3
-                    .select('[data-name="' + nodeName + '"].' + scene.Class.Node.GROUP)
-                    .node();
+                const node = d3
+                    .select(svg).select(`[data-name="${nodeName}"]`).node();
                 if (!node) {
+                    console.warn(`panToNode() failed for node name "${nodeName}"`);
                     return false;
                 }
                 // Check if the selected node is off-screen in either
