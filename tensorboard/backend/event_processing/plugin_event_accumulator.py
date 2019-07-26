@@ -107,7 +107,7 @@ class EventAccumulator(object):
                size_guidance=None,
                tensor_size_guidance=None,
                purge_orphaned_data=True,
-               eventfile_active_filter=None):
+               event_file_active_filter=None):
     """Construct the `EventAccumulator`.
 
     Args:
@@ -127,8 +127,8 @@ class EventAccumulator(object):
         `size_guidance[event_accumulator.TENSORS]`. Defaults to `{}`.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
-      eventfile_active_filter: Optional predicate for determining whether an
-        eventfile latest load timestamp should be considered active. If passed,
+      event_file_active_filter: Optional predicate for determining whether an
+        event file latest load timestamp should be considered active. If passed,
         this will enable multifile directory loading.
     """
     size_guidance = dict(size_guidance or DEFAULT_SIZE_GUIDANCE)
@@ -161,7 +161,7 @@ class EventAccumulator(object):
     self._plugin_tag_locks = collections.defaultdict(threading.Lock)
 
     self.path = path
-    self._generator = _GeneratorFromPath(path, eventfile_active_filter)
+    self._generator = _GeneratorFromPath(path, event_file_active_filter)
     self._generator_mutex = threading.Lock()
 
     self.purge_orphaned_data = purge_orphaned_data
@@ -573,18 +573,18 @@ def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
                   event_step, event_wall_time)
 
 
-def _GeneratorFromPath(path, eventfile_active_filter=None):
+def _GeneratorFromPath(path, event_file_active_filter=None):
   """Create an event generator for file or directory at given path string."""
   if not path:
     raise ValueError('path must be a valid string')
   if io_wrapper.IsTensorFlowEventsFile(path):
     return event_file_loader.EventFileLoader(path)
-  elif eventfile_active_filter:
+  elif event_file_active_filter:
     return directory_loader.DirectoryLoader(
       path,
       event_file_loader.TimestampedEventFileLoader,
       path_filter=io_wrapper.IsTensorFlowEventsFile,
-      active_filter=eventfile_active_filter)
+      active_filter=event_file_active_filter)
   else:
     return directory_watcher.DirectoryWatcher(
         path,

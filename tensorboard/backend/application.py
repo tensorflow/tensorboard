@@ -106,13 +106,13 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   :type plugin_loaders: list[base_plugin.TBLoader]
   :rtype: TensorBoardWSGI
   """
-  eventfile_active_filter = _get_eventfile_active_filter(flags)
+  event_file_active_filter = _get_event_file_active_filter(flags)
   multiplexer = event_multiplexer.EventMultiplexer(
       size_guidance=DEFAULT_SIZE_GUIDANCE,
       tensor_size_guidance=tensor_size_guidance_from_flags(flags),
       purge_orphaned_data=flags.purge_orphaned_data,
       max_reload_threads=flags.max_reload_threads,
-      eventfile_active_filter=eventfile_active_filter)
+      event_file_active_filter=event_file_active_filter)
   loading_multiplexer = multiplexer
   reload_interval = flags.reload_interval
   # For db import op mode, prefer reloading in a child process. See
@@ -534,8 +534,8 @@ def _clean_path(path, path_prefix=""):
   return path
 
 
-def _get_eventfile_active_filter(flags):
-  """Returns a predicate for whether an eventfile load timestamp is active.
+def _get_event_file_active_filter(flags):
+  """Returns a predicate for whether an event file load timestamp is active.
 
   Returns:
     A predicate function accepting a single UNIX timestamp float argument.

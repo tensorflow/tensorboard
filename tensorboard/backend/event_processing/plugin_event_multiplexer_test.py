@@ -92,9 +92,9 @@ def _GetFakeAccumulator(path,
                         size_guidance=None,
                         tensor_size_guidance=None,
                         purge_orphaned_data=None,
-                        eventfile_active_filter=None):
+                        event_file_active_filter=None):
   del size_guidance, tensor_size_guidance, purge_orphaned_data  # Unused.
-  del eventfile_active_filter  # unused
+  del event_file_active_filter  # unused
   return _FakeAccumulator(path)
 
 
@@ -372,7 +372,7 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
 
   def testMultifileReload(self):
     multiplexer = event_multiplexer.EventMultiplexer(
-        eventfile_active_filter=lambda timestamp: True)
+        event_file_active_filter=lambda timestamp: True)
     def make_summary(tag_name):
       return summary_pb2.Summary(
           value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])

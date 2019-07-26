@@ -131,7 +131,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self._real_generator = ea._GeneratorFromPath
 
     def _FakeAccumulatorConstructor(generator, *args, **kwargs):
-      def _FakeGeneratorFromPath(path, eventfile_active_filter=None):
+      def _FakeGeneratorFromPath(path, event_file_active_filter=None):
         return generator
       ea._GeneratorFromPath = _FakeGeneratorFromPath
       return self._real_constructor(generator, *args, **kwargs)

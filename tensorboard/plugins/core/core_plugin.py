@@ -462,7 +462,7 @@ polling multiple event files in each run directory for newly appended data
 (rather than only polling the last event file). Event files will only be
 polled as long as their most recently read data is newer than the threshold
 defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
-of running out of memory if the logdir contains many active eventfiles.
+of running out of memory if the logdir contains many active event files.
 (default: %(default)s)\
 ''')
 
@@ -472,13 +472,13 @@ of running out of memory if the logdir contains many active eventfiles.
         type=int,
         default=4000,
         help='''\
-[experimental] Configures the age threshold in seconds at which an eventfile
+[experimental] Configures the age threshold in seconds at which an event file
 that has no event wall time more recent than that will be considered an
 inactive file and no longer polled (to limit resource usage). If set to -1,
 no maximum age will be enforced, but beware of running out of memory and
 heavier filesystem read traffic. If set to 0, this reverts to the older
 last-file-only polling strategy (akin to --reload_multifile=false).
-(default: %(default)s - intended to ensure an eventfile remains active if
+(default: %(default)s - intended to ensure an event file remains active if
 it receives new data at least once per hour)\
 ''')
 

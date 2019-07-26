@@ -76,7 +76,7 @@ class EventMultiplexer(object):
                tensor_size_guidance=None,
                purge_orphaned_data=True,
                max_reload_threads=None,
-               eventfile_active_filter=None):
+               event_file_active_filter=None):
     """Constructor for the `EventMultiplexer`.
 
     Args:
@@ -94,8 +94,8 @@ class EventMultiplexer(object):
       max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
-      eventfile_active_filter: Optional predicate for determining whether an
-        eventfile latest load timestamp should be considered active. If passed,
+      event_file_active_filter: Optional predicate for determining whether an
+        event file latest load timestamp should be considered active. If passed,
         this will enable multifile directory loading.
     """
     logger.info('Event Multiplexer initializing.')
@@ -108,7 +108,7 @@ class EventMultiplexer(object):
     self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads or 1
-    self._eventfile_active_filter = eventfile_active_filter
+    self._event_file_active_filter = event_file_active_filter
     if run_path_map is not None:
       logger.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
@@ -150,7 +150,7 @@ class EventMultiplexer(object):
             size_guidance=self._size_guidance,
             tensor_size_guidance=self._tensor_size_guidance,
             purge_orphaned_data=self.purge_orphaned_data,
-            eventfile_active_filter=self._eventfile_active_filter)
+            event_file_active_filter=self._event_file_active_filter)
         self._accumulators[name] = accumulator
         self._paths[name] = path
     if accumulator:
