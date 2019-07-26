@@ -19,7 +19,7 @@
     "visualization"
   ],
   "author": "TensorFlow authors",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/tensorflow/tensorboard/issues"
   },
