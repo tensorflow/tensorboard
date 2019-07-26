@@ -159,7 +159,10 @@ limitations under the License.
 
       .settings-button {
         margin-top: 4px;
-        min-width: 40px;
+      }
+
+      .datapoint-right-controls-holder .control {
+        flex-shrink: 0;
       }
 
       .button {
@@ -1306,10 +1309,10 @@ limitations under the License.
                   </paper-tabs>
                 </div>
                 <div class="datapoint-right-controls-holder">
-                  <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+                  <a target="_blank" class="control" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
                     <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
                   </a>
-                  <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
+                  <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button control" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
                   <div class="example-status">[[exampleStatusStr]]</div>
                 </div>
               </div>
