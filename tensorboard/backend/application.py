@@ -538,7 +538,8 @@ def _get_event_file_active_filter(flags):
   """Returns a predicate for whether an event file load timestamp is active.
 
   Returns:
-    A predicate function accepting a single UNIX timestamp float argument.
+    A predicate function accepting a single UNIX timestamp float argument, or
+    None if multi-file loading is not enabled.
   """
   if not flags.reload_multifile:
     return None
