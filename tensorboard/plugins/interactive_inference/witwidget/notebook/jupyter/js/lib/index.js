@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 window.__nbextension_path__ =
-  document.querySelector('body').getAttribute('data-base-url') +
-  'nbextensions/wit-widget/';
+  document.querySelector("body").getAttribute("data-base-url") +
+  "nbextensions/wit-widget/";
 
 // Export widget models and views.
-module.exports = require('./wit.js');
+module.exports = require("./wit.js");

@@ -13,19 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-var witwidget = require('./index');
-var base = require('@jupyter-widgets/base');
+var witwidget = require("./index");
+var base = require("@jupyter-widgets/base");
 
 module.exports = {
-  id: 'wit-widget',
+  id: "wit-widget",
   requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
-      widgets.registerWidget({
-          name: 'wit-widget',
-          version: '0.1.0',
-          exports: witwidget
-      });
+    widgets.registerWidget({
+      name: "wit-widget",
+      version: "0.1.0",
+      exports: witwidget,
+    });
   },
-  autoStart: true
+  autoStart: true,
 };
-
