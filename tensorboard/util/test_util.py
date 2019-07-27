@@ -46,6 +46,11 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
   for testing in integrational style (writing out event files and use the real
   event readers).
   """
+  def __init__(self, *args, **kwargs):
+    # Briefly enter graph mode context so this testing FileWriter can be
+    # created from an eager mode context without triggering a usage error.
+    with tf.compat.v1.Graph().as_default():
+      super(FileWriter, self).__init__(*args, **kwargs)
 
   def add_event(self, event):
     if isinstance(event, event_pb2.Event):
