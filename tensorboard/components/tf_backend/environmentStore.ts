@@ -13,49 +13,47 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
-
-export enum Mode {
-  DB,
-  LOGDIR,
-}
-
-interface Environment {
-  dataLocation: string,
-  mode: Mode,
-  windowTitle: string,
-}
-
-export class EnvironmentStore extends BaseStore {
-  private environment: Environment;
-
-  load() {
-    const url = tf_backend.getRouter().environment();
-    return this.requestManager.request(url).then(result => {
-      const environment = {
-        dataLocation: result.data_location,
-        mode: result.mode == 'db' ? Mode.DB : Mode.LOGDIR,
-        windowTitle: result.window_title,
-      };
-      if (_.isEqual(this.environment, environment)) return;
-
-      this.environment = environment;
-      this.emitChange();
-    });
+  export enum Mode {
+    DB,
+    LOGDIR,
   }
 
-  public getDataLocation(): string {
-    return this.environment ? this.environment.dataLocation : '';
+  interface Environment {
+    dataLocation: string;
+    mode: Mode;
+    windowTitle: string;
   }
 
-  public getMode(): Mode {
-    return this.environment ? this.environment.mode : null;
+  export class EnvironmentStore extends BaseStore {
+    private environment: Environment;
+
+    load() {
+      const url = tf_backend.getRouter().environment();
+      return this.requestManager.request(url).then((result) => {
+        const environment = {
+          dataLocation: result.data_location,
+          mode: result.mode == "db" ? Mode.DB : Mode.LOGDIR,
+          windowTitle: result.window_title,
+        };
+        if (_.isEqual(this.environment, environment)) return;
+
+        this.environment = environment;
+        this.emitChange();
+      });
+    }
+
+    public getDataLocation(): string {
+      return this.environment ? this.environment.dataLocation : "";
+    }
+
+    public getMode(): Mode {
+      return this.environment ? this.environment.mode : null;
+    }
+
+    public getWindowTitle(): string {
+      return this.environment ? this.environment.windowTitle : "";
+    }
   }
 
-  public getWindowTitle(): string {
-    return this.environment ? this.environment.windowTitle : '';
-  }
-}
-
-export const environmentStore = new EnvironmentStore();
-
-}  // namespace tf_backend
+  export const environmentStore = new EnvironmentStore();
+} // namespace tf_backend
