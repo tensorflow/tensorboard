@@ -15,18 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
-<link rel="import" href="../tf-card-heading/util.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-slider/paper-slider.html" />
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading-style.html" />
+<link rel="import" href="../tf-card-heading/util.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
 
 <!--
 tf-image-loader loads an individual image from the TensorBoard backend.
@@ -49,7 +49,10 @@ future for loading older images.
       <template is="dom-if" if="[[_hasAtLeastOneStep]]">
         <div class="heading-row">
           <div class="heading-label">
-            step <span style="font-weight: bold">[[_toLocaleString(_stepValue)]]</span>
+            step
+            <span style="font-weight: bold"
+              >[[_toLocaleString(_stepValue)]]</span
+            >
           </div>
           <div class="heading-label heading-right datetime">
             <template is="dom-if" if="[[_currentWallTime]]">
@@ -57,7 +60,7 @@ future for loading older images.
             </template>
           </div>
           <div class="label right">
-            <paper-spinner-lite active hidden$=[[!_isImageLoading]]>
+            <paper-spinner-lite active hidden$="[[!_isImageLoading]]">
             </paper-spinner-lite>
           </div>
         </div>
@@ -79,11 +82,13 @@ future for loading older images.
 
     <!-- Semantically a button but <img> inside a <button> disallows user to do
     an interesting operation like "Copy Image" in non-Chromium browsers. -->
-    <a id="main-image-container"
-        role="button"
-        aria-label="Toggle actual size"
-        aria-expanded$="[[_getAriaExpanded(actualSize)]]"
-        on-tap="_handleTap"></a>
+    <a
+      id="main-image-container"
+      role="button"
+      aria-label="Toggle actual size"
+      aria-expanded$="[[_getAriaExpanded(actualSize)]]"
+      on-tap="_handleTap"
+    ></a>
 
     <style include="tf-card-heading-style">
       /** Make button a div. */
@@ -173,7 +178,7 @@ future for loading older images.
       }
 
       paper-icon-button {
-        color: #2196F3;
+        color: #2196f3;
         border-radius: 100%;
         width: 32px;
         height: 32px;
@@ -202,12 +207,12 @@ future for loading older images.
 
         _runColor: {
           type: String,
-          computed: '_computeRunColor(run)',
+          computed: "_computeRunColor(run)",
         },
         actualSize: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,  // for CSS
+          reflectToAttribute: true, // for CSS
         },
         brightnessAdjustment: {
           type: Number,
@@ -303,7 +308,7 @@ future for loading older images.
         return currentStep.step;
       },
       _computeCurrentWallTime(currentStep) {
-        if (!currentStep) return '';
+        if (!currentStep) return "";
         return tf_card_heading.formatDate(currentStep.wall_time);
       },
       _computeMaxStepIndex(steps) {
@@ -316,7 +321,7 @@ future for loading older images.
         return ofSamples > 1;
       },
       _getAriaExpanded() {
-        return this.actualSize ? 'true' : 'false';
+        return this.actualSize ? "true" : "false";
       },
       attached() {
         this._attached = true;
@@ -328,12 +333,15 @@ future for loading older images.
         }
         this._metadataCanceller.cancelAll();
         const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(router.pluginRoute('images', '/images'), {
+        const url = tf_backend.addParams(
+          router.pluginRoute("images", "/images"),
+          {
             tag: this.tag,
             run: this.run,
             sample: this.sample,
-        });
-        const updateSteps = this._metadataCanceller.cancellable(result => {
+          }
+        );
+        const updateSteps = this._metadataCanceller.cancellable((result) => {
           if (result.cancelled) {
             return;
           }
@@ -345,12 +353,14 @@ future for loading older images.
         this.requestManager.request(url).then(updateSteps);
       },
       _createStepDatum(imageMetadata) {
-        let url = tf_backend.getRouter().pluginRoute('images', '/individualImage');
+        let url = tf_backend
+          .getRouter()
+          .pluginRoute("images", "/individualImage");
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the image when the URL changes. The
         // backend doesn't care about the value.
         url = tf_backend.addParams(url, {ts: imageMetadata.wall_time});
-        url += '&' + imageMetadata.query;
+        url += "&" + imageMetadata.query;
 
         return {
           width: imageMetadata.width,
@@ -370,15 +380,17 @@ future for loading older images.
 
         const img = new Image();
         this._imageCanceller.cancelAll();
-        img.onload = img.onerror = this._imageCanceller.cancellable(result => {
-          if (result.cancelled) {
-            return;
-          }
-          const mainImageContainer = this.$$("#main-image-container");
-          mainImageContainer.innerHTML = "";
-          Polymer.dom(mainImageContainer).appendChild(img);
-          this.set("_isImageLoading", false);
-        }).bind(this);
+        img.onload = img.onerror = this._imageCanceller
+          .cancellable((result) => {
+            if (result.cancelled) {
+              return;
+            }
+            const mainImageContainer = this.$$("#main-image-container");
+            mainImageContainer.innerHTML = "";
+            Polymer.dom(mainImageContainer).appendChild(img);
+            this.set("_isImageLoading", false);
+          })
+          .bind(this);
 
         img.style.filter = `contrast(${contrastPercentage}%) `;
         img.style.filter += `brightness(${brightnessAdjustment})`;
@@ -388,7 +400,7 @@ future for loading older images.
         img.src = currentStep.url;
       },
       _handleTap(e) {
-        this.set('actualSize', !this.actualSize);
+        this.set("actualSize", !this.actualSize);
       },
       _toLocaleString(number) {
         // Shows commas (or locale-appropriate punctuation) for large numbers.
