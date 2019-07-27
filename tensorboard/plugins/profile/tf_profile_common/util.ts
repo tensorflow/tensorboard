@@ -33,7 +33,7 @@ module tf.profile.util {
     let start = Date.now();
     let result = task();
     /* tslint:disable */
-    console.log(msg, ':', Date.now() - start, 'ms');
+    console.log(msg, ":", Date.now() - start, "ms");
     /* tslint:enable */
     return result;
   }
@@ -48,22 +48,26 @@ module tf.profile.util {
   export function getTracker(polymerComponent: any) {
     return {
       setMessage: function(msg) {
-        polymerComponent.set(
-            'progress', {value: polymerComponent.progress.value, msg: msg});
+        polymerComponent.set("progress", {
+          value: polymerComponent.progress.value,
+          msg: msg,
+        });
       },
       updateProgress: function(value) {
-        polymerComponent.set('progress', {
+        polymerComponent.set("progress", {
           value: polymerComponent.progress.value + value,
-          msg: polymerComponent.progress.msg
+          msg: polymerComponent.progress.msg,
         });
       },
       reportError: function(msg: string, err) {
         // Log the stack trace in the console.
         console.error(err.stack);
         // And send a user-friendly message to the UI.
-        polymerComponent.set(
-            'progress',
-            {value: polymerComponent.progress.value, msg: msg, error: true});
+        polymerComponent.set("progress", {
+          value: polymerComponent.progress.value,
+          msg: msg,
+          error: true,
+        });
       },
     };
   }
@@ -72,8 +76,11 @@ module tf.profile.util {
    * Runs an expensive task and return the result.
    */
   export function runTask<T>(
-      msg: string, incProgressValue: number, task: () => T,
-      tracker: ProgressTracker): T {
+    msg: string,
+    incProgressValue: number,
+    task: () => T,
+    tracker: ProgressTracker
+  ): T {
     // Update the progress message to say the current running task.
     tracker.setMessage(msg);
     // Run the expensive task with a delay that gives enough time for the
@@ -87,7 +94,7 @@ module tf.profile.util {
     } catch (e) {
       // Errors that happen inside asynchronous tasks are
       // reported to the tracker using a user-friendly message.
-      tracker.reportError('Failed ' + msg, e);
+      tracker.reportError("Failed " + msg, e);
     }
   }
 }
