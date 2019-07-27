@@ -89,10 +89,12 @@ class DirectoryLoader(object):
       for path in paths:
         for value in self._LoadPath(path):
           yield value
-    except tf.errors.OpError:
+    except tf.errors.OpError as e:
       if not tf.io.gfile.exists(self._directory):
         raise directory_watcher.DirectoryDeletedError(
             'Directory %s has been permanently deleted' % self._directory)
+      else:
+        logger.info('Ignoring error during file loading: %s' % e)
 
   def _LoadPath(self, path):
     """Generator for values from a single path's loader.
@@ -109,12 +111,16 @@ class DirectoryLoader(object):
       return
     loader = self._loaders.get(path, None)
     if loader is None:
-      loader = self._loader_factory(path)
+      try:
+        loader = self._loader_factory(path)
+      except tf.errors.NotFoundError:
+        # Happens if a file was removed after we listed the directory.
+        logger.debug('Skipping nonexistent path %s', path)
+        return
       self._loaders[path] = loader
     logger.info('Loading data from path %s', path)
     for timestamp, value in loader.Load():
-      if max_timestamp is None or (timestamp is not None
-                                   and timestamp > max_timestamp):
+      if max_timestamp is None or timestamp > max_timestamp:
         max_timestamp = timestamp
       yield value
     if not self._MarkIfInactive(path, max_timestamp):

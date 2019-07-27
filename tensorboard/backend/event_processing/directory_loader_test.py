@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import glob
 import os
 import shutil
 
@@ -33,7 +34,9 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
+from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.util import test_util
 
 
 class _TimestampedByteLoader(object):
@@ -195,12 +198,44 @@ class DirectoryLoaderTest(tf.test.TestCase):
     self._WriteToFile('b', ['B7'], [7])
     self.assertLoaderYields([])
 
-  def testDoesntCrashWhenFileIsDeleted(self):
-    self._WriteToFile('a', 'a')
-    self.assertLoaderYields(['a'])
-    os.remove(os.path.join(self._directory, 'a'))
-    self._WriteToFile('b', 'b')
-    self.assertLoaderYields(['b'])
+  def testDoesntCrashWhenCurrentFileIsDeleted(self):
+    # Use actual file loader so it emits the real error.
+    self._loader = directory_loader.DirectoryLoader(
+        self._directory, event_file_loader.TimestampedEventFileLoader)
+    def make_summary(tag_name):
+      return summary_pb2.Summary(
+          value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])
+    with test_util.FileWriter(self._directory, filename_suffix='.a') as writer_a:
+      writer_a.add_test_summary('a')
+    events = list(self._loader.Load())
+    events.pop(0)  # Ignore the file_version event.
+    self.assertEqual(1, len(events))
+    self.assertEqual('a', events[0].summary.value[0].tag)
+    os.remove(glob.glob(os.path.join(self._directory, '*.a'))[0])
+    with test_util.FileWriter(self._directory, filename_suffix='.b') as writer_b:
+      writer_b.add_test_summary('b')
+    events = list(self._loader.Load())
+    events.pop(0)  # Ignore the file_version event.
+    self.assertEqual(1, len(events))
+    self.assertEqual('b', events[0].summary.value[0].tag)
+
+  def testDoesntCrashWhenUpcomingFileIsDeleted(self):
+    # Use actual file loader so it emits the real error.
+    self._loader = directory_loader.DirectoryLoader(
+        self._directory, event_file_loader.TimestampedEventFileLoader)
+    def make_summary(tag_name):
+      return summary_pb2.Summary(
+          value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])
+    with test_util.FileWriter(self._directory, filename_suffix='.a') as writer_a:
+      writer_a.add_test_summary('a')
+    with test_util.FileWriter(self._directory, filename_suffix='.b') as writer_b:
+      writer_b.add_test_summary('b')
+    generator = self._loader.Load()
+    next(generator)  # Ignore the file_version event.
+    event = next(generator)
+    self.assertEqual('a', event.summary.value[0].tag)
+    os.remove(glob.glob(os.path.join(self._directory, '*.b'))[0])
+    self.assertEmpty(list(generator))
 
   def testRaisesDirectoryDeletedError_whenDirectoryIsDeleted(self):
     self._WriteToFile('a', 'a')

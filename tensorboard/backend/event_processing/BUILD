@@ -50,7 +50,9 @@ py_test(
     deps = [
         ":directory_loader",
         ":directory_watcher",
+        ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
         "@org_pythonhosted_mock",
     ],
 )
