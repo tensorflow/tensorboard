@@ -202,9 +202,6 @@ class DirectoryLoaderTest(tf.test.TestCase):
     # Use actual file loader so it emits the real error.
     self._loader = directory_loader.DirectoryLoader(
         self._directory, event_file_loader.TimestampedEventFileLoader)
-    def make_summary(tag_name):
-      return summary_pb2.Summary(
-          value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])
     with test_util.FileWriter(self._directory, filename_suffix='.a') as writer_a:
       writer_a.add_test_summary('a')
     events = list(self._loader.Load())
@@ -223,9 +220,6 @@ class DirectoryLoaderTest(tf.test.TestCase):
     # Use actual file loader so it emits the real error.
     self._loader = directory_loader.DirectoryLoader(
         self._directory, event_file_loader.TimestampedEventFileLoader)
-    def make_summary(tag_name):
-      return summary_pb2.Summary(
-          value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])
     with test_util.FileWriter(self._directory, filename_suffix='.a') as writer_a:
       writer_a.add_test_summary('a')
     with test_util.FileWriter(self._directory, filename_suffix='.b') as writer_b:
