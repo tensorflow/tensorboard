@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-suite('graph loader', () => {
+suite("graph loader", () => {
   let assert = chai.assert;
 
-  test('loader exists', () => {
-    assert.isTrue(document.getElementById('loader') != null);
+  test("loader exists", () => {
+    assert.isTrue(document.getElementById("loader") != null);
   });
 
   // TODO: write tests.
-
 });
