@@ -13,7 +13,7 @@
 // limitations under the License.
 
 export function render() {
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.innerText = `
 html,
 body,
@@ -25,7 +25,7 @@ iframe {
 }`;
   document.head.appendChild(style);
 
-  const iframe = document.createElement('iframe');
-  iframe.src = './projector_binary.html';
+  const iframe = document.createElement("iframe");
+  iframe.src = "./projector_binary.html";
   document.body.appendChild(iframe);
 }
