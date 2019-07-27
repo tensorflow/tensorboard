@@ -15,173 +15,176 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-dashboard-common/tf-downloader.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-menu-button/paper-menu-button.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link
+  rel="import"
+  href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html"
+/>
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-dashboard-common/tf-downloader.html" />
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
   chart, and providing UI affordances (such as buttons) for scalar data.
 -->
 <dom-module id="tf-scalar-card">
-<template>
-  <tf-card-heading
-    tag="[[tag]]"
-    display-name="[[tagMetadata.displayName]]"
-    description="[[tagMetadata.description]]"
-  ></tf-card-heading>
-  <div id="tf-line-chart-data-loader-container">
-    <tf-line-chart-data-loader
-      active="[[active]]"
-      color-scale="[[_getColorScale(colorScale)]]"
-      data-series="[[_getDataSeries(dataToLoad.*)]]"
-      data-to-load="[[dataToLoad]]"
-      get-data-load-name="[[_getDataLoadName]]"
-      get-data-load-url="[[getDataLoadUrl]]"
-      request-data="[[requestData]]"
-      ignore-y-outliers="[[ignoreYOutliers]]"
-      load-data-callback="[[_loadDataCallback]]"
-      load-key="[[tag]]"
-      log-scale-active="[[_logScaleActive]]"
-      request-manager="[[requestManager]]"
-      smoothing-enabled="[[smoothingEnabled]]"
-      smoothing-weight="[[smoothingWeight]]"
-      tag-metadata="[[tagMetadata]]"
-      tooltip-columns="[[_tooltipColumns]]"
-      tooltip-position="auto"
-      tooltip-sorting-method="[[tooltipSortingMethod]]"
-      x-type="[[xType]]"
-    >
-    </tf-line-chart-data-loader>
-  </div>
-  <div id="buttons">
-    <paper-icon-button
-      selected$="[[_expanded]]"
-      icon="fullscreen"
-      on-tap="_toggleExpanded"
-    ></paper-icon-button>
-    <paper-icon-button
-      selected$="[[_logScaleActive]]"
-      icon="line-weight"
-      on-tap="_toggleLogScale"
-      title="Toggle y-axis log scale"
-    ></paper-icon-button>
-    <paper-icon-button
-      icon="settings-overscan"
-      on-tap="_resetDomain"
-      title="Fit domain to data"
-    ></paper-icon-button>
-    <template is="dom-if" if="[[showDownloadLinks]]">
-      <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
-        <paper-icon-button
-          class="dropdown-trigger"
-          slot="dropdown-trigger"
-          icon="file-download"
-        ></paper-icon-button>
-        <paper-listbox class="dropdown-content" slot="dropdown-content">
-          <paper-item>
-            <a id="svgLink" download="[[tag]].svg">
-              Download Current Chart as SVG
-            </a>
-          </paper-item>
-        </paper-listbox>
-      </paper-menu-button>
-    </template>
-    <span style="flex-grow: 1"></span>
-    <template is="dom-if" if="[[showDownloadLinks]]">
-      <div class="download-links">
-        <tf-downloader
-          runs="[[_runsFromData(dataToLoad)]]"
-          tag="[[tag]]"
-          url-fn="[[_downloadUrlFn]]"
-        ></tf-downloader>
-      </div>
-    </template>
-  </div>
-  <style>
-    :host {
-      margin: 5px;
-      display: block;
-      width: 330px;
-    }
-
-    :host([_expanded]) {
-      width: 100%;
-    }
-
-    :host([_expanded]) #tf-line-chart-data-loader-container {
-      height: 400px;
-    }
-
-    #tf-line-chart-data-loader-container {
-      height: 200px;
-      width: 100%;
-    }
-
-    tf-card-heading {
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    #buttons {
-      display: flex;
-      flex-direction: row;
-    }
-
-    paper-icon-button {
-      color: #2196F3;
-      border-radius: 100%;
-      width: 32px;
-      height: 32px;
-      padding: 4px;
-    }
-
-    paper-icon-button[selected] {
-      background: var(--tb-ui-light-accent);
-    }
-
-    .download-links {
-      display: flex;
-      height: 32px;
-    }
-
-    .download-links a {
-      align-self: center;
-      font-size: 10px;
-      margin: 2px;
-    }
-
-    .download-links paper-dropdown-menu {
-      width: 100px;
-      --paper-input-container-label: {
-        font-size: 10px;
+  <template>
+    <tf-card-heading
+      tag="[[tag]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+    ></tf-card-heading>
+    <div id="tf-line-chart-data-loader-container">
+      <tf-line-chart-data-loader
+        active="[[active]]"
+        color-scale="[[_getColorScale(colorScale)]]"
+        data-series="[[_getDataSeries(dataToLoad.*)]]"
+        data-to-load="[[dataToLoad]]"
+        get-data-load-name="[[_getDataLoadName]]"
+        get-data-load-url="[[getDataLoadUrl]]"
+        request-data="[[requestData]]"
+        ignore-y-outliers="[[ignoreYOutliers]]"
+        load-data-callback="[[_loadDataCallback]]"
+        load-key="[[tag]]"
+        log-scale-active="[[_logScaleActive]]"
+        request-manager="[[requestManager]]"
+        smoothing-enabled="[[smoothingEnabled]]"
+        smoothing-weight="[[smoothingWeight]]"
+        tag-metadata="[[tagMetadata]]"
+        tooltip-columns="[[_tooltipColumns]]"
+        tooltip-position="auto"
+        tooltip-sorting-method="[[tooltipSortingMethod]]"
+        x-type="[[xType]]"
+      >
+      </tf-line-chart-data-loader>
+    </div>
+    <div id="buttons">
+      <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        selected$="[[_logScaleActive]]"
+        icon="line-weight"
+        on-tap="_toggleLogScale"
+        title="Toggle y-axis log scale"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Fit domain to data"
+      ></paper-icon-button>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
+          <paper-icon-button
+            class="dropdown-trigger"
+            slot="dropdown-trigger"
+            icon="file-download"
+          ></paper-icon-button>
+          <paper-listbox class="dropdown-content" slot="dropdown-content">
+            <paper-item>
+              <a id="svgLink" download="[[tag]].svg">
+                Download Current Chart as SVG
+              </a>
+            </paper-item>
+          </paper-listbox>
+        </paper-menu-button>
+      </template>
+      <span style="flex-grow: 1"></span>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links">
+          <tf-downloader
+            runs="[[_runsFromData(dataToLoad)]]"
+            tag="[[tag]]"
+            url-fn="[[_downloadUrlFn]]"
+          ></tf-downloader>
+        </div>
+      </template>
+    </div>
+    <style>
+      :host {
+        margin: 5px;
+        display: block;
+        width: 330px;
       }
-      --paper-input-container-input: {
-        font-size: 10px;
-      }
-    }
 
-    paper-menu-button {
-      padding: 0;
-    }
-    paper-item a {
-      color: inherit;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-  </style>
-</template>
-<script>
-  Polymer({
-      is: 'tf-scalar-card',
+      :host([_expanded]) {
+        width: 100%;
+      }
+
+      :host([_expanded]) #tf-line-chart-data-loader-container {
+        height: 400px;
+      }
+
+      #tf-line-chart-data-loader-container {
+        height: 200px;
+        width: 100%;
+      }
+
+      tf-card-heading {
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      #buttons {
+        display: flex;
+        flex-direction: row;
+      }
+
+      paper-icon-button {
+        color: #2196f3;
+        border-radius: 100%;
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+      }
+
+      paper-icon-button[selected] {
+        background: var(--tb-ui-light-accent);
+      }
+
+      .download-links {
+        display: flex;
+        height: 32px;
+      }
+
+      .download-links a {
+        align-self: center;
+        font-size: 10px;
+        margin: 2px;
+      }
+
+      .download-links paper-dropdown-menu {
+        width: 100px;
+        --paper-input-container-label: {
+          font-size: 10px;
+        }
+        --paper-input-container-input: {
+          font-size: 10px;
+        }
+      }
+
+      paper-menu-button {
+        padding: 0;
+      }
+      paper-item a {
+        color: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: "tf-scalar-card",
       properties: {
         tag: String,
 
@@ -215,7 +218,7 @@ limitations under the License.
           type: Object,
           value: function() {
             return (scalarChart, datum, data) => {
-              const formattedData = data.map(datum => ({
+              const formattedData = data.map((datum) => ({
                 wall_time: new Date(datum[0] * 1000),
                 step: datum[1],
                 scalar: datum[2],
@@ -233,14 +236,15 @@ limitations under the License.
           value: function() {
             return ({tag, run, experiment}) => {
               return tf_backend.getRouter().pluginRoute(
-                  'scalars',
-                  '/scalars',
-                  new URLSearchParams({
-                    tag,
-                    run,
-                    experiment: experiment ? experiment.id : '',
-                  }));
-            }
+                "scalars",
+                "/scalars",
+                new URLSearchParams({
+                  tag,
+                  run,
+                  experiment: experiment ? experiment.id : "",
+                })
+              );
+            };
           },
         },
 
@@ -270,7 +274,7 @@ limitations under the License.
         _expanded: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,  // for CSS
+          reflectToAttribute: true, // for CSS
         },
 
         _logScaleActive: Boolean,
@@ -279,9 +283,9 @@ limitations under the License.
           type: Array,
           value: function() {
             const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
-            const ind = columns.findIndex(c => c.title == 'Name');
+            const ind = columns.findIndex((c) => c.title == "Name");
             columns.splice(ind, 1, {
-              title: 'Name',
+              title: "Name",
               evaluate: (d) => {
                 const datum = d.dataset.metadata().meta;
                 return this._getSeriesDisplayNameFromDatum(datum);
@@ -289,43 +293,43 @@ limitations under the License.
             });
             return columns;
           },
-        }
+        },
       },
       reload() {
-        this.$$('tf-line-chart-data-loader').reload();
+        this.$$("tf-line-chart-data-loader").reload();
       },
       redraw() {
-        this.$$('tf-line-chart-data-loader').redraw();
+        this.$$("tf-line-chart-data-loader").redraw();
       },
       _toggleExpanded(e) {
-        this.set('_expanded', !this._expanded);
+        this.set("_expanded", !this._expanded);
         this.redraw();
       },
       _toggleLogScale() {
-        this.set('_logScaleActive', !this._logScaleActive);
+        this.set("_logScaleActive", !this._logScaleActive);
       },
       _resetDomain() {
-        const chart = this.$$('tf-line-chart-data-loader');
+        const chart = this.$$("tf-line-chart-data-loader");
         if (chart) {
           chart.resetDomain();
         }
       },
       _updateDownloadLink() {
-        const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
+        const svgStr = this.$$("tf-line-chart-data-loader").exportAsSvgString();
         // The SVG code string may include hash characters, such as an
         // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
         // data so that such a hash is not interpreted as a fragment
         // specifier, truncating the SVG. (See issue #1874.)
-        this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
+        this.$$("#svgLink").href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
       _runsFromData(data) {
         return data.map((datum) => datum.run);
       },
       _getDataSeries() {
-        return this.dataToLoad.map(d => this._getSeriesNameFromDatum(d));
+        return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d));
       },
       // name is a stable identifier for a series.
-      _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
+      _getSeriesNameFromDatum({run, experiment = {name: "_default"}}) {
         return JSON.stringify([experiment.name, run]);
       },
       // title is a visible string of a series for the UI.
@@ -344,7 +348,7 @@ limitations under the License.
             return tf_color_scale.runsColorScale(run);
           },
         };
-      }
-  });
-</script>
+      },
+    });
+  </script>
 </dom-module>
