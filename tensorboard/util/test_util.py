@@ -52,6 +52,12 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
     with tf.compat.v1.Graph().as_default():
       super(FileWriter, self).__init__(*args, **kwargs)
 
+  def add_test_summary(self, tag, simple_value=1.0, step=None):
+    """Convenience for writing a simple summary for a given tag."""
+    value = summary_pb2.Summary.Value(tag=tag, simple_value=simple_value)
+    summary = summary_pb2.Summary(value=[value])
+    self.add_summary(summary, global_step=step)
+
   def add_event(self, event):
     if isinstance(event, event_pb2.Event):
       tf_event = tf.compat.v1.Event.FromString(event.SerializeToString())

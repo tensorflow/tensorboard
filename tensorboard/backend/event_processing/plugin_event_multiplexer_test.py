@@ -25,7 +25,6 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
-from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import test_util
 
 
@@ -373,9 +372,6 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
   def testMultifileReload(self):
     multiplexer = event_multiplexer.EventMultiplexer(
         event_file_active_filter=lambda timestamp: True)
-    def make_summary(tag_name):
-      return summary_pb2.Summary(
-          value=[summary_pb2.Summary.Value(tag=tag_name, simple_value=1.0)])
     logdir = self.get_temp_dir()
     run_name = 'run1'
     run_path = os.path.join(logdir, run_name)
@@ -383,14 +379,14 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     # deterministic sort order, and then simulate a write to file A, then
     # to file B, then another write to file A (with reloads after each).
     with test_util.FileWriter(run_path, filename_suffix='.a') as writer_a:
-      writer_a.add_summary(make_summary('a1'), 1)
+      writer_a.add_test_summary('a1', step=1)
       writer_a.flush()
       multiplexer.AddRunsFromDirectory(logdir)
       multiplexer.Reload()
       with test_util.FileWriter(run_path, filename_suffix='.b') as writer_b:
-        writer_b.add_summary(make_summary('b'), 1)
+        writer_b.add_test_summary('b', step=1)
       multiplexer.Reload()
-      writer_a.add_summary(make_summary('a2'), 2)
+      writer_a.add_test_summary('a2', step=2)
       writer_a.flush()
       multiplexer.Reload()
     # Both event files should be treated as active, so we should load the newly
