@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-graph-common/tf-node-icon.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
+<link rel="import" href="../tf-graph-common/tf-node-icon.html" />
 
 <dom-module id="tf-node-list-item">
   <template>
@@ -64,15 +64,22 @@ limitations under the License.
         color: var(--tb-graph-faded);
       }
     </style>
-    <div id="list-item"
-         on-mouseover="_nodeListener"
-         on-mouseout="_nodeListener"
-         on-click="_nodeListener">
+    <div
+      id="list-item"
+      on-mouseover="_nodeListener"
+      on-mouseout="_nodeListener"
+      on-click="_nodeListener"
+    >
       <div class$="{{_fadedClass(itemRenderInfo)}}">
-        <tf-node-icon class="node-icon" height="12"
-            color-by="[[colorBy]]" color-by-params="[[colorByParams]]"
-            node="[[itemNode]]" render-info="[[itemRenderInfo]]"
-            template-index="[[templateIndex]]"></tf-node-icon>
+        <tf-node-icon
+          class="node-icon"
+          height="12"
+          color-by="[[colorBy]]"
+          color-by-params="[[colorByParams]]"
+          node="[[itemNode]]"
+          render-info="[[itemRenderInfo]]"
+          template-index="[[templateIndex]]"
+        ></tf-node-icon>
         <span title$="[[name]]">[[name]]</span>
         <span class="edge-label">[[edgeLabel]]</span>
       </div>
@@ -82,7 +89,7 @@ limitations under the License.
   <script>
     (function() {
       Polymer({
-        is: 'tf-node-list-item',
+        is: "tf-node-list-item",
 
         properties: {
           /**
@@ -105,33 +112,33 @@ limitations under the License.
           name: String,
           itemType: {
             type: String,
-            observer: '_itemTypeChanged'
+            observer: "_itemTypeChanged",
           },
           colorBy: String,
           colorByParams: Object,
-          templateIndex: Function
+          templateIndex: Function,
         },
 
         _itemTypeChanged: function() {
-          if (this.itemType !== 'subnode') {
-            this.$['list-item'].classList.add('clickable');
+          if (this.itemType !== "subnode") {
+            this.$["list-item"].classList.add("clickable");
           } else {
-            this.$['list-item'].classList.remove('clickable');
+            this.$["list-item"].classList.remove("clickable");
           }
         },
 
         _nodeListener: function(event) {
           // fire node.click/mouseover/mouseout
-          this.fire('node-list-item-' + event.type, {
+          this.fire("node-list-item-" + event.type, {
             cardNode: this.cardNode.name,
             nodeName: this.name,
-            type: this.itemType
+            type: this.itemType,
           });
         },
 
         _fadedClass: function(itemRenderInfo) {
-          return itemRenderInfo && itemRenderInfo.isFadedOut ? 'faded' : '';
-        }
+          return itemRenderInfo && itemRenderInfo.isFadedOut ? "faded" : "";
+        },
       });
     })();
   </script>
