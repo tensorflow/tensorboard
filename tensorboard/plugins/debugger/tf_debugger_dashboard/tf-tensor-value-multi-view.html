@@ -15,22 +15,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="tf-tensor-value-view.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-tensor-value-view.html" />
 
 <dom-module id="tf-tensor-value-multi-view">
   <template>
     <div id="multiView">
       <div class="section-title">Tensor Values</div>
-      <div id="multi-tensor-view-container">
-      </div>
+      <div id="multi-tensor-view-container"></div>
     </div>
     <style>
       .section-title {
         font-size: 110%;
         font-weight: bold;
       }
-      #multiView{
+      #multiView {
         background-color: #fff;
         padding-top: 3px;
         padding-left: 3px;
@@ -41,7 +40,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: 'tf-tensor-value-multi-view',
+      is: "tf-tensor-value-multi-view",
       properties: {
         continueToCallback: Function,
 
@@ -51,34 +50,42 @@ limitations under the License.
 
         _tensorViewCounter: {
           type: Number,
-          value: 0
+          value: 0,
         },
       },
 
       addView(view) {
-        const multiViewContainer = this.$$('#multi-tensor-view-container');
-        const viewCard = document.createElement('tf-tensor-value-view');
-        viewCard.setAttribute('class', 'debugger-tensor-view');
+        const multiViewContainer = this.$$("#multi-tensor-view-container");
+        const viewCard = document.createElement("tf-tensor-value-view");
+        viewCard.setAttribute("class", "debugger-tensor-view");
         viewCard.viewId = view.viewId;
         viewCard.tensorName = view.tensorName;
         viewCard.debugOp = view.debugOp;
         viewCard.slicing = view.slicing;
         viewCard.timeIndices = view.timeIndices;
-        viewCard.closeButtonCallback = this._createCloseButtonCallback(view.viewId);
+        viewCard.closeButtonCallback = this._createCloseButtonCallback(
+          view.viewId
+        );
         viewCard.continueToButtonCallback = () => {
-          this.continueToCallback(view.deviceName, view.maybeBaseExpandedNodeName);
+          this.continueToCallback(
+            view.deviceName,
+            view.maybeBaseExpandedNodeName
+          );
         };
         viewCard.tensorNameCallback = () => {
-          this.tensorNameClicked(view.deviceName, view.maybeBaseExpandedNodeName);
+          this.tensorNameClicked(
+            view.deviceName,
+            view.maybeBaseExpandedNodeName
+          );
         };
         multiViewContainer.appendChild(viewCard);
         viewCard.refresh();
       },
 
       getViews() {
-        const viewCards = this.root.querySelectorAll('.debugger-tensor-view');
+        const viewCards = this.root.querySelectorAll(".debugger-tensor-view");
         const views = [];
-        _.forEach(viewCards, viewCard => {
+        _.forEach(viewCards, (viewCard) => {
           views.push({
             viewId: viewCard.viewId,
             tensorName: viewCard.tensorName,
@@ -91,22 +98,22 @@ limitations under the License.
       },
 
       renderTensorValues() {
-        const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
-        _.forEach(tensorViews, tensorView => {
+        const tensorViews = this.root.querySelectorAll(".debugger-tensor-view");
+        _.forEach(tensorViews, (tensorView) => {
           tensorView.renderTensorValue();
         });
       },
 
       _redrawViews(views) {
-        const multiViewContainer = this.$$('#multi-tensor-view-container');
+        const multiViewContainer = this.$$("#multi-tensor-view-container");
 
         // First, clear all current views.
-        const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
-        _.forEach(tensorViews, tensorView => {
+        const tensorViews = this.root.querySelectorAll(".debugger-tensor-view");
+        _.forEach(tensorViews, (tensorView) => {
           multiViewContainer.removeChild(tensorView);
         });
 
-        _.forEach(views, view => {
+        _.forEach(views, (view) => {
           this.addView(view);
         });
       },
@@ -114,7 +121,9 @@ limitations under the License.
       _createCloseButtonCallback(viewId) {
         return () => {
           const newViews = [];
-          const tensorViews = this.root.querySelectorAll('.debugger-tensor-view');
+          const tensorViews = this.root.querySelectorAll(
+            ".debugger-tensor-view"
+          );
           for (let i = 0; i < tensorViews.length; ++i) {
             const tensorView = tensorViews[i];
             if (tensorView.viewId !== viewId) {
@@ -126,7 +135,7 @@ limitations under the License.
                 timeIndices: tensorView.timeIndices,
               });
             }
-          };
+          }
           this._redrawViews(newViews);
         };
       },
