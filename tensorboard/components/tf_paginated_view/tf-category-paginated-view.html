@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-collapse/iron-collapse.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="tf-dom-repeat.html">
-<link rel="import" href="tf-paginated-view-store.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-dom-repeat.html" />
+<link rel="import" href="tf-paginated-view-store.html" />
 
 <!--
   tf-category-paginated-view takes a category and renders subset of its items
@@ -46,7 +46,9 @@ limitations under the License.
             <template is="dom-if" if="[[_isCompositeSearch(category)]]">
               <span>Tags matching multiple experiments</span>
               <template is="dom-if" if="[[_isInvalidSearchResults]]">
-                <span>&nbsp;<strong>(malformed regular expression)</strong></span>
+                <span
+                  >&nbsp;<strong>(malformed regular expression)</strong></span
+                >
               </template>
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
@@ -79,11 +81,13 @@ limitations under the License.
               <paper-button
                 on-tap="_performPreviousPage"
                 disabled$="[[!_hasPreviousPage]]"
-              >Previous page</paper-button>
+                >Previous page</paper-button
+              >
               <paper-button
                 on-tap="_performNextPage"
                 disabled$="[[!_hasNextPage]]"
-              >Next page</paper-button>
+                >Next page</paper-button
+              >
             </div>
           </template>
 
@@ -95,19 +99,19 @@ limitations under the License.
               <div style="display: inline-block; padding: 0 5px">
                 Page
                 <paper-input
-                   id="page-input"
-                   type="number"
-                   no-label-float
-                   min="1"
-                   max="[[_pageCount]]"
-                   value="[[_pageInputValue]]"
-                   style="display: inline-block; width: [[_inputWidth]];"
-                   on-input="_handlePageInputEvent"
-                   on-change="_handlePageChangeEvent"
-                   on-focus="_handlePageFocusEvent"
-                   on-blur="_handlePageBlurEvent"
-                 ></paper-input>
-                 of [[_pageCount]]
+                  id="page-input"
+                  type="number"
+                  no-label-float
+                  min="1"
+                  max="[[_pageCount]]"
+                  value="[[_pageInputValue]]"
+                  style="display: inline-block; width: [[_inputWidth]];"
+                  on-input="_handlePageInputEvent"
+                  on-change="_handlePageChangeEvent"
+                  on-focus="_handlePageFocusEvent"
+                  on-blur="_handlePageBlurEvent"
+                ></paper-input>
+                of [[_pageCount]]
               </div>
             </div>
 
@@ -115,11 +119,13 @@ limitations under the License.
               <paper-button
                 on-tap="_performPreviousPage"
                 disabled$="[[!_hasPreviousPage]]"
-              >Previous page</paper-button>
+                >Previous page</paper-button
+              >
               <paper-button
                 on-tap="_performNextPage"
                 disabled$="[[!_hasNextPage]]"
-              >Next page</paper-button>
+                >Next page</paper-button
+              >
             </div>
           </template>
         </div>
@@ -146,7 +152,7 @@ limitations under the License.
         width: 100%;
         font-size: 15px;
         line-height: 1;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
         padding: 10px 15px;
       }
 
@@ -269,28 +275,28 @@ limitations under the License.
 
         _count: {
           type: Number,
-          computed: '_computeCount(category.items.*)',
+          computed: "_computeCount(category.items.*)",
         },
         _paneRendered: {
           type: Boolean,
-          computed: '_computePaneRendered(category)',
-          observer: '_onPaneRenderedChanged',
+          computed: "_computePaneRendered(category)",
+          observer: "_onPaneRenderedChanged",
         },
         _itemsRendered: {
           type: Boolean,
-          computed: '_computeItemsRendered(opened, _paneRendered)',
+          computed: "_computeItemsRendered(opened, _paneRendered)",
         },
         _isSearchResults: {
           type: Boolean,
-          computed: '_computeIsSearchResults(category.metadata.type)',
+          computed: "_computeIsSearchResults(category.metadata.type)",
         },
         _isInvalidSearchResults: {
           type: Boolean,
-          computed: '_computeIsInvalidSearchResults(category.metadata)',
+          computed: "_computeIsInvalidSearchResults(category.metadata)",
         },
         _isUniversalSearchQuery: {
           type: Boolean,
-          computed: '_computeIsUniversalSearchQuery(category.metadata)',
+          computed: "_computeIsUniversalSearchQuery(category.metadata)",
         },
 
         /**
@@ -299,7 +305,7 @@ limitations under the License.
         getCategoryItemKey: {
           type: Function,
           value: () => (item, index) => JSON.stringify(item),
-          observer: '_getCategoryItemKeyChanged',
+          observer: "_getCategoryItemKeyChanged",
         },
 
         /**
@@ -307,8 +313,8 @@ limitations under the License.
          */
         _limit: {
           type: Number,
-          value: 12,  // reasonably small and has lots of factors
-          observer: '_limitChanged',
+          value: 12, // reasonably small and has lots of factors
+          observer: "_limitChanged",
         },
 
         // At any time we'll mark one particular item('s index) as
@@ -332,38 +338,39 @@ limitations under the License.
         },
 
         _currentPage: {
-          type: Number,  // 1-indexed
-          computed: '_computeCurrentPage(_limit, _activeIndex)',
+          type: Number, // 1-indexed
+          computed: "_computeCurrentPage(_limit, _activeIndex)",
         },
         _pageCount: {
           type: Number,
-          computed: '_computePageCount(category.items.*, _limit)',
+          computed: "_computePageCount(category.items.*, _limit)",
         },
         _multiplePagesExist: {
           type: Boolean,
-          computed: '_computeMultiplePagesExist(_pageCount, disablePagination)',
+          computed: "_computeMultiplePagesExist(_pageCount, disablePagination)",
         },
         _hasPreviousPage: {
           type: Boolean,
-          computed: '_computeHasPreviousPage(_currentPage)',
+          computed: "_computeHasPreviousPage(_currentPage)",
         },
         _hasNextPage: {
           type: Boolean,
-          computed: '_computeHasNextPage(_currentPage, _pageCount)',
+          computed: "_computeHasNextPage(_currentPage, _pageCount)",
         },
         _inputWidth: {
           type: String,
-          computed: '_computeInputWidth(_pageCount)',
+          computed: "_computeInputWidth(_pageCount)",
         },
 
         _pageInputValue: {
-          type: String,  // value displayed in the input field at any time
-          computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
-          observer: '_updatePageInputValue',
+          type: String, // value displayed in the input field at any time
+          computed:
+            "_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)",
+          observer: "_updatePageInputValue",
         },
         _pageInputRawValue: {
-          type: String,  // updated live as the user types
-          value: '',
+          type: String, // updated live as the user types
+          value: "",
         },
         _pageInputFocused: {
           type: Boolean,
@@ -372,8 +379,8 @@ limitations under the License.
       },
 
       observers: [
-        '_clampActiveIndex(category.items.*)',
-        '_updateRenderedItems(_itemsRendered, category.items.*, _limit, _activeIndex, _pageCount, disablePagination)',
+        "_clampActiveIndex(category.items.*)",
+        "_updateRenderedItems(_itemsRendered, category.items.*, _limit, _activeIndex, _pageCount, disablePagination)",
       ],
 
       behaviors: [tf_dom_repeat.TfDomRepeatBehavior],
@@ -397,8 +404,10 @@ limitations under the License.
         // Show a category unless it's a search results category where
         // there wasn't actually a search query.
         return !(
-            category.metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-            && category.name === "");
+          category.metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          category.name === ""
+        );
       },
 
       _computeItemsRendered() {
@@ -411,26 +420,32 @@ limitations under the License.
 
       _computeIsInvalidSearchResults(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-          && !metadata.validRegex);
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          !metadata.validRegex
+        );
       },
 
       _computeIsUniversalSearchQuery(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-          && metadata.universalRegex);
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          metadata.universalRegex
+        );
       },
 
       _isCompositeSearch() {
         const {type, compositeSearch} = this.category.metadata;
-        return compositeSearch &&
-            type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
+        return (
+          compositeSearch &&
+          type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+        );
       },
 
       ready() {
         this._setOpened(this.initialOpened == null ? true : this.initialOpened);
         this._limitListener = () => {
-          this.set('_limit', tf_paginated_view.getLimit());
+          this.set("_limit", tf_paginated_view.getLimit());
         };
         tf_paginated_view.addLimitListener(this._limitListener);
         this._limitListener();
@@ -441,13 +456,19 @@ limitations under the License.
       },
 
       _updateRenderedItems(
-          itemsRendered, _, limit, activeIndex, pageCount, disablePagination) {
+        itemsRendered,
+        _,
+        limit,
+        activeIndex,
+        pageCount,
+        disablePagination
+      ) {
         if (!itemsRendered) return;
         const activePageIndex = Math.floor(activeIndex / limit);
-        const items = (this.category.items || []);
-        const domItems = disablePagination ?
-            items :
-            items.slice(activePageIndex * limit, (activePageIndex + 1) * limit);
+        const items = this.category.items || [];
+        const domItems = disablePagination
+          ? items
+          : items.slice(activePageIndex * limit, (activePageIndex + 1) * limit);
         this.updateDom(domItems, this.getCategoryItemKey);
       },
 
@@ -463,8 +484,9 @@ limitations under the License.
         return Math.floor(activeIndex / limit) + 1;
       },
       _computePageCount(_, limit) {
-        return this.category ?
-            Math.ceil((this.category.items).length / limit) : 0;
+        return this.category
+          ? Math.ceil(this.category.items.length / limit)
+          : 0;
       },
       _computeMultiplePagesExist(pageCount, disablePagination) {
         return !disablePagination && pageCount > 1;
@@ -491,7 +513,7 @@ limitations under the License.
         if (index < 0) {
           index = 0;
         }
-        this.set('_activeIndex', index);
+        this.set("_activeIndex", index);
       },
 
       _clampActiveIndex(items) {
@@ -507,28 +529,27 @@ limitations under the License.
         return focused ? rawValue : currentPage.toString();
       },
       _handlePageInputEvent(e) {
-        this.set('_pageInputRawValue', e.target.value);
+        this.set("_pageInputRawValue", e.target.value);
         const oneIndexedPage = e.target.valueAsNumber;
         if (isNaN(oneIndexedPage)) return;
-        const page =
-          Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+        const page = Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
         this._setActiveIndex(this._limit * page);
       },
       _handlePageChangeEvent() {
         // Occurs on Enter, etc. Commit the true state.
-        this.set('_pageInputRawValue', this._currentPage.toString());
+        this.set("_pageInputRawValue", this._currentPage.toString());
       },
       _handlePageFocusEvent() {
         // Discard any old (or uninitialized) state before we grant focus.
-        this.set('_pageInputRawValue', this._pageInputValue);
-        this.set('_pageInputFocused', true);
+        this.set("_pageInputRawValue", this._pageInputValue);
+        this.set("_pageInputFocused", true);
       },
       _handlePageBlurEvent() {
-        this.set('_pageInputFocused', false);
+        this.set("_pageInputFocused", false);
       },
       _updatePageInputValue(newValue) {
         // Force two-way binding.
-        const pageInput = this.$$('#page-input input');
+        const pageInput = this.$$("#page-input input");
         if (pageInput) {
           pageInput.value = newValue;
         }
