@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <!--
   tf-markdown-view renders raw HTML that has been converted from
@@ -67,16 +67,16 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: 'tf-markdown-view',
+      is: "tf-markdown-view",
       properties: {
         html: {
           type: String,
-          value: '',
+          value: "",
         },
       },
       attached() {
         window.requestAnimationFrame(() => {
-          this.scopeSubtree(this.$.markdown, /*shouldObserve=*/true);
+          this.scopeSubtree(this.$.markdown, /*shouldObserve=*/ true);
         });
       },
     });
