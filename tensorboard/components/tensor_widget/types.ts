@@ -46,7 +46,7 @@ export interface TensorView {
    * being a non-negative integer.
    * @return The value of the element at the specified indices.
    */
-  get: (...indices: number[]) => Promise<boolean|number|string>;
+  get: (...indices: number[]) => Promise<boolean | number | string>;
 
   /**
    * Get a view of the underlying tensor with the specified
@@ -64,9 +64,18 @@ export interface TensorView {
  * tensor.
  */
 export type SlicedValues =
-    boolean|boolean[]|boolean[][]|boolean[][][]|
-    number|number[]|number[][]|number[][][]|
-    string|string[]|string[][]|string[][][];
+  | boolean
+  | boolean[]
+  | boolean[][]
+  | boolean[][][]
+  | number
+  | number[]
+  | number[][]
+  | number[][][]
+  | string
+  | string[]
+  | string[][]
+  | string[][][];
 
 /**
  * A data structure that keeps track of how an n-dimensional array (tensor)
@@ -100,7 +109,7 @@ export interface TensorViewSlicingSpec {
    * - The `dim` field is the 0-based dimension index.
    * - The `index` is the 0-based index for the selected slice.
    */
-  slicingDimsAndIndices: Array<{dim: number, index: number}>;
+  slicingDimsAndIndices: Array<{dim: number; index: number}>;
 
   /**
    * Which dimensions are used for viewing (i.e., rendered in the

@@ -24,8 +24,11 @@ import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
  * @returns An instance of a single-tensor tensor widget.
  */
 export function tensorWidget(
-    rootElement: HTMLDivElement, tensor: TensorView,
-    options?: TensorWidgetOptions): TensorWidget {
+  rootElement: HTMLDivElement,
+  tensor: TensorView,
+  options?: TensorWidgetOptions
+): TensorWidget {
   throw new Error(
-       'tensorWidget() factory method has not been implemented yet.');
+    "tensorWidget() factory method has not been implemented yet."
+  );
 }
