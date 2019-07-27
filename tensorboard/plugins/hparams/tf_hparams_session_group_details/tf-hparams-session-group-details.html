@@ -22,13 +22,16 @@ is shown one the user "drills-in" to a session group, for example when she
 clicks on a row in table-view or a curve in parallel-coords view.
 -->
 
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-scalar-dashboard/tf-scalar-card.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link
+  rel="import"
+  href="../iron-resizable-behavior/iron-resizable-behavior.html"
+/>
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-scalar-dashboard/tf-scalar-card.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
 
 <dom-module id="tf-hparams-session-group-details">
   <template>
@@ -45,11 +48,16 @@ clicks on a row in table-view or a curve in parallel-coords view.
       </div>
     </template>
     <div class="layout horizontal wrap session-group-details">
-      <template is="dom-if"
-                if="[[_haveMetricsAndSessionGroup(visibleSchema.*,
-                                                  sessionGroup)]]">
-        <template is="dom-repeat" items="[[visibleSchema.metricInfos]]"
-                  as="metricInfo">
+      <template
+        is="dom-if"
+        if="[[_haveMetricsAndSessionGroup(visibleSchema.*,
+                                                  sessionGroup)]]"
+      >
+        <template
+          is="dom-repeat"
+          items="[[visibleSchema.metricInfos]]"
+          as="metricInfo"
+        >
           <!-- Note that we do not provide a request-manager attribute since
                we provide a function in request-data for calling the backend
                to get the metrics data.
@@ -64,7 +72,8 @@ clicks on a row in table-view or a curve in parallel-coords view.
             x-type="[[_xType]]"
             multi-experiments="[[_noMultiExperiments]]"
             request-data="[[_requestData]]"
-            active>
+            active
+          >
           </tf-scalar-card>
         </template>
       </template>
@@ -77,9 +86,9 @@ clicks on a row in table-view or a curve in parallel-coords view.
     </style>
   </template>
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'tf-hparams-session-group-details',
+      is: "tf-hparams-session-group-details",
       properties: {
         // An object for making HParams API requests to the backend.
         backend: Object,
@@ -102,7 +111,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
 
         _noMultiExperiments: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         // A Map mapping each of the sessionGroup's session's name
@@ -124,8 +133,8 @@ clicks on a row in table-view or a curve in parallel-coords view.
                 metricName: tag,
               };
               return this.backend.listMetricEvals(request);
-            }
-          }
+            };
+          },
         },
 
         _colorScale: {
@@ -151,12 +160,13 @@ clicks on a row in table-view or a curve in parallel-coords view.
                 const sessionName = JSON.parse(seriesName)[1];
                 const sessionIndex = this._indexOfSession.get(sessionName);
                 const palette = tf_color_scale.standard;
-                return palette[(this._sessionGroupNameHash + sessionIndex)
-                               % palette.length];
-              }
+                return palette[
+                  (this._sessionGroupNameHash + sessionIndex) % palette.length
+                ];
+              },
             };
-          }
-        }
+          },
+        },
       },
 
       // Whenever the backend sends a new 'sessionGroups' array reply to the
@@ -174,21 +184,18 @@ clicks on a row in table-view or a curve in parallel-coords view.
       // incorrectly. To avoid that, we listen for the 'iron-resize' event
       // that is fired by 'iron-pages' whenever the active page changes and
       // redraw each tf-scalar-card child.
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
+      behaviors: [Polymer.IronResizableBehavior],
 
       listeners: {
-        'iron-resize': 'redraw',
+        "iron-resize": "redraw",
       },
 
-      observers: [
-        '_sessionGroupChanged(sessionGroup.*)',
-      ],
+      observers: ["_sessionGroupChanged(sessionGroup.*)"],
 
       redraw() {
-        Polymer.dom(this.root).querySelectorAll('tf-scalar-card').forEach(
-            c => c.redraw());
+        Polymer.dom(this.root)
+          .querySelectorAll("tf-scalar-card")
+          .forEach((c) => c.redraw());
       },
 
       _sessionGroupChanged() {
@@ -197,25 +204,32 @@ clicks on a row in table-view or a curve in parallel-coords view.
           this._sessionGroupNameHash = 0;
         } else {
           this._indexOfSession = new Map(
-              this.sessionGroup.sessions.map(
-                  (session, index) => [session.name, index]));
+            this.sessionGroup.sessions.map((session, index) => [
+              session.name,
+              index,
+            ])
+          );
           this._sessionGroupNameHash = tf.hparams.utils.hashOfString(
-              this.sessionGroup.name);
+            this.sessionGroup.name
+          );
         }
         // Reset each scalar-card by prodding 'tag'.
         // We do this so the card will reset its domain on the next load.
-        Polymer.dom(this.root).querySelectorAll('tf-scalar-card').forEach(
-            c => {
-              const tag = c.get("tag");
-              c.set("tag", "");
-              c.set("tag", tag);
-            });
+        Polymer.dom(this.root)
+          .querySelectorAll("tf-scalar-card")
+          .forEach((c) => {
+            const tag = c.get("tag");
+            c.set("tag", "");
+            c.set("tag", tag);
+          });
       },
 
       _haveMetrics() {
-        return this.visibleSchema
-            && Array.isArray(this.visibleSchema.metricInfos)
-            && (this.visibleSchema.metricInfos.length > 0);
+        return (
+          this.visibleSchema &&
+          Array.isArray(this.visibleSchema.metricInfos) &&
+          this.visibleSchema.metricInfos.length > 0
+        );
       },
 
       _haveMetricsAndSessionGroup() {
@@ -229,21 +243,23 @@ clicks on a row in table-view or a curve in parallel-coords view.
           return [];
         }
         return sessionGroup.sessions
-            .filter(
-                // If this session does not currently have a value for the given
-                // metric then we don't want to include its run.
-                session =>
-                    tf.hparams.utils.metricValueByName(
-                        session.metricValues, metricInfo.name) !== undefined
-            )
-            .map(
-                // Since the 'tag' and 'run' fields are essentially opaque
-                // for the tf-scalar-card element, and passed as is to the
-                // requestData function, we use them to encode the fields we
-                // need to supply to the eval_metrics API (called in our
-                // implementation of requestData above).
-                session => ({tag: metricInfo.name, run: session.name})
-            );
+          .filter(
+            // If this session does not currently have a value for the given
+            // metric then we don't want to include its run.
+            (session) =>
+              tf.hparams.utils.metricValueByName(
+                session.metricValues,
+                metricInfo.name
+              ) !== undefined
+          )
+          .map(
+            // Since the 'tag' and 'run' fields are essentially opaque
+            // for the tf-scalar-card element, and passed as is to the
+            // requestData function, we use them to encode the fields we
+            // need to supply to the eval_metrics API (called in our
+            // implementation of requestData above).
+            (session) => ({tag: metricInfo.name, run: session.name})
+          );
       },
 
       // Computes the tag-metadata attribute to send to the
@@ -251,7 +267,7 @@ clicks on a row in table-view or a curve in parallel-coords view.
       _computeTagMetadata(metricInfo) {
         return {
           displayName: tf.hparams.utils.metricName(metricInfo),
-          description: (metricInfo.description || ''),
+          description: metricInfo.description || "",
         };
       },
     });
