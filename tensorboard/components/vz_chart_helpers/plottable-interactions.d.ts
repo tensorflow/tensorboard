@@ -14,4 +14,4 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_chart_helpers {
   export class PointerInteraction extends Plottable.Interactions.Pointer {}
-}  // namespace vz_chart_helper
+} // namespace vz_chart_helper
