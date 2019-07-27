@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="polymer-externs.html">
+<link rel="import" href="polymer-externs.html" />
 
 <script src="../web-animations-js/web-animations-next-lite.min.js"></script>
 <!-- NOTE: Instruct Vulcanize to add the source without using JSCompiler.
@@ -23,11 +23,14 @@ Without this, because of [1], JSCompiler omits the source from the output
 JavaScript blob completely.
 [1]: https://github.com/webcomponents/webcomponentsjs/blob/v1.3.3/webcomponents-lite.js#L2
 -->
-<script jscomp-nocompile src="../webcomponentsjs/webcomponents-lite.js"></script>
+<script
+  jscomp-nocompile
+  src="../webcomponentsjs/webcomponents-lite.js"
+></script>
 <!-- [2]: HACK: Polymer2 (not 3) makes use of `super` in static methods which
 gets wrongly replaced by Closure compiler. This causes Polymer critical libs to
 misbehave and breaks application badly.
 This import let Vulcanization skip future polymer/polymer.html statement and
 allow us to use the hack only in one place.
 Please see https://github.com/google/closure-compiler/issues/3240. -->
-<link jscomp-nocompile rel="import" href="../polymer/polymer.html">
+<link jscomp-nocompile rel="import" href="../polymer/polymer.html" />
