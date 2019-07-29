@@ -347,7 +347,7 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
             plugin_name='foo',
             is_active_value=True,
             routes_mapping={route: lambda environ, start_response: None}),
-    ]
+      ]
     if should_be_okay:
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
@@ -358,6 +358,9 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
 
   def testNormalRoute(self):
     self._test('/runs', True)
+
+  def testWildcardRoute(self):
+    self._test('/foo/*', True)
 
   def testEmptyRoute(self):
     self._test('', False)
@@ -506,20 +509,41 @@ class TensorBoardPluginsTest(tb_test.TestCase):
               FakePlugin,
               plugin_name='bar',
               is_active_value=True,
-              routes_mapping={'/bar_route': self._bar_handler},
+              routes_mapping={
+                '/bar_route': self._bar_handler,
+                '/wildcard/*': self._wildcard_handler
+                },
               construction_callback=self._construction_callback)),
         ],
         dummy_assets_zip_provider)
-
-  def _foo_handler(self):
-    pass
-
-  def _bar_handler(self):
-    pass
+    
+    self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
 
   def _construction_callback(self, context):
     """Called when a plugin is constructed."""
     self.context = context
+
+  def _test_route(self, route, should_be_okay):
+    response = self.server.get(route)
+    
+    if should_be_okay:
+      self.assertEquals(response.status_code, 200)
+    else:
+      self.assertEquals(response.status_code, 404)
+
+  @wrappers.Request.application
+  def _foo_handler(self, request):
+    return wrappers.Response(response='hello world', status=200)
+
+  def _bar_handler(self):
+    pass
+
+  @wrappers.Request.application
+  def _wildcard_handler(self, request):
+    if(request.path == '/data/plugin/bar/wildcard/ok'):
+      return wrappers.Response(response='hello world', status=200)
+    else:
+      return wrappers.Response(status=404)
 
   def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
@@ -534,9 +558,27 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
+
+  def testNormalRoute(self):
+    self._test_route('/data/plugin/foo/foo_route', True)
+
+  def testMissingRoute(self):
+    self._test_route('/data/plugin/foo/bogus', False)
+
+  def testEmptyRoute(self):
+    self._test_route('', False)
+
+  def testSlashlessRoute(self):
+    self._test_route('runaway', False)
+
+  def testGoodWildcardRoute(self):
+    self._test_route('/data/plugin/bar/wildcard/ok', True)
   
-  def testPluginRoutesActive(self):
-    self.assertEqual(True, False)
+  def testBadWildcardRoute(self):
+    self._test_route('/data/plugin/bar/wildcard/bogus', False)
+
+  def testEmptyWildcardRoute(self):
+    self._test_route('/data/plugin/bar/wildcard', False)
 
 
 class ApplicationConstructionTest(tb_test.TestCase):
