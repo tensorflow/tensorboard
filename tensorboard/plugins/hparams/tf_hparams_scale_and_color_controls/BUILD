@@ -39,8 +39,8 @@ tf_web_library(
     path = "/tf-hparams-scale-and-color-controls",
     deps = [
         ":tf_hparams_scale_and_color_controls",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 
@@ -49,6 +49,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_scale_and_color_controls"],
     destdir = "tf-hparams-scale-and-color-controls",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//third_party/javascript/polymer/v1/paper-dropdown-menu:lib",
@@ -56,6 +57,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-listbox:lib",
         "//third_party/javascript/polymer/v1/paper-radio-button:lib",
         "//third_party/javascript/polymer/v1/paper-radio-group:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

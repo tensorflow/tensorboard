@@ -1,5 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
+load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:hacks.bzl", "tensorboard_typescript_bundle")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
@@ -15,11 +16,51 @@ tf_web_library(
 
 tf_web_library(
     name = "polymer",
-    srcs = ["@org_definitelytyped//:polymer.d.ts"],
-    path = "/polymer",
+    srcs = [
+        "polymer.html",
+        "@org_definitelytyped//:polymer.d.ts"
+    ],
+    path = "/tf-imports",
     visibility = ["//visibility:public"],
     exports = ["@org_polymer"],
-    deps = [":webcomponentsjs"],
+    deps = [
+        ":polymer_externs",
+        ":webcomponentsjs",
+        "@org_polymer",
+        "@org_polymer_web_animations_js",
+        "@org_polymer_webcomponentsjs",
+    ],
+)
+
+tensorboard_webcomponent_library(
+    name = "polymer_lib",
+    srcs = [":polymer"],
+    visibility = ["//visibility:public"],
+    destdir = "tf-imports",
+    deps = [
+        ":polymer_externs_lib",
+        "//third_party/javascript/polymer/v1/web-animations-js:other-js",
+        "//third_party/javascript/polymer/v2/polymer:lib",
+        "//third_party/javascript/polymer/v2/webcomponentsjs:lib",
+    ],
+)
+
+tf_web_library(
+    name = "polymer_externs",
+    srcs = [
+        "polymer-externs.html",
+    ],
+    path = "/tf-imports",
+    deps = [
+        "@org_polymer_externs",
+    ],
+)
+
+tensorboard_webcomponent_library(
+    name = "polymer_externs_lib",
+    srcs = [":polymer_externs"],
+    destdir = "tf-imports",
+    deps = ["//third_party/javascript/polymer/v2/polymer:other-js"],
 )
 
 tf_web_library(
@@ -133,7 +174,9 @@ tf_web_library(
     ],
     path = "/tf-imports",
     strip_prefix = "package",
-    visibility = ["//visibility:private"],
+    visibility = [
+        "//visibility:private",
+    ],
 )
 
 tf_web_library(

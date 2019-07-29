@@ -145,7 +145,7 @@ Polymer({
   },
 
   _synchronizeColors(e) {
-    const checkboxes = this.querySelectorAll('paper-checkbox');
+    const checkboxes = this.root.querySelectorAll('paper-checkbox');
 
     checkboxes.forEach(cb => {
       // Setting the null value will clear previously set color.

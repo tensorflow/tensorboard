@@ -67,6 +67,7 @@ export class Projector extends ProjectorPolymer implements
   private routePrefix: string;
   private normalizeData: boolean;
   private projection: Projection;
+  private metadataFile: string;
 
   /** Polymer component panels */
   private dataPanel: DataPanel;
@@ -80,7 +81,8 @@ export class Projector extends ProjectorPolymer implements
   private pageViewLogging: boolean;
 
   ready() {
-    logging.setDomContainer(this);
+    super.ready();
+    logging.setDomContainer(this as HTMLElement);
 
     this.analyticsLogger =
         new AnalyticsLogger(this.pageViewLogging, this.eventLogging);
@@ -104,14 +106,14 @@ export class Projector extends ProjectorPolymer implements
 
     this.dataPanel = this.$['data-panel'] as DataPanel;
     this.inspectorPanel = this.$['inspector-panel'] as InspectorPanel;
-    this.inspectorPanel.initialize(this, this as ProjectorEventContext);
     this.projectionsPanel = this.$['projections-panel'] as ProjectionsPanel;
-    this.projectionsPanel.initialize(this);
     this.bookmarkPanel = this.$['bookmark-panel'] as BookmarkPanel;
-    this.bookmarkPanel.initialize(this, this as ProjectorEventContext);
     this.metadataCard = this.$['metadata-card'] as MetadataCard;
-    this.statusBar = this.querySelector('#status-bar') as HTMLDivElement;
-    this.scopeSubtree(this.$$('#notification-dialog'), true);
+    this.statusBar = this.$$('#status-bar') as HTMLDivElement;
+
+    this.inspectorPanel.initialize(this, this as ProjectorEventContext);
+    this.projectionsPanel.initialize(this);
+    this.bookmarkPanel.initialize(this, this as ProjectorEventContext);
     this.setupUIControls();
     this.initializeDataProvider();
   }
@@ -416,7 +418,7 @@ export class Projector extends ProjectorPolymer implements
   }
 
   private get3DLabelModeButton(): any {
-    return this.querySelector('#labels3DMode');
+    return this.$$('#labels3DMode');
   }
 
   private get3DLabelMode(): boolean {
@@ -431,7 +433,7 @@ export class Projector extends ProjectorPolymer implements
   }
 
   private setMouseMode(mouseMode: MouseMode) {
-    let selectModeButton = this.querySelector('#selectMode');
+    let selectModeButton = this.$$('#selectMode');
     (selectModeButton as any).active = (mouseMode === MouseMode.AREA_SELECT);
     this.projectorScatterPlotAdapter.scatterPlot.setMouseMode(mouseMode);
   }
@@ -445,9 +447,9 @@ export class Projector extends ProjectorPolymer implements
       ds.normalize();
     }
     this.dim = (ds == null) ? 0 : ds.dim[1];
-    (this.querySelector('span.numDataPoints') as HTMLSpanElement).innerText =
+    (this.$$('span.numDataPoints') as HTMLSpanElement).innerText =
         (ds == null) ? '0' : '' + ds.dim[0];
-    (this.querySelector('span.dim') as HTMLSpanElement).innerText =
+    (this.$$('span.dim') as HTMLSpanElement).innerText =
         (ds == null) ? '0' : '' + ds.dim[1];
 
     this.dataSet = ds;
@@ -462,24 +464,24 @@ export class Projector extends ProjectorPolymer implements
 
   private setupUIControls() {
     // View controls
-    this.querySelector('#reset-zoom').addEventListener('click', () => {
+    this.$$('#reset-zoom').addEventListener('click', () => {
       this.projectorScatterPlotAdapter.scatterPlot.resetZoom();
       this.projectorScatterPlotAdapter.scatterPlot.startOrbitAnimation();
     });
 
-    let selectModeButton = this.querySelector('#selectMode');
+    let selectModeButton = this.$$('#selectMode');
     selectModeButton.addEventListener('click', (event) => {
       this.setMouseMode(
           (selectModeButton as any).active ? MouseMode.AREA_SELECT :
                                              MouseMode.CAMERA_AND_CLICK_SELECT);
     });
-    let nightModeButton = this.querySelector('#nightDayMode');
+    let nightModeButton = this.$$('#nightDayMode');
     nightModeButton.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.scatterPlot.setDayNightMode(
           (nightModeButton as any).active);
     });
 
-    let editModeButton = this.querySelector('#editMode');
+    let editModeButton = this.$$('#editMode');
       editModeButton.addEventListener('click', (event) => {
         this.editMode = (editModeButton as any).active;
     });
@@ -490,8 +492,6 @@ export class Projector extends ProjectorPolymer implements
     });
 
     window.addEventListener('resize', () => {
-      const container = this.parentNode as HTMLDivElement;
-      container.style.height = document.body.clientHeight + 'px';
       this.projectorScatterPlotAdapter.resize();
     });
 
@@ -535,7 +535,7 @@ export class Projector extends ProjectorPolymer implements
   }
 
   private getScatterContainer(): HTMLDivElement {
-    return this.querySelector('#scatter') as HTMLDivElement;
+    return this.$$('#scatter') as HTMLDivElement;
   }
 
   private onSelectionChanged(
@@ -640,6 +640,6 @@ export class Projector extends ProjectorPolymer implements
   }
 }
 
-document.registerElement(Projector.prototype.is, Projector);
+customElements.define(Projector.prototype.is, Projector);
 
 }  // namespace vz_projector

@@ -32,6 +32,7 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_sessions_pane"],
     destdir = "tf-hparams-sessions-pane",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_view:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_scatter_plot_matrix_view:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_table_view:legacy",
@@ -41,6 +42,5 @@ tensorboard_webcomponent_library(
         "//third_party/javascript/polymer/v1/paper-icon-button:lib",
         "//third_party/javascript/polymer/v1/paper-tabs:lib",
         "//third_party/javascript/polymer/v1/paper-toolbar:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

@@ -111,30 +111,24 @@ class TensorBoardInfoTest(tb_test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "incompatible version:"):
+        re.escape("missing keys: ['version']")):
       manager._info_from_string(bad_input)
 
-  def test_deserialization_rejects_bad_version(self):
+  def test_deserialization_accepts_future_version(self):
     info = _make_info()
     json_value = json.loads(manager._info_to_string(info))
-    json_value["version"] = "not likely"
-    bad_input = json.dumps(json_value)
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        "incompatible version:.*not likely"):
-      manager._info_from_string(bad_input)
+    json_value["version"] = "99.99.99a20991232"
+    input_ = json.dumps(json_value)
+    result = manager._info_from_string(input_)
+    self.assertEqual(result.version, "99.99.99a20991232")
 
-  def test_deserialization_rejects_extra_keys(self):
+  def test_deserialization_ignores_extra_keys(self):
     info = _make_info()
     json_value = json.loads(manager._info_to_string(info))
     json_value["unlikely"] = "story"
     bad_input = json.dumps(json_value)
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        "bad keys on TensorBoardInfo"):
-      manager._info_from_string(bad_input)
+    result = manager._info_from_string(bad_input)
+    self.assertIsInstance(result, manager.TensorBoardInfo)
 
   def test_deserialization_rejects_missing_keys(self):
     info = _make_info()
@@ -144,7 +138,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "bad keys on TensorBoardInfo"):
+        re.escape("missing keys: ['start_time']")):
       manager._info_from_string(bad_input)
 
   def test_deserialization_rejects_bad_types(self):
@@ -401,7 +395,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     with open(os.path.join(self.info_dir, "pid-9012.info"), "w") as outfile:
       outfile.write('if a tbinfo has st_mode==0, does it make a sound?\n')
     os.chmod(os.path.join(self.info_dir, "pid-9012.info"), 0o000)
-    with mock.patch.object(tb_logging.get_logger(), "warning") as fn:
+    with mock.patch.object(tb_logging.get_logger(), "debug") as fn:
       self.assertEqual(manager.get_all(), [])
     self.assertEqual(fn.call_count, 2)  # 2 invalid, 1 unreadable (silent)
 

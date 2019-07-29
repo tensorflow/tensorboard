@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import json
 import os
 import textwrap
 import numpy as np
@@ -329,41 +328,12 @@ class TextPluginTest(tf.test.TestCase):
       </table>""")
     self.assertEqual(convert(d3), d3_expected)
 
-  def assertIsActive(self, plugin, expected_finally_is_active):
-    """Helper to simulate threading for asserting on is_active()."""
-    patcher = tf.compat.v1.test.mock.patch('threading.Thread.start', autospec=True)
-    mock = patcher.start()
-    self.addCleanup(patcher.stop)
-
-    # Initial response from is_active() is always False.
-    self.assertFalse(plugin.is_active())
-    thread = plugin._index_impl_thread
-    mock.assert_called_once_with(thread)
-
-    # The thread hasn't run yet, so is_active() should still be False, and we
-    # should not have tried to launch a second thread.
-    self.assertFalse(plugin.is_active())
-    mock.assert_called_once_with(thread)
-
-    # Run the thread; it should clean up after itself.
-    thread.run()
-    self.assertIsNone(plugin._index_impl_thread)
-
-    if expected_finally_is_active:
-      self.assertTrue(plugin.is_active())
-      # The call above shouldn't have launched a new thread.
-      mock.assert_called_once_with(thread)
-    else:
-      self.assertFalse(plugin.is_active())
-      # The call above should have launched a second thread to check again.
-      self.assertEqual(2, mock.call_count)
-
   def testPluginIsActiveWhenNoRuns(self):
     """The plugin should be inactive when there are no runs."""
     multiplexer = event_multiplexer.EventMultiplexer()
     context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
     plugin = text_plugin.TextPlugin(context)
-    self.assertIsActive(plugin, False)
+    self.assertFalse(plugin.is_active())
 
   def testPluginIsActiveWhenTextRuns(self):
     """The plugin should be active when there are runs with text."""
@@ -372,15 +342,7 @@ class TextPluginTest(tf.test.TestCase):
     plugin = text_plugin.TextPlugin(context)
     multiplexer.AddRunsFromDirectory(self.logdir)
     multiplexer.Reload()
-
-    patcher = tf.compat.v1.test.mock.patch('threading.Thread.start', autospec=True)
-    mock = patcher.start()
-    self.addCleanup(patcher.stop)
-    self.assertTrue(plugin.is_active(), True)
-
-    # Data is available within the multiplexer. No thread should have started
-    # for checking plugin assets data.
-    self.assertFalse(mock.called)
+    self.assertTrue(plugin.is_active())
 
   def testPluginIsActiveWhenRunsButNoText(self):
     """The plugin should be inactive when there are runs but none has text."""
@@ -391,99 +353,13 @@ class TextPluginTest(tf.test.TestCase):
     self.generate_testdata(include_text=False, logdir=logdir)
     multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
-    self.assertIsActive(plugin, False)
+    self.assertFalse(plugin.is_active())
 
-  def testPluginTagsImpl(self):
-    patcher = tf.compat.v1.test.mock.patch('threading.Thread.start', autospec=True)
-    mock = patcher.start()
-    self.addCleanup(patcher.stop)
-
-    # Initially, the thread for checking for plugin assets data has not run.
-    # Hence, the mapping should only have data from the multiplexer.
-    run_to_tags = self.plugin.tags_impl()
+  def testPluginIndexImpl(self):
+    run_to_tags = self.plugin.index_impl()
     self.assertItemsEqual(['fry', 'leela'], run_to_tags.keys())
     self.assertItemsEqual(['message', 'vector'], run_to_tags['fry'])
     self.assertItemsEqual(['message', 'vector'], run_to_tags['leela'])
-    thread = self.plugin._index_impl_thread
-    mock.assert_called_once_with(thread)
-
-    # The thread hasn't run yet, so no change in response, and we should not
-    # have tried to launch a second thread.
-    run_to_tags = self.plugin.tags_impl()
-    self.assertItemsEqual(['fry', 'leela'], run_to_tags.keys())
-    self.assertItemsEqual(['message', 'vector'], run_to_tags['fry'])
-    self.assertItemsEqual(['message', 'vector'], run_to_tags['leela'])
-    mock.assert_called_once_with(thread)
-
-    # Run the thread; it should clean up after itself.
-    thread.run()
-    self.assertIsNone(self.plugin._index_impl_thread)
-
-    # Expect response to be identical to calling index_impl() directly.
-    self.assertEqual(self.plugin.index_impl(), self.plugin.tags_impl())
-    # The call above should have launched a second thread to check again.
-    self.assertEqual(2, mock.call_count)
-
-
-class TextPluginBackwardsCompatibilityTest(tf.test.TestCase):
-
-  def setUp(self):
-    self.logdir = self.get_temp_dir()
-    self.generate_testdata()
-    multiplexer = event_multiplexer.EventMultiplexer()
-    multiplexer.AddRunsFromDirectory(self.logdir)
-    multiplexer.Reload()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    self.plugin = text_plugin.TextPlugin(context)
-
-  def generate_testdata(self):
-    tf.compat.v1.reset_default_graph()
-    sess = tf.compat.v1.Session()
-    placeholder = tf.constant('I am deprecated.')
-
-    # Previously, we had used a means of creating text summaries that used
-    # plugin assets (which loaded JSON files containing runs and tags). The
-    # plugin must continue to be able to load summaries of that format, so we
-    # create a summary using that old plugin asset-based method here.
-    plugin_asset_summary = tf.compat.v1.summary.tensor_summary('old_plugin_asset_summary',
-                                                     placeholder)
-    assets_directory = os.path.join(self.logdir, 'fry', 'plugins',
-                                    'tensorboard_text')
-    # Make the directory of assets if it does not exist.
-    if not os.path.isdir(assets_directory):
-      try:
-        os.makedirs(assets_directory)
-      except OSError as err:
-        self.assertFail('Could not make assets directory %r: %r',
-                        assets_directory, err)
-    json_path = os.path.join(assets_directory, 'tensors.json')
-    with open(json_path, 'w+') as tensors_json_file:
-      # Write the op name to a JSON file that the text plugin later uses to
-      # determine the tag names of tensors to fetch.
-      tensors_json_file.write(json.dumps([plugin_asset_summary.op.name]))
-
-    run_name = 'fry'
-    subdir = os.path.join(self.logdir, run_name)
-    with test_util.FileWriterCache.get(subdir) as writer:
-      writer.add_graph(sess.graph)
-
-      summ = sess.run(plugin_asset_summary)
-      writer.add_summary(summ)
-
-  def testIndex(self):
-    index = self.plugin.index_impl()
-    self.assertItemsEqual(['fry'], index.keys())
-    # The summary made via plugin assets (the old method being phased out) is
-    # only available for run 'fry'.
-    self.assertItemsEqual(['old_plugin_asset_summary'],
-                          index['fry'])
-
-  def testText(self):
-    fry = self.plugin.text_impl('fry', 'old_plugin_asset_summary')
-    self.assertEqual(len(fry), 1)
-    self.assertEqual(fry[0]['step'], 0)
-    self.assertEqual(fry[0]['text'], u'<p>I am deprecated.</p>')
-
 
 
 if __name__ == '__main__':

@@ -8,17 +8,14 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_graph_app",
     srcs = [
-        "index.html",
         "tf-graph-app.html",
     ],
     path = "/tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
-        "@org_polymer_iron_component_page",
     ],
 )
 
@@ -27,12 +24,9 @@ tensorboard_webcomponent_library(
     srcs = [":tf_graph_app"],
     destdir = "tf-graph-app",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_board:legacy",
         "//tensorboard/plugins/graph/tf_graph_controls:legacy",
         "//tensorboard/plugins/graph/tf_graph_loader:legacy",
-        "//third_party/javascript/polymer/v1/iron-component-page:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
-        "//third_party/javascript/polymer/v1/webcomponentsjs:lib",
     ],
 )
-

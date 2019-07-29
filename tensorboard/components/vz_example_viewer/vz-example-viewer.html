@@ -17,7 +17,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/d3.html">
 <link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
@@ -385,8 +385,10 @@ limitations under the License.
             <div class="feature-name-text">[[feat.name]]</div>
             <div class="value-pills-holder">
               <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
-                <img class="image" src$="[[getImageSrc(feat.name)]]"
-                      id="[[getImageId(feat.name)]]"></img>
+                <img
+                  class="image" src$="[[getImageSrc(feat.name)]]"
+                  id="[[getImageId(feat.name)]]"
+                />
                 <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                 <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
                   <div>Image windowing (contrast)</div>
@@ -426,8 +428,10 @@ limitations under the License.
             <template is="dom-if" if="[[compareMode]]">
               <div class="value-pills-holder">
                 <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
-                  <img class="image" src$="[[getCompareImageSrc(feat.name)]]"
-                        id="[[getCompareImageId(feat.name)]]"></img>
+                  <img
+                    class="image" src$="[[getCompareImageSrc(feat.name)]]"
+                    id="[[getCompareImageId(feat.name)]]"
+                  />
                   <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
                   <div class="image-bottom-bar">
                   </div>
@@ -535,8 +539,10 @@ limitations under the License.
                 <div class="feature-name-text">[[seqfeat.name]]</div>
                 <div class="value-pills-holder">
                   <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
-                    <img class="image" src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
-                        id="[[getImageId(seqfeat.name)]]"></img>
+                    <img
+                      class="image" src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                      id="[[getImageId(seqfeat.name)]]"
+                    />
                     <canvas id="[[getCanvasId(seqfeat.name)]]"
                         data-feature="[[seqfeat.name]]"
                         data-seq-num="[[seqNumber]]"></canvas>
@@ -581,8 +587,10 @@ limitations under the License.
                 <template is="dom-if" if="[[compareMode]]">
                   <div class="value-pills-holder">
                     <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
-                      <img class="image" src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
-                          id="[[getCompareImageId(seqfeat.name)]]"></img>
+                      <img
+                        class="image" src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                        id="[[getCompareImageId(seqfeat.name)]]"
+                      />
                       <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
                           data-feature="[[seqfeat.name]]"
                           data-seq-num="[[seqNumber]]"></canvas>

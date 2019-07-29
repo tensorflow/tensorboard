@@ -45,7 +45,7 @@ export function setModalMessage(
   if (id == null) {
     id = (msgId++).toString();
   }
-  let dialog = dom.querySelector('#notification-dialog') as any;
+  let dialog = dom.shadowRoot.querySelector('#notification-dialog') as any;
   dialog.querySelector('.close-button').style.display =
       isErrorMsg ? null : 'none';
   let spinner = dialog.querySelector('.progress');
@@ -97,7 +97,7 @@ export function setErrorMessage(errMsg: string, task?: string) {
  * Shows a warning message to the user for a certain amount of time.
  */
 export function setWarningMessage(msg: string): void {
-  let toast = dom.querySelector('#toast') as any;
+  let toast = dom.shadowRoot.querySelector('#toast') as any;
   toast.text = msg;
   toast.duration = WARNING_DURATION_MS;
   toast.open();

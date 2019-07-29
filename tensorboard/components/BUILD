@@ -13,7 +13,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
     ],

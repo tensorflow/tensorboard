@@ -38,11 +38,12 @@ export class ProjectorInput extends ProjectorInputPolymer {
   }
 
   ready() {
+    super.ready();
     this.inRegexMode = false;
     this.textChangedListeners = [];
-    this.paperInput = this.querySelector('paper-input') as HTMLInputElement;
+    this.paperInput = this.$$('paper-input') as HTMLInputElement;
     this.inRegexModeButton =
-        this.querySelector('paper-button') as HTMLButtonElement;
+        this.$$('paper-button') as HTMLButtonElement;
     this.paperInput.setAttribute('error-message', 'Invalid regex');
 
     this.paperInput.addEventListener('input', () => {
@@ -101,13 +102,13 @@ export class ProjectorInput extends ProjectorInputPolymer {
     return this.inRegexMode;
   }
 
-  set(value: string, inRegexMode: boolean) {
+  setValue(value: string, inRegexMode: boolean) {
     (this.inRegexModeButton as any).active = inRegexMode;
     this.paperInput.value = value;
     this.onClickRegexModeButton();
   }
 }
 
-document.registerElement(ProjectorInput.prototype.is, ProjectorInput);
+customElements.define(ProjectorInput.prototype.is, ProjectorInput);
 
 }  // namespace vz_projector
