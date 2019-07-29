@@ -31,6 +31,33 @@ py_test(
 )
 
 py_library(
+    name = "directory_loader",
+    srcs = ["directory_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":directory_watcher",
+        ":io_wrapper",
+        "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "directory_loader_test",
+    size = "small",
+    srcs = ["directory_loader_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":directory_loader",
+        ":directory_watcher",
+        ":event_file_loader",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
     name = "directory_watcher",
     srcs = ["directory_watcher.py"],
     srcs_version = "PY2AND3",
@@ -101,6 +128,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":directory_loader",
         ":directory_watcher",
         ":event_file_loader",
         ":io_wrapper",
@@ -190,6 +218,7 @@ py_test(
         ":event_accumulator",
         ":event_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
     ],
 )
 
