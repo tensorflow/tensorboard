@@ -562,6 +562,9 @@ class TensorBoardPluginsTest(tb_test.TestCase):
   def testNormalRoute(self):
     self._test_route('/data/plugin/foo/foo_route', True)
 
+  def testNormalRouteIsNotWildcard(self):
+    self._test_route('/data/plugin/foo/foo_route/bogus', False)
+
   def testMissingRoute(self):
     self._test_route('/data/plugin/foo/bogus', False)
 
