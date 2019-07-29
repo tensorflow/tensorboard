@@ -93,3 +93,20 @@ class EventFileLoader(RawEventFileLoader):
     """
     for record in super(EventFileLoader, self).Load():
       yield event_pb2.Event.FromString(record)
+
+
+class TimestampedEventFileLoader(EventFileLoader):
+  """An iterator that yields (UNIX timestamp float, Event proto) pairs."""
+
+  def Load(self):
+    """Loads all new events and their wall time values from disk.
+
+    Calling Load multiple times in a row will not 'drop' events as long as the
+    return value is not iterated over.
+
+    Yields:
+      Pairs of (UNIX timestamp float, Event proto) for all events in the file
+      that have not been yielded yet.
+    """
+    for event in super(TimestampedEventFileLoader, self).Load():
+      yield (event.wall_time, event)
