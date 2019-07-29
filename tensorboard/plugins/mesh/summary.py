@@ -24,8 +24,6 @@ from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.plugins.mesh import summary_v2
 
-PLUGIN_NAME = 'mesh'
-
 # Export V2 versions.
 mesh = summary_v2.mesh
 mesh_pb = summary_v2.mesh_pb

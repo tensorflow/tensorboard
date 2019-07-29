@@ -20,6 +20,7 @@ from __future__ import print_function
 import glob
 import json
 import os
+
 import tensorflow as tf
 
 from tensorboard.compat import tf2
@@ -58,10 +59,8 @@ class MeshSummaryV2Test(tf.test.TestCase):
     # summary one.
     num_events = 2
     # All additional tensors (i.e. colors or faces) will be stored as separate
-    # event files, so account for them as well.
-    for tensor_name in ["colors", "faces"]:
-      if tensor_name in kwargs:
-        num_events += 1
+    # events, so account for them as well.
+    num_events += len(frozenset(["colors", "faces"]).intersection(kwargs))
     self.assertEqual(len(events), num_events)
     # Delete the event file to reset to an empty directory for later calls.
     os.remove(event_files[0])
@@ -92,6 +91,7 @@ class MeshSummaryV2Test(tf.test.TestCase):
         step=333)
     self.assertEqual(333, events[0].step)
     self.assertEqual(333, events[1].step)
+    self.assertEqual(333, events[2].step)
 
   def test_tags(self):
     """Tests proper tags for each event/tensor."""
@@ -106,13 +106,17 @@ class MeshSummaryV2Test(tf.test.TestCase):
         colors=tensor_data.colors,
         config_dict=config_dict,
         step=333)
-    for name_tpl in ["%s_VERTEX", "%s_FACE", "%s_COLOR"]:
-      is_event_found = False
-      for event in events:
-        if event.summary.value[0].tag == name_tpl % name:
-          is_event_found = True
-        self.assertEqual(14, self.get_metadata(event).components)
-      self.assertTrue(is_event_found)
+    expected_names_set = frozenset(
+      name_tpl % name for name_tpl in ["%s_VERTEX", "%s_FACE", "%s_COLOR"])
+    actual_names_set = frozenset([event.summary.value[0].tag for event in events])
+    self.assertEqual(expected_names_set, actual_names_set)
+    expected_bitmask = metadata.get_components_bitmask([
+        plugin_data_pb2.MeshPluginData.VERTEX,
+        plugin_data_pb2.MeshPluginData.FACE,
+        plugin_data_pb2.MeshPluginData.COLOR,
+    ])
+    for event in events:
+      self.assertEqual(expected_bitmask, self.get_metadata(event).components)
 
   def test_pb(self):
     """Tests ProtoBuf interface."""

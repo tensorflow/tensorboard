@@ -25,11 +25,9 @@ from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import tensor_util
 
-PLUGIN_NAME = 'mesh'
-
 
 def _write_summary(
-    name, display_name, description, tensor, content_type, components,
+    name, description, tensor, content_type, components,
     json_config, step):
   """Creates a tensor summary with summary metadata.
 
@@ -37,10 +35,8 @@ def _write_summary(
     name: Uniquely identifiable name of the summary op. Could be replaced by
       combination of name and type to make it unique even outside of this
       summary.
-    display_name: Will be used as the display name in TensorBoard.
-      Defaults to `tag`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
     tensor: Tensor to display in summary.
     content_type: Type of content inside the Tensor.
     components: Bitmask representing present parts (vertices, colors, etc.) that
@@ -59,7 +55,7 @@ def _write_summary(
   shape = [dim if dim is not None else -1 for dim in shape]
   tensor_metadata = metadata.create_summary_metadata(
       name,
-      display_name,
+      None,  # display_name
       content_type,
       components,
       shape,
@@ -72,13 +68,6 @@ def _write_summary(
         metadata=tensor_metadata)
 
 
-def _get_display_name(name, display_name):
-  """Returns display_name from display_name and name."""
-  if display_name is None:
-    return name
-  return display_name
-
-
 def _get_json_config(config_dict):
   """Parses and returns JSON string from python dictionary."""
   json_config = '{}'
@@ -87,22 +76,22 @@ def _get_json_config(config_dict):
   return json_config
 
 
-def mesh(name, vertices, faces=None, colors=None, display_name=None,
-       description=None, config_dict=None, step=None):
+def mesh(name, vertices, faces=None, colors=None, description=None,
+    config_dict=None, step=None):
   """Writes a TensorFlow mesh summary.
 
   Args:
-    name: A name for this summary operation.
+    name: Uniquely identifiable name of the summary op. Could be replaced by
+      combination of name and type to make it unique even outside of this
+      summary.
     vertices: Tensor of shape `[dim_1, ..., dim_n, 3]` representing the 3D
       coordinates of vertices.
     faces: Tensor of shape `[dim_1, ..., dim_n, 3]` containing indices of
       vertices within each triangle.
     colors: Tensor of shape `[dim_1, ..., dim_n, 3]` containing colors for each
       vertex.
-    display_name: If set, will be used as the display name in TensorBoard.
-      Defaults to `name`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
     config_dict: Dictionary with ThreeJS classes names and configuration.
     step: Explicit `int64`-castable monotonic step value for this summary. If
       omitted, this defaults to `tf.summary.experimental.get_step()`, which must
@@ -112,7 +101,6 @@ def mesh(name, vertices, faces=None, colors=None, display_name=None,
     True if all components of the mesh were saved successfully and False
       otherwise.
   """
-  display_name = _get_display_name(name, display_name)
   json_config = _get_json_config(config_dict)
 
   # All tensors representing a single mesh will be represented as separate
@@ -137,39 +125,33 @@ def mesh(name, vertices, faces=None, colors=None, display_name=None,
   with summary_scope(name, 'mesh_summary', values=tensors):
     for tensor in tensors:
       all_success = all_success and _write_summary(
-        name, display_name, description, tensor.data, tensor.content_type,
+        name, description, tensor.data, tensor.content_type,
         components, json_config, step)
 
   return all_success
 
 
-def mesh_pb(name,
-       vertices,
-       faces=None,
-       colors=None,
-       display_name=None,
-       description=None,
-       config_dict=None):
+def mesh_pb(name, vertices, faces=None, colors=None, description=None,
+    config_dict=None):
   """Create a mesh summary to save in pb format.
 
   Args:
-    name: A name for this summary operation.
+    name: Uniquely identifiable name of the summary op. Could be replaced by
+      combination of name and type to make it unique even outside of this
+      summary.
     vertices: numpy array of shape `[dim_1, ..., dim_n, 3]` representing the 3D
       coordinates of vertices.
     faces: numpy array of shape `[dim_1, ..., dim_n, 3]` containing indices of
       vertices within each triangle.
     colors: numpy array of shape `[dim_1, ..., dim_n, 3]` containing colors for
       each vertex.
-    display_name: If set, will be used as the display name in TensorBoard.
-      Defaults to `name`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
     config_dict: Dictionary with ThreeJS classes names and configuration.
 
   Returns:
     Instance of tf.Summary class.
   """
-  display_name = _get_display_name(name, display_name)
   json_config = _get_json_config(config_dict)
 
   summaries = []
@@ -190,7 +172,7 @@ def mesh_pb(name,
         tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
         name,
-        display_name,
+        None,  # display_name
         tensor.content_type,
         components,
         shape,
@@ -201,8 +183,6 @@ def mesh_pb(name,
 
   summary = summary_pb2.Summary()
   for tag, summary_metadata, tensor_proto in summaries:
-    tf_summary_metadata = summary_pb2.SummaryMetadata.FromString(
-        summary_metadata.SerializeToString())
     summary.value.add(
-      tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
+      tag=tag, metadata=summary_metadata, tensor=tensor_proto)
   return summary
