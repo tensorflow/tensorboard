@@ -26,7 +26,7 @@ rollup_bundle(
         ":ng_main",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/platform-browser-dynamic",
+        "@npm//@angular/platform-browser",
         "@npm//@angular/router",
         "@npm//rxjs",
         "@npm//zone.js",
@@ -42,7 +42,7 @@ ng_module(
         ":app",
         "@npm//@angular/core",
         "@npm//@angular/router",
-        "@npm//@angular/platform-browser-dynamic",
+        "@npm//@angular/platform-browser",
         "@npm//zone.js",
     ],
 )
