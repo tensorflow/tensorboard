@@ -347,12 +347,12 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
             plugin_name='foo',
             is_active_value=True,
             routes_mapping={route: lambda environ, start_response: None}),
-      ]
+    ]
     if should_be_okay:
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
     else:
-      with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      with six.assertRaisesRegex(self, ValueError, r'[Ii]nvalid route'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
 
@@ -361,6 +361,12 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
 
   def testWildcardRoute(self):
     self._test('/foo/*', True)
+
+  def testMultiWildcardRoute(self):
+    self._test('/foo/*/bar/*', False)
+
+  def testInternalWildcardRoute(self):
+    self._test('/foo/*/bar', False)
 
   def testEmptyRoute(self):
     self._test('', False)
@@ -510,9 +516,11 @@ class TensorBoardPluginsTest(tb_test.TestCase):
               plugin_name='bar',
               is_active_value=True,
               routes_mapping={
-                '/bar_route': self._bar_handler,
-                '/wildcard/*': self._wildcard_handler
-                },
+                  '/bar_route': self._bar_handler,
+                  '/wildcard/*': self._wildcard_handler,
+                  '/wildcard/special/*': self._wildcard_special_handler,
+                  '/wildcard/special/exact': self._foo_handler,
+              },
               construction_callback=self._construction_callback)),
         ],
         dummy_assets_zip_provider)
@@ -523,13 +531,9 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     """Called when a plugin is constructed."""
     self.context = context
 
-  def _test_route(self, route, should_be_okay):
+  def _test_route(self, route, expected_status_code):
     response = self.server.get(route)
-    
-    if should_be_okay:
-      self.assertEquals(response.status_code, 200)
-    else:
-      self.assertEquals(response.status_code, 404)
+    self.assertEquals(response.status_code, expected_status_code)
 
   @wrappers.Request.application
   def _foo_handler(self, request):
@@ -540,17 +544,24 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   @wrappers.Request.application
   def _wildcard_handler(self, request):
-    if(request.path == '/data/plugin/bar/wildcard/ok'):
+    if request.path == '/data/plugin/bar/wildcard/ok':
+      return wrappers.Response(response='hello world', status=200)
+    elif request.path == '/data/plugin/bar/wildcard/':
+      # this route cannot actually be hit; see testEmptyWildCardRouteWithSlash.
       return wrappers.Response(response='hello world', status=200)
     else:
-      return wrappers.Response(status=404)
+      return wrappers.Response(status=401)
+  
+  @wrappers.Request.application
+  def _wildcard_special_handler(self, request):
+    return wrappers.Response(status=300)
 
   def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
     self.assertDictContainsSubset({
         '/data/plugin/foo/foo_route': self._foo_handler,
         '/data/plugin/bar/bar_route': self._bar_handler,
-    }, self.app.data_applications)
+    }, self.app.exact_routes)
 
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include both plugins.
@@ -560,28 +571,55 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
   def testNormalRoute(self):
-    self._test_route('/data/plugin/foo/foo_route', True)
+    self._test_route('/data/plugin/foo/foo_route', 200)
 
   def testNormalRouteIsNotWildcard(self):
-    self._test_route('/data/plugin/foo/foo_route/bogus', False)
+    self._test_route('/data/plugin/foo/foo_route/bogus', 404)
 
   def testMissingRoute(self):
-    self._test_route('/data/plugin/foo/bogus', False)
+    self._test_route('/data/plugin/foo/bogus', 404)
 
   def testEmptyRoute(self):
-    self._test_route('', False)
+    self._test_route('', 404)
 
   def testSlashlessRoute(self):
-    self._test_route('runaway', False)
+    self._test_route('runaway', 404)
 
-  def testGoodWildcardRoute(self):
-    self._test_route('/data/plugin/bar/wildcard/ok', True)
+  def testWildcardAcceptedRoute(self):
+    self._test_route('/data/plugin/bar/wildcard/ok', 200)
+
+  def testLongerWildcardRouteTakesPrecedence(self):
+    # This tests that the longer 'special' wildcard takes precedence over
+    # the shorter one.
+    self._test_route('/data/plugin/bar/wildcard/special/blah', 300)
   
-  def testBadWildcardRoute(self):
-    self._test_route('/data/plugin/bar/wildcard/bogus', False)
+  def testExactRouteTakesPrecedence(self):
+    # This tests that an exact match takes precedence over a wildcard.
+    self._test_route('/data/plugin/bar/wildcard/special/exact', 200)
+  
+  def testWildcardRejectedRoute(self):
+    # A plugin may reject a request passed to it via a wildcard route.
+    # Note our test plugin returns 401 in this case, to distinguish this
+    # response from a 404 passed if the route were not found.
+    self._test_route('/data/plugin/bar/wildcard/bogus', 401)
 
-  def testEmptyWildcardRoute(self):
-    self._test_route('/data/plugin/bar/wildcard', False)
+  def testWildcardRouteWithoutSlash(self):
+    # A wildcard route requires a slash before the '*'.
+    # Lacking one, no route is matched.
+    self._test_route('/data/plugin/bar/wildcard', 404)
+
+  def testEmptyWildcardRouteWithSlash(self):
+    # A wildcard route requires a slash before the '*'.  Here we include the
+    # slash, so we might expect the route to match.
+    #
+    # However: Trailing slashes are automatically removed from incoming requests
+    # in _clean_path().  Consequently, this request does not match the wildcard
+    # route after all.
+    #
+    # Note the test plugin specifically accepts this route (returning 200), so
+    # the fact that 404 is returned demonstrates that the plugin was not
+    # consulted.
+    self._test_route('/data/plugin/bar/wildcard/', 404)
 
 
 class ApplicationConstructionTest(tb_test.TestCase):
