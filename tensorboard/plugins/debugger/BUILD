@@ -330,6 +330,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":constants",
         ":debugger_plugin",
         ":interactive_debugger_plugin",
         "//tensorboard/plugins:base_plugin",

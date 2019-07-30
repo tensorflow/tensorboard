@@ -23,11 +23,29 @@ import sys
 import six
 
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
-from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
+from tensorboard.plugins.debugger import constants
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
+
+
+class InactiveDebuggerPlugin(base_plugin.TBPlugin):
+  """A placeholder debugger plugin used when no grpc port is specified."""
+
+  plugin_name = constants.DEBUGGER_PLUGIN_NAME
+
+  def __init__(self):
+    pass
+
+  def is_active(self):
+    return False
+
+  def get_plugin_apps(self):
+    return {}
+
+  def frontend_metadata(self):
+    return super(InactiveDebuggerPlugin, self).frontend_metadata()._replace(
+        element_name='tf-debugger-dashboard')
 
 
 class DebuggerPluginLoader(base_plugin.TBLoader):
@@ -105,6 +123,10 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             '  pip install tensorflow')
 
     if flags.debugger_data_server_grpc_port > 0:
+      # pylint: disable=line-too-long,g-import-not-at-top
+      from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
+      # pylint: enable=line-too-long,g-import-not-at-top
+
       # debugger_data_server_grpc opens the non-interactive Debugger Plugin,
       # which appears as health pills in the Graph Plugin.
       noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
@@ -112,7 +134,11 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
                    flags.debugger_data_server_grpc_port)
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin
-    else:
+    elif flags.debugger_port > 0:
+      # pylint: disable=line-too-long,g-import-not-at-top
+      from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
+      # pylint: enable=line-too-long,g-import-not-at-top
+
       # If debugger_data_server_grpc_port flag is not specified, we always
       # instantiate the interactive Debugger Plugin. If debugger_port
       # is not specified (i.e., defaults to -1), the frontend will display a
@@ -126,3 +152,5 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
                     flags.debugger_data_server_grpc_port)
         interactive_plugin.listen(flags.debugger_port)
       return interactive_plugin
+    else:
+      return InactiveDebuggerPlugin()
