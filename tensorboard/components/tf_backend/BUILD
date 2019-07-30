@@ -23,10 +23,8 @@ tf_web_library(
     visibility = ["//visibility:public"],
     deps = [
         ":type",
-        "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
-        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
 )
@@ -45,7 +43,6 @@ tensorboard_webcomponent_library(
     srcs = [":tf_backend"],
     destdir = "tf-backend",
     deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_sorting:legacy",
     ],
