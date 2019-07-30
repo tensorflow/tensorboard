@@ -102,7 +102,23 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
     ],
 )
@@ -115,6 +131,21 @@ py_test(
     deps = [
         ":summary",
         ":test_utils",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
+    ],
+)
+
+py_test(
+    name = "summary_v2_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        ":test_utils",
+        ":metadata",
+        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
@@ -163,7 +194,27 @@ py_binary(
     deps = [
         ":demo_utils",
         ":summary",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+py_binary(
+    name = "mesh_demo_v2",
+    srcs = ["mesh_demo_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":demo_utils",
+        ":summary_v2",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:expect_numpy_installed",
     ],
 )
 
