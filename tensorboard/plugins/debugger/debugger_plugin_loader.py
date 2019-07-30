@@ -23,6 +23,8 @@ import sys
 import six
 
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
+from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -101,20 +103,6 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
         raise ImportError(
             'To use the debugger plugin, you need to have TensorFlow installed:\n'
             '  pip install tensorflow')
-      try:
-        # pylint: disable=line-too-long,g-import-not-at-top
-        from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
-        from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
-        # pylint: enable=line-too-long,g-import-not-at-top
-      except ImportError as e:
-        e_type, e_value, e_traceback = sys.exc_info()
-        message = e.msg if hasattr(e, 'msg') else e.message  # Handle py2 vs py3
-        if 'grpc' in message:
-          e_value = ImportError(
-              message +
-              '\n\nTo use the debugger plugin, you need to have '
-              'gRPC installed:\n  pip install grpcio')
-        six.reraise(e_type, e_value, e_traceback)
 
     if flags.debugger_data_server_grpc_port > 0:
       # debugger_data_server_grpc opens the non-interactive Debugger Plugin,
