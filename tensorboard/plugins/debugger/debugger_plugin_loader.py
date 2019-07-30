@@ -123,7 +123,8 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin
     else:
-      # We always instantiate the interactive Debugger Plugin. If debugger_port
+      # If debugger_data_server_grpc_port flag is not specified, we always
+      # instantiate the interactive Debugger Plugin. If debugger_port
       # is not specified (i.e., defaults to -1), the frontend will display a
       # message indicating that the plugin is not active. It'll also display
       # a command snippet to illustrate how to activate the interactive Debugger
