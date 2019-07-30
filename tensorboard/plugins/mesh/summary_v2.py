@@ -12,71 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Mesh summaries and TensorFlow operations to create them."""
+"""Mesh summaries and TensorFlow operations to create them. V2 versions"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import json
-import tensorflow as tf
 
+from tensorboard.compat import tf2 as tf
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
-from tensorboard.plugins.mesh import summary_v2
-
-# Export V2 versions.
-mesh = summary_v2.mesh
-mesh_pb = summary_v2.mesh_pb
+from tensorboard.util import tensor_util
 
 
-def _get_tensor_summary(
-    name, display_name, description, tensor, content_type, components,
-    json_config, collections):
+def _write_summary(
+    name, description, tensor, content_type, components,
+    json_config, step):
   """Creates a tensor summary with summary metadata.
 
   Args:
-    name: Uniquely identifiable name of the summary op. Could be replaced by
-      combination of name and type to make it unique even outside of this
-      summary.
-    display_name: Will be used as the display name in TensorBoard.
-      Defaults to `tag`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
+    name: A name for this summary. The summary tag used for TensorBoard will
+      be this name prefixed by any active name scopes.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
     tensor: Tensor to display in summary.
     content_type: Type of content inside the Tensor.
     components: Bitmask representing present parts (vertices, colors, etc.) that
       belong to the summary.
     json_config: A string, JSON-serialized dictionary of ThreeJS classes
       configuration.
-    collections: List of collections to add this summary to.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
 
   Returns:
-    Tensor summary with metadata.
+    A boolean indicating if summary was saved successfully or not.
   """
   tensor = tf.convert_to_tensor(value=tensor)
   shape = tensor.shape.as_list()
   shape = [dim if dim is not None else -1 for dim in shape]
   tensor_metadata = metadata.create_summary_metadata(
       name,
-      display_name,
+      None,  # display_name
       content_type,
       components,
       shape,
       description,
       json_config=json_config)
-  tensor_summary = tf.summary.tensor_summary(
-      metadata.get_instance_name(name, content_type),
-      tensor,
-      summary_metadata=tensor_metadata,
-      collections=collections)
-  return tensor_summary
-
-
-def _get_display_name(name, display_name):
-  """Returns display_name from display_name and name."""
-  if display_name is None:
-    return name
-  return display_name
+  return tf.summary.write(
+        tag=metadata.get_instance_name(name, content_type),
+        tensor=tensor,
+        step=step,
+        metadata=tensor_metadata)
 
 
 def _get_json_config(config_dict):
@@ -87,36 +75,35 @@ def _get_json_config(config_dict):
   return json_config
 
 
-def op(name, vertices, faces=None, colors=None, display_name=None,
-       description=None, collections=None, config_dict=None):
-  """Creates a TensorFlow summary op for mesh rendering.
+def mesh(name, vertices, faces=None, colors=None, config_dict=None, step=None,
+   description=None):
+  """Writes a TensorFlow mesh summary.
 
   Args:
-    name: A name for this summary operation.
+    name: A name for this summary. The summary tag used for TensorBoard will
+      be this name prefixed by any active name scopes.
     vertices: Tensor of shape `[dim_1, ..., dim_n, 3]` representing the 3D
       coordinates of vertices.
     faces: Tensor of shape `[dim_1, ..., dim_n, 3]` containing indices of
       vertices within each triangle.
     colors: Tensor of shape `[dim_1, ..., dim_n, 3]` containing colors for each
       vertex.
-    display_name: If set, will be used as the display name in TensorBoard.
-      Defaults to `name`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
-    collections: Which TensorFlow graph collections to add the summary op to.
-      Defaults to `['summaries']`. Can usually be ignored.
     config_dict: Dictionary with ThreeJS classes names and configuration.
+    step: Explicit `int64`-castable monotonic step value for this summary. If
+      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+      not be None.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
 
   Returns:
-    Merged summary for mesh/point cloud representation.
+    True if all components of the mesh were saved successfully and False
+      otherwise.
   """
-  display_name = _get_display_name(name, display_name)
   json_config = _get_json_config(config_dict)
 
   # All tensors representing a single mesh will be represented as separate
   # summaries internally. Those summaries will be regrouped on the client before
   # rendering.
-  summaries = []
   tensors = [
       metadata.MeshTensor(
         vertices, plugin_data_pb2.MeshPluginData.VERTEX, tf.float32),
@@ -129,44 +116,38 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
   components = metadata.get_components_bitmask([
       tensor.content_type for tensor in tensors])
 
-  for tensor in tensors:
-    summaries.append(
-      _get_tensor_summary(name, display_name, description, tensor.data,
-                          tensor.content_type, components, json_config,
-                          collections))
+  summary_scope = (
+      getattr(tf.summary.experimental, 'summary_scope', None) or
+      tf.summary.summary_scope)
+  all_success = True
+  with summary_scope(name, 'mesh_summary', values=tensors):
+    for tensor in tensors:
+      all_success = all_success and _write_summary(
+        name, description, tensor.data, tensor.content_type,
+        components, json_config, step)
 
-  all_summaries = tf.summary.merge(
-      summaries, collections=collections, name=name)
-  return all_summaries
+  return all_success
 
 
-def pb(name,
-       vertices,
-       faces=None,
-       colors=None,
-       display_name=None,
-       description=None,
-       config_dict=None):
+def mesh_pb(tag, vertices, faces=None, colors=None, config_dict=None,
+   description=None):
   """Create a mesh summary to save in pb format.
 
   Args:
-    name: A name for this summary operation.
+    tag: String tag for the summary.
     vertices: numpy array of shape `[dim_1, ..., dim_n, 3]` representing the 3D
       coordinates of vertices.
     faces: numpy array of shape `[dim_1, ..., dim_n, 3]` containing indices of
       vertices within each triangle.
     colors: numpy array of shape `[dim_1, ..., dim_n, 3]` containing colors for
       each vertex.
-    display_name: If set, will be used as the display name in TensorBoard.
-      Defaults to `name`.
-    description: A longform readable description of the summary data. Markdown
-      is supported.
     config_dict: Dictionary with ThreeJS classes names and configuration.
+    description: Optional long-form description for this summary, as a
+      constant `str`. Markdown is supported. Defaults to empty.
 
   Returns:
     Instance of tf.Summary class.
   """
-  display_name = _get_display_name(name, display_name)
   json_config = _get_json_config(config_dict)
 
   summaries = []
@@ -183,23 +164,21 @@ def pb(name,
   for tensor in tensors:
     shape = tensor.data.shape
     shape = [dim if dim is not None else -1 for dim in shape]
-    tensor_proto = tf.compat.v1.make_tensor_proto(
+    tensor_proto = tensor_util.make_tensor_proto(
         tensor.data, dtype=tensor.data_type)
     summary_metadata = metadata.create_summary_metadata(
-        name,
-        display_name,
+        tag,
+        None,  # display_name
         tensor.content_type,
         components,
         shape,
         description,
         json_config=json_config)
-    tag = metadata.get_instance_name(name, tensor.content_type)
-    summaries.append((tag, summary_metadata, tensor_proto))
+    instance_tag = metadata.get_instance_name(tag, tensor.content_type)
+    summaries.append((instance_tag, summary_metadata, tensor_proto))
 
-  summary = tf.Summary()
-  for tag, summary_metadata, tensor_proto in summaries:
-    tf_summary_metadata = tf.SummaryMetadata.FromString(
-        summary_metadata.SerializeToString())
+  summary = summary_pb2.Summary()
+  for instance_tag, summary_metadata, tensor_proto in summaries:
     summary.value.add(
-      tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
+      tag=instance_tag, metadata=summary_metadata, tensor=tensor_proto)
   return summary
