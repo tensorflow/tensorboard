@@ -152,19 +152,16 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       # pylint: disable=line-too-long,g-import-not-at-top
       from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
       # pylint: enable=line-too-long,g-import-not-at-top
-
-      # If debugger_data_server_grpc_port flag is not specified, we always
-      # instantiate the interactive Debugger Plugin. If debugger_port
-      # is not specified (i.e., defaults to -1), the frontend will display a
-      # message indicating that the plugin is not active. It'll also display
-      # a command snippet to illustrate how to activate the interactive Debugger
-      # Plugin.
       interactive_plugin = (
           interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-      if flags.debugger_port > 0:
-        logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
-                    flags.debugger_data_server_grpc_port)
-        interactive_plugin.listen(flags.debugger_port)
+      logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                  flags.debugger_data_server_grpc_port)
+      interactive_plugin.listen(flags.debugger_port)
       return interactive_plugin
     else:
+      # If neither the debugger_data_server_grpc_port flag or the grpc_port
+      # flag is specified, we instantiate a dummy plugin as a placeholder for
+      # the frontend. The dummy plugin will display a message indicating that
+      # the plugin is not active. It'll also display a command snippet to
+      # illustrate how to activate the interactive Debugger Plugin.
       return InactiveDebuggerPlugin()
