@@ -43,11 +43,6 @@ namedtuple = collections.namedtuple
 
 TensorEvent = namedtuple('TensorEvent', ['wall_time', 'step', 'tensor_proto'])
 
-## Different types of summary events handled by the event_accumulator
-SUMMARY_TYPES = {
-    'tensor': '_ProcessTensor',
-}
-
 ## The tagTypes below are just arbitrary strings chosen to pass the type
 ## information of the tag from the backend to the frontend
 TENSORS = 'tensors'
@@ -350,15 +345,14 @@ class EventAccumulator(object):
                   ('This summary with tag %r is oddly not associated with a '
                    'plugin.'), tag)
 
-        for summary_type, summary_func in SUMMARY_TYPES.items():
-          if value.HasField(summary_type):
-            datum = getattr(value, summary_type)
-            tag = value.tag
-            if summary_type == 'tensor' and not tag:
-              # This tensor summary was created using the old method that used
-              # plugin assets. We must still continue to support it.
-              tag = value.node_name
-            getattr(self, summary_func)(tag, event.wall_time, event.step, datum)
+        if value.HasField('tensor'):
+          datum = value.tensor
+          tag = value.tag
+          if not tag:
+            # This tensor summary was created using the old method that used
+            # plugin assets. We must still continue to support it.
+            tag = value.node_name
+          self._ProcessTensor(tag, event.wall_time, event.step, datum)
 
   def Tags(self):
     """Return all tags found in the value stream.
