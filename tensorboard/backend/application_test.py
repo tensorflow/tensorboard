@@ -362,6 +362,9 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
   def testWildcardRoute(self):
     self._test('/foo/*', True)
 
+  def testNonPathComponentWildcardRoute(self):
+    self._test('/foo*', False)
+
   def testMultiWildcardRoute(self):
     self._test('/foo/*/bar/*', False)
 
