@@ -23,6 +23,6 @@ tensorboard_webcomponent_library(
     destdir = "tf-markdown-view",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",
-        "//third_party/javascript/polymer/v1/paper-styles:lib",
+        "//third_party/javascript/polymer/v2/paper-styles:lib",
     ],
 )
