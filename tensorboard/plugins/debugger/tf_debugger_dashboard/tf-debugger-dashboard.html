@@ -858,11 +858,11 @@ limitations under the License.
           // TODO(cais): If the TDP backend is not activated, display message
           // informing the user of that.
           this.$.initialDialog.openDialog(response.host, response.port);
-        }).catch(error => {
-          this.$.initialDialog.openDisabledDialog();
         }).then(() => {
           // Initiate long-polling.
           this.long_poll();
+        }).catch(error => {
+          this.$.initialDialog.openDisabledDialog();
         });
       },
 

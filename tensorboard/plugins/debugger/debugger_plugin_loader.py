@@ -91,9 +91,6 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     Returns:
       A DebuggerPlugin instance or None if it couldn't be loaded.
     """
-    if not (context.flags.debugger_data_server_grpc_port > 0 or
-            context.flags.debugger_port > 0):
-      return None
     flags = context.flags
     try:
       # pylint: disable=g-import-not-at-top,unused-import
@@ -116,17 +113,25 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             '\n\nTo use the debugger plugin, you need to have '
             'gRPC installed:\n  pip install grpcio')
       six.reraise(e_type, e_value, e_traceback)
-    if flags.debugger_port > 0:
-      interactive_plugin = (
-          interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-      logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
-                   flags.debugger_data_server_grpc_port)
-      interactive_plugin.listen(flags.debugger_port)
-      return interactive_plugin
-    elif flags.debugger_data_server_grpc_port > 0:
+
+    if flags.debugger_data_server_grpc_port > 0:
+      # debugger_data_server_grpc opens the non-interactive Debugger Plugin,
+      # which appears as health pills in the Graph Plugin.
       noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
       logger.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
                    flags.debugger_data_server_grpc_port)
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin
-    raise AssertionError()
+    else:
+      # We always instantiate the interactive Debugger Plugin. If debugger_port
+      # is not specified (i.e., defaults to -1), the frontend will display a
+      # message indicating that the plugin is not active. It'll also display
+      # a command snippet to illustrate how to activate the interactive Debugger
+      # Plugin.
+      interactive_plugin = (
+          interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
+      if flags.debugger_port > 0:
+        logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                    flags.debugger_data_server_grpc_port)
+        interactive_plugin.listen(flags.debugger_port)
+      return interactive_plugin
