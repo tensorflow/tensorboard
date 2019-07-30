@@ -21,7 +21,9 @@ from __future__ import print_function
 import sys
 
 import six
+from werkzeug import wrappers
 
+from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import constants
 from tensorboard.util import tb_logging
@@ -40,12 +42,24 @@ class InactiveDebuggerPlugin(base_plugin.TBPlugin):
   def is_active(self):
     return False
 
-  def get_plugin_apps(self):
-    return {}
-
   def frontend_metadata(self):
     return super(InactiveDebuggerPlugin, self).frontend_metadata()._replace(
         element_name='tf-debugger-dashboard')
+
+  def get_plugin_apps(self):
+    return {
+        '/debugger_grpc_host_port': self._serve_debugger_grpc_host_port,
+    }
+
+  @wrappers.Request.application
+  def _serve_debugger_grpc_host_port(self, request):
+    # Respond with a -1 port number to indicate the debugger plugin is
+    # inactive.
+    return http_util.Respond(
+        request,
+        {'host': None, 'port': -1},
+        'application/json')
+
 
 
 class DebuggerPluginLoader(base_plugin.TBLoader):

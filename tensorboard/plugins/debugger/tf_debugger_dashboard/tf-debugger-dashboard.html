@@ -855,14 +855,15 @@ limitations under the License.
         const url = tf_backend.getRouter().pluginRoute(
             'debugger', '/debugger_grpc_host_port');
         this._requestManager.request(url).then(response => {
-          // TODO(cais): If the TDP backend is not activated, display message
+          // TODO(cais): If the Debugger Plugin backend is not activated, display message
           // informing the user of that.
-          this.$.initialDialog.openDialog(response.host, response.port);
-        }).then(() => {
-          // Initiate long-polling.
-          this.long_poll();
-        }).catch(error => {
-          this.$.initialDialog.openDisabledDialog();
+          if (response.port > 0) {
+            this.$.initialDialog.openDialog(response.host, response.port);
+            // Initiate long-polling.
+            this.long_poll();
+          } else {
+            this.$.initialDialog.openDisabledDialog();
+          }
         });
       },
 
