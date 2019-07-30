@@ -194,7 +194,8 @@ py_binary(
     deps = [
         ":demo_utils",
         ":summary",
-        "//tensorboard:expect_absl_installed",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed ",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
     ],
@@ -210,7 +211,8 @@ py_binary(
     deps = [
         ":demo_utils",
         ":summary_v2",
-        "//tensorboard:expect_absl_installed",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed ",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
     ],
