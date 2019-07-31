@@ -547,7 +547,7 @@ _np_qint32 = np.dtype([("qint32", np.int32)])
 # _np_bfloat16 is defined by a module import.
 
 # Custom struct dtype for directly-fed ResourceHandles of supported type(s).
-np_resource = np.dtype([("resource", np.ubyte, 1)])
+np_resource = np.dtype([("resource", np.ubyte)])
 
 # Standard mappings between types_pb2.DataType values and numpy.dtypes.
 _NP_TO_TF = frozenset(
