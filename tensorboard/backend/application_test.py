@@ -527,7 +527,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
               construction_callback=self._construction_callback)),
         ],
         dummy_assets_zip_provider)
-    
+
     self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
 
   def _construction_callback(self, context):
@@ -554,7 +554,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
       return wrappers.Response(response='hello world', status=200)
     else:
       return wrappers.Response(status=401)
-  
+
   @wrappers.Request.application
   def _wildcard_special_handler(self, request):
     return wrappers.Response(status=300)
@@ -595,11 +595,11 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     # This tests that the longer 'special' wildcard takes precedence over
     # the shorter one.
     self._test_route('/data/plugin/bar/wildcard/special/blah', 300)
-  
+
   def testExactRouteTakesPrecedence(self):
     # This tests that an exact match takes precedence over a wildcard.
     self._test_route('/data/plugin/bar/wildcard/special/exact', 200)
-  
+
   def testWildcardRejectedRoute(self):
     # A plugin may reject a request passed to it via a wildcard route.
     # Note our test plugin returns 401 in this case, to distinguish this

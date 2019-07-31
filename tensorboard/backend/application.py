@@ -264,7 +264,7 @@ class TensorBoardWSGI(object):
         else:
           path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
                   plugin.plugin_name + route)
-        
+
         if path.endswith('/*'):
           # Note we remove the '*' but leave the slash in place.
           path = path[:-1]
@@ -275,14 +275,14 @@ class TensorBoardWSGI(object):
           if '*' in path:
             raise ValueError('Invalid route: only trailing wildcards are supported (i.e., `/.../*`)')
           self.exact_routes[path] = app
-    
+
     # Wildcard routes will be checked in the given order, so we sort them
     # longest to shortest so that a more specific route will take precedence
     # over a more general one (e.g., a catchall route `/*` should come last).
     self.prefix_routes = collections.OrderedDict(
         sorted(six.iteritems(self.prefix_routes),
             key=lambda x: len(x[0]), reverse=True))
-      
+
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
@@ -372,7 +372,7 @@ class TensorBoardWSGI(object):
         if clean_path.startswith(path_prefix):
           return self.prefix_routes[path_prefix](environ, start_response)
         print(clean_path, ' does not start with ', path_prefix)
-        
+
       logger.warn('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
           environ, start_response)
