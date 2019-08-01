@@ -1032,6 +1032,7 @@ class LineChart {
     // 1st-order IIR low-pass filter to attenuate the higher-
     // frequency components of the time-series.
     let last = data.length > 0 ? 0 : NaN;
+    let bias = data.length > 0 ? 0 : NaN;
     let numAccum = 0;
 
     const yValues = data.map((d, i) => this.yValueAccessor(d, i, dataset));
@@ -1042,8 +1043,11 @@ class LineChart {
       if (isConstant || !Number.isFinite(nextVal)) {
         d.smoothed = nextVal;
       } else {
-        last = last * smoothingWeight + (1 - smoothingWeight) * nextVal;
+        let old_last = last
+        last = (last + bias) * smoothingWeight + (1 - smoothingWeight) * nextVal;
+        bias = bias * smoothingWeight + (1 - smoothingWeight) * (last - old_last)
         numAccum++;
+
         // The uncorrected moving average is biased towards the initial value.
         // For example, if initialized with `0`, with smoothingWeight `s`, where
         // every data point is `c`, after `t` steps the moving average is
