@@ -50,6 +50,9 @@ pip uninstall -y tensorboard tb-nightly  # drop conflicting packages
 pip install ./tensorboard-wheels/*py"${py_major_version}"*.whl
 pip install ./example-plugin/dist/*.whl
 
+if ! python -c 'print(list(__import__("pkg_resources").iter_entry_points("tensorboard_plugins")))'; then echo $?; fi
+if ! python -c 'print(__import__("tensorboard_plugin_example"))'; then echo $?; fi
+
 python -m tensorboard_plugin_example.demo
 
 # Test tensorboard + tensorboard_plugin_example integration.
