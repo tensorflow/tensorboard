@@ -32,7 +32,7 @@ tar xzvf \
     "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/pip_package/pip_packages.tar.gz" \
     -C ./tensorboard-wheels/
 
-virtualenv venv
+virtualenv --always-copy venv
 export VIRTUAL_ENV=venv
 export PATH="${PWD}/venv/bin:${PATH}"
 unset PYTHON_HOME

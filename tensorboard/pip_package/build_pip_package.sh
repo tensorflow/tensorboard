@@ -38,7 +38,6 @@ main() {
     RUNFILES="$(CDPATH="" cd -- "$0.runfiles" && pwd)"
   fi
 
-  export TMPDIR="${PWD}"
   if [ "$(uname)" = "Darwin" ]; then
     workdir="$(mktemp -d -t tensorboard-pip)"
   else
