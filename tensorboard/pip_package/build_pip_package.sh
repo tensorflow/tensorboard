@@ -102,7 +102,7 @@ build() (
       s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
     ' {} +
 
-  virtualenv -q venv
+  virtualenv -q --always-copy venv
   export VIRTUAL_ENV=venv
   export PATH="${PWD}/venv/bin:${PATH}"
   unset PYTHON_HOME
