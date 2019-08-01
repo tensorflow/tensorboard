@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-graph-board/tf-graph-board.html">
@@ -66,6 +66,7 @@ by default. The user can select a different run from a dropdown menu.
   <tf-graph-controls
         id="controls"
         class="sidebar"
+        slot="sidebar"
         devices-for-stats="{{_devicesForStats}}"
         color-by-params="[[_colorByParams]]"
         stats="[[_stats]]"
@@ -77,8 +78,10 @@ by default. The user can select a different run from a dropdown menu.
         selected-node="{{_selectedNode}}"
         health-pills-feature-enabled="[[_debuggerDataEnabled]]"
         health-pills-toggled-on="{{healthPillsToggledOn}}"
+        on-fit-tap="_fit"
+        trace-inputs="{{_traceInputs}}"
   ></tf-graph-controls>
-  <div class="center">
+  <div class="center" slot="center">
     <tf-graph-dashboard-loader id="loader"
           datasets="[[_datasets]]"
           selection="[[_selection]]"
@@ -108,7 +111,7 @@ by default. The user can select a different run from a dropdown menu.
         render-hierarchy="{{_renderHierarchy}}"
         selected-node="{{_selectedNode}}"
         stats="[[_stats]]"
-        compat-node-title="TPU Compatibility"
+        trace-inputs="[[_traceInputs]]"
     ></tf-graph-board>
   </div>
 </tf-dashboard-layout>
@@ -170,7 +173,14 @@ Polymer({
     /**
      * @type {!Array<!RunItem>}
      */
-    _datasets: Array,
+    _datasets: {
+      type: Array,
+      value: () => [],
+    },
+    _selectedDataset: {
+      type: Number,
+      value: 0,
+    },
     _renderHierarchy: {type: Object, observer: '_renderHierarchyChanged'},
     _requestManager: {
       type: Object,
@@ -239,10 +249,7 @@ Polymer({
       type: Object,
     },
     _compatibilityProvider: Object,
-    _hierarchyParams: {
-      type: Object,
-      value: () => tf.graph.hierarchy.DefaultHierarchyParams,
-    },
+    _traceInputs: Boolean,
   },
   listeners: {
     'node-toggle-expand': '_handleNodeToggleExpand',
@@ -281,6 +288,9 @@ Polymer({
     }
 
     this._maybeFetchHealthPills();
+  },
+  _fit: function() {
+    this.$$('#graphboard').fit();
   },
   _runObserver: tf_storage.getStringObserver(
       RUN_STORAGE_KEY, {
@@ -506,13 +516,6 @@ Polymer({
 
     this._requestHealthPills();
   },
-});
-
-tf_tensorboard.registerDashboard({
-  plugin: 'graphs',
-  elementName: 'tf-graph-dashboard',
-  // TODO(@chihuahua): Reconcile this setting with Health Pills.
-  isReloadDisabled: true,
 });
 
 </script>

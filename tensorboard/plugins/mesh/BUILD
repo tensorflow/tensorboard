@@ -32,7 +32,7 @@ py_test(
     srcs = ["metadata_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":metadata",        
+        ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
         "@org_pythonhosted_mock",
@@ -48,9 +48,9 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
-        "//tensorboard:expect_numpy_installed",        
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:http_util",        
+        "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
@@ -65,7 +65,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard:expect_tensorflow_installed",        
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
@@ -81,8 +81,8 @@ py_test(
         ":mesh_plugin",
         ":summary",
         ":test_utils",
-        "//tensorboard:expect_numpy_installed",        
-        "//tensorboard:expect_tensorflow_installed",        
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -102,7 +102,23 @@ py_library(
     ],
     deps = [
         ":metadata",
+        ":summary_v2",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
     ],
 )
@@ -114,7 +130,22 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        ":test_utils",        
+        ":test_utils",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
+    ],
+)
+
+py_test(
+    name = "summary_v2_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        ":test_utils",
+        ":metadata",
+        ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
@@ -123,5 +154,74 @@ py_test(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "demo_utils",
+    srcs = ["demo_utils.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_test(
+    name = "demo_utils_test",
+    size = "small",
+    srcs = ["demo_utils_test.py"],
+    data = [
+        ":test_data",
+        "//tensorboard/compat:tensorflow",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":demo_utils",
+    ],
+)
+
+py_binary(
+    name = "mesh_demo",
+    srcs = ["mesh_demo.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":demo_utils",
+        ":summary",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+py_binary(
+    name = "mesh_demo_v2",
+    srcs = ["mesh_demo_v2.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":demo_utils",
+        ":summary_v2",
+        "//tensorboard:expect_absl_app_installed",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:expect_numpy_installed",
+    ],
+)
+
+filegroup(
+    name = "test_data",
+    srcs = [
+        "test_data/icosphere.ply",
+    ],
     visibility = ["//visibility:public"],
 )

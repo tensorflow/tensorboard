@@ -20,14 +20,13 @@ limitations under the License.
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-dashboard-common/tf-regex-group.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="tf-image-loader.html">
@@ -39,7 +38,7 @@ TensorFlow run.
 <dom-module id="tf-image-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
             <paper-checkbox
@@ -92,7 +91,7 @@ TensorFlow run.
           ></tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No image data was found.</h3>
@@ -115,32 +114,25 @@ TensorFlow run.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-image-loader
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          sample="[[item.sample]]"
-                          of-samples="[[item.ofSamples]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                          request-manager="[[_requestManager]]"
-                          actual-size="[[_actualSize]]"
-                          brightness-adjustment="[[_brightnessAdjustment]]"
-                          contrast-percentage="[[_contrastPercentage]]"
-                        ></tf-image-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-image-loader
+                  active="[[active]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  sample="[[item.sample]]"
+                  of-samples="[[item.ofSamples]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  request-manager="[[_requestManager]]"
+                  actual-size="[[_actualSize]]"
+                  brightness-adjustment="[[_brightnessAdjustment]]"
+                  contrast-percentage="[[_contrastPercentage]]"
+                ></tf-image-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -269,7 +261,7 @@ TensorFlow run.
         });
       },
       _reloadImages() {
-        this.querySelectorAll('tf-image-loader').forEach(image => {
+        this.root.querySelectorAll('tf-image-loader').forEach(image => {
           image.reload();
         });
       },
@@ -313,11 +305,5 @@ TensorFlow run.
         return runToTagInfo[run][tag];
       },
     });
-
-    tf_tensorboard.registerDashboard({
-      plugin: 'images',
-      elementName: 'tf-image-dashboard',
-    });
-
   </script>
 </dom-module>

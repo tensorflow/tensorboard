@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tf-no-data-warning.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
@@ -69,7 +69,7 @@ Polymer({
     dataNotFound: Boolean,
     _routePrefix: {
       type: String,
-      value: () => tf_backend.getRouter().pluginRoute('projector', ''),
+      value: '.',
     },
     // Whether this dashboard is initialized. This dashboard should only be initialized once.
     _initialized: Boolean,
@@ -95,12 +95,6 @@ Polymer({
     };
     xhr.send();
   },
-});
-
-tf_tensorboard.registerDashboard({
-  plugin: 'projector',
-  elementName: 'vz-projector-dashboard',
-  isReloadDisabled: true,
 });
 
 </script>

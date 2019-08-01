@@ -19,7 +19,7 @@ limitations under the License.
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
@@ -36,10 +36,10 @@ of the checkbox, and the number of names may also be very large, and works to
 handle these situations gracefully.
 -->
 <dom-module id="tf-multi-checkbox">
-  <style include="scrollbar-style"></style>
-  <style include="run-color-style"></style>
-
   <template>
+    <style include="scrollbar-style"></style>
+    <style include="run-color-style"></style>
+
     <paper-input
       id="names-regex"
       no-label-float
@@ -93,12 +93,12 @@ handle these situations gracefully.
       display: flex;
       flex-direction: column;
       height: 100%;
+      overflow: hidden;
     }
     #outer-container {
       overflow-y: auto;
       overflow-x: hidden;
       width: 100%;
-      height: 0; /* Quirk to make firefox add scrolling instead of expand div */
       flex-grow: 1;
       flex-shrink: 1;
       word-wrap: break-word;

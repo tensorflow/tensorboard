@@ -16,11 +16,11 @@ limitations under the License.
 -->
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
@@ -33,8 +33,7 @@ limitations under the License.
 <dom-module id="mesh-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar all-controls">
-
+      <div slot="sidebar" class="all-controls">
         <div class="sidebar-section view-control">
             <h3 class="title">Point of view</h3>
             <div>
@@ -66,7 +65,7 @@ limitations under the License.
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No point cloud data was found.</h3>
@@ -89,32 +88,24 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-mesh-loader
-                          active
-                          selected-view="[[_selectedView]]"
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          sample="[[item.sample]]"
-                          of-samples="[[item.ofSamples]]"
-                          request-manager="[[_requestManager]]"
-                          class="tf-mesh-loader-container"
-                          on-camera-position-change="_onCameraPositionChanged">
-                        </tf-mesh-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-mesh-loader
+                  active="[[active]]"
+                  selected-view="[[_selectedView]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  sample="[[item.sample]]"
+                  of-samples="[[item.ofSamples]]"
+                  request-manager="[[_requestManager]]"
+                  class="tf-mesh-loader-container"
+                  on-camera-position-change="_onCameraPositionChanged">
+                </tf-mesh-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -167,7 +158,7 @@ limitations under the License.
         flex-direction: row;
         flex-wrap: wrap;
       }
-      .tf-mesh-loader-container {
+      tf-mesh-loader {
         width: 480px;
         flex-basis: 480px;
         flex-grow: 1;
@@ -216,7 +207,7 @@ limitations under the License.
           this.reload();
         },
         _getAllChildren() {
-          return this.querySelectorAll('tf-mesh-loader');
+          return this.root.querySelectorAll('tf-mesh-loader');
         },
         _onCameraPositionChanged(event) {
           if (this._selectedView == 'share') {
@@ -225,6 +216,9 @@ limitations under the License.
               g.setCameraViewpoint(event.detail.position, event.detail.far, event.detail.target);
             });
           }
+        },
+        _shouldOpen(index) {
+          return index <= 2;
         },
         reload() {
           this._fetchTags().then(this._reloadMeshes.bind(this));
@@ -271,11 +265,6 @@ limitations under the License.
           return withSamples;
         }
       });  // End of Polymer constructor call.
-
-      tf_tensorboard.registerDashboard({
-        plugin: 'mesh',
-        elementName: 'mesh-dashboard',
-      });
 
     })();  // End of anonymous namespace.
   </script>

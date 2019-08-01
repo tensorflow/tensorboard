@@ -30,10 +30,10 @@ tensorboard_webcomponent_library(
     visibility = ["//visibility:public"],
     destdir = "tf-card-heading",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_markdown_view:legacy",
-        "//third_party/javascript/polymer/v1/paper-dialog:lib",
-        "//third_party/javascript/polymer/v1/paper-dialog-scrollable:lib",
-        "//third_party/javascript/polymer/v1/paper-icon-button:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//third_party/javascript/polymer/v2/paper-dialog:lib",
+        "//third_party/javascript/polymer/v2/paper-dialog-scrollable:lib",
+        "//third_party/javascript/polymer/v2/paper-icon-button:lib",
     ],
 )

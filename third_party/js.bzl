@@ -150,32 +150,21 @@ def tensorboard_js_workspace():
   )
 
   filegroup_external(
-      name = "com_google_javascript_closure_compiler_externs_polymer",
-      licenses = ["notice"],  # Apache 2.0
-      sha256_urls = {
-          "737af73d7b02226e6e1516044a8eb8283376d44f64839979936ca163c00900f4": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
-              "https://raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
-          ],
-      },
-  )
-
-  filegroup_external(
       name = "org_threejs",
       # no @license header
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "5eb9be209f84c4588f573b9abd8e13c04ce187ad6f40e8b12993d00b1428de54": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r77/LICENSE",
+          "90f3af9ebfaf34f642b05f3baeeca2c5547d1b8ba6872803990c26804f4067b1": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
           ],
-          "881cc79c84c34a1f61f8c8af0ee3f237d83a2eda3868720fdcb47bcacf8da44a": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r77/build/three.js",
+          "40873d04d4ace1529c503b10053fe6c09c04e8ba4a1eaacb07a1ea17fa073368": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
           ],
-          "98b8b5954901025a98033c8bdd65969be1f30b59e11f823ec864253bb72f768d": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r77/examples/js/controls/OrbitControls.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r77/examples/js/controls/OrbitControls.js",
+          "f495c87a34ac1bf238e245c60e9fed2ec831cefbb9dc29e17b91e24b5ef6559b": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
           ],
       },
   )
@@ -325,11 +314,11 @@ def tensorboard_js_workspace():
 
   http_archive(
       name = "ai_google_pair_facets",
-      sha256 = "e3f7b7b3c194c1772d16bdc8b348716c0da59a51daa03ef4503cf06c073caafc",
-      strip_prefix = "facets-0.2.1",
+      sha256 = "e69d44a2b51b0373e6d1e2ec126b92f7927e408080d959010dee501a6fa852c6",
+      strip_prefix = "facets-cd29284009dc0e4d54107a55b978d65d105b7f7f",
       urls = [
-          "http://mirror.tensorflow.org/github.com/pair-code/facets/archive/0.2.1.tar.gz",
-          "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
+          # TODO(stephanwlee); Unpin after facets make Polymer2 compat release.
+          "https://github.com/pair-code/facets/archive/cd29284009dc0e4d54107a55b978d65d105b7f7f.tar.gz",
       ],
   )
   web_library_external(
@@ -515,13 +504,13 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_graphics_lib",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "82bf620fbf10af00a83754b7ebadcbcd41af7181e1aa237cdd72a2881d8004fe": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/be403ab520d129fa2ad99a2dc9ae0102c57a499f/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+          "76ebbb763969cad7f66fadf24d97a8beec6b6e9c64da568139ad739a1c46ba14": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
           ],
-          "bc7e983aae707e2d8dc0ca6406e3779e4ad73c537a02bed6d3d3d40180f26904": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/659021ac8d56c0d13eb0ebfa99786a12d48fbc61/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+          "caa00bdd80fe10b481f34b34df1b8688316ed8e8a6aaa49ddf9e5e6ac7f202e4": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )

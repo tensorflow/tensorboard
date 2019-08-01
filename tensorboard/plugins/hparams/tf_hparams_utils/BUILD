@@ -9,6 +9,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_hparams_utils",
     srcs = [
+        "tf-hparams-utils.d.ts",
         "tf-hparams-utils.html",
     ],
     path = "/tf-hparams-utils",
@@ -34,8 +35,8 @@ tf_web_library(
     deps = [
         ":tf_hparams_utils",
         "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 

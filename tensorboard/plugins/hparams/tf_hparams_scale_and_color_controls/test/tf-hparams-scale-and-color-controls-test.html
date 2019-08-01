@@ -19,7 +19,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="../../tf-imports/polymer.html">
     <script src="../../web-component-tester/browser.js"></script>
     <link rel="import" href="../tf-hparams-scale-and-color-controls.html">
   </head>
@@ -37,75 +37,84 @@ limitations under the License.
 
         setup(function() {
           element = fixture("f");
-          element.set("schema", {
-            "hparamInfos": [
-              {
-                "domainDiscrete": [
-                  270,
-                  320,
-                  370,
-                  420,
-                  470
-                ],
-                "description": "",
-                "displayName": "Initial Temperature",
-                "type": "DATA_TYPE_FLOAT64",
-                "name": "initial_temperature"
-              },
-              {
-                "domainDiscrete": [
-                  270,
-                  320,
-                  370,
-                  420,
-                  470
-                ],
-                "description": "",
-                "displayName": "Ambient Temperature",
-                "type": "DATA_TYPE_FLOAT64",
-                "name": "ambient_temperature"
-              },
-              {
-                "domainDiscrete": [
-                  "water",
-                  "air"
-                ],
-                "description": "",
-                "displayName": "Material",
-                "type": "DATA_TYPE_STRING",
-                "name": "material"
-              }
-            ],
-            "metricInfos": [
-              {
-                "displayName": "Current Temp.",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "current"
+          const configuration = {
+            visibleSchema: {
+              "hparamInfos": [
+                {
+                  "domainDiscrete": [
+                    270,
+                    320,
+                    370,
+                    420,
+                    470
+                  ],
+                  "description": "",
+                  "displayName": "Initial Temperature",
+                  "type": "DATA_TYPE_FLOAT64",
+                  "name": "initial_temperature"
+                },
+                {
+                  "domainDiscrete": [
+                    270,
+                    320,
+                    370,
+                    420,
+                    470
+                  ],
+                  "description": "",
+                  "displayName": "Ambient Temperature",
+                  "type": "DATA_TYPE_FLOAT64",
+                  "name": "ambient_temperature"
+                },
+                {
+                  "domainDiscrete": [
+                    "water",
+                    "air"
+                  ],
+                  "description": "",
+                  "displayName": "Material",
+                  "type": "DATA_TYPE_STRING",
+                  "name": "material"
                 }
-              },
-              {
-                "displayName": "Difference To Ambient Temp.",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "difference_to_ambient"
+              ],
+              "metricInfos": [
+                {
+                  "displayName": "Current Temp.",
+                  "datasetType": "DATASET_UNKNOWN",
+                  "description": "",
+                  "name": {
+                    "group": "",
+                    "tag": "current"
+                  }
+                },
+                {
+                  "displayName": "Difference To Ambient Temp.",
+                  "datasetType": "DATASET_UNKNOWN",
+                  "description": "",
+                  "name": {
+                    "group": "",
+                    "tag": "difference_to_ambient"
+                  }
+                },
+                {
+                  "displayName": "Delta T",
+                  "datasetType": "DATASET_UNKNOWN",
+                  "description": "",
+                  "name": {
+                    "group": "",
+                    "tag": "delta"
+                  }
                 }
-              },
-              {
-                "displayName": "Delta T",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "delta"
-                }
-              }
-            ]
-          });
+              ]
+            }
+          };
+          configuration.schema = {
+            hparamColumns: configuration.visibleSchema.hparamInfos.map(
+                hparam => ({hparamInfo: hparam})),
+            metricColumns: configuration.visibleSchema.metricInfos.map(
+                metric => ({metricInfo: metric})),
+          };
+          element.set("configuration", configuration);
           element.set("sessionGroups", [
             {
               "sessions": [],
@@ -233,13 +242,9 @@ limitations under the License.
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -250,15 +255,12 @@ limitations under the License.
         });
 
         test("removal of last metric updates shadow DOM", function(done) {
-          element.pop("schema.metricInfos"); // remove 'Delta T'
+          // remove 'Delta T'
+          element.pop("configuration.visibleSchema.metricInfos");
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Current Temp.",
@@ -269,17 +271,14 @@ limitations under the License.
         });
 
         test("removal of first metric updates shadow DOM", function(done) {
-          element.shift("schema.metricInfos"); // remove 'Current Temp'
+          // remove 'Current Temp'
+          element.shift("configuration.visibleSchema.metricInfos");
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
           flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
+            const columnTitles = getColumnTitles();
             assert.deepEqual(
-                column_titles,
+                columnTitles,
                 ["Initial Temperature",
                  "Ambient Temperature",
                  "Difference To Ambient Temp.",
@@ -316,17 +315,17 @@ limitations under the License.
                        3 /* Current Temp */);
           // Hparams: ["Ambient Temp", "Material" (non-numeric)]
           // Metrics: ["Current Temp", "Difference To Ambient Temp.", "Delta T"]
-          element.splice("schema.hparamInfos", 0, 1);
+          element.splice("configuration.visibleSchema.hparamInfos", 0, 1);
           assert.equal(element._defaultColorByColumnIndex(),
                        2 /* Current Temp */);
           // Hparams: ["Ambient Temp", "Material" (non-numeric)]
           // Metrics: []
-          element.set("schema.metricInfos", []);
+          element.set("configuration.visibleSchema.metricInfos", []);
           assert.equal(element._defaultColorByColumnIndex(),
                              0 /* Ambient Temperature */);
           // Hparams: ["Material" (non-numeric)]
           // Metrics: []
-          element.splice("schema.hparamInfos", 0, 1);
+          element.splice("configuration.visibleSchema.hparamInfos", 0, 1);
           assert.isUndefined(element._defaultColorByColumnIndex());
           // Hparams: []
           // Metrics: []
@@ -375,6 +374,14 @@ limitations under the License.
             done();
           });
         });
+
+        function getColumnTitles() {
+          const columnTitlesNodes = Array.from(
+              element.root.querySelectorAll(".column-title"));
+          return columnTitlesNodes
+              .map(n => n.textContent)
+              .map(s => s.replace(/^\s*/,"").replace(/\s*$/,""));
+        }
       });
     </script>
   </body>

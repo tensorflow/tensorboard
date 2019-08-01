@@ -24,7 +24,7 @@ TODO(erez): The logic for computing the number of ticks so that tick labels
 do not overlap is ignored, for some reason, when we set compile=True in
 the vulcanization build step. Figure out why.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/d3.html">
 <link rel="import" href="../tf-imports/lodash.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
@@ -68,7 +68,7 @@ the vulcanization build step. Figure out why.
       properties: {
         // Public properties
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
+        visibleSchema: Object,
         // See the property description in tf-hparams-query-pane.html
         sessionGroups: Array,
         // See the description in tf-hparams-scale-and-color-controls.html
@@ -137,7 +137,7 @@ the vulcanization build step. Figure out why.
 
       observers: [
         '_sessionGroupsChanged(sessionGroups.*)',
-        '_schemaChanged(schema.*)',
+        '_visibleSchemaChanged(visibleSchema.*)',
         '_redraw(options.*)',
       ],
 
@@ -161,7 +161,7 @@ the vulcanization build step. Figure out why.
         this._redraw();
       },
 
-      _schemaChanged() {
+      _visibleSchemaChanged() {
         this._brushedCellIndex = null;
         this._brushSelection = null;
         this._redraw();
@@ -176,10 +176,11 @@ the vulcanization build step. Figure out why.
           const PLOT_MIN_HEIGHT = 0.4*PLOT_MIN_WIDTH;
           const CELL_MIN_WIDTH = 150;
           const CELL_MIN_HEIGHT = 0.75*CELL_MIN_WIDTH;
-          this.width = Math.max(CELL_MIN_WIDTH * utils.numColumns(this.schema),
+          this.width = Math.max(CELL_MIN_WIDTH *
+                                utils.numVisibleColumns(this.visibleSchema),
                                 PLOT_MIN_WIDTH);
           this.height = Math.max(
-              CELL_MIN_HEIGHT * utils.numMetrics(this.schema),
+              CELL_MIN_HEIGHT * utils.numVisibleMetrics(this.visibleSchema),
               PLOT_MIN_HEIGHT);
 
           this._container.style.width = this.width + "px";
@@ -204,18 +205,18 @@ the vulcanization build step. Figure out why.
 
         if (!this.sessionGroups
             || this.sessionGroups.length == 0
-            || !this.schema
-            || this.schema.metricInfos.length == 0) {
+            || !this.visibleSchema
+            || this.visibleSchema.metricInfos.length == 0) {
           // If there's no metrics or session groups. There's nothing to draw.
           return;
         }
 
-        // An array containing the schema-columns (hparams followed by metrics)
-        // indices. These index the columns of the scatter plot matrix.
-        const cols = d3.range(utils.numColumns(_this.schema));
+        // An array containing the visibleSchema-columns (hparams followed by
+        // metrics) indices. These index the columns of the scatter plot matrix.
+        const cols = d3.range(utils.numVisibleColumns(_this.visibleSchema));
         // An array containing the metric indices. These index the rows of the
         // scatter plot matrix.
-        const metrics = d3.range(utils.numMetrics(_this.schema));
+        const metrics = d3.range(utils.numVisibleMetrics(_this.visibleSchema));
 
         // The margin in pixels from the left to leave for the y-axis text
         // (tick values and x-axis label).
@@ -249,7 +250,8 @@ the vulcanization build step. Figure out why.
         // left corner.
         const xCoords = cols.map(c=>_this._cellScale(c, [0, cellWidth - 1]));
         const yCoords = metrics.map(m=>_this._cellScale(
-            m + utils.numHParams(_this.schema), [cellHeight - 1, 0]));
+            m + utils.numVisibleHParams(_this.visibleSchema),
+            [cellHeight - 1, 0]));
 
         // ---------------------------------------------------------------------
         // Draw axes.
@@ -307,9 +309,11 @@ the vulcanization build step. Figure out why.
               .attr("text-anchor", "middle")
               .attr("x", cellWidth / 2)
               .attr("y", _this.height - 1 - xAxisTextMargin / 4)
-              .text(col=>utils.schemaColumnName(_this.schema, col))
+              .text(col=>utils.schemaVisibleColumnName(_this.visibleSchema,
+                                                       col))
             .append("title")   // Show full name as a tooltip.
-              .text(col=>utils.schemaColumnName(_this.schema, col));
+              .text(col=>utils.schemaVisibleColumnName(_this.visibleSchema,
+                                                       col));
 
         // Y-Axes and labels.
         const yAxesG = this._svg
@@ -355,7 +359,8 @@ the vulcanization build step. Figure out why.
                     cellHeight,
                     /* minLabelSize */ 20,
                     _this.options.columns[
-                      metric + utils.numHParams(_this.schema)].scale);
+                      metric + utils.numVisibleHParams(
+                          _this.visibleSchema)].scale);
               });
         // Append a label for each axis.
         yAxesG
@@ -371,10 +376,10 @@ the vulcanization build step. Figure out why.
                   90, -(_this.width - yAxisTextMargin / 4 - 1),
                   cellHeight / 2))
               .text(metric=>
-                    utils.metricName(_this.schema.metricInfos[metric]))
+                    utils.metricName(_this.visibleSchema.metricInfos[metric]))
             .append("title")   // Show full name as a tooltip.
               .text(metric=>
-                    utils.metricName(_this.schema.metricInfos[metric]));
+                    utils.metricName(_this.visibleSchema.metricInfos[metric]));
 
         function drawAxis(g, axisGen, axisLength, minLabelSize, scaleType) {
           // We compute the number of ticks to display based on the estimate
@@ -619,7 +624,7 @@ the vulcanization build step. Figure out why.
               .extent([[-frameMargin + 1, -frameMargin + 1],
                        [cellWidth - 1 + frameMargin - 1,
                         cellHeight - 1 + frameMargin - 1]])
-              .on("start", function ([col, metric]) {
+              .on("start", function () {
                 if (isBrushActive() && brushedCellG.node() != this) {
                   // The brush is active in a different cell.
                   // Clear the selection first.
@@ -631,17 +636,19 @@ the vulcanization build step. Figure out why.
                 }
                 brushChanged(this);
               })
-              .on("brush", function([col, metric]) {
+              .on("brush", function() {
                 brushChanged(this);
               })
-              .on("end", function([col, metric]) {
+              .on("end", function() {
                 brushChanged(this);
               });
 
         // Updates the internal state in response to a brush event in
         // the cell whose <g> element (in 'cells') is given by cellGNode
         function brushChanged(cellGNode) {
-          const brushSelection = d3.brushSelection(cellGNode);
+          // For some reason the closure compiler drops the argument when we
+          // write the call below as 'd3.brushSelection(cellGNode)'.
+          const brushSelection = d3["brushSelection"](cellGNode);
           if ((!isBrushActive() && brushSelection === null) ||
               (isBrushActive() &&
                cellGNode === brushedCellG.node() &&
@@ -796,7 +803,7 @@ the vulcanization build step. Figure out why.
       // to the cell's coordinate system. 'range' should be an interval in the
       // cell's coordinate system representing the range of the scale. The
       // metric or hparam to be mapped should be specified as the
-      // schema-column indexed by colIndex.
+      // visibleSchema-column indexed by colIndex.
       _cellScale(colIndex, range) {
         const extent = this._colExtent(colIndex);
         const linearScale = d3.scaleLinear()
@@ -853,18 +860,18 @@ the vulcanization build step. Figure out why.
       },
 
       _colValue(sessionGroup, colIndex) {
-        return tf.hparams.utils.columnValueByIndex(
-            this.schema, sessionGroup, colIndex);
+        return tf.hparams.utils.columnValueByVisibleIndex(
+            this.visibleSchema, sessionGroup, colIndex);
       },
 
       _metricValue(sessionGroup, metricIndex) {
-        return tf.hparams.utils.metricValueByIndex(
-            this.schema, sessionGroup, metricIndex);
+        return tf.hparams.utils.metricValueByVisibleIndex(
+            this.visibleSchema, sessionGroup, metricIndex);
       },
 
       _colExtent(colIndex) {
-        return tf.hparams.utils.numericColumnExtent(
-            this.schema, this.sessionGroups, colIndex);
+        return tf.hparams.utils.visibleNumericColumnExtent(
+            this.visibleSchema, this.sessionGroups, colIndex);
       },
     });
   </script>

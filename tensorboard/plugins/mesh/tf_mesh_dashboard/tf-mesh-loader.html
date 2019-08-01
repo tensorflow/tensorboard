@@ -14,10 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-imports/tf_graphics_lib.html">
+<link rel="import" href="../tf-imports/threejs.html">
 
 <!--
   Mesh component loads 3D data (point clouds, meshes, etc.) and renders it.
@@ -52,8 +53,8 @@ limitations under the License.
           <paper-slider
             id="steps"
             immediate-value="{{_stepIndex}}"
-            max="[[_getMaxStepIndex(_step)]]"
-            max-markers="[[_getMaxStepIndex(_step)]]"
+            max="[[_getMaxStepIndex(_steps)]]"
+            max-markers="[[_getMaxStepIndex(_steps)]]"
             snaps
             step="1"
             value="{{_stepIndex}}"
@@ -70,6 +71,9 @@ limitations under the License.
       .tf-mesh-loader-header {
         display: block;
         height: 105px;
+      }
+      [hidden] {
+        display: none;
       }
     </style>
   </template>

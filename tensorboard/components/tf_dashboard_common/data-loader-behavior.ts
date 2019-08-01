@@ -19,6 +19,11 @@ namespace tf_dashboard_common {
  */
 export const DataLoaderBehavior = {
   properties: {
+    active: {
+      type: Boolean,
+      observer: '_loadDataIfActive',
+    },
+
     /**
      * A unique identifiable string. When changes, it expunges the data
      * cache.
@@ -139,10 +144,15 @@ export const DataLoaderBehavior = {
     this.cancelAsync(this._loadDataAsync);
   },
 
-  _loadDataImpl() {
-    this.cancelAsync(this._loadDataAsync);
+  _loadDataIfActive() {
+    if (this.active) {
+      this._loadData();
+    }
+  },
 
-    if (!this.isAttached) return;
+  _loadDataImpl() {
+    if (!this.active) return;
+    this.cancelAsync(this._loadDataAsync);
     this._loadDataAsync = this.async(() => {
       // Read-only property have a special setter.
       this._setDataLoading(true);

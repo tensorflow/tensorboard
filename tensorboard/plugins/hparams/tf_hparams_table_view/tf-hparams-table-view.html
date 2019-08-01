@@ -23,7 +23,7 @@ the user to expand rows to show graphs of the metrics associated with the
 session group.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/vaadin-grid.html">
 <link rel="import" href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
@@ -36,7 +36,7 @@ session group.
                  items="[[sessionGroups]]">
       <vaadin-grid-column flex-grow="0" width="10em" resizable>
         <template class="header">
-          <div class="table-header table-cell">Session Group Name.</div>
+          <div class="table-header table-cell">Trial ID</div>
         </template>
         <template>
           <div class="table-cell">[[item.name]]</div>
@@ -53,7 +53,7 @@ session group.
           </template>
         </vaadin-grid-column>
       </template>
-      <template is="dom-repeat" items="[[schema.hparamInfos]]"
+      <template is="dom-repeat" items="[[visibleSchema.hparamInfos]]"
                 as="hparamInfo"
                 index-as="hparamIndex">
         <vaadin-grid-column flex-grow="2" width="10em" resizable>
@@ -69,7 +69,7 @@ session group.
           </template>
         </vaadin-grid-column>
       </template>
-      <template is="dom-repeat" items="{{schema.metricInfos}}"
+      <template is="dom-repeat" items="{{visibleSchema.metricInfos}}"
                 as="metricInfo"
                 index-as="metricIndex">
         <vaadin-grid-column flex-grow="2" width="10em" resizable>
@@ -90,7 +90,7 @@ session group.
           backend="[[backend]]"
           experiment-name="[[experimentName]]"
           session-group="[[item]]"
-          schema="[[schema]]"
+          visible-schema="[[visibleSchema]]"
           class="session-group-details">
         </tf-hparams-session-group-details>
       </template>
@@ -127,7 +127,7 @@ session group.
       properties: {
         /* Public properties */
         // See comment for the property in tf-hparams-query-pane.
-        schema: Object,
+        visibleSchema: Object,
 
         // See comment for the property in tf-hparams-query-pane.
         sessionGroups: Array,
@@ -146,11 +146,11 @@ session group.
         experimentName: String,
       },
       observers: [
-        '_schemaOrSessionGroupsChanged(schema.*, sessionGroups.*)'
+        '_visibleSchemaOrSessionGroupsChanged(visibleSchema.*, sessionGroups.*)'
       ],
 
-      _schemaOrSessionGroupsChanged() {
-        // Vaadin-grid removes 'row-details' if the schema changes
+      _visibleSchemaOrSessionGroupsChanged() {
+        // Vaadin-grid removes 'row-details' if the visibleSchema changes
         // and doesn't update 'expandedItems'. So we first close the
         // expanded items, call Polymer.dom.flush() to update the grid,
         // and then re-open the groups that were open before.
@@ -171,7 +171,7 @@ session group.
       _metricName: tf.hparams.utils.metricName,
 
       _sessionGroupHParam(sessionGroup, hparam) {
-        if (sessionGroup === null ||
+        if (sessionGroup == null ||
             !Object.prototype.hasOwnProperty.call(sessionGroup.hparams,
                                                   hparam)) {
           return "";

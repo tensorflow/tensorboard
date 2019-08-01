@@ -24,6 +24,7 @@ from __future__ import print_function
 import abc
 import hashlib
 import json
+import random
 import time
 
 import six
@@ -35,7 +36,7 @@ from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
 
 
-def hparams(hparams, start_time_secs=None):
+def hparams(hparams, trial_id=None, start_time_secs=None):
   # NOTE: Keep docs in sync with `hparams_pb` below.
   """Write hyperparameter values for a single trial.
 
@@ -45,6 +46,8 @@ def hparams(hparams, start_time_secs=None):
       experiment, or the `HParam` objects themselves. Values should be
       Python `bool`, `int`, `float`, or `string` values, depending on
       the type of the hyperparameter.
+    trial_id: An optional `str` ID for the set of hyperparameter values
+      used in this trial. Defaults to a hash of the hyperparameters.
     start_time_secs: The time that this trial started training, as
       seconds since epoch. Defaults to the current time.
 
@@ -54,12 +57,13 @@ def hparams(hparams, start_time_secs=None):
   """
   pb = hparams_pb(
       hparams=hparams,
+      trial_id=trial_id,
       start_time_secs=start_time_secs,
   )
   return _write_summary("hparams", pb)
 
 
-def hparams_pb(hparams, start_time_secs=None):
+def hparams_pb(hparams, trial_id=None, start_time_secs=None):
   # NOTE: Keep docs in sync with `hparams` above.
   """Create a summary encoding hyperparameter values for a single trial.
 
@@ -69,6 +73,8 @@ def hparams_pb(hparams, start_time_secs=None):
       experiment, or the `HParam` objects themselves. Values should be
       Python `bool`, `int`, `float`, or `string` values, depending on
       the type of the hyperparameter.
+    trial_id: An optional `str` ID for the set of hyperparameter values
+      used in this trial. Defaults to a hash of the hyperparameters.
     start_time_secs: The time that this trial started training, as
       seconds since epoch. Defaults to the current time.
 
@@ -78,7 +84,7 @@ def hparams_pb(hparams, start_time_secs=None):
   if start_time_secs is None:
     start_time_secs = time.time()
   hparams = _normalize_hparams(hparams)
-  group_name = _derive_session_group_name(hparams)
+  group_name = _derive_session_group_name(trial_id, hparams)
 
   session_start_info = plugin_data_pb2.SessionStartInfo(
       group_name=group_name,
@@ -198,7 +204,11 @@ def _normalize_hparams(hparams):
   return result
 
 
-def _derive_session_group_name(hparams):
+def _derive_session_group_name(trial_id, hparams):
+  if trial_id is not None:
+    if not isinstance(trial_id, six.string_types):
+      raise TypeError("`trial_id` should be a `str`, but got: %r" % (trial_id,))
+    return trial_id
   # Use `json.dumps` rather than `str` to ensure invariance under string
   # type (incl. across Python versions) and dict iteration order.
   jparams = json.dumps(hparams, sort_keys=True, separators=(",", ":"))
@@ -314,6 +324,19 @@ class Domain(object):
     pass
 
   @abc.abstractmethod
+  def sample_uniform(self, rng=random):
+    """Sample a value from this domain uniformly at random.
+
+    Args:
+      rng: A `random.Random` interface; defaults to the `random` module
+        itself.
+
+    Raises:
+      IndexError: If the domain is empty.
+    """
+    pass
+
+  @abc.abstractmethod
   def update_hparam_info(self, hparam_info):
     """Update an `HParamInfo` proto to include this domain.
 
@@ -367,6 +390,9 @@ class IntInterval(Domain):
   def max_value(self):
     return self._max_value
 
+  def sample_uniform(self, rng=random):
+    return rng.randint(self._min_value, self._max_value)
+
   def update_hparam_info(self, hparam_info):
     hparam_info.type = api_pb2.DATA_TYPE_FLOAT64  # TODO(#1998): Add int dtype.
     hparam_info.domain_interval.min_value = self._min_value
@@ -413,6 +439,9 @@ class RealInterval(Domain):
   @property
   def max_value(self):
     return self._max_value
+
+  def sample_uniform(self, rng=random):
+    return rng.uniform(self._min_value, self._max_value)
 
   def update_hparam_info(self, hparam_info):
     hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
@@ -473,6 +502,9 @@ class Discrete(Domain):
   @property
   def values(self):
     return list(self._values)
+
+  def sample_uniform(self, rng=random):
+    return rng.choice(self._values)
 
   def update_hparam_info(self, hparam_info):
     hparam_info.type = {

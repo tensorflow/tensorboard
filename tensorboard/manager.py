@@ -139,10 +139,8 @@ def _info_from_string(info_string):
     A `TensorBoardInfo` value.
 
   Raises:
-    ValueError: If the provided string is not valid JSON, or if it does
-      not represent a JSON object with a "version" field whose value is
-      `tensorboard.version.VERSION`, or if it has the wrong set of
-      fields, or if at least one field is of invalid type.
+    ValueError: If the provided string is not valid JSON, or if it is
+      missing any required fields, or if any field is of incorrect type.
   """
 
   try:
@@ -151,17 +149,18 @@ def _info_from_string(info_string):
     raise ValueError("invalid JSON: %r" % (info_string,))
   if not isinstance(json_value, dict):
     raise ValueError("not a JSON object: %r" % (json_value,))
-  if json_value.get("version") != version.VERSION:
-    raise ValueError("incompatible version: %r" % (json_value,))
   expected_keys = frozenset(_TENSORBOARD_INFO_FIELDS)
   actual_keys = frozenset(json_value)
-  if expected_keys != actual_keys:
+  missing_keys = expected_keys - actual_keys
+  if missing_keys:
     raise ValueError(
-        "bad keys on TensorBoardInfo (missing: %s; extraneous: %s)"
-        % (expected_keys - actual_keys, actual_keys - expected_keys)
+        "TensorBoardInfo missing keys: %r"
+        % (sorted(missing_keys),)
     )
+  # For forward compatibility, silently ignore unknown keys.
 
   # Validate and deserialize fields.
+  fields = {}
   for key in _TENSORBOARD_INFO_FIELDS:
     field_type = _TENSORBOARD_INFO_FIELDS[key]
     if not isinstance(json_value[key], field_type.serialized_type):
@@ -169,9 +168,9 @@ def _info_from_string(info_string):
           "expected %r of type %s, but found: %r" %
           (key, field_type.serialized_type, json_value[key])
       )
-    json_value[key] = field_type.deserialize(json_value[key])
+    fields[key] = field_type.deserialize(json_value[key])
 
-  return TensorBoardInfo(**json_value)
+  return TensorBoardInfo(**fields)
 
 
 def cache_key(working_directory, arguments, configure_kwargs):
@@ -295,6 +294,9 @@ def get_all():
   contain extraneous entries if TensorBoard processes exited uncleanly
   (e.g., with SIGKILL or SIGQUIT).
 
+  Entries in the info directory that do not represent valid
+  `TensorBoardInfo` values will be silently ignored.
+
   Returns:
     A fresh list of `TensorBoardInfo` objects.
   """
@@ -315,7 +317,8 @@ def get_all():
     try:
       info = _info_from_string(contents)
     except ValueError:
-      tb_logging.get_logger().warning(
+      # Ignore unrecognized files, logging at debug only.
+      tb_logging.get_logger().debug(
           "invalid info file: %r",
           filepath,
           exc_info=True,
@@ -325,7 +328,7 @@ def get_all():
   return results
 
 
-# The following four types enumerate the possible return values of the
+# The following five types enumerate the possible return values of the
 # `start` function.
 
 # Indicates that a call to `start` was compatible with an existing
@@ -348,6 +351,19 @@ StartFailed = collections.namedtuple(
         "exit_code",  # int, as `Popen.returncode` (negative for signal)
         "stdout",  # str, or `None` if the stream could not be read
         "stderr",  # str, or `None` if the stream could not be read
+    ),
+)
+
+# Indicates that a call to `start` failed to invoke the subprocess.
+#
+# If the TensorBoard executable was chosen via the `TENSORBOARD_BINARY`
+# environment variable, then the `explicit_binary` field contains the
+# path to that binary; otherwise, the field is `None`.
+StartExecFailed = collections.namedtuple(
+    "StartExecFailed",
+    (
+        "os_error",  # `OSError` due to `Popen` invocation
+        "explicit_binary",  # `str` or `None`; see type-level comment
     ),
 )
 
@@ -397,12 +413,15 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
   (stdout_fd, stdout_path) = tempfile.mkstemp(prefix=".tensorboard-stdout-")
   (stderr_fd, stderr_path) = tempfile.mkstemp(prefix=".tensorboard-stderr-")
   start_time_seconds = time.time()
+  explicit_tb = os.environ.get("TENSORBOARD_BINARY", None)
   try:
     p = subprocess.Popen(
-        ["tensorboard"] + arguments,
+        ["tensorboard" if explicit_tb is None else explicit_tb] + arguments,
         stdout=stdout_fd,
         stderr=stderr_fd,
     )
+  except OSError as e:
+    return StartExecFailed(os_error=e, explicit_binary=explicit_tb)
   finally:
     os.close(stdout_fd)
     os.close(stderr_fd)

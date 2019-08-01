@@ -53,11 +53,14 @@ setup(
     long_description=get_readme(),
     url='https://github.com/tensorflow/tensorboard',
     author='Google Inc.',
-    author_email='opensource@google.com',
+    author_email='packages@tensorflow.org',
     # Contained modules and scripts.
     packages=find_packages(),
     entry_points={
         'console_scripts': CONSOLE_SCRIPTS,
+        'tensorboard_plugins': [
+            'projector = tensorboard.plugins.projector.projector_plugin:ProjectorPlugin',
+        ],
     },
     package_data={
         'tensorboard': [
@@ -65,6 +68,11 @@ setup(
         ],
         'tensorboard.plugins.beholder': [
             'resources/*',
+        ],
+        # Must keep this in sync with tf_projector_plugin:projector_assets
+        'tensorboard.plugins.projector': [
+            'tf_projector_plugin/index.js',
+            'tf_projector_plugin/projector_binary.html',
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).

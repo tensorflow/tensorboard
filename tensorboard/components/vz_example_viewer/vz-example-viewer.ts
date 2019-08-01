@@ -238,6 +238,9 @@ Polymer({
    * display.
    */
   getFeaturesList: function(features: any, compareFeatures: any) {
+    if (features == null) {
+      return [];
+    }
     const featuresList: NameAndFeature[] = [];
     const featureSet: {[key: string]: boolean} = {};
     let it = features.keys();
@@ -249,6 +252,9 @@ Polymer({
         featureSet[next.value] = true;
         next = it.next();
       }
+    }
+    if (compareFeatures == null) {
+      return featuresList;
     }
     it = compareFeatures.keys();
     if (it) {
@@ -292,6 +298,9 @@ Polymer({
 
   getFilteredFeaturesList: function(featureList: NameAndFeature[],
       searchValue: string, saliency: SaliencyMap) {
+    if (featureList == null) {
+      return;
+    }
     let filtered = featureList;
     const checkSal = saliency && Object.keys(saliency).length > 0;
     // Create a dict of feature names to the total saliency of all
@@ -917,7 +926,7 @@ Polymer({
     }
 
     const feat = new Feature();
-    // tslint:disable-next-line:no-any Using arbitary json.
+    // tslint:disable-next-line:no-any Using arbitrary json.
     let jsonFeat: any;
     if (this.newFeatureType === INT_FEATURE_NAME) {
       const valueList: number[] = [];
@@ -949,7 +958,7 @@ Polymer({
    * Helper method to add a feature to the JSON version of the example,
    * if the example was provided as JSON.
    */
-  // tslint:disable-next-line:no-any Using arbitary json.
+  // tslint:disable-next-line:no-any Using arbitrary json.
   addJsonFeature: function(feature: string, jsonFeat: any) {
     if (this.json && this.json.features && this.json.features.feature) {
       this.json.features.feature[feature] = jsonFeat;
@@ -1319,7 +1328,7 @@ Polymer({
     }
   },
 
-  // tslint:disable-next-line:no-any Parsing arbitary json.
+  // tslint:disable-next-line:no-any Parsing arbitrary json.
   parseFeatures: function(features: any) {
     const feats = new Features();
     for (const fname in features.feature) {
@@ -1332,7 +1341,7 @@ Polymer({
     return feats;
   }
 ,
-  // tslint:disable-next-line:no-any Parsing arbitary json.
+  // tslint:disable-next-line:no-any Parsing arbitrary json.
   parseFeatureLists: function(features: any) {
     const feats = new FeatureLists();
     for (const fname in features.featureList) {
@@ -1353,7 +1362,7 @@ Polymer({
     return feats;
   },
 
-  // tslint:disable-next-line:no-any Parsing arbitary json.
+  // tslint:disable-next-line:no-any Parsing arbitrary json.
   parseFeature: function(featentry: any, isImage: boolean) {
     const feat = new Feature();
     if (featentry.floatList) {
@@ -1414,7 +1423,7 @@ Polymer({
   },
 
   featureMoreClicked: function(event: Event) {
-    const button = event.srcElement.parentElement;
+    const button = event.srcElement;
     const feature = (button as any).dataFeature;
     const dialog = this.$$('#' + this.sanitizeFeature(feature) + '_dialog');
     dialog.positionTarget = button;

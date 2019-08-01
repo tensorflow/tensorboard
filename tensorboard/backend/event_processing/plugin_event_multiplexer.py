@@ -75,7 +75,8 @@ class EventMultiplexer(object):
                size_guidance=None,
                tensor_size_guidance=None,
                purge_orphaned_data=True,
-               max_reload_threads=None):
+               max_reload_threads=None,
+               event_file_active_filter=None):
     """Constructor for the `EventMultiplexer`.
 
     Args:
@@ -93,6 +94,9 @@ class EventMultiplexer(object):
       max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
+      event_file_active_filter: Optional predicate for determining whether an
+        event file latest load timestamp should be considered active. If passed,
+        this will enable multifile directory loading.
     """
     logger.info('Event Multiplexer initializing.')
     self._accumulators_mutex = threading.Lock()
@@ -104,6 +108,7 @@ class EventMultiplexer(object):
     self._tensor_size_guidance = tensor_size_guidance
     self.purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads or 1
+    self._event_file_active_filter = event_file_active_filter
     if run_path_map is not None:
       logger.info('Event Multplexer doing initialization load for %s',
                       run_path_map)
@@ -135,7 +140,7 @@ class EventMultiplexer(object):
     with self._accumulators_mutex:
       if name not in self._accumulators or self._paths[name] != path:
         if name in self._paths and self._paths[name] != path:
-          # TODO(@dandelionmane) - Make it impossible to overwrite an old path
+          # TODO(@decentralion) - Make it impossible to overwrite an old path
           # with a new path (just give the new path a distinct name)
           logger.warn('Conflict for name %s: old path %s, new path %s',
                              name, self._paths[name], path)
@@ -144,7 +149,8 @@ class EventMultiplexer(object):
             path,
             size_guidance=self._size_guidance,
             tensor_size_guidance=self._tensor_size_guidance,
-            purge_orphaned_data=self.purge_orphaned_data)
+            purge_orphaned_data=self.purge_orphaned_data,
+            event_file_active_filter=self._event_file_active_filter)
         self._accumulators[name] = accumulator
         self._paths[name] = path
     if accumulator:

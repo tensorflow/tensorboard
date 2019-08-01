@@ -140,7 +140,7 @@ Polymer({
   drawAxes: function(svg: any, xScale: any, yScale: any, height: number) {
     svg.select('.x.axis')
         .transition()
-        .duration(TRANSITION_DURATION)     
+        .duration(TRANSITION_DURATION)
         .call(d3.axisBottom(xScale));
     svg.select('.y.axis')
         .transition()
@@ -163,7 +163,7 @@ Polymer({
         .attr('x', YAXIS_TO_LEGEND + LEGEND_MARGIN + ICON_SIZE)
         .attr('y', LEGEND_TEXT_HEIGHT)
         .attr('dy', LEGEND_TEXT_SIZE)
-   
+
     legend = legendEnter.merge(legend);
     legend.attr('transform', (d, i) => {
       const x = i * LEGEND_WIDTH - Math.floor(i / LABELS_PER_LANE) *

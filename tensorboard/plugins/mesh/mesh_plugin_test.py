@@ -22,6 +22,7 @@ import os
 import shutil
 import numpy as np
 import tensorflow as tf
+import time
 
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -30,9 +31,11 @@ from tensorboard.backend.event_processing import plugin_event_multiplexer as eve
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.mesh import mesh_plugin
 from tensorboard.plugins.mesh import summary
+from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.plugins.mesh import test_utils
 from tensorboard.util import test_util as tensorboard_test_util
+from mock import patch
 
 try:
   # python version >= 3.3
@@ -41,7 +44,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 
-@tensorboard_test_util.run_v1_only('requires tf.Session') 
+@tensorboard_test_util.run_v1_only('requires tf.Session')
 class MeshPluginTest(tf.test.TestCase):
   """Tests for mesh plugin server."""
 
@@ -61,10 +64,11 @@ class MeshPluginTest(tf.test.TestCase):
                                                     point_cloud.vertices.shape)
 
     mesh_no_color = test_utils.get_random_mesh(2000, add_faces=True)
+    mesh_no_color_extended = test_utils.get_random_mesh(2500, add_faces=True)
     mesh_no_color_vertices = tf.compat.v1.placeholder(
-        tf.float32, mesh_no_color.vertices.shape)
+        tf.float32, [1, None, 3])
     mesh_no_color_faces = tf.compat.v1.placeholder(tf.int32,
-                                                   mesh_no_color.faces.shape)
+                                                   [1, None, 3])
 
     mesh_color = test_utils.get_random_mesh(
         3000, add_faces=True, add_colors=True)
@@ -74,7 +78,8 @@ class MeshPluginTest(tf.test.TestCase):
                                                 mesh_color.faces.shape)
     mesh_color_colors = tf.compat.v1.placeholder(tf.uint8,
                                                  mesh_color.colors.shape)
-    self.data = [point_cloud, mesh_no_color, mesh_color]
+    self.data = [
+      point_cloud, mesh_no_color, mesh_no_color_extended, mesh_color]
 
     # In case when name is present and display_name is not, we will reuse name
     # as display_name. Summaries below intended to test both cases.
@@ -103,18 +108,22 @@ class MeshPluginTest(tf.test.TestCase):
     with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
       writer.add_graph(sess.graph)
       for step in range(self.steps):
-        writer.add_summary(
-            sess.run(
-                merged_summary_op,
-                feed_dict={
-                    point_cloud_vertices: point_cloud.vertices,
-                    mesh_no_color_vertices: mesh_no_color.vertices,
-                    mesh_no_color_faces: mesh_no_color.faces,
-                    mesh_color_vertices: mesh_color.vertices,
-                    mesh_color_faces: mesh_color.faces,
-                    mesh_color_colors: mesh_color.colors,
-                }),
-            global_step=step)
+        # Alternate between two random meshes with different number of
+        # vertices.
+        no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_extended
+        with patch.object(time, 'time', return_value=step):
+          writer.add_summary(
+              sess.run(
+                  merged_summary_op,
+                  feed_dict={
+                      point_cloud_vertices: point_cloud.vertices,
+                      mesh_no_color_vertices: no_color.vertices,
+                      mesh_no_color_faces: no_color.faces,
+                      mesh_color_vertices: mesh_color.vertices,
+                      mesh_color_faces: mesh_color.faces,
+                      mesh_color_colors: mesh_color.colors,
+                  }),
+              global_step=step)
 
     # Start a server that will receive requests.
     self.multiplexer = event_multiplexer.EventMultiplexer({
@@ -150,34 +159,36 @@ class MeshPluginTest(tf.test.TestCase):
     for name in self.names:
       self.assertIn(name, tags[self.runs[0]])
 
+  def validate_data_response(
+      self, run, tag, sample, content_type, dtype, ground_truth_data,
+      step=0):
+    """Makes request and checks that response has expected data."""
+    response = self.server.get(
+        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type="
+        "%s&step=%d" %
+        (run, tag, sample, content_type, step))
+    self.assertEqual(200, response.status_code)
+    data = test_utils.deserialize_array_buffer_response(
+        next(response.response), dtype)
+    self.assertEqual(ground_truth_data.reshape(-1).tolist(), data.tolist())
+
   def testDataRoute(self):
     """Tests that the /data route returns correct data for meshes."""
-    response = self.server.get(
-        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type=%s" %
-        (self.runs[0], self.names[0], 0, "VERTEX"))
-    self.assertEqual(200, response.status_code)
-    data = test_utils.deserialize_array_buffer_response(
-        next(response.response), np.float32)
-    vertices = np.tile(self.data[0].vertices.reshape(-1), self.steps)
-    self.assertEqual(vertices.tolist(), data.tolist())
+    self.validate_data_response(
+      self.runs[0], self.names[0], 0, "VERTEX", np.float32,
+      self.data[0].vertices)
 
-    response = self.server.get(
-        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type=%s" %
-        (self.runs[0], self.names[1], 0, "FACE"))
-    self.assertEqual(200, response.status_code)
-    data = test_utils.deserialize_array_buffer_response(
-        next(response.response), np.int32)
-    faces = np.tile(self.data[1].faces.reshape(-1), self.steps)
-    self.assertEqual(faces.tolist(), data.tolist())
+    self.validate_data_response(
+      self.runs[0], self.names[1], 0, "FACE", np.int32, self.data[1].faces)
 
-    response = self.server.get(
-        "/data/plugin/mesh/data?run=%s&tag=%s&sample=%d&content_type=%s" %
-        (self.runs[0], self.names[2], 0, "COLOR"))
-    self.assertEqual(200, response.status_code)
-    data = test_utils.deserialize_array_buffer_response(
-        next(response.response), np.uint8)
-    colors = np.tile(self.data[2].colors.reshape(-1), self.steps)
-    self.assertListEqual(colors.tolist(), data.tolist())
+    # Validate that the same summary has mesh with different number of faces at
+    # different step=1.
+    self.validate_data_response(
+      self.runs[0], self.names[1], 0, "FACE", np.int32, self.data[2].faces,
+        step=1)
+
+    self.validate_data_response(
+      self.runs[0], self.names[2], 0, "COLOR", np.uint8, self.data[3].colors)
 
   def testMetadataRoute(self):
     """Tests that the /meshes route returns correct metadata for meshes."""
@@ -191,18 +202,18 @@ class MeshPluginTest(tf.test.TestCase):
                         plugin_data_pb2.MeshPluginData.VERTEX)
     self.assertAllEqual(metadata[0]["data_shape"], self.data[0].vertices.shape)
 
-  def testsEventsAlwaysSortedByWallTime(self):
-    """Tests that events always sorted by wall time."""
+  def testsEventsAlwaysSortedByStep(self):
+    """Tests that events always sorted by step."""
     response = self.server.get(
         "/data/plugin/mesh/meshes?run=%s&tag=%s&sample=%d" %
         (self.runs[0], self.names[1], 0))
     self.assertEqual(200, response.status_code)
     metadata = test_utils.deserialize_json_response(response.get_data())
     for i in range(1, self.steps):
-      # Timestamp will be equal when two tensors of different content type
-      #  belong to the same mesh.
-      self.assertLessEqual(metadata[i - 1]["wall_time"],
-                           metadata[i]["wall_time"])
+      # Step will be equal when two tensors of different content type
+      # belong to the same mesh.
+      self.assertLessEqual(metadata[i - 1]["step"],
+                           metadata[i]["step"])
 
   @mock.patch.object(
       event_multiplexer.EventMultiplexer,

@@ -35,17 +35,18 @@ limitations under the License.
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-storage/tf-storage.html">
 <link rel="import" href="./tf-inference-panel.html">
 <link rel="import" href="../tf-tensorboard/plugin-dialog.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../vz-bar-chart/vz-bar-chart.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
 <link rel="import" href="./tf-confusion-matrix.html">
 <link rel="import" href="./tf-inference-viewer.html">
 <link rel="import" href="../facets-dive/components/facets-dive/facets-dive.html">
@@ -75,6 +76,10 @@ limitations under the License.
         font-family: 'Roboto', 'Noto', sans-serif;
         --paper-tab-ink: var(--tb-orange-dark);
         --wit-color-gray300: #DADCE0;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       #classification {
@@ -160,6 +165,10 @@ limitations under the License.
         margin-top: 4px;
       }
 
+      .datapoint-right-controls-holder .control {
+        flex-shrink: 0;
+      }
+
       .button {
         font-size: 13px;
         margin: 10px 0 0 0;
@@ -184,6 +193,17 @@ limitations under the License.
         width: 150px;
         min-width: 150px;
         padding-right: 16px;
+        --paper-input-container-input: {
+          font-size: 14px;
+          color: #3C4043;
+        }
+      }
+
+      .counterfactual-dropdown {
+        display: inline-block;
+        width: 100px;
+        min-width: 50px;
+        padding-right: 5px;
         --paper-input-container-input: {
           font-size: 14px;
           color: #3C4043;
@@ -388,6 +408,7 @@ limitations under the License.
       .datapoint-right-controls-holder {
         display: flex;
         flex-direction: row-reverse;
+        overflow: hidden;
       }
 
       .tf-category-pane {
@@ -405,7 +426,7 @@ limitations under the License.
         background: white;
       }
 
-      :host vz-line-chart {
+      :host vz-line-chart2 {
         margin: 12px 12px 12px 24px;
         height: 180px;
         width: 300px;
@@ -724,7 +745,8 @@ limitations under the License.
         color: #5F6368;
         white-space: nowrap;
         overflow: hidden;
-        padding-top: 16px;
+        text-overflow: ellipsis;
+        padding-top: 20px;
       }
 
       .example-id-label {
@@ -1006,6 +1028,10 @@ limitations under the License.
         margin-left: 30px;
       }
 
+      .scroll-x {
+        overflow-x: auto;
+      }
+
       .perf-table-clickable {
         cursor: pointer;
       }
@@ -1260,7 +1286,7 @@ limitations under the License.
         <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
       </paper-radio-group>
       <paper-dropdown-menu label="Apply to datapoints visualization" class="threshold-dropdown distance-vis-dropdown">
-        <paper-listbox class="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
+        <paper-listbox slot="dropdown-content" selected="{{facetDistSetting}}" attr-for-selected="name">
           <paper-item name="colorBy">Color By</paper-item>
           <paper-item name="horizontalFacet">X-Axis Binning</paper-item>
           <paper-item name="verticalFacet">Y-Axis Binning</paper-item>
@@ -1287,10 +1313,10 @@ limitations under the License.
                   </paper-tabs>
                 </div>
                 <div class="datapoint-right-controls-holder">
-                  <a target="_blank" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
+                  <a target="_blank" class="control" href="https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/interactive_inference/README.md">
                     <paper-icon-button icon="help-outline" class="settings-button" title="What-If Tool documentation"></paper-icon-button>
                   </a>
-                  <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
+                  <paper-icon-button icon="settings" on-tap="settingsClicked_" class="settings-button control" title="What-If Tool settings" disabled$="[[local]]"></paper-icon-button>
                   <div class="example-status">[[exampleStatusStr]]</div>
                 </div>
               </div>
@@ -1322,6 +1348,13 @@ limitations under the License.
                               <paper-radio-button name="L1">L1</paper-radio-button>
                               <paper-radio-button name="L2">L2</paper-radio-button>
                             </paper-radio-group>
+                            <paper-dropdown-menu label="Model:" no-label-float class="counterfactual-dropdown" hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]">
+                              <paper-listbox class="dropdown-content" selected="{{nearestCounterfactualModelIndex}}">
+                                <template is="dom-repeat" items="[[parsedModelNames]]">
+                                  <paper-item>[[getCounterfactualModelName_(item)]]</paper-item>
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
                             <paper-icon-button icon="info-outline" class="info-icon cf-info-icon no-padding" on-tap="openDialog">
                             </paper-icon-button>
                             <paper-dialog class="dialog-text" horizontal-align="auto" vertical-align="auto">
@@ -1386,7 +1419,7 @@ limitations under the License.
                             <paper-input value="{{featureSearchValue}}" label="Search features"
                                 class="datapoint-control-filter-input feature-search-input"
                                 disabled$="[[!hasSelected(selectedExampleAndInference)]]" no-label-float>
-                              <iron-icon icon="icons:search" prefix></iron-icon>
+                              <iron-icon icon="icons:search" slot="prefix"></iron-icon>
                             </paper-input>
                           </div>
                           <div class="datapoint-right-controls-holder">
@@ -1465,7 +1498,7 @@ limitations under the License.
                       <iron-icon icon="av:pause" class="resize-icon"></iron-icon>
                     </div>
                   </div>
-                  <div class="center" id="center">
+                  <div class="center" slot="center" id="center">
                     <facets-dive id="dive" data="[[visdata]]"
                                 selected-indices="[[selected]]"
                                 compared-indices="[[comparedIndices]]"
@@ -1479,7 +1512,7 @@ limitations under the License.
                     <div id="noexamples" class="noexamples info-text">
                       Datapoints and their inference results will be displayed here.
                     </div>
-                    <paper-spinner-lite id="spinner" hidden active></paper-spinner-lite>
+                    <paper-spinner-lite id="spinner" hidden="[[spinnerHidden_]]" active></paper-spinner-lite>
                     <div class="feature-container-holder" id="partialplotholder">
                       <div class="pd-plots-header">
                         <div class="flex">
@@ -1575,7 +1608,7 @@ limitations under the License.
                         <template is="dom-if" if="[[shouldShowLabelDropdown_(stats)]]">
                           <div class="flex">
                             <paper-dropdown-menu label="Ground Truth Feature" class="threshold-dropdown">
-                              <paper-listbox class="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
+                              <paper-listbox slot="dropdown-content" selected="{{selectedLabelFeature}}" attr-for-selected="name">
                                 <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                   <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                 </template>
@@ -1625,7 +1658,7 @@ limitations under the License.
                           <template is="dom-if" if="[[shouldShowFeatureDropdown_(stats)]]">
                             <div class="flex">
                               <paper-dropdown-menu label="Slice by" class="threshold-dropdown">
-                                <paper-listbox class="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
+                                <paper-listbox slot="dropdown-content" selected="{{selectedBreakdownFeature}}" attr-for-selected="name">
                                   <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                     <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                   </template>
@@ -1641,7 +1674,7 @@ limitations under the License.
                             <div class="flex">
                               <template is="dom-if" if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]">
                                 <paper-dropdown-menu label="Slice by (secondary)" class="threshold-dropdown">
-                                  <paper-listbox class="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
+                                  <paper-listbox slot="dropdown-content" selected="{{selectedSecondBreakdownFeature}}" attr-for-selected="name">
                                     <template is="dom-repeat" items="[[getFeatureList_(stats)]]">
                                       <paper-item name="[[item]]">[[getFeatureName_(item)]]</paper-item>
                                     </template>
@@ -1770,7 +1803,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -1821,7 +1854,7 @@ limitations under the License.
                               <div class="perf-table-threshold">
                                 <template is="dom-repeat" items="{{featureValueThreshold.threshold}}">
                                     <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
+                                      value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-immediate-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                     </paper-slider>
                                 </template>
                               </div>
@@ -1875,10 +1908,10 @@ limitations under the License.
                                   </div>
                                   <div class="roc-x-label">False positive rate</div>
                                   <div class="roc-y-label">True positive rate</div>
-                                  <vz-line-chart id="[[getRocChartId(index)]]" class="pr-line-chart"
+                                  <vz-line-chart2 id="[[getRocChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                                 <div class="curve-holder">
                                   <div class="roc-text">PR curve
@@ -1893,10 +1926,10 @@ limitations under the License.
                                   </div>
                                   <div class="pr-x-label">Recall</div>
                                   <div class="pr-y-label">Precision</div>
-                                  <vz-line-chart id="[[getPrChartId(index)]]" class="pr-line-chart"
+                                  <vz-line-chart2 id="[[getPrChartId(index)]]" class="pr-line-chart"
                                       x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                       y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                  </vz-line-chart>
+                                  </vz-line-chart2>
                                 </div>
                               </div>
                             </template>
@@ -1919,7 +1952,7 @@ limitations under the License.
                             <div class="perf-table-threshold">
                               <template is="dom-repeat" items="{{overallThresholds}}">
                                   <paper-slider class$="[[getSliderClass(index)]]" editable=true min="0" max="1" step="0.01" immediate-value="{{item.threshold}}"
-                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
+                                    value="[[item.threshold]]" on-value-changed="refreshInferencesNoRegen_" on-immediate-value-changed="refreshInferencesNoRegen_" on-down="resetOptimizationSelected_">
                                   </paper-slider>
                               </template>
                             </div>
@@ -1972,10 +2005,10 @@ limitations under the License.
                                 </div>
                                 <div class="roc-x-label">False positive rate</div>
                                 <div class="roc-y-label">True positive rate</div>
-                                <vz-line-chart id="rocchart" class="pr-line-chart"
+                                <vz-line-chart2 id="rocchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
+                                </vz-line-chart2>
                               </div>
                               <div class="curve-holder">
                                 <div class="roc-text">PR curve
@@ -1990,10 +2023,10 @@ limitations under the License.
                                 </div>
                                 <div class="pr-x-label">Recall</div>
                                 <div class="pr-y-label">Precision</div>
-                                <vz-line-chart id="prchart" class="pr-line-chart"
+                                <vz-line-chart2 id="prchart" class="pr-line-chart"
                                     x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                     y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]">
-                                </vz-line-chart>
+                                </vz-line-chart2>
                               </div>
                             </div>
                           </template>
@@ -2023,7 +2056,7 @@ limitations under the License.
                           </paper-icon-button>
                         </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                          <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                          <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                             <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                               <paper-item name="[[item]]">[[item]]</paper-item>
                             </template>
@@ -2063,7 +2096,7 @@ limitations under the License.
                           </div>
                         </div>
                         <iron-collapse opened="{{featureValueThreshold.opened}}">
-                          <div class="perf-table-entry-expanded flex-row-reverse">
+                          <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                             <div>
                               <template is="dom-if" if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                                 <div class="conf-matrix-holder">
@@ -2106,7 +2139,7 @@ limitations under the License.
                             </div>
                           </div>
                         </div>
-                        <div class="perf-table-entry-expanded flex-row-reverse">
+                        <div class="perf-table-entry-expanded flex-row-reverse scroll-x">
                           <template is="dom-if" if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]">
                             <div class="conf-matrix-holder">
                               <div class="conf-text">Confusion matrix</div>
@@ -2137,7 +2170,7 @@ limitations under the License.
                         </paper-dialog>
                       </div>
                         <paper-dropdown-menu label="Sort by" class="threshold-dropdown perf-table-sort-menu">
-                        <paper-listbox class="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
+                        <paper-listbox slot="dropdown-content" selected="{{selectedFeatureSort}}" attr-for-selected="name">
                           <template is="dom-repeat" items="[[getFeatureSortBy(modelType, multiClass)]]">
                             <paper-item name="[[item]]">[[item]]</paper-item>
                           </template>
@@ -2149,8 +2182,11 @@ limitations under the License.
                       <div class="perf-table-val">Feature Value</div>
                       <div class="perf-table-count">Count</div>
                       <div class="perf-table-error">Mean error</div>
+                      <div class="perf-table-error">Median error</div>
                       <div class="perf-table-error">Mean absolute error</div>
+                      <div class="perf-table-error">Median absolute error</div>
                       <div class="perf-table-sq-error">Mean squared error</div>
+                      <div class="perf-table-sq-error">Median squared error</div>
                     </div>
                     <div class="perf-table-entries-holder">
                       <template is="dom-repeat" items="[[regressionEntries_]]">
@@ -2165,10 +2201,19 @@ limitations under the License.
                               [[formatError(item.meanError)]]
                             </div>
                             <div class="perf-table-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.medianError)]]
+                            </div>
+                            <div class="perf-table-error perf-table-num-entry perf-table-text-entry">
                               [[formatError(item.meanAbsError)]]
                             </div>
                             <div class="perf-table-sq-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.medianAbsError)]]
+                            </div>
+                            <div class="perf-table-error perf-table-num-entry perf-table-text-entry">
                               [[formatError(item.meanSquaredError)]]
+                            </div>
+                            <div class="perf-table-sq-error perf-table-num-entry perf-table-text-entry">
+                              [[formatError(item.medianSquaredError)]]
                             </div>
                           </div>
                         </div>
@@ -2368,6 +2413,11 @@ limitations under the License.
           value: '',
           observer: 'labelFeatureSelected_',
         },
+        // Choose which model is used for counterfactual computation
+        nearestCounterfactualModelIndex: {
+          type: Number,
+          value: 0,
+        },
         // Calculated statistics from the inference results.
         inferenceStats_: {
           type: Array,
@@ -2530,7 +2580,6 @@ limitations under the License.
         nearestCounterfactualDist: {
           type: String,
           value: "L1",
-          observer: 'nearestCounterfactualDistChanged_',
         },
         visMode: {
           type: String,
@@ -2568,7 +2617,6 @@ limitations under the License.
         showNearestCounterfactual: {
           type: Boolean,
           value: false,
-          observer: 'showNearestCounterfactualChanged_',
         },
         selectedFeatureSort: {
           type: String,
@@ -2626,11 +2674,17 @@ limitations under the License.
         allConfMatrixLabels: {
           type: Array,
           value: () => ([]),
-        }
+        },
+        // Controls if the loading spinner is hidden from view.
+        spinnerHidden_: {
+          type: Boolean,
+          value: true,
+        },
       },
 
       observers: [
         'setFacetDistFeatureName(facetDistSwitch, selected)',
+        'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)'
       ],
 
       // Required function.
@@ -2751,7 +2805,7 @@ limitations under the License.
             ' distance to datapoint ' + selected[0];
       },
 
-      showNearestCounterfactualChanged_: function(show) {
+      nearestCounterfactualStatusChanged_: function(show) {
         if (show) {
           this.findClosestCounterfactual_();
         } else {
@@ -2763,17 +2817,11 @@ limitations under the License.
         }
       },
 
-      nearestCounterfactualDistChanged_: function() {
-        if (this.showNearestCounterfactual) {
-          this.findClosestCounterfactual_();
-        }
-      },
-
-      // TODO (tolgab) Update for model comparison
       findClosestCounterfactual_: function() {
         const selected = this.selected[0];
         const modelInferenceValueStr =
-            this.strWithModelName_(inferenceValueStr, 0);
+            this.strWithModelName_(inferenceValueStr,
+                                   this.nearestCounterfactualModelIndex);
         let closestDist = Number.POSITIVE_INFINITY;
         let closest = -1;
         for (let i = 0; i < this.visdata.length; i++) {
@@ -2968,6 +3016,10 @@ limitations under the License.
 
       shouldShowLabelDropdown_: function(stats) {
         return stats && Object.keys(stats).length > 0;
+      },
+
+      shouldHideCounterfactualModelSelector_: function(modelNames) {
+        return !(modelNames && modelNames.length > 1);
       },
 
       shouldShowOverallPrChart_: function(selectedLabelFeature,
@@ -3461,19 +3513,40 @@ limitations under the License.
             return b.meanAbsError - a.meanAbsError;
           } else if (this.selectedFeatureSort == 'Mean squared error') {
             return b.meanSquaredError - a.meanSquaredError;
+          } else if (this.selectedFeatureSort == 'Median error') {
+            return b.medianError - a.medianError;
+          } else if (this.selectedFeatureSort == 'Median absolute error') {
+            return b.medianAbsError - a.medianAbsError;
+          } else if (this.selectedFeatureSort == 'Median squared error') {
+            return b.medianSquaredError - a.medianSquaredError;
           }
         });
       },
 
       fillInRegressionStats: function(regressionStats, name) {
         // From initial regression stats having regression error per example,
-        // calculate mean error, mean abs error, and mean squared error.
+        // calculate error statistics.
         function mean(data) {
           const sum = data.reduce((sum, value) => {
             return sum + value;
           }, 0);
 
           return sum / data.length;
+        }
+        function median(data) {
+          if (data.length == 0) {
+            return NaN;
+          }
+          const sortedData = data.sort((a, b) => a - b);
+          const midIndex = sortedData.length / 2;
+          if (sortedData.length == 1) {
+            return sortedData[0];
+          } else if (sortedData.length % 2 == 0) {
+            return sortedData[midIndex];
+          } else {
+            return (sortedData[Math.floor(midIndex)] +
+                    sortedData[Math.ceil(midIndex)]) / 2;
+          }
         }
 
         const absErrors = regressionStats.errors.map(err => Math.abs(err));
@@ -3484,6 +3557,9 @@ limitations under the License.
           meanError: mean(regressionStats.errors),
           meanAbsError: mean(absErrors),
           meanSquaredError: mean(squaredErrors),
+          medianError: median(regressionStats.errors),
+          medianAbsError: median(absErrors),
+          medianSquaredError: median(squaredErrors),
           count: regressionStats.errors.length
         };
       },
@@ -3627,6 +3703,7 @@ limitations under the License.
         else if (selection == 'equalopp') {
           this.equalOppoClicked_();
         }
+        this.updateInferenceStats_(true);
       },
 
       costRatioChanged_: function() {
@@ -4164,6 +4241,10 @@ limitations under the License.
         return feature;
       },
 
+      getCounterfactualModelName_: function(modelName) {
+        return 'Model: ' + modelName;
+      },
+
       getClassName_: function(cls) {
         // If class name is blank then this represents selecting no class.
         if (cls.length === 0) {
@@ -4279,7 +4360,7 @@ limitations under the License.
       },
 
       newInferences_: function() {
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.updateInferences_(true);
         requestAnimationFrame(() => this.updateInferenceStats_(true));
       },
@@ -4410,6 +4491,9 @@ limitations under the License.
               : this.strWithModelName_(inferenceValueStr, 0);
           if (this.isRegression_(this.modelType)) {
             this.$.dive.horizontalPosition = this.strWithModelName_(inferenceValueStr, 0);
+            if (this.numModels > 1) {
+              this.$.dive.verticalPosition = this.strWithModelName_(inferenceValueStr, 1);
+            }
           }
           else if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             if (this.numModels == 1) {
@@ -4433,7 +4517,8 @@ limitations under the License.
           // TODO(jwexler): Support attributions from multiple models.
           // For now, we only display attribution from the first model, if WIT
           // is loaded with two models.
-          const attribs = attributions.attributions[0][i];
+          const attribs = attributions.attributions[0] == null ? {} :
+              attributions.attributions[0][i];
           const keys = Object.keys(attribs);
           for (let j = 0; j < keys.length; j++) {
             // If the attributions for a key is a 2D array then treat the first
@@ -4555,16 +4640,16 @@ limitations under the License.
                              'use_predict': this.usePredictApi,
                              'predict_output_tensor': this.predictOutputTensor,
                              'predict_input_tensor': this.predictInputTensor};
-        this.$.spinner.hidden = false;
+        this.spinnerHidden_ = false;
         if (!this.local) {
           const url = this.makeUrl_('/data/plugin/whatif/infer',
               inferParams);
           const inferContents = result => {
-            this.$.spinner.hidden = true;
+            this.spinnerHidden_ = true;
             this.labelVocab = /** @type {!Array} */ (JSON.parse(result.value.vocab));
             this.inferences = /** @type {!Object} */ (JSON.parse(result.value.inferences));
           };
-          this.makeAsyncRequest_(url, inferContents, null);
+          this.makeAsyncRequest_(url, inferContents, null, 'model inference');
         }
         this.fire('infer-examples', inferParams);
       },
@@ -4648,7 +4733,8 @@ limitations under the License.
           var url = this.makeUrl_('/data/plugin/whatif/update_example', null);
 
           this.makeAsyncRequest_(url, null, {'example': exampleJson,
-                                              'index': index});
+                                             'index': index},
+                                 'datapoint update');
         }
       },
 
@@ -4676,16 +4762,20 @@ limitations under the License.
         console.error(msg);
       },
 
+      handleError: function(errorStr) {
+        this.showToast_(errorStr);
+        this.exampleStatusStr = errorStr;
+        this.spinnerHidden_ = true;
+      },
+
       makeAsyncRequest_: function(
-          url, thenDoFn, postData, errorFn = () => {}) {
+          url, thenDoFn, postData, readableRequestName, errorFn = () => {}) {
         const wrapperFn = this._canceller.cancellable(result => {
           if (result.cancelled) {
             return;
           }
           if (result.value && result.value.error){
-            // show toast with the error
-            this.showToast_(result.value.error);
-            this.$.spinner.hidden = true;
+            this.handleError(result.value.error);
             if (errorFn != null) {
               errorFn();
             }
@@ -4695,9 +4785,8 @@ limitations under the License.
         });
         this._requestManager.request(url, postData).then(wrapperFn)
             .catch(reason => {
-              this.exampleStatusStr = 'Request failed';
-              this.showToast_('Request failed: ' + reason);
-              this.$.spinner.hidden = true;
+              this.handleError(
+                  `Request for ${readableRequestName} failed: ${reason}`);
               if (errorFn != null) {
                 errorFn();
               }
@@ -4807,7 +4896,7 @@ limitations under the License.
       updateExampleContents: function(examples, hasSprite) {
         this.exampleStatusStr = examples.length + ' datapoints loaded';
         this.$.noexamples.style.display = 'none';
-        this.$.spinner.hidden = true;
+        this.spinnerHidden_ = true;
         this.examplesAndInferences = examples.map(function(ex) {
           const example = JSON.parse(ex);
           return {example: example, changed: false, orig: JSON.parse(ex)};});
@@ -4880,8 +4969,8 @@ limitations under the License.
             result.value.examples, result.value.sprite);
         };
         this.exampleStatusStr = 'Loading datapoints...'
-        this.makeAsyncRequest_(url, updateExampleContents, null);
-        this.$.spinner.hidden = false;
+        this.makeAsyncRequest_(url, updateExampleContents, null, 'datapoint load');
+        this.spinnerHidden_ = false;
       },
 
       updateSprite: function() {
@@ -4935,7 +5024,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/duplicate_example',
             {'index': duplicatedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDuplicate, null, 'datapoint duplication');
         } else {
           this.refreshDive_();
         }
@@ -4970,7 +5059,7 @@ limitations under the License.
           };
           const url = this.makeUrl_('/data/plugin/whatif/delete_example',
             {'index': deletedIndex});
-          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null);
+          this.makeAsyncRequest_(url, refreshDiveAfterDelete, null, 'datapoint delete');
         } else {
           this.refreshDive_();
         }
@@ -5008,10 +5097,41 @@ limitations under the License.
        */
       addChart: function(chartType, featureName, data){
         let chart;
+        let dataToChart = data;
+
+        // If multiclass and there are more inferred classes than the set
+        // number of classes to display, then filter the classes to display
+        // in the chart down to the top scoring classes.
+        if (this.isMultiClass_(this.modelType, this.multiClass)) {
+          dataToChart = [];
+          for (let modelIdx = 0; modelIdx < data.length; modelIdx++) {
+            let modelDataToChart = {};
+            if (Object.keys(data[modelIdx]).length >
+                Number(this.maxInferenceEntriesPerRun)) {
+              const exampleId = this.selected &&
+                this.selected.length > 0 ? this.selected[0] : 0;
+              // Get the class labels of the top scoring classes from the most
+              // recent inference.
+              const currentExample = this.examplesAndInferences[exampleId];
+              const lastInference = currentExample.inferences[
+                currentExample.inferences.length - 1];
+              const labels = lastInference[modelIdx].slice(
+                0, this.maxInferenceEntriesPerRun);
+              for (let labelIdx = 0; labelIdx < labels.length; labelIdx++) {
+                const label = labels[labelIdx].label;
+                modelDataToChart[label] = data[modelIdx][label];
+              }
+            } else {
+              modelDataToChart = data[modelIdx];
+            }
+            dataToChart.push(modelDataToChart);
+          }
+        }
+
         if (chartType == 'numeric'){
-          chart = this.makeLineChart(featureName, data);
+          chart = this.makeLineChart(featureName, dataToChart);
         } else if (chartType == 'categorical'){
-          chart = this.makeBarChart(featureName, data);
+          chart = this.makeBarChart(featureName, dataToChart);
         } else {
           console.error('Unknown chartType: ' + chartType);
         }
@@ -5189,7 +5309,7 @@ limitations under the License.
 
         const holder = document.createElement('div');
         holder.classList.add('pd-holder');
-        const chart = document.createElement('vz-line-chart');
+        const chart = document.createElement('vz-line-chart2');
         const colorScale = [];
         const thresholdSeries = [];
         const valueFormatter = vz_chart_helpers.multiscaleFormatter(
@@ -5341,16 +5461,6 @@ limitations under the License.
         return {step: origValue, scalar: origInferenceScore};
       },
 
-      showToast: function(msg) {
-        const toast = document.createElement('paper-toast');
-        document.body.appendChild(toast);
-        toast.text = msg;
-        toast.show();
-
-        // Also, log to console.
-        console.error(msg);
-      },
-
       deletePdPlotSpinner: function(featureName) {
         const container = this.featureContainerByName(featureName);
         deleteElement(container.querySelector('paper-spinner-lite'));
@@ -5407,7 +5517,7 @@ limitations under the License.
           }
           this.makeAsyncRequest_(
             url, chartMakerCallback.bind(this), null,
-            chartErrorCallback.bind(this));
+            'plot creation', chartErrorCallback.bind(this));
         } else {
           this.fire('infer-mutants', urlParams);
         }
@@ -5597,7 +5707,7 @@ limitations under the License.
           const setEligibleFields = result => {
             this.set('partialDepPlotEligibleFeatures', result.value);
           };
-          this.makeAsyncRequest_(url, setEligibleFields, null);
+          this.makeAsyncRequest_(url, setEligibleFields, null, 'plot setup');
         } else {
           this.fire('get-eligible-features');
         }
@@ -5748,7 +5858,9 @@ limitations under the License.
           sorts = sorts.concat(['Accuracy']);
         } else {
           sorts = sorts.concat(
-            ['Mean error', 'Mean absolute error', 'Mean squared error']);
+            ['Mean error', 'Median error', 'Mean absolute error',
+             'Median absolute error', 'Mean squared error',
+             'Median squared error']);
         }
         return sorts;
       },
@@ -5795,6 +5907,9 @@ limitations under the License.
        },
     });
 
+    // TODO(#2338): Remove this, and set up a "no TF" message properly.
+    // Keep this in sync with `frontend_metadata` in
+    // `interactive_inference_plugin.py`.
     tf_tensorboard.registerDashboard({
       plugin: PLUGIN_NAME,
       elementName: 'tf-interactive-inference-dashboard',

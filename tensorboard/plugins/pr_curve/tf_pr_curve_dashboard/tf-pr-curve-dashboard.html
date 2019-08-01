@@ -15,15 +15,15 @@ limitations under the License.
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
 <link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/dashboard-style.html">
 <link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
 <link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
+<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
 <link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
 <link rel="import" href="../tf-tensorboard/registry.html">
 <link rel="import" href="../tf-utils/tf-utils.html">
@@ -37,7 +37,7 @@ limitations under the License.
 <dom-module id="tf-pr-curve-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <tf-option-selector
             id="time-type-selector"
@@ -62,9 +62,8 @@ limitations under the License.
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
-       </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No precision–recall curve data was found.</h3>
@@ -92,29 +91,21 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-pr-curve-card
-                          runs="[[item.runs]]"
-                          tag="[[item.tag]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
-                          request-manager="[[_requestManager]]"
-                          run-to-step-cap="[[_runToStep]]"
-                          active="[[page.active]]"
-                        ></tf-pr-curve-card>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-pr-curve-card
+                  active="[[active]]"
+                  runs="[[item.runs]]"
+                  tag="[[item.tag]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
+                  request-manager="[[_requestManager]]"
+                  run-to-step-cap="[[_runToStep]]"
+                ></tf-pr-curve-card>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -145,8 +136,14 @@ limitations under the License.
         type: String,
         value: 'step',
       },
-      _selectedRuns: Array,
-      _runToTagInfo: Object,
+      _selectedRuns: {
+        type: Array,
+        value: () => [],
+      },
+      _runToTagInfo: {
+        type: Object,
+        value: () => ({}),
+      },
       // The steps that the step slider for each run should use.
       _runToAvailableTimeEntries: {
         type: Object, // map<run: string, steps: number[]>
@@ -235,7 +232,7 @@ limitations under the License.
       });
     },
     _reloadCards() {
-      _.forEach(this.querySelectorAll('tf-pr-curve-card'), card => {
+      _.forEach(this.root.querySelectorAll('tf-pr-curve-card'), card => {
         card.reload();
       });
     },
@@ -259,12 +256,6 @@ limitations under the License.
       const defaultDisplayName = tag.replace(/\/pr_curves$/, '');
       return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
     },
-  });
-
-  tf_tensorboard.registerDashboard({
-    plugin: 'pr_curves',
-    elementName: 'tf-pr-curve-dashboard',
-    tabName: 'PR Curves',
   });
 
   </script>

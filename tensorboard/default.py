@@ -50,7 +50,6 @@ from tensorboard.plugins.interactive_inference import (
 )
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin_loader
-from tensorboard.plugins.projector import projector_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
@@ -58,22 +57,23 @@ from tensorboard.plugins.mesh import mesh_plugin
 
 logger = logging.getLogger(__name__)
 
+# Ordering matters. The order in which these lines appear determines the
+# ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
     core_plugin.CorePluginLoader(),
-    beholder_plugin_loader.BeholderPluginLoader(),
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
     audio_plugin.AudioPlugin,
+    debugger_plugin_loader.DebuggerPluginLoader(),
     graphs_plugin.GraphsPlugin,
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
-    pr_curves_plugin.PrCurvesPlugin,
-    projector_plugin.ProjectorPlugin,
     text_plugin.TextPlugin,
-    interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
+    pr_curves_plugin.PrCurvesPlugin,
     profile_plugin_loader.ProfilePluginLoader(),
-    debugger_plugin_loader.DebuggerPluginLoader(),
+    beholder_plugin_loader.BeholderPluginLoader(),
+    interactive_inference_plugin_loader.InteractiveInferencePluginLoader(),
     hparams_plugin_loader.HParamsPluginLoader(),
     mesh_plugin.MeshPlugin,
 ]

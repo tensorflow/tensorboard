@@ -20,8 +20,8 @@ limitations under the License.
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
 <link rel="import" href="../tf-card-heading/tf-card-heading.html">
@@ -41,8 +41,8 @@ limitations under the License.
   <div id="tf-line-chart-data-loader-container">
     <tf-line-chart-data-loader
       active="[[active]]"
-      color-scale="[[_getColorScale(multiExperiments, colorScale)]]"
-      data-series="[[_getDataSeries(multiExperiments, dataToLoad.*)]]"
+      color-scale="[[_getColorScale(colorScale)]]"
+      data-series="[[_getDataSeries(dataToLoad.*)]]"
       data-to-load="[[dataToLoad]]"
       get-data-load-name="[[_getDataLoadName]]"
       get-data-load-url="[[getDataLoadUrl]]"
@@ -113,11 +113,11 @@ limitations under the License.
       width: 330px;
     }
 
-    :host[_expanded] {
+    :host([_expanded]) {
       width: 100%;
     }
 
-    :host[_expanded] #tf-line-chart-data-loader-container {
+    :host([_expanded]) #tf-line-chart-data-loader-container {
       height: 400px;
     }
 
@@ -194,8 +194,6 @@ limitations under the License.
          * @type {vz_chart_helpers.XType}
          */
         xType: String,
-
-        multiExperiments: Boolean,
 
         active: Boolean,
         ignoreYOutliers: Boolean,
@@ -332,9 +330,7 @@ limitations under the License.
       },
       // title is a visible string of a series for the UI.
       _getSeriesDisplayNameFromDatum(datum) {
-        return this.multiExperiments ?
-            `${datum.experiment.name}/${datum.run}` :
-            datum.run;
+        return datum.run;
       },
       _getColorScale() {
         if (this.colorScale !== null) {
@@ -345,9 +341,7 @@ limitations under the License.
         return {
           scale: (name) => {
             const [exp, run] = JSON.parse(name);
-            return this.multiExperiments ?
-                tf_color_scale.experimentsColorScale(exp) :
-                tf_color_scale.runsColorScale(run);
+            return tf_color_scale.runsColorScale(run);
           },
         };
       }

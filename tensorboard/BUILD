@@ -24,6 +24,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":default",
+        ":dynamic_plugins",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
@@ -159,6 +160,7 @@ py_library(
     srcs = ["test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_absl_testing_absltest_installed",
         "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
@@ -186,10 +188,16 @@ py_library(
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
-        "//tensorboard/plugins/projector:projector_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
+    ],
+)
+
+py_library(
+    name = "dynamic_plugins",
+    deps = [
+        "//tensorboard/plugins/projector:projector_plugin",
     ],
 )
 
@@ -282,6 +290,14 @@ py_library(
 
 py_library(
     name = "expect_absl_logging_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_absl_testing_absltest_installed",
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
     # `pip install absl-py`

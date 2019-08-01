@@ -284,7 +284,7 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     }
 
     const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    colors.array = this.renderColors;
+    (colors as any).setArray(this.renderColors);
 
     const n = pointColors.length / XYZ_ELEMENTS_PER_ENTRY;
     let src = 0;
@@ -331,7 +331,7 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     this.material.uniforms.texture.value = this.glyphTexture.texture;
     this.material.uniforms.picking.value = true;
     const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    colors.array = this.pickingColors;
+    (colors as any).setArray(this.pickingColors);
     colors.needsUpdate = true;
   }
 
@@ -346,7 +346,7 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     this.material.uniforms.texture.value = this.glyphTexture.texture;
     this.material.uniforms.picking.value = false;
     const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    colors.array = this.renderColors;
+    (colors as any).setArray(this.renderColors);
     colors.needsUpdate = true;
   }
 

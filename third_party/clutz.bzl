@@ -49,25 +49,25 @@ def deprecated_extract_dts_from_closure_libraries(ctx):
   js = collect_js(deps, ctx.files._closure_library_base)
   if not js.srcs:
     return None
-  js_typings = ctx.new_file(ctx.bin_dir, "%s-js-typings.d.ts" % ctx.label.name)
+  js_typings = ctx.actions.declare_file("%s-js-typings.d.ts" % ctx.label.name)
   # File.extension does not have leading "." whereas JS_FILE_TYPE does.
   clutz_js_externs = [f for f in ctx.files._clutz_externs
                       if '.%s' % f.extension in JS_FILE_TYPE]
   srcs = depset(transitive=[depset(clutz_js_externs), js.srcs])
   args = ["-o", js_typings.path]
-  for src in srcs:
+  for src in srcs.to_list():
     args.append(src.path)
   if getattr(ctx.attr, "clutz_entry_points", None):
     args.append("--closure_entry_points")
     args.extend(ctx.attr.clutz_entry_points)
-  ctx.action(
-      inputs=list(srcs),
+  ctx.actions.run(
+      inputs=srcs,
       outputs=[js_typings],
       executable=ctx.executable._clutz,
       arguments=args,
       mnemonic="Clutz",
       progress_message="Running Clutz on %d JS files %s" % (
-          len(srcs), ctx.label))
+          len(srcs.to_list()), ctx.label))
   return js_typings
 
 ################################################################################

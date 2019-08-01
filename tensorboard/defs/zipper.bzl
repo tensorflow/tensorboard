@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Rule for zipping Webfiles."""
+
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
 
 def _tensorboard_zip_file(ctx):
@@ -23,13 +25,14 @@ def _tensorboard_zip_file(ctx):
     manifests = depset(transitive=[manifests, dep.webfiles.manifests])
     webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
     files = depset(transitive=[files, dep.data_runfiles.files])
-  ctx.action(
+  ctx.actions.run(
+      mnemonic="Zipper",
       inputs=depset(transitive=[manifests, files]).to_list(),
       outputs=[ctx.outputs.zip],
       executable=ctx.executable._Zipper,
       arguments=([ctx.outputs.zip.path] +
-                 [m.path for m in manifests]),
-      progress_message="Zipping %d files" % len(webpaths))
+                 [m.path for m in manifests.to_list()]),
+      progress_message="Zipping %d files" % len(webpaths.to_list()))
   transitive_runfiles = depset()
   for dep in deps:
     transitive_runfiles = depset(transitive=[

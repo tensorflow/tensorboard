@@ -26,4 +26,7 @@ message MeshPluginData {
 
   // Shape of underlying data. Cache it here for performance reasons.
   repeated int32 shape = 6;
+
+  // Bitmask of all existing components in addition current component.
+  uint32 components = 7;
 }

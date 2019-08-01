@@ -83,6 +83,13 @@ class HParamsPlugin(base_plugin.TBPlugin):
     return bool(self._context.multiplexer.PluginRunToTagToContent(
         metadata.PLUGIN_NAME))
 
+  def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
+    return super(HParamsPlugin, self).frontend_metadata()._replace(
+        element_name='tf-hparams-dashboard',
+    )
+
   # ---- /experiment -----------------------------------------------------------
   @wrappers.Request.application
   def get_experiment_route(self, request):

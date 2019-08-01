@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 
 <!--
 Display a warning when there is no data found.
@@ -29,16 +29,16 @@ Display a warning when there is no data found.
         </h3>
         <p>
           Probable causes:
-          <ul>
-            <li>
-              You haven't written any <span>[[dataType]]</span> data
-              to your event files.
-            </li>
-            <li>
-              TensorBoard can't find your event files.
-            </li>
-          </ul>
         </p>
+        <ul>
+          <li>
+            You haven't written any <span>[[dataType]]</span> data
+            to your event files.
+          </li>
+          <li>
+            TensorBoard can't find your event files.
+          </li>
+        </ul>
         <p>
           If you're new to using TensorBoard, and want to find out how to add
           data and set up your event files, check out the

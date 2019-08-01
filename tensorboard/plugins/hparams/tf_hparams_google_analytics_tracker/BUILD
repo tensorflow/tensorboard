@@ -32,8 +32,8 @@ tf_web_library(
     path = "/tf-hparams-google-analytics-tracker",
     deps = [
         ":tf_hparams_google_analytics_tracker",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
     ],
 )
 
@@ -44,6 +44,6 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_google_analytics_tracker"],
     destdir = "tf-hparams-google-analytics-tracker",
     deps = [
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//tensorboard/components/tf_imports:polymer_lib",
     ],
 )

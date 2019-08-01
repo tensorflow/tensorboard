@@ -17,7 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-color-scale/tf-color-scale.html">
 <link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
@@ -71,10 +71,10 @@ Properties out:
     </template>
     <style>
       :host {
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         padding-bottom: 10px;
-        box-sizing: border-box;
       }
       #top-text {
         width: 100%;
@@ -88,6 +88,7 @@ Properties out:
         display: flex;
         flex-grow: 1;
         flex-shrink: 1;
+        overflow: hidden;
       }
       .x-button {
         font-size: 13px;
