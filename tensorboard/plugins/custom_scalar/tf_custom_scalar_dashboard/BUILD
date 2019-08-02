@@ -40,7 +40,7 @@ tf_web_library(
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
-        "@org_polymer_paper_menu",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_styles",
     ],

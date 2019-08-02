@@ -14,8 +14,6 @@
 
 """Same as web_library but supports TypeScript."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
 load("//third_party:clutz.bzl",
      "DEPRECATED_CLUTZ_ATTRIBUTES",
      "DEPRECATED_CLUTZ_OUTPUTS",
@@ -113,10 +111,8 @@ def _tf_web_library(ctx):
       execroot.inputs.append(entry)
     elif suffix.endswith(".ts"):
       noext = suffix[:-3]
-      js = ctx.actions.declare_file(paths.join(
-          ctx.genfiles_dir.path, "%s.js" % noext))
-      dts = ctx.actions.declare_file(paths.join(
-          ctx.genfiles_dir.path, "%s.d.ts" % noext))
+      js = ctx.actions.declare_file("%s.js" % noext)
+      dts = ctx.actions.declare_file("%s.d.ts" % noext)
       webpath_js = webpath[:-3] + ".js"
       webpath_dts = webpath[:-3] + ".d.ts"
       _add_webpath(ctx, js, webpath_js, webpaths, new_webpaths, manifest_srcs)
@@ -160,7 +156,7 @@ def _tf_web_library(ctx):
                 moduleResolution="node",
                 skipLibCheck=True,
                 noResolve=True,
-                target="es5",
+                target="es6",
             ),
             files=ts_files,
         ).to_json())
@@ -189,6 +185,7 @@ def _tf_web_library(ctx):
             [er_config.path] +
             [f.path for f in ts_typings_execroots.to_list()]
         ),
+        mnemonic="Tsc",
         progress_message="Compiling %d TypeScript files %s" % (
             len(ts_files), ctx.label))
 
@@ -334,8 +331,7 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
   return dummy, manifests
 
 def _new_file(ctx, suffix):
-  return ctx.actions.declare_file(paths.join(
-      ctx.bin_dir.path, "%s%s" % (ctx.label.name, suffix)))
+  return ctx.actions.declare_file("%s%s" % (ctx.label.name, suffix))
 
 def _add_webpath(ctx, src, webpath, webpaths, new_webpaths, manifest_srcs):
   if webpath in new_webpaths:

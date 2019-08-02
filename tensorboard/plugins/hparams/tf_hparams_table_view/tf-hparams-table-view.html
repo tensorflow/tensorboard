@@ -23,7 +23,7 @@ the user to expand rows to show graphs of the metrics associated with the
 session group.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-imports/vaadin-grid.html">
 <link rel="import" href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html">
 <link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
@@ -36,7 +36,7 @@ session group.
                  items="[[sessionGroups]]">
       <vaadin-grid-column flex-grow="0" width="10em" resizable>
         <template class="header">
-          <div class="table-header table-cell">Session Group Name.</div>
+          <div class="table-header table-cell">Trial ID</div>
         </template>
         <template>
           <div class="table-cell">[[item.name]]</div>
@@ -171,7 +171,7 @@ session group.
       _metricName: tf.hparams.utils.metricName,
 
       _sessionGroupHParam(sessionGroup, hparam) {
-        if (sessionGroup === null ||
+        if (sessionGroup == null ||
             !Object.prototype.hasOwnProperty.call(sessionGroup.hparams,
                                                   hparam)) {
           return "";

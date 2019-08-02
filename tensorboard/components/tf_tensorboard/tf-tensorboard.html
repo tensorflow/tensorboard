@@ -20,10 +20,11 @@ limitations under the License.
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-toolbar/paper-toolbar.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-globals/tf-globals.html">
@@ -53,10 +54,11 @@ limitations under the License.
         min="1"
         step="1"
         on-change="_paginationLimitChanged"
+        on-value-changed="_paginationLimitValidate"
       ></paper-input>
     </paper-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar" slot="header">
+      <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
           <div class="toolbar-title">[[brand]]</div>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
@@ -94,9 +96,9 @@ limitations under the License.
                 noink
                 style="margin-left: 12px"
               >
-                <paper-menu
+                <paper-listbox
                   id="inactive-dashboards-menu"
-                  class="dropdown-content"
+                  slot="dropdown-content"
                   selected="{{_selectedDashboard}}"
                   attr-for-selected="data-dashboard"
                 >
@@ -113,7 +115,7 @@ limitations under the License.
                       >[[dashboardDatum.tabName]]</paper-item>
                     </template>
                   </template>
-                </paper-menu>
+                </paper-listbox>
               </paper-dropdown-menu>
             </template>
           </template>
@@ -260,7 +262,7 @@ limitations under the License.
         --paper-dropdown-menu-icon: {
           color: white;
         }
-        --paper-input-container-input: {
+        --paper-dropdown-menu-input: {
           -webkit-font-smoothing: antialiased;
           font-size: 14px;
           font-weight: 500;
@@ -272,6 +274,13 @@ limitations under the License.
           font-weight: 500;
           text-transform: uppercase;
         }
+      }
+
+      paper-dropdown-menu paper-item {
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
       }
 
       #inactive-dashboards-menu {
@@ -858,7 +867,7 @@ limitations under the License.
         const onDomChange = () => {
           // This will trigger an observer that kicks off everything.
           const dashboardContainersStamped = {};
-          for (const container of this.querySelectorAll('.dashboard-container')) {
+          for (const container of this.root.querySelectorAll('.dashboard-container')) {
             dashboardContainersStamped[container.dataset.dashboard] = true;
           }
           this._dashboardContainersStamped = dashboardContainersStamped;
@@ -871,6 +880,8 @@ limitations under the License.
       },
 
       _computeActiveDashboard() {
+        if (!this._dashboardData) return [];
+
         return this._dashboardData
             .map((d) => d.plugin)
             .filter((dashboardName) => {
@@ -1063,12 +1074,15 @@ limitations under the License.
         this.$.settings.open();
         this.$.paginationLimitInput.value = tf_paginated_view.getLimit();
       },
+      _paginationLimitValidate(event) {
+        event.target.validate();
+      },
       _paginationLimitChanged(e) {
-        const value = e.target.valueAsNumber;
+        const value = Number.parseInt(e.target.value, 10);
         // We set type="number" and min="1" on the input, but Polymer
         // doesn't actually enforce those, so we have to check manually.
         if (value === +value && value > 0) {
-          tf_paginated_view.setLimit(e.target.valueAsNumber);
+          tf_paginated_view.setLimit(value);
         }
       },
     });

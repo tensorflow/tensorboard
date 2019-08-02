@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html">
 <link rel="import" href="../tf-hparams-query-pane/tf-hparams-query-pane.html">
 <link rel="import" href="../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html">
 <link rel="import" href="../tf-hparams-google-analytics-tracker/tf-hparams-google-analytics-tracker.html">
@@ -37,7 +37,7 @@ TODO(erez): Add aggregation of repeated trials.
 <dom-module id="tf-hparams-main">
   <template>
     <vaadin-split-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <tf-hparams-query-pane
           id="query-pane"
           backend="[[backend]]"
@@ -46,7 +46,7 @@ TODO(erez): Add aggregation of repeated trials.
           session-groups="{{_sessionGroups}}">
         </tf-hparams-query-pane>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <tf-hparams-sessions-pane
           id="sessions-pane"
           backend="[[backend]]"

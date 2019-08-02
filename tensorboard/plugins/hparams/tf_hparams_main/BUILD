@@ -30,10 +30,10 @@ tensorboard_webcomponent_library(
     visibility = ["//tensorboard/plugins/hparams/external_users:whitelist"],
     destdir = "tf-hparams-main",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_google_analytics_tracker:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_query_pane:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_sessions_pane:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

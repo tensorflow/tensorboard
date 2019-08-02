@@ -8,8 +8,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_line_chart2",
     srcs = [
-        "line-chart-exporter.ts",
         "line-chart.ts",
+        "line-chart-exporter.ts",
         "linear-scale.ts",
         "log-scale.ts",
         "panZoomDragLayer.html",
@@ -34,9 +34,9 @@ tensorboard_webcomponent_library(
     srcs = [":vz_line_chart2"],
     destdir = "vz-line-chart2",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_chart_helpers:legacy",
         "//tensorboard/components/vz_line_chart:dragZoomInteraction_legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

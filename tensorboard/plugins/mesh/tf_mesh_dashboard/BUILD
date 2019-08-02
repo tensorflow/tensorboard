@@ -32,10 +32,9 @@ tf_web_library(
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
+        "@org_polymer_paper_radio_group",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",
         "@org_polymer_paper_toggle_button",
-        "@org_polymer_paper_radio_group",
     ],
 )
-

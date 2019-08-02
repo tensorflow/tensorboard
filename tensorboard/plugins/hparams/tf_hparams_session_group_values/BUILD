@@ -25,8 +25,8 @@ tensorboard_webcomponent_library(
     visibility = ["//visibility:public"],
     destdir = "tf-hparams-session-group-values",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/hparams/tf_hparams_table_view:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

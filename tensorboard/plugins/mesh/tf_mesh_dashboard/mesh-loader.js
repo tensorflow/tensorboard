@@ -108,8 +108,9 @@ Polymer({
   },
 
   observers: [
-    'reload(run, tag, active, _dataProvider)',
-    '_updateScene(_currentStep)',
+    'reload(run, tag, active, _dataProvider, _meshViewer)',
+    '_updateScene(_currentStep.*, _meshViewer)',
+    '_debouncedFetchMesh(_currentStep)',
     '_updateView(selectedView)'
   ],
 
@@ -127,12 +128,12 @@ Polymer({
     // sometimes)
     this._dataProvider = new vz_mesh.ArrayBufferDataProvider(
         this.requestManager);
-    this._meshViewer = new vz_mesh.MeshViewer(this._runColor);
-    this._meshViewer.addEventListener(
+    const meshViewer = new vz_mesh.MeshViewer(this._runColor);
+    meshViewer.addEventListener(
         'beforeUpdateScene', this._updateCanvasSize.bind(this));
-    this._meshViewer.addEventListener(
+    meshViewer.addEventListener(
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
-    this.reload();
+    this._meshViewer = meshViewer;
   },
 
   /**
@@ -147,13 +148,8 @@ Polymer({
       if (!steps) return;  // Happens when request was cancelled at some point.
       this.set('_steps', steps);
       this.set('_stepIndex', steps.length - 1);
-      this.set('_isMeshLoading', false);
-      if (!this._meshViewerAttached) {
-        // Mesh viewer should be added to the dom once.
-        this.appendChild(this._meshViewer.getRenderer().domElement);
-        this._meshViewerAttached = true;
-      }
-    }).catch((error) => {
+    })
+    .catch((error) => {
       if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
         error = error || 'Response processing failed.';
         throw new Error(error);
@@ -163,14 +159,53 @@ Polymer({
 
   /**
    * Updates the scene.
-   * @param {!Object} currentStep Step datum.
    * @private
    */
-  _updateScene: function(currentStep) {
+  _updateScene: function() {
+    const currentStep = this._currentStep;
+    // Mesh data is not fetched yet. Please see `_maybeFetchMesh`.
+    if (!currentStep || !currentStep.mesh) return;
+
     this._meshViewer.updateScene(currentStep, this);
     if (!this._cameraPositionInitialized) {
       this._meshViewer.resetView();
       this._cameraPositionInitialized = true;
+    }
+    if (!this._meshViewerAttached) {
+      // Mesh viewer should be added to the dom once.
+      this.root.appendChild(this._meshViewer.getRenderer().domElement);
+      this._meshViewerAttached = true;
+    }
+  },
+
+  _debouncedFetchMesh() {
+    this.debounce('fetchMesh', () => this._maybeFetchMesh(), 100);
+  },
+
+  async _maybeFetchMesh() {
+    const currentStep = this._currentStep;
+    if (!currentStep || currentStep.mesh || currentStep.meshFetching) return;
+    currentStep.meshFetching = true;
+    this._isMeshLoading = true;
+
+    try {
+      const meshData = await this._dataProvider.fetchData(
+        currentStep,
+        this.run,
+        this.tag,
+        this.sample,
+        this._stepIndex,
+      );
+      currentStep.mesh = meshData[0];
+      this.notifyPath('_currentStep.mesh');
+    } catch (error) {
+      if (!error || !error.code || error.code != vz_mesh.ErrorCodes.CANCELLED) {
+        error = error || 'Response processing failed.';
+        throw new Error(error);
+      }
+    } finally {
+      this._isMeshLoading = false;
+      currentStep.meshFetching = false;
     }
   },
 

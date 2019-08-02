@@ -31,10 +31,10 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_color_scale:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card_legacy",
-        "//third_party/javascript/polymer/v1/iron-flex-layout:lib",
-        "//third_party/javascript/polymer/v1/iron-resizable-behavior:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//third_party/javascript/polymer/v2/iron-flex-layout:lib",
+        "//third_party/javascript/polymer/v2/iron-resizable-behavior:lib",
     ],
 )

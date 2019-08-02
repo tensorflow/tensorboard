@@ -25,8 +25,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_scatter_plot_matrix_plot"],
     destdir = "tf-hparams-scatter-plot-matrix-plot",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

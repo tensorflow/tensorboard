@@ -36,8 +36,8 @@ tf_web_library(
     path = "/vz-example-viewer",
     deps = [
         ":vz_example_viewer",
+        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_styles",
     ],
 )
 
@@ -49,4 +49,3 @@ tensorboard_html_binary(
     output_path = "/vz-example-viewer/demo.html",
     deps = [":demo"],
 )
-

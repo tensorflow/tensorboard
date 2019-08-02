@@ -249,6 +249,13 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
+> **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+> now be used to poll all "active" files in a directory for new data, rather
+> than the most recent one as described below. A file is "active" as long as it
+> received new data within `--reload_multifile_inactive_secs` seconds ago,
+> defaulting to 4000. You may need to install our nightly build
+> [`tb-nightly`][tb-nightly] for this option to be available.
+
 This issue usually comes about because of how TensorBoard iterates through the
 `tfevents` files: it progresses through the events file in timestamp order, and
 only reads one file at a time. Let's suppose we have files with timestamps `a`
@@ -259,6 +266,12 @@ more recent file. This could cause an issue if, for example, you have two
 multiple summary writers, each one should be writing to a separate directory.
 
 ### Does TensorBoard support multiple or distributed summary writers?
+
+> **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+> now be used to poll all "active" files in a directory for new data, defined as
+> any file that received new data within `--reload_multifile_inactive_secs`
+> seconds ago, defaulting to 4000. You may need to install our nightly build
+> [`tb-nightly`][tb-nightly] for this option to be available.
 
 No. TensorBoard expects that only one events file will be written to at a time,
 and multiple summary writers means multiple events files. If you are running a
@@ -274,6 +287,12 @@ with itself, there are a few possible explanations.
 
 * You may have multiple execution of TensorFlow that all wrote to the same log
 directory. Please have each TensorFlow run write to its own logdir.
+
+  > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
+  > now be used to poll all "active" files in a directory for new data, defined
+  > as any file that received new data within `--reload_multifile_inactive_secs`
+  > seconds ago, defaulting to 4000. You may need to install our nightly build
+  > [`tb-nightly`][tb-nightly] for this option to be available.
 
 * You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
@@ -352,6 +371,14 @@ This is because by default, TensorBoard serves on host `0.0.0.0` which is
 publicly accessible. You can stop the popups by specifying `--host localhost` at
 startup.
 
+### Can I run `tensorboard` without a TensorFlow installation?
+
+TensorBoard 1.14+ can be run with a reduced feature set if you do not have
+TensorFlow installed. The primary limitation is that as of 1.14, only the
+following plugins are supported: scalars, custom scalars, image, audio,
+graph, projector (partial), distributions, histograms, text, PR curves, mesh.
+In addition, there is no support for log directories on Google Cloud Storage.
+
 ### How can I contribute to TensorBoard development?
 
 See [DEVELOPMENT.md](DEVELOPMENT.md).
@@ -372,3 +399,5 @@ information as you can provide (e.g. attaching events files, including the outpu
 of `tensorboard --inspect`, etc.).
 
 [stack-overflow]: https://stackoverflow.com/questions/tagged/tensorboard
+[pr-1867]: https://github.com/tensorflow/tensorboard/pull/1867
+[tb-nightly]: https://pypi.org/project/tb-nightly/
