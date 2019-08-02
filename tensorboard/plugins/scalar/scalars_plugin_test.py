@@ -19,8 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
 import collections
 import csv
+import functools
 import os.path
 
 from six import StringIO
@@ -28,10 +30,12 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import test_util
@@ -58,21 +62,19 @@ class ScalarsPluginTest(tf.test.TestCase):
 
   def __init__(self, *args, **kwargs):
     super(ScalarsPluginTest, self).__init__(*args, **kwargs)
-    self.logdir = None
-    self.plugin = None
+    self.plugin = None  # used by DB tests only
 
-  def set_up_with_runs(self, run_names):
-    self.logdir = self.get_temp_dir()
+  def load_runs(self, run_names):
+    logdir = self.get_temp_dir()
     for run_name in run_names:
-      self.generate_run(run_name)
+      self.generate_run(logdir, run_name)
     multiplexer = event_multiplexer.EventMultiplexer(size_guidance={
         # don't truncate my test data, please
         event_accumulator.TENSORS: self._STEPS,
     })
-    multiplexer.AddRunsFromDirectory(self.logdir)
+    multiplexer.AddRunsFromDirectory(logdir)
     multiplexer.Reload()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    self.plugin = scalars_plugin.ScalarsPlugin(context)
+    return (logdir, multiplexer)
 
   def set_up_db(self):
     self.db_path = os.path.join(self.get_temp_dir(), 'db.db')
@@ -108,15 +110,32 @@ class ScalarsPluginTest(tf.test.TestCase):
           sess.run(summaries, feed_dict=feed_dict)
         sess.run(flush_op)
 
-  def testRoutesProvided(self):
-    """Tests that the plugin offers the correct routes."""
-    self.set_up_with_runs([self._RUN_WITH_SCALARS])
-    routes = self.plugin.get_plugin_apps()
-    self.assertIsInstance(routes['/scalars'], collections.Callable)
-    self.assertIsInstance(routes['/tags'], collections.Callable)
+  def with_runs(run_names):
+    """Run a test with a bare multiplexer and with a `data_provider`."""
+    def decorator(fn):
+      @functools.wraps(fn)
+      def wrapper(self, *args, **kwargs):
+        (logdir, multiplexer) = self.load_runs(run_names)
+        with self.subTest('bare multiplexer'):
+          ctx = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+          fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
+        with self.subTest('generic data provider'):
+          flags = argparse.Namespace(
+              generic_data=frozenset([metadata.PLUGIN_NAME])
+          )
+          provider = data_provider.MultiplexerDataProvider(multiplexer)
+          ctx = base_plugin.TBContext(
+              flags=flags,
+              logdir=logdir,
+              multiplexer=multiplexer,
+              data_provider=provider,
+          )
+          fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
+      return wrapper
+    return decorator
 
-  def generate_run(self, run_name):
-    subdir = os.path.join(self.logdir, run_name)
+  def generate_run(self, logdir, run_name):
+    subdir = os.path.join(logdir, run_name)
     with test_util.FileWriterCache.get(subdir) as writer:
       for step in xrange(self._STEPS):
         placeholder = [1 + step, 2 + step, 3 + step]
@@ -139,10 +158,15 @@ class ScalarsPluginTest(tf.test.TestCase):
           assert False, 'Invalid run name: %r' % run_name
         writer.add_summary(summ, global_step=step)
 
-  def test_index(self):
-    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS,
-                           self._RUN_WITH_SCALARS,
-                           self._RUN_WITH_HISTOGRAM])
+  @with_runs([])
+  def testRoutesProvided(self, plugin):
+    """Tests that the plugin offers the correct routes."""
+    routes = plugin.get_plugin_apps()
+    self.assertIsInstance(routes['/scalars'], collections.Callable)
+    self.assertIsInstance(routes['/tags'], collections.Callable)
+
+  @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
+  def test_index(self, plugin):
     self.assertEqual({
         self._RUN_WITH_LEGACY_SCALARS: {
             self._LEGACY_SCALAR_TAG: {
@@ -157,28 +181,25 @@ class ScalarsPluginTest(tf.test.TestCase):
             },
         },
         # _RUN_WITH_HISTOGRAM omitted: No scalar data.
-    }, self.plugin.index_impl())
+    }, plugin.index_impl())
 
-  def _test_scalars_json(self, run_name, tag_name, should_work=True):
-    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS,
-                           self._RUN_WITH_SCALARS,
-                           self._RUN_WITH_HISTOGRAM])
+  @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
+  def _test_scalars_json(self, plugin, run_name, tag_name, should_work=True):
     if should_work:
-      (data, mime_type) = self.plugin.scalars_impl(
+      (data, mime_type) = plugin.scalars_impl(
           tag_name, run_name, None, scalars_plugin.OutputFormat.JSON)
       self.assertEqual('application/json', mime_type)
       self.assertEqual(len(data), self._STEPS)
     else:
       with self.assertRaises(KeyError):
-        self.plugin.scalars_impl(self._SCALAR_TAG, run_name, None,
-                                 scalars_plugin.OutputFormat.JSON)
+        plugin.scalars_impl(
+            self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.JSON
+        )
 
-  def _test_scalars_csv(self, run_name, tag_name, should_work=True):
-    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS,
-                           self._RUN_WITH_SCALARS,
-                           self._RUN_WITH_HISTOGRAM])
+  @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
+  def _test_scalars_csv(self, plugin, run_name, tag_name, should_work=True):
     if should_work:
-      (data, mime_type) = self.plugin.scalars_impl(
+      (data, mime_type) = plugin.scalars_impl(
           tag_name, run_name, None, scalars_plugin.OutputFormat.CSV)
       self.assertEqual('text/csv', mime_type)
       s = StringIO(data)
@@ -187,8 +208,9 @@ class ScalarsPluginTest(tf.test.TestCase):
       self.assertEqual(len(list(reader)), self._STEPS)
     else:
       with self.assertRaises(KeyError):
-        self.plugin.scalars_impl(self._SCALAR_TAG, run_name, None,
-                                 scalars_plugin.OutputFormat.CSV)
+        plugin.scalars_impl(
+            self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.CSV
+        )
 
   def test_scalars_json_with_legacy_scalars(self):
     self._test_scalars_json(self._RUN_WITH_LEGACY_SCALARS,
@@ -214,23 +236,21 @@ class ScalarsPluginTest(tf.test.TestCase):
     self._test_scalars_csv(self._RUN_WITH_HISTOGRAM, self._HISTOGRAM_TAG,
                            should_work=False)
 
-  def test_active_with_legacy_scalars(self):
-    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS])
-    self.assertTrue(self.plugin.is_active())
+  @with_runs([_RUN_WITH_LEGACY_SCALARS])
+  def test_active_with_legacy_scalars(self, plugin):
+    self.assertTrue(plugin.is_active())
 
-  def test_active_with_scalars(self):
-    self.set_up_with_runs([self._RUN_WITH_SCALARS])
-    self.assertTrue(self.plugin.is_active())
+  @with_runs([_RUN_WITH_SCALARS])
+  def test_active_with_scalars(self, plugin):
+    self.assertTrue(plugin.is_active())
 
-  def test_active_with_histogram(self):
-    self.set_up_with_runs([self._RUN_WITH_HISTOGRAM])
-    self.assertFalse(self.plugin.is_active())
+  @with_runs([_RUN_WITH_HISTOGRAM])
+  def test_active_with_histogram(self, plugin):
+    self.assertFalse(plugin.is_active())
 
-  def test_active_with_all(self):
-    self.set_up_with_runs([self._RUN_WITH_LEGACY_SCALARS,
-                           self._RUN_WITH_SCALARS,
-                           self._RUN_WITH_HISTOGRAM])
-    self.assertTrue(self.plugin.is_active())
+  @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
+  def test_active_with_all(self, plugin):
+    self.assertTrue(plugin.is_active())
 
   @test_util.run_v1_only('Requires contrib for db writer')
   def test_scalars_db_without_exp(self):
