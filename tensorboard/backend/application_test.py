@@ -352,7 +352,7 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
       application.TensorBoardWSGIApp(
           temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
     else:
-      with six.assertRaisesRegex(self, ValueError, r'[Ii]nvalid route'):
+      with six.assertRaisesRegex(self, ValueError, r'invalid route'):
         application.TensorBoardWSGIApp(
             temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
 
