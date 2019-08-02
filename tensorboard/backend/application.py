@@ -40,6 +40,7 @@ from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
+from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -141,7 +142,13 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     # DB read-only mode, never load event logs.
     reload_interval = -1
   plugin_name_to_instance = {}
+  data_provider = None
+  if flags.generic_data:
+    if not flags.logdir:
+      raise base_plugin.FlagsError('--generic_data requires --logdir')
+    data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
   context = base_plugin.TBContext(
+      data_provider=data_provider,
       db_module=db_module,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,

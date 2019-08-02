@@ -151,6 +151,7 @@ class TBContext(object):
   def __init__(
       self,
       assets_zip_provider=None,
+      data_provider=None,
       db_connection_provider=None,
       db_module=None,
       db_uri=None,
@@ -171,6 +172,8 @@ class TBContext(object):
           handle this function returns must be closed. It is assumed that you
           will pass this file handle to zipfile.ZipFile. This zip file should
           also have been created by the tensorboard_zip_file build rule.
+      data_provider: Instance of `tensorboard.data.provider.DataProvider`, or
+          `None`.
       db_connection_provider: Function taking no arguments that returns a
           PEP-249 database Connection object, or None if multiplexer should be
           used instead. The returned value must be closed, and is safe to use in
@@ -198,6 +201,7 @@ class TBContext(object):
       window_title: A string specifying the window title.
     """
     self.assets_zip_provider = assets_zip_provider
+    self.data_provider = data_provider
     self.db_connection_provider = db_connection_provider
     self.db_module = db_module
     self.db_uri = db_uri

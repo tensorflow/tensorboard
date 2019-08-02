@@ -483,6 +483,18 @@ it receives new data at least once per hour)\
 ''')
 
     parser.add_argument(
+        '--generic_data',
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
+        default=False,
+        help='''\
+[experimental] Use generic data provider infrastructure. Only compatible
+with `--logdir` loading for now.
+''')
+
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',
