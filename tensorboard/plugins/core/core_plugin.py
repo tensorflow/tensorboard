@@ -483,6 +483,17 @@ it receives new data at least once per hour)\
 ''')
 
     parser.add_argument(
+        '--generic_data',
+        type=lambda s: frozenset(x for x in s.split(',') if x),
+        default=frozenset(),
+        help='''\
+[experimental] Use generic data provider infrastructure for plugins in
+this comma-separated list. Currently only has any effect with `--logdir`
+data sources.
+''')
+
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',
