@@ -172,33 +172,56 @@ class RunTagFilter(object):
   def tags(self):
     return self._tags
 
+  def test(self, run, tag):
+    return run in self._runs and tag in self._tags
+
 
 class StepFilter(object):
   """Filters data in a time series by step."""
 
-  def __init__(self, min_step, max_step):
+  def __init__(self, lower_bound, upper_bound):
     """Construct a `StepFilter`.
 
-    Negative values for `min_step` or `max_step` indicate indices from
-    the end of the array, as with Python slicing semantics.
+    Negative values for `lower_bound` or `upper_bound` indicate indices
+    from the end of the array, with the same semantics as Python slices.
 
-    It is valid for `max_step` to be smaller than `min_step`; in this
-    case, if `min_step` and `max_step` are of the same sign, no data
-    will pass this filter.
+    It is valid for `upper_bound` to be smaller than `lower_bound`; in
+    this case, if `lower_bound` and `upper_bound` are of the same sign,
+    no data will pass this filter.
 
     Args:
-      min_step: The minimum step value permitted by this filter,
+      lower_bound: The minimum step value permitted by this filter,
         inclusive. Integer.
-      max_step: The maximum step value permitted by this filter,
+      upper_bound: The maximum step value permitted by this filter,
         inclusive. Integer.
     """
-    self._min_step = min_step
-    self._max_step = max_step
+    self._lower_bound = lower_bound
+    self._upper_bound = upper_bound
 
   @property
-  def min_step(self):
-    return self._min_step
+  def lower_bound(self):
+    return self._lower_bound
 
   @property
-  def max_step(self):
-    return self._max_step
+  def upper_bound(self):
+    return self._upper_bound
+
+  def resolve(self, max_step):
+    """Resolve an actual lower and upper bound for a given time series.
+
+    Args:
+      max_step: The highest step of any event in the time series.
+
+    Returns:
+      A tuple `(lower_bound, upper_bound)` of nonnegative step values.
+    """
+    return (
+        self._resolve_step(max_step, self._lower_bound),
+        self._resolve_step(max_step, self._upper_bound),
+    )
+
+  def _resolve_step(self, max_step, step):
+    if step >= 0:
+      return step
+    else:
+      return max(0, max_step - ~step)

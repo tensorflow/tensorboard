@@ -31,6 +31,17 @@ py_test(
 )
 
 py_library(
+    name = "data_provider",
+    srcs = ["data_provider.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/data:provider",
+        "//tensorboard/util:tensor_util",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "directory_loader",
     srcs = ["directory_loader.py"],
     srcs_version = "PY2AND3",
