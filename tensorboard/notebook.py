@@ -399,7 +399,7 @@ def _display_colab(port, height, display_handle):
 def _display_ipython(port, height, display_handle):
   import IPython.display
 
-  frame_id = "tensorboard-frame-{:08x}".format(random.randrange(0, 1 << 64))
+  frame_id = "tensorboard-frame-{:08x}".format(random.getrandbits(64))
   shell = """
       <iframe id="%HTML_ID%" width="100%" height="%HEIGHT%" frameborder="0">
       </iframe>
