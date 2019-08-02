@@ -14,22 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store, select} from '@ngrx/store';
-import {State, getActivePlugin} from './core/core.reducers';
-import {changePlugin} from './core/core.actions';
-import {PluginId} from './types/api';
+
+import {State, getActivePlugin} from '../../core/core.reducers';
+
+import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'tf-ng-tensorboard',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
 })
-export class AppComponent {
+export class HeaderComponent {
+  activePlugin$ = this.store.pipe(select(getActivePlugin));
   constructor(private store: Store<State>) {}
-
-  ngOnInit() {
-    // TODO(stephanwlee): Instead of hardcoding it, consider reading it off of the
-    // tf_dashboard.registry. It is current infeasible unless Angular source is also
-    // compiled with JSCompiler.
-    this.store.dispatch(changePlugin({plugin: 'meowth'}));
-  }
 }

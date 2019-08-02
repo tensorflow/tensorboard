@@ -12,17 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {enableProdMode} from '@angular/core';
-import {platformBrowser} from '@angular/platform-browser';
-import {AppModuleNgFactory} from './app.module.ngfactory';
-import 'zone.js/dist/zone.js'; // Angular runtime dep
+import {createAction, props} from '@ngrx/store';
+import {PluginId} from '../types/api';
 
-// TODO(stephanwlee): Create dev mode and conditionally enable this.
-enableProdMode();
+// HACK: Below import is for type inference.
+// https://github.com/bazelbuild/rules_nodejs/issues/1013
+import * as _typeHackModels from '@ngrx/store/src/models';
 
-// Bootstrap needs to happen after body is ready but we cannot reliably
-// controls the order in which script gets loaded (Vulcanization inlines
-// the script in <head>).
-window.addEventListener('DOMContentLoaded', () => {
-  platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);
-});
+type ChangePluginProps = {plugin: PluginId};
+
+export const changePlugin = createAction(
+  'CHANGE_PLUGIN',
+  props<ChangePluginProps>()
+);
