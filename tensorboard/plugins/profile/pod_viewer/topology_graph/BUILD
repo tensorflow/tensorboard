@@ -8,7 +8,7 @@ tf_web_library(
     name = "topology_graph",
     srcs = [
         "topology-graph.html",
-        "topology-graph.js",
+        "topology-graph.ts",
     ],
     path = "/pod-viewer",
     deps = [

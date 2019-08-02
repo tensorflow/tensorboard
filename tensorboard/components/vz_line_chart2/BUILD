@@ -8,15 +8,15 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_line_chart2",
     srcs = [
-        "line-chart.js",
-        "line-chart-exporter.js",
-        "linear-scale.js",
-        "log-scale.js",
+        "line-chart.ts",
+        "line-chart-exporter.ts",
+        "linear-scale.ts",
+        "log-scale.ts",
         "panZoomDragLayer.html",
-        "panZoomDragLayer.js",
-        "tf-scale.js",
+        "panZoomDragLayer.ts",
+        "tf-scale.ts",
         "vz-line-chart2.html",
-        "vz-line-chart2.js",
+        "vz-line-chart2.ts",
     ],
     path = "/vz-line-chart2",
     deps = [

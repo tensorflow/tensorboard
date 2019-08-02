@@ -8,7 +8,7 @@ tf_web_library(
     name = "stack_bar_chart",
     srcs = [
         "stack-bar-chart.html",
-        "stack-bar-chart.js",
+        "stack-bar-chart.ts",
     ],
     path = "/pod-viewer",
     deps = [

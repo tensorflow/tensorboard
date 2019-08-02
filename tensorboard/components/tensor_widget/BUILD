@@ -7,10 +7,10 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tensor_widget",
     srcs = [
-        "health-pill-types.js",
+        "health-pill-types.ts",
         "tensor-widget.html",
-        "tensor-widget.js",
-        "types.js",
+        "tensor-widget.ts",
+        "types.ts",
     ],
     path = "/tensor-widget",
     visibility = ["//visibility:public"],

@@ -8,7 +8,7 @@ tf_web_library(
     name = "memory_viewer_dashboard",
     srcs = [
             "memory-viewer-dashboard.html",
-            "memory-viewer-dashboard.js",
+            "memory-viewer-dashboard.ts",
            ],
     path = "/memory-viewer",
     deps = [

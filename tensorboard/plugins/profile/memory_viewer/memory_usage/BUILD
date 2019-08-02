@@ -8,7 +8,7 @@ tf_web_library(
     name = "memory_usage",
     srcs = [
         "memory-usage.html",
-        "memory-usage.js",
+        "memory-usage.ts",
     ],
     path = "/memory-viewer",
     deps = [

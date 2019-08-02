@@ -10,7 +10,7 @@ tf_web_library(
         "tf-custom-scalar-card-style.html",
         "tf-custom-scalar-dashboard.html",
         "tf-custom-scalar-helpers.html",
-        "tf-custom-scalar-helpers.js",
+        "tf-custom-scalar-helpers.ts",
         "tf-custom-scalar-margin-chart-card.html",
         "tf-custom-scalar-multi-line-chart-card.html",
     ],

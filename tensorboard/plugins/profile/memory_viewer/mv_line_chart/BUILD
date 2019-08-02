@@ -8,7 +8,7 @@ tf_web_library(
     name = "mv_line_chart",
     srcs = [
         "mv-line-chart.html",
-        "mv-line-chart.js",
+        "mv-line-chart.ts",
     ],
     path = "/memory-viewer",
     deps = [

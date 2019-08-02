@@ -8,7 +8,7 @@ tf_web_library(
     name = "buffer_details",
     srcs = [
         "buffer-details.html",
-        "buffer-details.js",
+        "buffer-details.ts",
     ],
     path = "/memory-viewer",
     deps = [

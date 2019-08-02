@@ -8,7 +8,7 @@ tf_web_library(
     name = "pod_viewer_common",
     srcs = [
         "pod-viewer-common.html",
-        "proto.js",
+        "proto.ts",
     ],
     path = "/pod-viewer",
 )

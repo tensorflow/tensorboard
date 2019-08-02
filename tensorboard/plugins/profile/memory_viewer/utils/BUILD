@@ -8,7 +8,7 @@ tf_web_library(
     name = "utils",
     srcs = [
         "utils.html",
-        "utils.js",
+        "utils.ts",
     ],
     path = "/memory-viewer",
 )

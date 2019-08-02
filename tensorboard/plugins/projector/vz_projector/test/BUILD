@@ -18,12 +18,12 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "assert.js",
-        "data-provider_test.js",
-        "data_test.js",
-        "sptree_test.js",
+        "assert.ts",
+        "data-provider_test.ts",
+        "data_test.ts",
+        "sptree_test.ts",
         "tests.html",
-        "util_test.js",
+        "util_test.ts",
         # "scatterPlotRectangleSelector_test.ts",
         # "vz-projector-projections-panel_test.ts",
     ],
