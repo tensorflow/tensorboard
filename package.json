@@ -35,6 +35,7 @@
     "@bazel/ibazel": "^0.10.3",
     "@bazel/typescript": "^0.34.0",
     "@types/node": "^12.6.8",
+    "prettier": "1.18.2",
     "typescript": "~3.4.5"
   },
   "dependencies": {
