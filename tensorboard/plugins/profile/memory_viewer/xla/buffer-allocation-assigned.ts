@@ -11,21 +11,19 @@ limitations under the License.
 ==============================================================================*/
 
 namespace memory_viewer_xla_baa {
+  /**
+   * HLO assigned buffer allocation representation.
+   * @final
+   */
+  export class BufferAllocationAssigned {
+    logicalBufferId: number;
+    offset: number;
+    size: number;
 
-/**
- * HLO assigned buffer allocation representation.
- * @final
- */
-export class BufferAllocationAssigned {
-  logicalBufferId: number;
-  offset: number;
-  size: number;
-
-  constructor(assigned) {
-    this.logicalBufferId = parseInt(assigned.logicalBufferId, 10);
-    this.offset = parseInt(assigned.offset, 10);
-    this.size = parseInt(assigned.size, 10);
+    constructor(assigned) {
+      this.logicalBufferId = parseInt(assigned.logicalBufferId, 10);
+      this.offset = parseInt(assigned.offset, 10);
+      this.size = parseInt(assigned.size, 10);
+    }
   }
-}
-
 } // namespace memory_viewer_xla_baa
