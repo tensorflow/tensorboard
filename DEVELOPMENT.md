@@ -11,8 +11,6 @@ $ source tf/bin/activate
 
 TensorBoard builds are done with [Bazel](https://bazel.build), so you may need to [install Bazel](https://docs.bazel.build/versions/master/install.html). The Bazel build will automatically "vulcanize" all the HTML files and generate a "binary" launcher script. When HTML is vulcanized, it means all the script tags and HTML imports are inlined into one big HTML file. Then the Bazel build puts that index.html file inside a static assets zip. The python HTTP server then reads static assets from that zip while serving.
 
-For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
-
 You can build and run TensorBoard via Bazel (from within the TensorFlow nightly virtualenv) as follows:
 
 ```sh
@@ -21,6 +19,8 @@ You can build and run TensorBoard via Bazel (from within the TensorFlow nightly 
 # Or combine the above steps as:
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
+
+For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
 
 To generate fake log data for a plugin, run its demo script. For instance, this command generates fake scalar data in `/tmp/scalars_demo`:
 
