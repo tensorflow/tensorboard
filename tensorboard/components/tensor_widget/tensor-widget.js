@@ -12,14 +12,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-/**
- * Create an instance of tensor widiget.
- * @param rootElement The element in which the tensor widget will be endered.
- * @param tensor The tensor view of which the content is to be rendered
- *   in the tensor widget.
- * @param options Optional configurations.
- * @returns An instance of a single-tensor tensor widget.
- */
-export function tensorWidget(rootElement, tensor, options) {
-    throw new Error('tensorWidget() factory method has not been implemented yet.');
-}
+(function (factory) {
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === "function" && define.amd) {
+        define("org_tensorflow_tensorboard/tensorboard/components/tensor_widget/tensor-widget", ["require", "exports"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * Create an instance of tensor widiget.
+     * @param rootElement The element in which the tensor widget will be endered.
+     * @param tensor The tensor view of which the content is to be rendered
+     *   in the tensor widget.
+     * @param options Optional configurations.
+     * @returns An instance of a single-tensor tensor widget.
+     */
+    function tensorWidget(rootElement, tensor, options) {
+        throw new Error('tensorWidget() factory method has not been implemented yet.');
+    }
+    exports.tensorWidget = tensorWidget;
+});

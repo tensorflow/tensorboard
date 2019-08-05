@@ -18,11 +18,28 @@ limitations under the License.
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define("org_tensorflow_tensorboard/tensorboard/components/tensor_widget/health-pill-types", ["require", "exports"], factory);
+        define("org_tensorflow_tensorboard/tensorboard/components/tensor_widget/dtype-utils", ["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * Determine if a data type is an integer type.
+     * @param dtype
+     * @return Whether the dtype is an integer type.
+     */
+    function isIntegerDType(dtype) {
+        return (dtype.match(/^int[0-9]+$/) !== null || dtype.match(/^uint[0-9]+$/) !== null);
+    }
+    exports.isIntegerDType = isIntegerDType;
+    /**
+     * Determine if a data type is a float type.
+     * @param dtype
+     * @return Whether the dtype is a float type.
+     */
+    function isFloatDType(dtype) {
+        return (dtype.match(/^float[0-9]+$/) !== null ||
+            dtype.match(/^bfloat[0-9]+$/) !== null);
+    }
+    exports.isFloatDType = isFloatDType;
 });
-// TODO(cais): Add sub-interfaces of `BaseTensorHealthPill` for other tensor
-// dtypes.
