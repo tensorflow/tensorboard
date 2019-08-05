@@ -13,56 +13,60 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_tensorboard {
+  export var AUTORELOAD_LOCALSTORAGE_KEY = 'TF.TensorBoard.autoReloadEnabled';
 
-export var AUTORELOAD_LOCALSTORAGE_KEY = 'TF.TensorBoard.autoReloadEnabled';
+  var getAutoReloadFromLocalStorage: () => boolean = () => {
+    var val = window.localStorage.getItem(AUTORELOAD_LOCALSTORAGE_KEY);
+    return val === 'true' || val == null; // defaults to true
+  };
 
-var getAutoReloadFromLocalStorage: () => boolean = () => {
-  var val = window.localStorage.getItem(AUTORELOAD_LOCALSTORAGE_KEY);
-  return val === 'true' || val == null;  // defaults to true
-};
-
-function forceDisableAutoReload(): boolean {
-  return new URLSearchParams(window.location.search).has('_DisableAutoReload');
-}
-
-/**
- * @polymerBehavior
- */
-export var AutoReloadBehavior = {
-  properties: {
-    autoReloadEnabled: {
-      type: Boolean,
-      observer: '_autoReloadObserver',
-      value: getAutoReloadFromLocalStorage,
-    },
-    _autoReloadId: {
-      type: Number,
-    },
-    autoReloadIntervalSecs: {
-      type: Number,
-      value: 30,
-    },
-  },
-  detached: function() {
-    window.clearTimeout(this._autoReloadId);
-  },
-  _autoReloadObserver: function(autoReload) {
-    window.localStorage.setItem(AUTORELOAD_LOCALSTORAGE_KEY, autoReload);
-    if (autoReload && !forceDisableAutoReload()) {
-      this._autoReloadId = window.setTimeout(
-          () => this._doAutoReload(), this.autoReloadIntervalSecs * 1000);
-    } else {
-      window.clearTimeout(this._autoReloadId);
-    }
-  },
-  _doAutoReload: function() {
-    if (this.reload == null) {
-      throw new Error('AutoReloadBehavior requires a reload method');
-    }
-    this.reload();
-    this._autoReloadId = window.setTimeout(
-        () => this._doAutoReload(), this.autoReloadIntervalSecs * 1000);
+  function forceDisableAutoReload(): boolean {
+    return new URLSearchParams(window.location.search).has(
+      '_DisableAutoReload'
+    );
   }
-};
 
-}  // namespace tf_tensorboard
+  /**
+   * @polymerBehavior
+   */
+  export var AutoReloadBehavior = {
+    properties: {
+      autoReloadEnabled: {
+        type: Boolean,
+        observer: '_autoReloadObserver',
+        value: getAutoReloadFromLocalStorage,
+      },
+      _autoReloadId: {
+        type: Number,
+      },
+      autoReloadIntervalSecs: {
+        type: Number,
+        value: 30,
+      },
+    },
+    detached: function() {
+      window.clearTimeout(this._autoReloadId);
+    },
+    _autoReloadObserver: function(autoReload) {
+      window.localStorage.setItem(AUTORELOAD_LOCALSTORAGE_KEY, autoReload);
+      if (autoReload && !forceDisableAutoReload()) {
+        this._autoReloadId = window.setTimeout(
+          () => this._doAutoReload(),
+          this.autoReloadIntervalSecs * 1000
+        );
+      } else {
+        window.clearTimeout(this._autoReloadId);
+      }
+    },
+    _doAutoReload: function() {
+      if (this.reload == null) {
+        throw new Error('AutoReloadBehavior requires a reload method');
+      }
+      this.reload();
+      this._autoReloadId = window.setTimeout(
+        () => this._doAutoReload(),
+        this.autoReloadIntervalSecs * 1000
+      );
+    },
+  };
+} // namespace tf_tensorboard
