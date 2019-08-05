@@ -13,161 +13,161 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_line_chart2 {
+  // Smallest positive non-zero value represented by IEEE 754 binary (64 bit)
+  // floating-point number.
+  // https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
+  export const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
 
-// Smallest positive non-zero value represented by IEEE 754 binary (64 bit)
-// floating-point number.
-// https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
-export const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
-
-function log(x: number): number {
-  return Math.log10(x);
-}
-
-function pow(x: number): number {
-  return Math.pow(10, x);
-}
-
-/**
- * A logarithmic scale that returns NaN for all non-positive values as it
- * mathematically is supposed to be -Infinity. Also, due to the floating point
- * precision issue, it treats all values smaller than MIN_POSITIVE_VALUE as
- * non-positive. Lastly, if using autoDomain feature and if all values are the
- * same value, it pads 10% of the value.
- */
-export class LogScale extends TfScale {
-  private _d3LogScale = d3.scaleLog();
-  private _untransformedDomain: number[];
-
-  constructor() {
-    super();
-    this.padProportion(.2);
+  function log(x: number): number {
+    return Math.log10(x);
   }
 
-  public scale(x: number): number {
-    // Returning NaN makes sure line plot does not plot illegal values.
-    if (x <= 0) return NaN;
-    return this._d3LogScale(x);
-  }
-
-  public invert(x: number): number {
-    return this._d3LogScale.invert(x);
-  }
-
-  public scaleTransformation(value: number) {
-    return this.scale(value);
-  }
-
-  public invertedTransformation(value: number) {
-    return this.invert(value);
-  }
-
-  public getTransformationDomain(): [number, number] {
-    return this.domain() as [number, number];
-  }
-
-  protected _getDomain() {
-    return this._untransformedDomain;
-  }
-
-  protected _setDomain(values: number[]) {
-    this._untransformedDomain = values;
-    const [min, max] = values;
-    super._setDomain([Math.max(MIN_POSITIVE_VALUE, min), max]);
+  function pow(x: number): number {
+    return Math.pow(10, x);
   }
 
   /**
-   * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
+   * A logarithmic scale that returns NaN for all non-positive values as it
+   * mathematically is supposed to be -Infinity. Also, due to the floating point
+   * precision issue, it treats all values smaller than MIN_POSITIVE_VALUE as
+   * non-positive. Lastly, if using autoDomain feature and if all values are the
+   * same value, it pads 10% of the value.
    */
-  protected _niceDomain(domain: number[], count?: number): number[] {
-    const [low, high] = domain;
-    const adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
-    const logHigh = log(high);
-    const spread = logHigh - adjustedLogLow;
-    const pad = spread ? spread * this.padProportion() : 1;
-    return [
-      pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad)),
-      pow(logHigh + pad),
-    ];
-  }
+  export class LogScale extends TfScale {
+    private _d3LogScale = d3.scaleLog();
+    private _untransformedDomain: number[];
 
-  /**
-   * Generates a possible extent based on data from all plots the scale is
-   * connected to by taking the minimum and maximum values of all extents for
-   * lower and upper bound, respectively.
-   * @override to remove default padding logic.
-   */
-  protected _getUnboundedExtent(ignoreAttachState): number[] {
-    const includedValues = this._getAllIncludedValues(ignoreAttachState);
-    let extent = this._defaultExtent();
-    if (includedValues.length !== 0) {
-      const combinedExtent = [
-        Plottable.Utils.Math.min<number>(includedValues, extent[0]),
-        Plottable.Utils.Math.max<number>(includedValues, extent[1]),
+    constructor() {
+      super();
+      this.padProportion(0.2);
+    }
+
+    public scale(x: number): number {
+      // Returning NaN makes sure line plot does not plot illegal values.
+      if (x <= 0) return NaN;
+      return this._d3LogScale(x);
+    }
+
+    public invert(x: number): number {
+      return this._d3LogScale.invert(x);
+    }
+
+    public scaleTransformation(value: number) {
+      return this.scale(value);
+    }
+
+    public invertedTransformation(value: number) {
+      return this.invert(value);
+    }
+
+    public getTransformationDomain(): [number, number] {
+      return this.domain() as [number, number];
+    }
+
+    protected _getDomain() {
+      return this._untransformedDomain;
+    }
+
+    protected _setDomain(values: number[]) {
+      this._untransformedDomain = values;
+      const [min, max] = values;
+      super._setDomain([Math.max(MIN_POSITIVE_VALUE, min), max]);
+    }
+
+    /**
+     * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
+     */
+    protected _niceDomain(domain: number[], count?: number): number[] {
+      const [low, high] = domain;
+      const adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
+      const logHigh = log(high);
+      const spread = logHigh - adjustedLogLow;
+      const pad = spread ? spread * this.padProportion() : 1;
+      return [
+        pow(Math.max(log(MIN_POSITIVE_VALUE), adjustedLogLow - pad)),
+        pow(logHigh + pad),
       ];
-      extent = this._niceDomain(combinedExtent);
     }
-    return extent;
-  }
 
-  protected _getAllIncludedValues(ignoreAttachState = false): number[] {
-    const values = super._getAllIncludedValues();
-    // For log scale, the value cannot be smaller or equal to 0. They are
-    // negative infinity.
-    return values.map(x => x > 0 ? x : MIN_POSITIVE_VALUE);
-  }
+    /**
+     * Generates a possible extent based on data from all plots the scale is
+     * connected to by taking the minimum and maximum values of all extents for
+     * lower and upper bound, respectively.
+     * @override to remove default padding logic.
+     */
+    protected _getUnboundedExtent(ignoreAttachState): number[] {
+      const includedValues = this._getAllIncludedValues(ignoreAttachState);
+      let extent = this._defaultExtent();
+      if (includedValues.length !== 0) {
+        const combinedExtent = [
+          Plottable.Utils.Math.min<number>(includedValues, extent[0]),
+          Plottable.Utils.Math.max<number>(includedValues, extent[1]),
+        ];
+        extent = this._niceDomain(combinedExtent);
+      }
+      return extent;
+    }
 
-  protected _defaultExtent(): number[] {
-    return [1, 10];
-  }
+    protected _getAllIncludedValues(ignoreAttachState = false): number[] {
+      const values = super._getAllIncludedValues();
+      // For log scale, the value cannot be smaller or equal to 0. They are
+      // negative infinity.
+      return values.map((x) => (x > 0 ? x : MIN_POSITIVE_VALUE));
+    }
 
-  protected _backingScaleDomain(): number[]
-  protected _backingScaleDomain(values: number[]): this
-  protected _backingScaleDomain(values?: number[]): any {
-    if (values == null) {
-      return this._d3LogScale.domain();
-    } else {
-      this._d3LogScale.domain(values);
-      return this;
+    protected _defaultExtent(): number[] {
+      return [1, 10];
+    }
+
+    protected _backingScaleDomain(): number[];
+    protected _backingScaleDomain(values: number[]): this;
+    protected _backingScaleDomain(values?: number[]): any {
+      if (values == null) {
+        return this._d3LogScale.domain();
+      } else {
+        this._d3LogScale.domain(values);
+        return this;
+      }
+    }
+
+    protected _getRange() {
+      return this._d3LogScale.range();
+    }
+
+    protected _setRange(values: number[]) {
+      this._d3LogScale.range(values);
+    }
+
+    public defaultTicks(): number[] {
+      return this._d3LogScale.ticks(1);
+    }
+
+    public ticks(): number[] {
+      return this._d3LogScale.ticks();
+    }
+
+    /**
+     * Returns an `extent` for a data series. In log-scale, we must omit all
+     * non-positive values when computing a `domain`.
+     * @override
+     */
+    public extentOfValues(values: number[]): number[] {
+      // Log can only take positive values.
+      const legalValues = values.filter(
+        (x) => Plottable.Utils.Math.isValidNumber(x) && x > 0
+      );
+      let filteredValues = legalValues;
+      if (this.ignoreOutlier()) {
+        const logValues = legalValues.map(log);
+        const sortedLogValues = logValues.sort((a, b) => a - b);
+        const a = d3.quantile(sortedLogValues, 0.05);
+        const b = d3.quantile(sortedLogValues, 0.95);
+        filteredValues = sortedLogValues
+          .filter((x) => x >= a && x <= b)
+          .map(pow);
+      }
+      const extent = d3.extent(filteredValues);
+      return extent[0] == null || extent[1] == null ? [] : extent;
     }
   }
-
-  protected _getRange() {
-    return this._d3LogScale.range();
-  }
-
-  protected _setRange(values: number[]) {
-    this._d3LogScale.range(values);
-  }
-
-  public defaultTicks(): number[] {
-    return this._d3LogScale.ticks(1);
-  }
-
-  public ticks(): number[] {
-    return this._d3LogScale.ticks();
-  }
-
-  /**
-   * Returns an `extent` for a data series. In log-scale, we must omit all
-   * non-positive values when computing a `domain`.
-   * @override
-   */
-  public extentOfValues(values: number[]): number[]  {
-    // Log can only take positive values.
-    const legalValues = values
-        .filter(x => Plottable.Utils.Math.isValidNumber(x) && x > 0);
-    let filteredValues = legalValues;
-    if (this.ignoreOutlier()) {
-      const logValues = legalValues.map(log);
-      const sortedLogValues = logValues.sort((a, b) => a - b);
-      const a = d3.quantile(sortedLogValues, 0.05);
-      const b = d3.quantile(sortedLogValues, 0.95);
-      filteredValues = sortedLogValues.filter(x => x >= a && x <= b).map(pow);
-    }
-    const extent = d3.extent(filteredValues);
-    return extent[0] == null || extent[1] == null ? [] : extent;
-  }
-
-}
-
 } //  namespace vz_line_chart2

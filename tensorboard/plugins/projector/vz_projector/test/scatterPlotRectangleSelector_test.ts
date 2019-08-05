@@ -13,58 +13,74 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector.test {
+  describe('selector callbacks make bounding box start bottom left', () => {
+    let containerElement: HTMLElement;
+    let selectionCallback: (boundingBox: ScatterBoundingBox) => void;
+    let selection: ScatterPlotRectangleSelector;
 
-describe('selector callbacks make bounding box start bottom left', () => {
-  let containerElement: HTMLElement;
-  let selectionCallback: (boundingBox: ScatterBoundingBox) => void;
-  let selection: ScatterPlotRectangleSelector;
+    beforeEach(() => {
+      containerElement = document.createElement('div');
+      const selector = document.createElement('svg');
+      selector.id = 'selector';
+      containerElement.appendChild(selector);
 
-  beforeEach(() => {
-    containerElement = document.createElement('div');
-    const selector = document.createElement('svg');
-    selector.id = 'selector';
-    containerElement.appendChild(selector);
+      selectionCallback = jasmine.createSpy('selectionCallback');
+      selection = new ScatterPlotRectangleSelector(
+        containerElement,
+        selectionCallback
+      );
+    });
 
-    selectionCallback = jasmine.createSpy('selectionCallback');
-    selection =
-        new ScatterPlotRectangleSelector(containerElement, selectionCallback);
+    it('Simple mouse event starting top left', () => {
+      selection.onMouseDown(0, 0);
+      selection.onMouseMove(10, 10);
+      selection.onMouseUp();
+
+      expect(selectionCallback).toHaveBeenCalledWith({
+        x: 0,
+        y: 10,
+        width: 10,
+        height: 10,
+      });
+    });
+
+    it('Simple mouse event starting bottom left', () => {
+      selection.onMouseDown(0, 10);
+      selection.onMouseMove(10, 0);
+      selection.onMouseUp();
+
+      expect(selectionCallback).toHaveBeenCalledWith({
+        x: 0,
+        y: 10,
+        width: 10,
+        height: 10,
+      });
+    });
+
+    it('Simple mouse event starting top right', () => {
+      selection.onMouseDown(10, 0);
+      selection.onMouseMove(0, 10);
+      selection.onMouseUp();
+
+      expect(selectionCallback).toHaveBeenCalledWith({
+        x: 0,
+        y: 10,
+        width: 10,
+        height: 10,
+      });
+    });
+
+    it('Simple mouse event starting bottom right', () => {
+      selection.onMouseDown(10, 10);
+      selection.onMouseMove(0, 0);
+      selection.onMouseUp();
+
+      expect(selectionCallback).toHaveBeenCalledWith({
+        x: 0,
+        y: 10,
+        width: 10,
+        height: 10,
+      });
+    });
   });
-
-  it('Simple mouse event starting top left', () => {
-    selection.onMouseDown(0, 0);
-    selection.onMouseMove(10, 10);
-    selection.onMouseUp();
-
-    expect(selectionCallback)
-        .toHaveBeenCalledWith({x: 0, y: 10, width: 10, height: 10});
-  });
-
-  it('Simple mouse event starting bottom left', () => {
-    selection.onMouseDown(0, 10);
-    selection.onMouseMove(10, 0);
-    selection.onMouseUp();
-
-    expect(selectionCallback)
-        .toHaveBeenCalledWith({x: 0, y: 10, width: 10, height: 10});
-  });
-
-  it('Simple mouse event starting top right', () => {
-    selection.onMouseDown(10, 0);
-    selection.onMouseMove(0, 10);
-    selection.onMouseUp();
-
-    expect(selectionCallback)
-        .toHaveBeenCalledWith({x: 0, y: 10, width: 10, height: 10});
-  });
-
-  it('Simple mouse event starting bottom right', () => {
-    selection.onMouseDown(10, 10);
-    selection.onMouseMove(0, 0);
-    selection.onMouseUp();
-
-    expect(selectionCallback)
-        .toHaveBeenCalledWith({x: 0, y: 10, width: 10, height: 10});
-  });
-});
-
-}  // namespace vz_projector.test
+} // namespace vz_projector.test

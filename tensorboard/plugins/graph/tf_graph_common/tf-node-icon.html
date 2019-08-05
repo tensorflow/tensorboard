@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="tf-graph-icon.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-graph-icon.html" />
 
 <dom-module id="tf-node-icon">
   <template>
@@ -50,7 +50,7 @@ limitations under the License.
            */
           node: {
             type: Object,
-            value: null
+            value: null,
           },
 
           /**
@@ -61,7 +61,7 @@ limitations under the License.
            */
           renderInfo: {
             type: Object,
-            value: null
+            value: null,
           },
 
           /**
@@ -70,7 +70,7 @@ limitations under the License.
            */
           colorBy: {
             type: Object,
-            value: "structural"
+            value: 'structural',
           },
 
           /**
@@ -79,31 +79,31 @@ limitations under the License.
            */
           templateIndex: {
             type: Function,
-            value: null
+            value: null,
           },
 
           /** Type of node to draw (ignored if node is set). */
           type: {
             type: String,
-            value: null
+            value: null,
           },
 
           /** Direction for series (ignored for other types). */
           vertical: {
             type: Boolean,
-            value: false
+            value: false,
           },
 
           /** Whether the op is Const (ignored for non-ops). */
           const: {
             type: Boolean,
-            value: false
+            value: false,
           },
 
           /** Whether the op is a Summary (ignored for non-ops). */
           summary: {
             type: Boolean,
-            value: false
+            value: false,
           },
 
           /**
@@ -113,18 +113,19 @@ limitations under the License.
            */
           fill: {
             type: String,
-            value: null
+            value: null,
           },
 
           /** Height of the SVG element in pixels, used for scaling. */
           height: {
             type: Number,
-            value: 20
+            value: 20,
           },
 
           _fillOverride: {
             type: String,
-            computed: '_computeFillOverride(node, renderInfo, colorBy, templateIndex, fill)',
+            computed:
+              '_computeFillOverride(node, renderInfo, colorBy, templateIndex, fill)',
             observer: '_onFillOverrideChanged',
           },
         },
@@ -135,21 +136,35 @@ limitations under the License.
          * Note that if this evaluates to null, it will be chosen based on
          * the type of the node.
          */
-        _computeFillOverride: function(inputNode, inputRenderInfo, inputColorBy,
-            inputTemplateIndex, inputFill) {
-          if (inputNode && inputRenderInfo &&
-              inputColorBy && inputTemplateIndex) {
+        _computeFillOverride: function(
+          inputNode,
+          inputRenderInfo,
+          inputColorBy,
+          inputTemplateIndex,
+          inputFill
+        ) {
+          if (
+            inputNode &&
+            inputRenderInfo &&
+            inputColorBy &&
+            inputTemplateIndex
+          ) {
             var ns = tf.graph.scene.node;
             var colorBy = ns.ColorBy[inputColorBy.toUpperCase()];
-            return ns.getFillForNode(inputTemplateIndex, colorBy,
-                inputRenderInfo, false);
+            return ns.getFillForNode(
+              inputTemplateIndex,
+              colorBy,
+              inputRenderInfo,
+              false
+            );
           }
           return inputFill;
         },
 
         _getStrokeOverride: function(fillOverride) {
-          return fillOverride ?
-              tf.graph.scene.node.getStrokeForFill(fillOverride) : null;
+          return fillOverride
+            ? tf.graph.scene.node.getStrokeForFill(fillOverride)
+            : null;
         },
 
         /**
@@ -203,8 +218,13 @@ limitations under the License.
           }
           if (node && renderInfo && colorBy && templateIndex) {
             const nsColorBy = ns.ColorBy[colorBy.toUpperCase()];
-            ns.getFillForNode(templateIndex, nsColorBy,
-                renderInfo, false, this.$.icon.getSvgDefineableElement());
+            ns.getFillForNode(
+              templateIndex,
+              nsColorBy,
+              renderInfo,
+              false,
+              this.$.icon.getSvgDefineableElement()
+            );
           }
         },
       });

@@ -11,25 +11,25 @@ limitations under the License.
 ==============================================================================*/
 
 namespace memory_viewer_xla_hi {
+  /**
+   * HLO instructions are the IR used by the high-level XLA compiler.
+   * @final
+   */
+  export class HloInstruction {
+    name: string;
+    opcode: string;
+    shape: memory_viewer_xla_s.Shape | null;
+    tfOpName: string;
 
-/**
- * HLO instructions are the IR used by the high-level XLA compiler.
- * @final
- */
-export class HloInstruction {
-  name: string;
-  opcode: string;
-  shape: memory_viewer_xla_s.Shape|null;
-  tfOpName: string;
-
-  constructor(inst) {
-    this.name = inst.name ? inst.name : '';
-    this.opcode = inst.opcode ? inst.opcode : '';
-    this.shape = inst.shape ? new memory_viewer_xla_s.Shape(inst.shape) : null;
-    if (inst.metadata) {
-      this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
+    constructor(inst) {
+      this.name = inst.name ? inst.name : '';
+      this.opcode = inst.opcode ? inst.opcode : '';
+      this.shape = inst.shape
+        ? new memory_viewer_xla_s.Shape(inst.shape)
+        : null;
+      if (inst.metadata) {
+        this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
+      }
     }
   }
-}
-
 } // namespace memory_viewer_xla_hi

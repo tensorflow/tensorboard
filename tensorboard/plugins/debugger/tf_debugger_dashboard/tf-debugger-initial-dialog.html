@@ -15,9 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-imports/lodash.html">
-
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
 
 <dom-module id="tf-debugger-initial-dialog">
   <template>
@@ -25,11 +24,13 @@ limitations under the License.
     <template is="dom-if" if="[[_open]]">
       <div id="dashboard-backdrop"></div>
     </template>
-    <paper-dialog id="dialog"
-                  no-cancel-on-outside-click
-                  no-cancel-on-esc-key
-                  opened="{{_open}}">
-      <h2 id='dialog-title'>[[_title]]</h2>
+    <paper-dialog
+      id="dialog"
+      no-cancel-on-outside-click
+      no-cancel-on-esc-key
+      opened="{{_open}}"
+    >
+      <h2 id="dialog-title">[[_title]]</h2>
       <template is="dom-if" if="[[_hasCustomMessage]]">
         <div class="custom-message">[[_customMessage]]</div>
       </template>
@@ -37,7 +38,11 @@ limitations under the License.
         <div class="code-example">
           <div class="code-example-section">
             <div class="code-example-section-title">
-              <a href="https://www.tensorflow.org/api_docs/python/tf/Session" target="_blank">tf.Session</a>:
+              <a
+                href="https://www.tensorflow.org/api_docs/python/tf/Session"
+                target="_blank"
+                >tf.Session</a
+              >:
             </div>
             <pre class="code-snippet">
 import tensorflow as tf
@@ -46,13 +51,22 @@ from tensorflow.python import debug as tf_debug
 sess = tf.Session()
 sess = tf_debug.TensorBoardDebugWrapperSession(sess, "[[_host]]:[[_port]]")
 sess.run(my_fetches)
-          </pre>
+          </pre
+            >
           </div>
           <div class="code-example-section">
             <div class="code-example-section-title">
-              <a href="https://www.tensorflow.org/programmers_guide/estimators" target="_blank">Estimator</a>
+              <a
+                href="https://www.tensorflow.org/programmers_guide/estimators"
+                target="_blank"
+                >Estimator</a
+              >
               |
-              <a href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession" target="_blank">MonitoredSession</a>:
+              <a
+                href="https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession"
+                target="_blank"
+                >MonitoredSession</a
+              >:
             </div>
             <pre class="code-snippet">
 import tensorflow as tf
@@ -64,7 +78,9 @@ my_estimator.fit(x=x_data, y=y_data, steps=1000, monitors=[hook])
           </div>
           <div class="code-example-section">
             <div class="code-example-section-title">
-              <a href="https://keras.io/models/model/" target="_blank">Keras Model</a>:
+              <a href="https://keras.io/models/model/" target="_blank"
+                >Keras Model</a
+              >:
             </div>
             <pre class="code-snippet">
 import tensorflow as tf
@@ -87,7 +103,8 @@ model.fit(...)
       :host([_hidden]) {
         display: none;
       }
-      :host, #dashboard-backdrop {
+      :host,
+      #dashboard-backdrop {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -124,68 +141,72 @@ model.fit(...)
     </style>
   </template>
   <script>
-
-  Polymer({
-    is: "tf-debugger-initial-dialog",
-    properties: {
-      _title: {
-        type: String,
-        value: null,
+    Polymer({
+      is: 'tf-debugger-initial-dialog',
+      properties: {
+        _title: {
+          type: String,
+          value: null,
+        },
+        _customMessage: {
+          type: String,
+          value: null,
+        },
+        _hasCustomMessage: {
+          type: Boolean,
+          computed: '_computeHasCustomMessage(_customMessage)',
+        },
+        _host: {
+          type: String,
+          value: null,
+        },
+        _port: {
+          type: String,
+          value: null,
+        },
+        _open: {
+          type: Boolean,
+        },
+        _hidden: {
+          type: Boolean,
+          computed: '_computeHidden(_open)',
+          reflectToAttribute: true, // for CSS
+        },
       },
-      _customMessage: {
-        type: String,
-        value: null,
-      },
-      _hasCustomMessage: {
-        type: Boolean,
-        computed: '_computeHasCustomMessage(_customMessage)',
-      },
-      _host: {
-        type: String,
-        value: null,
-      },
-      _port: {
-        type: String,
-        value: null,
-      },
-      _open: {
-        type: Boolean,
-      },
-      _hidden: {
-        type: Boolean,
-        computed: '_computeHidden(_open)',
-        reflectToAttribute: true,  // for CSS
-      },
-    },
-    openDialog(host, port) {
-      this.set('_title', 'Debugger is waiting for Session.run() connections...');
-      this.set('_customMessage', null);
-      this.$.dialog.open();
-      if (host != null && port != null) {
-        // TODO(cais): Use markdown; syntax highlight Python code.
-        this.set('_host', host);
-        this.set('_port', port);
-      }
-    },
-    closeDialog() {
-      this.$.dialog.close();
-    },
-    openDisabledDialog() {
-      this.set(
+      openDialog(host, port) {
+        this.set(
           '_title',
-          'Debugger is not enabled in this TensorBoard instance');
-      this.set(
+          'Debugger is waiting for Session.run() connections...'
+        );
+        this.set('_customMessage', null);
+        this.$.dialog.open();
+        if (host != null && port != null) {
+          // TODO(cais): Use markdown; syntax highlight Python code.
+          this.set('_host', host);
+          this.set('_port', port);
+        }
+      },
+      closeDialog() {
+        this.$.dialog.close();
+      },
+      openDisabledDialog() {
+        this.set(
+          '_title',
+          'Debugger is not enabled in this TensorBoard instance'
+        );
+        this.set(
           '_customMessage',
-          'To enable the debugger in TensorBoard, use the flag: '
-              + '--debugger_port <port_number>');
-      this.$.dialog.open();
-    },
-    _computeHidden(open) {
-      return !open;
-    },
-    _computeHasCustomMessage(customMessage) {
-      return !_.isEmpty(customMessage);
-    }
-  });
+          'To enable the debugger in TensorBoard, use the flag: ' +
+            '--debugger_port <port_number>'
+        );
+        this.$.dialog.open();
+      },
+      _computeHidden(open) {
+        return !open;
+      },
+      _computeHasCustomMessage(customMessage) {
+        return !_.isEmpty(customMessage);
+      },
+    });
   </script>
 </dom-module>

@@ -62,18 +62,20 @@ limitations under the License.
  *
  * See the individual class comments in the respective files for more details.
 -->
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
-<link rel="import" href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html">
-<link rel="import" href="../tf-hparams-parallel-coords-plot/utils.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
+<link
+  rel="import"
+  href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html"
+/>
+<link rel="import" href="../tf-hparams-parallel-coords-plot/utils.html" />
 
 <dom-module id="tf-hparams-parallel-coords-plot">
   <template>
     <div id="container">
-      <svg id="svg">
-      </svg>
+      <svg id="svg"></svg>
     </div>
     <style>
       :host {
@@ -111,7 +113,7 @@ limitations under the License.
          inline style that sets the regular color of a path. */
       .foreground .selected-path {
         stroke-width: 3 !important;
-        stroke: #0f0    !important;
+        stroke: #0f0 !important;
       }
 
       #container {
@@ -154,7 +156,7 @@ limitations under the License.
           type: Object,
           value: null,
           readOnly: true,
-          notify: true
+          notify: true,
         },
         // The session group represented by the curve "closest" to the mouse
         // pointer (the corresponding path element will have the 'peaked-path'
@@ -191,9 +193,7 @@ limitations under the License.
         _interactionManager: Object,
       },
 
-      observers: [
-        '_optionsOrSessionGroupsChanged(options.*, sessionGroups.*)',
-      ],
+      observers: ['_optionsOrSessionGroupsChanged(options.*, sessionGroups.*)'],
 
       _optionsOrSessionGroupsChanged() {
         if (this.options === null) {
@@ -202,30 +202,34 @@ limitations under the License.
         const configuration = this.options.configuration;
         // See if we need to redraw from scratch. We redraw from scratch if
         // this is initialization or if configuration.schema has changed.
-        if (this._interactionManager === undefined ||
-            !_.isEqual(this._interactionManager.schema(),
-                       configuration.schema)) {
+        if (
+          this._interactionManager === undefined ||
+          !_.isEqual(this._interactionManager.schema(), configuration.schema)
+        ) {
           // Remove any pre-existing DOM children of our SVG.
-          d3.select(this.$.svg).selectAll('*').remove();
+          d3.select(this.$.svg)
+            .selectAll('*')
+            .remove();
           const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
-              this.$.svg,
-              tf.hparams.utils.numColumns(configuration.schema));
+            this.$.svg,
+            tf.hparams.utils.numColumns(configuration.schema)
+          );
           // Listen to DOM changes underneath this.$.svg, and apply local CSS
           // scoping rules so that our rules in the <style> section above
           // would apply.
           this.scopeSubtree(this.$.svg, true);
-          this._interactionManager =
-              new tf.hparams.parallel_coords_plot.InteractionManager(
-                  svgProps,
-                  configuration.schema,
-                  sessionGroup => this.closestSessionGroupChanged(sessionGroup),
-                  sessionGroup =>
-                    this.selectedSessionGroupChanged(sessionGroup));
+          this._interactionManager = new tf.hparams.parallel_coords_plot.InteractionManager(
+            svgProps,
+            configuration.schema,
+            (sessionGroup) => this.closestSessionGroupChanged(sessionGroup),
+            (sessionGroup) => this.selectedSessionGroupChanged(sessionGroup)
+          );
         }
         this._computeValidSessionGroups();
         this._interactionManager.onOptionsOrSessionGroupsChanged(
-            this.options,
-            this._validSessionGroups);
+          this.options,
+          this._validSessionGroups
+        );
         this.redrawCount++;
       },
 
@@ -250,17 +254,18 @@ limitations under the License.
         }
         const schema = this.options.configuration.schema;
         this._validSessionGroups = this.sessionGroups.filter((sg) => {
-          for (let colIndex = 0;
-               colIndex < utils.numColumns(schema);
-               ++colIndex) {
-                 if (!this.options.configuration.columnsVisibility[colIndex]) {
-                   continue;
-                 }
-                 if (utils.columnValueByIndex(schema, sg, colIndex) ===
-                     undefined) {
-                   return false;
-                 }
-               }
+          for (
+            let colIndex = 0;
+            colIndex < utils.numColumns(schema);
+            ++colIndex
+          ) {
+            if (!this.options.configuration.columnsVisibility[colIndex]) {
+              continue;
+            }
+            if (utils.columnValueByIndex(schema, sg, colIndex) === undefined) {
+              return false;
+            }
+          }
           return true;
         });
       },

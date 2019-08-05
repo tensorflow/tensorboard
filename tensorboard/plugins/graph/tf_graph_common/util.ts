@@ -52,22 +52,26 @@ module tf.graph.util {
   export function getTracker(polymerComponent: any): Tracker {
     return {
       setMessage: function(msg) {
-        polymerComponent.set(
-            'progress', {value: polymerComponent.progress.value, msg: msg});
+        polymerComponent.set('progress', {
+          value: polymerComponent.progress.value,
+          msg: msg,
+        });
       },
       updateProgress: function(value) {
         polymerComponent.set('progress', {
           value: polymerComponent.progress.value + value,
-          msg: polymerComponent.progress.msg
+          msg: polymerComponent.progress.msg,
         });
       },
       reportError: function(msg: string, err) {
         // Log the stack trace in the console.
         console.error(err.stack);
         // And send a user-friendly message to the UI.
-        polymerComponent.set(
-            'progress',
-            {value: polymerComponent.progress.value, msg: msg, error: true});
+        polymerComponent.set('progress', {
+          value: polymerComponent.progress.value,
+          msg: msg,
+          error: true,
+        });
       },
     };
   }
@@ -80,8 +84,10 @@ module tf.graph.util {
    * becomes relative to the main task.
    */
   export function getSubtaskTracker(
-      parentTracker: ProgressTracker, impactOnTotalProgress: number,
-      subtaskMsg: string): ProgressTracker {
+    parentTracker: ProgressTracker,
+    impactOnTotalProgress: number,
+    subtaskMsg: string
+  ): ProgressTracker {
     return {
       setMessage: function(progressMsg) {
         // The parent should show a concatenation of its message along with
@@ -93,13 +99,14 @@ module tf.graph.util {
         // For example, if the sub-task progresses by 30%, and the impact on the
         // total progress is 50%, then the task progresses by 30% * 50% = 15%.
         parentTracker.updateProgress(
-            incrementValue * impactOnTotalProgress / 100);
+          (incrementValue * impactOnTotalProgress) / 100
+        );
       },
       reportError: function(msg: string, err: Error) {
         // The parent should show a concatenation of its message along with
         // its subtask error message.
         parentTracker.reportError(subtaskMsg + ': ' + msg, err);
-      }
+      },
     };
   }
 
@@ -108,8 +115,11 @@ module tf.graph.util {
    * Please use runAsyncPromiseTask in case a task returns a Promise.
    */
   export function runTask<T>(
-      msg: string, incProgressValue: number, task: () => T,
-      tracker: ProgressTracker): T {
+    msg: string,
+    incProgressValue: number,
+    task: () => T,
+    tracker: ProgressTracker
+  ): T {
     // Update the progress message to say the current running task.
     tracker.setMessage(msg);
     // Run the expensive task with a delay that gives enough time for the
@@ -131,8 +141,11 @@ module tf.graph.util {
    * Runs an expensive task asynchronously and returns a promise of the result.
    */
   export function runAsyncTask<T>(
-      msg: string, incProgressValue: number, task: () => T,
-      tracker: ProgressTracker): Promise<T> {
+    msg: string,
+    incProgressValue: number,
+    task: () => T,
+    tracker: ProgressTracker
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       // Update the progress message to say the current running task.
       tracker.setMessage(msg);
@@ -160,8 +173,11 @@ module tf.graph.util {
    * resolves after the progress is updated.
    */
   export function runAsyncPromiseTask<T>(
-      msg: string, incProgressValue: number, task: () => Promise<T>,
-      tracker: ProgressTracker): Promise<T> {
+    msg: string,
+    incProgressValue: number,
+    task: () => Promise<T>,
+    tracker: ProgressTracker
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       let handleError = function(e) {
         // Errors that happen inside asynchronous tasks are
@@ -178,15 +194,15 @@ module tf.graph.util {
         try {
           let start = Date.now();
           task()
-              .then(function(value) {
-                /* tslint:disable */
-                console.log(msg, ':', Date.now() - start, 'ms');
-                // Update the progress value.
-                tracker.updateProgress(incProgressValue);
-                // Return the result to be used by other tasks.
-                resolve(value);
-              })
-              .catch(handleError);
+            .then(function(value) {
+              /* tslint:disable */
+              console.log(msg, ':', Date.now() - start, 'ms');
+              // Update the progress value.
+              tracker.updateProgress(incProgressValue);
+              // Return the result to be used by other tasks.
+              resolve(value);
+            })
+            .catch(handleError);
         } catch (e) {
           handleError(e);
         }
@@ -214,18 +230,22 @@ module tf.graph.util {
     // Atomic unit.
     {symbol: 'B'},
     // numUnits specifies how many previous units this unit contains.
-    {symbol: 'KB', numUnits: 1024}, {symbol: 'MB', numUnits: 1024},
-    {symbol: 'GB', numUnits: 1024}, {symbol: 'TB', numUnits: 1024},
-    {symbol: 'PB', numUnits: 1024}
+    {symbol: 'KB', numUnits: 1024},
+    {symbol: 'MB', numUnits: 1024},
+    {symbol: 'GB', numUnits: 1024},
+    {symbol: 'TB', numUnits: 1024},
+    {symbol: 'PB', numUnits: 1024},
   ];
 
   export const TIME_UNITS: Units = [
     // Atomic unit. Finest granularity in TensorFlow stat collection.
     {symbol: 'µs'},
     // numUnits specifies how many previous units this unit contains.
-    {symbol: 'ms', numUnits: 1000}, {symbol: 's', numUnits: 1000},
-    {symbol: 'min', numUnits: 60}, {symbol: 'hr', numUnits: 60},
-    {symbol: 'days', numUnits: 24}
+    {symbol: 'ms', numUnits: 1000},
+    {symbol: 's', numUnits: 1000},
+    {symbol: 'min', numUnits: 60},
+    {symbol: 'hr', numUnits: 60},
+    {symbol: 'days', numUnits: 24},
   ];
 
   /**
@@ -233,11 +253,19 @@ module tf.graph.util {
    * (e.g. 1.35 GB, 23 MB, 34 ms, 6.53 min etc).
    */
   export function convertUnitsToHumanReadable(
-      value: number, units: Units, unitIndex: number = 0) {
-    if (unitIndex + 1 < units.length &&
-        value >= units[unitIndex + 1].numUnits) {
+    value: number,
+    units: Units,
+    unitIndex: number = 0
+  ) {
+    if (
+      unitIndex + 1 < units.length &&
+      value >= units[unitIndex + 1].numUnits
+    ) {
       return tf.graph.util.convertUnitsToHumanReadable(
-          value / units[unitIndex + 1].numUnits, units, unitIndex + 1);
+        value / units[unitIndex + 1].numUnits,
+        units,
+        unitIndex + 1
+      );
     }
     // toPrecision() has the tendency to return a number in scientific
     // notation and casting back to a number brings it back to normal notation.
@@ -250,9 +278,10 @@ module tf.graph.util {
   }
 
   export function hasDisplayableNodeStats(stats: NodeStats) {
-    if (stats &&
-        (stats.totalBytes > 0 || stats.getTotalMicros() > 0 ||
-         stats.outputSize)) {
+    if (
+      stats &&
+      (stats.totalBytes > 0 || stats.getTotalMicros() > 0 || stats.outputSize)
+    ) {
       return true;
     }
     return false;
@@ -271,12 +300,12 @@ module tf.graph.util {
     let index = 0;
     let largestIndex = 0;
     // Find the shortest name across all strings.
-    let minLength = _.min(_.map(strings, str => str.length));
+    let minLength = _.min(_.map(strings, (str) => str.length));
     while (true) {
       index++;
-      let prefixes = _.map(strings, str => str.substring(0, index));
+      let prefixes = _.map(strings, (str) => str.substring(0, index));
       let allTheSame = prefixes.every((prefix, i) => {
-        return (i === 0 ? true : prefix === prefixes[i - 1]);
+        return i === 0 ? true : prefix === prefixes[i - 1];
       });
       if (allTheSame) {
         if (index >= minLength) {
@@ -289,7 +318,7 @@ module tf.graph.util {
         break;
       }
     }
-    return _.map(strings, str => str.substring(largestIndex));
+    return _.map(strings, (str) => str.substring(largestIndex));
   }
 
   /**
@@ -297,8 +326,7 @@ module tf.graph.util {
    * how long ago the timestamp was.
    */
   export function computeHumanFriendlyTime(timeInMicroseconds: number) {
-    var timeDifferenceInMs =
-        +(new Date()) - +(new Date(timeInMicroseconds / 1e3));
+    var timeDifferenceInMs = +new Date() - +new Date(timeInMicroseconds / 1e3);
     if (timeDifferenceInMs < 30000) {
       return 'just now';
     } else if (timeDifferenceInMs < 60000) {
