@@ -19,15 +19,23 @@ import {isIntegerDType, isFloatDType} from './dtype-utils';
 
 describe('isIntegerDType', () => {
   it('returns true for unsigned ints', () => {
+    expect(isIntegerDType('uint02')).to.be.true;
+    expect(isIntegerDType('uint2')).to.be.true;
+    expect(isIntegerDType('uint04')).to.be.true;
+    expect(isIntegerDType('uint4')).to.be.true;
     expect(isIntegerDType('uint8')).to.be.true;
     expect(isIntegerDType('uint16')).to.be.true;
+    expect(isIntegerDType('uint64')).to.be.true;
+    expect(isIntegerDType('uint128')).to.be.true;
   });
 
   it('returns true for signed ints', () => {
+    expect(isIntegerDType('int4')).to.be.true;
     expect(isIntegerDType('int8')).to.be.true;
     expect(isIntegerDType('int16')).to.be.true;
     expect(isIntegerDType('int32')).to.be.true;
     expect(isIntegerDType('int64')).to.be.true;
+    expect(isIntegerDType('int128')).to.be.true;
   });
 
   it('returns false for negative cases', () => {
@@ -35,6 +43,9 @@ describe('isIntegerDType', () => {
     expect(isIntegerDType('string')).to.be.false;
     expect(isIntegerDType('float32')).to.be.false;
     expect(isIntegerDType('complex64')).to.be.false;
+    expect(isIntegerDType('complex128')).to.be.false;
+    expect(isIntegerDType('resource')).to.be.false;
+    expect(isIntegerDType('interrupt')).to.be.false;
   });
 });
 
@@ -54,5 +65,7 @@ describe('isFloatDType', () => {
     expect(isFloatDType('int32')).to.be.false;
     expect(isFloatDType('uint32')).to.be.false;
     expect(isFloatDType('complex64')).to.be.false;
+    expect(isIntegerDType('complex128')).to.be.false;
+    expect(isIntegerDType('resource')).to.be.false;
   });
 });
