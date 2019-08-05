@@ -20,39 +20,39 @@ import {isIntegerDType, isFloatDType} from './dtype-utils';
 describe('isIntegerDType', () => {
   it('unsigned ints', () => {
     expect(isIntegerDType('uint8')).to.be.true;
-    // expect(isIntegerDType('uint16')).toEqual(true);
+    expect(isIntegerDType('uint16')).to.be.true;
   });
 
-  // it('signed ints', () => {
-  //   expect(isIntegerDType('int8')).toEqual(true);
-  //   expect(isIntegerDType('int16')).toEqual(true);
-  //   expect(isIntegerDType('int32')).toEqual(true);
-  //   expect(isIntegerDType('int64')).toEqual(true);
-  // });
+  it('signed ints', () => {
+    expect(isIntegerDType('int8')).to.be.true;
+    expect(isIntegerDType('int16')).to.be.true;
+    expect(isIntegerDType('int32')).to.be.true;
+    expect(isIntegerDType('int64')).to.be.true;
+  });
 
-  // it('negative cases', () => {
-  //   expect(isIntegerDType('bool')).toEqual(false);
-  //   expect(isIntegerDType('string')).toEqual(false);
-  //   expect(isIntegerDType('float32')).toEqual(false);
-  //   expect(isIntegerDType('complex64')).toEqual(false);
-  // });
+  it('negative cases', () => {
+    expect(isIntegerDType('bool')).to.be.false;
+    expect(isIntegerDType('string')).to.be.false;
+    expect(isIntegerDType('float32')).to.be.false;
+    expect(isIntegerDType('complex64')).to.be.false;
+  });
 });
 
-// describe('isFloatDType', () => {
-//   it('floats', () => {
-//     expect(isFloatDType('float32')).toEqual(true);
-//     expect(isFloatDType('float64')).toEqual(true);
-//   });
+describe('isFloatDType', () => {
+  it('floats', () => {
+    expect(isFloatDType('float32')).to.be.true;
+    expect(isFloatDType('float64')).to.be.true;
+  });
 
-//   it('bfloat', () => {
-//     expect(isFloatDType('bfloat16')).toEqual(true);
-//   });
+  it('bfloat', () => {
+    expect(isFloatDType('bfloat16')).to.be.true;
+  });
 
-//   it('negative cases', () => {
-//     expect(isFloatDType('bool')).toEqual(false);
-//     expect(isFloatDType('string')).toEqual(false);
-//     expect(isFloatDType('int32')).toEqual(false);
-//     expect(isFloatDType('uint32')).toEqual(false);
-//     expect(isFloatDType('complex64')).toEqual(false);
-//   });
-// });
+  it('negative cases', () => {
+    expect(isFloatDType('bool')).to.be.false;
+    expect(isFloatDType('string')).to.be.false;
+    expect(isFloatDType('int32')).to.be.false;
+    expect(isFloatDType('uint32')).to.be.false;
+    expect(isFloatDType('complex64')).to.be.false;
+  });
+});
