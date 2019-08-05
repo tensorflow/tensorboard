@@ -26,7 +26,8 @@ tf_web_library(
     path = "/tf-debugger-dashboard",
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components/tensor_widget",
+        # TODO(cais): Update this.
+        # "//tensorboard/components/tensor_widget",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_categorization_utils",
