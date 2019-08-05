@@ -28,6 +28,6 @@ tensorboard_webcomponent_library(
         "//tensorboard/plugins/graph/tf_graph:legacy",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
         "//tensorboard/plugins/graph/tf_graph_info:legacy",
-        "//third_party/javascript/polymer/v1/paper-progress:lib",
+        "//third_party/javascript/polymer/v2/paper-progress:lib",
     ],
 )

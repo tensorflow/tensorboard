@@ -27,6 +27,7 @@ import posixpath
 import shutil
 import socket
 import tempfile
+import time
 
 import six
 
@@ -58,7 +59,9 @@ class FakeFlags(object):
       db_import=False,
       db_import_use_op=False,
       window_title='',
-      path_prefix=''):
+      path_prefix='',
+      reload_multifile=False,
+      reload_multifile_inactive_secs=4000):
     self.logdir = logdir
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
@@ -70,6 +73,8 @@ class FakeFlags(object):
     self.db_import_use_op = db_import_use_op
     self.window_title = window_title
     self.path_prefix = path_prefix
+    self.reload_multifile = reload_multifile
+    self.reload_multifile_inactive_secs = reload_multifile_inactive_secs
 
 
 class FakePlugin(base_plugin.TBPlugin):
@@ -376,6 +381,38 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
 
   def testSlashlessRoute(self):
     self._test('runaway', False)
+
+
+class GetEventFileActiveFilterTest(tb_test.TestCase):
+
+  def testDisabled(self):
+    flags = FakeFlags('logdir', reload_multifile=False)
+    self.assertIsNone(application._get_event_file_active_filter(flags))
+
+  def testInactiveSecsZero(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=0)
+    self.assertIsNone(application._get_event_file_active_filter(flags))
+
+  def testInactiveSecsNegative(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=-1)
+    filter_fn = application._get_event_file_active_filter(flags)
+    self.assertTrue(filter_fn(0))
+    self.assertTrue(filter_fn(time.time()))
+    self.assertTrue(filter_fn(float("inf")))
+
+  def testInactiveSecs(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=10)
+    filter_fn = application._get_event_file_active_filter(flags)
+    with mock.patch.object(time, 'time') as mock_time:
+      mock_time.return_value = 100
+      self.assertFalse(filter_fn(0))
+      self.assertFalse(filter_fn(time.time() - 11))
+      self.assertTrue(filter_fn(time.time() - 10))
+      self.assertTrue(filter_fn(time.time()))
+      self.assertTrue(filter_fn(float("inf")))
 
 
 class ParseEventFilesSpecTest(tb_test.TestCase):

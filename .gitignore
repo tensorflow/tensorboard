@@ -4,3 +4,4 @@
 *.pyc
 *.egg-info/
 *.swp
+node_modules

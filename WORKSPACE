@@ -16,7 +16,7 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
-versions.check(minimum_bazel_version = "0.22.0")
+versions.check(minimum_bazel_version = "0.26.1")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
@@ -51,6 +51,25 @@ closure_repositories(
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
 )
+
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "7c4a690268be97c96f04d505224ec4cb1ae53c2c2b68be495c9bd2634296a5cd",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz"],
+)
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
+node_repositories()
+
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
+)
+
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
 
 http_archive(
     name = "org_tensorflow",
