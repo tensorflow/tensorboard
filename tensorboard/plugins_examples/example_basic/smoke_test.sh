@@ -24,7 +24,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-cp -LR "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/plugins_examples/example/" \
+cp -LR "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/plugins_examples/example_basic/" \
     ./example-plugin/
 
 mkdir tensorboard-wheels
@@ -62,13 +62,13 @@ tensorboard \
     2>pipe &
 perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
 port="$(cat port)"
-curl -fs "http://localhost:${port}/data/plugin/example/index.js" >index.js
+curl -fs "http://localhost:${port}/data/plugin/example_basic/index.js" >index.js
 diff -u example-plugin/tensorboard_plugin_example/static/index.js index.js
 curl -fs "http://localhost:${port}/data/plugins_listing" >plugins_listing
 cat plugins_listing; printf '\n'
-grep -qP '"example":(?:(?!"enabled").)*+"enabled": *true' plugins_listing
-grep -qF '"/data/plugin/example/index.js"' plugins_listing
-curl -fs "http://localhost:${port}/data/plugin/example/tags" >tags
+grep -qP '"example_basic":(?:(?!"enabled").)*+"enabled": *true' plugins_listing
+grep -qF '"/data/plugin/example_basic/index.js"' plugins_listing
+curl -fs "http://localhost:${port}/data/plugin/example_basic/tags" >tags
 <<EOF tr -d '\n' | diff -u - tags
 {"demo_logs": {"guestbook": {"description": "Sign your name!"}, "more_names": {"description": ""}}}
 EOF

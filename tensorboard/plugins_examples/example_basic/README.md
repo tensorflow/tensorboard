@@ -72,7 +72,7 @@ Lastly, when distributing a custom plugin of TensorBoard, we recommend that it b
 
 ## Local Development
 
-To get started right away, copy the directory `tensorboard/plugins_examples/example` into a desired folder and, in a virtualenv with TensorBoard installed, run:
+To get started right away, copy the directory `tensorboard/plugins_examples/example_basic` into a desired folder and, in a virtualenv with TensorBoard installed, run:
 
 ```
 python setup.py develop
