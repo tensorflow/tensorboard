@@ -87,7 +87,3 @@ tf_workspace()
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
 tensorboard_workspace()
-
-# Fetch transitive Bazel dependencies of npm_bazel_karma
-load("@npm_bazel_karma//:package.bzl", "rules_karma_dependencies")
-rules_karma_dependencies()
