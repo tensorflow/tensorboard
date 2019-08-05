@@ -13,40 +13,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
-
-/**
- * ScatterPlotVisualizer is an interface used by ScatterPlotContainer
- * to manage and aggregate any number of concurrent visualization behaviors.
- * To add a new visualization to the 3D scatter plot, create a new class that
- * implements this interface and attach it to the ScatterPlotContainer.
- */
-export interface ScatterPlotVisualizer {
-  /** Called to initialize the visualizer with the primary scene. */
-  setScene(scene: THREE.Scene);
   /**
-   * Called when the main scatter plot tears down the visualizer. Remove all
-   * objects from the scene, and dispose any heavy resources.
+   * ScatterPlotVisualizer is an interface used by ScatterPlotContainer
+   * to manage and aggregate any number of concurrent visualization behaviors.
+   * To add a new visualization to the 3D scatter plot, create a new class that
+   * implements this interface and attach it to the ScatterPlotContainer.
    */
-  dispose();
-  /**
-   * Called when the positions of the scatter plot points have changed.
-   */
-  onPointPositionsChanged(newWorldSpacePointPositions: Float32Array);
-  /**
-   * Called immediately before the main scatter plot performs a picking
-   * (selection) render. Set up render state for any geometry to use picking IDs
-   * instead of visual colors.
-   */
-  onPickingRender(renderContext: RenderContext);
-  /**
-   * Called immediately before the main scatter plot performs a color (visual)
-   * render. Set up render state, lights, etc here.
-   */
-  onRender(renderContext: RenderContext);
-  /**
-   * Called when the canvas size changes.
-   */
-  onResize(newWidth: number, newHeight: number);
-}
-
-}  // namespace vz_projector
+  export interface ScatterPlotVisualizer {
+    /** Called to initialize the visualizer with the primary scene. */
+    setScene(scene: THREE.Scene);
+    /**
+     * Called when the main scatter plot tears down the visualizer. Remove all
+     * objects from the scene, and dispose any heavy resources.
+     */
+    dispose();
+    /**
+     * Called when the positions of the scatter plot points have changed.
+     */
+    onPointPositionsChanged(newWorldSpacePointPositions: Float32Array);
+    /**
+     * Called immediately before the main scatter plot performs a picking
+     * (selection) render. Set up render state for any geometry to use picking IDs
+     * instead of visual colors.
+     */
+    onPickingRender(renderContext: RenderContext);
+    /**
+     * Called immediately before the main scatter plot performs a color (visual)
+     * render. Set up render state, lights, etc here.
+     */
+    onRender(renderContext: RenderContext);
+    /**
+     * Called when the canvas size changes.
+     */
+    onResize(newWidth: number, newHeight: number);
+  }
+} // namespace vz_projector

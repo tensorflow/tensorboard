@@ -13,98 +13,101 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
+  const FILL = '#dddddd';
+  const FILL_OPACITY = 0.2;
+  const STROKE = '#aaaaaa';
+  const STROKE_WIDTH = 2;
+  const STROKE_DASHARRAY = '10 5';
 
-const FILL = '#dddddd';
-const FILL_OPACITY = .2;
-const STROKE = '#aaaaaa';
-const STROKE_WIDTH = 2;
-const STROKE_DASHARRAY = '10 5';
-
-export interface ScatterBoundingBox {
-  // The bounding box (x, y) position refers to the bottom left corner of the
-  // rect.
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-/**
- * A class that manages and renders a data selection rectangle.
- */
-export class ScatterPlotRectangleSelector {
-  private svgElement: SVGElement;
-  private rectElement: SVGRectElement;
-
-  private isMouseDown: boolean;
-  private startCoordinates: [number, number];
-  private lastBoundingBox: ScatterBoundingBox;
-
-  private selectionCallback: (boundingBox: ScatterBoundingBox) => void;
+  export interface ScatterBoundingBox {
+    // The bounding box (x, y) position refers to the bottom left corner of the
+    // rect.
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }
 
   /**
-   * @param container The container HTML element that the selection SVG rect
-   *     will be a child of.
-   * @param selectionCallback The callback that accepts a bounding box to be
-   *     called when selection changes. Currently, we only call the callback on
-   *     mouseUp.
+   * A class that manages and renders a data selection rectangle.
    */
-  constructor(
+  export class ScatterPlotRectangleSelector {
+    private svgElement: SVGElement;
+    private rectElement: SVGRectElement;
+
+    private isMouseDown: boolean;
+    private startCoordinates: [number, number];
+    private lastBoundingBox: ScatterBoundingBox;
+
+    private selectionCallback: (boundingBox: ScatterBoundingBox) => void;
+
+    /**
+     * @param container The container HTML element that the selection SVG rect
+     *     will be a child of.
+     * @param selectionCallback The callback that accepts a bounding box to be
+     *     called when selection changes. Currently, we only call the callback on
+     *     mouseUp.
+     */
+    constructor(
       container: HTMLElement,
-      selectionCallback: (boundingBox: ScatterBoundingBox) => void) {
-    this.svgElement = container.querySelector('#selector') as SVGElement;
-    this.rectElement =
-        document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    this.rectElement.style.stroke = STROKE;
-    this.rectElement.style.strokeDasharray = STROKE_DASHARRAY;
-    this.rectElement.style.strokeWidth = '' + STROKE_WIDTH;
-    this.rectElement.style.fill = FILL;
-    this.rectElement.style.fillOpacity = '' + FILL_OPACITY;
-    this.svgElement.appendChild(this.rectElement);
+      selectionCallback: (boundingBox: ScatterBoundingBox) => void
+    ) {
+      this.svgElement = container.querySelector('#selector') as SVGElement;
+      this.rectElement = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'rect'
+      );
+      this.rectElement.style.stroke = STROKE;
+      this.rectElement.style.strokeDasharray = STROKE_DASHARRAY;
+      this.rectElement.style.strokeWidth = '' + STROKE_WIDTH;
+      this.rectElement.style.fill = FILL;
+      this.rectElement.style.fillOpacity = '' + FILL_OPACITY;
+      this.svgElement.appendChild(this.rectElement);
 
-    this.selectionCallback = selectionCallback;
-    this.isMouseDown = false;
-  }
-
-  onMouseDown(offsetX: number, offsetY: number) {
-    this.isMouseDown = true;
-    this.svgElement.style.display = 'block';
-
-    this.startCoordinates = [offsetX, offsetY];
-    this.lastBoundingBox = {
-      x: this.startCoordinates[0],
-      y: this.startCoordinates[1],
-      width: 1,
-      height: 1
-    };
-  }
-
-  onMouseMove(offsetX: number, offsetY: number) {
-    if (!this.isMouseDown) {
-      return;
+      this.selectionCallback = selectionCallback;
+      this.isMouseDown = false;
     }
 
-    this.lastBoundingBox.x = Math.min(offsetX, this.startCoordinates[0]);
-    this.lastBoundingBox.y = Math.max(offsetY, this.startCoordinates[1]);
-    this.lastBoundingBox.width =
+    onMouseDown(offsetX: number, offsetY: number) {
+      this.isMouseDown = true;
+      this.svgElement.style.display = 'block';
+
+      this.startCoordinates = [offsetX, offsetY];
+      this.lastBoundingBox = {
+        x: this.startCoordinates[0],
+        y: this.startCoordinates[1],
+        width: 1,
+        height: 1,
+      };
+    }
+
+    onMouseMove(offsetX: number, offsetY: number) {
+      if (!this.isMouseDown) {
+        return;
+      }
+
+      this.lastBoundingBox.x = Math.min(offsetX, this.startCoordinates[0]);
+      this.lastBoundingBox.y = Math.max(offsetY, this.startCoordinates[1]);
+      this.lastBoundingBox.width =
         Math.max(offsetX, this.startCoordinates[0]) - this.lastBoundingBox.x;
-    this.lastBoundingBox.height =
+      this.lastBoundingBox.height =
         this.lastBoundingBox.y - Math.min(offsetY, this.startCoordinates[1]);
 
-    this.rectElement.setAttribute('x', '' + this.lastBoundingBox.x);
-    this.rectElement.setAttribute(
-        'y', '' + (this.lastBoundingBox.y - this.lastBoundingBox.height));
-    this.rectElement.setAttribute('width', '' + this.lastBoundingBox.width);
-    this.rectElement.setAttribute('height', '' + this.lastBoundingBox.height);
-  }
+      this.rectElement.setAttribute('x', '' + this.lastBoundingBox.x);
+      this.rectElement.setAttribute(
+        'y',
+        '' + (this.lastBoundingBox.y - this.lastBoundingBox.height)
+      );
+      this.rectElement.setAttribute('width', '' + this.lastBoundingBox.width);
+      this.rectElement.setAttribute('height', '' + this.lastBoundingBox.height);
+    }
 
-  onMouseUp() {
-    this.isMouseDown = false;
-    this.svgElement.style.display = 'none';
-    this.rectElement.setAttribute('width', '0');
-    this.rectElement.setAttribute('height', '0');
-    this.selectionCallback(this.lastBoundingBox);
+    onMouseUp() {
+      this.isMouseDown = false;
+      this.svgElement.style.display = 'none';
+      this.rectElement.setAttribute('width', '0');
+      this.rectElement.setAttribute('height', '0');
+      this.selectionCallback(this.lastBoundingBox);
+    }
   }
-}
-
-}  // namespace vz_projector
+} // namespace vz_projector
