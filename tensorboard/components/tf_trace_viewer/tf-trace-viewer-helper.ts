@@ -35,12 +35,12 @@ namespace tf_component_traceviewer {
   /**
    * Expand the input range by scale, keep the center invariant.
    */
-  export function expand(range: Range, scale: number) : Range {
+  export function expand(range: Range, scale: number): Range {
     var width = range.max - range.min;
     var mid = range.min + width / 2;
     return {
-      min: mid - scale * width / 2,
-      max: mid + scale * width / 2,
+      min: mid - (scale * width) / 2,
+      max: mid + (scale * width) / 2,
     };
   }
   /**
@@ -64,4 +64,4 @@ namespace tf_component_traceviewer {
       max: Math.min(range.max, bounds.max),
     };
   }
-}  // namespace tf_component_traceviewer
+} // namespace tf_component_traceviewer

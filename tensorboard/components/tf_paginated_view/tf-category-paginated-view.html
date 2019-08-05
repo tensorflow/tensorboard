@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-collapse/iron-collapse.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="tf-dom-repeat.html">
-<link rel="import" href="tf-paginated-view-store.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-dom-repeat.html" />
+<link rel="import" href="tf-paginated-view-store.html" />
 
 <!--
   tf-category-paginated-view takes a category and renders subset of its items
@@ -46,7 +46,9 @@ limitations under the License.
             <template is="dom-if" if="[[_isCompositeSearch(category)]]">
               <span>Tags matching multiple experiments</span>
               <template is="dom-if" if="[[_isInvalidSearchResults]]">
-                <span>&nbsp;<strong>(malformed regular expression)</strong></span>
+                <span
+                  >&nbsp;<strong>(malformed regular expression)</strong></span
+                >
               </template>
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
@@ -79,11 +81,13 @@ limitations under the License.
               <paper-button
                 on-tap="_performPreviousPage"
                 disabled$="[[!_hasPreviousPage]]"
-              >Previous page</paper-button>
+                >Previous page</paper-button
+              >
               <paper-button
                 on-tap="_performNextPage"
                 disabled$="[[!_hasNextPage]]"
-              >Next page</paper-button>
+                >Next page</paper-button
+              >
             </div>
           </template>
 
@@ -95,19 +99,19 @@ limitations under the License.
               <div style="display: inline-block; padding: 0 5px">
                 Page
                 <paper-input
-                   id="page-input"
-                   type="number"
-                   no-label-float
-                   min="1"
-                   max="[[_pageCount]]"
-                   value="[[_pageInputValue]]"
-                   style="display: inline-block; width: [[_inputWidth]];"
-                   on-input="_handlePageInputEvent"
-                   on-change="_handlePageChangeEvent"
-                   on-focus="_handlePageFocusEvent"
-                   on-blur="_handlePageBlurEvent"
-                 ></paper-input>
-                 of [[_pageCount]]
+                  id="page-input"
+                  type="number"
+                  no-label-float
+                  min="1"
+                  max="[[_pageCount]]"
+                  value="[[_pageInputValue]]"
+                  style="display: inline-block; width: [[_inputWidth]];"
+                  on-input="_handlePageInputEvent"
+                  on-change="_handlePageChangeEvent"
+                  on-focus="_handlePageFocusEvent"
+                  on-blur="_handlePageBlurEvent"
+                ></paper-input>
+                of [[_pageCount]]
               </div>
             </div>
 
@@ -115,11 +119,13 @@ limitations under the License.
               <paper-button
                 on-tap="_performPreviousPage"
                 disabled$="[[!_hasPreviousPage]]"
-              >Previous page</paper-button>
+                >Previous page</paper-button
+              >
               <paper-button
                 on-tap="_performNextPage"
                 disabled$="[[!_hasNextPage]]"
-              >Next page</paper-button>
+                >Next page</paper-button
+              >
             </div>
           </template>
         </div>
@@ -146,7 +152,7 @@ limitations under the License.
         width: 100%;
         font-size: 15px;
         line-height: 1;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
         padding: 10px 15px;
       }
 
@@ -243,7 +249,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-category-paginated-view",
+      is: 'tf-category-paginated-view',
       properties: {
         /**
          * The category object represented by this pane. Should be of
@@ -307,7 +313,7 @@ limitations under the License.
          */
         _limit: {
           type: Number,
-          value: 12,  // reasonably small and has lots of factors
+          value: 12, // reasonably small and has lots of factors
           observer: '_limitChanged',
         },
 
@@ -332,7 +338,7 @@ limitations under the License.
         },
 
         _currentPage: {
-          type: Number,  // 1-indexed
+          type: Number, // 1-indexed
           computed: '_computeCurrentPage(_limit, _activeIndex)',
         },
         _pageCount: {
@@ -357,12 +363,13 @@ limitations under the License.
         },
 
         _pageInputValue: {
-          type: String,  // value displayed in the input field at any time
-          computed: '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
+          type: String, // value displayed in the input field at any time
+          computed:
+            '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
           observer: '_updatePageInputValue',
         },
         _pageInputRawValue: {
-          type: String,  // updated live as the user types
+          type: String, // updated live as the user types
           value: '',
         },
         _pageInputFocused: {
@@ -397,8 +404,10 @@ limitations under the License.
         // Show a category unless it's a search results category where
         // there wasn't actually a search query.
         return !(
-            category.metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-            && category.name === "");
+          category.metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          category.name === ''
+        );
       },
 
       _computeItemsRendered() {
@@ -411,20 +420,26 @@ limitations under the License.
 
       _computeIsInvalidSearchResults(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-          && !metadata.validRegex);
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          !metadata.validRegex
+        );
       },
 
       _computeIsUniversalSearchQuery(metadata) {
         return (
-          metadata.type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
-          && metadata.universalRegex);
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          metadata.universalRegex
+        );
       },
 
       _isCompositeSearch() {
         const {type, compositeSearch} = this.category.metadata;
-        return compositeSearch &&
-            type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
+        return (
+          compositeSearch &&
+          type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+        );
       },
 
       ready() {
@@ -441,13 +456,19 @@ limitations under the License.
       },
 
       _updateRenderedItems(
-          itemsRendered, _, limit, activeIndex, pageCount, disablePagination) {
+        itemsRendered,
+        _,
+        limit,
+        activeIndex,
+        pageCount,
+        disablePagination
+      ) {
         if (!itemsRendered) return;
         const activePageIndex = Math.floor(activeIndex / limit);
-        const items = (this.category.items || []);
-        const domItems = disablePagination ?
-            items :
-            items.slice(activePageIndex * limit, (activePageIndex + 1) * limit);
+        const items = this.category.items || [];
+        const domItems = disablePagination
+          ? items
+          : items.slice(activePageIndex * limit, (activePageIndex + 1) * limit);
         this.updateDom(domItems, this.getCategoryItemKey);
       },
 
@@ -463,8 +484,9 @@ limitations under the License.
         return Math.floor(activeIndex / limit) + 1;
       },
       _computePageCount(_, limit) {
-        return this.category ?
-            Math.ceil((this.category.items).length / limit) : 0;
+        return this.category
+          ? Math.ceil(this.category.items.length / limit)
+          : 0;
       },
       _computeMultiplePagesExist(pageCount, disablePagination) {
         return !disablePagination && pageCount > 1;
@@ -510,8 +532,7 @@ limitations under the License.
         this.set('_pageInputRawValue', e.target.value);
         const oneIndexedPage = e.target.valueAsNumber;
         if (isNaN(oneIndexedPage)) return;
-        const page =
-          Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+        const page = Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
         this._setActiveIndex(this._limit * page);
       },
       _handlePageChangeEvent() {

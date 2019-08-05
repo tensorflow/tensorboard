@@ -88,9 +88,18 @@ var vz_chart_helpers;
       if (elementTransform != null) {
         const midX = elem.clientWidth / 2;
         const midY = elem.clientHeight / 2;
-        transform = Plottable.Utils.Math.multiplyTranslate(transform, [midX, midY]);
-        transform = Plottable.Utils.Math.multiplyMatrix(transform, Plottable.Utils.Math.invertMatrix(elementTransform));
-        transform = Plottable.Utils.Math.multiplyTranslate(transform, [-midX, -midY]);
+        transform = Plottable.Utils.Math.multiplyTranslate(transform, [
+          midX,
+          midY,
+        ]);
+        transform = Plottable.Utils.Math.multiplyMatrix(
+          transform,
+          Plottable.Utils.Math.invertMatrix(elementTransform)
+        );
+        transform = Plottable.Utils.Math.multiplyTranslate(transform, [
+          -midX,
+          -midY,
+        ]);
       }
 
       // apply scroll offsets from any ancestor element
@@ -103,7 +112,10 @@ var vz_chart_helpers;
         offsetY -= elem.offsetTop + elem.clientTop;
         offsetParent = elem.offsetParent;
       }
-      transform = Plottable.Utils.Math.multiplyTranslate(transform, [offsetX, offsetY]);
+      transform = Plottable.Utils.Math.multiplyTranslate(transform, [
+        offsetX,
+        offsetY,
+      ]);
     }
     return transform;
   }
@@ -120,7 +132,10 @@ var vz_chart_helpers;
         return clientPosition;
       }
 
-      const transformed = Plottable.Utils.Math.applyTransform(transform, clientPosition);
+      const transformed = Plottable.Utils.Math.applyTransform(
+        transform,
+        clientPosition
+      );
       return transformed;
     }
   }
@@ -129,10 +144,18 @@ var vz_chart_helpers;
     constructor(component) {
       super(component);
       // eventTarget is `document` by default. Change it to the root of chart.
-      this._eventTarget = component.root().rootElement().node();
+      this._eventTarget = component
+        .root()
+        .rootElement()
+        .node();
       // Requires custom translator that uses correct DOM traversal (with
       // WebComponents) to change pointer position to relative to the root node.
-      this._translator = new CustomTranslator(component.root().rootElement().node());
+      this._translator = new CustomTranslator(
+        component
+          .root()
+          .rootElement()
+          .node()
+      );
     }
 
     static getDispatcher(component) {
@@ -151,11 +174,18 @@ var vz_chart_helpers;
     constructor(component) {
       super(component);
       // eventTarget is `document` by default. Change it to the root of chart.
-      this._eventTarget = component.root().rootElement().node();
+      this._eventTarget = component
+        .root()
+        .rootElement()
+        .node();
       // Requires custom translator that uses correct DOM traversal (with
       // WebComponents) to change pointer position to relative to the root node.
       this._translator = new CustomTranslator(
-          component.root().rootElement().node());
+        component
+          .root()
+          .rootElement()
+          .node()
+      );
     }
 
     static getDispatcher(component) {
@@ -174,11 +204,13 @@ var vz_chart_helpers;
     _anchor(component) {
       this._isAnchored = true;
       this._mouseDispatcher = MouseDispatcher.getDispatcher(
-          this._componentAttachedTo);
+        this._componentAttachedTo
+      );
       this._mouseDispatcher.onMouseMove(this._mouseMoveCallback);
 
       this._touchDispatcher = TouchDispatcher.getDispatcher(
-          this._componentAttachedTo);
+        this._componentAttachedTo
+      );
       this._touchDispatcher.onTouchStart(this._touchStartCallback);
     }
   }
