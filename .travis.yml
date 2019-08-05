@@ -46,6 +46,9 @@ before_install:
 
 install:
   - elapsed "install"
+  # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
+  # to versions other than the most recent(!).
+  - pip install -U pip
   # Lint check deps.
   - pip install flake8==3.5.0
   - pip install yamllint==1.5.0
