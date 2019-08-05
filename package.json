@@ -34,6 +34,7 @@
     "@bazel/hide-bazel-files": "^0.34.0",
     "@bazel/ibazel": "^0.10.3",
     "@bazel/jasmine": "^0.32.2",
+    "@bazel/karma": "^0.32.2",
     "@bazel/typescript": "^0.34.0",
     "@types/jasmine": "^3.3.16",
     "@types/node": "^12.6.8",

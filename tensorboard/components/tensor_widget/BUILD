@@ -2,8 +2,19 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
+# load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("@npm_bazel_typescript//:index.bzl", "ts_library")
+
+# Setup web testing, choose browsers we can test on
+# load("@io_bazel_rules_webtesting//web:repositories.bzl", "browser_repositories", "web_test_repositories")
+
+# web_test_repositoriesa()
+# browser_repositories(
+#     chromium = True,
+# )
+
+load("@npm_bazel_karma//:index.bzl", "karma_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -21,6 +32,11 @@ tf_web_library(
     deps = [],
 )
 
+# rollup_bundle(
+#     name = "tensor_widget_1",
+#     entry_point = ":tensor-widget.ts",
+# )
+
 ts_library(
     name = "tensor_widget_lib",
     srcs = glob([
@@ -28,10 +44,15 @@ ts_library(
     ]),
 )
 
-jasmine_node_test(
-    name = "dtype-utils-test",
+# jasmine_node_test(
+#     name = "dtype-utils-test",
+#     srcs = ["dtype-utils-test.js"],
+#     deps = [
+#         ":tensor_widget_lib",
+#     ]
+# )
+
+karma_web_test(
+    name =  "dtype-utils-test",
     srcs = ["dtype-utils-test.js"],
-    deps = [
-        ":tensor_widget_lib",
-    ]
 )
