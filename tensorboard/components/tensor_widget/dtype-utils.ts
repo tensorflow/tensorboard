@@ -20,7 +20,7 @@ limitations under the License.
  */
 export function isIntegerDType(dtype: string): boolean {
   return (
-    dtype.match(/^int[0-9]+$/) != null || dtype.match(/^uint[0-9]+$/) != null
+    dtype.match(/^int[0-9]+$/) !== null || dtype.match(/^uint[0-9]+$/) !== null
   );
 }
 
@@ -31,7 +31,7 @@ export function isIntegerDType(dtype: string): boolean {
  */
 export function isFloatDType(dtype: string): boolean {
   return (
-    dtype.match(/^float[0-9]+$/) != null ||
-    dtype.match(/^bfloat[0-9]+$/) != null
+    dtype.match(/^float[0-9]+$/) !== null ||
+    dtype.match(/^bfloat[0-9]+$/) !== null
   );
 }
