@@ -24,7 +24,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-cp -LR "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/plugins_examples/example_basic/" \
+cp -LR "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/examples/plugins/example_basic/" \
     ./example-plugin/
 
 mkdir tensorboard-wheels
