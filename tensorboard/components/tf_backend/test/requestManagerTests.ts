@@ -13,113 +13,113 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
+  const {expect} = chai;
 
-const {expect} = chai;
-
-interface MockRequest {
-  resolve: Function;
-  reject: Function;
-  id: number;
-  url: string;
-}
-
-class MockedRequestManager extends RequestManager {
-  private resolvers: Function[];
-  private rejectors: Function[];
-  public requestsDispatched: number;
-  constructor(maxRequests = 10, maxRetries = 3) {
-    super(maxRequests, maxRetries);
-    this.resolvers = [];
-    this.rejectors = [];
-    this.requestsDispatched = 0;
+  interface MockRequest {
+    resolve: Function;
+    reject: Function;
+    id: number;
+    url: string;
   }
-  protected _promiseFromUrl(url) {
+
+  class MockedRequestManager extends RequestManager {
+    private resolvers: Function[];
+    private rejectors: Function[];
+    public requestsDispatched: number;
+    constructor(maxRequests = 10, maxRetries = 3) {
+      super(maxRequests, maxRetries);
+      this.resolvers = [];
+      this.rejectors = [];
+      this.requestsDispatched = 0;
+    }
+    protected _promiseFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const mockJSON = {
+          ok: true,
+          json() {
+            return url;
+          },
+          url,
+          status: 200,
+        };
+        const mockFailedRequest: any = {
+          ok: false,
+          url,
+          status: 502,
+        };
+        const mockFailure = new RequestNetworkError(mockFailedRequest, url);
+        this.resolvers.push(() => {
+          resolve(mockJSON);
+        });
+        this.rejectors.push(() => {
+          reject(mockFailure);
+        });
+        this.requestsDispatched++;
+      });
+    }
+    public resolveFakeRequest() {
+      this.resolvers.pop()();
+    }
+    public rejectFakeRequest() {
+      this.rejectors.pop()();
+    }
+    public dispatchAndResolve() {
+      // Wait for at least one request to be dispatched, then resolve it.
+      this.waitForDispatch(1).then(() => this.resolveFakeRequest());
+    }
+    public waitForDispatch(num) {
+      return waitForCondition(() => {
+        return this.requestsDispatched >= num;
+      });
+    }
+  }
+
+  /** Create a promise that returns when *check* returns true.
+   * May cause a test timeout if check never becomes true.
+   */
+
+  function waitForCondition(check: () => boolean): Promise<any> {
     return new Promise((resolve, reject) => {
-      const mockJSON = {
-        ok: true,
-        json() {
-          return url;
-        },
-        url,
-        status: 200,
+      const go = () => {
+        if (check()) {
+          resolve();
+        }
+        setTimeout(go, 2);
       };
-      const mockFailedRequest: any = {
-        ok: false,
-        url,
-        status: 502,
-      };
-      const mockFailure = new RequestNetworkError(mockFailedRequest, url);
-      this.resolvers.push(() => {
-        resolve(mockJSON);
-      });
-      this.rejectors.push(() => {
-        reject(mockFailure);
-      });
-      this.requestsDispatched++;
+      go();
     });
   }
-  public resolveFakeRequest() {
-    this.resolvers.pop()();
-  }
-  public rejectFakeRequest() {
-    this.rejectors.pop()();
-  }
-  public dispatchAndResolve() {
-    // Wait for at least one request to be dispatched, then resolve it.
-    this.waitForDispatch(1).then(() => this.resolveFakeRequest());
-  }
-  public waitForDispatch(num) {
-    return waitForCondition(() => {
-      return this.requestsDispatched >= num;
+
+  describe('backend', () => {
+    let sandbox;
+    beforeEach(() => {
+      sandbox = sinon.sandbox.create();
     });
-  }
-}
 
-/** Create a promise that returns when *check* returns true.
- * May cause a test timeout if check never becomes true.
- */
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-function waitForCondition(check: () => boolean): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const go = () => {
-      if (check()) {
-        resolve();
-      }
-      setTimeout(go, 2);
-    };
-    go();
-  });
-}
-
-describe('backend', () => {
-  let sandbox;
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  describe('request manager', () => {
-    it('request loads JSON properly', (done) => {
-      const rm = new RequestManager();
-      const promise = rm.request('data/example.json');
-      promise.then(
+    describe('request manager', () => {
+      it('request loads JSON properly', (done) => {
+        const rm = new RequestManager();
+        const promise = rm.request('data/example.json');
+        promise.then(
           (response) => {
             chai.assert.deepEqual(response, {foo: 3, bar: 'zoidberg'});
             done();
           },
           (reject) => {
             throw new Error(reject);
-          });
-    });
+          }
+        );
+      });
 
-    it('rejects on bad url', (done) => {
-      const rm = new RequestManager(5, 0);
-      const badUrl = '_bad_url_which_doesnt_exist.json';
-      const promise = rm.request(badUrl);
-      promise.then(
+      it('rejects on bad url', (done) => {
+        const rm = new RequestManager(5, 0);
+        const badUrl = '_bad_url_which_doesnt_exist.json';
+        const promise = rm.request(badUrl);
+        promise.then(
           (success) => {
             done(new Error('the promise should have rejected'));
           },
@@ -128,26 +128,27 @@ describe('backend', () => {
             chai.assert.include(reject.message, badUrl);
             chai.assert.equal(reject.req.status, 404);
             done();
-          });
-    });
+          }
+        );
+      });
 
-    it('can retry if requests fail', (done) => {
-      const rm = new MockedRequestManager(3, 5);
-      const r = rm.request('foo');
-      rm.waitForDispatch(1)
+      it('can retry if requests fail', (done) => {
+        const rm = new MockedRequestManager(3, 5);
+        const r = rm.request('foo');
+        rm.waitForDispatch(1)
           .then(() => {
             rm.rejectFakeRequest();
             return rm.waitForDispatch(2);
           })
           .then(() => rm.resolveFakeRequest());
-      r.then((success) => done());
-    });
+        r.then((success) => done());
+      });
 
-    it('retries at most maxRetries times', (done) => {
-      const MAX_RETRIES = 2;
-      const rm = new MockedRequestManager(3, MAX_RETRIES);
-      const r = rm.request('foo');
-      rm.waitForDispatch(1)
+      it('retries at most maxRetries times', (done) => {
+        const MAX_RETRIES = 2;
+        const rm = new MockedRequestManager(3, MAX_RETRIES);
+        const r = rm.request('foo');
+        rm.waitForDispatch(1)
           .then(() => {
             rm.rejectFakeRequest();
             return rm.waitForDispatch(2);
@@ -160,36 +161,55 @@ describe('backend', () => {
             rm.rejectFakeRequest();
           });
 
-      r.then(
+        r.then(
           (success) => done(new Error('The request should have failed')),
-          (failure) => done());
-    });
+          (failure) => done()
+        );
+      });
 
-    it('requestManager only sends maxRequests requests at a time', (done) => {
-      const rm = new MockedRequestManager(3);
-      const r0 = rm.request('1');
-      const r1 = rm.request('2');
-      const r2 = rm.request('3');
-      const r3 = rm.request('4');
-      chai.assert.equal(rm.activeRequests(), 3, 'three requests are active');
-      chai.assert.equal(
-          rm.outstandingRequests(), 4, 'four requests are pending');
-      rm.waitForDispatch(3)
+      it('requestManager only sends maxRequests requests at a time', (done) => {
+        const rm = new MockedRequestManager(3);
+        const r0 = rm.request('1');
+        const r1 = rm.request('2');
+        const r2 = rm.request('3');
+        const r3 = rm.request('4');
+        chai.assert.equal(rm.activeRequests(), 3, 'three requests are active');
+        chai.assert.equal(
+          rm.outstandingRequests(),
+          4,
+          'four requests are pending'
+        );
+        rm.waitForDispatch(3)
           .then(() => {
             chai.assert.equal(
-                rm.activeRequests(), 3, 'three requests are still active (1)');
+              rm.activeRequests(),
+              3,
+              'three requests are still active (1)'
+            );
             chai.assert.equal(
-                rm.requestsDispatched, 3, 'three requests were dispatched');
+              rm.requestsDispatched,
+              3,
+              'three requests were dispatched'
+            );
             rm.resolveFakeRequest();
             return rm.waitForDispatch(4);
           })
           .then(() => {
             chai.assert.equal(
-                rm.activeRequests(), 3, 'three requests are still active (2)');
+              rm.activeRequests(),
+              3,
+              'three requests are still active (2)'
+            );
             chai.assert.equal(
-                rm.requestsDispatched, 4, 'four requests were dispatched');
+              rm.requestsDispatched,
+              4,
+              'four requests were dispatched'
+            );
             chai.assert.equal(
-                rm.outstandingRequests(), 3, 'three requests are pending');
+              rm.outstandingRequests(),
+              3,
+              'three requests are pending'
+            );
             rm.resolveFakeRequest();
             rm.resolveFakeRequest();
             rm.resolveFakeRequest();
@@ -198,290 +218,313 @@ describe('backend', () => {
           .then(() => {
             chai.assert.equal(rm.activeRequests(), 0, 'all requests finished');
             chai.assert.equal(
-                rm.outstandingRequests(), 0, 'no requests pending');
+              rm.outstandingRequests(),
+              0,
+              'no requests pending'
+            );
             done();
           });
-    });
-
-    it('queue continues after failures', (done) => {
-      const rm = new MockedRequestManager(1, 0);
-      const r0 = rm.request('1');
-      const r1 = rm.request('2');
-      rm.waitForDispatch(1).then(() => {
-        rm.rejectFakeRequest();
       });
 
-      r0.then(
-            (success) => done(new Error('r0 should have failed')),
-            (failure) => 'unused_argument')
-          .then(() => rm.resolveFakeRequest());
+      it('queue continues after failures', (done) => {
+        const rm = new MockedRequestManager(1, 0);
+        const r0 = rm.request('1');
+        const r1 = rm.request('2');
+        rm.waitForDispatch(1).then(() => {
+          rm.rejectFakeRequest();
+        });
 
-      // When the first request rejects, it should decrement nActiveRequests
-      // and then launch remaining requests in queue (i.e. this one)
-      r1.then((success) => done(), (failure) => done(new Error(failure)));
-    });
+        r0.then(
+          (success) => done(new Error('r0 should have failed')),
+          (failure) => 'unused_argument'
+        ).then(() => rm.resolveFakeRequest());
 
-    it('queue is LIFO', (done) => {
-      /* This test is a bit tricky.
-       * We want to verify that the RequestManager queue has LIFO semantics.
-       * So we construct three requests off the bat: A, B, C.
-       * So LIFO semantics ensure these will resolve in order A, C, B.
-       * (Because the A request launches immediately when we create it, it's
-       * not in queue)
-       * Then after resolving A, C moves out of queue, and we create X.
-       * So expected final order is A, C, X, B.
-       * We verify this with an external var that counts how many requests were
-       * resolved.
-       */
-      const rm = new MockedRequestManager(1);
-      let nResolved = 0;
-      function assertResolutionOrder(expectedSpotInSequence) {
-        return () => {
-          nResolved++;
-          chai.assert.equal(expectedSpotInSequence, nResolved);
-        };
-      }
+        // When the first request rejects, it should decrement nActiveRequests
+        // and then launch remaining requests in queue (i.e. this one)
+        r1.then((success) => done(), (failure) => done(new Error(failure)));
+      });
 
-      function launchThirdRequest() {
-        rm.request('started late but goes third')
+      it('queue is LIFO', (done) => {
+        /* This test is a bit tricky.
+         * We want to verify that the RequestManager queue has LIFO semantics.
+         * So we construct three requests off the bat: A, B, C.
+         * So LIFO semantics ensure these will resolve in order A, C, B.
+         * (Because the A request launches immediately when we create it, it's
+         * not in queue)
+         * Then after resolving A, C moves out of queue, and we create X.
+         * So expected final order is A, C, X, B.
+         * We verify this with an external var that counts how many requests were
+         * resolved.
+         */
+        const rm = new MockedRequestManager(1);
+        let nResolved = 0;
+        function assertResolutionOrder(expectedSpotInSequence) {
+          return () => {
+            nResolved++;
+            chai.assert.equal(expectedSpotInSequence, nResolved);
+          };
+        }
+
+        function launchThirdRequest() {
+          rm.request('started late but goes third')
             .then(assertResolutionOrder(3))
             .then(() => rm.dispatchAndResolve());
-      }
+        }
 
-      rm.request('first')
-          .then(
-              assertResolutionOrder(1))  // Assert that this one resolved first
+        rm.request('first')
+          .then(assertResolutionOrder(1)) // Assert that this one resolved first
           .then(launchThirdRequest)
-          .then(() => rm.dispatchAndResolve());  // then trigger the next one
+          .then(() => rm.dispatchAndResolve()); // then trigger the next one
 
-      rm.request('this one goes fourth')  // created second, will go last
-          .then(assertResolutionOrder(
-              4))       // assert it was the fourth to get resolved
-          .then(done);  // finish the test
+        rm.request('this one goes fourth') // created second, will go last
+          .then(assertResolutionOrder(4)) // assert it was the fourth to get resolved
+          .then(done); // finish the test
 
-      rm.request('second')
+        rm.request('second')
           .then(assertResolutionOrder(2))
           .then(() => rm.dispatchAndResolve());
 
-      rm.dispatchAndResolve();
-    });
+        rm.dispatchAndResolve();
+      });
 
-    it('requestManager can clear queue', (done) => {
-      const rm = new MockedRequestManager(1);
-      let requestsResolved = 0;
-      let requestsRejected = 0;
-      const success = () => requestsResolved++;
-      const failure = (err) => {
-        chai.assert.equal(err.name, 'RequestCancellationError');
-        requestsRejected++;
-      };
-      const finishTheTest = () => {
-        chai.assert.equal(rm.activeRequests(), 0, 'no requests still active');
-        chai.assert.equal(
-            rm.requestsDispatched, 1, 'only one req was ever dispatched');
-        chai.assert.equal(rm.outstandingRequests(), 0, 'no pending requests');
-        chai.assert.equal(requestsResolved, 1, 'one request got resolved');
-        chai.assert.equal(
-            requestsRejected, 4, 'four were cancelled and threw errors');
-        done();
-      };
-      rm.request('0').then(success, failure).then(finishTheTest);
-      rm.request('1').then(success, failure);
-      rm.request('2').then(success, failure);
-      rm.request('3').then(success, failure);
-      rm.request('4').then(success, failure);
-      chai.assert.equal(rm.activeRequests(), 1, 'one req is active');
-      rm.waitForDispatch(1).then(() => {
+      it('requestManager can clear queue', (done) => {
+        const rm = new MockedRequestManager(1);
+        let requestsResolved = 0;
+        let requestsRejected = 0;
+        const success = () => requestsResolved++;
+        const failure = (err) => {
+          chai.assert.equal(err.name, 'RequestCancellationError');
+          requestsRejected++;
+        };
+        const finishTheTest = () => {
+          chai.assert.equal(rm.activeRequests(), 0, 'no requests still active');
+          chai.assert.equal(
+            rm.requestsDispatched,
+            1,
+            'only one req was ever dispatched'
+          );
+          chai.assert.equal(rm.outstandingRequests(), 0, 'no pending requests');
+          chai.assert.equal(requestsResolved, 1, 'one request got resolved');
+          chai.assert.equal(
+            requestsRejected,
+            4,
+            'four were cancelled and threw errors'
+          );
+          done();
+        };
+        rm.request('0')
+          .then(success, failure)
+          .then(finishTheTest);
+        rm.request('1').then(success, failure);
+        rm.request('2').then(success, failure);
+        rm.request('3').then(success, failure);
+        rm.request('4').then(success, failure);
         chai.assert.equal(rm.activeRequests(), 1, 'one req is active');
-        chai.assert.equal(rm.requestsDispatched, 1, 'one req was dispatched');
-        chai.assert.equal(rm.outstandingRequests(), 5, 'five reqs outstanding');
-        rm.clearQueue();
-        rm.resolveFakeRequest();
-        // resolving the first request triggers finishTheTest
-      });
-    });
-
-    it('throws an error when a GET request has a body', function() {
-      const rm = new RequestManager();
-      const badOptions = new RequestOptions();
-      badOptions.methodType = HttpMethodType.GET;
-      badOptions.body = "a body";
-      chai.assert.throws(
-        ()=>rm.requestWithOptions("http://www.google.com", badOptions),
-        InvalidRequestOptionsError);
-    });
-
-    describe('tests using sinon.fakeServer', function() {
-      let server;
-
-      beforeEach(function() {
-        server = sinon.fakeServer.create();
-        server.respondImmediately = true;
-        server.respondWith("{}");
+        rm.waitForDispatch(1).then(() => {
+          chai.assert.equal(rm.activeRequests(), 1, 'one req is active');
+          chai.assert.equal(rm.requestsDispatched, 1, 'one req was dispatched');
+          chai.assert.equal(
+            rm.outstandingRequests(),
+            5,
+            'five reqs outstanding'
+          );
+          rm.clearQueue();
+          rm.resolveFakeRequest();
+          // resolving the first request triggers finishTheTest
+        });
       });
 
-      afterEach(function() {
-        server.restore();
+      it('throws an error when a GET request has a body', function() {
+        const rm = new RequestManager();
+        const badOptions = new RequestOptions();
+        badOptions.methodType = HttpMethodType.GET;
+        badOptions.body = 'a body';
+        chai.assert.throws(
+          () => rm.requestWithOptions('http://www.google.com', badOptions),
+          InvalidRequestOptionsError
+        );
       });
 
-      it('builds correct XMLHttpRequest when request(url) is called',
-         function() {
-           const rm = new RequestManager();
-           return rm.request("my_url")
-             .then(()=>{
-               chai.assert.lengthOf(server.requests, 1);
-               chai.assert.equal(server.requests[0].url, "my_url");
-               chai.assert.equal(server.requests[0].requestBody, null);
-               chai.assert.equal(server.requests[0].method, HttpMethodType.GET);
-               chai.assert.notProperty(server.requests[0].requestHeaders,
-                                       "Content-Type");
-             });
-         });
+      describe('tests using sinon.fakeServer', function() {
+        let server;
 
-      it('builds correct XMLHttpRequest when request(url, postData) is called',
-         function() {
-           const rm = new RequestManager();
-           return rm.request("my_url",
-                              {"key1": "value1", "key2": "value2"})
-             .then(() => {
-               chai.assert.lengthOf(server.requests, 1);
-               chai.assert.equal(server.requests[0].url, "my_url");
-               chai.assert.equal(server.requests[0].method,
-                                 HttpMethodType.POST);
-               chai.assert.instanceOf(server.requests[0].requestBody, FormData);
-               chai.assert.sameDeepMembers(
-                 Array.from(server.requests[0].requestBody.entries()),
-                 [["key1", "value1"], ["key2", "value2"]]);
-             });
-         });
+        beforeEach(function() {
+          server = sinon.fakeServer.create();
+          server.respondImmediately = true;
+          server.respondWith('{}');
+        });
 
-      it('builds correct XMLHttpRequest when requestWithOptions is called',
-         function() {
-           const rm = new RequestManager();
-           const requestOptions = new RequestOptions();
-           requestOptions.methodType = HttpMethodType.POST;
-           requestOptions.contentType = "text/plain;charset=utf-8";
-           requestOptions.body = "the body";
-           return rm.requestWithOptions("my_url", requestOptions)
-             .then(()=>{
-               chai.assert.lengthOf(server.requests, 1);
-               chai.assert.equal(server.requests[0].url, "my_url");
-               chai.assert.equal(server.requests[0].method,
-                                 HttpMethodType.POST);
-               chai.assert.equal(server.requests[0].requestBody, "the body");
-               chai.assert.equal(
-                 server.requests[0].requestHeaders["Content-Type"],
-                 "text/plain;charset=utf-8");
-             });
-         });
-    });
+        afterEach(function() {
+          server.restore();
+        });
 
-    describe('fetch', () => {
-      beforeEach(function() {
-        this.stubbedFetch = sandbox.stub(window, 'fetch');
-        this.clock = sandbox.useFakeTimers();
-
-        this.resolvesAfter = function(value: any, timeInMs: number):
-            Promise<any> {
-          return new Promise((resolve) => {
-            setTimeout(() => resolve(value), timeInMs);
+        it('builds correct XMLHttpRequest when request(url) is called', function() {
+          const rm = new RequestManager();
+          return rm.request('my_url').then(() => {
+            chai.assert.lengthOf(server.requests, 1);
+            chai.assert.equal(server.requests[0].url, 'my_url');
+            chai.assert.equal(server.requests[0].requestBody, null);
+            chai.assert.equal(server.requests[0].method, HttpMethodType.GET);
+            chai.assert.notProperty(
+              server.requests[0].requestHeaders,
+              'Content-Type'
+            );
           });
-        }
+        });
+
+        it('builds correct XMLHttpRequest when request(url, postData) is called', function() {
+          const rm = new RequestManager();
+          return rm
+            .request('my_url', {key1: 'value1', key2: 'value2'})
+            .then(() => {
+              chai.assert.lengthOf(server.requests, 1);
+              chai.assert.equal(server.requests[0].url, 'my_url');
+              chai.assert.equal(server.requests[0].method, HttpMethodType.POST);
+              chai.assert.instanceOf(server.requests[0].requestBody, FormData);
+              chai.assert.sameDeepMembers(
+                Array.from(server.requests[0].requestBody.entries()),
+                [['key1', 'value1'], ['key2', 'value2']]
+              );
+            });
+        });
+
+        it('builds correct XMLHttpRequest when requestWithOptions is called', function() {
+          const rm = new RequestManager();
+          const requestOptions = new RequestOptions();
+          requestOptions.methodType = HttpMethodType.POST;
+          requestOptions.contentType = 'text/plain;charset=utf-8';
+          requestOptions.body = 'the body';
+          return rm.requestWithOptions('my_url', requestOptions).then(() => {
+            chai.assert.lengthOf(server.requests, 1);
+            chai.assert.equal(server.requests[0].url, 'my_url');
+            chai.assert.equal(server.requests[0].method, HttpMethodType.POST);
+            chai.assert.equal(server.requests[0].requestBody, 'the body');
+            chai.assert.equal(
+              server.requests[0].requestHeaders['Content-Type'],
+              'text/plain;charset=utf-8'
+            );
+          });
+        });
       });
 
-      it('resolves', async function() {
-        this.stubbedFetch.returns(
-            Promise.resolve(new Response('Success', {status: 200})));
-        const rm = new RequestManager();
+      describe('fetch', () => {
+        beforeEach(function() {
+          this.stubbedFetch = sandbox.stub(window, 'fetch');
+          this.clock = sandbox.useFakeTimers();
 
-        const response = await rm.fetch('foo');
+          this.resolvesAfter = function(
+            value: any,
+            timeInMs: number
+          ): Promise<any> {
+            return new Promise((resolve) => {
+              setTimeout(() => resolve(value), timeInMs);
+            });
+          };
+        });
 
-        expect(response).to.have.property('ok', true);
-        expect(response).to.have.property('status', 200);
-        const body = await response.text();
-        expect(body).to.equal('Success');
-      });
+        it('resolves', async function() {
+          this.stubbedFetch.returns(
+            Promise.resolve(new Response('Success', {status: 200}))
+          );
+          const rm = new RequestManager();
 
-      it('retries', async function() {
-        this.stubbedFetch.onCall(0).returns(
-            Promise.resolve(new Response('Error 1', {status: 500})));
-        this.stubbedFetch.onCall(1).returns(
-            Promise.resolve(new Response('Error 2', {status: 500})));
-        this.stubbedFetch.onCall(2).returns(
-            Promise.resolve(new Response('Success', {status: 200})));
-        const rm = new RequestManager();
+          const response = await rm.fetch('foo');
 
-        const response = await rm.fetch('foo');
+          expect(response).to.have.property('ok', true);
+          expect(response).to.have.property('status', 200);
+          const body = await response.text();
+          expect(body).to.equal('Success');
+        });
 
-        expect(response).to.have.property('ok', true);
-        expect(response).to.have.property('status', 200);
-        const body = await response.text();
-        expect(body).to.equal('Success');
-      });
+        it('retries', async function() {
+          this.stubbedFetch
+            .onCall(0)
+            .returns(Promise.resolve(new Response('Error 1', {status: 500})));
+          this.stubbedFetch
+            .onCall(1)
+            .returns(Promise.resolve(new Response('Error 2', {status: 500})));
+          this.stubbedFetch
+            .onCall(2)
+            .returns(Promise.resolve(new Response('Success', {status: 200})));
+          const rm = new RequestManager();
 
-      it('gives up after max retries', async function() {
-        const failure = new Response('Error', {status: 500});
-        this.stubbedFetch.returns(Promise.resolve(failure));
-        const rm = new RequestManager();
+          const response = await rm.fetch('foo');
 
-        const response = await rm.fetch('foo');
+          expect(response).to.have.property('ok', true);
+          expect(response).to.have.property('status', 200);
+          const body = await response.text();
+          expect(body).to.equal('Success');
+        });
 
-        expect(this.stubbedFetch).to.have.been.calledThrice;
-        expect(response).to.have.property('ok', false);
-        expect(response).to.have.property('status', 500);
-        const body = await response.text();
-        expect(body).to.equal('Error');
-      });
+        it('gives up after max retries', async function() {
+          const failure = new Response('Error', {status: 500});
+          this.stubbedFetch.returns(Promise.resolve(failure));
+          const rm = new RequestManager();
 
-      it('sends requests concurrently', async function() {
-        this.stubbedFetch.onCall(0).returns(
-            this.resolvesAfter(new Response('nay', {status: 200}), 3000));
-        this.stubbedFetch.onCall(1).returns(
-            Promise.resolve(new Response('yay', {status: 200})));
+          const response = await rm.fetch('foo');
 
-        const rm = new RequestManager(/** nSimultaneousRequests */ 2);
+          expect(this.stubbedFetch).to.have.been.calledThrice;
+          expect(response).to.have.property('ok', false);
+          expect(response).to.have.property('status', 500);
+          const body = await response.text();
+          expect(body).to.equal('Error');
+        });
 
-        const promise1 = rm.fetch('foo');
-        const promise2 = rm.fetch('bar');
+        it('sends requests concurrently', async function() {
+          this.stubbedFetch
+            .onCall(0)
+            .returns(
+              this.resolvesAfter(new Response('nay', {status: 200}), 3000)
+            );
+          this.stubbedFetch
+            .onCall(1)
+            .returns(Promise.resolve(new Response('yay', {status: 200})));
 
-        const secondResponse = await Promise.race([promise1, promise2]);
-        const secondBody = await secondResponse.text();
-        expect(secondBody).to.equal('yay');
+          const rm = new RequestManager(/** nSimultaneousRequests */ 2);
 
-        this.clock.tick(3000);
+          const promise1 = rm.fetch('foo');
+          const promise2 = rm.fetch('bar');
 
-        const firstResponse = await promise1;
-        const firstBody = await firstResponse.text();
-        expect(firstBody).to.equal('nay');
-      });
+          const secondResponse = await Promise.race([promise1, promise2]);
+          const secondBody = await secondResponse.text();
+          expect(secondBody).to.equal('yay');
 
-      it('queues requests', async function() {
-        this.stubbedFetch.onCall(0).returns(
-            this.resolvesAfter(new Response('nay', {status: 200}), 3000));
-        this.stubbedFetch.onCall(1).returns(
-            Promise.resolve(new Response('yay', {status: 200})));
+          this.clock.tick(3000);
 
+          const firstResponse = await promise1;
+          const firstBody = await firstResponse.text();
+          expect(firstBody).to.equal('nay');
+        });
 
-        const rm = new RequestManager(/** nSimultaneousRequests */ 1);
+        it('queues requests', async function() {
+          this.stubbedFetch
+            .onCall(0)
+            .returns(
+              this.resolvesAfter(new Response('nay', {status: 200}), 3000)
+            );
+          this.stubbedFetch
+            .onCall(1)
+            .returns(Promise.resolve(new Response('yay', {status: 200})));
 
-        const promise1 = rm.fetch('foo');
-        const promise2 = rm.fetch('bar');
+          const rm = new RequestManager(/** nSimultaneousRequests */ 1);
 
-        expect(rm.activeRequests()).to.equal(1);
-        expect(rm.outstandingRequests()).to.equal(2);
+          const promise1 = rm.fetch('foo');
+          const promise2 = rm.fetch('bar');
 
-        this.clock.tick(3000);
+          expect(rm.activeRequests()).to.equal(1);
+          expect(rm.outstandingRequests()).to.equal(2);
 
-        const firstResponse = await Promise.race([promise1, promise2]);
-        const firstBody = await firstResponse.text();
-        expect(firstBody).to.equal('nay');
+          this.clock.tick(3000);
 
-        const secondResponse = await promise2;
-        const secondBody = await secondResponse.text();
-        expect(secondBody).to.equal('yay');
+          const firstResponse = await Promise.race([promise1, promise2]);
+          const firstBody = await firstResponse.text();
+          expect(firstBody).to.equal('nay');
+
+          const secondResponse = await promise2;
+          const secondBody = await secondResponse.text();
+          expect(secondBody).to.equal('yay');
+        });
       });
     });
   });
-});
-
-}  // namespace tf_backend
+} // namespace tf_backend
