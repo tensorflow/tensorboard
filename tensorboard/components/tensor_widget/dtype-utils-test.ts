@@ -56,9 +56,3 @@ describe('isFloatDType', () => {
     expect(isFloatDType('complex64')).toEqual(false);
   });
 });
-
-// describe('isFloatDType', () => {
-//   it('floats', () => {
-//     expect(1).toEqual(1);
-//   });
-// });
