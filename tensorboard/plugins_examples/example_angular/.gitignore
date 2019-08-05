@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+*.swp
+build
+*.egg-info
+dist
+*.pyc
