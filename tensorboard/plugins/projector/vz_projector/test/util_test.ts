@@ -13,32 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector.test {
+  describe('getURLParams', () => {
+    it('search query with valid param returns correct object', () => {
+      let urlParams = util.getURLParams('?config=http://google.com/');
+      assert.deepEqual({config: 'http://google.com/'}, urlParams);
+    });
 
-describe('getURLParams', () => {
-  it('search query with valid param returns correct object', () => {
-    let urlParams = util.getURLParams('?config=http://google.com/');
-    assert.deepEqual({'config': 'http://google.com/'}, urlParams);
+    it('search query with multiple valid params returns correct object', () => {
+      let urlParams = util.getURLParams('?config=http://google.com/&foo=bar');
+      assert.deepEqual({config: 'http://google.com/', foo: 'bar'}, urlParams);
+    });
+
+    it('search query with valid param with URL encoded characters', () => {
+      let urlParams = util.getURLParams('?config=http://google.com/%20search');
+      assert.deepEqual({config: 'http://google.com/ search'}, urlParams);
+    });
+
+    it('search query with pound sign', () => {
+      let urlParams = util.getURLParams('?config=http://google.com/#foo');
+      assert.deepEqual({config: 'http://google.com/'}, urlParams);
+    });
+
+    it('no search query returns empty object', () => {
+      let urlParams = util.getURLParams('');
+      assert.deepEqual({}, urlParams);
+    });
   });
-
-  it('search query with multiple valid params returns correct object', () => {
-    let urlParams = util.getURLParams('?config=http://google.com/&foo=bar');
-    assert.deepEqual({'config': 'http://google.com/', 'foo': 'bar'}, urlParams);
-  });
-
-  it('search query with valid param with URL encoded characters', () => {
-    let urlParams = util.getURLParams('?config=http://google.com/%20search');
-    assert.deepEqual({'config': 'http://google.com/ search'}, urlParams);
-  });
-
-  it('search query with pound sign', () => {
-    let urlParams = util.getURLParams('?config=http://google.com/#foo');
-    assert.deepEqual({'config': 'http://google.com/'}, urlParams);
-  });
-
-  it('no search query returns empty object', () => {
-    let urlParams = util.getURLParams('');
-    assert.deepEqual({}, urlParams);
-  });
-});
-
-}  // namespace vz_projector.test
+} // namespace vz_projector.test
