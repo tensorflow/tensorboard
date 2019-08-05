@@ -15,12 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-hparams-query-pane/tf-hparams-query-pane.html">
-<link rel="import" href="../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html">
-<link rel="import" href="../tf-hparams-google-analytics-tracker/tf-hparams-google-analytics-tracker.html">
-<link rel="import" href="../tf-imports/vaadin-split-layout.html">
-<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-hparams-query-pane/tf-hparams-query-pane.html" />
+<link
+  rel="import"
+  href="../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html"
+/>
+<link
+  rel="import"
+  href="../tf-hparams-google-analytics-tracker/tf-hparams-google-analytics-tracker.html"
+/>
+<link rel="import" href="../tf-imports/vaadin-split-layout.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
 
 <!-- The entry point into the hparams plugin frontend.
 A container for two sub-elements:
@@ -43,7 +49,8 @@ TODO(erez): Add aggregation of repeated trials.
           backend="[[backend]]"
           experiment-name="[[experimentName]]"
           configuration="{{_configuration}}"
-          session-groups="{{_sessionGroups}}">
+          session-groups="{{_sessionGroups}}"
+        >
         </tf-hparams-query-pane>
       </div>
       <div class="center" slot="center">
@@ -54,13 +61,16 @@ TODO(erez): Add aggregation of repeated trials.
           bug-report-url="[[bugReportUrl]]"
           experiment-name="[[experimentName]]"
           configuration="[[_configuration]]"
-          session-groups="[[_sessionGroups]]">
+          session-groups="[[_sessionGroups]]"
+        >
         </tf-hparams-sessions-pane>
       </div>
     </vaadin-split-layout>
-    <tf-hparams-google-analytics-tracker id="tracker"
-                                         tracking-id="[[trackingId]]"
-                                         name="tf_hparams">
+    <tf-hparams-google-analytics-tracker
+      id="tracker"
+      tracking-id="[[trackingId]]"
+      name="tf_hparams"
+    >
     </tf-hparams-google-analytics-tracker>
 
     <style>
@@ -119,39 +129,40 @@ TODO(erez): Add aggregation of repeated trials.
         // will have its own throttler, rather than using a global one.
         _throttledSendEventToGA: {
           type: Function,
-          value: () => _.throttle(
+          value: () =>
+            _.throttle(
               function() {
                 this._handleGAEvent({
                   detail: {
-                    hitType: "event",
-                    eventCategory: "UserInteraction",
-                    eventLabel: "Experiment: " + this.experimentName
-                  }
+                    hitType: 'event',
+                    eventCategory: 'UserInteraction',
+                    eventLabel: 'Experiment: ' + this.experimentName,
+                  },
                 });
               },
               60000 /* wait = 60000 milliseconds or 1 minute */,
               {leading: true} /* Call on the leading edge of wait period. */
-          )
-        }
+            ),
+        },
       },
 
       // Listen for google-analytics-tracking events from child elements
       // and dispatch them to the tracker.
       listeners: {
-        "mousemove": "_sendEventToGA",
-        "tap": "_sendEventToGA",
-        "google-analytics-tracking": "_handleGAEvent"
+        mousemove: '_sendEventToGA',
+        tap: '_sendEventToGA',
+        'google-analytics-tracking': '_handleGAEvent',
       },
 
       attached() {
         // We don't use 'ready()', since empirically, ready() can be called
         // before 'trackingId' is set.
-        this._handleGAEvent({detail: {hitType: "pageview"}});
+        this._handleGAEvent({detail: {hitType: 'pageview'}});
       },
 
       // This can be called to refresh the plugin.
       reload() {
-        this.$["query-pane"].reload();
+        this.$['query-pane'].reload();
       },
 
       _sendEventToGA() {
@@ -160,7 +171,7 @@ TODO(erez): Add aggregation of repeated trials.
 
       _handleGAEvent(event) {
         this.$.tracker.handleEvent(event);
-      }
+      },
     });
   </script>
 </dom-module>
