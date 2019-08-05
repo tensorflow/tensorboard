@@ -2,24 +2,29 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
-# load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-# load("@npm_bazel_karma//:index.bzl", "ts_web_test", "ts_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_library")
 
 load("@npm_bazel_karma//:index.bzl", "karma_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
-# rollup_bundle(
-#     name = "tensor_widget",
-#     entry_point = ":tensor-widget.ts",
-# )
+rollup_bundle(
+    name = "tensor_widget",
+    entry_point = ":tensor-widget.ts",
+    deps = [
+        ":tensor_widget_lib",
+    ]
+)
 
 ts_library(
     name = "tensor_widget_lib",
     srcs = glob([
         "dtype-utils.ts",
+        "health-pill-types.ts",
+        "tensor-widget.ts",
+        "types.ts",
     ]),
 )
 
