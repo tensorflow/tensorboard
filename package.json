@@ -9,7 +9,9 @@
   "scripts": {
     "postinstall": "ngc -p angular-metadata.tsconfig.json",
     "build": "bazel build //...",
-    "test": "ibazel test //..."
+    "test": "ibazel test //...",
+    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts}",
+    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts}"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "@types/jasmine": "^3.3.16",
     "@types/node": "^12.6.8",
     "chai": "^4.2.0",
+    "prettier": "1.18.2",
     "typescript": "~3.4.5"
   },
   "dependencies": {

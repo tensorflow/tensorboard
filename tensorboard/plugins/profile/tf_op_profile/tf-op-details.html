@@ -15,8 +15,8 @@ You may obtain a copy of the License at
     limitations under the License.
 -->
 
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="utils.html">
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="utils.html" />
 
 <!--
   tf-op-bar shows a small % utilization bar, colored using flameColor.
@@ -30,26 +30,25 @@ You may obtain a copy of the License at
         line-height: 1.5em;
       }
     </style>
-&nbsp;[[_percent(value)]]
+    &nbsp;[[_percent(value)]]
   </template>
   <script>
-Polymer({
-  is: 'tf-op-bar',
-  properties: {
-    value: {
-      type: Number,
-      notify: true,
-      observer: '_updateValue',
-    },
-  },
-  _percent: tf_op_profile.percent,
-  _updateValue: function(value) {
-    const color = tf_op_profile.flameColor(value);
-    const length = tf_op_profile.percent(value);
-    this.style.background =
-        `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
-  },
-});
+    Polymer({
+      is: 'tf-op-bar',
+      properties: {
+        value: {
+          type: Number,
+          notify: true,
+          observer: '_updateValue',
+        },
+      },
+      _percent: tf_op_profile.percent,
+      _updateValue: function(value) {
+        const color = tf_op_profile.flameColor(value);
+        const length = tf_op_profile.percent(value);
+        this.style.background = `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
+      },
+    });
   </script>
 </dom-module>
 
@@ -92,10 +91,20 @@ Polymer({
         width: 50%;
         border-spacing: 1em 0.3em;
       }
-      .layout > * { display: table-row; }
-      .layout > * > * { display: table-cell; }
-      .layout .size, .layout .size-x { text-align: center; }
-      .layout .size-x { font-weight: bold; color: #888; }
+      .layout > * {
+        display: table-row;
+      }
+      .layout > * > * {
+        display: table-cell;
+      }
+      .layout .size,
+      .layout .size-x {
+        text-align: center;
+      }
+      .layout .size-x {
+        font-weight: bold;
+        color: #888;
+      }
       .layout .semantics {
         font-size: smaller;
         font-weight: bold;
@@ -132,7 +141,8 @@ Polymer({
           <code class="expression">[[node.xla.provenance]]</code>
         </div>
         <div class="unavailable" hidden="[[!_fused(node)]]">
-          Performance information for individual fused operations is not available.
+          Performance information for individual fused operations is not
+          available.
         </div>
         <div class="unavailable" hidden="[[!node.category]]">
           Select items within this category for performance details.
@@ -145,7 +155,11 @@ Polymer({
               <div>
                 <span class="size">[[item.size]]</span>
                 <span class="semantics">[[item.semantics]]</span>
-                <span class="alignment" style$="background-color:[[_dimensionColor(item)]]">[[_dimensionHint(item)]]</span>
+                <span
+                  class="alignment"
+                  style$="background-color:[[_dimensionColor(item)]]"
+                  >[[_dimensionHint(item)]]</span
+                >
               </div>
             </template>
           </div>
@@ -155,47 +169,55 @@ Polymer({
   </template>
 
   <script>
-Polymer({
-  is: 'tf-op-details',
-  properties: {
-    node: {
-      type: Object,
-      notify: true,
-      observer: '_updateCard',
-    },
-  },
-  _utilization: tf_op_profile.utilization,
-  _memoryUtilization: tf_op_profile.memoryUtilization,
-  _hasFlops: tf_op_profile.hasFlops,
-  _hasMemoryUtilization: tf_op_profile.hasMemoryUtilization,
-  _updateCard: function(node) {
-    if (!node) return;
-    var color = tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
-    this.$.card.updateStyles({"--paper-card-background-color": color});
-  },
-  _subheader: function(node) {
-    if (!node) return null;
-    if (node.xla) return node.xla.category + " operation";
-    if (node.category) return "Operation category";
-    return "Unknown";
-  },
-  _fused: function(node) {
-    return node && node.xla && !node.metrics;
-  },
-  _dimensionColor: function(dim) {
-    if (!dim || !dim.alignment) return null;
-    var ratio = dim.size / dim.alignment;
-    // Colors should grade harshly: 50% in a dimension is already very bad.
-    var harshCurve = (x) => 1 - Math.sqrt(1 - x);
-    return tf_op_profile.flameColor(ratio / Math.ceil(ratio), 1, 0.25, harshCurve);
-  },
-  _dimensionHint: function(dim) {
-    if (!dim || !dim.alignment) return null;
-    var mul = Math.ceil(dim.size / dim.alignment);
-    var mulSuffix = (mul == 1) ? "" : ": " + mul + " × " + dim.alignment;
-    if (dim.size % dim.alignment == 0) return "Exact fit" + mulSuffix;
-    return "Pad to " + (mul * dim.alignment) + mulSuffix;
-  },
-});
+    Polymer({
+      is: 'tf-op-details',
+      properties: {
+        node: {
+          type: Object,
+          notify: true,
+          observer: '_updateCard',
+        },
+      },
+      _utilization: tf_op_profile.utilization,
+      _memoryUtilization: tf_op_profile.memoryUtilization,
+      _hasFlops: tf_op_profile.hasFlops,
+      _hasMemoryUtilization: tf_op_profile.hasMemoryUtilization,
+      _updateCard: function(node) {
+        if (!node) return;
+        var color = tf_op_profile.flameColor(
+          tf_op_profile.utilization(node),
+          0.7
+        );
+        this.$.card.updateStyles({'--paper-card-background-color': color});
+      },
+      _subheader: function(node) {
+        if (!node) return null;
+        if (node.xla) return node.xla.category + ' operation';
+        if (node.category) return 'Operation category';
+        return 'Unknown';
+      },
+      _fused: function(node) {
+        return node && node.xla && !node.metrics;
+      },
+      _dimensionColor: function(dim) {
+        if (!dim || !dim.alignment) return null;
+        var ratio = dim.size / dim.alignment;
+        // Colors should grade harshly: 50% in a dimension is already very bad.
+        var harshCurve = (x) => 1 - Math.sqrt(1 - x);
+        return tf_op_profile.flameColor(
+          ratio / Math.ceil(ratio),
+          1,
+          0.25,
+          harshCurve
+        );
+      },
+      _dimensionHint: function(dim) {
+        if (!dim || !dim.alignment) return null;
+        var mul = Math.ceil(dim.size / dim.alignment);
+        var mulSuffix = mul == 1 ? '' : ': ' + mul + ' × ' + dim.alignment;
+        if (dim.size % dim.alignment == 0) return 'Exact fit' + mulSuffix;
+        return 'Pad to ' + mul * dim.alignment + mulSuffix;
+      },
+    });
   </script>
 </dom-module>
