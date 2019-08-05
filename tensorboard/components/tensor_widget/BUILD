@@ -10,8 +10,19 @@ load("@npm_bazel_karma//:index.bzl", "karma_web_test")
 
 licenses(["notice"])  # Apache 2.0
 
-rollup_bundle(
+tf_web_library(
     name = "tensor_widget",
+    srcs = [
+        ":tensor_widget_binary.js",
+    ],
+    path = "/tensor-widget",
+    deps = [
+        ":tensor_widget_binary",
+    ]
+)
+
+rollup_bundle(
+    name = "tensor_widget_binary",
     entry_point = ":tensor-widget.ts",
     deps = [
         ":tensor_widget_lib",
@@ -20,12 +31,12 @@ rollup_bundle(
 
 ts_library(
     name = "tensor_widget_lib",
-    srcs = glob([
+    srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
         "tensor-widget.ts",
         "types.ts",
-    ]),
+    ],
 )
 
 ts_library(
@@ -35,8 +46,8 @@ ts_library(
         "dtype-utils-test.ts",
     ],
     deps = [
-	    ":tensor_widget_lib",
-	    "@npm//@types/jasmine",
+        ":tensor_widget_lib",
+        "@npm//@types/jasmine",
     ],
     tsconfig = "//:tsconfig-test",
 )
