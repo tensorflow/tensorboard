@@ -16,7 +16,7 @@ tf_web_library(
     path = "/tensor-widget",
     deps = [
         ":tensor_widget_binary",
-    ]
+    ],
 )
 
 rollup_bundle(
@@ -24,7 +24,7 @@ rollup_bundle(
     entry_point = ":tensor-widget.ts",
     deps = [
         ":tensor_widget_lib",
-    ]
+    ],
 )
 
 ts_library(
@@ -45,7 +45,9 @@ ts_library(
     ],
     deps = [
         ":tensor_widget_lib",
+        "@npm//@types/chai",
         "@npm//@types/jasmine",
+        "@npm//chai",
     ],
     tsconfig = "//:tsconfig-test",
 )
