@@ -32,7 +32,7 @@ describe('parser', () => {
         input: "Q"
         input: "W"
       }`);
-      return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+      return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
         let nodes = graph.node;
         assert.isTrue(nodes != null && nodes.length === 3);
 
@@ -101,34 +101,40 @@ describe('parser', () => {
           }
         }
       }`);
-      return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
-        expect(graph).to.have.property('library')
-            .that.has.property('function')
-            .that.is.an('array')
-            .and.that.has.length(1);
+      return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
+        expect(graph)
+          .to.have.property('library')
+          .that.has.property('function')
+          .that.is.an('array')
+          .and.that.has.length(1);
 
         const firstFunc = graph.library.function[0];
 
-        expect(firstFunc).to.have.property('signature')
-            .that.has.property('name', 'foo');
+        expect(firstFunc)
+          .to.have.property('signature')
+          .that.has.property('name', 'foo');
 
-        expect(firstFunc).to.have.property('node_def')
-            .that.is.an('array')
-            .and.that.has.length(2);
+        expect(firstFunc)
+          .to.have.property('node_def')
+          .that.is.an('array')
+          .and.that.has.length(2);
 
         expect(firstFunc.node_def[0]).to.have.property('name', 'NoOp');
         expect(firstFunc.node_def[0]).to.not.have.property('input');
-        expect(firstFunc.node_def[0]).to.have.property('attr')
-            .that.deep.equal([{key: '_output_shapes', value: {list: {}}}]);
+        expect(firstFunc.node_def[0])
+          .to.have.property('attr')
+          .that.deep.equal([{key: '_output_shapes', value: {list: {}}}]);
 
         expect(firstFunc.node_def[1]).to.have.property('name', 'Identity');
-        expect(firstFunc.node_def[1]).to.have.property('input')
-            .that.deep.equal(['placeholder_1', '^NoOp']);
-        expect(firstFunc.node_def[1]).to.have.property('attr')
-            .that.deep.equal([
-                {key: 'T', value: {type: 'DT_BOOL'}},
-                {key: '_output_shapes', value: {list: {shape: [{}]}}}
-            ]);
+        expect(firstFunc.node_def[1])
+          .to.have.property('input')
+          .that.deep.equal(['placeholder_1', '^NoOp']);
+        expect(firstFunc.node_def[1])
+          .to.have.property('attr')
+          .that.deep.equal([
+            {key: 'T', value: {type: 'DT_BOOL'}},
+            {key: '_output_shapes', value: {list: {shape: [{}]}}},
+          ]);
       });
     });
 
@@ -137,7 +143,6 @@ describe('parser', () => {
     // unpredictable way...
     // These specs are describing behavior as implemented.
     describe('malformed cases', () => {
-
       // Then it becomes unpredictable.
       it('parses upto an empty node', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
@@ -145,7 +150,7 @@ describe('parser', () => {
           op: "Input"
         }
         node {}`);
-        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
           const nodes = graph.node;
           assert.isArray(nodes);
           assert.lengthOf(nodes, 1);
@@ -161,22 +166,22 @@ describe('parser', () => {
           name: "Q"
           op: "Input"
         }`);
-        return tf.graph.parser.parseGraphPbTxt(pbtxt)
-            .then(
-              () => assert.fail('Should NOT resolve'),
-              () => {
-                // Expected to fail and reject the promise.
-              });
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(
+          () => assert.fail('Should NOT resolve'),
+          () => {
+            // Expected to fail and reject the promise.
+          }
+        );
       });
 
       it('parses pbtxt without newlines as errorneously empty', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(
-            `node { name: "Q" op: "Input" } node { name: "A" op: "Input" }`);
+          `node { name: "Q" op: "Input" } node { name: "A" op: "Input" }`
+        );
         return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
           assert.notProperty(graph, 'node');
         });
       });
-
 
       it('parses malformed pbtxt upto the correct declaration', () => {
         const pbtxt = tf.graph.test.util.stringToArrayBuffer(`node {
@@ -185,7 +190,7 @@ describe('parser', () => {
         }
         node { name: "W" op: "Input" }
         node { name: "X" op: "MatMul" input: "Q" input: "W" }`);
-        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(graph => {
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then((graph) => {
           const nodes = graph.node;
           assert.isArray(nodes);
           assert.lengthOf(nodes, 1);
@@ -206,12 +211,12 @@ describe('parser', () => {
           name: A"
           op: "Input"
         }`);
-        return tf.graph.parser.parseGraphPbTxt(pbtxt)
-            .then(
-              () => assert.fail('Should NOT resolve'),
-              () => {
-                // Expected to fail and reject the promise.
-              });
+        return tf.graph.parser.parseGraphPbTxt(pbtxt).then(
+          () => assert.fail('Should NOT resolve'),
+          () => {
+            // Expected to fail and reject the promise.
+          }
+        );
       });
     });
   });
@@ -232,7 +237,7 @@ describe('parser', () => {
         }
       }
     }`);
-    return tf.graph.parser.parseStatsPbTxt(statsPbtxt).then(stepStats => {
+    return tf.graph.parser.parseStatsPbTxt(statsPbtxt).then((stepStats) => {
       assert.equal(stepStats.dev_stats.length, 1);
       assert.equal(stepStats.dev_stats[0].device, 'cpu');
       assert.equal(stepStats.dev_stats[0].node_stats.length, 2);
@@ -247,5 +252,4 @@ describe('parser', () => {
   });
 
   // TODO(nsthorat): write tests.
-
 });
