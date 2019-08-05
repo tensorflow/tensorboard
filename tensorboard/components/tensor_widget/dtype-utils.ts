@@ -18,7 +18,7 @@ limitations under the License.
  * @param dtype
  * @return Whether the dtype is an integer type.
  */
-export function isIntegerDType(dtype: string) {
+export function isIntegerDType(dtype: string): boolean {
   return (dtype.match(/^int[0-9]+$/) != null ||
           dtype.match(/^uint[0-9]+$/) != null);
 }
@@ -28,7 +28,7 @@ export function isIntegerDType(dtype: string) {
  * @param dtype
  * @return Whether the dtype is a float type.
  */
-export function isFloatDType(dtype: string) {
+export function isFloatDType(dtype: string): boolean {
   return (dtype.match(/^float[0-9]+$/) != null ||
           dtype.match(/^bfloat[0-9]+$/) != null);
 }
