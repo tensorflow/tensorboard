@@ -11,49 +11,49 @@ limitations under the License.
 ==============================================================================*/
 
 namespace memory_viewer_dashboard {
-
-Polymer({
-  is:'memory-viewer-dashboard',
-  properties:{
-    // Data is XLA HloProto in JSON format.
-    _data:{
-      type:Object,
-      notify:true,
-      observer:'dataChanged_'
+  Polymer({
+    is: 'memory-viewer-dashboard',
+    properties: {
+      // Data is XLA HloProto in JSON format.
+      _data: {
+        type: Object,
+        notify: true,
+        observer: 'dataChanged_',
+      },
+      hloModule_: {
+        type: Object,
+      },
+      moduleName_: {
+        type: String,
+      },
+      peakHeapSizeMiB_: {
+        type: String,
+      },
+      unpaddedPeakHeapSizeMiB_: {
+        type: String,
+      },
+      usage: {
+        type: Object,
+        notify: true,
+      },
+      active: {
+        type: Object,
+        notify: true,
+        value: null,
+      },
     },
-    hloModule_:{
-      type:Object
+    dataChanged_(newData) {
+      if (newData && newData.hloModule && newData.bufferAssignment) {
+        this.hloModule_ = newData.hloModule;
+        this.moduleName_ = this.hloModule_.name ? this.hloModule_.name : '';
+        this.usage = new memory_viewer_usage.MemoryUsage(newData);
+        this.peakHeapSizeMiB_ = memory_viewer_utils
+          .bytesToMiB(this.usage.peakHeapSizeBytes)
+          .toFixed(2);
+        this.unpaddedPeakHeapSizeMiB_ = memory_viewer_utils
+          .bytesToMiB(this.usage.unpaddedPeakHeapSizeBytes)
+          .toFixed(2);
+      }
     },
-    moduleName_:{
-      type:String
-    },
-    peakHeapSizeMiB_:{
-      type:String
-    },
-    unpaddedPeakHeapSizeMiB_:{
-      type:String
-    },
-    usage:{
-      type:Object,
-      notify:true
-    },
-    active: {
-      type: Object,
-      notify: true,
-      value: null,
-    },
-  },
-  dataChanged_(newData) {
-    if (newData && newData.hloModule && newData.bufferAssignment) {
-      this.hloModule_ = newData.hloModule;
-      this.moduleName_ = this.hloModule_.name ? this.hloModule_.name : '';
-      this.usage = new memory_viewer_usage.MemoryUsage(newData);
-      this.peakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(
-        this.usage.peakHeapSizeBytes).toFixed(2);
-      this.unpaddedPeakHeapSizeMiB_ = memory_viewer_utils.bytesToMiB(
-        this.usage.unpaddedPeakHeapSizeBytes).toFixed(2);
-    }
-  }
-});
-
+  });
 } // namespace memory_viewer_dashboard
