@@ -9,7 +9,7 @@ tf_web_library(
     name = "tf_profile_common",
     srcs = [
         "tf-profile-common.html",
-        "util.ts",
+        "util.js",
     ],
     path = "/tf-profile-common",
     deps = [

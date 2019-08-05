@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "vz_sorting",
     srcs = [
-        "sorting.ts",
+        "sorting.js",
         "vz-sorting.html",
     ],
     path = "/vz-sorting",

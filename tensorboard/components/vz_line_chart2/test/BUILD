@@ -16,7 +16,7 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "log-scale-test.ts",
+        "log-scale-test.js",
         "tests.html",
     ],
     path = "/vz-line-chart2/test",

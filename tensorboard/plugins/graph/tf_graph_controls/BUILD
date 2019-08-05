@@ -9,7 +9,7 @@ tf_web_library(
     name = "tf_graph_controls",
     srcs = [
         "tf-graph-controls.html",
-        "tf-graph-controls.ts",
+        "tf-graph-controls.js",
     ],
     path = "/tf-graph-controls",
     deps = [

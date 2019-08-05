@@ -8,7 +8,7 @@ tf_web_library(
     name = "pod_viewer_dashboard",
     srcs = [
         "pod-viewer-dashboard.html",
-        "pod-viewer-dashboard.ts",
+        "pod-viewer-dashboard.js",
     ],
     path = "/pod-viewer",
     deps = [

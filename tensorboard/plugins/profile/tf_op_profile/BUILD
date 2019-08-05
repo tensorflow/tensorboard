@@ -41,7 +41,7 @@ tf_web_library(
     name = "utils",
     srcs = [
         "utils.html",
-        "utils.ts",
+        "utils.js",
     ],
     path = "/tf-op-profile",
 )

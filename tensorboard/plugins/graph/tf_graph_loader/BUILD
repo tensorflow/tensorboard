@@ -9,7 +9,7 @@ tf_web_library(
     name = "tf_graph_loader",
     srcs = [
         "tf-graph-loader.html",
-        "tf-graph-loader.ts",
+        "tf-graph-loader.js",
     ],
     path = "/tf-graph-loader",
     visibility = ["//visibility:public"],
@@ -33,7 +33,7 @@ tf_web_library(
     name = "tf_graph_dashboard_loader",
     srcs = [
         "tf-graph-dashboard-loader.html",
-        "tf-graph-dashboard-loader.ts",
+        "tf-graph-dashboard-loader.js",
     ],
     path = "/tf-graph-loader",
     visibility = ["//visibility:public"],

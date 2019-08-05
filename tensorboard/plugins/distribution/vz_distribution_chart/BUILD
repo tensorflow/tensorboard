@@ -8,7 +8,7 @@ tf_web_library(
     name = "vz_distribution_chart",
     srcs = [
         "vz-distribution-chart.html",
-        "vz-distribution-chart.ts",
+        "vz-distribution-chart.js",
     ],
     path = "/vz-distribution-chart",
     visibility = ["//visibility:public"],

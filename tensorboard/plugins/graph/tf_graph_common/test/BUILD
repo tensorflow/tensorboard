@@ -16,13 +16,13 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "graph-test.ts",
-        "hierarchy-test.ts",
+        "graph-test.js",
+        "hierarchy-test.js",
         "index.html",
-        "layout-test.ts",
-        "parser-test.ts",
-        "util.ts",
-        "util-test.ts",
+        "layout-test.js",
+        "parser-test.js",
+        "util.js",
+        "util-test.js",
     ],
     path = "/tf-graph-common/test",
     deps = [

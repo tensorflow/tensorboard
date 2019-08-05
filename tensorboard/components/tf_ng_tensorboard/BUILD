@@ -21,7 +21,7 @@ tf_web_library(
 
 rollup_bundle(
     name = "tf_ng_tensorboard_binary",
-    entry_point = ":main.ts",
+    entry_point = ":main.js",
     deps = [
         ":ng_main",
         "@npm//@angular/common",
@@ -36,7 +36,7 @@ rollup_bundle(
 ng_module(
     name = "ng_main",
     srcs = [
-        "main.ts"
+        "main.js"
     ],
     deps = [
         ":app",
@@ -50,9 +50,9 @@ ng_module(
 ng_module(
     name = "app",
     srcs = [
-        "app-routing.module.ts",
-        "app.module.ts",
-        "app.component.ts",
+        "app-routing.module.js",
+        "app.module.js",
+        "app.component.js",
     ],
     assets = [
         "app.component.css",

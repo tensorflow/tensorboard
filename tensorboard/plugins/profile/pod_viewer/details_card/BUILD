@@ -8,7 +8,7 @@ tf_web_library(
     name = "details_card",
     srcs = [
         "details-card.html",
-        "details-card.ts",
+        "details-card.js",
     ],
     path = "/pod-viewer",
     deps = [

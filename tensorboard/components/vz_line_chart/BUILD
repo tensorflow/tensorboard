@@ -9,7 +9,7 @@ tf_web_library(
     name = "vz_line_chart",
     srcs = [
         "vz-line-chart.html",
-        "vz-line-chart.ts",
+        "vz-line-chart.js",
     ],
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],
@@ -27,7 +27,7 @@ tf_web_library(
     name = "dragZoomInteraction",
     srcs = [
         "dragZoomInteraction.html",
-        "dragZoomInteraction.ts",
+        "dragZoomInteraction.js",
     ],
     path = "/vz-line-chart",
     visibility = ["//visibility:public"],

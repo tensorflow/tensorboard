@@ -8,9 +8,9 @@ tf_web_library(
     name = "tf_debugger_dashboard",
     srcs = [
         "health-pills.html",
-        "health-pills.ts",
-        "selection-tree-node.ts",
-        "tensor-shape-helper.ts",
+        "health-pills.js",
+        "selection-tree-node.js",
+        "tensor-shape-helper.js",
         "tf-debugger-continue-dialog.html",
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",
