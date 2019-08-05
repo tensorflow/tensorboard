@@ -18,19 +18,19 @@ import {expect} from 'chai';
 import {isIntegerDType, isFloatDType} from './dtype-utils';
 
 describe('isIntegerDType', () => {
-  it('unsigned ints', () => {
+  it('returns true for unsigned ints', () => {
     expect(isIntegerDType('uint8')).to.be.true;
     expect(isIntegerDType('uint16')).to.be.true;
   });
 
-  it('signed ints', () => {
+  it('returns true for signed ints', () => {
     expect(isIntegerDType('int8')).to.be.true;
     expect(isIntegerDType('int16')).to.be.true;
     expect(isIntegerDType('int32')).to.be.true;
     expect(isIntegerDType('int64')).to.be.true;
   });
 
-  it('negative cases', () => {
+  it('returns false for negative cases', () => {
     expect(isIntegerDType('bool')).to.be.false;
     expect(isIntegerDType('string')).to.be.false;
     expect(isIntegerDType('float32')).to.be.false;
@@ -39,16 +39,16 @@ describe('isIntegerDType', () => {
 });
 
 describe('isFloatDType', () => {
-  it('floats', () => {
+  it('returns true for floats', () => {
     expect(isFloatDType('float32')).to.be.true;
     expect(isFloatDType('float64')).to.be.true;
   });
 
-  it('bfloat', () => {
+  it('returns true for bfloat types', () => {
     expect(isFloatDType('bfloat16')).to.be.true;
   });
 
-  it('negative cases', () => {
+  it('returns false for negative cases', () => {
     expect(isFloatDType('bool')).to.be.false;
     expect(isFloatDType('string')).to.be.false;
     expect(isFloatDType('int32')).to.be.false;
