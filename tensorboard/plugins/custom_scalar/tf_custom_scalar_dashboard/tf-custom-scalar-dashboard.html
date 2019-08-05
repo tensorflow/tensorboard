@@ -15,24 +15,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html">
-<link rel="import" href="../tf-paginated-view/tf-category-paginated-view.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="../tf-utils/tf-utils.html">
-<link rel="import" href="tf-custom-scalar-margin-chart-card.html">
-<link rel="import" href="tf-custom-scalar-multi-line-chart-card.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link
+  rel="import"
+  href="../tf-categorization-utils/tf-categorization-utils.html"
+/>
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
+<link rel="import" href="../tf-dashboard-common/tf-option-selector.html" />
+<link
+  rel="import"
+  href="../tf-paginated-view/tf-category-paginated-view.html"
+/>
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
+<link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html" />
+<link rel="import" href="../tf-tensorboard/registry.html" />
+<link rel="import" href="../tf-utils/tf-utils.html" />
+<link rel="import" href="tf-custom-scalar-margin-chart-card.html" />
+<link rel="import" href="tf-custom-scalar-multi-line-chart-card.html" />
 
 <!--
   A frontend that displays a custom set of line charts.
@@ -43,14 +49,14 @@ limitations under the License.
       <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
-            <paper-checkbox
-              checked="{{_showDownloadLinks}}"
-            >Show data download links</paper-checkbox>
+            <paper-checkbox checked="{{_showDownloadLinks}}"
+              >Show data download links</paper-checkbox
+            >
           </div>
           <div class="line-item">
-            <paper-checkbox
-              checked="{{_ignoreYOutliers}}"
-            >Ignore outliers in chart scaling</paper-checkbox>
+            <paper-checkbox checked="{{_ignoreYOutliers}}"
+              >Ignore outliers in chart scaling</paper-checkbox
+            >
           </div>
           <div id="tooltip-sorting">
             <div id="tooltip-sorting-label">Tooltip sorting method:</div>
@@ -58,7 +64,11 @@ limitations under the License.
               no-label-float
               selected-item-label="{{_tooltipSortingMethod}}"
             >
-              <paper-listbox class="dropdown-content" selected="0" slot="dropdown-content">
+              <paper-listbox
+                class="dropdown-content"
+                selected="0"
+                slot="dropdown-content"
+              >
                 <paper-item>default</paper-item>
                 <paper-item>descending</paper-item>
                 <paper-item>ascending</paper-item>
@@ -81,8 +91,10 @@ limitations under the License.
             name="Horizontal Axis"
             selected-id="{{_xType}}"
           >
-            <paper-button id="step">step</paper-button><!--
-            --><paper-button id="relative">relative</paper-button><!--
+            <paper-button id="step">step</paper-button
+            ><!--
+            --><paper-button id="relative">relative</paper-button
+            ><!--
             --><paper-button id="wall_time">wall</paper-button>
           </tf-option-selector>
         </div>
@@ -97,14 +109,15 @@ limitations under the License.
             <h3>The custom scalars dashboard is inactive.</h3>
             <p>Probable causes:</p>
             <ol>
-              <li>You haven't laid out the dashboard.
-              <li>You haven’t written any scalar data to your event files.
+              <li>You haven't laid out the dashboard.</li>
+              <li>You haven’t written any scalar data to your event files.</li>
             </ol>
+
             <p>
               To lay out the dashboard, pass a <code>Layout</code> protobuffer
               to the <code>set_layout</code> method. For example,
             </p>
-<pre>
+            <pre>
 from tensorboard import summary
 from tensorboard.plugins.custom_scalar import layout_pb2
 ...
@@ -151,14 +164,22 @@ layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
       closed=True),
   ]))
 writer.add_summary(layout_summary)
-</pre>
-        <p>
-        If you’re new to using TensorBoard, and want to find out how
-        to add data and set up your event files, check out the
-        <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-        and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
-        </p>
-         </div>
+</pre
+            >
+            <p>
+              If you’re new to using TensorBoard, and want to find out how to
+              add data and set up your event files, check out the
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
+              and perhaps the
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
+            </p>
+          </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <template is="dom-repeat" items="[[_categories]]" as="category">
@@ -231,7 +252,7 @@ writer.add_summary(layout_summary)
   </template>
 
   <script>
-    "use strict";
+    'use strict';
 
     Polymer({
       is: 'tf-custom-scalar-dashboard',
@@ -248,8 +269,10 @@ writer.add_summary(layout_summary)
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
-          value: tf_storage.getBooleanInitializer('_showDownloadLinks',
-              {defaultValue: false, useLocalStorage: true}),
+          value: tf_storage.getBooleanInitializer('_showDownloadLinks', {
+            defaultValue: false,
+            useLocalStorage: true,
+          }),
           observer: '_showDownloadLinksObserver',
         },
         // Note that smoothing does not apply to margin charts.
@@ -260,13 +283,17 @@ writer.add_summary(layout_summary)
         _smoothingWeight: {
           type: Number,
           notify: true,
-          value: tf_storage.getNumberInitializer('_smoothingWeight', {defaultValue: 0.6}),
+          value: tf_storage.getNumberInitializer('_smoothingWeight', {
+            defaultValue: 0.6,
+          }),
           observer: '_smoothingWeightObserver',
         },
         _ignoreYOutliers: {
           type: Boolean,
-          value: tf_storage.getBooleanInitializer('_ignoreYOutliers',
-              {defaultValue: true, useLocalStorage: true}),
+          value: tf_storage.getBooleanInitializer('_ignoreYOutliers', {
+            defaultValue: true,
+            useLocalStorage: true,
+          }),
           observer: '_ignoreYOutliersObserver',
         },
         _xType: {
@@ -307,30 +334,34 @@ writer.add_summary(layout_summary)
       reload() {
         const url = tf_backend.getRouter().pluginsListing();
         const handlePluginsListingResponse = this._canceller.cancellable(
-            result => {
-          if (result.cancelled) {
-            return;
-          }
+          (result) => {
+            if (result.cancelled) {
+              return;
+            }
 
-          this.set('_dataNotFound', !result.value['custom_scalars']);
-          if (this._dataNotFound) {
-            return;
+            this.set('_dataNotFound', !result.value['custom_scalars']);
+            if (this._dataNotFound) {
+              return;
+            }
+            this._retrieveLayoutAndData();
           }
-          this._retrieveLayoutAndData();
-        });
+        );
         this._requestManager.request(url).then(handlePluginsListingResponse);
       },
       _reloadCharts() {
         const charts = this.root.querySelectorAll(
-            'tf-custom-scalar-margin-chart-card, ' +
-            'tf-custom-scalar-multi-line-chart-card');
+          'tf-custom-scalar-margin-chart-card, ' +
+            'tf-custom-scalar-multi-line-chart-card'
+        );
         charts.forEach((chart) => {
           chart.reload();
         });
       },
       _retrieveLayoutAndData() {
-        const url = tf_backend.getRouter().pluginRoute('custom_scalars', '/layout');
-        const update = this._canceller.cancellable(result => {
+        const url = tf_backend
+          .getRouter()
+          .pluginRoute('custom_scalars', '/layout');
+        const update = this._canceller.cancellable((result) => {
           if (result.cancelled) {
             return;
           }
@@ -344,11 +375,17 @@ writer.add_summary(layout_summary)
         this._requestManager.request(url).then(update);
       },
       _showDownloadLinksObserver: tf_storage.getBooleanObserver(
-          '_showDownloadLinks', {defaultValue: false, useLocalStorage: true}),
+        '_showDownloadLinks',
+        {defaultValue: false, useLocalStorage: true}
+      ),
       _smoothingWeightObserver: tf_storage.getNumberObserver(
-          '_smoothingWeight', {defaultValue: 0.6}),
+        '_smoothingWeight',
+        {defaultValue: 0.6}
+      ),
       _ignoreYOutliersObserver: tf_storage.getBooleanObserver(
-          '_ignoreYOutliers', {defaultValue: true, useLocalStorage: true}),
+        '_ignoreYOutliers',
+        {defaultValue: true, useLocalStorage: true}
+      ),
       _computeSmoothingEnabled(_smoothingWeight) {
         return _smoothingWeight > 0;
       },
@@ -364,7 +401,7 @@ writer.add_summary(layout_summary)
           this._openedCategories = {};
         }
 
-        const categories = layout.category.map(category => {
+        const categories = layout.category.map((category) => {
           if (firstTimeLoad && !category.closed) {
             // Remember whether this category is currently open.
             this._openedCategories[category.title] = true;
