@@ -55,6 +55,7 @@ install:
   # TensorBoard deps.
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
+  - yarn install --ignore-engines
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
   - |
@@ -78,6 +79,8 @@ before_script:
   # Do a fail-fast check for Python syntax errors or undefined names.
   # Use the comment '# noqa: <error code>' to suppress.
   - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  # Lint frontend code
+  - yarn lint
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
   - yamllint -c docs/.yamllint docs docs/.yamllint
   # Make sure that IPython notebooks have valid Markdown.
