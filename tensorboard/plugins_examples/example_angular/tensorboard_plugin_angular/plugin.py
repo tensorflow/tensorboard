@@ -29,7 +29,11 @@ from tensorboard.util import tensor_util
 import werkzeug
 from werkzeug import wrappers
 
+from tensorboard.util import tb_logging
+
 from tensorboard_plugin_angular import metadata
+
+logger = tb_logging.get_logger()
 
 class ExamplePlugin(base_plugin.TBPlugin):
   plugin_name = metadata.PLUGIN_NAME
@@ -46,10 +50,10 @@ class ExamplePlugin(base_plugin.TBPlugin):
         os.path.dirname(os.path.abspath(__file__)), 
         'frontend/dist/frontend/')
     cache_timeout = 1 if override_static_path else 43200
-    print('%s frontend serving from %s with timeout %d' %
-        ExamplePlugin.plugin_name, static_path, cache_timeout)
-    
-    static_route = '/data/plugin/angular_example/static/'
+    logger.info('%s frontend serving from %s with timeout %d' %
+        (ExamplePlugin.plugin_name, static_path, cache_timeout))
+
+    static_route = '/data/plugin/example_angular/static/'
     return {
         "/static/*":
             werkzeug.middleware.shared_data.SharedDataMiddleware(

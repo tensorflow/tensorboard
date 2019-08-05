@@ -19,4 +19,4 @@ from __future__ import division
 from __future__ import print_function
 
 
-PLUGIN_NAME = "angular_example"
+PLUGIN_NAME = "example_angular"
