@@ -11,6 +11,8 @@ $ source tf/bin/activate
 
 TensorBoard builds are done with [Bazel](https://bazel.build), so you may need to [install Bazel](https://docs.bazel.build/versions/master/install.html). The Bazel build will automatically "vulcanize" all the HTML files and generate a "binary" launcher script. When HTML is vulcanized, it means all the script tags and HTML imports are inlined into one big HTML file. Then the Bazel build puts that index.html file inside a static assets zip. The python HTTP server then reads static assets from that zip while serving.
 
+For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
+
 You can build and run TensorBoard via Bazel (from within the TensorFlow nightly virtualenv) as follows:
 
 ```sh
@@ -33,3 +35,4 @@ $ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
 ```
 
 [pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334
+[yarn]: https://yarnpkg.com/
