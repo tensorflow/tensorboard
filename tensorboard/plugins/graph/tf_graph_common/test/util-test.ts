@@ -17,7 +17,6 @@ describe('util', () => {
   let assert = chai.assert;
 
   it('remove common prefix', () => {
-
     // Empty array.
     let result = tf.graph.util.removeCommonPrefix([]);
     assert.deepEqual(result, []);
