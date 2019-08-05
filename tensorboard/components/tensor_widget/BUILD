@@ -32,8 +32,8 @@ ts_library(
 )
 
 jasmine_node_test(
-    name = "dtypes-utils-test",
-    srcs = ["dtypes-utils-test.js"],
+    name = "dtype-utils-test",
+    srcs = ["dtype-utils-test.js"],
     deps = [
         ":tensor_widget_lib",
     ]
