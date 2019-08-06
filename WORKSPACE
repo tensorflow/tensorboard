@@ -88,6 +88,6 @@ tf_workspace()
 load("//third_party:workspace.bzl", "tensorboard_workspace")
 tensorboard_workspace()
 
-# Setup TypeScript toolchain
+# Setup TypeScript toolchain.
 load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 ts_setup_workspace()
