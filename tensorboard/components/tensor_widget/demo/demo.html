@@ -34,8 +34,11 @@ limitations under the License.
 
     <script src="bundle.js"></script>
     <script>
+      // TODO(cais): Find a way to not hard-code the path below and/or cover
+      //   it with a test.
       const TENSOR_WIDGET_MODULE_PATH =
         'org_tensorflow_tensorboard/tensorboard/components/tensor_widget/tensor-widget';
+
       require([TENSOR_WIDGET_MODULE_PATH], function(tensorWidgetLib) {
         document.getElementById('tensor-widget-version').textContent =
           tensorWidgetLib.VERSION;
