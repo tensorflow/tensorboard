@@ -62,6 +62,7 @@ ts_devserver(
     name = "dev_server",
     deps = [":tensor_widget_lib"],
     serving_path = "/bundle.js",
+    entry_module = "tensor-widget",
     static_files = [
         "demo/demo.css",
         "demo/demo.html",

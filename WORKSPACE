@@ -87,7 +87,3 @@ tf_workspace()
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
 tensorboard_workspace()
-
-# Setup TypeScript toolchain.
-load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-ts_setup_workspace()

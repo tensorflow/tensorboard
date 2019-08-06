@@ -24,7 +24,19 @@ Features
 
 ### Running the development server
 
-1. Make sure you have installed [ibazel](https://www.npmjs.com/package/@bazel/ibazel)
-2. Run in the root folder of tensorboard: `ibazel run tensorboard/components/tensor_widget:dev_server`
+1. Make sure you have installed bazel and optionally also
+   [ibazel](https://www.npmjs.com/package/@bazel/ibazel)
+2. Run in the root folder of tensorboard:
 
-The dev server will track changes to the source files automatically.
+   ```sh
+   bazel run //tensorboard/components/tensor_widget:dev_server
+   ```
+
+   or using ibazel:
+
+   ```sh
+   ibazel run //tensorboard/components/tensor_widget:dev_server
+   ```
+
+   With ibazel, the dev server will track changes to the source files
+   automatically.
