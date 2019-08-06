@@ -14,6 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
+import {VERSION} from './version';
+
+export const version = VERSION;
 
 /**
  * Create an instance of tensor widiget.

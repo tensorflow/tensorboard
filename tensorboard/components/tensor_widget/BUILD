@@ -2,7 +2,7 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
@@ -34,6 +34,7 @@ ts_library(
         "health-pill-types.ts",
         "tensor-widget.ts",
         "types.ts",
+        "version.ts",
     ],
 )
 
@@ -55,4 +56,15 @@ ts_library(
 jasmine_node_test(
     name = "test",
     deps = [":test_lib"],
+)
+
+ts_devserver(
+    name = "dev_server",
+    deps = [":tensor_widget_lib"],
+    serving_path = "/bundle.js",
+    static_files = [
+        "demo/demo.css",
+        "demo/demo.html",
+    ],
+    index_html = "demo/demo.html",
 )
