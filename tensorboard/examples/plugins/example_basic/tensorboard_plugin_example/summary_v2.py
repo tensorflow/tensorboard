@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Summaries for the example plugin."""
+"""Summaries for the example_basic plugin."""
 
 from __future__ import absolute_import
 from __future__ import division

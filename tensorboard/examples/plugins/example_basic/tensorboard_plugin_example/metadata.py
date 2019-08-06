@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Entry point for the example plugin package.
+"""Plugin-specific global metadata."""
 
-Public submodules:
-  summary: Summary-writing ops.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-Private submodules:
-  metadata: Global constants and the like.
-  plugin: TensorBoard backend plugin.
-"""
+
+PLUGIN_NAME = "example_basic"
