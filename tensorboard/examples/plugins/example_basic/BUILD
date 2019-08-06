@@ -12,7 +12,7 @@ licenses(["notice"])  # Apache 2.0
 sh_test(
     name = "smoke_test",
     size = "large",
-    timeout = "short",
+    timeout = "moderate",
     srcs = ["smoke_test.sh"],
     # Don't just `glob(["**"])` because `setup.py` creates artifacts
     # like wheels and a `tensorboard_plugin_example.egg-info` directory,
