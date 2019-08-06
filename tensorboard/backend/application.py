@@ -225,13 +225,14 @@ class TensorBoardWSGI(object):
     else:
       self._path_prefix = path_prefix
 
-    self.data_applications = {
+    self.exact_routes = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
         # active.
         self._path_prefix + DATA_PREFIX + PLUGINS_LISTING_ROUTE:
             self._serve_plugins_listing,
     }
+    unordered_prefix_routes = {}
 
     # Serve the routes from the registered plugins using their name as the route
     # prefix. For example if plugin z has two routes /a and /b, they will be
@@ -265,7 +266,34 @@ class TensorBoardWSGI(object):
         else:
           path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
                   plugin.plugin_name + route)
-        self.data_applications[path] = app
+
+        if path.endswith('/*'):
+          # Note we remove the '*' but leave the slash in place.
+          path = path[:-1]
+          if '*' in path:
+            # note we re-add the removed * in the format string
+            raise ValueError('Plugin %r handles invalid route \'%s*\': Only '
+                             'trailing wildcards are supported '
+                             '(i.e., `/.../*`)' %
+                             (plugin.plugin_name, path))
+          unordered_prefix_routes[path] = app
+        else:
+          if '*' in path:
+            raise ValueError('Plugin %r handles invalid route %r: Only '
+                             'trailing wildcards are supported '
+                             '(i.e., `/.../*`)' %
+                             (plugin.plugin_name, path))
+          self.exact_routes[path] = app
+
+    # Wildcard routes will be checked in the given order, so we sort them
+    # longest to shortest so that a more specific route will take precedence
+    # over a more general one (e.g., a catchall route `/*` should come last).
+    self.prefix_routes = collections.OrderedDict(
+        sorted(
+            six.iteritems(unordered_prefix_routes),
+            key=lambda x: len(x[0]),
+            reverse=True))
+
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
@@ -330,7 +358,8 @@ class TensorBoardWSGI(object):
     """Central entry point for the TensorBoard application.
 
     This method handles routing to sub-applications. It does simple routing
-    using regular expression matching.
+    using strict string matching.  Regular expressions are not supported.
+    Wildcard routes such as `/foo/*` are supported as a special case.
 
     This __call__ method conforms to the WSGI spec, so that instances of this
     class are WSGI applications.
@@ -347,9 +376,13 @@ class TensorBoardWSGI(object):
     clean_path = _clean_path(parsed_url.path, self._path_prefix)
 
     # pylint: disable=too-many-function-args
-    if clean_path in self.data_applications:
-      return self.data_applications[clean_path](environ, start_response)
+    if clean_path in self.exact_routes:
+      return self.exact_routes[clean_path](environ, start_response)
     else:
+      for path_prefix in self.prefix_routes:
+        if clean_path.startswith(path_prefix):
+          return self.prefix_routes[path_prefix](environ, start_response)
+
       logger.warn('path %s not found, sending 404', clean_path)
       return http_util.Respond(request, 'Not found', 'text/plain', code=404)(
           environ, start_response)
