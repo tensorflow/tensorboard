@@ -573,7 +573,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def _test_route(self, route, expected_status_code):
     response = self.server.get(route)
-    self.assertEquals(response.status_code, expected_status_code)
+    self.assertEqual(response.status_code, expected_status_code)
 
   @wrappers.Request.application
   def _foo_handler(self, request):
@@ -587,7 +587,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     if request.path == '/data/plugin/bar/wildcard/ok':
       return wrappers.Response(response='hello world', status=200)
     elif request.path == '/data/plugin/bar/wildcard/':
-      # this route cannot actually be hit; see testEmptyWildCardRouteWithSlash.
+      # this route cannot actually be hit; see testEmptyWildcardRouteWithSlash.
       return wrappers.Response(response='hello world', status=200)
     else:
       return wrappers.Response(status=401)
