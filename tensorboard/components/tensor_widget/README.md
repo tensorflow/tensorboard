@@ -25,7 +25,7 @@ Features
 ### Running the development server
 
 1. Make sure you have installed bazel and optionally also
-   [ibazel](https://www.npmjs.com/package/@bazel/ibazel)
+   [ibazel](https://github.com/bazelbuild/bazel-watcher#installation)
 2. Run in the root folder of tensorboard:
 
    ```sh
