@@ -19,3 +19,12 @@ Features
 
 *This component is in early stage of active development.*
 *Many of its features are still incomplete.*
+
+## Developer workflow
+
+### Running the development server
+
+1. Make sure you have installed [ibazel](https://www.npmjs.com/package/@bazel/ibazel)
+2. Run in the root folder of tensorboard: `ibazel run tensorboard/components/tensor_widget:dev_server`
+
+The dev server will track changes to the source files automatically.
