@@ -12,25 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Entry point for the example_basic plugin package.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+Public submodules:
+  summary: Summary-writing ops.
 
-import setuptools
-
-
-setuptools.setup(
-    name="tensorboard_plugin_example",
-    version="0.1.0",
-    description="Sample TensorBoard plugin.",
-    packages=["tensorboard_plugin_example"],
-    package_data={
-        "tensorboard_plugin_example": ["static/**"],
-    },
-    entry_points={
-        "tensorboard_plugins": [
-            "example = tensorboard_plugin_example.plugin:ExamplePlugin",
-        ],
-    },
-)
+Private submodules:
+  metadata: Global constants and the like.
+  plugin: TensorBoard backend plugin.
+"""
