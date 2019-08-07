@@ -37,12 +37,12 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   /**
-   * TODO(cais): Doc string.
+   * Render the tensor widget.
    *
    * This method should be called only once after the instantiation of the
    * `TensorWidget` object, unless the value of the underlying tensor,
    * as seen through `tensorView` has changed after the last `render()`
-   * call.
+   * call, in which case it can be called against to update the display.
    */
   async render() {
     this.rootElement.classList.add('tensor-widget');
@@ -97,7 +97,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.renderShape();
   }
 
-  /** Render the name in the info subsection. */
+  /** Render the optional name in the info subsection. */
   private renderName() {
     if (this.options.name == null || this.options.name.length === 0) {
       return;
