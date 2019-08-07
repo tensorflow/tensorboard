@@ -13,65 +13,63 @@
 +limitations under the License.
 +==============================================================================*/
 namespace tf_backend {
+  export type Listener = () => void;
 
-export type Listener = () => void;
-
-// A unique reference to a listener for an easier dereferencing.
-export class ListenKey {
-  public readonly listener: Listener;
-  constructor(listener: Listener) {
-    this.listener = listener;
-  }
-}
-
-export abstract class BaseStore {
-  protected requestManager: RequestManager =
-      new RequestManager(1 /* simultaneous request */);
-  private _listeners: Set<ListenKey> = new Set<ListenKey>();
-  public initialized: boolean = false;
-
-  /**
-   * Asynchronously load or reload the runs data. Listeners will be
-   * invoked if this causes the runs data to change.
-   *
-   * @see addListener
-   * @return {Promise<void>} a promise that resolves when new data have loaded.
-   */
-  protected abstract load(): Promise<void>;
-
-  refresh(): Promise<void> {
-    return this.load().then(() => {
-      this.initialized = true;
-    });
+  // A unique reference to a listener for an easier dereferencing.
+  export class ListenKey {
+    public readonly listener: Listener;
+    constructor(listener: Listener) {
+      this.listener = listener;
+    }
   }
 
-  /**
-   * Register a listener (nullary function) to be called when new runs are
-   * available.
-   */
-  addListener(listener: Listener): ListenKey {
-    const key = new ListenKey(listener);
-    this._listeners.add(key);
-    return key;
+  export abstract class BaseStore {
+    protected requestManager: RequestManager = new RequestManager(
+      1 /* simultaneous request */
+    );
+    private _listeners: Set<ListenKey> = new Set<ListenKey>();
+    public initialized: boolean = false;
+
+    /**
+     * Asynchronously load or reload the runs data. Listeners will be
+     * invoked if this causes the runs data to change.
+     *
+     * @see addListener
+     * @return {Promise<void>} a promise that resolves when new data have loaded.
+     */
+    protected abstract load(): Promise<void>;
+
+    refresh(): Promise<void> {
+      return this.load().then(() => {
+        this.initialized = true;
+      });
+    }
+
+    /**
+     * Register a listener (nullary function) to be called when new runs are
+     * available.
+     */
+    addListener(listener: Listener): ListenKey {
+      const key = new ListenKey(listener);
+      this._listeners.add(key);
+      return key;
+    }
+
+    /**
+     * Remove a listener registered with `addListener`.
+     */
+    removeListenerByKey(listenKey: ListenKey): void {
+      this._listeners.delete(listenKey);
+    }
+
+    protected emitChange(): void {
+      this._listeners.forEach((listenKey) => {
+        try {
+          listenKey.listener();
+        } catch (e) {
+          // ignore exceptions on the listener side.
+        }
+      });
+    }
   }
-
-  /**
-   * Remove a listener registered with `addListener`.
-   */
-  removeListenerByKey(listenKey: ListenKey): void {
-    this._listeners.delete(listenKey);
-  }
-
-  protected emitChange(): void {
-    this._listeners.forEach(listenKey => {
-      try {
-        listenKey.listener();
-      } catch (e) {
-        // ignore exceptions on the listener side.
-      }
-    });
-  }
-
-}
-
 } // namespace tf_backend

@@ -20,6 +20,8 @@ You can build and run TensorBoard via Bazel (from within the TensorFlow nightly 
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
 
+For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
+
 To generate fake log data for a plugin, run its demo script. For instance, this command generates fake scalar data in `/tmp/scalars_demo`:
 
 ```sh
@@ -33,3 +35,4 @@ $ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
 ```
 
 [pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334
+[yarn]: https://yarnpkg.com/

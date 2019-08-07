@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
+import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
+export {VERSION} from './version';
 
 /**
  * Create an instance of tensor widiget.
@@ -24,8 +25,11 @@ import {TensorWidget, TensorWidgetOptions, TensorView} from "./types";
  * @returns An instance of a single-tensor tensor widget.
  */
 export function tensorWidget(
-    rootElement: HTMLDivElement, tensor: TensorView,
-    options?: TensorWidgetOptions): TensorWidget {
+  rootElement: HTMLDivElement,
+  tensor: TensorView,
+  options?: TensorWidgetOptions
+): TensorWidget {
   throw new Error(
-       'tensorWidget() factory method has not been implemented yet.');
+    'tensorWidget() factory method has not been implemented yet.'
+  );
 }

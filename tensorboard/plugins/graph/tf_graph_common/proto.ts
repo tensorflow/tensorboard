@@ -40,7 +40,7 @@ module tf.graph.proto {
     /** The name of the operation associated with this node. */
     op: string;
     /** List of attributes that describe/modify the operation. */
-    attr: {key: string, value: Object}[];
+    attr: {key: string; value: Object}[];
   }
 
   /**
@@ -55,7 +55,7 @@ module tf.graph.proto {
 
     // Specific consumer versions which are disallowed (e.g. due to bugs).
     bad_consumers: number[];
-  };
+  }
 
   /**
    * Specifies an argument. An argument is either an input or an output of a
@@ -66,7 +66,7 @@ module tf.graph.proto {
   export interface ArgDef {
     name: string;
     type: string;
-  };
+  }
 
   /**
    * Describes the signature of a function - its name, inputs, and outputs.
@@ -75,7 +75,7 @@ module tf.graph.proto {
     name: string;
     input_arg: ArgDef[];
     output_arg: ArgDef[];
-  };
+  }
 
   /**
    * Describes a single function within the library.
@@ -87,7 +87,7 @@ module tf.graph.proto {
 
     // A list of nodes in the function.
     node_def: NodeDef[];
-  };
+  }
 
   /**
    * Describes a library of functions that may be composed throughout the graph.
@@ -95,7 +95,7 @@ module tf.graph.proto {
   export interface FunctionDefLibraryDef {
     // A list of functions.
     function: FunctionDef[];
-  };
+  }
 
   /**
    * TensorFlow graph definition as defined in the graph.proto file.
@@ -109,7 +109,7 @@ module tf.graph.proto {
 
     // Contains a library of functions that may composed through the graph.
     library: FunctionDefLibraryDef;
-  };
+  }
 
   /**
    * Generic graph as defined in the graph_explorer.proto file.
@@ -172,8 +172,8 @@ module tf.graph.proto {
     all_end_rel_micros: number;
     memory: {
       allocator_name: string;
-      total_bytes: number;  // Stored as string in json and should be parsed.
-      peak_bytes: number;   // Stored as string in json and should be parsed.
+      total_bytes: number; // Stored as string in json and should be parsed.
+      peak_bytes: number; // Stored as string in json and should be parsed.
     }[];
     /** Output sizes recorded for a single execution of a graph node */
     output: NodeOutput[];
@@ -187,7 +187,7 @@ module tf.graph.proto {
    * defined in the step_stats.proto file.
    */
   export interface NodeOutput {
-    slot: number;  // Stored as string in json and should be parsed.
+    slot: number; // Stored as string in json and should be parsed.
     tensor_description: {
       /** Data type of tensor elements */
       dtype: string;
@@ -201,9 +201,9 @@ module tf.graph.proto {
          */
         dim: {
           /** Size of the tensor in that dimension */
-          size: number,  // Stored as string in json and should be parsed.
+          size: number; // Stored as string in json and should be parsed.
           /** Optional name of the tensor dimension */
-          name?: string
+          name?: string;
         }[];
       };
       /** Information about the size and allocator used for the data */

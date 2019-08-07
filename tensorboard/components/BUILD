@@ -32,7 +32,6 @@ tf_web_library(
     srcs = ["trace_viewer.html"],
     path = "/",
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_trace_viewer",
     ],
 )

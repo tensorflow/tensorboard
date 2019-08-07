@@ -22,19 +22,22 @@ type EpochCallback = (epoch: number) => boolean | void;
 type Vector = number[];
 type Vectors = Vector[];
 interface UMAPParameters {
-    nComponents?: number;
-    nEpochs?: number;
-    nNeighbors?: number;
-    random?: () => number;
+  nComponents?: number;
+  nEpochs?: number;
+  nNeighbors?: number;
+  random?: () => number;
 }
 interface UMAP {
-    new(params?: UMAPParameters): UMAP;
-    fit(X: Vectors): number[][];
-    fitAsync(X: Vectors, callback?: (epochNumber: number) => void | boolean): Promise<number[][]>;
-    initializeFit(X: Vectors): number;
-    setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]): void;
-    step(): number;
-    getEmbedding(): number[][];
+  new (params?: UMAPParameters): UMAP;
+  fit(X: Vectors): number[][];
+  fitAsync(
+    X: Vectors,
+    callback?: (epochNumber: number) => void | boolean
+  ): Promise<number[][]>;
+  initializeFit(X: Vectors): number;
+  setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]): void;
+  step(): number;
+  getEmbedding(): number[][];
 }
 
 declare let UMAP: UMAP;

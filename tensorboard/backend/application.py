@@ -272,14 +272,14 @@ class TensorBoardWSGI(object):
           path = path[:-1]
           if '*' in path:
             # note we re-add the removed * in the format string
-            raise ValueError('Plugin %r handles invalid route %r*:  Only '
+            raise ValueError('Plugin %r handles invalid route \'%s*\': Only '
                              'trailing wildcards are supported '
                              '(i.e., `/.../*`)' %
                              (plugin.plugin_name, path))
           unordered_prefix_routes[path] = app
         else:
           if '*' in path:
-            raise ValueError('Plugin %r handles invalid route %r:  Only '
+            raise ValueError('Plugin %r handles invalid route %r: Only '
                              'trailing wildcards are supported '
                              '(i.e., `/.../*`)' %
                              (plugin.plugin_name, path))
@@ -289,8 +289,10 @@ class TensorBoardWSGI(object):
     # longest to shortest so that a more specific route will take precedence
     # over a more general one (e.g., a catchall route `/*` should come last).
     self.prefix_routes = collections.OrderedDict(
-        sorted(six.iteritems(unordered_prefix_routes),
-            key=lambda x: len(x[0]), reverse=True))
+        sorted(
+            six.iteritems(unordered_prefix_routes),
+            key=lambda x: len(x[0]),
+            reverse=True))
 
 
   @wrappers.Request.application

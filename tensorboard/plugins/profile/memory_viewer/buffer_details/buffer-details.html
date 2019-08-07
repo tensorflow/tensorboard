@@ -12,9 +12,9 @@ You may obtain a copy of the License at
     limitations under the License.
 -->
 
-<link rel="import" href="../tf-imports/polymer.html">
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="utils.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="utils.html" />
 
 <!--
   tf-mv-bar shows a small % utilization bar, colored using flameColor.
@@ -61,8 +61,12 @@ You may obtain a copy of the License at
         word-wrap: break-word;
       }
     </style>
-    <paper-card id="card" heading="[[node.instructionName]]" hidden="[[!node]]"
-      elevation="2">
+    <paper-card
+      id="card"
+      heading="[[node.instructionName]]"
+      hidden="[[!node]]"
+      elevation="2"
+    >
       <div id="subheader">[[_subheader(node)]]</div>
       <div class="card-content">
         <div hidden="[[!size]]">
@@ -72,7 +76,8 @@ You may obtain a copy of the License at
           <b>Unpadded Size: </b><span>[[unpaddedSize]]</span><b> MiB</b>
         </div>
         <div hidden="[[!padding]]">
-          <b>Extra memory due to padding: </b><span>[[padding]]</span><b> MiB</b>
+          <b>Extra memory due to padding: </b><span>[[padding]]</span
+          ><b> MiB</b>
         </div>
         <div hidden="[[!expansion]]">
           <b>Expansion: </b><span>[[expansion]]</span><b>X</b>
