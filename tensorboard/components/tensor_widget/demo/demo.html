@@ -32,6 +32,8 @@ limitations under the License.
       <span id="tensor-widget-version"></span>
     </p>
 
+    <div id="tensor1" class="tensor"></div>
+
     <script src="bundle.js"></script>
     <script>
       // TODO(cais): Find a way to not hard-code the path below and/or cover
@@ -40,8 +42,24 @@ limitations under the License.
         'org_tensorflow_tensorboard/tensorboard/components/tensor_widget/tensor-widget';
 
       require([TENSOR_WIDGET_MODULE_PATH], function(tensorWidgetLib) {
+        // Display the version of the tensor-widget library.
         document.getElementById('tensor-widget-version').textContent =
           tensorWidgetLib.VERSION;
+
+        // Render tensor1: a float32 scalar.
+        const tensor1Div = document.getElementById('tensor1');
+        const tensorView1 = {
+          spec: {
+            dtype: 'float32',
+            shape: [], // A scalar.
+          },
+        };
+        const tensorWidget1 = tensorWidgetLib.tensorWidget(
+          tensor1Div,
+          tensorView1,
+          {name: 'scalar1'}
+        );
+        tensorWidget1.render();
       });
     </script>
   </body>

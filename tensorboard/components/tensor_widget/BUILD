@@ -33,6 +33,7 @@ ts_library(
         "dtype-utils.ts",
         "health-pill-types.ts",
         "tensor-widget.ts",
+        "tensor-widget-impl.ts",
         "types.ts",
         "version.ts",
     ],
@@ -66,6 +67,7 @@ ts_devserver(
     static_files = [
         "demo/demo.css",
         "demo/demo.html",
+        "tensor-widget.css",
     ],
     index_html = "demo/demo.html",
 )
