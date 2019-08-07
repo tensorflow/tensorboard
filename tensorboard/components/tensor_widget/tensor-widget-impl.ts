@@ -43,7 +43,8 @@ export class TensorWidgetImpl implements TensorWidget {
    * This method should be called only once after the instantiation of the
    * `TensorWidget` object, unless the value of the underlying tensor,
    * as seen through `tensorView` has changed after the last `render()`
-   * call, in which case it can be called against to update the display.
+   * call, in which case it can be called again to update the display by
+   * the tensor widget.
    */
   async render() {
     this.rootElement.classList.add('tensor-widget');

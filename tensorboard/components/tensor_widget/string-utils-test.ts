@@ -37,7 +37,7 @@ describe('formatTensorName', () => {
     expect(formatTensorName(onLimitName)).to.equal(onLimitName);
   });
 
-  it('returns string with ellipses for over-limit lenghts', () => {
+  it('returns string with ellipses for over-limit lengths', () => {
     const longName = stringRepeat('A', TENSOR_NAME_LENGTH_CUTOFF + 10);
     expect(formatTensorName(longName).length).to.equal(
       TENSOR_NAME_LENGTH_CUTOFF
