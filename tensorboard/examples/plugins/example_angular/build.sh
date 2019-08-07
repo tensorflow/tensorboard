@@ -3,20 +3,20 @@ echo
 rm -rf build
 rm -rf dist
 rm -rf tensorboard_plugin_angular/frontend/build
-rm -rf tensorboard_plugin_angular.egg-info 
+rm -rf tensorboard_plugin_angular.egg-info
 
 pushd tensorboard_plugin_angular/frontend > /dev/null
 
 echo "-------------------------------------------------------------------------"
 echo "Checking Dependencies..."
-echo
+
 npm install
 
 echo "-------------------------------------------------------------------------"
 echo "Building frontend..."
 npm run build
-popd > /dev/null
 
+popd > /dev/null
 
 echo
 echo "-------------------------------------------------------------------------"

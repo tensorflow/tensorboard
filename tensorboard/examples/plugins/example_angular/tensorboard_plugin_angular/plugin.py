@@ -47,7 +47,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     override_static_path = os.environ.get("TENSORBOARD_ANGULAR_EXAMPLE_PATH")
     static_path = override_static_path or os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 
+        os.path.dirname(os.path.abspath(__file__)),
         'frontend/dist/frontend/')
     cache_timeout = 1 if override_static_path else 43200
     logger.info('%s frontend serving from %s with timeout %d' %

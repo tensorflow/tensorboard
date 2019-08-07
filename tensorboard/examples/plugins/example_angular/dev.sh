@@ -5,11 +5,13 @@ rm -rf dist
 rm -rf tensorboard_plugin_angular/frontend/build
 rm -rf tensorboard_plugin_angular.egg-info
 
+pushd tensorboard_plugin_angular/frontend > /dev/null
+
 echo "-------------------------------------------------------------------------"
 echo "Checking Dependencies..."
 
-pushd tensorboard_plugin_angular/frontend > /dev/null
 npm install
+
 popd > /dev/null
 
 echo "-------------------------------------------------------------------------"
