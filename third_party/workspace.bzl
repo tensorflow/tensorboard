@@ -19,6 +19,7 @@ load("@io_bazel_rules_closure//closure/private:java_import_external.bzl", "java_
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:polymer.bzl", "tensorboard_polymer_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
@@ -32,6 +33,9 @@ def tensorboard_workspace():
   tensorboard_python_workspace()
   tensorboard_typings_workspace()
   tensorboard_js_workspace()
+
+  # Set up TypeScript toolchain.
+  ts_setup_workspace()
 
   http_archive(
       name = "com_google_protobuf_js",
