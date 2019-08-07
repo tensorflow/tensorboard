@@ -8,18 +8,18 @@ This document will explain high level concepts using the example plugin and prov
 
 A plugin is comprised of three components:
 
-- The **Backend** is where you write Python code that does post-processing of your data and serves the data to your plugin frontend in the browser.
-- The **Frontend** is where your custom visualization lives.
-- The optional **Summary** component is how users of your plugins will write data that your plugin can read from their TensorFlow programs.
+  - The **Backend** is where you write Python code that does post-processing of your data and serves the data to your plugin frontend in the browser.
+  - The **Frontend** is where your custom visualization lives.
+  - The optional **Summary** component is how users of your plugins will write data that your plugin can read from their TensorFlow programs.
 
 ### Backend: How the plugin processes data, and sends it to the browser
 
 TensorBoard detects plugins using the [Python `entry_points` mechanism][entrypoints-spec]; see [the example plugin’s `setup.py`][entrypoints-declaration] for an example of how to declare a plugin to TensorBoard. The plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints). You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py`] (if your plugin does non-trivial work at the load time, consider using `TBLoader`). It must have a `plugin_name` (please refer to [naming](#guideline_on_naming_and_branding) section for naming your plugin) class attribute and implement the following methods:
 
-- `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
-- `get_plugin_apps`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
-- `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
-- `fix_flags`: Optional method needed to fix or sanitize command-line flags.
+  - `is_active`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
+  - `get_plugin_apps`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
+  - `define_flags`: Optional method needed to expose command-line flags. Please prefix flags with the name of the plugin to avoid collision.
+  - `fix_flags`: Optional method needed to fix or sanitize command-line flags.
 
 [entrypoints-spec]: https://packaging.python.org/specifications/entry-points/
 [entrypoints-declaration]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/setup.py#L31-L35
@@ -29,7 +29,7 @@ On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from 
 
 Plugins are not technically restricted from arbitrary file system and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
 
-[`plugineventmultiplexer`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/plugin_event_multiplexer.py
+[`PluginEventMultiplexer`]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/plugin_event_multiplexer.py
 
 ### Frontend: How the plugin visualizes your new data
 
@@ -37,7 +37,7 @@ Now that we have an API, it’s time for the cool part: adding a visualization.
 
 TensorBoard does not impose any framework/tool requirements for building a frontend—you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example ES module][example-es-module]). Do note that all frontend resources have to be served by the plugin backend ([example backend][example-backend])
 
-[es module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
+[ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
 [example-es-module]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16
 [example-backend]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/plugin.py#L45
 
@@ -52,10 +52,10 @@ Consistency in user interface and experience, we believe, is important for happy
 
 Your plugin will need to provide a way for users to log **summaries**, which are the mechanism for getting data from a TensorFlow model to disk and eventually into your TensorBoard plugin for visualization. For example, the example plugin provides a novel [“greeting” TensorFlow op][greeting-op] that writes greeting summaries. A summary is a protocol buffer with the following information:
 
-- tag: A string that uniquely identifies a data series, often supplied by the user (e.g., “loss”).
-- step: A temporal index (an integer), often batch number of epoch number.
-- tensor: The actual value for a tag–step combination, as a tensor of arbitrary shape and dtype (e.g., `0.123`, or `["one", "two"]`).
-- metadata: Specifies [which plugin owns the summary][owner-identifier], and provides an arbitrary plugin-specific payload.
+  - tag: A string that uniquely identifies a data series, often supplied by the user (e.g., “loss”).
+  - step: A temporal index (an integer), often batch number of epoch number.
+  - tensor: The actual value for a tag–step combination, as a tensor of arbitrary shape and dtype (e.g., `0.123`, or `["one", "two"]`).
+  - metadata: Specifies [which plugin owns the summary][owner-identifier], and provides an arbitrary plugin-specific payload.
 
 [greeting-op]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L28-L48
 [owner-identifier]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/summary_v2.py#L64
@@ -72,7 +72,7 @@ Lastly, when distributing a custom plugin of TensorBoard, we recommend that it b
 
 ## Local Development
 
-To get started right away, copy the directory `tensorboard/examples/plugins/example_angular` into a desired folder and, in a virtualenv with TensorBoard installed, run:
+To get started right away, copy the directory `tensorboard/examples/plugins/example_basic` into a desired folder and, in a virtualenv with TensorBoard installed, run:
 
 ```
 python setup.py develop

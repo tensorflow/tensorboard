@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Entry point for the example_angular plugin package.
+"""Entry point for the example_basic plugin package.
 
-Public submodules: None
+Public submodules:
+  summary: Summary-writing ops.
 
 Private submodules:
   metadata: Global constants and the like.
