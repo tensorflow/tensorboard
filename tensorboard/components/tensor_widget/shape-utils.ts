@@ -12,3 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+/**
+ * Tensor shape utilities for tensor widget.
+ */
+
+/**
+ * Format tensor shape as a string for display.
+ *
+ * The special case of empty shape ([]) is formatted as the more human-readable
+ * name "scalar".
+ *
+ * @param shape
+ * @returns A human-understandable string that describes tensor shape.
+ */
+export function formatShapeForDisplay(shape: ReadonlyArray<number>): string {
+  if (shape.length === 0) {
+    return 'scalar';
+  } else {
+    return `[${shape}]`;
+  }
+}

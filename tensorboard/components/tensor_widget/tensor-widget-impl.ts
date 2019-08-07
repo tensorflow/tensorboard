@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {TensorView, TensorWidget, TensorWidgetOptions} from './types';
+import {formatShapeForDisplay} from './shape-utils';
 import {formatTensorName} from './string-utils';
 
 /**
@@ -137,7 +138,9 @@ export class TensorWidgetImpl implements TensorWidget {
     shapeTagDiv.appendChild(shapeTagLabel);
     const shapeTagValue = document.createElement('div');
     shapeTagValue.classList.add('tensor-widget-shape-value');
-    shapeTagValue.textContent = `[${this.tensorView.spec.shape}]`;
+    shapeTagValue.textContent = formatShapeForDisplay(
+      this.tensorView.spec.shape
+    );
     shapeTagDiv.appendChild(shapeTagValue);
     this.infoSubsection.appendChild(shapeTagDiv);
   }
