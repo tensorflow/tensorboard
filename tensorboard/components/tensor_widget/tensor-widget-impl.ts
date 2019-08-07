@@ -14,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {TensorView, TensorWidget, TensorWidgetOptions} from './types';
-
-const DEFAULT_TENSOR_NAME_LENGTH_CUTOFF = 20;
+import {formatTensorName} from './string-utils';
 
 /**
  * Implementation of TensorWidget.
@@ -93,28 +92,26 @@ export class TensorWidgetImpl implements TensorWidget {
       this.infoSubsection.removeChild(this.infoSubsection.firstChild);
     }
 
-    // Create name control.
-    if (this.options.name != null && this.options.name.length > 0) {
-      const nameTagDiv = document.createElement('div');
-      nameTagDiv.classList.add('tensor-widget-tensor-name');
-      const nameLength = this.options.name.length;
-      nameTagDiv.textContent =
-        nameLength > DEFAULT_TENSOR_NAME_LENGTH_CUTOFF
-          ? `...${this.options.name.slice(
-              nameLength - DEFAULT_TENSOR_NAME_LENGTH_CUTOFF,
-              nameLength
-            )}`
-          : this.options.name;
-
-      this.infoSubsection.appendChild(nameTagDiv);
-    }
-
-    this.createDTypeTag();
-    this.createShapeTag();
+    this.renderName();
+    this.renderDType();
+    this.renderShape();
   }
 
-  /** Create the dtype tag in the info subsection. */
-  private createDTypeTag() {
+  /** Render the name in the info subsection. */
+  private renderName() {
+    if (this.options.name == null || this.options.name.length === 0) {
+      return;
+    }
+    const nameDiv = document.createElement('div');
+    nameDiv.classList.add('tensor-widget-tensor-name');
+    nameDiv.textContent = formatTensorName(this.options.name);
+    // Add a hover text that shows the full name.
+    nameDiv.title = this.options.name;
+    this.infoSubsection.appendChild(nameDiv);
+  }
+
+  /** Render the dtype in the info subsection. */
+  private renderDType() {
     const dTypeControl = document.createElement('div');
     dTypeControl.classList.add('tensor-widget-dtype');
 
@@ -130,8 +127,8 @@ export class TensorWidgetImpl implements TensorWidget {
     this.infoSubsection.appendChild(dTypeControl);
   }
 
-  /** Create the shape tag in the info subsection. */
-  private createShapeTag() {
+  /** Render the shape in the info subsection. */
+  private renderShape() {
     const shapeTagDiv = document.createElement('div');
     shapeTagDiv.classList.add('tensor-widget-shape');
     const shapeTagLabel = document.createElement('div');

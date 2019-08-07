@@ -32,7 +32,10 @@ limitations under the License.
       <span id="tensor-widget-version"></span>
     </p>
 
+    <div id="tensor0" class="tensor"></div>
     <div id="tensor1" class="tensor"></div>
+    <div id="tensor2" class="tensor"></div>
+    <div id="tensor3" class="tensor"></div>
 
     <script src="bundle.js"></script>
     <script>
@@ -47,19 +50,68 @@ limitations under the License.
           tensorWidgetLib.VERSION;
 
         // Render tensor1: a float32 scalar.
-        const tensor1Div = document.getElementById('tensor1');
-        const tensorView1 = {
+        const tensor0Div = document.getElementById('tensor0');
+        // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
+        const tensorView0 = {
           spec: {
             dtype: 'float32',
             shape: [], // A scalar.
           },
         };
+        const tensorWidget0 = tensorWidgetLib.tensorWidget(
+          tensor0Div,
+          tensorView0,
+          {name: 'scalar1'}
+        );
+        tensorWidget0.render();
+
+        // Render tensor1: a 1D int32 tensor.
+        const tensor1Div = document.getElementById('tensor1');
+        // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
+        const tensorView1 = {
+          spec: {
+            dtype: 'int32',
+            shape: [100], // A scalar.
+          },
+        };
         const tensorWidget1 = tensorWidgetLib.tensorWidget(
           tensor1Div,
           tensorView1,
-          {name: 'scalar1'}
+          {name: 'Tensor1DOutputByAnOpWithAVeryLongName:0'}
         );
         tensorWidget1.render();
+
+        // Render tensor2: a 2D uint8 scalar.
+        const tensor2Div = document.getElementById('tensor2');
+        // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
+        const tensorView2 = {
+          spec: {
+            dtype: 'float32',
+            shape: [512, 1024], // A scalar.
+          },
+        };
+        const tensorWidget2 = tensorWidgetLib.tensorWidget(
+          tensor2Div,
+          tensorView2,
+          {name: 'Float32_2D_Tensor:0'}
+        );
+        tensorWidget2.render();
+
+        // Render tensor3: a 3D int32 scalar.
+        const tensor3Div = document.getElementById('tensor3');
+        // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
+        const tensorView3 = {
+          spec: {
+            dtype: 'float32',
+            shape: [64, 32, 50], // A scalar.
+          },
+        };
+        const tensorWidget3 = tensorWidgetLib.tensorWidget(
+          tensor3Div,
+          tensorView3,
+          {name: 'ThreeDimensional:0'}
+        );
+        tensorWidget3.render();
       });
     </script>
   </body>

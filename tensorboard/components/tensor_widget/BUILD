@@ -32,6 +32,7 @@ ts_library(
     srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "string-utils.ts",
         "tensor-widget.ts",
         "tensor-widget-impl.ts",
         "types.ts",
@@ -44,6 +45,7 @@ ts_library(
     testonly = True,
     srcs = [
         "dtype-utils-test.ts",
+        "string-utils-test.ts",
     ],
     deps = [
         ":tensor_widget_lib",
