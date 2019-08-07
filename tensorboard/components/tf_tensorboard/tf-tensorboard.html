@@ -96,7 +96,7 @@ limitations under the License.
               if="[[_inactiveDashboardsExist(_dashboardData, disabledDashboards, _activeDashboards)]]"
             >
               <paper-dropdown-menu
-                label="Inactive"
+                label="INACTIVE"
                 no-label-float
                 noink
                 style="margin-left: 12px"
@@ -337,14 +337,11 @@ limitations under the License.
       }
 
       #inactive-dashboards-menu {
-        --paper-menu-background-color: var(
+        --paper-listbox-background-color: var(
           --tb-toolbar-background-color,
           var(--tb-orange-strong)
         );
-        --paper-menu-color: white;
-        --paper-menu: {
-          text-transform: uppercase;
-        }
+        --paper-listbox-color: white;
       }
 
       .global-actions {
