@@ -19,17 +19,17 @@ limitations under the License.
 }
 
 .tensor-widget-dtype {
-  position: relative;
-  height: 48px;
-  max-height: 22px;
-  line-height: 22px;
-  display: inline-block;
   align-content: center;
-  vertical-align: middle;
+  color: rgb(60, 60, 60);
+  display: inline-block;
+  font-size: 8pt;
+  height: 48px;
+  line-height: 22px;
+  max-height: 22px;
   padding-left: 14px;
   padding-right: 10px;
-  color: rgb(60, 60, 60);
-  font-size: 8pt;
+  position: relative;
+  vertical-align: middle;
 }
 
 .tensor-widget-dtype-label {
