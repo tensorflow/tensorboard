@@ -36,8 +36,7 @@ Here is an example:
       }
     }
 
-Note that runs without any scalar tags are included as keys with value the
-empty dictionary.
+Runs without any scalar tags are omitted from the result.
 
 ## `/data/plugin/scalars/scalars?run=foo&tag=bar`
 

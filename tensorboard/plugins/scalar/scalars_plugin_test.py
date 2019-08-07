@@ -156,7 +156,7 @@ class ScalarsPluginTest(tf.test.TestCase):
                 'description': self._HTML_DESCRIPTION,
             },
         },
-        self._RUN_WITH_HISTOGRAM: {},
+        # _RUN_WITH_HISTOGRAM omitted: No scalar data.
     }, self.plugin.index_impl())
 
   def _test_scalars_json(self, run_name, tag_name, should_work=True):

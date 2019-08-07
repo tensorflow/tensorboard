@@ -115,9 +115,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         }
       return result
 
-    runs = self._multiplexer.Runs()
-    result = {run: {} for run in runs}
-
+    result = collections.defaultdict(lambda: {})
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
