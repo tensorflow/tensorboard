@@ -1,11 +1,10 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
-
 
 tf_web_library(
     name = "tf_ng_tensorboard",
@@ -15,12 +14,13 @@ tf_web_library(
     ],
     path = "/tf-ng-tensorboard",
     deps = [
-        ":tf_ng_tensorboard_binary"
+        ":tf_ng_tensorboard_binary",
     ],
 )
 
-rollup_bundle(
+tf_js_binary(
     name = "tf_ng_tensorboard_binary",
+    compile = 1,
     entry_point = ":main.ts",
     deps = [
         ":ng_main",
@@ -36,13 +36,13 @@ rollup_bundle(
 ng_module(
     name = "ng_main",
     srcs = [
-        "main.ts"
+        "main.ts",
     ],
     deps = [
         ":app",
         "@npm//@angular/core",
-        "@npm//@angular/router",
         "@npm//@angular/platform-browser",
+        "@npm//@angular/router",
         "@npm//zone.js",
     ],
 )
@@ -50,9 +50,9 @@ ng_module(
 ng_module(
     name = "app",
     srcs = [
-        "app-routing.module.ts",
-        "app.module.ts",
         "app.component.ts",
+        "app.module.ts",
+        "app-routing.module.ts",
     ],
     assets = [
         "app.component.css",
@@ -60,7 +60,7 @@ ng_module(
     ],
     deps = [
         "@npm//@angular/core",
-        "@npm//@angular/router",
         "@npm//@angular/platform-browser",
+        "@npm//@angular/router",
     ],
 )

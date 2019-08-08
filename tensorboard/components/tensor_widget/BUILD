@@ -1,9 +1,8 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -19,8 +18,9 @@ tf_web_library(
     ],
 )
 
-rollup_bundle(
+tf_js_binary(
     name = "tensor_widget_binary",
+    compile = 1,
     entry_point = ":tensor-widget.ts",
     deps = [
         ":tensor_widget_lib",
@@ -44,13 +44,13 @@ ts_library(
     srcs = [
         "dtype-utils-test.ts",
     ],
+    tsconfig = "//:tsconfig-test",
     deps = [
         ":tensor_widget_lib",
         "@npm//@types/chai",
         "@npm//@types/jasmine",
         "@npm//chai",
     ],
-    tsconfig = "//:tsconfig-test",
 )
 
 jasmine_node_test(
@@ -60,12 +60,12 @@ jasmine_node_test(
 
 ts_devserver(
     name = "dev_server",
-    deps = [":tensor_widget_lib"],
-    serving_path = "/bundle.js",
     entry_module = "tensor-widget",
+    index_html = "demo/demo.html",
+    serving_path = "/bundle.js",
     static_files = [
         "demo/demo.css",
         "demo/demo.html",
     ],
-    index_html = "demo/demo.html",
+    deps = [":tensor_widget_lib"],
 )
