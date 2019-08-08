@@ -18,6 +18,7 @@ namespace memory_viewer_xla_lb {
   export class LogicalBuffer {
     id: number;
     size: number;
+    color: number;
     computationName: string | undefined = '';
     instructionName: string | undefined = '';
     shapeIndex: number[] = [];
@@ -25,6 +26,7 @@ namespace memory_viewer_xla_lb {
     constructor(buffer) {
       this.id = parseInt(buffer.id, 10);
       this.size = parseInt(buffer.size, 10);
+      this.color = parseInt(buffer.color, 10);
       this.initBufferLocation_(buffer.definedAt);
     }
 

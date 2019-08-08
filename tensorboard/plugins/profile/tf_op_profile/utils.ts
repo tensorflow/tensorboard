@@ -49,6 +49,14 @@ namespace tf_op_profile {
       : rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
   }
 
+  export function flopsColor(fraction: number) {
+    return flameColor(fraction, 0.7);
+  }
+
+  export function bwColor(fraction: number) {
+    return flameColor(1 - fraction, 0.7);
+  }
+
   export function utilization(node: any) {
     // NaN indicates undefined utilization for fused operations (we can't measure
     // performance inside a fusion). It could also indicate operations with zero
@@ -79,5 +87,10 @@ namespace tf_op_profile {
       : fraction < 0.00001
       ? '0.00%'
       : (fraction * 100).toPrecision(2) + '%';
+  }
+  export function timeWasted(node: any) {
+    if (!node || !node.metrics) return 0 / 0;
+    return node.metrics.time *
+        (1 - Math.max(utilization(node), memoryUtilization(node)));
   }
 } // namespace tf_op_profile
