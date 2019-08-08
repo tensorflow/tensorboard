@@ -36,12 +36,10 @@ You may obtain a copy of the License at
     Polymer({
       is: 'tf-op-bar',
       properties: {
-        value: { type: Number, },
-        color: { type: String, },
+        value: {type: Number},
+        color: {type: String},
       },
-      observers: [
-        '_updateValue(value, color)',
-      ],
+      observers: ['_updateValue(value, color)'],
       _percent: tf_op_profile.percent,
       _updateValue: function(value, color) {
         if (!color) return;
@@ -126,11 +124,17 @@ You may obtain a copy of the License at
       <div class="card-content">
         <div hidden="[[!_hasFlops(node)]]">
           <b>FLOPS utilization: </b>
-          <tf-op-bar color="[[_flopsColor(node)]]" value="[[_utilization(node)]]"></tf-op-bar>
+          <tf-op-bar
+            color="[[_flopsColor(node)]]"
+            value="[[_utilization(node)]]"
+          ></tf-op-bar>
         </div>
         <div hidden="[[!_hasMemoryUtilization(node)]]">
           <b>Memory bandwidth utilization: </b>
-          <tf-op-bar color="[[_bwColor(node)]]" value="[[_memoryUtilization(node)]]"></tf-op-bar>
+          <tf-op-bar
+            color="[[_bwColor(node)]]"
+            value="[[_memoryUtilization(node)]]"
+          ></tf-op-bar>
         </div>
         <div class="unavailable" hidden="[[!_fused(node)]]">
           Performance information for individual fused operations is not

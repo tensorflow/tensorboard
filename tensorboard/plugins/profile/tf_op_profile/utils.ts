@@ -90,7 +90,9 @@ namespace tf_op_profile {
   }
   export function timeWasted(node: any) {
     if (!node || !node.metrics) return 0 / 0;
-    return node.metrics.time *
-        (1 - Math.max(utilization(node), memoryUtilization(node)));
+    return (
+      node.metrics.time *
+      (1 - Math.max(utilization(node), memoryUtilization(node)))
+    );
   }
 } // namespace tf_op_profile

@@ -79,9 +79,12 @@ You may obtain a copy of the License at
       <h3>
         Overall TPU FLOPS utilization is
         <span style$="color:[[_flopsColor(_root)]]">
-          [[_utilizationPercent(_root)]]</span>
-        , memory bandwidth utilization is <span style$="color:[[_bwColor(_root)]]">
-        [[_memoryUtilizationPercent(_root)]]</span>
+          [[_utilizationPercent(_root)]]</span
+        >
+        , memory bandwidth utilization is
+        <span style$="color:[[_bwColor(_root)]]">
+          [[_memoryUtilizationPercent(_root)]]</span
+        >
       </h3>
       <div id="description">
         <p>
@@ -91,8 +94,8 @@ You may obtain a copy of the License at
         </p>
         <p>
           "Idle" represents the portion of the total execution time on device
-          that is idle. Wasted time is defined by
-          RuntimeFraction * (1 - max(FlopsUtilization, MemoryUtilization)).
+          that is idle. Wasted time is defined by RuntimeFraction * (1 -
+          max(FlopsUtilization, MemoryUtilization)).
         </p>
       </div>
       <div id="control">
@@ -122,9 +125,11 @@ You may obtain a copy of the License at
           </paper-slider
           >ops</span
         >
-        <span class="controlRowRight">&nbsp;
-          <paper-toggle-button checked={{byWaste}}>
-          </paper-toggle-button>Sort by wasted time</span>
+        <span class="controlRowRight"
+          >&nbsp;
+          <paper-toggle-button checked="{{byWaste}}"> </paper-toggle-button>Sort
+          by wasted time</span
+        >
         <span class="controlRowRight"
           >off&nbsp;
           <paper-toggle-button checked="{{showP90}}"> </paper-toggle-button>Top
