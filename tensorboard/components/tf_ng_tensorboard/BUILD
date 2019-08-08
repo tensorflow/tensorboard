@@ -2,21 +2,9 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_js_binary")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
-    name = "tf_ng_tensorboard",
-    srcs = [
-        ":tf_ng_tensorboard_binary.js",
-        "@npm//:node_modules/zone.js/dist/zone.js",
-    ],
-    path = "/tf-ng-tensorboard",
-    deps = [
-        ":tf_ng_tensorboard_binary",
-    ],
-)
 
 tf_js_binary(
     name = "tf_ng_tensorboard_binary",
