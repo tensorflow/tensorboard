@@ -9,7 +9,7 @@ licenses(["notice"])  # Apache 2.0
 tf_js_binary(
     name = "tf_ng_tensorboard_binary",
     compile = 1,
-    entry_point = ":main.js",
+    entry_point = ":main.ts",
     deps = [
         ":ng_main",
         "@npm//@angular/common",
@@ -24,7 +24,7 @@ tf_js_binary(
 ng_module(
     name = "ng_main",
     srcs = [
-        "main.js",
+        "main.ts",
     ],
     deps = [
         ":app",
@@ -38,9 +38,9 @@ ng_module(
 ng_module(
     name = "app",
     srcs = [
-        "app.component.js",
-        "app.module.js",
-        "app-routing.module.js",
+        "app.component.ts",
+        "app.module.ts",
+        "app-routing.module.ts",
     ],
     assets = [
         "app.component.css",

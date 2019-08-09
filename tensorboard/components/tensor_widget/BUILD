@@ -21,7 +21,7 @@ tf_web_library(
 tf_js_binary(
     name = "tensor_widget_binary",
     compile = 1,
-    entry_point = ":tensor-widget.js",
+    entry_point = ":tensor-widget.ts",
     deps = [
         ":tensor_widget_lib",
     ],
@@ -30,10 +30,10 @@ tf_js_binary(
 ts_library(
     name = "tensor_widget_lib",
     srcs = [
-        "dtype-utils.js",
-        "health-pill-types.js",
-        "tensor-widget.js",
-        "types.js",
+        "dtype-utils.ts",
+        "health-pill-types.ts",
+        "tensor-widget.ts",
+        "types.ts",
         "version.ts",
     ],
 )
@@ -42,7 +42,7 @@ ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "dtype-utils-test.js",
+        "dtype-utils-test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
