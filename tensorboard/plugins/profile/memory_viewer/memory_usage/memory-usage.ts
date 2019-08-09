@@ -107,7 +107,8 @@ namespace memory_viewer_usage {
      * memory space.
      */
     private getHbmHeapTrace_(bufferAssignment) {
-      // XLA memory space colors and Hbm memory space is colored to 0.
+      // The color here indicates the XLA memory space color assigned to each
+      // logical buffer by graph coloring pass.
       const kHbmColor = 0;
       for (const trace of bufferAssignment.heapSimulatorTraces) {
         for (const event of trace.events) {
