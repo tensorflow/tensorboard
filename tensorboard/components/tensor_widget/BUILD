@@ -32,7 +32,10 @@ ts_library(
     srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "shape-utils.ts",
+        "string-utils.ts",
         "tensor-widget.ts",
+        "tensor-widget-impl.ts",
         "types.ts",
         "version.ts",
     ],
@@ -43,6 +46,8 @@ ts_library(
     testonly = True,
     srcs = [
         "dtype-utils-test.ts",
+        "shape-utils-test.ts",
+        "string-utils-test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
@@ -66,6 +71,7 @@ ts_devserver(
     static_files = [
         "demo/demo.css",
         "demo/demo.html",
+        "tensor-widget.css",
     ],
     deps = [":tensor_widget_lib"],
 )
