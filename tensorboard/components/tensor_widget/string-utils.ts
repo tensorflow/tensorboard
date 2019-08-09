@@ -20,17 +20,25 @@ limitations under the License.
 export const TENSOR_NAME_LENGTH_CUTOFF = 20;
 export const ELLIPSES = '...';
 
+/**
+ * Format the name of a tensor for display.
+ *
+ * If the name is longer than `TENSOR_NAME_LENGTH_CUTOFF`. The middle part
+ * of it will be replaced with ellipses.
+ *
+ * @param tensorName
+ * @returns Formated tensor name.
+ */
 export function formatTensorName(tensorName: string): string {
   if (tensorName.length <= TENSOR_NAME_LENGTH_CUTOFF) {
     return tensorName;
   } else {
     const leadLength = Math.floor(TENSOR_NAME_LENGTH_CUTOFF / 2);
-    const trailLength =
-      TENSOR_NAME_LENGTH_CUTOFF - ELLIPSES.length - leadLength;
+    const tailLength = TENSOR_NAME_LENGTH_CUTOFF - ELLIPSES.length - leadLength;
     return (
       tensorName.slice(0, leadLength) +
       ELLIPSES +
-      tensorName.slice(tensorName.length - trailLength, tensorName.length)
+      tensorName.slice(tensorName.length - tailLength, tensorName.length)
     );
   }
 }

@@ -43,6 +43,16 @@ describe('formatTensorName', () => {
       TENSOR_NAME_LENGTH_CUTOFF
     );
   });
+
+  it('includes ellipses, prefix and suffix', () => {
+    const longName = stringRepeat('A', TENSOR_NAME_LENGTH_CUTOFF + 10);
+    const output = formatTensorName(longName);
+    expect(output.indexOf(ELLIPSES)).to.equal(
+      Math.floor(TENSOR_NAME_LENGTH_CUTOFF / 2)
+    );
+    expect(output.slice(0, 1)).to.equal('A');
+    expect(output.slice(output.length - 1, output.length)).to.equal('A');
+  });
 });
 
 describe('Constants for formatTensorName', () => {

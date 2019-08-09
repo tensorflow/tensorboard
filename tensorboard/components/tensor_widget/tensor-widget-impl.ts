@@ -64,7 +64,7 @@ export class TensorWidgetImpl implements TensorWidget {
    *   - The info subsection, which displays basic information about the tensor,
    *     including name, dtype and shape. See `renderInfo()`.
    *   - The health-pill subsection, which displays numeric summary of the tensor's
-   *     eleements. See `renderHealthPill()`.
+   *     elements. See `renderHealthPill()`.
    *   - The menu. See `createMenu()`.
    */
   private renderHeader() {

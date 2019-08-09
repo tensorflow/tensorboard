@@ -18,7 +18,7 @@ import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
 export {VERSION} from './version';
 
 /**
- * Create an instance of tensor widiget.
+ * Create an instance of tensor widget.
  * @param rootElement The element in which the tensor widget will be endered.
  * @param tensor The tensor view of which the content is to be rendered
  *   in the tensor widget.
