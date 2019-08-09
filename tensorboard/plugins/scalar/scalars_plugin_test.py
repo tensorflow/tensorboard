@@ -119,21 +119,21 @@ class ScalarsPluginTest(tf.test.TestCase):
     subdir = os.path.join(self.logdir, run_name)
     with test_util.FileWriterCache.get(subdir) as writer:
       for step in xrange(self._STEPS):
-        placeholder = [1 + step, 2 + step, 3 + step]
+        data = [1 + step, 2 + step, 3 + step]
         if run_name == self._RUN_WITH_LEGACY_SCALARS:
           summ = tf.compat.v1.summary.scalar(
-              self._LEGACY_SCALAR_TAG, tf.reduce_mean(placeholder),
+              self._LEGACY_SCALAR_TAG, tf.reduce_mean(data),
           ).numpy()
         elif run_name == self._RUN_WITH_SCALARS:
           summ = summary.op(
               self._SCALAR_TAG,
-              tf.reduce_sum(placeholder),
+              tf.reduce_sum(data),
               display_name=self._DISPLAY_NAME,
               description=self._DESCRIPTION,
           ).numpy()
         elif run_name == self._RUN_WITH_HISTOGRAM:
           summ = tf.compat.v1.summary.histogram(
-              self._HISTOGRAM_TAG, placeholder
+              self._HISTOGRAM_TAG, data
           ).numpy()
         else:
           assert False, 'Invalid run name: %r' % run_name
