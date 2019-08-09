@@ -23,7 +23,7 @@ export const ELLIPSES = '...';
 /**
  * Format the name of a tensor for display.
  *
- * If the name is longer than `TENSOR_NAME_LENGTH_CUTOFF`. The middle part
+ * If the name is longer than `TENSOR_NAME_LENGTH_CUTOFF`, the middle part
  * of it will be replaced with ellipses.
  *
  * @param tensorName
