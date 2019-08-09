@@ -58,17 +58,17 @@ namespace tf_op_profile {
   }
 
   export function utilization(node: any) {
-    // NaN indicates undefined utilization for fused operations (we can't measure
-    // performance inside a fusion). It could also indicate operations with zero
-    // time, but they currently don't appear in the profile.
-    if (!node || !node.metrics || !node.metrics.time) return 0 / 0;
+    // NaN indicates undefined utilization for fused operations (we can't
+    // measure performance inside a fusion). It could also indicate operations
+    // with zero time, but they currently don't appear in the profile.
+    if (!node || !node.metrics || !node.metrics.time) return NaN;
     return node.metrics.flops / node.metrics.time;
   }
 
   export function memoryUtilization(node: any) {
-    // NaN indicates undefined memory utilization (the profile was collected from
-    // older versions of profiler).
-    if (!node || !node.metrics || !node.metrics.memoryBandwidth) return 0 / 0;
+    // NaN indicates undefined memory utilization (the profile was collected
+    // from older versions of profiler).
+    if (!node || !node.metrics || !node.metrics.memoryBandwidth) return NaN;
     return node.metrics.memoryBandwidth;
   }
 
@@ -89,7 +89,7 @@ namespace tf_op_profile {
       : (fraction * 100).toPrecision(2) + '%';
   }
   export function timeWasted(node: any) {
-    if (!node || !node.metrics) return 0 / 0;
+    if (!node || !node.metrics) return NaN;
     return (
       node.metrics.time *
       (1 - Math.max(utilization(node), memoryUtilization(node)))

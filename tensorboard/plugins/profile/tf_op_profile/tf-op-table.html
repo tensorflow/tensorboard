@@ -264,7 +264,7 @@ limitations under the License.
       <template
         is="dom-repeat"
         items="{{_getKChildren(node, childrenCount, showP90, level)}}"
-        sort="{{_sort(byWaste)}}"
+        sort="[[_sort(byWaste)]]"
       >
         <tf-op-table-entry
           node="[[item]]"
