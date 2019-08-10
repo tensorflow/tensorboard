@@ -1,0 +1,5 @@
+# For compatibility with Bazel 0.27 through 0.29. See:
+# <https://github.com/tensorflow/tensorboard/issues/2355>
+aquery --incompatible_use_python_toolchains=false
+build --incompatible_use_python_toolchains=false
+test --incompatible_use_python_toolchains=false
