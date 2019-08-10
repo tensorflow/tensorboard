@@ -19,7 +19,7 @@ You may obtain a copy of the License at
 <link rel="import" href="utils.html" />
 
 <!--
-  tf-op-bar shows a small % utilization bar, colored using flameColor.
+  tf-op-bar shows two small % utilization bars, colored using flameColor.
 -->
 <dom-module id="tf-op-bar">
   <template>
@@ -36,15 +36,13 @@ You may obtain a copy of the License at
     Polymer({
       is: 'tf-op-bar',
       properties: {
-        value: {
-          type: Number,
-          notify: true,
-          observer: '_updateValue',
-        },
+        value: {type: Number},
+        color: {type: String},
       },
+      observers: ['_updateValue(value, color)'],
       _percent: tf_op_profile.percent,
-      _updateValue: function(value) {
-        const color = tf_op_profile.flameColor(value);
+      _updateValue: function(value, color) {
+        if (!color) return;
         const length = tf_op_profile.percent(value);
         this.style.background = `linear-gradient(to right, ${color} ${length}, #ccc ${length})`;
       },
@@ -126,11 +124,24 @@ You may obtain a copy of the License at
       <div class="card-content">
         <div hidden="[[!_hasFlops(node)]]">
           <b>FLOPS utilization: </b>
-          <tf-op-bar value="[[_utilization(node)]]"></tf-op-bar>
+          <tf-op-bar
+            color="[[_flopsColor(node)]]"
+            value="[[_utilization(node)]]"
+          ></tf-op-bar>
         </div>
         <div hidden="[[!_hasMemoryUtilization(node)]]">
-          <b>Memory utilization: </b>
-          <tf-op-bar value="[[_memoryUtilization(node)]]"></tf-op-bar>
+          <b>Memory bandwidth utilization: </b>
+          <tf-op-bar
+            color="[[_bwColor(node)]]"
+            value="[[_memoryUtilization(node)]]"
+          ></tf-op-bar>
+        </div>
+        <div class="unavailable" hidden="[[!_fused(node)]]">
+          Performance information for individual fused operations is not
+          available.
+        </div>
+        <div class="unavailable" hidden="[[!node.category]]">
+          Select items within this category for performance details.
         </div>
         <div hidden="[[!node.xla.expression]]">
           <b>XLA Expression: </b>
@@ -139,13 +150,6 @@ You may obtain a copy of the License at
         <div hidden="[[!node.xla.provenance]]">
           <b>TensorFlow Name: </b>
           <code class="expression">[[node.xla.provenance]]</code>
-        </div>
-        <div class="unavailable" hidden="[[!_fused(node)]]">
-          Performance information for individual fused operations is not
-          available.
-        </div>
-        <div class="unavailable" hidden="[[!node.category]]">
-          Select items within this category for performance details.
         </div>
         <div hidden="[[!node.xla.layout]]">
           <b>Layout: </b>
@@ -197,7 +201,7 @@ You may obtain a copy of the License at
         return 'Unknown';
       },
       _fused: function(node) {
-        return node && node.xla && !node.metrics;
+        return node && node.xla && !(node.metrics && node.metrics.time);
       },
       _dimensionColor: function(dim) {
         if (!dim || !dim.alignment) return null;
@@ -217,6 +221,12 @@ You may obtain a copy of the License at
         var mulSuffix = mul == 1 ? '' : ': ' + mul + ' × ' + dim.alignment;
         if (dim.size % dim.alignment == 0) return 'Exact fit' + mulSuffix;
         return 'Pad to ' + mul * dim.alignment + mulSuffix;
+      },
+      _flopsColor: function(node) {
+        return tf_op_profile.flopsColor(tf_op_profile.utilization(node));
+      },
+      _bwColor: function(node) {
+        return tf_op_profile.bwColor(tf_op_profile.memoryUtilization(node));
       },
     });
   </script>

@@ -22,6 +22,7 @@ limitations under the License.
   <template>
     <style>
       #time,
+      #wasted,
       #utilization {
         width: 60px;
       }
@@ -81,6 +82,7 @@ limitations under the License.
     </style>
     <div id="header">
       <span id="time">Time</span>
+      <span id="wasted">Wasted</span>
       <span id="name">Name</span>
       <span id="provenance">TensorFlow Op</span>
       <span id="utilization">FLOPS</span>
@@ -91,6 +93,7 @@ limitations under the License.
       header-click="[[_onHeaderClick]]"
       children-count="{{childrenCount}}"
       show-p90="{{showP90}}"
+      by-waste="{{byWaste}}"
       expanded="true"
     >
     </tf-op-table-entry>
@@ -109,6 +112,11 @@ limitations under the License.
           notify: true,
         },
         showP90: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+        byWaste: {
           type: Boolean,
           value: false,
           notify: true,
@@ -206,11 +214,12 @@ limitations under the License.
         font-family: monospace;
       }
       #time,
+      #wasted,
       #utilization {
         font-size: smaller;
       }
       /* Utilization has a background color, so it stretches to fill the row.
-   Its text is in an inner div that remains vertically centered. */
+         Its text is in an inner div that remains vertically centered. */
       #utilization {
         align-self: stretch;
       }
@@ -233,6 +242,7 @@ limitations under the License.
     >
       <div id="bar" style$="width:{{_barWidth(node)}}"></div>
       <span id="time">{{_percent(node)}}</span>
+      <span id="wasted">{{_timeWasted(node)}}</span>
       <span id="name" style$="padding-left:[[level]]em;">
         <span id="disclosure">
           <span hidden="[[!node.children.length]]">
@@ -254,11 +264,13 @@ limitations under the License.
       <template
         is="dom-repeat"
         items="{{_getKChildren(node, childrenCount, showP90, level)}}"
+        sort="[[_sort(byWaste)]]"
       >
         <tf-op-table-entry
           node="[[item]]"
           children-count="{{childrenCount}}"
           show-p90="{{showP90}}"
+          by-waste="{{byWaste}}"
           level="{{_nextLevel(level)}}"
           header-hover="{{headerHover}}"
           header-click="{{headerClick}}"
@@ -329,6 +341,9 @@ limitations under the License.
           ? tf_op_profile.percent(node.metrics.time)
           : '';
       },
+      _timeWasted: function(node) {
+        return tf_op_profile.percent(tf_op_profile.timeWasted(node));
+      },
       _provenance: function(node) {
         return node.xla && node.xla.provenance
           ? node.xla.provenance.replace(/^.*\//, '')
@@ -354,9 +369,9 @@ limitations under the License.
         this.classList.toggle('selected', v);
       },
       /*
-    Returns top K children for the node. If p90 is true, then only children
-    fallen in the top 90th percentile in time are returned.
-  */
+       Returns top K children for the node. If p90 is true, then only children
+       fallen in the top 90th percentile in time are returned.
+      */
       _getKChildren: function(node, k, p90, level) {
         if (p90 && node.children.length > 0 && node.children[0].metrics) {
           var tot = 0,
@@ -379,6 +394,19 @@ limitations under the License.
       },
       _getPaddingLeft: function(level) {
         return level + 5;
+      },
+      /*
+       If byWaste is true, sort the children by wasted time in descending order.
+       The wasted time is defined by the following equation:
+       RuntimeFraction * (1 - max(FlopsUtilization, MemoryUtilization))
+      */
+      _sort: function(byWaste) {
+        if (!byWaste) {
+          return 0;
+        }
+        return (a, b) => {
+          return tf_op_profile.timeWasted(b) - tf_op_profile.timeWasted(a);
+        };
       },
     });
   </script>
