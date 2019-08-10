@@ -32,7 +32,7 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
   return {
     spec: {
       dtype: x.dtype as string,
-      shape: x.shape as ReadonlyArray<number>,
+      shape: x.shape as tensorWidget.Shape,
     },
     get: async (...indices: number[]) => {
       if (indices.length !== x.rank) {
@@ -172,14 +172,14 @@ function demo() {
   ); // No name.
   tensorWidget3.render();
 
-  const x = tf.eye(10);
-  const xView = tensorToTensorView(x);
-  xView.view({
-    slicingDimsAndIndices: [],
-    viewingDims: [0, 1],
-    verticalRange: [1, 6],
-    horizontalRange: [0, 6]
-  }).then(values => console.log(values));
+  // const x = tf.eye(10);
+  // const xView = tensorToTensorView(x);
+  // xView.view({
+  //   slicingDimsAndIndices: [],
+  //   viewingDims: [0, 1],
+  //   verticalRange: [1, 6],
+  //   horizontalRange: [0, 6]
+  // }).then(values => console.log(values));
 }
 
 demo();

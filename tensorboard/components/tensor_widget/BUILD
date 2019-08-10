@@ -71,7 +71,6 @@ ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":tensor_widget_lib",
-        "@npm//@tensorflow/tfjs-core",
     ],
 )
 

@@ -15,13 +15,15 @@ limitations under the License.
 
 import {BaseTensorHealthPill} from './health-pill-types';
 
+export type Shape = ReadonlyArray<number>;
+
 /** The basic specifications of a tensor. */
 export interface TensorSpec {
   /** Data type of the underlying tensor. */
   dtype: string;
 
   /** Shape of the underlying tensor. */
-  shape: ReadonlyArray<number>;
+  shape: Shape;
 }
 
 /**

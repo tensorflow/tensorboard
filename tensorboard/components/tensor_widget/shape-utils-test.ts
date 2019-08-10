@@ -15,7 +15,7 @@ limitations under the License.
 
 import {expect} from 'chai';
 
-import {formatShapeForDisplay} from './shape-utils';
+import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
 
 describe('formatShapeForDisplay', () => {
   it('returns string scalar for []', () => {
@@ -31,5 +31,79 @@ describe('formatShapeForDisplay', () => {
     expect(formatShapeForDisplay([0, 8, 32, 32, 128])).to.equal(
       '[0,8,32,32,128]'
     );
+  });
+});
+
+describe('getDefaultSlicingSpec', () => {
+  it('returns correct result for scalar shape', () => {
+    expect(getDefaultSlicingSpec([])).to.eql({
+      slicingDimsAndIndices: [],
+      viewingDims: [],
+      verticalRange: null,
+      horizontalRange: null
+    });
+  });
+
+  it('returns correct result for 1D shape', () => {
+    expect(getDefaultSlicingSpec([10])).to.eql({
+      slicingDimsAndIndices: [],
+      viewingDims: [0],
+      verticalRange: null,
+      horizontalRange: null
+    });
+  });
+
+  it('returns correct result for 2D shape', () => {
+    expect(getDefaultSlicingSpec([4, 5])).to.eql({
+      slicingDimsAndIndices: [],
+      viewingDims: [0, 1],
+      verticalRange: null,
+      horizontalRange: null
+    });
+  });
+
+  it('returns correct result for 3D shape', () => {
+    expect(getDefaultSlicingSpec([4, 5, 6])).to.eql({
+      slicingDimsAndIndices: [{
+        dim: 0,
+        index: 0
+      }],
+      viewingDims: [1, 2],
+      verticalRange: null,
+      horizontalRange: null
+    });
+  });
+
+  it('returns correct result for 4D shape', () => {
+    expect(getDefaultSlicingSpec([4, 5, 6, 7])).to.eql({
+      slicingDimsAndIndices: [{
+        dim: 0,
+        index: 0
+      }, {
+        dim: 1,
+        index: 0
+      }],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null
+    });
+  });
+
+  it('returns correct result for 5D shape', () => {
+    expect(getDefaultSlicingSpec([4, 5, 6, 7, 8])).to.eql({
+      slicingDimsAndIndices: [{
+        dim: 0,
+        index: 0
+      }, {
+        dim: 1,
+        index: 0
+      }, {
+        dim: 2,
+        index: 0
+      }],
+      viewingDims: [3, 4],
+      verticalRange: null,
+      horizontalRange: null
+    });
   });
 });
