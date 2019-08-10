@@ -9,18 +9,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var memory_viewer_xla_baa;
-(function (memory_viewer_xla_baa) {
-    /**
-     * HLO assigned buffer allocation representation.
-     * @final
-     */
-    class BufferAllocationAssigned {
-        constructor(assigned) {
-            this.logicalBufferId = parseInt(assigned.logicalBufferId, 10);
-            this.offset = parseInt(assigned.offset, 10);
-            this.size = parseInt(assigned.size, 10);
-        }
+
+namespace memory_viewer_xla_hi {
+  /**
+   * HLO instructions are the IR used by the high-level XLA compiler.
+   * @final
+   */
+  export class HloInstruction {
+    name: string;
+    opcode: string;
+    shape: memory_viewer_xla_s.Shape | null;
+    tfOpName: string;
+
+    constructor(inst) {
+      this.name = inst.name ? inst.name : '';
+      this.opcode = inst.opcode ? inst.opcode : '';
+      this.shape = inst.shape
+        ? new memory_viewer_xla_s.Shape(inst.shape)
+        : null;
+      if (inst.metadata) {
+        this.tfOpName = inst.metadata.opName ? inst.metadata.opName : '';
+      }
     }
-    memory_viewer_xla_baa.BufferAllocationAssigned = BufferAllocationAssigned;
-})(memory_viewer_xla_baa || (memory_viewer_xla_baa = {})); // namespace memory_viewer_xla_baa
+  }
+} // namespace memory_viewer_xla_hi
