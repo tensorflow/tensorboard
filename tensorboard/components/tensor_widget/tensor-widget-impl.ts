@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TensorView, TensorWidget, TensorWidgetOptions} from './types';
+import {TensorView, TensorWidget, TensorWidgetOptions, TensorViewSlicingSpec} from './types';
 import {formatShapeForDisplay} from './shape-utils';
 import {formatTensorName} from './string-utils';
 
@@ -50,7 +50,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.rootElement.classList.add('tensor-widget');
 
     this.renderHeader();
-    // TODO(cais): Implement and call renderValues();
+    await this.renderValues();
   }
 
   /**
@@ -74,7 +74,6 @@ export class TensorWidgetImpl implements TensorWidget {
       this.rootElement.appendChild(this.headerSection);
     }
     this.renderInfo();
-
     // TODO(cais): Implement and call renderHealthPill().
     // TODO(cais): Implement and call createMenu();
   }
@@ -144,6 +143,20 @@ export class TensorWidgetImpl implements TensorWidget {
     );
     shapeTagDiv.appendChild(shapeTagValue);
     this.infoSubsection.appendChild(shapeTagDiv);
+  }
+
+  private async renderValues() {
+    if (this.tensorView.spec.shape.length === 2) {
+      console.log(`Rendering 2D tensor: ${this.options.name}`);
+      const slicingSpec: TensorViewSlicingSpec = {
+        slicingDimsAndIndices: [],
+        viewingDims: [0, 1],
+        verticalRange: [1, 6],
+        horizontalRange: [0, 6]
+      }
+      const values = await this.tensorView.view(slicingSpec);
+      console.log(`values =`, values);
+    }
   }
 
   async scrollHorizontally(index: number) {
