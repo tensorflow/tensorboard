@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {TensorView, TensorWidget, TensorWidgetOptions, TensorViewSlicingSpec} from './types';
-import {formatShapeForDisplay} from './shape-utils';
+import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
 import {formatTensorName} from './string-utils';
 
 /**
@@ -28,6 +28,13 @@ export class TensorWidgetImpl implements TensorWidget {
   // Constituent UI elements.
   protected headerSection: HTMLDivElement;
   protected infoSubsection: HTMLDivElement;
+  protected valueSection: HTMLDivElement;
+  protected topRuler: HTMLDivElement;
+  protected baseRulerTick: HTMLDivElement;
+  protected valueCells: HTMLDivElement[][];
+
+  // Current slicing specification for the underlying tensor.
+  protected slicingSpec: TensorViewSlicingSpec;
 
   constructor(
     private readonly rootElement: HTMLDivElement,
@@ -35,6 +42,7 @@ export class TensorWidgetImpl implements TensorWidget {
     options?: TensorWidgetOptions
   ) {
     this.options = options || {};
+    this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
   }
 
   /**
@@ -145,17 +153,86 @@ export class TensorWidgetImpl implements TensorWidget {
     this.infoSubsection.appendChild(shapeTagDiv);
   }
 
+  /**
+   * TODO(cais): Add doc string.
+   */
   private async renderValues() {
-    if (this.tensorView.spec.shape.length === 2) {
+    console.log(
+        `renderValues(): current slicingSpec: ` +
+        `${JSON.stringify(this.slicingSpec)}`);  // DEBUG
+    if (this.valueSection == null) {
+      this.valueSection = document.createElement('div');
+      this.rootElement.appendChild(this.valueSection);
+    }
+    if (this.tensorView.spec.shape.length <= 2) {
+      this.createTopRuler();
       console.log(`Rendering 2D tensor: ${this.options.name}`);
       const slicingSpec: TensorViewSlicingSpec = {
         slicingDimsAndIndices: [],
         viewingDims: [0, 1],
         verticalRange: [1, 6],
         horizontalRange: [0, 6]
-      }
+      };
       const values = await this.tensorView.view(slicingSpec);
       console.log(`values =`, values);
+    }
+  }
+
+  /**
+   * Creates the top ruler.
+   *
+   * The top ruler includes the topleft-most ruler block, in addition to the
+   * column-wise ruler blocks.
+   */
+  private createTopRuler() {
+    if (this.topRuler == null) {
+      this.topRuler = document.createElement('div');
+      this.topRuler.classList.add('tenesor-widget-top-ruler');
+      this.valueSection.appendChild(this.topRuler);
+    }
+
+    while (this.topRuler.firstChild) {
+      this.topRuler.removeChild(this.topRuler.firstChild);
+    }
+
+    this.baseRulerTick = document.createElement('div');
+    this.baseRulerTick.classList.add('tensor-vis-top-ruler-tick');
+    this.topRuler.appendChild(this.baseRulerTick);
+
+    // TODO(cais): Handle non-2D cases.
+    const rank = this.tensorView.spec.shape.length;
+    if (rank > 2) {
+      throw new Error(`Support for ${rank}D tensor is not implemented yet.`);
+    }
+
+    // Whether the number of columns to render on the screen is to be
+    // determined, e.g., when the `render` method is called for the first time.
+    const determineNumCols = this.slicingSpec.horizontalRange == null;
+    if (determineNumCols && rank >= 2) {
+      this.slicingSpec.horizontalRange = [0, null];
+    }
+    const valueSectionRight = this.valueSection.getBoundingClientRect().right;
+
+    let numColsUpperLim: number;
+    if (rank <= 1) {
+      numColsUpperLim = 1;
+    } else {
+      const horizontalDim = this.slicingSpec.viewingDims[1];
+      numColsUpperLim = this.tensorView.spec.shape[horizontalDim];
+    }
+
+    for (let i = 0; i < numColsUpperLim; ++i) {
+      const tick = document.createElement('div');
+      tick.classList.add('tensor-vis-top-ruler-tick');
+      this.topRuler.appendChild(tick);
+      if (tick.getBoundingClientRect().right >= valueSectionRight) {
+        if (rank >= 2) {
+          this.slicingSpec.horizontalRange[1] = i + 1;
+        }
+        console.log(`Breaking at i = ${i}: horizontalRange:`,
+                    this.slicingSpec.horizontalRange);  // DEBUG
+        break;
+      }
     }
   }
 

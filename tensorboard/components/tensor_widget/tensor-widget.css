@@ -80,3 +80,29 @@ limitations under the License.
   display: inline-block;
   font-weight: bold;
 }
+
+.tensor-widget-top-ruler {
+  height: 24px;
+  white-space: nowrap;
+}
+
+.tensor-vis-top-ruler-tick {
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  background-color: rgb(210, 210, 210);
+  border-right: 1px solid rgb(140, 140, 140);
+  color: rgb(110, 110, 110);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
+  height: 24px;
+  line-height: 24px;
+  padding-right: 2px;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  width: 45px;
+}

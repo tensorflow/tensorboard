@@ -54,7 +54,7 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
 
       const begins: number[] = [];
       const sizes: number[] = [];
-      if (x.rank === 1) {
+      if (x.rank === 1) {tf.
         begins.push(slicingSpec.verticalRange[0]);
         sizes.push(slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]);
       } else if (x.rank > 1) {
@@ -109,32 +109,22 @@ function demo() {
     tensorWidget.VERSION;
 
   // Render tensor1: a float32 scalar.
-  const tensor0Div = document.getElementById('tensor0') as HTMLDivElement;
+  const tensorDiv0 = document.getElementById('tensor0') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView0: any = {
-    spec: {
-      dtype: 'float32',
-      shape: [], // A scalar.
-    },
-  };
+  const tensorView0 = tensorToTensorView(tf.scalar(28));
   const tensorWidget0 = tensorWidget.tensorWidget(
-    tensor0Div,
+    tensorDiv0,
     tensorView0,
     {name: 'scalar1'}
   );
   tensorWidget0.render();
 
   // Render tensor1: a 1D int32 tensor.
-  const tensor1Div = document.getElementById('tensor1') as HTMLDivElement;
+  const tensorDiv1 = document.getElementById('tensor1') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView1: any = {
-    spec: {
-      dtype: 'int32',
-      shape: [100],
-    },
-  };
+  const tensorView1 = tensorToTensorView(tf.randomUniform([100]));
   const tensorWidget1 = tensorWidget.tensorWidget(
-    tensor1Div,
+    tensorDiv1,
     tensorView1,
     {name: 'Tensor1DOutputByAnOpWithAVeryLongName:0'}
   );
@@ -142,13 +132,6 @@ function demo() {
 
   // Render tensor2: a 2D float32 scalar.
   const tensor2Div = document.getElementById('tensor2') as HTMLDivElement;
-  // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  // const tensorView2: any = {
-  //   spec: {
-  //     dtype: 'float32',
-  //     shape: [512, 1024],
-  //   },
-  // };
   const tensorView2 = tensorToTensorView(tf.randomNormal([512, 1024]));
   const tensorWidget2 = tensorWidget.tensorWidget(
     tensor2Div,
@@ -158,7 +141,7 @@ function demo() {
   tensorWidget2.render();
 
   // Render tensor3: a 3D float32 scalar, without the optional name.
-  const tensor3Div = document.getElementById('tensor3') as HTMLDivElement;
+  const tensorDiv3 = document.getElementById('tensor3') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
   const tensorView3: any = {
     spec: {
@@ -167,7 +150,7 @@ function demo() {
     },
   };
   const tensorWidget3 = tensorWidget.tensorWidget(
-    tensor3Div,
+    tensorDiv3,
     tensorView3
   ); // No name.
   tensorWidget3.render();
