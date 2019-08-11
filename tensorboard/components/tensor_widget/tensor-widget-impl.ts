@@ -24,6 +24,7 @@ import {formatTensorName} from './string-utils';
 /** An implementation of TensorWidget single-tensor view. */
 export class TensorWidgetImpl implements TensorWidget {
   private options: TensorWidgetOptions;
+  protected rank: number;
 
   // Constituent UI elements.
   protected headerSection: HTMLDivElement;
@@ -31,6 +32,9 @@ export class TensorWidgetImpl implements TensorWidget {
   protected valueSection: HTMLDivElement;
   protected topRuler: HTMLDivElement;
   protected baseRulerTick: HTMLDivElement;
+  protected topRulerTicks: HTMLDivElement[];
+  protected leftRulerTicks: HTMLDivElement[];
+  protected valueRows: HTMLDivElement[];
   protected valueCells: HTMLDivElement[][];
 
   // Current slicing specification for the underlying tensor.
@@ -43,6 +47,7 @@ export class TensorWidgetImpl implements TensorWidget {
   ) {
     this.options = options || {};
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
+    this.rank = this.tensorView.spec.shape.length;
   }
 
   /**
@@ -164,17 +169,15 @@ export class TensorWidgetImpl implements TensorWidget {
       this.valueSection = document.createElement('div');
       this.rootElement.appendChild(this.valueSection);
     }
-    if (this.tensorView.spec.shape.length <= 2) {
+    // TOOD(cais): Determine when valueSection should be cleared and drawn from
+    // scratch.
+    if (this.rank <= 2) {
       this.createTopRuler();
-      console.log(`Rendering 2D tensor: ${this.options.name}`);
-      const slicingSpec: TensorViewSlicingSpec = {
-        slicingDimsAndIndices: [],
-        viewingDims: [0, 1],
-        verticalRange: [1, 6],
-        horizontalRange: [0, 6]
-      };
-      const values = await this.tensorView.view(slicingSpec);
-      console.log(`values =`, values);
+      this.createLeftRuler();
+      // TODO(cais): The following lines should probably be refactors into a
+      // non-creation update-render method.
+      this.renderTopRuler();
+      this.renderLeftRuler();
     }
   }
 
@@ -189,6 +192,7 @@ export class TensorWidgetImpl implements TensorWidget {
       this.topRuler = document.createElement('div');
       this.topRuler.classList.add('tenesor-widget-top-ruler');
       this.valueSection.appendChild(this.topRuler);
+      this.topRulerTicks = [];
     }
 
     while (this.topRuler.firstChild) {
@@ -196,42 +200,104 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     this.baseRulerTick = document.createElement('div');
-    this.baseRulerTick.classList.add('tensor-vis-top-ruler-tick');
+    this.baseRulerTick.classList.add('tensor-widget-top-ruler-tick');
     this.topRuler.appendChild(this.baseRulerTick);
 
-    // TODO(cais): Handle non-2D cases.
-    const rank = this.tensorView.spec.shape.length;
-    if (rank > 2) {
-      throw new Error(`Support for ${rank}D tensor is not implemented yet.`);
+    // TODO(cais): Handle 3D+ cases.
+    if (this.rank > 2) {
+      throw new Error(`Support for ${this.rank}D tensor is not implemented yet.`);
     }
 
     // Whether the number of columns to render on the screen is to be
     // determined, e.g., when the `render` method is called for the first time.
-    const determineNumCols = this.slicingSpec.horizontalRange == null;
-    if (determineNumCols && rank >= 2) {
+    if (this.rank >= 2) {
       this.slicingSpec.horizontalRange = [0, null];
     }
-    const valueSectionRight = this.valueSection.getBoundingClientRect().right;
 
-    let numColsUpperLim: number;
-    if (rank <= 1) {
-      numColsUpperLim = 1;
+    let maxNumCols: number;
+    if (this.rank <= 1) {
+      maxNumCols = 1;
     } else {
       const horizontalDim = this.slicingSpec.viewingDims[1];
-      numColsUpperLim = this.tensorView.spec.shape[horizontalDim];
+      maxNumCols = this.tensorView.spec.shape[horizontalDim];
     }
 
-    for (let i = 0; i < numColsUpperLim; ++i) {
+    const rootElementRight = this.rootElement.getBoundingClientRect().right;
+    for (let i = 0; i < maxNumCols; ++i) {
       const tick = document.createElement('div');
-      tick.classList.add('tensor-vis-top-ruler-tick');
+      tick.classList.add('tensor-widget-top-ruler-tick');
       this.topRuler.appendChild(tick);
-      if (tick.getBoundingClientRect().right >= valueSectionRight) {
-        if (rank >= 2) {
+      this.topRulerTicks.push(tick);
+      if (tick.getBoundingClientRect().right >= rootElementRight) {
+        // The tick has gone out of the right bound of the tensor widget.
+        if (this.rank >= 2) {
           this.slicingSpec.horizontalRange[1] = i + 1;
         }
         console.log(`Breaking at i = ${i}: horizontalRange:`,
                     this.slicingSpec.horizontalRange);  // DEBUG
         break;
+      }
+    }
+  }
+
+  private createLeftRuler() {
+    if (this.valueRows == null) {
+      this.valueRows = [];
+      this.leftRulerTicks = [];
+    }
+
+    if (this.rank >= 1) {
+      this.slicingSpec.verticalRange = [0, null];
+    }
+
+    let maxNumRows: number;
+    if (this.rank === 0) {
+      maxNumRows = 1;
+    } else {
+      const verticalDim = this.slicingSpec.viewingDims[0];
+      maxNumRows = this.tensorView.spec.shape[verticalDim];
+    }
+
+    // TODO(cais): Make sure that root element bottom is set to begin with.
+    const rootElementBottom = this.rootElement.getBoundingClientRect().bottom;
+    for (let i = 0; i < maxNumRows; ++i) {
+      const row = document.createElement('div');
+      row.classList.add('tensor-widget-value-row');
+      this.valueSection.appendChild(row);
+      this.valueRows.push(row);
+
+      const tick = document.createElement('div');
+      tick.classList.add('tensor-widget-top-ruler-tick');
+      row.appendChild(tick);
+      this.leftRulerTicks.push(tick);
+      if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
+        // The tick has gone out of the right bound of the tensor widget.
+        if (this.rank >= 2) {
+          this.slicingSpec.verticalRange[1] = i + 1;
+        }
+        console.log(`Breaking at i = ${i}: verticalRange:`,
+                    this.slicingSpec.verticalRange);  // DEBUG
+        break;
+      }
+    }
+  }
+
+  /** TODO(cais): Add doc string. */
+  private renderTopRuler() {
+    if (this.rank >= 2) {
+      for (let i = 0; i < this.topRulerTicks.length; ++i) {
+        this.topRulerTicks[i].textContent =
+          `${this.slicingSpec.horizontalRange[0] + i}`;
+      }
+    }
+  }
+
+  /** TODO(cais): Add doc string. */
+  private renderLeftRuler() {
+    if (this.rank >= 1) {
+      for (let i = 0; i < this.leftRulerTicks.length; ++i) {
+        this.leftRulerTicks[i].textContent =
+          `${this.slicingSpec.verticalRange[0] + i}`;
       }
     }
   }

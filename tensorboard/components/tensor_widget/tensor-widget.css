@@ -81,18 +81,43 @@ limitations under the License.
   font-weight: bold;
 }
 
+.tensor-widget-left-ruler-tick {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  background-color: rgb(210, 210, 210);
+  border-bottom: 1px solid rgb(140, 140, 140);
+  border-top: 1px solid rgb(140, 140, 140);
+  box-shadow: 1px 1px 1px rgb(140, 140, 140);
+  color: rgb(110, 110, 110);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
+  height: 29px;
+  line-height: 29px;
+  margin-left: 0px;
+  max-width: 45px;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  width: 45px;
+}
+
 .tensor-widget-top-ruler {
   height: 24px;
   white-space: nowrap;
 }
 
-.tensor-vis-top-ruler-tick {
+.tensor-widget-top-ruler-tick {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   background-color: rgb(210, 210, 210);
+  border-bottom: 1px solid rgb(140, 140, 140);
   border-right: 1px solid rgb(140, 140, 140);
   color: rgb(110, 110, 110);
   cursor: pointer;
@@ -105,4 +130,10 @@ limitations under the License.
   user-select: none;
   vertical-align: middle;
   width: 45px;
+}
+
+.tensor-widget-value-row {
+  height: 25px;
+  line-height: 25px;
+  white-space: nowrap;
 }
