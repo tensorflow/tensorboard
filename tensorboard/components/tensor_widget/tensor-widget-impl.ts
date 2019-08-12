@@ -403,7 +403,6 @@ export class TensorWidgetImpl implements TensorWidget {
       for (let i = 0; i < numRows; ++i) {
         for (let j = 0; j < numCols; ++j) {
           const valueDiv = this.valueDivs[i][j];
-          // console.log((values[i] as number[]).length);  // DEBUG
           if (
             i < (values as number[][]).length &&
             j < (values[i] as number[]).length
@@ -437,9 +436,6 @@ export class TensorWidgetImpl implements TensorWidget {
     const indexUpperBound = this.tensorView.spec.shape[
       this.slicingSpec.viewingDims[1]
     ];
-    console.log(
-      `scrollHorizontally(): 100: index=${index}, indexUpperBound=${indexUpperBound}`
-    ); // DEBUG
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
         `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`
@@ -448,10 +444,8 @@ export class TensorWidgetImpl implements TensorWidget {
 
     this.slicingSpec.horizontalRange[0] = index;
     this.slicingSpec.horizontalRange[1] = index + this.topRulerTicks.length;
-    console.log(`scrollHorizontally(): 200:`, this.slicingSpec.horizontalRange); // DEBUG
     const maxCol = this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]];
     if (this.slicingSpec.horizontalRange[1] > maxCol) {
-      console.log(`scrollHorizontally(): 300: Force to ${maxCol}`); // DEBUG
       this.slicingSpec.horizontalRange[1] = maxCol;
     }
 
