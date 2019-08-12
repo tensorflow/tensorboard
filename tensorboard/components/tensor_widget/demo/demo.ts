@@ -20,8 +20,6 @@ import {TensorViewSlicingSpec} from '../types';
 // TODO(cais): Find a way to import tfjs-core here.
 declare const tf: any;
 
-console.log('In demo.ts,', tf);  // DEBUG
-
 /**
  * Convert a TensorFlow.js tensor to a TensorView.
  */
@@ -37,8 +35,8 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
     get: async (...indices: number[]) => {
       if (indices.length !== x.rank) {
         throw new Error(
-            `indices length ${indices.length} does not match ` +
-            `rank ${x.rank}`);
+          `indices length ${indices.length} does not match ` + `rank ${x.rank}`
+        );
       }
       return buffer.get(...indices);
     },
@@ -48,9 +46,11 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
       }
 
       const slicingDims = slicingSpec.slicingDimsAndIndices.map(
-        dimAndIndex => dimAndIndex.dim);
+        (dimAndIndex) => dimAndIndex.dim
+      );
       const slicingIndices = slicingSpec.slicingDimsAndIndices.map(
-        dimAndIndex => dimAndIndex.index);
+        (dimAndIndex) => dimAndIndex.index
+      );
 
       const begins: number[] = [];
       const sizes: number[] = [];
@@ -68,29 +68,38 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
             const viewDimIndex = slicingSpec.viewingDims.indexOf(i);
             if (viewDimIndex === 0) {
               begins.push(slicingSpec.verticalRange[0]);
-              sizes.push(slicingSpec.verticalRange[1] -
-                         slicingSpec.verticalRange[0]);
+              sizes.push(
+                slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]
+              );
             } else {
               begins.push(slicingSpec.horizontalRange[0]);
-              sizes.push(slicingSpec.horizontalRange[1] -
-                         slicingSpec.horizontalRange[0]);
+              sizes.push(
+                slicingSpec.horizontalRange[1] - slicingSpec.horizontalRange[0]
+              );
             }
           }
         }
       }
       // TODO(cais): Doesn't work when slicing dimensions is not the first few
       // yet.
-      const sliced = x.rank === 0 ? x : tf.tidy(() => {
-        let output = x.slice(begins, sizes);
-        if (slicingDims != null) {
-          output = output.squeeze(slicingDims);
-        }
-        return output;
-      });
+      const sliced =
+        x.rank === 0
+          ? x
+          : tf.tidy(() => {
+              let output = x.slice(begins, sizes);
+              if (slicingDims != null) {
+                output = output.squeeze(slicingDims);
+              }
+              return output;
+            });
 
-      const retval =
-          (await sliced.array()) as
-          boolean|number|string|boolean[][]|number[][]|string[][];
+      const retval = (await sliced.array()) as
+        | boolean
+        | number
+        | string
+        | boolean[][]
+        | number[][]
+        | string[][];
       if (sliced !== x) {
         tf.dispose(sliced);
       }
@@ -100,7 +109,7 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
     getHealthPill: async () => {
       // return calculateHealthPill(x);
       throw new Error('Not implemented yet.');
-    }
+    },
   };
 }
 
@@ -108,52 +117,61 @@ function demo() {
   document.getElementById('tensor-widget-version').textContent =
     tensorWidget.VERSION;
 
+  /////////////////////////////////////////////////////////////
   // Render tensor1: a float32 scalar.
   const tensorDiv0 = document.getElementById('tensor0') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
   const tensorView0 = tensorToTensorView(tf.scalar(28));
-  const tensorWidget0 = tensorWidget.tensorWidget(
-    tensorDiv0,
-    tensorView0,
-    {name: 'scalar1'}
-  );
+  const tensorWidget0 = tensorWidget.tensorWidget(tensorDiv0, tensorView0, {
+    name: 'scalar1',
+  });
   tensorWidget0.render();
 
+  /////////////////////////////////////////////////////////////
   // Render tensor1: a 1D int32 tensor.
   const tensorDiv1 = document.getElementById('tensor1') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView1 = tensorToTensorView(tf.linspace(0, 190, 20).asType('int32'));
-  const tensorWidget1 = tensorWidget.tensorWidget(
-    tensorDiv1,
-    tensorView1,
-    {name: 'Tensor1DOutputByAnOpWithAVeryLongName:0'}
+  const tensorView1 = tensorToTensorView(
+    tf.linspace(0, 190, 20).asType('int32')
   );
+  const tensorWidget1 = tensorWidget.tensorWidget(tensorDiv1, tensorView1, {
+    name: 'Tensor1DOutputByAnOpWithAVeryLongName:0',
+  });
   tensorWidget1.render();
 
+  /////////////////////////////////////////////////////////////
   // Render tensor2: a 2D float32 scalar.
   const tensor2Div = document.getElementById('tensor2') as HTMLDivElement;
   const tensorView2 = tensorToTensorView(tf.randomNormal([128, 64]));
-  const tensorWidget2 = tensorWidget.tensorWidget(
-    tensor2Div,
-    tensorView2,
-    {name: 'Float32_2D_Tensor:0'}
-  );
+  const tensorWidget2 = tensorWidget.tensorWidget(tensor2Div, tensorView2, {
+    name: 'Float32_2D_Tensor:0',
+  });
   tensorWidget2.render();
 
-  // Render tensor3: a 3D float32 scalar, without the optional name.
+  /////////////////////////////////////////////////////////////
+  // Render tensor3: a 2D float32 scalar with NaN and Infinities in it.
   const tensorDiv3 = document.getElementById('tensor3') as HTMLDivElement;
+  const tensorView3 = tensorToTensorView(
+    tf.tensor2d([[NaN, -Infinity], [Infinity, 0]])
+  );
+  // const tensorView3 = tensorToTensorView(tf.tensor2d([[3, 4], [5, 6]]));
+  const tensorWidget3 = tensorWidget.tensorWidget(tensorDiv3, tensorView3, {
+    name: 'Tensor2D_w_badValues',
+  });
+  tensorWidget3.render();
+
+  /////////////////////////////////////////////////////////////
+  // Render tensor4: a 3D float32 scalar, without the optional name.
+  const tensorDiv4 = document.getElementById('tensor4') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView3: any = {
+  const tensorView4: any = {
     spec: {
       dtype: 'float32',
       shape: [64, 32, 50],
     },
   };
-  const tensorWidget3 = tensorWidget.tensorWidget(
-    tensorDiv3,
-    tensorView3
-  ); // No name.
-  tensorWidget3.render();
+  const tensorWidget4 = tensorWidget.tensorWidget(tensorDiv4, tensorView4); // No name.
+  tensorWidget4.render();
 }
 
 demo();

@@ -43,6 +43,13 @@ export class TensorWidgetImpl implements TensorWidget {
   protected valueRows: HTMLDivElement[];
   protected valueDivs: HTMLDivElement[][];
 
+  // Whether the height of the root element is insufficient to display
+  // the rows (vertical dimension under currrent slicing) in its entirety.
+  protected rowsCutoff: boolean;
+  // Whether the height of the root element is insufficient to display
+  // the rows (horizontal dimension under currrent slicing) in its entirety.
+  protected colsCutoff: boolean;
+
   // Current slicing specification for the underlying tensor.
   protected slicingSpec: TensorViewSlicingSpec;
 
@@ -67,7 +74,6 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   async render() {
     this.rootElement.classList.add('tensor-widget');
-
     this.renderHeader();
     await this.renderValues();
   }
@@ -200,6 +206,12 @@ export class TensorWidgetImpl implements TensorWidget {
       this.topRuler.classList.add('tenesor-widget-top-ruler');
       this.valueSection.appendChild(this.topRuler);
       this.topRulerTicks = [];
+
+      this.topRuler.addEventListener('wheel', async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
+      });
     }
 
     while (this.topRuler.firstChild) {
@@ -232,6 +244,7 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     const rootElementRight = this.rootElement.getBoundingClientRect().right;
+    this.colsCutoff = false;
     for (let i = 0; i < maxNumCols; ++i) {
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
@@ -240,13 +253,14 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().right >= rootElementRight) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
-          // TODO(cais): Remove.
-          // this.topRuler.removeChild(tick);
-          // this.topRulerTicks.pop();
           this.slicingSpec.horizontalRange[1] = i + 1;
+          this.colsCutoff = true;
         }
         break;
       }
+    }
+    if (!this.colsCutoff && this.rank >= 2) {
+      this.slicingSpec.horizontalRange[1] = maxNumCols;
     }
   }
 
@@ -269,6 +283,7 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     // TODO(cais): Make sure that root element bottom is set to begin with.
+    this.rowsCutoff = false;
     const rootElementBottom = this.rootElement.getBoundingClientRect().bottom;
     for (let i = 0; i < maxNumRows; ++i) {
       const row = document.createElement('div');
@@ -284,13 +299,13 @@ export class TensorWidgetImpl implements TensorWidget {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 1) {
           this.slicingSpec.verticalRange[1] = i + 1;
+          this.rowsCutoff = true;
         }
-        console.log(
-          `Breaking at i = ${i}: verticalRange:`,
-          this.slicingSpec.verticalRange
-        ); // DEBUG
         break;
       }
+    }
+    if (!this.rowsCutoff && this.rank >= 1) {
+      this.slicingSpec.verticalRange[1] = maxNumRows;
     }
   }
 
@@ -323,9 +338,16 @@ export class TensorWidgetImpl implements TensorWidget {
   /** TODO(cais): Add doc string. */
   private renderTopRuler() {
     if (this.rank >= 2) {
+      const numCols = this.tensorView.spec.shape[
+        this.slicingSpec.viewingDims[1]
+      ];
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
-        this.topRulerTicks[i].textContent = `${this.slicingSpec
-          .horizontalRange[0] + i}`;
+        const colIndex = this.slicingSpec.horizontalRange[0] + i;
+        if (colIndex < numCols) {
+          this.topRulerTicks[i].textContent = `${colIndex}`;
+        } else {
+          this.topRulerTicks[i].textContent = ``;
+        }
       }
     }
   }
@@ -333,11 +355,12 @@ export class TensorWidgetImpl implements TensorWidget {
   /** TODO(cais): Add doc string. */
   private renderLeftRuler() {
     if (this.rank >= 1) {
-      const tensorNumRows = this.tensorView.spec.shape[
-        this.slicingSpec.viewingDims[0]];
+      const numRows = this.tensorView.spec.shape[
+        this.slicingSpec.viewingDims[0]
+      ];
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
-        if (rowIndex < tensorNumRows) {
+        if (rowIndex < numRows) {
           this.leftRulerTicks[i].textContent = `${rowIndex}`;
         } else {
           this.leftRulerTicks[i].textContent = '';
@@ -380,8 +403,11 @@ export class TensorWidgetImpl implements TensorWidget {
       for (let i = 0; i < numRows; ++i) {
         for (let j = 0; j < numCols; ++j) {
           const valueDiv = this.valueDivs[i][j];
-          if (i < (values as number[][]).length &&
-              j < (values[i] as number[]).length) {
+          // console.log((values[i] as number[]).length);  // DEBUG
+          if (
+            i < (values as number[][]).length &&
+            j < (values[i] as number[]).length
+          ) {
             valueDiv.textContent = numericValueToString(
               values[i][j],
               isIntegerDType(this.tensorView.spec.dtype)
@@ -394,6 +420,9 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
+  /**
+   * TODO(cais): Doc string.
+   */
   private async renderRulersAndValueDivs() {
     this.renderTopRuler();
     this.renderLeftRuler();
@@ -402,10 +431,31 @@ export class TensorWidgetImpl implements TensorWidget {
 
   async scrollHorizontally(index: number) {
     if (this.rank <= 1) {
-      // Cannot horizontally scroll the display a scalar or 1D tensor.
+      // Cannot scroll the display of a scalar or 1D tensor.
       return;
     }
-    throw new Error('scrollHorizontally() is not implemented yet.');
+    const indexUpperBound = this.tensorView.spec.shape[
+      this.slicingSpec.viewingDims[1]
+    ];
+    console.log(
+      `scrollHorizontally(): 100: index=${index}, indexUpperBound=${indexUpperBound}`
+    ); // DEBUG
+    if (index < 0 || index >= indexUpperBound) {
+      throw new Error(
+        `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`
+      );
+    }
+
+    this.slicingSpec.horizontalRange[0] = index;
+    this.slicingSpec.horizontalRange[1] = index + this.topRulerTicks.length;
+    console.log(`scrollHorizontally(): 200:`, this.slicingSpec.horizontalRange); // DEBUG
+    const maxCol = this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]];
+    if (this.slicingSpec.horizontalRange[1] > maxCol) {
+      console.log(`scrollHorizontally(): 300: Force to ${maxCol}`); // DEBUG
+      this.slicingSpec.horizontalRange[1] = maxCol;
+    }
+
+    await this.renderRulersAndValueDivs();
   }
 
   async scrollVertically(index: number) {
@@ -413,45 +463,73 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar.
       return;
     }
-    const indexUpperBound =
-      this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
+    const indexUpperBound = this.tensorView.spec.shape[
+      this.slicingSpec.viewingDims[0]
+    ];
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
-          `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`);
+        `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`
+      );
     }
 
-    // const prevVerticalRange = this.slicingSpec.verticalRange[1] -
-    //   this.slicingSpec.verticalRange[0];
-    // this.slicingSpec.verticalRange[0] = index;
-    // const verticalMax =
     this.slicingSpec.verticalRange[0] = index;
     this.slicingSpec.verticalRange[1] = index + this.valueRows.length;
     const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
     if (this.slicingSpec.verticalRange[1] > maxRow) {
       this.slicingSpec.verticalRange[1] = maxRow;
-      console.log(`Forced maxRow = ${this.slicingSpec.verticalRange[1]}`);  // DEBUG
     }
 
     await this.renderRulersAndValueDivs();
   }
 
-  async scrollUpOrDown(direction: 'down'|'up') {
+  async scrollUpOrDown(direction: 'down' | 'up') {
     if (this.rank === 0) {
       // Cannot scroll the display of a scalar.
       return;
     }
-    const currIndex = this.slicingSpec.verticalRange[0];
+    if (!this.rowsCutoff) {
+      // Cannot scroll vertically when all rows are shown.
+      return;
+    }
+    const currRowIndex = this.slicingSpec.verticalRange[0];
     if (direction === 'down') {
       const numRowsShown = this.valueRows.length - 1;
-      const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]]
-        - numRowsShown ;
-      if (currIndex < maxRow) {
-        await this.scrollVertically(currIndex +  1);
+      const maxRow =
+        this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]] -
+        numRowsShown;
+      if (currRowIndex < maxRow) {
+        await this.scrollVertically(currRowIndex + 1);
       }
     } else {
-      // direction === 'up'
-      if (currIndex - 1 >= 0) {
-        await this.scrollVertically(currIndex - 1);
+      // direction is 'up'.
+      if (currRowIndex - 1 >= 0) {
+        await this.scrollVertically(currRowIndex - 1);
+      }
+    }
+  }
+
+  async scrollLeftOrRight(direction: 'left' | 'right') {
+    if (this.rank <= 1) {
+      // Cannot horizontally scroll the display a scalar or 1D tensor.
+      return;
+    }
+    if (!this.colsCutoff) {
+      // Cannot scroll horizontally when all rows are shown.
+      return;
+    }
+    const currColIndex = this.slicingSpec.horizontalRange[0];
+    if (direction === 'right') {
+      const numColsShown = this.topRulerTicks.length - 1;
+      const maxCol =
+        this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]] -
+        numColsShown;
+      if (currColIndex < maxCol) {
+        await this.scrollHorizontally(currColIndex + 1);
+      }
+    } else {
+      // direction is 'left'.
+      if (currColIndex - 1 >= 0) {
+        await this.scrollHorizontally(currColIndex - 1);
       }
     }
   }
