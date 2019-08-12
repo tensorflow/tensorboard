@@ -122,7 +122,7 @@ function demo() {
   // Render tensor1: a 1D int32 tensor.
   const tensorDiv1 = document.getElementById('tensor1') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView1 = tensorToTensorView(tf.randomUniform([100]));
+  const tensorView1 = tensorToTensorView(tf.linspace(0, 990, 100).asType('int32'));
   const tensorWidget1 = tensorWidget.tensorWidget(
     tensorDiv1,
     tensorView1,
