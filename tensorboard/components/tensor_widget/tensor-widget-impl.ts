@@ -335,7 +335,11 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
-  /** TODO(cais): Add doc string. */
+  /**
+   * Render the content of the top ruler ticks based on current slicing spec.
+   *
+   * The top ruler ticks show the currently displayed column indices.
+   */
   private renderTopRuler() {
     if (this.rank >= 2) {
       const numCols = this.tensorView.spec.shape[
@@ -352,7 +356,11 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
-  /** TODO(cais): Add doc string. */
+  /**
+   * Render the content of the left ruler ticks based on current slicing spec.
+   *
+   * The left ruler ticks show the currently displayed row indices.
+   */
   private renderLeftRuler() {
     if (this.rank >= 1) {
       const numRows = this.tensorView.spec.shape[
@@ -420,7 +428,8 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   /**
-   * TODO(cais): Doc string.
+   * Fill in the content of the top/left rulers and main value divs
+   * based on the current slicing spec.
    */
   private async renderRulersAndValueDivs() {
     this.renderTopRuler();
@@ -428,6 +437,15 @@ export class TensorWidgetImpl implements TensorWidget {
     await this.renderValueDivs();
   }
 
+  /**
+   * Scroll horizontally to a specified column index.
+   *
+   * This is a no-op for scalar (0D) and 1D tensors.
+   * If the column index is out of bound under the current slicing spec,
+   * an error will be thrown.
+   *
+   * @param index
+   */
   async scrollHorizontally(index: number) {
     if (this.rank <= 1) {
       // Cannot scroll the display of a scalar or 1D tensor.
@@ -452,6 +470,15 @@ export class TensorWidgetImpl implements TensorWidget {
     await this.renderRulersAndValueDivs();
   }
 
+  /**
+   * Scroll vertically to a specified row index.
+   *
+   * This is a no-op for scalar (0D) tensors.
+   * If the row index is out of bound under the current slicing spec,
+   * an error will be thrown.
+   *
+   * @param index
+   */
   async scrollVertically(index: number) {
     if (this.rank === 0) {
       // Cannot scroll the display of a scalar.
@@ -476,7 +503,7 @@ export class TensorWidgetImpl implements TensorWidget {
     await this.renderRulersAndValueDivs();
   }
 
-  async scrollUpOrDown(direction: 'down' | 'up') {
+  protected async scrollUpOrDown(direction: 'down' | 'up') {
     if (this.rank === 0) {
       // Cannot scroll the display of a scalar.
       return;
@@ -502,7 +529,7 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
-  async scrollLeftOrRight(direction: 'left' | 'right') {
+  protected async scrollLeftOrRight(direction: 'left' | 'right') {
     if (this.rank <= 1) {
       // Cannot horizontally scroll the display a scalar or 1D tensor.
       return;

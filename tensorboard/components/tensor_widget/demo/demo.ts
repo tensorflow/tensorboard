@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// import * as tf from '@tensorflow/tfjs-core';
 import * as tensorWidget from '../tensor-widget';
 import {TensorViewSlicingSpec} from '../types';
 
-// TODO(cais): Find a way to import tfjs-core here.
+// TODO(cais): Find a way to import tfjs-core here, instead of depending on
+// a global variable.
 declare const tf: any;
 
 /**

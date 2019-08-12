@@ -18,8 +18,8 @@ import {expect} from 'chai';
 import {
   ELLIPSES,
   formatTensorName,
-  TENSOR_NAME_LENGTH_CUTOFF,
   numericValueToString,
+  TENSOR_NAME_LENGTH_CUTOFF,
 } from './string-utils';
 
 function stringRepeat(str: string, times: number) {
