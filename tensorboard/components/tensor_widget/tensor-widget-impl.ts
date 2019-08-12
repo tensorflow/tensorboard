@@ -44,10 +44,10 @@ export class TensorWidgetImpl implements TensorWidget {
   protected valueDivs: HTMLDivElement[][];
 
   // Whether the height of the root element is insufficient to display
-  // the rows (vertical dimension under currrent slicing) in its entirety.
+  // all the rows (vertical dimension under currrent slicing) at once.
   protected rowsCutoff: boolean;
   // Whether the height of the root element is insufficient to display
-  // the rows (horizontal dimension under currrent slicing) in its entirety.
+  // all the columns rows (horizontal dimension under currrent slicing) at once.
   protected colsCutoff: boolean;
 
   // Current slicing specification for the underlying tensor.
