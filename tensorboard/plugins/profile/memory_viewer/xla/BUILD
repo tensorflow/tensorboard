@@ -8,11 +8,11 @@ tf_web_library(
     name = "xla",
     srcs = [
         "xla.html",
-        "shape.ts",
-        "logical-buffer.ts",
-        "buffer-allocation-assigned.ts",
-        "buffer-allocation.ts",
-        "hlo-instruction.ts",
+        "shape.js",
+        "logical-buffer.js",
+        "buffer-allocation-assigned.js",
+        "buffer-allocation.js",
+        "hlo-instruction.js",
     ],
     path = "/memory-viewer",
     deps = [

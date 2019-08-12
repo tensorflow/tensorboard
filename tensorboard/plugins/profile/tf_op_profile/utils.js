@@ -42,20 +42,28 @@ var tf_op_profile;
             : rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
     }
     tf_op_profile.flameColor = flameColor;
+    function flopsColor(fraction) {
+        return flameColor(fraction, 0.7);
+    }
+    tf_op_profile.flopsColor = flopsColor;
+    function bwColor(fraction) {
+        return flameColor(1 - fraction, 0.7);
+    }
+    tf_op_profile.bwColor = bwColor;
     function utilization(node) {
-        // NaN indicates undefined utilization for fused operations (we can't measure
-        // performance inside a fusion). It could also indicate operations with zero
-        // time, but they currently don't appear in the profile.
+        // NaN indicates undefined utilization for fused operations (we can't
+        // measure performance inside a fusion). It could also indicate operations
+        // with zero time, but they currently don't appear in the profile.
         if (!node || !node.metrics || !node.metrics.time)
-            return 0 / 0;
+            return NaN;
         return node.metrics.flops / node.metrics.time;
     }
     tf_op_profile.utilization = utilization;
     function memoryUtilization(node) {
-        // NaN indicates undefined memory utilization (the profile was collected from
-        // older versions of profiler).
+        // NaN indicates undefined memory utilization (the profile was collected
+        // from older versions of profiler).
         if (!node || !node.metrics || !node.metrics.memoryBandwidth)
-            return 0 / 0;
+            return NaN;
         return node.metrics.memoryBandwidth;
     }
     tf_op_profile.memoryUtilization = memoryUtilization;
@@ -77,4 +85,11 @@ var tf_op_profile;
                 : (fraction * 100).toPrecision(2) + '%';
     }
     tf_op_profile.percent = percent;
+    function timeWasted(node) {
+        if (!node || !node.metrics)
+            return NaN;
+        return (node.metrics.time *
+            (1 - Math.max(utilization(node), memoryUtilization(node))));
+    }
+    tf_op_profile.timeWasted = timeWasted;
 })(tf_op_profile || (tf_op_profile = {})); // namespace tf_op_profile
