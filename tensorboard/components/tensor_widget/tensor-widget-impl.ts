@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {isIntegerDType} from './dtype-utils';
+import {isIntegerDType, isFloatDType} from './dtype-utils';
 import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
 import {formatTensorName, numericValueToString} from './string-utils';
 import {
@@ -75,6 +75,14 @@ export class TensorWidgetImpl implements TensorWidget {
   async render() {
     this.rootElement.classList.add('tensor-widget');
     this.renderHeader();
+    if (
+      !isIntegerDType(this.tensorView.spec.dtype) &&
+      !isFloatDType(this.tensorView.spec.dtype)
+    ) {
+      throw new Error(
+        `Rendering dtype ${this.tensorView.spec.dtype} is not supported yet.`
+      );
+    }
     await this.renderValues();
   }
 
@@ -171,7 +179,7 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   /**
-   * TODO(cais): Add doc string.
+   * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
     if (this.valueSection == null) {
@@ -184,8 +192,7 @@ export class TensorWidgetImpl implements TensorWidget {
         await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
       });
     }
-    // TOOD(cais): Determine when valueSection should be cleared and drawn from
-    // scratch.
+    // TOOD(cais): Remove this check once 2D+ tensors are supported.
     if (this.rank <= 2) {
       this.createTopRuler();
       this.createLeftRuler();
