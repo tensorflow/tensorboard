@@ -13,9 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TensorView, TensorWidget, TensorWidgetOptions, TensorViewSlicingSpec} from './types';
+import {isIntegerDType} from './dtype-utils';
 import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
-import {formatTensorName} from './string-utils';
+import {formatTensorName, numericValueToString} from './string-utils';
+import {
+  TensorView,
+  TensorWidget,
+  TensorWidgetOptions,
+  TensorViewSlicingSpec,
+} from './types';
 
 /**
  * Implementation of TensorWidget.
@@ -204,7 +210,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
     // TODO(cais): Handle 3D+ cases.
     if (this.rank > 2) {
-      throw new Error(`Support for ${this.rank}D tensor is not implemented yet.`);
+      throw new Error(
+        `Support for ${this.rank}D tensor is not implemented yet.`
+      );
     }
 
     // Whether the number of columns to render on the screen is to be
@@ -232,8 +240,10 @@ export class TensorWidgetImpl implements TensorWidget {
         if (this.rank >= 2) {
           this.slicingSpec.horizontalRange[1] = i + 1;
         }
-        console.log(`Breaking at i = ${i}: horizontalRange:`,
-                    this.slicingSpec.horizontalRange);  // DEBUG
+        console.log(
+          `Breaking at i = ${i}: horizontalRange:`,
+          this.slicingSpec.horizontalRange
+        ); // DEBUG
         break;
       }
     }
@@ -274,8 +284,10 @@ export class TensorWidgetImpl implements TensorWidget {
         if (this.rank >= 1) {
           this.slicingSpec.verticalRange[1] = i + 1;
         }
-        console.log(`Breaking at i = ${i}: verticalRange:`,
-                    this.slicingSpec.verticalRange);  // DEBUG
+        console.log(
+          `Breaking at i = ${i}: verticalRange:`,
+          this.slicingSpec.verticalRange
+        ); // DEBUG
         break;
       }
     }
@@ -311,8 +323,8 @@ export class TensorWidgetImpl implements TensorWidget {
   private renderTopRuler() {
     if (this.rank >= 2) {
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
-        this.topRulerTicks[i].textContent =
-          `${this.slicingSpec.horizontalRange[0] + i}`;
+        this.topRulerTicks[i].textContent = `${this.slicingSpec
+          .horizontalRange[0] + i}`;
       }
     }
   }
@@ -321,8 +333,8 @@ export class TensorWidgetImpl implements TensorWidget {
   private renderLeftRuler() {
     if (this.rank >= 1) {
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
-        this.leftRulerTicks[i].textContent =
-          `${this.slicingSpec.verticalRange[0] + i}`;
+        this.leftRulerTicks[i].textContent = `${this.slicingSpec
+          .verticalRange[0] + i}`;
       }
     }
   }
@@ -336,33 +348,35 @@ export class TensorWidgetImpl implements TensorWidget {
   private async renderValueDivs() {
     const numRows = this.valueDivs.length;
     const numCols = this.valueDivs[0].length;
+    const values = await this.tensorView.view(this.slicingSpec);
+    // TODO(cais): Once health pills are available, use the min / max values to determine
+    // # of decimal places.
+    // TODO(cais): Add hover popup card for the value divs.
     if (this.rank === 0) {
-      // TODO(cais): Deduplicate the following line?
-      const values = await this.tensorView.view(this.slicingSpec) as number;
-      // TODO(cais): Implement and call formatValue().
-      this.valueDivs[0][0].textContent = `${values.toFixed(2)}`;
+      this.valueDivs[0][0].textContent = numericValueToString(
+        values as number,
+        isIntegerDType(this.tensorView.spec.dtype)
+      );
     } else if (this.rank === 1) {
-      console.log(`rank = 1; slicingSpec.verticalRange = ${this.slicingSpec.verticalRange}`);  // DEBUG
-      const values = await this.tensorView.view(this.slicingSpec) as number;
-      console.log(`renderValueDivs(): rank=${this.rank}, `,
-                  JSON.stringify(values));  // DEBUG
       for (let i = 0; i < numRows; ++i) {
         const valueDiv = this.valueDivs[i][0];
-        valueDiv.textContent = `${values[i].toFixed(2)}`;
+        valueDiv.textContent = numericValueToString(
+          values[i],
+          isIntegerDType(this.tensorView.spec.dtype)
+        );
       }
     } else if (this.rank >= 2) {
-      const values = await this.tensorView.view(this.slicingSpec);
-      console.log(
-        `renderValueDivs(): numRows=${numRows}, numCols=${numCols}`);  // DEBUG
+      console.log(`renderValueDivs(): numRows=${numRows}, numCols=${numCols}`); // DEBUG
       for (let i = 0; i < numRows; ++i) {
         for (let j = 0; j < numCols; ++j) {
           const valueDiv = this.valueDivs[i][j];
-          // TODO(cais): Implement and call formatValue().
-          valueDiv.textContent = `${values[i][j].toFixed(2)}`;
+          valueDiv.textContent = numericValueToString(
+            values[i][j],
+            isIntegerDType(this.tensorView.spec.dtype)
+          );
         }
       }
     }
-
   }
 
   async scrollHorizontally(index: number) {

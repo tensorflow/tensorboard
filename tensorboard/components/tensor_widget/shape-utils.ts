@@ -53,7 +53,7 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
     // The vertical and horizontal ranges are left undetermined. They will
     // be determined by the widget during rendering.
     verticalRange: null,
-    horizontalRange: null
+    horizontalRange: null,
   };
 
   const rank = shape.length;
@@ -68,12 +68,12 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
       for (let i = 0; i < rank - 2; ++i) {
         slicingSpec.slicingDimsAndIndices.push({
           dim: i,
-          index: shape[i] === 0 ? null : 0
+          index: shape[i] === 0 ? null : 0,
         });
       }
     }
 
-     // Viewing dimensions for tensors 2D or up.
+    // Viewing dimensions for tensors 2D or up.
     for (let i = shape.length - 2; i < shape.length; ++i) {
       slicingSpec.viewingDims.push(i);
     }
