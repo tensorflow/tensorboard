@@ -35,7 +35,7 @@ export class TensorWidgetImpl implements TensorWidget {
   protected topRulerTicks: HTMLDivElement[];
   protected leftRulerTicks: HTMLDivElement[];
   protected valueRows: HTMLDivElement[];
-  protected valueCells: HTMLDivElement[][];
+  protected valueDivs: HTMLDivElement[][];
 
   // Current slicing specification for the underlying tensor.
   protected slicingSpec: TensorViewSlicingSpec;
@@ -174,6 +174,7 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.rank <= 2) {
       this.createTopRuler();
       this.createLeftRuler();
+      this.createValueDivs();
       // TODO(cais): The following lines should probably be refactors into a
       // non-creation update-render method.
       this.renderTopRuler();
@@ -282,6 +283,32 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
+  /**
+   * Creates the value divs, according to the presence and counts of the top
+   * and left rulers.
+   *
+   * Value divs are the div elements that hold the currently visible elements
+   * of the tensors.
+   *
+   * This method doesn't render the contents of the value divs, but merely
+   * creats them. The `renderValueDivs()` method is what renders their contents
+   * (based on the current slicing spec).
+   */
+  private createValueDivs() {
+    this.valueDivs = [];
+    const numCols = this.topRulerTicks.length;
+    const numRows = this.valueRows.length;
+    for (let i = 0; i < numRows; ++i) {
+      this.valueDivs[i] = [];
+      for (let j = 0; j < numCols; ++j) {
+        const valueDiv = document.createElement('div');
+        valueDiv.classList.add('tensor-widget-value-div');
+        this.valueRows[i].appendChild(valueDiv);
+        this.valueDivs[i].push(valueDiv);
+      }
+    }
+  }
+
   /** TODO(cais): Add doc string. */
   private renderTopRuler() {
     if (this.rank >= 2) {
@@ -300,6 +327,16 @@ export class TensorWidgetImpl implements TensorWidget {
           `${this.slicingSpec.verticalRange[0] + i}`;
       }
     }
+  }
+
+  /**
+   * Render contents of the value divs.
+   *
+   * This method doesn't re-create the value divs, but merely updates
+   * the text content of them based on the current slicing spec.
+   */
+  private renderValueDivs() {
+
   }
 
   async scrollHorizontally(index: number) {
