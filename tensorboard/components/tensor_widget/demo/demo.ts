@@ -122,7 +122,7 @@ function demo() {
   // Render tensor1: a 1D int32 tensor.
   const tensorDiv1 = document.getElementById('tensor1') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView1 = tensorToTensorView(tf.linspace(0, 990, 100).asType('int32'));
+  const tensorView1 = tensorToTensorView(tf.linspace(0, 190, 20).asType('int32'));
   const tensorWidget1 = tensorWidget.tensorWidget(
     tensorDiv1,
     tensorView1,
@@ -132,7 +132,7 @@ function demo() {
 
   // Render tensor2: a 2D float32 scalar.
   const tensor2Div = document.getElementById('tensor2') as HTMLDivElement;
-  const tensorView2 = tensorToTensorView(tf.randomNormal([512, 1024]));
+  const tensorView2 = tensorToTensorView(tf.randomNormal([128, 64]));
   const tensorWidget2 = tensorWidget.tensorWidget(
     tensor2Div,
     tensorView2,

@@ -175,11 +175,7 @@ export class TensorWidgetImpl implements TensorWidget {
       this.valueSection.addEventListener('wheel', async (event) => {
         event.stopPropagation();
         event.preventDefault();
-        if (event.deltaY > 0) {
-          await this.scrollDown();
-        } else {
-          await this.scrollUp();
-        }
+        await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
       });
     }
     // TOOD(cais): Determine when valueSection should be cleared and drawn from
@@ -188,11 +184,7 @@ export class TensorWidgetImpl implements TensorWidget {
       this.createTopRuler();
       this.createLeftRuler();
       this.createValueDivs();
-      // TODO(cais): The following lines should probably be refactors into a
-      // non-creation update-render method.
-      this.renderTopRuler();
-      this.renderLeftRuler();
-      await this.renderValueDivs();
+      await this.renderRulersAndValueDivs();
     }
   }
 
@@ -248,12 +240,11 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().right >= rootElementRight) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
+          // TODO(cais): Remove.
+          // this.topRuler.removeChild(tick);
+          // this.topRulerTicks.pop();
           this.slicingSpec.horizontalRange[1] = i + 1;
         }
-        console.log(
-          `Breaking at i = ${i}: horizontalRange:`,
-          this.slicingSpec.horizontalRange
-        ); // DEBUG
         break;
       }
     }
@@ -342,9 +333,15 @@ export class TensorWidgetImpl implements TensorWidget {
   /** TODO(cais): Add doc string. */
   private renderLeftRuler() {
     if (this.rank >= 1) {
+      const tensorNumRows = this.tensorView.spec.shape[
+        this.slicingSpec.viewingDims[0]];
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
-        this.leftRulerTicks[i].textContent = `${this.slicingSpec
-          .verticalRange[0] + i}`;
+        const rowIndex = this.slicingSpec.verticalRange[0] + i;
+        if (rowIndex < tensorNumRows) {
+          this.leftRulerTicks[i].textContent = `${rowIndex}`;
+        } else {
+          this.leftRulerTicks[i].textContent = '';
+        }
       }
     }
   }
@@ -370,23 +367,37 @@ export class TensorWidgetImpl implements TensorWidget {
     } else if (this.rank === 1) {
       for (let i = 0; i < numRows; ++i) {
         const valueDiv = this.valueDivs[i][0];
-        valueDiv.textContent = numericValueToString(
-          values[i],
-          isIntegerDType(this.tensorView.spec.dtype)
-        );
+        if (i < (values as number[]).length) {
+          valueDiv.textContent = numericValueToString(
+            values[i],
+            isIntegerDType(this.tensorView.spec.dtype)
+          );
+        } else {
+          valueDiv.textContent = '';
+        }
       }
     } else if (this.rank >= 2) {
-      console.log(`renderValueDivs(): numRows=${numRows}, numCols=${numCols}`); // DEBUG
       for (let i = 0; i < numRows; ++i) {
         for (let j = 0; j < numCols; ++j) {
           const valueDiv = this.valueDivs[i][j];
-          valueDiv.textContent = numericValueToString(
-            values[i][j],
-            isIntegerDType(this.tensorView.spec.dtype)
-          );
+          if (i < (values as number[][]).length &&
+              j < (values[i] as number[]).length) {
+            valueDiv.textContent = numericValueToString(
+              values[i][j],
+              isIntegerDType(this.tensorView.spec.dtype)
+            );
+          } else {
+            valueDiv.textContent = '';
+          }
         }
       }
     }
+  }
+
+  private async renderRulersAndValueDivs() {
+    this.renderTopRuler();
+    this.renderLeftRuler();
+    await this.renderValueDivs();
   }
 
   async scrollHorizontally(index: number) {
@@ -402,32 +413,46 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar.
       return;
     }
-    const currVerticalRange = this.slicingSpec.verticalRange[1] -
-      this.slicingSpec.verticalRange[0];
+    const indexUpperBound =
+      this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
+    if (index < 0 || index >= indexUpperBound) {
+      throw new Error(
+          `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`);
+    }
+
+    // const prevVerticalRange = this.slicingSpec.verticalRange[1] -
+    //   this.slicingSpec.verticalRange[0];
     // this.slicingSpec.verticalRange[0] = index;
     // const verticalMax =
     this.slicingSpec.verticalRange[0] = index;
-    this.slicingSpec.verticalRange[1] = index + currVerticalRange;
-
-    await this.renderTopRuler();
-    await this.renderLeftRuler();
-    await this.renderValueDivs();
-  }
-
-  async scrollDown() {
-    const currIndex = this.slicingSpec.verticalRange[0];
-    console.log(`scrollDown(): currIndex = ${currIndex}`);  // DEBUG
+    this.slicingSpec.verticalRange[1] = index + this.valueRows.length;
     const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
-    if (currIndex + 1 < maxRow) {
-      await this.scrollVertically(currIndex +  1);
+    if (this.slicingSpec.verticalRange[1] > maxRow) {
+      this.slicingSpec.verticalRange[1] = maxRow;
+      console.log(`Forced maxRow = ${this.slicingSpec.verticalRange[1]}`);  // DEBUG
     }
+
+    await this.renderRulersAndValueDivs();
   }
 
-  async scrollUp() {
+  async scrollUpOrDown(direction: 'down'|'up') {
+    if (this.rank === 0) {
+      // Cannot scroll the display of a scalar.
+      return;
+    }
     const currIndex = this.slicingSpec.verticalRange[0];
-    console.log(`scrollUp(): currIndex = ${currIndex}`);  // DEBUG
-    if (currIndex - 1 >= 0) {
-      await this.scrollVertically(currIndex - 1);
+    if (direction === 'down') {
+      const numRowsShown = this.valueRows.length - 1;
+      const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]]
+        - numRowsShown ;
+      if (currIndex < maxRow) {
+        await this.scrollVertically(currIndex +  1);
+      }
+    } else {
+      // direction === 'up'
+      if (currIndex - 1 >= 0) {
+        await this.scrollVertically(currIndex - 1);
+      }
     }
   }
 
