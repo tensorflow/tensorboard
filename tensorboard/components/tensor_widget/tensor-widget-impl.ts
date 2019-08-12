@@ -171,6 +171,16 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.valueSection == null) {
       this.valueSection = document.createElement('div');
       this.rootElement.appendChild(this.valueSection);
+
+      this.valueSection.addEventListener('wheel', async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (event.deltaY > 0) {
+          await this.scrollDown();
+        } else {
+          await this.scrollUp();
+        }
+      });
     }
     // TOOD(cais): Determine when valueSection should be cleared and drawn from
     // scratch.
@@ -380,11 +390,45 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   async scrollHorizontally(index: number) {
+    if (this.rank <= 1) {
+      // Cannot horizontally scroll the display a scalar or 1D tensor.
+      return;
+    }
     throw new Error('scrollHorizontally() is not implemented yet.');
   }
 
   async scrollVertically(index: number) {
-    throw new Error('scrollVertically() is not implemented yet.');
+    if (this.rank === 0) {
+      // Cannot scroll the display of a scalar.
+      return;
+    }
+    const currVerticalRange = this.slicingSpec.verticalRange[1] -
+      this.slicingSpec.verticalRange[0];
+    // this.slicingSpec.verticalRange[0] = index;
+    // const verticalMax =
+    this.slicingSpec.verticalRange[0] = index;
+    this.slicingSpec.verticalRange[1] = index + currVerticalRange;
+
+    await this.renderTopRuler();
+    await this.renderLeftRuler();
+    await this.renderValueDivs();
+  }
+
+  async scrollDown() {
+    const currIndex = this.slicingSpec.verticalRange[0];
+    console.log(`scrollDown(): currIndex = ${currIndex}`);  // DEBUG
+    const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
+    if (currIndex + 1 < maxRow) {
+      await this.scrollVertically(currIndex +  1);
+    }
+  }
+
+  async scrollUp() {
+    const currIndex = this.slicingSpec.verticalRange[0];
+    console.log(`scrollUp(): currIndex = ${currIndex}`);  // DEBUG
+    if (currIndex - 1 >= 0) {
+      await this.scrollVertically(currIndex - 1);
+    }
   }
 
   async navigateToIndices(indices: number[]) {
