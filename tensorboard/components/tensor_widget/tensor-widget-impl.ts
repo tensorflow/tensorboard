@@ -162,9 +162,6 @@ export class TensorWidgetImpl implements TensorWidget {
    * TODO(cais): Add doc string.
    */
   private async renderValues() {
-    console.log(
-        `renderValues(): current slicingSpec: ` +
-        `${JSON.stringify(this.slicingSpec)}`);  // DEBUG
     if (this.valueSection == null) {
       this.valueSection = document.createElement('div');
       this.rootElement.appendChild(this.valueSection);
@@ -179,6 +176,7 @@ export class TensorWidgetImpl implements TensorWidget {
       // non-creation update-render method.
       this.renderTopRuler();
       this.renderLeftRuler();
+      await this.renderValueDivs();
     }
   }
 
@@ -273,7 +271,7 @@ export class TensorWidgetImpl implements TensorWidget {
       this.leftRulerTicks.push(tick);
       if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
         // The tick has gone out of the right bound of the tensor widget.
-        if (this.rank >= 2) {
+        if (this.rank >= 1) {
           this.slicingSpec.verticalRange[1] = i + 1;
         }
         console.log(`Breaking at i = ${i}: verticalRange:`,
@@ -335,7 +333,35 @@ export class TensorWidgetImpl implements TensorWidget {
    * This method doesn't re-create the value divs, but merely updates
    * the text content of them based on the current slicing spec.
    */
-  private renderValueDivs() {
+  private async renderValueDivs() {
+    const numRows = this.valueDivs.length;
+    const numCols = this.valueDivs[0].length;
+    if (this.rank === 0) {
+      // TODO(cais): Deduplicate the following line?
+      const values = await this.tensorView.view(this.slicingSpec) as number;
+      // TODO(cais): Implement and call formatValue().
+      this.valueDivs[0][0].textContent = `${values.toFixed(2)}`;
+    } else if (this.rank === 1) {
+      console.log(`rank = 1; slicingSpec.verticalRange = ${this.slicingSpec.verticalRange}`);  // DEBUG
+      const values = await this.tensorView.view(this.slicingSpec) as number;
+      console.log(`renderValueDivs(): rank=${this.rank}, `,
+                  JSON.stringify(values));  // DEBUG
+      for (let i = 0; i < numRows; ++i) {
+        const valueDiv = this.valueDivs[i][0];
+        valueDiv.textContent = `${values[i].toFixed(2)}`;
+      }
+    } else if (this.rank >= 2) {
+      const values = await this.tensorView.view(this.slicingSpec);
+      console.log(
+        `renderValueDivs(): numRows=${numRows}, numCols=${numCols}`);  // DEBUG
+      for (let i = 0; i < numRows; ++i) {
+        for (let j = 0; j < numCols; ++j) {
+          const valueDiv = this.valueDivs[i][j];
+          // TODO(cais): Implement and call formatValue().
+          valueDiv.textContent = `${values[i][j].toFixed(2)}`;
+        }
+      }
+    }
 
   }
 

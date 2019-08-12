@@ -54,7 +54,7 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
 
       const begins: number[] = [];
       const sizes: number[] = [];
-      if (x.rank === 1) {tf.
+      if (x.rank === 1) {
         begins.push(slicingSpec.verticalRange[0]);
         sizes.push(slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]);
       } else if (x.rank > 1) {
@@ -154,15 +154,6 @@ function demo() {
     tensorView3
   ); // No name.
   tensorWidget3.render();
-
-  // const x = tf.eye(10);
-  // const xView = tensorToTensorView(x);
-  // xView.view({
-  //   slicingDimsAndIndices: [],
-  //   viewingDims: [0, 1],
-  //   verticalRange: [1, 6],
-  //   horizontalRange: [0, 6]
-  // }).then(values => console.log(values));
 }
 
 demo();
