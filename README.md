@@ -69,9 +69,9 @@ The first step in using TensorBoard is acquiring data from your TensorFlow run.
 For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
 Summary ops are ops, like
-[`tf.matmul`](https://www.tensorflow.org/versions/r1.2/api_docs/python/tf/matmul)
+[`tf.matmul`](https://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
 or
-[`tf.nn.relu`](https://www.tensorflow.org/versions/master/api_docs/python/tf/nn/relu),
+[`tf.nn.relu`](https://www.tensorflow.org/api_docs/python/tf/nn/relu),
 which means they take in tensors, produce tensors, and are evaluated from within
 a TensorFlow graph. However, summary ops have a twist: the Tensors they produce
 contain serialized protobufs, which are written to disk and sent to TensorBoard.
