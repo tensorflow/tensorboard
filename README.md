@@ -69,7 +69,7 @@ The first step in using TensorBoard is acquiring data from your TensorFlow run.
 For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
 Summary ops are ops, like
-[`tf.matmul`](ttps://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
+[`tf.matmul`](https://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
 or
 [`tf.nn.relu`](https://www.tensorflow.org/api_docs/python/tf/nn/relu),
 which means they take in tensors, produce tensors, and are evaluated from within
