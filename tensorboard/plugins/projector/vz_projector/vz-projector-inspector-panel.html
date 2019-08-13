@@ -227,10 +227,11 @@ limitations under the License.
         flex-direction: column;
       }
 
-      .results, .nn, .nn-list {
+      .results,
+      .nn,
+      .nn-list {
         flex: 1 0 100px;
       }
-
     </style>
     <div class="container">
       <div class="buttons">
@@ -293,17 +294,25 @@ limitations under the License.
             </div>
           </div>
           <div class="neighbor-image-controls">
-            <paper-checkbox id="neighbor-images-checkbox" class="no-images-available" checked="{{showNeighborImages}}">
-             show images
-             <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-             <paper-tooltip
-               position="bottom"
-               animation-delay="0"
-               fit-to-visible-bounds
-             >
-               If image data is available, show the images of the nearest neighbors.
-             </paper-tooltip>
-           </paper-checkbox>
+            <paper-checkbox
+              id="neighbor-images-checkbox"
+              class="no-images-available"
+              checked="{{showNeighborImages}}"
+            >
+              show images
+              <paper-icon-button
+                icon="help"
+                class="help-icon"
+              ></paper-icon-button>
+              <paper-tooltip
+                position="bottom"
+                animation-delay="0"
+                fit-to-visible-bounds
+              >
+                If image data is available, show the images of the nearest
+                neighbors.
+              </paper-tooltip>
+            </paper-checkbox>
           </div>
         </div>
         <p>Nearest points in the original space:</p>
