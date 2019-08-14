@@ -75,7 +75,10 @@ class MultiplexerDataProvider(provider.DataProvider):
   def read_scalars(
       self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
-    del downsample  # ignored for now (see note below)
+    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
+    # is already downsampled. We could downsample on top of the existing
+    # sampling, which would be nice for testing.
+    del downsample  # ignored for now
     index = self.list_scalars(
         experiment_id, plugin_name, run_tag_filter=run_tag_filter
     )
@@ -85,9 +88,6 @@ class MultiplexerDataProvider(provider.DataProvider):
       result[run] = result_for_run
       for (tag, metadata) in six.iteritems(tags_for_run):
         events = self._multiplexer.Tensors(run, tag)
-        # TODO(@wchargin): Downsampling not implemented, as the
-        # multiplexer is already downsampled. We could downsample on top
-        # of the existing sampling, which would be nice for testing.
         result_for_run[tag] = [self._convert_scalar_event(e) for e in events]
     return result
 

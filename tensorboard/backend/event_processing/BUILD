@@ -48,11 +48,12 @@ py_test(
     deps = [
         ":data_provider",
         ":event_multiplexer",
-        "//tensorboard/data:provider",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins/image:summary_v2",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
+        "//tensorboard/util:tensor_util",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
