@@ -34,7 +34,11 @@ from tensorboard.plugins.image import summary_v2 as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_summary
 from tensorboard.util import tensor_util
+import tensorflow.compat.v1 as tf1
 import tensorflow.compat.v2 as tf
+
+
+tf1.enable_eager_execution()
 
 
 class MultiplexerDataProviderTest(tf.test.TestCase):
