@@ -111,7 +111,11 @@ class ScalarsPluginTest(tf.test.TestCase):
         sess.run(flush_op)
 
   def with_runs(run_names):
-    """Run a test with a bare multiplexer and with a `data_provider`."""
+    """Run a test with a bare multiplexer and with a `data_provider`.
+    
+    The decorated function will receive an initialized `ScalarsPlugin`
+    object as its first positional argument.
+    """
     def decorator(fn):
       @functools.wraps(fn)
       def wrapper(self, *args, **kwargs):
@@ -120,9 +124,7 @@ class ScalarsPluginTest(tf.test.TestCase):
           ctx = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
           fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
         with self.subTest('generic data provider'):
-          flags = argparse.Namespace(
-              generic_data=frozenset([metadata.PLUGIN_NAME])
-          )
+          flags = argparse.Namespace(generic_data='true')
           provider = data_provider.MultiplexerDataProvider(multiplexer)
           ctx = base_plugin.TBContext(
               flags=flags,
@@ -191,7 +193,7 @@ class ScalarsPluginTest(tf.test.TestCase):
       self.assertEqual('application/json', mime_type)
       self.assertEqual(len(data), self._STEPS)
     else:
-      with self.assertRaises(KeyError):
+      with self.assertRaises((KeyError, ValueError)):
         plugin.scalars_impl(
             self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.JSON
         )
@@ -207,7 +209,7 @@ class ScalarsPluginTest(tf.test.TestCase):
       self.assertEqual(['Wall time', 'Step', 'Value'], next(reader))
       self.assertEqual(len(list(reader)), self._STEPS)
     else:
-      with self.assertRaises(KeyError):
+      with self.assertRaises((KeyError, ValueError)):
         plugin.scalars_impl(
             self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.CSV
         )

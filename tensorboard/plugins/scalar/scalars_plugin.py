@@ -58,7 +58,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     """
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
-    if context.flags and metadata.PLUGIN_NAME in context.flags.generic_data:
+    if context.flags and context.flags.generic_data == 'true':
       self._data_provider = context.data_provider
     else:
       self._data_provider = None
@@ -98,16 +98,15 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     if self._data_provider:
       mapping = self._data_provider.list_scalars(
           experiment_id=None,  # experiment support not yet implemented
-          owner_plugin=metadata.PLUGIN_NAME,
+          plugin_name=metadata.PLUGIN_NAME,
       )
       result = {run: {} for run in mapping}
       for (run, tag_to_content) in six.iteritems(mapping):
         for (tag, metadatum) in six.iteritems(tag_to_content):
-          sm = metadatum.summary_metadata
-          descr = plugin_util.markdown_to_safe_html(sm.summary_description)
+          description = plugin_util.markdown_to_safe_html(metadatum.description)
           result[run][tag] = {
-              'displayName': sm.display_name,
-              'description': descr,
+              'displayName': metadatum.display_name,
+              'description': description,
           }
       return result
 
@@ -151,16 +150,19 @@ class ScalarsPlugin(base_plugin.TBPlugin):
   def scalars_impl(self, tag, run, experiment, output_format):
     """Result of the form `(body, mime_type)`."""
     if self._data_provider:
+      # Downsample reads to 1000 scalars per time series, which is the
+      # default size guidance for scalars under the multiplexer loading
+      # logic.
+      SAMPLE_COUNT = 1000
       all_scalars = self._data_provider.read_scalars(
           experiment_id=None,  # experiment support not yet implemented
-          owner_plugin=metadata.PLUGIN_NAME,
-          downsample_to=1000,
+          plugin_name=metadata.PLUGIN_NAME,
+          downsample=SAMPLE_COUNT,
           run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-          step_filter=None,  # also the default
       )
       scalars = all_scalars.get(run, {}).get(tag, None)
       if scalars is None:
-        raise KeyError('No scalar data for run=%r, tag=%r' % (run, tag))
+        raise ValueError('No scalar data for run=%r, tag=%r' % (run, tag))
       values = [(x.wall_time, x.step, x.value) for x in scalars]
     elif self._db_connection_provider:
       db = self._db_connection_provider()
