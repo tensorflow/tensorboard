@@ -22,7 +22,6 @@ import os
 
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import struct
 
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
@@ -34,6 +33,7 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary_v2 as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_summary
+from tensorboard.util import tensor_util
 import tensorflow.compat.v2 as tf
 
 
@@ -152,8 +152,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
           self.assertEqual(datum.step, event.step)
           self.assertEqual(datum.wall_time, event.wall_time)
           self.assertEqual(
-              datum.value,
-              struct.unpack("<f", event.tensor_proto.tensor_content)[0],
+              datum.value, tensor_util.make_ndarray(event.tensor_proto).item()
           )
 
   def test_read_scalars_but_not_rank_0(self):
