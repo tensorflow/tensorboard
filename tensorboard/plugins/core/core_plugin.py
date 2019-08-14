@@ -483,6 +483,18 @@ it receives new data at least once per hour)\
 ''')
 
     parser.add_argument(
+        '--generic_data',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['false', 'auto', 'true'],
+        help='''\
+[experimental] Whether to use generic data provider infrastructure. The
+"auto" option enables this only for dashboards that are considered
+stable under the new codepaths. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',

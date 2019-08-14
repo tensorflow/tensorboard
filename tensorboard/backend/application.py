@@ -40,6 +40,7 @@ from werkzeug import wrappers
 
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
+from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -113,6 +114,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       purge_orphaned_data=flags.purge_orphaned_data,
       max_reload_threads=flags.max_reload_threads,
       event_file_active_filter=event_file_active_filter)
+  if flags.generic_data == 'false':
+    data_provider = None
+  else:
+    data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
   loading_multiplexer = multiplexer
   reload_interval = flags.reload_interval
   # For db import op mode, prefer reloading in a child process. See
@@ -142,6 +147,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     reload_interval = -1
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
+      data_provider=data_provider,
       db_module=db_module,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,
