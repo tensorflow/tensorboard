@@ -484,14 +484,15 @@ it receives new data at least once per hour)\
 
     parser.add_argument(
         '--generic_data',
-        type=lambda s: frozenset(x for x in s.split(',') if x),
-        default=frozenset(),
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['false', 'auto', 'true'],
         help='''\
-[experimental] Use generic data provider infrastructure for plugins in
-this comma-separated list. Currently only has any effect with `--logdir`
-data sources.
+[experimental] Whether to use generic data provider infrastructure. The
+"auto" option enables this only for dashboards that are considered
+stable under the new codepaths. (default: %(default)s)\
 ''')
-
 
     parser.add_argument(
         '--samples_per_plugin',
