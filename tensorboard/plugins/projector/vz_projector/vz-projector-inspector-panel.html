@@ -290,23 +290,23 @@ limitations under the License.
           </div>
           <div class="neighbor-image-controls">
             <template is="dom-if" if="[[spriteImagesAvailable]]">
-                <paper-checkbox
-                  id="neighbor-images-checkbox"
-                  checked="{{showNeighborImages}}"
+              <paper-checkbox
+                id="neighbor-images-checkbox"
+                checked="{{showNeighborImages}}"
+              >
+                show images
+                <paper-icon-button
+                  icon="help"
+                  class="help-icon"
+                ></paper-icon-button>
+                <paper-tooltip
+                  position="bottom"
+                  animation-delay="0"
+                  fit-to-visible-bounds
                 >
-                  show images
-                  <paper-icon-button
-                    icon="help"
-                    class="help-icon"
-                  ></paper-icon-button>
-                  <paper-tooltip
-                    position="bottom"
-                    animation-delay="0"
-                    fit-to-visible-bounds
-                  >
-                    Show the images of the nearest neighbors.
-                  </paper-tooltip>
-                </paper-checkbox>
+                  Show the images of the nearest neighbors.
+                </paper-tooltip>
+              </paper-checkbox>
             </template>
           </div>
         </div>

@@ -132,7 +132,6 @@ namespace vz_projector {
         spriteAndMetadata.spriteMetadata &&
         spriteAndMetadata.spriteMetadata.imagePath
       ) {
-
         const [
           spriteWidth,
           spriteHeight,
@@ -171,7 +170,7 @@ namespace vz_projector {
     }
 
     _updateNeighborsList() {
-      if(this.projector) {
+      if (this.projector) {
         const neighbors = this.projector.dataSet.findNeighbors(
           this.selectedPointIndices[0],
           this.distFunc,
@@ -364,9 +363,10 @@ namespace vz_projector {
             Math.floor(neighbor.index / nCols),
             neighbor.index % nCols,
           ];
-          neighborElementImage.style.backgroundPosition = (
-            `${(col / (nCols - 1)) * 100}%
-             ${(row / (nCols - 1)) * 100}%`);
+          neighborElementImage.style.backgroundPosition = `${(col /
+            (nCols - 1)) *
+            100}%
+             ${(row / (nCols - 1)) * 100}%`;
         }
 
         const neighborElementLink = document.createElement('a');
