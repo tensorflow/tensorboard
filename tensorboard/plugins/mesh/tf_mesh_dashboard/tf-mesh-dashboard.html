@@ -88,6 +88,14 @@ limitations under the License.
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
+        <div class="sidebar-section layers-selector">
+          <div class="line-item">
+            <paper-checkbox id="show-bounding-box" checked="{{_showBoundingBox}}">Show bounding box</paper-checkbox>
+          </div>
+          <div class="line-item">
+            <paper-checkbox id="show-axes" checked="{{_showAxes}}">Show axes</paper-checkbox>
+          </div>
+        </div>
       </div>
       <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
@@ -143,6 +151,8 @@ limitations under the License.
                   request-manager="[[_requestManager]]"
                   class="tf-mesh-loader-container"
                   on-camera-position-change="_onCameraPositionChanged"
+                  show-bounding-box="[[_showBoundingBox]]"
+                  show-axes="[[_showAxes]]"
                 >
                 </tf-mesh-loader>
               </template>
@@ -172,6 +182,10 @@ limitations under the License.
 
       .runs-selector {
         flex-grow: 1;
+      }
+
+      .sidebar-section.layers-selector {
+        display: block;
       }
 
       tf-runs-selector {
@@ -239,6 +253,22 @@ limitations under the License.
             type: Object,
             value: () => new tf_backend.RequestManager(),
           },
+          _showBoundingBox: {
+            type: Boolean,
+            value: tf_storage.getBooleanInitializer('_showBoundingBox', {
+              defaultValue: false,
+              useLocalStorage: true,
+            }),
+            observer: '_showBoundingBoxObserver',
+          },
+          _showAxes: {
+            type: Boolean,
+            value: tf_storage.getBooleanInitializer('_showAxes', {
+              defaultValue: false,
+              useLocalStorage: true,
+            }),
+            observer: '_showAxesObserver',
+          },
         },
         ready() {
           window.addEventListener(
@@ -250,6 +280,14 @@ limitations under the License.
           );
           this.reload();
         },
+        _showBoundingBoxObserver: tf_storage.getBooleanObserver(
+          '_showBoundingBox',
+          {defaultValue: false, useLocalStorage: true}
+        ),
+        _showAxesObserver: tf_storage.getBooleanObserver(
+          '_showAxes',
+          {defaultValue: false, useLocalStorage: true}
+        ),
         _getAllChildren() {
           return this.root.querySelectorAll('tf-mesh-loader');
         },
