@@ -114,7 +114,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       purge_orphaned_data=flags.purge_orphaned_data,
       max_reload_threads=flags.max_reload_threads,
       event_file_active_filter=event_file_active_filter)
-  data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
+  if flags.generic_data == 'false':
+    data_provider = None
+  else:
+    data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
   loading_multiplexer = multiplexer
   reload_interval = flags.reload_interval
   # For db import op mode, prefer reloading in a child process. See

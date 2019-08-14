@@ -65,6 +65,15 @@ yarn_install(
     name = "npm",
     package_json = "//:package.json",
     yarn_lock = "//:yarn.lock",
+    # Opt out of symlinking local node_modules folder into bazel internal
+    # directory.  Symlinking is incompatible with our toolchain which often
+    # removes source directory without `bazel clean` which creates broken
+    # symlink into node_modules folder.
+    symlink_node_modules = False,
+    data = [
+        # package.json contains postinstall that requires this file.
+        "//:angular-metadata.tsconfig.json",
+    ],
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")

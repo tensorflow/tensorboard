@@ -39,21 +39,16 @@ limitations under the License.
         flex-direction: column;
         font-size: 12px;
         width: 100%;
+      }
 
-        --paper-font-subhead: {
-          font-size: 14px;
-          color: gray;
-        }
-        --paper-dropdown-menu-icon: {
-          width: 15px;
-          height: 15px;
-        }
-        --paper-dropdown-menu-button: {
-          padding: 0;
-        }
+      paper-dropdown-menu {
         --paper-dropdown-menu-input: {
           padding: 0;
+          color: gray;
         }
+        --iron-icon-width: 15px;
+        --iron-icon-height: 15px;
+        --primary-text-color: gray;
         --paper-item-min-height: 30px;
       }
 
@@ -407,10 +402,9 @@ limitations under the License.
       </div>
       <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
         <div class="control-holder">
-          <paper-toggle-button
-            checked="{{healthPillsToggledOn}}"
-          ></paper-toggle-button>
-          <div class="title">Show health pills</div>
+          <paper-toggle-button checked="{{healthPillsToggledOn}}" class="title"
+            >Show health pills</paper-toggle-button
+          >
         </div>
       </template>
       <div class="control-holder">
