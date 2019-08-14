@@ -31,6 +31,35 @@ py_test(
 )
 
 py_library(
+    name = "data_provider",
+    srcs = ["data_provider.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/data:provider",
+        "//tensorboard/util:tensor_util",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "data_provider_test",
+    srcs = ["data_provider_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":data_provider",
+        ":event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/data:provider",
+        "//tensorboard/plugins/image:summary_v2",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/scalar:summary_v2",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
     name = "directory_loader",
     srcs = ["directory_loader.py"],
     srcs_version = "PY2AND3",
