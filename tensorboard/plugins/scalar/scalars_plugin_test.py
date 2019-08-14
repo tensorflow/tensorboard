@@ -112,7 +112,7 @@ class ScalarsPluginTest(tf.test.TestCase):
 
   def with_runs(run_names):
     """Run a test with a bare multiplexer and with a `data_provider`.
-    
+
     The decorated function will receive an initialized `ScalarsPlugin`
     object as its first positional argument.
     """
