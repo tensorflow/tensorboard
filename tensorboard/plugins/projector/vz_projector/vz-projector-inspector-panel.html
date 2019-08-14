@@ -124,13 +124,13 @@ limitations under the License.
         border-left: 1px solid rgba(0, 0, 0, 0.15);
       }
 
-      .nn-list .neighbor-image,
-      .metadata-list .metadata-image {
+      .nn-list .sprite-image,
+      .metadata-list .sprite-image {
         width: 100%;
       }
 
-      .nn-list.nn-img-show .neighbor-image,
-      .metadata-list.nn-img-show .metadata-image {
+      .nn-list.nn-img-show .sprite-image,
+      .metadata-list.nn-img-show .sprite-image {
         display: block;
       }
 
@@ -290,10 +290,7 @@ limitations under the License.
           </div>
           <div class="neighbor-image-controls">
             <template is="dom-if" if="[[spriteImagesAvailable]]">
-              <paper-checkbox
-                id="neighbor-images-checkbox"
-                checked="{{showNeighborImages}}"
-              >
+              <paper-checkbox checked="{{showNeighborImages}}">
                 show images
                 <paper-icon-button
                   icon="help"

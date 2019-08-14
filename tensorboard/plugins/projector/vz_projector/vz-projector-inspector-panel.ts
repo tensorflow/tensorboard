@@ -15,6 +15,7 @@ limitations under the License.
 namespace vz_projector {
   /** Limit the number of search results we show to the user. */
   const LIMIT_RESULTS = 100;
+  const DEFAULT_NEIGHBORS = 100;
 
   // tslint:disable-next-line
   export let InspectorPanelPolymer = PolymerElement({
@@ -23,9 +24,9 @@ namespace vz_projector {
       selectedMetadataField: String,
       metadataFields: Array,
       metadataColumn: String,
-      numNN: {type: Number, value: 100},
+      numNN: {type: Number, value: DEFAULT_NEIGHBORS},
       updateNumNN: Object,
-      spriteMeta: Object,
+      spriteMeta: Object, // type: `SpriteMetadata`
       showNeighborImages: {
         type: Boolean,
         value: true,
@@ -34,7 +35,6 @@ namespace vz_projector {
       spriteImagesAvailable: {
         type: Boolean,
         value: true,
-        // computed: 'checkSpriteImagesAvailable(SpriteMetadata.*)',
         observer: '_updateNeighborsList',
       },
     },
@@ -170,14 +170,7 @@ namespace vz_projector {
     }
 
     _updateNeighborsList() {
-      if (this.projector) {
-        const neighbors = this.projector.dataSet.findNeighbors(
-          this.selectedPointIndices[0],
-          this.distFunc,
-          this.numNN
-        );
-        this.updateNeighborsList(neighbors);
-      }
+      this.updateNeighborsList();
     }
 
     checkSpriteImagesAvailable() {
@@ -326,7 +319,40 @@ namespace vz_projector {
       return point.metadata[this.selectedMetadataField].toString();
     }
 
-    private updateNeighborsList(neighbors: knn.NearestEntry[]) {
+    private spriteImageRenderer() {
+      const spriteImagePath = this.spriteMeta.imagePath;
+      const {aspectRatio, nCols} = this.spriteMeta;
+      const paddingBottom = 100 / aspectRatio + '%';
+      const backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
+      const backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
+
+      return (neighbor: knn.NearestEntry): HTMLElement => {
+        const spriteElementImage = document.createElement('div');
+        spriteElementImage.className = 'sprite-image';
+        spriteElementImage.style.backgroundImage = backgroundImage;
+        spriteElementImage.style.paddingBottom = paddingBottom;
+        spriteElementImage.style.backgroundSize = backgroundSize;
+        const [row, col] = [
+          Math.floor(neighbor.index / nCols),
+          neighbor.index % nCols,
+        ];
+        const [top, left] = [
+          (row / (nCols - 1)) * 100,
+          (col / (nCols - 1)) * 100,
+        ];
+        spriteElementImage.style.backgroundPosition = `${left}% ${top}%`;
+
+        return spriteElementImage;
+      };
+    }
+
+    private updateNeighborsList(neighbors?: knn.NearestEntry[]) {
+      neighbors = neighbors || this._currentNeighbors;
+      this._currentNeighbors = neighbors;
+      if (neighbors == null) {
+        return;
+      }
+
       const nnlist = this.$$('.nn-list') as HTMLDivElement;
       nnlist.innerHTML = '';
 
@@ -339,12 +365,8 @@ namespace vz_projector {
       this.searchBox.message = '';
       const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
 
-      if (this.spriteImagesAvailable) {
-        var spriteImagePath = this.spriteMeta.imagePath;
-        var {aspectRatio, nCols} = this.spriteMeta;
-        var paddingBottom = 100 / aspectRatio + '%';
-        var backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
-        var backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
+      if (this.spriteImagesAvailable && this.showNeighborImages) {
+        var image_renderer = this.spriteImageRenderer();
       }
 
       for (let i = 0; i < neighbors.length; i++) {
@@ -352,22 +374,6 @@ namespace vz_projector {
 
         const neighborElement = document.createElement('div');
         neighborElement.className = 'neighbor';
-
-        if (this.spriteImagesAvailable) {
-          var neighborElementImage = document.createElement('div');
-          neighborElementImage.className = 'neighbor-image';
-          neighborElementImage.style.backgroundImage = backgroundImage;
-          neighborElementImage.style.paddingBottom = paddingBottom;
-          neighborElementImage.style.backgroundSize = backgroundSize;
-          const [row, col] = [
-            Math.floor(neighbor.index / nCols),
-            neighbor.index % nCols,
-          ];
-          neighborElementImage.style.backgroundPosition = `${(col /
-            (nCols - 1)) *
-            100}%
-             ${(row / (nCols - 1)) * 100}%`;
-        }
 
         const neighborElementLink = document.createElement('a');
         neighborElementLink.className = 'neighbor-link';
@@ -413,9 +419,11 @@ namespace vz_projector {
           barElement.appendChild(tickElement);
         }
 
-        if (this.spriteImagesAvailable) {
+        if (this.spriteImagesAvailable && this.showNeighborImages) {
+          const neighborElementImage = image_renderer(neighbor);
           neighborElement.appendChild(neighborElementImage);
         }
+
         neighborElementLink.appendChild(labelValueElement);
         neighborElementLink.appendChild(barElement);
         neighborElement.appendChild(neighborElementLink);
