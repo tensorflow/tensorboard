@@ -127,7 +127,6 @@ limitations under the License.
       .nn-list .neighbor-image,
       .metadata-list .metadata-image {
         width: 100%;
-        display: None;
       }
 
       .nn-list.nn-img-show .neighbor-image,
@@ -160,10 +159,6 @@ limitations under the License.
       .neighbor-image-controls {
         display: flex;
         padding: 0.8em 0.1em;
-      }
-
-      .no-images-available {
-        display: None;
       }
 
       .options a {
@@ -294,25 +289,25 @@ limitations under the License.
             </div>
           </div>
           <div class="neighbor-image-controls">
-            <paper-checkbox
-              id="neighbor-images-checkbox"
-              class="no-images-available"
-              checked="{{showNeighborImages}}"
-            >
-              show images
-              <paper-icon-button
-                icon="help"
-                class="help-icon"
-              ></paper-icon-button>
-              <paper-tooltip
-                position="bottom"
-                animation-delay="0"
-                fit-to-visible-bounds
-              >
-                If image data is available, show the images of the nearest
-                neighbors.
-              </paper-tooltip>
-            </paper-checkbox>
+            <template is="dom-if" if="[[spriteImagesAvailable]]">
+                <paper-checkbox
+                  id="neighbor-images-checkbox"
+                  checked="{{showNeighborImages}}"
+                >
+                  show images
+                  <paper-icon-button
+                    icon="help"
+                    class="help-icon"
+                  ></paper-icon-button>
+                  <paper-tooltip
+                    position="bottom"
+                    animation-delay="0"
+                    fit-to-visible-bounds
+                  >
+                    Show the images of the nearest neighbors.
+                  </paper-tooltip>
+                </paper-checkbox>
+            </template>
           </div>
         </div>
         <p>Nearest points in the original space:</p>

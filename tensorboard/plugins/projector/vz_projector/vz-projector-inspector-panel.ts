@@ -25,12 +25,22 @@ namespace vz_projector {
       metadataColumn: String,
       numNN: {type: Number, value: 100},
       updateNumNN: Object,
-      spriteMetadata: Object,
-      showNeighborImages: Boolean,
+      spriteMeta: Object,
+      showNeighborImages: {
+        type: Boolean,
+        value: true,
+        observer: '_updateNeighborsList',
+      },
+      spriteImagesAvailable: {
+        type: Boolean,
+        value: true,
+        // computed: 'checkSpriteImagesAvailable(SpriteMetadata.*)',
+        observer: '_updateNeighborsList',
+      },
     },
   });
 
-  export type spriteMetadata = {
+  type SpriteMetadata = {
     imagePath?: string;
     singleImageDim?: number[];
     aspectRatio?: number;
@@ -46,12 +56,13 @@ namespace vz_projector {
     private selectedMetadataField: string;
     private metadataFields: string[];
     private metadataColumn: string;
-    private spriteMeta: spriteMetadata;
+    private spriteMeta: SpriteMetadata;
     private displayContexts: string[];
     private projector: Projector;
     private selectedPointIndices: number[];
     private neighborsOfFirstPoint: knn.NearestEntry[];
-    private showNeighborImages: boolean = true;
+    private showNeighborImages: boolean;
+    private spriteImagesAvailable: boolean;
     private searchBox: ProjectorInput;
 
     private resetFilterButton: HTMLButtonElement;
@@ -69,10 +80,6 @@ namespace vz_projector {
       this.limitMessage = this.$$('.limit-msg') as HTMLDivElement;
       this.searchBox = this.$$('#search-box') as ProjectorInput;
       this.displayContexts = [];
-      this.neighborImagesCheckbox = this.$$(
-        '#neighbor-images-checkbox'
-      ) as HTMLInputElement;
-      this.setShowNeighborImages(this.neighborImagesCheckbox.checked);
     }
 
     initialize(
@@ -125,10 +132,12 @@ namespace vz_projector {
         spriteAndMetadata.spriteMetadata &&
         spriteAndMetadata.spriteMetadata.imagePath
       ) {
+
         const [
           spriteWidth,
           spriteHeight,
         ] = spriteAndMetadata.spriteMetadata.singleImageDim;
+
         this.spriteMeta = {
           imagePath: spriteAndMetadata.spriteImage.src,
           aspectRatio: spriteWidth / spriteHeight,
@@ -138,10 +147,7 @@ namespace vz_projector {
       } else {
         this.spriteMeta = {};
       }
-      this.neighborImagesCheckbox.classList.toggle(
-        'no-images-available',
-        !this.spriteMeta.imagePath
-      );
+      this.spriteImagesAvailable = !!this.spriteMeta.imagePath;
 
       if (
         this.selectedMetadataField == null ||
@@ -164,12 +170,19 @@ namespace vz_projector {
       this.enableResetFilterButton(false);
     }
 
-    setShowNeighborImages(show: boolean, selector = '.nn-list') {
-      this.showNeighborImages = show;
-      const cls = 'nn-img-show';
-      // NOTE: selector used so we could easily move to metadata-info
-      const el = this.$$(selector) as HTMLDivElement;
-      show ? el.classList.add(cls) : el.classList.remove(cls);
+    _updateNeighborsList() {
+      if(this.projector) {
+        const neighbors = this.projector.dataSet.findNeighbors(
+          this.selectedPointIndices[0],
+          this.distFunc,
+          this.numNN
+        );
+        this.updateNeighborsList(neighbors);
+      }
+    }
+
+    checkSpriteImagesAvailable() {
+      return !!this.spriteMeta.imagePath;
     }
 
     metadataEditorContext(enabled: boolean, metadataColumn: string) {
@@ -327,11 +340,12 @@ namespace vz_projector {
       this.searchBox.message = '';
       const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
 
-      const spriteImagePath = this.spriteMeta.imagePath;
-      if (spriteImagePath) {
+      if (this.spriteImagesAvailable) {
+        var spriteImagePath = this.spriteMeta.imagePath;
         var {aspectRatio, nCols} = this.spriteMeta;
         var paddingBottom = 100 / aspectRatio + '%';
         var backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
+        var backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
       }
 
       for (let i = 0; i < neighbors.length; i++) {
@@ -340,20 +354,19 @@ namespace vz_projector {
         const neighborElement = document.createElement('div');
         neighborElement.className = 'neighbor';
 
-        if (spriteImagePath) {
+        if (this.spriteImagesAvailable) {
           var neighborElementImage = document.createElement('div');
           neighborElementImage.className = 'neighbor-image';
-          neighborElementImage.style.backgroundImage = `url(${spriteImagePath})`;
+          neighborElementImage.style.backgroundImage = backgroundImage;
           neighborElementImage.style.paddingBottom = paddingBottom;
-
           neighborElementImage.style.backgroundSize = backgroundSize;
           const [row, col] = [
             Math.floor(neighbor.index / nCols),
             neighbor.index % nCols,
           ];
-          neighborElementImage.style.backgroundPosition = `${(col /
-            (nCols - 1)) *
-            100}% ${(row / (nCols - 1)) * 100}%`;
+          neighborElementImage.style.backgroundPosition = (
+            `${(col / (nCols - 1)) * 100}%
+             ${(row / (nCols - 1)) * 100}%`);
         }
 
         const neighborElementLink = document.createElement('a');
@@ -400,7 +413,7 @@ namespace vz_projector {
           barElement.appendChild(tickElement);
         }
 
-        if (spriteImagePath) {
+        if (this.spriteImagesAvailable) {
           neighborElement.appendChild(neighborElementImage);
         }
         neighborElementLink.appendChild(labelValueElement);
@@ -450,10 +463,6 @@ namespace vz_projector {
         );
         this.updateNeighborsList(neighbors);
       };
-
-      this.neighborImagesCheckbox.addEventListener('change', (e) => {
-        this.setShowNeighborImages(this.neighborImagesCheckbox.checked);
-      });
 
       const cosDist = this.$$('.distance a.cosine') as HTMLLinkElement;
       cosDist.onclick = () => {
