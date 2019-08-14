@@ -173,7 +173,7 @@ class TBContext(object):
           will pass this file handle to zipfile.ZipFile. This zip file should
           also have been created by the tensorboard_zip_file build rule.
       data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
-        be `None` if `flags.generic_data` is set to `"off"`.
+        be `None` if `flags.generic_data` is set to `"false"`.
       db_connection_provider: Function taking no arguments that returns a
           PEP-249 database Connection object, or None if multiplexer should be
           used instead. The returned value must be closed, and is safe to use in
