@@ -17,3 +17,12 @@ body {
   margin: 25px;
   font-family: sans-serif;
 }
+
+.tensor {
+  border: 1px solid rgb(220, 220, 220);
+  display: inline-block;
+  height: 300px;
+  margin: 15px;
+  white-space: nowrap;
+  width: 550px;
+}

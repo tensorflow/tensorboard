@@ -17,8 +17,8 @@ Features
 - The API allows for programmatic interaction with the UI, as well as listening
   to events in the UI.
 
-*This component is in early stage of active development.*
-*Many of its features are still incomplete.*
+_This component is in early stage of active development._
+_Many of its features are still incomplete._
 
 ## Developer workflow
 
