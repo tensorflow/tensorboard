@@ -40,35 +40,6 @@ class RunTagFilterTest(tb_test.TestCase):
     self.assertEqual(frozenset(f.runs), frozenset(["r1"]))
     self.assertEqual(frozenset(f.tags), frozenset(["t1"]))
 
-  def test_predicate(self):
-    runs = ["r1", "r2"]
-    tags = ["t1", "t2"]
-    f = provider.RunTagFilter(runs, tags)
-    self.assertTrue(f.test("r1", "t2"))
-    self.assertFalse(f.test("rx", "t2"))
-    self.assertFalse(f.test("r1", "tx"))
-    self.assertFalse(f.test("rx", "tx"))
-    self.assertTrue(provider.RunTagFilter().test("r", "t"))
-
-
-class StepFilterTest(tb_test.TestCase):
-  def test_fields(self):
-    f = provider.StepFilter(lower_bound=22, upper_bound=-77)
-    self.assertEqual(f.lower_bound, 22)
-    self.assertEqual(f.upper_bound, -77)
-
-  def test_resolve_global(self):
-    f = provider.StepFilter(lower_bound=0, upper_bound=-1)
-    self.assertEqual(f.resolve(123), (0, 123))
-
-  def test_resolve_both_from_start(self):
-    f = provider.StepFilter(lower_bound=22, upper_bound=99)
-    self.assertEqual(f.resolve(123), (22, 99))
-
-  def test_resolve_both_from_end(self):
-    f = provider.StepFilter(lower_bound=-22, upper_bound=-2)
-    self.assertEqual(f.resolve(123), (102, 122))
-
 
 if __name__ == "__main__":
   tb_test.main()

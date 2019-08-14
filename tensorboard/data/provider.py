@@ -26,18 +26,20 @@ import six
 
 @six.add_metaclass(abc.ABCMeta)
 class DataProvider(object):
+  """Interface for reading TensorBoard scalar, tensor, and blob data.
+
+  These APIs are under development and subject to change. For instance,
+  providers may be asked to implement more filtering mechanisms, such as
+  downsampling strategies or domain restriction by step or wall time.
+  """
+
   @abc.abstractmethod
-  def list_scalars(
-      self,
-      experiment_id,
-      owner_plugin,
-      run_tag_filter=None,
-  ):
+  def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
     """List metadata about scalar time series.
 
     Args:
       experiment_id: ID of enclosing experiment.
-      owner_plugin: String name of the TensorBoard plugin that created
+      plugin_name: String name of the TensorBoard plugin that created
         the data to be queried. Required.
       run_tag_filter: Optional `RunTagFilter` value. If omitted, all
         runs and tags will be included.
@@ -47,34 +49,27 @@ class DataProvider(object):
     `run_tag_filter`.
 
     Returns:
-      A nested map `d` such that `d[run][tag]` is a `ScalarMetadata`
+      A nested map `d` such that `d[run][tag]` is a `ScalarTimeSeries`
       value.
     """
     pass
 
   @abc.abstractmethod
   def read_scalars(
-      self,
-      experiment_id,
-      owner_plugin,
-      downsample_to=None,
-      run_tag_filter=None,
-      step_filter=None,
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
     """Read values from scalar time series.
 
     Args:
       experiment_id: ID of enclosing experiment.
-      owner_plugin: String name of the TensorBoard plugin that created
+      plugin_name: String name of the TensorBoard plugin that created
         the data to be queried. Required.
-      downsample_to: Integer number of steps to which to downsample the
+      downsample: Integer number of steps to which to downsample the
         results (e.g., `1000`). Required.
       run_tag_filter: Optional `RunTagFilter` value. If provided, a time
         series will only be included in the result if its run and tag
         both pass this filter. If `None`, all time series will be
         included.
-      step_filter: Optional `StepFilter` value. If `None`, the entire
-        range of steps may be included.
 
     The result will only contain keys for run-tag combinations that
     actually exist, which may not include all entries in the
@@ -103,26 +98,72 @@ class DataProvider(object):
     pass
 
 
-_ScalarMetadata = collections.namedtuple(
-    "ScalarMetadata",
-    ("max_step", "corresponding_wall_time", "summary_metadata"),
-)
-class ScalarMetadata(_ScalarMetadata):
+class ScalarTimeSeries(object):
   """Metadata about a scalar time series for a particular run and tag.
 
   Attributes:
-    max_step: The largest step for this scalar time series; an integer.
-    corresponding_wall_time: The wall time of the datum with the largest
-      step in this time series, as `float` seconds since epoch.
-    summary_metadata: A `summary_pb2.SummaryMetadata` value.
+    max_step: The largest step value of any datum in this scalar time
+      series; a nonnegative integer.
+    max_wall_time: The largest wall time of any datum in this time
+      series, as `float` seconds since epoch.
+    plugin_content: A bytestring of arbitrary plugin-specific metadata
+      for this time series, as provided to `tf.summary.write` in the
+      `plugin_data.content` field of the `metadata` argument.
+    description: An optional long-form Markdown description, as a `str`
+      that is empty if no description was specified.
+    display_name: An optional long-form Markdown description, as a `str`
+      that is empty if no description was specified. Deprecated; may be
+      removed soon.
   """
-  pass
+
+  __slots__ = (
+      "_max_step",
+      "_max_wall_time",
+      "_plugin_content",
+      "_description",
+      "_display_name",
+  )
+
+  def __init__(
+      self, max_step, max_wall_time, plugin_content, description, display_name
+  ):
+    self._max_step = max_step
+    self._max_wall_time = max_wall_time
+    self._plugin_content = plugin_content
+    self._description = description
+    self._display_name = display_name
+
+  @property
+  def max_step(self):
+    return self._max_step
+
+  @property
+  def max_wall_time(self):
+    return self._max_wall_time
+
+  @property
+  def plugin_content(self):
+    return self._plugin_content
+
+  @property
+  def description(self):
+    return self._description
+
+  @property
+  def display_name(self):
+    return self._display_name
+
+  def __repr__(self):
+    return "ScalarTimeSeries(%s)" % ", ".join(
+        "max_step=%r" % (self._max_step,),
+        "max_wall_time=%r" % (self._max_wall_time,),
+        "plugin_content=%r" % (self._plugin_content,),
+        "description=%r" % (self._description,),
+        "display_name=%r" % (self._display_name,),
+    )
 
 
-_ScalarDatum = collections.namedtuple(
-    "ScalarDatum", ("step", "wall_time", "value")
-)
-class ScalarDatum(_ScalarDatum):
+class ScalarDatum(object):
   """A single datum in a scalar time series for a run and tag.
 
   Attributes:
@@ -132,7 +173,37 @@ class ScalarDatum(_ScalarDatum):
       `float` seconds since epoch.
     value: The scalar value for this datum; a `float`.
   """
-  pass
+
+  __slots__ = ("_step", "_wall_time", "_value")
+
+  def __init__(self, step, wall_time, value):
+    self._step = step
+    self._wall_time = wall_time
+    self._value = value
+
+  @property
+  def step(self):
+    return self._step
+
+  @property
+  def wall_time(self):
+    return self._wall_time
+
+  @property
+  def value(self):
+    return self._value
+
+  def __repr__(self):
+    return "ScalarDatum(step=%r, wall_time=%r, value=%r)" % (
+        self._step,
+        self._wall_time,
+        self._value,
+    )
+    return "ScalarDatum(%s)" % ", ".join(
+        "step=%r" % (self._step,),
+        "wall_time=%r" % (self._wall_time,),
+        "value=%r" % (self._value,),
+    )
 
 
 class RunTagFilter(object):
@@ -164,60 +235,5 @@ class RunTagFilter(object):
   def tags(self):
     return self._tags
 
-  def test(self, run, tag):
-    if self._runs is not None and run not in self._runs:
-      return False
-    if self._tags is not None and tag not in self._tags:
-      return False
-    return True
-
-
-class StepFilter(object):
-  """Filters data in a time series by step."""
-
-  def __init__(self, lower_bound, upper_bound):
-    """Construct a `StepFilter`.
-
-    Negative values for `lower_bound` or `upper_bound` indicate indices
-    from the end of the array, with the same semantics as Python slices.
-
-    It is valid for `upper_bound` to be smaller than `lower_bound`; in
-    this case, if `lower_bound` and `upper_bound` are of the same sign,
-    no data will pass this filter.
-
-    Args:
-      lower_bound: The minimum step value permitted by this filter,
-        inclusive. Integer.
-      upper_bound: The maximum step value permitted by this filter,
-        inclusive. Integer.
-    """
-    self._lower_bound = lower_bound
-    self._upper_bound = upper_bound
-
-  @property
-  def lower_bound(self):
-    return self._lower_bound
-
-  @property
-  def upper_bound(self):
-    return self._upper_bound
-
-  def resolve(self, max_step):
-    """Resolve an actual lower and upper bound for a given time series.
-
-    Args:
-      max_step: The highest step of any event in the time series.
-
-    Returns:
-      A tuple `(lower_bound, upper_bound)` of nonnegative step values.
-    """
-    return (
-        self._resolve_step(max_step, self._lower_bound),
-        self._resolve_step(max_step, self._upper_bound),
-    )
-
-  def _resolve_step(self, max_step, step):
-    if step >= 0:
-      return step
-    else:
-      return max(0, max_step - ~step)
+  def __repr__(self):
+    return "RunTagFilter(runs=%r, tags=%r)" % (self._runs, self._tags)
