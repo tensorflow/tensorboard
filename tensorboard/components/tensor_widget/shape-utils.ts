@@ -13,22 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {TensorWidgetImpl} from './tensor-widget-impl';
-import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
-export {VERSION} from './version';
+/**
+ * Tensor shape utilities for tensor widget.
+ */
 
 /**
- * Create an instance of tensor widget.
- * @param rootElement The element in which the tensor widget will be endered.
- * @param tensor The tensor view of which the content is to be rendered
- *   in the tensor widget.
- * @param options Optional configurations.
- * @returns An instance of a single-tensor tensor widget.
+ * Format tensor shape as a string for display.
+ *
+ * The special case of empty shape ([]) is formatted as the more human-readable
+ * name "scalar".
+ *
+ * @param shape
+ * @returns A human-understandable string that describes tensor shape.
  */
-export function tensorWidget(
-  rootElement: HTMLDivElement,
-  tensor: TensorView,
-  options?: TensorWidgetOptions
-): TensorWidget {
-  return new TensorWidgetImpl(rootElement, tensor, options);
+export function formatShapeForDisplay(shape: ReadonlyArray<number>): string {
+  if (shape.length === 0) {
+    return 'scalar';
+  } else {
+    return `[${shape}]`;
+  }
 }

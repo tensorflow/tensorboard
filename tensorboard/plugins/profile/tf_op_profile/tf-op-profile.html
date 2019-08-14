@@ -76,12 +76,16 @@ You may obtain a copy of the License at
       }
     </style>
     <div class="tf-op-profile">
-      <h4>
+      <h3>
         Overall TPU FLOPS utilization is
-        <span style$="color:[[_textColor(_root)]]">
+        <span style$="color:[[_flopsColor(_root)]]">
           [[_utilizationPercent(_root)]]</span
         >
-      </h4>
+        , memory bandwidth utilization is
+        <span style$="color:[[_bwColor(_root)]]">
+          [[_memoryUtilizationPercent(_root)]]</span
+        >
+      </h3>
       <div id="description">
         <p>
           Modifying your model's architecture, data dimensions, and improving
@@ -90,7 +94,11 @@ You may obtain a copy of the License at
         </p>
         <p>
           "Idle" represents the portion of the total execution time on device
-          that is idle.
+          that is idle. Wasted time is defined by
+          <code
+            >RuntimeFraction * (1 - max(FlopsUtilization,
+            MemoryUtilization))</code
+          >.
         </p>
       </div>
       <div id="control">
@@ -101,8 +109,11 @@ You may obtain a copy of the License at
         >
         <!--
           paper-slider sets how many child nodes to show for each category.
-          If paper-toggle-button is checked, then only children in top 90th
-          percentile of time spent are listed.
+          If P90 paper-toggle-button is checked, then only children in top 90th
+          percentile of time spent are listed. If byWaste paper-toggle-button is
+          checked, then the children by be sorted by wasted time, that is
+          defined by the following equation:
+          RuntimeFraction * (1 - max(FlopsUtilization, MemoryUtilization)).
         -->
         <span class="controlRowLeft"
           >Show top
@@ -118,6 +129,11 @@ You may obtain a copy of the License at
           >ops</span
         >
         <span class="controlRowRight"
+          >&nbsp;
+          <paper-toggle-button checked="{{byWaste}}"> </paper-toggle-button>Sort
+          by wasted time</span
+        >
+        <span class="controlRowRight"
           >off&nbsp;
           <paper-toggle-button checked="{{showP90}}"> </paper-toggle-button>Top
           90%</span
@@ -126,6 +142,7 @@ You may obtain a copy of the License at
       <tf-op-table
         root-node="[[_root]]"
         active="{{active}}"
+        by-waste="{{byWaste}}"
         show-p90="{{showP90}}"
         children-count="{{childrenCount}}"
       >
@@ -165,6 +182,11 @@ You may obtain a copy of the License at
           value: false,
           notify: true,
         },
+        byWaste: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
         childrenCount: {
           type: Number,
           value: 10,
@@ -191,11 +213,17 @@ You may obtain a copy of the License at
       _utilizationPercent: function(node) {
         return tf_op_profile.percent(tf_op_profile.utilization(node));
       },
+      _memoryUtilizationPercent: function(node) {
+        return tf_op_profile.percent(tf_op_profile.memoryUtilization(node));
+      },
       _hasFlops: function(node) {
         return node.metrics.flops > 0;
       },
-      _textColor: function(node) {
-        return tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7);
+      _flopsColor: function(node) {
+        return tf_op_profile.flopsColor(tf_op_profile.utilization(node));
+      },
+      _bwColor: function(node) {
+        return tf_op_profile.bwColor(tf_op_profile.memoryUtilization(node));
       },
     });
   </script>

@@ -34,63 +34,61 @@ class MultiplexerDataProvider(provider.DataProvider):
     """
     self._multiplexer = multiplexer
 
-  def list_scalars(self, experiment_id, owner_plugin, run_tag_filter=None):
+  def _test_run_tag(self, run_tag_filter, run, tag):
+    runs = run_tag_filter.runs
+    if runs is not None and run not in runs:
+      return False
+    tags = run_tag_filter.tags
+    if tags is not None and tag not in tags:
+      return False
+    return True
+
+  def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
     del experiment_id  # ignored for now
-    run_tag_content = self._multiplexer.PluginRunToTagToContent(owner_plugin)
+    run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
     result = {}
     if run_tag_filter is None:
       run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
     for (run, tag_to_content) in six.iteritems(run_tag_content):
       result_for_run = {}
       for tag in tag_to_content:
-        if not run_tag_filter.test(run, tag):
+        if not self._test_run_tag(run_tag_filter, run, tag):
           continue
         result[run] = result_for_run
-        highest_step_event = max(
-            self._multiplexer.Tensors(run, tag),
-            key=lambda event: event.step,
-        )
-        result_for_run[tag] = provider.ScalarMetadata(
-            max_step=highest_step_event.step,
-            corresponding_wall_time=highest_step_event.wall_time,
-            summary_metadata=self._multiplexer.SummaryMetadata(run, tag),
+        max_step = None
+        max_wall_time = None
+        for event in self._multiplexer.Tensors(run, tag):
+          if max_step is None or max_step < event.step:
+            max_step = event.step
+          if max_wall_time is None or max_wall_time < event.wall_time:
+            max_wall_time = event.wall_time
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        result_for_run[tag] = provider.ScalarTimeSeries(
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            plugin_content=summary_metadata.plugin_data.content,
+            description=summary_metadata.summary_description,
+            display_name=summary_metadata.display_name,
         )
     return result
 
   def read_scalars(
-      self,
-      experiment_id,
-      owner_plugin,
-      downsample_to=None,
-      run_tag_filter=None,
-      step_filter=None,
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
-    del experiment_id  # ignored for now
-    index = self._multiplexer.PluginRunToTagToContent(owner_plugin)
+    del downsample  # ignored for now (see note below)
+    index = self.list_scalars(
+        experiment_id, plugin_name, run_tag_filter=run_tag_filter
+    )
     result = {}
-    if step_filter is None:
-      step_filter = provider.StepFilter(lower_bound=0, upper_bound=-1)
-    if (
-        run_tag_filter is None
-        or run_tag_filter.runs is None
-        or run_tag_filter.tags is None
-    ):
-      raise ValueError("Must provide both run and tag filters.")
-    for run in run_tag_filter.runs:
+    for (run, tags_for_run) in six.iteritems(index):
       result_for_run = {}
-      for tag in run_tag_filter.tags:
-        if tag not in index.get(run, {}):
-          continue
-        result[run] = result_for_run
-        all_events = self._multiplexer.Tensors(run, tag)
-        max_step = max(all_events, key=lambda event: event.step).step
-        (lower_bound, upper_bound) = step_filter.resolve(max_step)
-        events = [e for e in all_events if lower_bound <= e.step <= upper_bound]
-        del all_events
-        result_for_run[tag] = [self._convert_scalar_event(e) for e in events]
+      result[run] = result_for_run
+      for (tag, metadata) in six.iteritems(tags_for_run):
+        events = self._multiplexer.Tensors(run, tag)
         # TODO(@wchargin): Downsampling not implemented, as the
         # multiplexer is already downsampled. We could downsample on top
         # of the existing sampling, which would be nice for testing.
+        result_for_run[tag] = [self._convert_scalar_event(e) for e in events]
     return result
 
   def _convert_scalar_event(self, event):
