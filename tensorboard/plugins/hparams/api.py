@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Experimental public APIs for the HParams plugin.
+"""Public APIs for the HParams plugin.
 
 This module supports a spectrum of use cases, depending on how much
 structure you want. In the simplest case, you can simply collect your
