@@ -184,11 +184,11 @@ export class TensorWidgetImpl implements TensorWidget {
   private async renderValues() {
     if (this.valueSection == null) {
       this.valueSection = document.createElement('div');
-      this.valueSection.classList.add('tensor-widget-value-section')
+      this.valueSection.classList.add('tensor-widget-value-section');
       this.rootElement.appendChild(this.valueSection);
 
-      // TODO(cais): Conditionally set wheel event listener: only when
-      // an element or mutiple elements are selected in the TensorWidget,
+      // TODO(cais): Conditionally set wheel event listener: only when an
+      // element or mutiple elements are selected in the TensorWidget,
       // when selection is supported.
       this.valueSection.addEventListener('wheel', async (event) => {
         event.stopPropagation();
