@@ -118,7 +118,7 @@ function demo() {
     tensorWidget.VERSION;
 
   /////////////////////////////////////////////////////////////
-  // Render tensor1: a float32 scalar.
+  // Render tensor0: a float32 scalar.
   const tensorDiv0 = document.getElementById('tensor0') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
   const tensorView0 = tensorToTensorView(tf.scalar(28));

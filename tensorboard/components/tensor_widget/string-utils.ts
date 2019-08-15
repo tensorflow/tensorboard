@@ -45,7 +45,7 @@ export function formatTensorName(tensorName: string): string {
 
 /**
  * Format a numeric value as a human-readable string.
- * @param num Numeric value t be formatted.
+ * @param num Numeric value to be formatted.
  * @param isInteger Whether the value is of an integer dtype.
  * @param decimalPoints How many decimal points to use.
  * @returns Formatted string representing the number.

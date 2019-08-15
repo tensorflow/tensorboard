@@ -82,15 +82,10 @@ limitations under the License.
 }
 
 .tensor-widget-left-ruler-tick {
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -khtml-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  background-color: rgb(210, 210, 210);
-  border-bottom: 1px solid rgb(140, 140, 140);
-  border-top: 1px solid rgb(140, 140, 140);
-  box-shadow: 1px 1px 1px rgb(140, 140, 140);
+  background-color: var(--ruler-background-color);
+  border-bottom: var(--border-style);
+  border-top: var(--border-style);
+  box-shadow: var(--border-style);
   color: rgb(110, 110, 110);
   cursor: pointer;
   display: inline-block;
@@ -111,14 +106,9 @@ limitations under the License.
 }
 
 .tensor-widget-top-ruler-tick {
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  background-color: rgb(210, 210, 210);
-  border-bottom: 1px solid rgb(140, 140, 140);
-  border-right: 1px solid rgb(140, 140, 140);
+  background-color: var(--ruler-background-color);
+  border-bottom: var(--border-style);
+  border-right: var(--border-style);
   color: rgb(110, 110, 110);
   cursor: pointer;
   display: inline-block;
@@ -133,13 +123,8 @@ limitations under the License.
 }
 
 .tensor-widget-value-div {
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  border-bottom: 1px solid rgb(160, 160, 160);
-  border-right: 1px solid rgb(160, 160, 160);
+  border-bottom: var(--border-style);
+  border-right: var(--border-style);
   cursor: pointer;
   display: inline-block;
   font-size: 80%;
@@ -151,6 +136,16 @@ limitations under the License.
   user-select: none;
   vertical-align: middle;
   width: 45px;
+}
+
+.tensor-widget-value-section {
+  --border-style: 1px solid rgb(140, 140, 140);
+  --ruler-background-color: rgb(210, 210, 210);
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .tensor-widget-value-row {

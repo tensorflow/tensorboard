@@ -184,6 +184,7 @@ export class TensorWidgetImpl implements TensorWidget {
   private async renderValues() {
     if (this.valueSection == null) {
       this.valueSection = document.createElement('div');
+      this.valueSection.classList.add('tensor-widget-value-section')
       this.rootElement.appendChild(this.valueSection);
 
       this.valueSection.addEventListener('wheel', async (event) => {
@@ -463,7 +464,7 @@ export class TensorWidgetImpl implements TensorWidget {
     ];
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
-        `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`
+        `Index out of bound: ${index} is outside [0, ${indexUpperBound}])`
       );
     }
 
@@ -496,7 +497,7 @@ export class TensorWidgetImpl implements TensorWidget {
     ];
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
-        `Index out of bound: ${index} is outside [0, ${indexUpperBound}})`
+        `Index out of bound: ${index} is outside [0, ${indexUpperBound}])`
       );
     }
 
