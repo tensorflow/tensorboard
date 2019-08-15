@@ -62,7 +62,7 @@ class FakeFlags(object):
       path_prefix='',
       reload_multifile=False,
       reload_multifile_inactive_secs=4000,
-      generic_data=frozenset()):
+      generic_data='auto'):
     self.logdir = logdir
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
