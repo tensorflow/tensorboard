@@ -15,13 +15,15 @@ limitations under the License.
 
 import {BaseTensorHealthPill} from './health-pill-types';
 
+export type Shape = ReadonlyArray<number>;
+
 /** The basic specifications of a tensor. */
 export interface TensorSpec {
   /** Data type of the underlying tensor. */
   dtype: string;
 
   /** Shape of the underlying tensor. */
-  shape: ReadonlyArray<number>;
+  shape: Shape;
 }
 
 /**
@@ -53,7 +55,7 @@ export interface TensorView {
    * slicing and viewing dimensions, as well as the ranges
    * within the viewing dimensions.
    */
-  view: (navigation: TensorViewSlicingSpec) => Promise<SlicedValues>;
+  view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
   /** Get the health pill of the underlying tensor. */
   getHealthPill: () => Promise<BaseTensorHealthPill>;
@@ -232,6 +234,6 @@ export interface TensorWidget {
    */
   navigateToIndices: (indices: number[]) => Promise<void>;
 
-  // TODO(cais): Add API for programmatically changing navigation status.
-  // TODO(cais): Add event listeners for navigation status changes.
+  // TODO(cais): Add API for programmatically changing slicingSpec status.
+  // TODO(cais): Add event listeners for slicingSpec change.
 }
