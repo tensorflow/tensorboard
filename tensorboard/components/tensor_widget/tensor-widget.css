@@ -80,3 +80,76 @@ limitations under the License.
   display: inline-block;
   font-weight: bold;
 }
+
+.tensor-widget-left-ruler-tick {
+  background-color: var(--ruler-background-color);
+  border-bottom: var(--border-style);
+  border-top: var(--border-style);
+  box-shadow: var(--border-style);
+  color: rgb(110, 110, 110);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
+  height: 29px;
+  line-height: 29px;
+  margin-left: 0px;
+  max-width: 45px;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  width: 45px;
+}
+
+.tensor-widget-top-ruler {
+  height: 24px;
+  white-space: nowrap;
+}
+
+.tensor-widget-top-ruler-tick {
+  background-color: var(--ruler-background-color);
+  border-bottom: var(--border-style);
+  border-right: var(--border-style);
+  color: rgb(110, 110, 110);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
+  height: 24px;
+  line-height: 24px;
+  padding-right: 2px;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  width: 45px;
+}
+
+.tensor-widget-value-div {
+  border-bottom: var(--border-style);
+  border-right: var(--border-style);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 80%;
+  height: 24px;
+  line-height: 24px;
+  max-width: 45px;
+  padding-right: 2px;
+  text-align: right;
+  user-select: none;
+  vertical-align: middle;
+  width: 45px;
+}
+
+.tensor-widget-value-section {
+  --border-style: 1px solid rgb(140, 140, 140);
+  --ruler-background-color: rgb(210, 210, 210);
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+
+.tensor-widget-value-row {
+  height: 25px;
+  line-height: 25px;
+  white-space: nowrap;
+}

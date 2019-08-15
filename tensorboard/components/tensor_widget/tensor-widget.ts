@@ -15,6 +15,8 @@ limitations under the License.
 
 import {TensorWidgetImpl} from './tensor-widget-impl';
 import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
+
+export {Shape, TensorView} from './types';
 export {VERSION} from './version';
 
 /**

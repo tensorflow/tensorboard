@@ -63,6 +63,17 @@ jasmine_node_test(
     deps = [":test_lib"],
 )
 
+ts_library(
+    name = "demo_lib",
+    srcs = [
+        "demo/demo.ts",
+    ],
+    tsconfig = "//:tsconfig-test",
+    deps = [
+        ":tensor_widget_lib",
+    ],
+)
+
 ts_devserver(
     name = "dev_server",
     entry_module = "tensor-widget",
@@ -73,5 +84,7 @@ ts_devserver(
         "demo/demo.html",
         "tensor-widget.css",
     ],
-    deps = [":tensor_widget_lib"],
+    deps = [
+        ":demo_lib",
+    ],
 )
