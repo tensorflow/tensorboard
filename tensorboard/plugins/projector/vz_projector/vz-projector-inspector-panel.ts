@@ -15,6 +15,7 @@ limitations under the License.
 namespace vz_projector {
   /** Limit the number of search results we show to the user. */
   const LIMIT_RESULTS = 100;
+  const DEFAULT_NEIGHBORS = 100;
 
   // tslint:disable-next-line
   export let InspectorPanelPolymer = PolymerElement({
@@ -23,10 +24,28 @@ namespace vz_projector {
       selectedMetadataField: String,
       metadataFields: Array,
       metadataColumn: String,
-      numNN: {type: Number, value: 100},
+      numNN: {type: Number, value: DEFAULT_NEIGHBORS},
       updateNumNN: Object,
+      spriteMeta: Object, // type: `SpriteMetadata`
+      showNeighborImages: {
+        type: Boolean,
+        value: true,
+        observer: '_refreshNeighborsList',
+      },
+      spriteImagesAvailable: {
+        type: Boolean,
+        value: true,
+        observer: '_refreshNeighborsList',
+      },
     },
   });
+
+  type SpriteMetadata = {
+    imagePath?: string;
+    singleImageDim?: number[];
+    aspectRatio?: number;
+    nCols?: number;
+  };
 
   export class InspectorPanel extends InspectorPanelPolymer {
     distFunc: DistanceFunction;
@@ -37,10 +56,13 @@ namespace vz_projector {
     private selectedMetadataField: string;
     private metadataFields: string[];
     private metadataColumn: string;
+    private spriteMeta: SpriteMetadata;
     private displayContexts: string[];
     private projector: Projector;
     private selectedPointIndices: number[];
     private neighborsOfFirstPoint: knn.NearestEntry[];
+    private showNeighborImages: boolean;
+    private spriteImagesAvailable: boolean;
     private searchBox: ProjectorInput;
 
     private resetFilterButton: HTMLButtonElement;
@@ -107,6 +129,26 @@ namespace vz_projector {
       });
 
       if (
+        spriteAndMetadata.spriteMetadata &&
+        spriteAndMetadata.spriteMetadata.imagePath
+      ) {
+        const [
+          spriteWidth,
+          spriteHeight,
+        ] = spriteAndMetadata.spriteMetadata.singleImageDim;
+
+        this.spriteMeta = {
+          imagePath: spriteAndMetadata.spriteImage.src,
+          aspectRatio: spriteWidth / spriteHeight,
+          nCols: Math.floor(spriteAndMetadata.spriteImage.width / spriteWidth),
+          singleImageDim: [spriteWidth, spriteHeight],
+        };
+      } else {
+        this.spriteMeta = {};
+      }
+      this.spriteImagesAvailable = !!this.spriteMeta.imagePath;
+
+      if (
         this.selectedMetadataField == null ||
         this.metadataFields.filter(
           (name) => name === this.selectedMetadataField
@@ -125,6 +167,10 @@ namespace vz_projector {
 
     datasetChanged() {
       this.enableResetFilterButton(false);
+    }
+
+    _refreshNeighborsList() {
+      this.updateNeighborsList();
     }
 
     metadataEditorContext(enabled: boolean, metadataColumn: string) {
@@ -269,7 +315,40 @@ namespace vz_projector {
       return point.metadata[this.selectedMetadataField].toString();
     }
 
-    private updateNeighborsList(neighbors: knn.NearestEntry[]) {
+    private spriteImageRenderer() {
+      const spriteImagePath = this.spriteMeta.imagePath;
+      const {aspectRatio, nCols} = this.spriteMeta;
+      const paddingBottom = 100 / aspectRatio + '%';
+      const backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
+      const backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
+
+      return (neighbor: knn.NearestEntry): HTMLElement => {
+        const spriteElementImage = document.createElement('div');
+        spriteElementImage.className = 'sprite-image';
+        spriteElementImage.style.backgroundImage = backgroundImage;
+        spriteElementImage.style.paddingBottom = paddingBottom;
+        spriteElementImage.style.backgroundSize = backgroundSize;
+        const [row, col] = [
+          Math.floor(neighbor.index / nCols),
+          neighbor.index % nCols,
+        ];
+        const [top, left] = [
+          (row / (nCols - 1)) * 100,
+          (col / (nCols - 1)) * 100,
+        ];
+        spriteElementImage.style.backgroundPosition = `${left}% ${top}%`;
+
+        return spriteElementImage;
+      };
+    }
+
+    private updateNeighborsList(neighbors?: knn.NearestEntry[]) {
+      neighbors = neighbors || this._currentNeighbors;
+      this._currentNeighbors = neighbors;
+      if (neighbors == null) {
+        return;
+      }
+
       const nnlist = this.$$('.nn-list') as HTMLDivElement;
       nnlist.innerHTML = '';
 
@@ -281,6 +360,10 @@ namespace vz_projector {
 
       this.searchBox.message = '';
       const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
+
+      if (this.spriteImagesAvailable && this.showNeighborImages) {
+        var imageRenderer = this.spriteImageRenderer();
+      }
 
       for (let i = 0; i < neighbors.length; i++) {
         const neighbor = neighbors[i];
@@ -330,6 +413,11 @@ namespace vz_projector {
           tickElement.className = 'tick';
           tickElement.style.left = (j * 100) / 4 + '%';
           barElement.appendChild(tickElement);
+        }
+
+        if (this.spriteImagesAvailable && this.showNeighborImages) {
+          const neighborElementImage = imageRenderer(neighbor);
+          neighborElement.appendChild(neighborElementImage);
         }
 
         neighborElementLink.appendChild(labelValueElement);
