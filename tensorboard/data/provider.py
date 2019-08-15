@@ -34,6 +34,25 @@ class DataProvider(object):
   """
 
   @abc.abstractmethod
+  def list_runs(self, experiment_id):
+    """List all runs within an experiment.
+
+    The returned sequence should be sorted by run start time (i.e., the
+    time of the first event in each run), so that as new runs are
+    created under a running TensorBoard the list of runs is append-only,
+    and thus each run's time series color stays constant over time. In
+    case two runs have the same start time, their relative order should
+    be tie-broken deterministically (e.g., by run name).
+
+    Args:
+      experiment_id: ID of enclosing experiment.
+
+    Returns:
+      A sequence of distinct run names, sorted as described above.
+    """
+    pass
+
+  @abc.abstractmethod
   def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
     """List metadata about scalar time series.
 

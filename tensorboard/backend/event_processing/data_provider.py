@@ -21,7 +21,11 @@ from __future__ import print_function
 import six
 
 from tensorboard.data import provider
+from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
+
+
+logger = tb_logging.get_logger()
 
 
 class MultiplexerDataProvider(provider.DataProvider):
@@ -42,6 +46,23 @@ class MultiplexerDataProvider(provider.DataProvider):
     if tags is not None and tag not in tags:
       return False
     return True
+
+  def _get_first_event_timestamp(self, run_name):
+    try:
+      return self._multiplexer.FirstEventTimestamp(run_name)
+    except ValueError as e:
+      logger.warn(
+          "Unable to get first event timestamp for run %s: %s", run_name, e
+      )
+      # Put runs without a timestamp at the end.
+      return float("inf")
+
+  def list_runs(self, experiment_id):
+    del experiment_id  # ignored for now
+    return sorted(
+        self._multiplexer.Runs(),
+        key=lambda run: (self._get_first_event_timestamp(run), run),
+    )
 
   def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
     del experiment_id  # ignored for now
