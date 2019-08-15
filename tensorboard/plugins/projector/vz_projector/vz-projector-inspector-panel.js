@@ -16,6 +16,7 @@ var vz_projector;
 (function (vz_projector) {
     /** Limit the number of search results we show to the user. */
     const LIMIT_RESULTS = 100;
+    const DEFAULT_NEIGHBORS = 100;
     // tslint:disable-next-line
     vz_projector.InspectorPanelPolymer = vz_projector.PolymerElement({
         is: 'vz-projector-inspector-panel',
@@ -23,8 +24,19 @@ var vz_projector;
             selectedMetadataField: String,
             metadataFields: Array,
             metadataColumn: String,
-            numNN: { type: Number, value: 100 },
+            numNN: { type: Number, value: DEFAULT_NEIGHBORS },
             updateNumNN: Object,
+            spriteMeta: Object,
+            showNeighborImages: {
+                type: Boolean,
+                value: true,
+                observer: '_refreshNeighborsList',
+            },
+            spriteImagesAvailable: {
+                type: Boolean,
+                value: true,
+                observer: '_refreshNeighborsList',
+            },
         },
     });
     class InspectorPanel extends vz_projector.InspectorPanelPolymer {
@@ -70,6 +82,20 @@ var vz_projector;
                 }
                 return stats.name;
             });
+            if (spriteAndMetadata.spriteMetadata &&
+                spriteAndMetadata.spriteMetadata.imagePath) {
+                const [spriteWidth, spriteHeight,] = spriteAndMetadata.spriteMetadata.singleImageDim;
+                this.spriteMeta = {
+                    imagePath: spriteAndMetadata.spriteImage.src,
+                    aspectRatio: spriteWidth / spriteHeight,
+                    nCols: Math.floor(spriteAndMetadata.spriteImage.width / spriteWidth),
+                    singleImageDim: [spriteWidth, spriteHeight],
+                };
+            }
+            else {
+                this.spriteMeta = {};
+            }
+            this.spriteImagesAvailable = !!this.spriteMeta.imagePath;
             if (this.selectedMetadataField == null ||
                 this.metadataFields.filter((name) => name === this.selectedMetadataField).length === 0) {
                 // Make the default label the first non-numeric column.
@@ -79,6 +105,9 @@ var vz_projector;
         }
         datasetChanged() {
             this.enableResetFilterButton(false);
+        }
+        _refreshNeighborsList() {
+            this.updateNeighborsList();
         }
         metadataEditorContext(enabled, metadataColumn) {
             if (!this.projector || !this.projector.dataSet) {
@@ -190,7 +219,36 @@ var vz_projector;
             const point = this.projector.dataSet.points[pointIndex];
             return point.metadata[this.selectedMetadataField].toString();
         }
+        spriteImageRenderer() {
+            const spriteImagePath = this.spriteMeta.imagePath;
+            const { aspectRatio, nCols } = this.spriteMeta;
+            const paddingBottom = 100 / aspectRatio + '%';
+            const backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
+            const backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
+            return (neighbor) => {
+                const spriteElementImage = document.createElement('div');
+                spriteElementImage.className = 'sprite-image';
+                spriteElementImage.style.backgroundImage = backgroundImage;
+                spriteElementImage.style.paddingBottom = paddingBottom;
+                spriteElementImage.style.backgroundSize = backgroundSize;
+                const [row, col] = [
+                    Math.floor(neighbor.index / nCols),
+                    neighbor.index % nCols,
+                ];
+                const [top, left] = [
+                    (row / (nCols - 1)) * 100,
+                    (col / (nCols - 1)) * 100,
+                ];
+                spriteElementImage.style.backgroundPosition = `${left}% ${top}%`;
+                return spriteElementImage;
+            };
+        }
         updateNeighborsList(neighbors) {
+            neighbors = neighbors || this._currentNeighbors;
+            this._currentNeighbors = neighbors;
+            if (neighbors == null) {
+                return;
+            }
             const nnlist = this.$$('.nn-list');
             nnlist.innerHTML = '';
             if (neighbors.length === 0) {
@@ -200,6 +258,9 @@ var vz_projector;
             this.addContext('.nn');
             this.searchBox.message = '';
             const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
+            if (this.spriteImagesAvailable && this.showNeighborImages) {
+                var imageRenderer = this.spriteImageRenderer();
+            }
             for (let i = 0; i < neighbors.length; i++) {
                 const neighbor = neighbors[i];
                 const neighborElement = document.createElement('div');
@@ -231,6 +292,10 @@ var vz_projector;
                     tickElement.className = 'tick';
                     tickElement.style.left = (j * 100) / 4 + '%';
                     barElement.appendChild(tickElement);
+                }
+                if (this.spriteImagesAvailable && this.showNeighborImages) {
+                    const neighborElementImage = imageRenderer(neighbor);
+                    neighborElement.appendChild(neighborElementImage);
                 }
                 neighborElementLink.appendChild(labelValueElement);
                 neighborElementLink.appendChild(barElement);
