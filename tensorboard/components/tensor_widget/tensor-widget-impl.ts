@@ -15,6 +15,7 @@ limitations under the License.
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
 import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
+import {SlicingControl} from './slicing-control';
 import {formatTensorName, numericValueToString} from './string-utils';
 import {
   TensorView,
