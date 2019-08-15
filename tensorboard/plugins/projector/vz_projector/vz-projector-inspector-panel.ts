@@ -30,12 +30,12 @@ namespace vz_projector {
       showNeighborImages: {
         type: Boolean,
         value: true,
-        observer: '_updateNeighborsList',
+        observer: '_refreshNeighborsList',
       },
       spriteImagesAvailable: {
         type: Boolean,
         value: true,
-        observer: '_updateNeighborsList',
+        observer: '_refreshNeighborsList',
       },
     },
   });
@@ -169,12 +169,8 @@ namespace vz_projector {
       this.enableResetFilterButton(false);
     }
 
-    _updateNeighborsList() {
+    _refreshNeighborsList() {
       this.updateNeighborsList();
-    }
-
-    checkSpriteImagesAvailable() {
-      return !!this.spriteMeta.imagePath;
     }
 
     metadataEditorContext(enabled: boolean, metadataColumn: string) {
@@ -366,7 +362,7 @@ namespace vz_projector {
       const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
 
       if (this.spriteImagesAvailable && this.showNeighborImages) {
-        var image_renderer = this.spriteImageRenderer();
+        var imageRenderer = this.spriteImageRenderer();
       }
 
       for (let i = 0; i < neighbors.length; i++) {
@@ -420,7 +416,7 @@ namespace vz_projector {
         }
 
         if (this.spriteImagesAvailable && this.showNeighborImages) {
-          const neighborElementImage = image_renderer(neighbor);
+          const neighborElementImage = imageRenderer(neighbor);
           neighborElement.appendChild(neighborElementImage);
         }
 
