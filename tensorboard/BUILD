@@ -365,7 +365,6 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
-        "//tensorboard/util:test_util",
     ],
 )
 
