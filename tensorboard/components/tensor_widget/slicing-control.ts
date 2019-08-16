@@ -62,7 +62,7 @@ export class SlicingControl {
 
 
   private createComponents() {
-    // Clean the dim group.
+    // Clear the dim group.
     while (this.rootDiv.firstChild) {
       this.rootDiv.removeChild(this.rootDiv.firstChild);
     }
@@ -208,15 +208,10 @@ export class SlicingControl {
    * @param dim
    */
   private renderDropdownMenuItems(
-    dropdown: HTMLDivElement,  top: number, left: number, dim: number) {
+    dropdown: HTMLDivElement, top: number, left: number, dim: number) {
     // Clear all dropdown menus. Make sure that at any moment, only one dropdown
     // menu is open.
     this.clearAllDropdowns();
-
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = `${top}px`;
-    dropdown.style.left = `${left}px`;
-    dropdown.style.display = 'block';
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
       dimAndIndex => dimAndIndex.dim);
@@ -224,6 +219,12 @@ export class SlicingControl {
       // Create "Swap with" menu items only with slicing dimensions.
       if (slicingDims.indexOf(i) === -1) {
         continue;
+      }
+      // Do not allow the second (columns) viewing dimension to be before
+      // the first one.
+      if (dim === this.slicingSpec.viewingDims[1] &&
+          i < this.slicingSpec.viewingDims[0]) {
+        continue
       }
 
       const menuItem = document.createElement('div');
@@ -256,6 +257,14 @@ export class SlicingControl {
     dropdown.addEventListener('mouseleave', () => {
       dropdown.style.display = 'none';
     });
+
+    // Show the dropdown menu if and only if it is non-empty.
+    if (dropdown.firstChild) {
+      dropdown.style.position = 'fixed';
+      dropdown.style.top = `${top}px`;
+      dropdown.style.left = `${left}px`;
+      dropdown.style.display = 'block';
+    }
   }
 
   private clearAllDropdowns() {
@@ -273,7 +282,6 @@ export class SlicingControl {
     // if there is any change in viewingDims, and if so, call createComponents()
     // before calling render().
     this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
-    console.log('Calling render:', JSON.stringify(this.slicingSpec));  // DEBUG
     this.render(this.slicingSpec);
   }
 }

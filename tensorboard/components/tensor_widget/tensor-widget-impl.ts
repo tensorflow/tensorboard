@@ -187,7 +187,7 @@ export class TensorWidgetImpl implements TensorWidget {
    * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
-    if (this.rank > 2 &&  this.slicingSpecRoot == null) {
+    if (this.rank > 2 && this.slicingSpecRoot == null) {
       this.slicingSpecRoot = document.createElement('div');
       this.slicingSpecRoot.classList.add('tensor-widget-slicing-group');
       this.rootElement.appendChild(this.slicingSpecRoot);
@@ -216,7 +216,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.createValueDivs();
     await this.renderRulersAndValueDivs();
 
-    if (this.rank > 2 && this.slicingControl == null) {
+    if (this.rank > 2) {
       this.slicingControl = new SlicingControl(
         this.slicingSpecRoot, this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
