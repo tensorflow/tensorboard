@@ -30,7 +30,6 @@ from tensorboard.compat import tf2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
 from tensorboard.util import tensor_util
-from tensorboard.util import test_util
 
 
 try:
@@ -149,7 +148,6 @@ class SummaryBaseTest(object):
       self.audio('k488', data, 44100, encoding='pptx')
 
 
-@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1PbTest, self).setUp()
@@ -168,13 +166,12 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     self.skipTest('summary V1 pb does not actually enforce this')
 
 
-@test_util.run_v1_only('Uses tf.contrib')
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1OpTest, self).setUp()
 
   def audio(self, *args, **kwargs):
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return tf.compat.v1.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     data = np.array(1, np.float32, ndmin=3)
