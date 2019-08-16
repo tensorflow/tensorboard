@@ -132,6 +132,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     logger.info('Importing logdir into DB at %s', db_uri)
     db_connection_provider = create_sqlite_connection_provider(db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
+        db_uri=db_uri,
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
         max_reload_threads=flags.max_reload_threads)

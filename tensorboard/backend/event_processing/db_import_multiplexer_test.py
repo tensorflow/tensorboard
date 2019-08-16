@@ -45,6 +45,7 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     db_file_name = os.path.join(self.get_temp_dir(), 'db')
     self.db_connection_provider = lambda: sqlite3.connect(db_file_name)
     self.multiplexer = db_import_multiplexer.DbImportMultiplexer(
+        db_uri='sqlite:' + db_file_name,
         db_connection_provider=self.db_connection_provider,
         purge_orphaned_data=False,
         max_reload_threads=1)

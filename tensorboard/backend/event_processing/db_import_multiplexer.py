@@ -46,12 +46,14 @@ class DbImportMultiplexer(object):
   """
 
   def __init__(self,
+               db_uri,
                db_connection_provider,
                purge_orphaned_data,
                max_reload_threads):
     """Constructor for `DbImportMultiplexer`.
 
     Args:
+      db_uri: A URI to the database file in use.
       db_connection_provider: Provider function for creating a DB connection.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
@@ -59,8 +61,9 @@ class DbImportMultiplexer(object):
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
     """
-    logger.info('DbImportMultiplexer initializing')
-    self._db_connection_provider = db_connection_provider
+    logger.info('DbImportMultiplexer initializing for %s', db_uri)
+    self.db_uri = db_uri
+    self.db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads
     self._event_sink = None
@@ -70,7 +73,7 @@ class DbImportMultiplexer(object):
       logger.warn(
           '--db_import does not yet support purging orphaned data')
 
-    conn = self._db_connection_provider()
+    conn = self.db_connection_provider()
     # Set the DB in WAL mode so reads don't block writes.
     conn.execute('PRAGMA journal_mode=wal')
     conn.execute('PRAGMA synchronous=normal')  # Recommended for WAL mode
@@ -111,7 +114,7 @@ class DbImportMultiplexer(object):
     # Defer event sink creation until needed; this ensures it will only exist in
     # the thread that calls Reload(), since DB connections must be thread-local.
     if not self._event_sink:
-      self._event_sink = _SqliteWriterEventSink(self._db_connection_provider)
+      self._event_sink = _SqliteWriterEventSink(self.db_connection_provider)
     # Use collections.deque() for speed when we don't need blocking since it
     # also has thread-safe appends/pops.
     loader_queue = collections.deque(six.itervalues(self._run_loaders))
