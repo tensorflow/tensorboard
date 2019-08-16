@@ -31,6 +31,7 @@ from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import sqlite_writer
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
@@ -39,10 +40,13 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-class DbImportMultiplexer(object):
+
+class DbImportMultiplexer(plugin_event_multiplexer.EventMultiplexer):
   """A loading-only `EventMultiplexer` that populates a SQLite DB.
 
-  This EventMultiplexer only loads data; it provides no read APIs.
+  This EventMultiplexer only loads data; the read APIs always return empty
+  results, since all data is accessed instead via SQL against the
+  db_connection_provider wrapped by this multiplexer.
   """
 
   def __init__(self,
@@ -62,6 +66,7 @@ class DbImportMultiplexer(object):
         reloads runs serially (one after another).
     """
     logger.info('DbImportMultiplexer initializing for %s', db_uri)
+    super(DbImportMultiplexer, self).__init__()
     self.db_uri = db_uri
     self.db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
@@ -79,6 +84,10 @@ class DbImportMultiplexer(object):
     conn.execute('PRAGMA synchronous=normal')  # Recommended for WAL mode
     sqlite_writer.initialize_schema(conn)
     logger.info('DbImportMultiplexer done initializing')
+
+  def AddRun(self, path, name=None):
+    """Unsupported; instead use AddRunsFromDirectory."""
+    raise NotImplementedError("Unsupported; use AddRunsFromDirectory()")
 
   def AddRunsFromDirectory(self, path, name=None):
     """Load runs from a directory; recursively walks subdirectories.

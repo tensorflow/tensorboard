@@ -151,6 +151,14 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     self.assertEqual(self._get_runs(), [os.path.join('some', 'nested', 'name'),
                                         os.path.join('some', 'nested', 'name')])
 
+  def test_empty_read_apis(self):
+    path = self.get_temp_dir()
+    add_event(path)
+    self.assertEmpty(self.multiplexer.Runs())
+    self.multiplexer.AddRunsFromDirectory(path)
+    self.multiplexer.Reload()
+    self.assertEmpty(self.multiplexer.Runs())
+
 
 if __name__ == '__main__':
   tf.test.main()
