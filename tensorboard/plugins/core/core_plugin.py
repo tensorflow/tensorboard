@@ -63,6 +63,10 @@ class CorePlugin(base_plugin.TBPlugin):
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def is_active(self):
     return True
@@ -149,7 +153,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Sort order is by started time (aka first event time) with empty times sorted
     last, and then ties are broken by sorting on the run name.
     """
-    if self._db_connection_provider:
+    if self._data_provider:
+      runs = sorted(
+          # (`experiment_id=None` as experiment support is not yet implemented)
+          self._data_provider.list_runs(experiment_id=None),
+          key=lambda run: (
+              run.start_time if run.start_time is not None else float('inf'),
+              run.run_name,
+          )
+      )
+      run_names = [run.run_name for run in runs]
+    elif self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT

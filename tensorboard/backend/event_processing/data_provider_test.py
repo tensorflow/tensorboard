@@ -77,6 +77,38 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
   def create_provider(self):
     return data_provider.MultiplexerDataProvider(self.create_multiplexer())
 
+  def test_list_runs(self):
+    # We can't control the timestamps of events written to disk (without
+    # manually reading the tfrecords, modifying the data, and writing
+    # them back out), so we provide a fake multiplexer instead.
+    start_times = {
+        "second_2": 2.0,
+        "first": 1.5,
+        "no_time": None,
+        "second_1": 2.0,
+    }
+    class FakeMultiplexer(object):
+      def Runs(multiplexer):
+        result = ["second_2", "first", "no_time", "second_1"]
+        self.assertItemsEqual(result, start_times)
+        return result
+
+      def FirstEventTimestamp(multiplexer, run):
+        self.assertIn(run, start_times)
+        result = start_times[run]
+        if result is None:
+          raise ValueError("No event timestep could be found")
+        else:
+          return result
+
+    multiplexer = FakeMultiplexer()
+    provider = data_provider.MultiplexerDataProvider(multiplexer)
+    result = provider.list_runs(experiment_id="unused")
+    self.assertItemsEqual(result, [
+        base_provider.Run(run_id=run, run_name=run, start_time=start_time)
+        for (run, start_time) in six.iteritems(start_times)
+    ])
+
   def test_list_scalars_all(self):
     provider = self.create_provider()
     result = provider.list_scalars(
