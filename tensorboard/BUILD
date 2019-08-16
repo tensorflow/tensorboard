@@ -312,13 +312,6 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-py_library(
-    name = "tf_contrib_ffmpeg",
-    # This is a dummy rule for the open source world, which indicates
-    # that srcs dereference tf.contrib.ffmpeg.
-    visibility = ["//visibility:public"],
-)
-
 filegroup(
     name = "tf_web_library_default_typings",
     srcs = [
