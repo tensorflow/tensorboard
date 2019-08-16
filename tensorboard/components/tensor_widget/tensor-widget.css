@@ -20,11 +20,15 @@ limitations under the License.
 
 .tensor-widget-dim {
   border: 1px solid rgb(160, 160, 160);
-  display:inline-block;
+  display: inline-block;
   font-size: 12px;
   margin-left: 15px;
   margin-right: 15px;
   padding: 2px;
+}
+
+.tensor-widget-dim-brackets {
+  display: inline-block;
 }
 
 .tensor-widget-dtype {
@@ -88,6 +92,7 @@ limitations under the License.
   background-color: rgb(250, 250, 250);
   border-bottom: 1px solid rgb(190, 190, 190);
   display: block;
+  height: 18px;
   text-align: center;
   padding-bottom: 5px;
   padding-top: 5px;

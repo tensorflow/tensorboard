@@ -218,9 +218,6 @@ export class TensorWidgetImpl implements TensorWidget {
       this.slicingControl = new SlicingControl(
         this.slicingSpecRoot, this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
-          // TODO(cais): Implement.
-          console.log(`New slicing spec:`,
-            JSON.stringify(slicingSpec.slicingDimsAndIndices));
           this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
           await this.renderRulersAndValueDivs();
         });
@@ -372,7 +369,6 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private renderTopRuler() {
     if (this.rank >= 2) {
-      console.log(`renderTopRuler():`, this.slicingSpec);  // DEBUG
       const numCols = this.tensorView.spec.shape[
         this.slicingSpec.viewingDims[1]
       ];
@@ -463,6 +459,9 @@ export class TensorWidgetImpl implements TensorWidget {
    * based on the current slicing spec.
    */
   private async renderRulersAndValueDivs() {
+    if (this.slicingControl != null) {
+      this.slicingControl.setSlicingSpec(this.slicingSpec);
+    }
     this.renderTopRuler();
     this.renderLeftRuler();
     await this.renderValueDivs();
