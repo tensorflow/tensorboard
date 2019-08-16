@@ -16,14 +16,76 @@ import {expect} from 'chai';
 
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
+import {PluginMetadata} from '../types/api';
+
+function createDefaultPluginMetadata(name: string): PluginMetadata {
+  return {
+    disable_reload: false,
+    enabled: true,
+    loading_mechanism: {
+      type: 'NONE',
+    },
+    tab_name: name,
+    remove_dom: false,
+  };
+}
+
+const DEFAULT_PLUGINS_LISTING = {
+  core: createDefaultPluginMetadata('Core'),
+  scalars: createDefaultPluginMetadata('Scalars'),
+};
 
 describe('core reducer', () => {
   describe('#changePlugin', () => {
     it('sets activePlugin to the one in action payload', () => {
-      const state = {activePlugin: 'foo'};
+      const state = {activePlugin: 'foo', plugins: {}};
+
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
       expect(nextState).to.have.property('activePlugin', 'bar');
+    });
+
+    it('does not change plugins when activePlugin changes', () => {
+      const state = {activePlugin: 'foo', plugins: DEFAULT_PLUGINS_LISTING};
+
+      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+
+      expect(nextState).to.have.property('plugins', DEFAULT_PLUGINS_LISTING);
+    });
+  });
+
+  describe('pluginsListingLoaded', () => {
+    it('sets plugins with the payload', () => {
+      const state = {activePlugin: 'foo', plugins: {}};
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+      );
+
+      expect(nextState).to.have.property('plugins', DEFAULT_PLUGINS_LISTING);
+    });
+
+    it('sets activePlugin to the first plugin (by key order) when not defined', () => {
+      const state = {activePlugin: null, plugins: {}};
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+      );
+
+      expect(nextState).to.have.property('activePlugin', 'core');
+    });
+
+    it('does not change activePlugin when already defined', () => {
+      const state = {activePlugin: 'foo', plugins: {}};
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+      );
+
+      expect(nextState).to.have.property('activePlugin', 'foo');
     });
   });
 });

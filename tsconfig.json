@@ -6,13 +6,7 @@
     "noResolve": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": [
-      "dom",
-      "es5",
-      "es2015.collection",
-      "es2015.iterable",
-      "es2015.promise"
-    ],
+    "lib": ["dom", "es2018"],
     "types": []
   }
 }

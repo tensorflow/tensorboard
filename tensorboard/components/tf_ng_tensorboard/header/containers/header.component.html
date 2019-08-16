@@ -14,11 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<mat-toolbar>
-  <span>TensorBoard</span>
-  <mat-tab-group>
-    <mat-tab label="{{ activePlugin$ | async }}"></mat-tab>
-    <mat-tab label="Siamese"></mat-tab>
-    <mat-tab label="Persian"></mat-tab>
+<mat-toolbar class="tb-toolbar">
+  <span class="brand">TensorBoard</span>
+  <mat-tab-group
+    [selectedIndex]="activePluginIndex$ | async"
+    (selectedIndexChange)="onPluginSelectionChanged($event)"
+    dynamicHeight="true"
+  >
+    <mat-tab *ngFor="let plugin of plugins$ | async" [label]="plugin.tab_name">
+    </mat-tab>
   </mat-tab-group>
+  <span class="settings">
+    settings go here
+  </span>
 </mat-toolbar>

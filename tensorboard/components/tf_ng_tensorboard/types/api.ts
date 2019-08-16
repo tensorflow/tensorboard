@@ -55,3 +55,19 @@ export interface Dashboard {
    */
   isReloadDisabled: boolean;
 }
+
+export interface PluginMetadata {
+  disable_reload: boolean;
+  enabled: boolean;
+  loading_mechanism: {
+    element_name?: string;
+    type: 'CUSTOM_ELEMENT' | 'IFRAME' | 'NONE';
+    module_path?: string;
+  };
+  tab_name: string;
+  remove_dom: boolean;
+}
+
+export type PluginsListing = {
+  [pluginName: string]: PluginMetadata;
+};

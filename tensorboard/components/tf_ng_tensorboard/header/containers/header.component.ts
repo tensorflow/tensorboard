@@ -13,11 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store, select} from '@ngrx/store';
+import {Store, select, createSelector} from '@ngrx/store';
+import {combineLatest, of} from 'rxjs';
 
-import {State, getActivePlugin} from '../../core/core.reducers';
+import {State, getActivePlugin, getPlugins} from '../../core/core.reducers';
+import {changePlugin} from '../../core/core.actions';
 
 import * as _typeHackRxjs from 'rxjs';
+
+const selectPlugins = createSelector(
+  getPlugins,
+  (listing) =>
+    Object.keys(listing).map((key) =>
+      Object.assign({}, {id: key}, listing[key])
+    )
+);
+
+const selectActivePluginIndex = createSelector(
+  getPlugins,
+  getActivePlugin,
+  (plugins, activePlugin) => {
+    return Object.keys(plugins).findIndex(
+      (pluginId) => pluginId === activePlugin
+    );
+  }
+);
 
 @Component({
   selector: 'app-header',
@@ -25,6 +45,15 @@ import * as _typeHackRxjs from 'rxjs';
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
-  activePlugin$ = this.store.pipe(select(getActivePlugin));
+  activePluginIndex$ = this.store.pipe(select(selectActivePluginIndex));
+  plugins$ = this.store.pipe(select(selectPlugins));
+
   constructor(private store: Store<State>) {}
+
+  onPluginSelectionChanged(index: number) {
+    const index$ = of(index as number);
+    combineLatest(this.plugins$, index$).subscribe(([plugins, index]) => {
+      this.store.dispatch(changePlugin({plugin: plugins[index].id}));
+    });
+  }
 }
