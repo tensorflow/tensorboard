@@ -30,6 +30,49 @@ class DataProviderTest(tb_test.TestCase):
       provider.DataProvider()
 
 
+class RunTest(tb_test.TestCase):
+  def test_eq(self):
+    a1 = provider.Run(run_id="a", run_name="aa", start_time=1.25)
+    a2 = provider.Run(run_id="a", run_name="aa", start_time=1.25)
+    b = provider.Run(run_id="b", run_name="bb", start_time=-1.75)
+    self.assertEqual(a1, a2)
+    self.assertNotEqual(a1, b)
+    self.assertNotEqual(b, object())
+
+  def test_repr(self):
+    x = provider.Run(run_id="alpha", run_name="bravo", start_time=1.25)
+    repr_ = repr(x)
+    self.assertIn(repr(x.run_id), repr_)
+    self.assertIn(repr(x.run_name), repr_)
+    self.assertIn(repr(x.start_time), repr_)
+
+
+class ScalarTimeSeriesTest(tb_test.TestCase):
+  def test_repr(self):
+    x = provider.ScalarTimeSeries(
+        max_step=77,
+        max_wall_time=1234.5,
+        plugin_content=b"AB\xCD\xEF!\x00",
+        description="test test",
+        display_name="one two",
+    )
+    repr_ = repr(x)
+    self.assertIn(repr(x.max_step), repr_)
+    self.assertIn(repr(x.max_wall_time), repr_)
+    self.assertIn(repr(x.plugin_content), repr_)
+    self.assertIn(repr(x.description), repr_)
+    self.assertIn(repr(x.display_name), repr_)
+
+
+class ScalarDatumTest(tb_test.TestCase):
+  def test_repr(self):
+    x = provider.ScalarDatum(step=123, wall_time=234.5, value=-0.125)
+    repr_ = repr(x)
+    self.assertIn(repr(x.step), repr_)
+    self.assertIn(repr(x.wall_time), repr_)
+    self.assertIn(repr(x.value), repr_)
+
+
 class RunTagFilterTest(tb_test.TestCase):
   def test_defensive_copy(self):
     runs = ["r1"]
@@ -39,6 +82,12 @@ class RunTagFilterTest(tb_test.TestCase):
     tags.pop()
     self.assertEqual(frozenset(f.runs), frozenset(["r1"]))
     self.assertEqual(frozenset(f.tags), frozenset(["t1"]))
+
+  def test_repr(self):
+    x = provider.RunTagFilter(runs=["one", "two"], tags=["three", "four"])
+    repr_ = repr(x)
+    self.assertIn(repr(x.runs), repr_)
+    self.assertIn(repr(x.tags), repr_)
 
 
 if __name__ == "__main__":

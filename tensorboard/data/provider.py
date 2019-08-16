@@ -218,13 +218,13 @@ class ScalarTimeSeries(object):
     return self._display_name
 
   def __repr__(self):
-    return "ScalarTimeSeries(%s)" % ", ".join(
+    return "ScalarTimeSeries(%s)" % ", ".join((
         "max_step=%r" % (self._max_step,),
         "max_wall_time=%r" % (self._max_wall_time,),
         "plugin_content=%r" % (self._plugin_content,),
         "description=%r" % (self._description,),
         "display_name=%r" % (self._display_name,),
-    )
+    ))
 
 
 class ScalarDatum(object):
@@ -258,16 +258,11 @@ class ScalarDatum(object):
     return self._value
 
   def __repr__(self):
-    return "ScalarDatum(step=%r, wall_time=%r, value=%r)" % (
-        self._step,
-        self._wall_time,
-        self._value,
-    )
-    return "ScalarDatum(%s)" % ", ".join(
+    return "ScalarDatum(%s)" % ", ".join((
         "step=%r" % (self._step,),
         "wall_time=%r" % (self._wall_time,),
         "value=%r" % (self._value,),
-    )
+    ))
 
 
 class RunTagFilter(object):
@@ -300,4 +295,7 @@ class RunTagFilter(object):
     return self._tags
 
   def __repr__(self):
-    return "RunTagFilter(runs=%r, tags=%r)" % (self._runs, self._tags)
+    return "RunTagFilter(%s)" % ", ".join((
+        "runs=%r" % (self._runs,),
+        "tags=%r" % (self._tags,),
+    ))
