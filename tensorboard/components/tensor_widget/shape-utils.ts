@@ -80,3 +80,30 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
   }
   return slicingSpec;
 }
+
+/**
+ * Check if two slicing specs involve different dimension arrangements.
+ *
+ * Note that the slicing indicies in the slicing dimensions are ignored.
+ *
+ * @param spec0
+ * @param spec1
+ * @return TODO(cais): Finish doc string.
+ */
+export function dimensionsDiffer(
+  spec0: TensorViewSlicingSpec, spec1: TensorViewSlicingSpec): boolean {
+  if (spec0.viewingDims[0] !== spec1.viewingDims[0]) {
+    return true;
+  } else if (spec0.viewingDims[1] !== spec1.viewingDims[1]) {
+    return true;
+  } else {
+    // Check the slicing dimension.
+    const slicingDims0 =
+      spec0.slicingDimsAndIndices.map(dimAndIndex => dimAndIndex.dim);
+    slicingDims0.sort();
+    const slicingDims1 =
+      spec0.slicingDimsAndIndices.map(dimAndIndex => dimAndIndex.dim);
+    slicingDims1.sort();
+    return JSON.stringify(slicingDims0) !== JSON.stringify(slicingDims1);
+  }
+}

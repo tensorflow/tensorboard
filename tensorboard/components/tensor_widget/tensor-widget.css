@@ -28,7 +28,29 @@ limitations under the License.
 }
 
 .tensor-widget-dim-brackets {
+  color: rgb(128, 128, 128);
   display: inline-block;
+  font-size: 8pt;
+}
+
+.tensor-widget-dim-dropdown {
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(128, 128, 128);
+  box-shadow: 2px 2px 2px #b0b0b0;
+  cursor: pointer;
+  width: 180px;
+  z-index: 1000;
+}
+
+.tensor-widget-dim-dropdown-menu-item {
+  border-bottom: 1px solid rgb(180, 180, 180);
+  font-size: 12px;
+  padding: 3px;
+}
+
+.tensor-widget-dim-dropdown-menu-item-active {
+  background-color: rgb(100, 180, 255);
+  color: rgb(255, 255, 255);
 }
 
 .tensor-widget-dtype {

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
+import {formatShapeForDisplay, getDefaultSlicingSpec, dimensionsDiffer} from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {formatTensorName, numericValueToString} from './string-utils';
 import {
@@ -218,6 +218,19 @@ export class TensorWidgetImpl implements TensorWidget {
       this.slicingControl = new SlicingControl(
         this.slicingSpecRoot, this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
+          if (dimensionsDiffer(this.slicingSpec, slicingSpec)) {
+            console.log('Slicing dimensions differ!!!');  // DEBUG
+            console.log('slicing spec changed:',
+              JSON.stringify(slicingSpec));  // DEBUG
+            this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+            await this.render();
+            // console.log('Calling createTopRuler()');  // DEBUG
+            // this.createTopRuler();
+            // console.log('Calling createLeftRuler()');  // DEBUG
+            // this.createLeftRuler();
+            // console.log('Calling createValueDivs()');  // DEBUG
+            // this.createValueDivs();
+          }
           this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
           await this.renderRulersAndValueDivs();
         });
@@ -460,6 +473,7 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private async renderRulersAndValueDivs() {
     if (this.slicingControl != null) {
+      console.log('Calling setSlicingSpec():', JSON.stringify(this.slicingSpec)); // DEBUG
       this.slicingControl.setSlicingSpec(this.slicingSpec);
     }
     this.renderTopRuler();
