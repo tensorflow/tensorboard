@@ -37,18 +37,11 @@ class DataProvider(object):
   def list_runs(self, experiment_id):
     """List all runs within an experiment.
 
-    The returned sequence should be sorted by run start time (i.e., the
-    time of the first event in each run), so that as new runs are
-    created under a running TensorBoard the list of runs is append-only,
-    and thus each run's time series color stays constant over time. In
-    case two runs have the same start time, their relative order should
-    be tie-broken deterministically (e.g., by run name).
-
     Args:
       experiment_id: ID of enclosing experiment.
 
     Returns:
-      A sequence of distinct run names, sorted as described above.
+      A collection of `Run` values.
     """
     pass
 
@@ -115,6 +108,55 @@ class DataProvider(object):
   def read_blob_sequences(self):
     """Not yet specified."""
     pass
+
+
+class Run(object):
+  """Metadata about a run.
+
+  Attributes:
+    run_id: A unique opaque string identifier for this run.
+    run_name: A user-facing name for this run (as a `str`).
+    start_time: The wall time of the earliest recorded event in this
+      run, as `float` seconds since epoch, or `None` if this run has no
+      recorded events.
+  """
+
+  __slots__ = ("_run_id", "_run_name", "_start_time")
+
+  def __init__(self, run_id, run_name, start_time):
+    self._run_id = run_id
+    self._run_name = run_name
+    self._start_time = start_time
+
+  @property
+  def run_id(self):
+    return self._run_id
+
+  @property
+  def run_name(self):
+    return self._run_name
+
+  @property
+  def start_time(self):
+    return self._start_time
+
+  def __eq__(self, other):
+    if not isinstance(other, Run):
+      return False
+    if self._run_id != other._run_id:
+      return False
+    if self._run_name != other._run_name:
+      return False
+    if self._start_time != other._start_time:
+      return False
+    return True
+
+  def __repr__(self):
+    return "Run(%s)" % ", ".join((
+        "run_id=%r" % (self._run_id,),
+        "run_name=%r" % (self._run_name,),
+        "start_time=%r" % (self._start_time,),
+    ))
 
 
 class ScalarTimeSeries(object):

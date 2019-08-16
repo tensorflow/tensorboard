@@ -51,18 +51,18 @@ class MultiplexerDataProvider(provider.DataProvider):
     try:
       return self._multiplexer.FirstEventTimestamp(run_name)
     except ValueError as e:
-      logger.warn(
-          "Unable to get first event timestamp for run %s: %s", run_name, e
-      )
-      # Put runs without a timestamp at the end.
-      return float("inf")
+      return None
 
   def list_runs(self, experiment_id):
     del experiment_id  # ignored for now
-    return sorted(
-        self._multiplexer.Runs(),
-        key=lambda run: (self._get_first_event_timestamp(run), run),
-    )
+    return [
+        provider.Run(
+            run_id=run,  # use names as IDs
+            run_name=run,
+            start_time=self._get_first_event_timestamp(run),
+        )
+        for run in self._multiplexer.Runs()
+    ]
 
   def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
     del experiment_id  # ignored for now

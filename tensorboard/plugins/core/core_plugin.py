@@ -154,9 +154,15 @@ class CorePlugin(base_plugin.TBPlugin):
     last, and then ties are broken by sorting on the run name.
     """
     if self._data_provider:
-      # We pass `experiment_id=None` because experiment support is not
-      # yet implemented.
-      run_names = list(self._data_provider.list_runs(experiment_id=None))
+      runs = sorted(
+          # (`experiment_id=None` as experiment support is not yet implemented)
+          self._data_provider.list_runs(experiment_id=None),
+          key=lambda run: (
+              run.start_time if run.start_time is not None else float('inf'),
+              run.run_name,
+          )
+      )
+      run_names = [run.run_name for run in runs]
     elif self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
