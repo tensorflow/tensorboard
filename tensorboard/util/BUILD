@@ -12,7 +12,6 @@ py_library(
         ":op_evaluator",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
     ],
 )
 
