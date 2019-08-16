@@ -26,7 +26,6 @@ from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.util import test_util
 
 
-@test_util.run_v1_only('requires tf.Session')
 class MetadataTest(tf.test.TestCase):
 
   def _create_metadata(self, shape=None):
