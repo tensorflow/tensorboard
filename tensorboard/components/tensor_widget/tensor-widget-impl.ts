@@ -36,6 +36,7 @@ export class TensorWidgetImpl implements TensorWidget {
   // Constituent UI elements.
   protected headerSection: HTMLDivElement;
   protected infoSubsection: HTMLDivElement;
+  protected slicingSpecRoot: HTMLDivElement;
   protected valueSection: HTMLDivElement;
   protected topRuler: HTMLDivElement;
   protected baseRulerTick: HTMLDivElement;
@@ -43,6 +44,9 @@ export class TensorWidgetImpl implements TensorWidget {
   protected leftRulerTicks: HTMLDivElement[];
   protected valueRows: HTMLDivElement[];
   protected valueDivs: HTMLDivElement[][];
+
+  // The UI slicing control used by 3D+ tensors.
+  protected slicingControl: SlicingControl;
 
   // Whether the height of the root element is insufficient to display
   // all the rows (vertical dimension under currrent slicing) at once.
@@ -183,6 +187,12 @@ export class TensorWidgetImpl implements TensorWidget {
    * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
+    if (this.rank > 2) {
+      this.slicingSpecRoot = document.createElement('div');
+      this.slicingSpecRoot.classList.add('tensor-widget-slicing-group');
+      this.rootElement.appendChild(this.slicingSpecRoot);
+    }
+
     if (this.valueSection == null) {
       this.valueSection = document.createElement('div');
       this.valueSection.classList.add('tensor-widget-value-section');
@@ -197,12 +207,24 @@ export class TensorWidgetImpl implements TensorWidget {
         await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
       });
     }
-    // TOOD(cais): Remove this check once 2D+ tensors are supported.
-    if (this.rank <= 2) {
-      this.createTopRuler();
-      this.createLeftRuler();
-      this.createValueDivs();
-      await this.renderRulersAndValueDivs();
+
+    // TODO(cais): Move this out of the else branch.
+    this.createTopRuler();
+    this.createLeftRuler();
+    this.createValueDivs();
+    await this.renderRulersAndValueDivs();
+
+    if (this.rank > 2) {  // TODO(cais): Remove.
+      this.slicingControl = new SlicingControl(
+        this.slicingSpecRoot, this.tensorView.spec.shape,
+        async (slicingSpec: TensorViewSlicingSpec) => {
+          // TODO(cais): Implement.
+          console.log(`New slicing spec:`,
+            JSON.stringify(slicingSpec.slicingDimsAndIndices));
+          this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+          await this.renderRulersAndValueDivs();
+        });
+      this.slicingControl.render(this.slicingSpec);
     }
   }
 
@@ -236,13 +258,6 @@ export class TensorWidgetImpl implements TensorWidget {
     this.baseRulerTick = document.createElement('div');
     this.baseRulerTick.classList.add('tensor-widget-top-ruler-tick');
     this.topRuler.appendChild(this.baseRulerTick);
-
-    // TODO(cais): Handle 3D+ cases.
-    if (this.rank > 2) {
-      throw new Error(
-        `Support for ${this.rank}D tensor is not implemented yet.`
-      );
-    }
 
     // Whether the number of columns to render on the screen is to be
     // determined, e.g., when the `render` method is called for the first time.
@@ -357,6 +372,7 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private renderTopRuler() {
     if (this.rank >= 2) {
+      console.log(`renderTopRuler():`, this.slicingSpec);  // DEBUG
       const numCols = this.tensorView.spec.shape[
         this.slicingSpec.viewingDims[1]
       ];

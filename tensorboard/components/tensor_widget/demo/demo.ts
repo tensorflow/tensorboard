@@ -164,12 +164,9 @@ function demo() {
   // Render tensor4: a 3D float32 scalar, without the optional name.
   const tensorDiv4 = document.getElementById('tensor4') as HTMLDivElement;
   // TODO(cais): Replace this with a TensorFlow.js-based TensorView.
-  const tensorView4: any = {
-    spec: {
-      dtype: 'float32',
-      shape: [64, 32, 50],
-    },
-  };
+  const tensorView4 =  tensorToTensorView(
+    tf.linspace(0, (64 * 32 * 50 - 1) / 100, 64 * 32 * 50)
+    .reshape([64, 32, 50]));
   const tensorWidget4 = tensorWidget.tensorWidget(tensorDiv4, tensorView4); // No name.
   tensorWidget4.render();
 }

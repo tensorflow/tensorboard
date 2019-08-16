@@ -28,7 +28,8 @@ export class SlicingControl {
   private slicingSpec: TensorViewSlicingSpec;
 
   // Constituent UI components.
-  private dimGroup: HTMLDivElement;
+  // private rootDiv: HTMLDivElement;
+  private dimControls: HTMLDivElement[];
 
   /**
    *
@@ -39,7 +40,6 @@ export class SlicingControl {
    */
   constructor(private readonly rootDiv: HTMLDivElement,
               private readonly shape: Shape,
-              readonly initialSlicingSpec: TensorViewSlicingSpec,
               private readonly onSlcingSpecChange: OnSlicingSpecChangeCallback) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
@@ -48,40 +48,86 @@ export class SlicingControl {
           `3D: received ${this.rank}D tensor shape: ` +
           `${JSON.stringify(this.shape)}.`);
     }
-    this.rootDiv.classList.add('tensor-widget-slicing-control');
-    this.slicingSpec = JSON.parse(JSON.stringify(initialSlicingSpec));
   }
 
-  render() {
-    if (this.dimGroup == null) {
-      this.dimGroup = document.createElement('div');
-      this.dimGroup.classList.add('tensor-widget-dim-group');
-      this.rootDiv.appendChild(this.dimGroup);
-    }
+  render(slcingSpec: TensorViewSlicingSpec) {
+    this.slicingSpec = JSON.parse(JSON.stringify(slcingSpec));
+    // if (this.rootDiv == null) {
+    //   this.rootDiv.appendChild(this.rootDiv);
+    // }
 
     // Clean the dim group.
-    while (this.dimGroup.firstChild) {
-      this.dimGroup.removeChild(this.dimGroup.firstChild);
+    while (this.rootDiv.firstChild) {
+      this.rootDiv.removeChild(this.rootDiv.firstChild);
     }
+    this.dimControls = [];
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
       dimAndIndex => dimAndIndex.dim);
     const slicingIndices = this.slicingSpec.slicingDimsAndIndices.map(
-        dimAndIndex => dimAndIndex.index);
+      dimAndIndex => dimAndIndex.index);
     for (let i = 0; i < this.rank; ++i) {
       const dimControl = document.createElement('div');
       if (slicingDims.indexOf(i) !== -1) {
         // This is a dimension being sliced down to a size of 1.
+        const dimSize = this.shape[i];
+        const currentIndex = slicingIndices[slicingDims.indexOf(i)];
+        dimControl.textContent = `${currentIndex}/${dimSize}`;
+        dimControl.classList.add('tensor-widget-dim');
+
+        const dimInput = document.createElement('input');
+        dimInput.classList.add('tensor-widget-dim');
+        dimInput.type = 'number';
+        dimInput.min = '0';
+        dimInput.max = `${dimSize - 1}`;
+        dimInput.value = `${currentIndex}`;
+        dimInput.style.width = '5';
+        dimInput.style.display = 'none';
+        this.rootDiv.appendChild(dimInput);
+
+        // When the dim control is clicked, it becomes a number input.
+        dimControl.addEventListener('click', () => {
+          dimControl.style.display = 'none';
+          dimInput.style.display = 'inline-block' ;
+        });
+
+        // Set change callback for the dim input.
+        dimInput.addEventListener('change',  () => {
+          const newIndex = parseInt(dimInput.value, 10);
+          if (newIndex < 0 || newIndex >= dimSize || Math.floor(dimSize) != dimSize) {
+            // Reject invalid value.
+            dimInput.value =
+              `${this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index}`;
+            return;
+          }
+          this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index =
+            newIndex;
+          dimControl.textContent = `${newIndex}/${dimSize}`;
+          this.onSlcingSpecChange(this.slicingSpec);
+        });
+
+        // When defocusing (blurring) from the dim input, it changes back into
+        // a div.
+        dimInput.addEventListener('blur', () => {
+          dimInput.style.display = 'none';
+          dimControl.style.display = 'inline-block';
+          // TODO(cais): Update the number.
+          // this.drawDimControl('top');
+          // this.drawDimControl('left');
+        });
+
       } else if (this.slicingSpec.viewingDims[0] === i) {
         // This is a dimension being viewed as the vertical (rows) dimension.
         dimControl.textContent = '↕:';
-        dimControl.classList.add('tensor-widget-dim-viewed');
+        dimControl.classList.add('tensor-widget-dim');
       } else if (this.slicingSpec.viewingDims[1] === i) {
         // This is a dimension being viewed as the horizontal (columns)
         // dimension.
         dimControl.textContent = '↔:';
-        dimControl.classList.add('tensor-widget-dim-viewed');
+        dimControl.classList.add('tensor-widget-dim');
       }
+      this.rootDiv.appendChild(dimControl);
+      this.dimControls.push(dimControl);
     }
   }
 }
