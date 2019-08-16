@@ -36,6 +36,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/data:provider",
+        "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
