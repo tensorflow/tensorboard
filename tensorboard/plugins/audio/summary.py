@@ -91,7 +91,6 @@ def op(name,
   file format explicitly.
   """
   # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-  import tensorflow  # for contrib
   import tensorflow.compat.v1 as tf
 
   if display_name is None:
@@ -101,9 +100,7 @@ def op(name,
 
   if encoding == 'wav':
     encoding = metadata.Encoding.Value('WAV')
-    encoder = functools.partial(tensorflow.contrib.ffmpeg.encode_audio,
-                                samples_per_second=sample_rate,
-                                file_format='wav')
+    encoder = functools.partial(tf.audio.encode_wav, sample_rate=sample_rate)
   else:
     raise ValueError('Unknown encoding: %r' % encoding)
 

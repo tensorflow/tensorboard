@@ -21,7 +21,6 @@ import six
 import tensorflow as tf
 
 from tensorboard.util import encoder
-from tensorboard.util import test_util
 
 
 class TensorFlowPngEncoderTest(tf.test.TestCase):
@@ -56,7 +55,6 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
     self._check_png(data)
 
 
-@test_util.run_v1_only('Uses contrib')
 class TensorFlowWavEncoderTest(tf.test.TestCase):
 
   def setUp(self):
