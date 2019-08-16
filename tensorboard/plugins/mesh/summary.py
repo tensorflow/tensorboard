@@ -64,7 +64,7 @@ def _get_tensor_summary(
       shape,
       description,
       json_config=json_config)
-  tensor_summary = tf.summary.tensor_summary(
+  tensor_summary = tf.compat.v1.summary.tensor_summary(
       metadata.get_instance_name(name, content_type),
       tensor,
       summary_metadata=tensor_metadata,
@@ -135,7 +135,7 @@ def op(name, vertices, faces=None, colors=None, display_name=None,
                           tensor.content_type, components, json_config,
                           collections))
 
-  all_summaries = tf.summary.merge(
+  all_summaries = tf.compat.v1.summary.merge(
       summaries, collections=collections, name=name)
   return all_summaries
 
@@ -196,9 +196,9 @@ def pb(name,
     tag = metadata.get_instance_name(name, tensor.content_type)
     summaries.append((tag, summary_metadata, tensor_proto))
 
-  summary = tf.Summary()
+  summary = tf.compat.v1.Summary()
   for tag, summary_metadata, tensor_proto in summaries:
-    tf_summary_metadata = tf.SummaryMetadata.FromString(
+    tf_summary_metadata = tf.compat.v1.SummaryMetadata.FromString(
         summary_metadata.SerializeToString())
     summary.value.add(
       tag=tag, metadata=tf_summary_metadata, tensor=tensor_proto)
