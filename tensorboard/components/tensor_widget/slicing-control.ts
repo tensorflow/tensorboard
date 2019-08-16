@@ -20,8 +20,12 @@ export type OnSlicingSpecChangeCallback = (
 ) => void;
 
 /**
- * UI control for selecting which dimensions to slicing down to 1 and which
- * to view. Used for tensors with rank (dimensionality) 3 or higher.
+ * UI control for
+ * - selecting which dimensions to slicing down to 1 and which to view
+ *   as a 2D data table.
+ * - which index to select within each sliced dimension.
+ *
+ * Used for tensors with rank (dimensionality) 3 or higher.
  */
 export class SlicingControl {
   private rank: number;
@@ -43,16 +47,21 @@ export class SlicingControl {
   private dimControlsListenerAttached: boolean[];
 
   /**
+   * Constructor of SlicingControl.
    *
-   * @param rootDiv
+   * @param rootDiv The div element in which all the UI components will be
+   *   rendered.
    * @param shape Shape of the tensor.
-   * @param initialSlicingSpec The initial slicing spec of the dimension.
-   *   DimensionControl will not mutate this object.
+   * @param onSlicngSpecChange User specified callback for slicing spec changes
+   *   triggered by user interactions with this SlicingControl. The callback
+   *   will be invoked for changes in:
+   *   - which dimensions are used for slicing and which for viewing
+   *   - the selected index within a slicing dimension.
    */
   constructor(
     private readonly rootDiv: HTMLDivElement,
     private readonly shape: Shape,
-    private readonly onSlicngSpecChange: OnSlicingSpecChangeCallback
+    private readonly onSlicngSpecChange?: OnSlicingSpecChangeCallback
   ) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
@@ -65,6 +74,12 @@ export class SlicingControl {
     this.createComponents();
   }
 
+  /**
+   * Create all UI components of this SlicingControl.
+   *
+   * The detailed contents of the components are not filled in. Those are filled
+   * in when the `render()` method is called.
+   */
   private createComponents() {
     // Clear the dim group.
     while (this.rootDiv.firstChild) {
@@ -113,7 +128,7 @@ export class SlicingControl {
   }
 
   /**
-   * Re-render the slicing control according to the current slicing spec
+   * Re-render the slicing control according to the current slicing spec.
    */
   render(slicingSpec?: TensorViewSlicingSpec) {
     if (slicingSpec != null) {
@@ -177,7 +192,7 @@ export class SlicingControl {
           });
 
           // When defocusing (blurring) from the dim input, it changes back into
-          // a div.
+          // a static div.
           dimInput.addEventListener('blur', () => {
             dimInput.style.display = 'none';
             dimControl.style.display = 'inline-block';
@@ -294,6 +309,20 @@ export class SlicingControl {
     }
   }
 
+  /**
+   * Set the slicing spec externally.
+   *
+   * This will trigger a re-rendering of the SlicingControl's UI components,
+   * which will reflect the input slicing spec's value.
+   *
+   * @param slicingSpec The externally-set slicing spec. It will not be mutated
+   *   by SlicingControl.
+   */
+  setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
+    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+    this.render(this.slicingSpec);
+  }
+
   private clearAllDropdowns() {
     this.dropdowns.forEach((dropdown) => {
       if (dropdown != null) {
@@ -302,10 +331,5 @@ export class SlicingControl {
         }
       }
     });
-  }
-
-  setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
-    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
-    this.render(this.slicingSpec);
   }
 }
