@@ -30,7 +30,6 @@ from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
-from tensorboard.util import test_util
 
 
 
@@ -78,11 +77,11 @@ class MigrateValueTest(tf.test.TestCase):
     low_precision_value = np.array(0x5f3759df).astype('float32').item()
     self.assertEqual(low_precision_value, data.item())
 
-  @test_util.run_v1_only('v1 audio summary uses contrib')
   def test_audio(self):
-    audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
-    old_op = tf.compat.v1.summary.audio('k488', audio, 44100)
-    old_value = self._value_from_op(old_op)
+    with tf.compat.v1.Graph().as_default():
+      audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
+      old_op = tf.compat.v1.summary.audio('k488', audio, 44100)
+      old_value = self._value_from_op(old_op)
     assert old_value.HasField('audio'), old_value
     new_value = data_compat.migrate_value(old_value)
 
@@ -185,7 +184,6 @@ class MigrateValueTest(tf.test.TestCase):
     assert value.HasField('tensor'), value
     self._assert_noop(value)
 
-  @test_util.run_v1_only('audio summary uses contrib')
   def test_new_style_audio(self):
     with tf.compat.v1.Graph().as_default():
       audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
