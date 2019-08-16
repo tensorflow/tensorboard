@@ -187,7 +187,7 @@ export class TensorWidgetImpl implements TensorWidget {
    * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
-    if (this.rank > 2) {
+    if (this.rank > 2 &&  this.slicingSpecRoot == null) {
       this.slicingSpecRoot = document.createElement('div');
       this.slicingSpecRoot.classList.add('tensor-widget-slicing-group');
       this.rootElement.appendChild(this.slicingSpecRoot);
@@ -208,13 +208,15 @@ export class TensorWidgetImpl implements TensorWidget {
       });
     }
 
+    this.clearValueSection();
+
     // TODO(cais): Move this out of the else branch.
     this.createTopRuler();
     this.createLeftRuler();
     this.createValueDivs();
     await this.renderRulersAndValueDivs();
 
-    if (this.rank > 2) {  // TODO(cais): Remove.
+    if (this.rank > 2 && this.slicingControl == null) {
       this.slicingControl = new SlicingControl(
         this.slicingSpecRoot, this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
@@ -223,19 +225,25 @@ export class TensorWidgetImpl implements TensorWidget {
             console.log('slicing spec changed:',
               JSON.stringify(slicingSpec));  // DEBUG
             this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+            // The dimension arrangement has changed in the slicing spec.
+            // The rulers and value divs must be re-created. This is why
+            // `render()` is called instead of `renderRulersAndValueDivs()`.
             await this.render();
-            // console.log('Calling createTopRuler()');  // DEBUG
-            // this.createTopRuler();
-            // console.log('Calling createLeftRuler()');  // DEBUG
-            // this.createLeftRuler();
-            // console.log('Calling createValueDivs()');  // DEBUG
-            // this.createValueDivs();
+          } else {
+            this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+            await this.renderRulersAndValueDivs();
           }
-          this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
-          await this.renderRulersAndValueDivs();
         });
       this.slicingControl.render(this.slicingSpec);
     }
+  }
+
+  private clearValueSection() {
+    while (this.valueSection.firstChild) {
+      this.valueSection.removeChild(this.valueSection.firstChild);
+    }
+    this.topRuler = null;
+    this.valueRows = null;
   }
 
   /**
@@ -294,6 +302,7 @@ export class TensorWidgetImpl implements TensorWidget {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
           this.slicingSpec.horizontalRange[1] = i + 1;
+          console.log(`Set this.slicingSpec.horizontalRange to ${this.slicingSpec.horizontalRange[1]}`);  // DEBUG
           this.colsCutoff = true;
         }
         break;
@@ -473,8 +482,9 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private async renderRulersAndValueDivs() {
     if (this.slicingControl != null) {
-      console.log('Calling setSlicingSpec():', JSON.stringify(this.slicingSpec)); // DEBUG
+      console.log('*** Calling setSlicingSpec():', JSON.stringify(this.slicingSpec)); // DEBUG
       this.slicingControl.setSlicingSpec(this.slicingSpec);
+      console.log('*** DONE calling setSlicingSpec()');  // DEBUG
     }
     this.renderTopRuler();
     this.renderLeftRuler();
