@@ -151,6 +151,9 @@ class Run(object):
       return False
     return True
 
+  def __hash__(self):
+    return hash((self._run_id, self._run_name, self._start_time))
+
   def __repr__(self):
     return "Run(%s)" % ", ".join((
         "run_id=%r" % (self._run_id,),
