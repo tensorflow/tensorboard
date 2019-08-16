@@ -88,21 +88,26 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
  *
  * @param spec0
  * @param spec1
- * @return TODO(cais): Finish doc string.
+ * @return `true` if and only if the slicing dimensions and/or the viewing
+ *   dimensions differ between the `spec0` and `spec1`.
  */
 export function dimensionsDiffer(
-  spec0: TensorViewSlicingSpec, spec1: TensorViewSlicingSpec): boolean {
+  spec0: TensorViewSlicingSpec,
+  spec1: TensorViewSlicingSpec
+): boolean {
   if (spec0.viewingDims[0] !== spec1.viewingDims[0]) {
     return true;
   } else if (spec0.viewingDims[1] !== spec1.viewingDims[1]) {
     return true;
   } else {
     // Check the slicing dimension.
-    const slicingDims0 =
-      spec0.slicingDimsAndIndices.map(dimAndIndex => dimAndIndex.dim);
+    const slicingDims0 = spec0.slicingDimsAndIndices.map(
+      (dimAndIndex) => dimAndIndex.dim
+    );
     slicingDims0.sort();
-    const slicingDims1 =
-      spec0.slicingDimsAndIndices.map(dimAndIndex => dimAndIndex.dim);
+    const slicingDims1 = spec0.slicingDimsAndIndices.map(
+      (dimAndIndex) => dimAndIndex.dim
+    );
     slicingDims1.sort();
     return JSON.stringify(slicingDims0) !== JSON.stringify(slicingDims1);
   }

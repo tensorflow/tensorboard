@@ -15,7 +15,12 @@ limitations under the License.
 
 import {expect} from 'chai';
 
-import {formatShapeForDisplay, getDefaultSlicingSpec} from './shape-utils';
+import {
+  formatShapeForDisplay,
+  getDefaultSlicingSpec,
+  dimensionsDiffer,
+} from './shape-utils';
+import {TensorViewSlicingSpec} from './types';
 
 describe('formatShapeForDisplay', () => {
   it('returns string scalar for []', () => {
@@ -114,5 +119,109 @@ describe('getDefaultSlicingSpec', () => {
       verticalRange: null,
       horizontalRange: null,
     });
+  });
+});
+
+describe('dimensionsDiffer', () => {
+  it('Different orders in slicing dimensions are ignored', () => {
+    const spec0: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 0,
+          index: 0,
+        },
+        {
+          dim: 1,
+          index: 0,
+        },
+      ],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    const spec1: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 1,
+          index: 0,
+        },
+        {
+          dim: 0,
+          index: 0,
+        },
+      ],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    expect(dimensionsDiffer(spec0, spec1)).to.be.false;
+  });
+
+  it('Different slicing indices are ignored', () => {
+    const spec0: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 0,
+          index: 8,
+        },
+        {
+          dim: 1,
+          index: 0,
+        },
+      ],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    const spec1: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 0,
+          index: 0,
+        },
+        {
+          dim: 1,
+          index: 9,
+        },
+      ],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    expect(dimensionsDiffer(spec0, spec1)).to.be.false;
+  });
+
+  it('Differen slicing and viewing dimensions are captured', () => {
+    const spec0: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 0,
+          index: 0,
+        },
+        {
+          dim: 3,
+          index: 0,
+        },
+      ],
+      viewingDims: [1, 2],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    const spec1: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [
+        {
+          dim: 0,
+          index: 0,
+        },
+        {
+          dim: 1,
+          index: 0,
+        },
+      ],
+      viewingDims: [2, 3],
+      verticalRange: null,
+      horizontalRange: null,
+    };
+    expect(dimensionsDiffer(spec0, spec1)).to.be.true;
   });
 });

@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {formatShapeForDisplay, getDefaultSlicingSpec, dimensionsDiffer} from './shape-utils';
+import {
+  formatShapeForDisplay,
+  getDefaultSlicingSpec,
+  dimensionsDiffer,
+} from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {formatTensorName, numericValueToString} from './string-utils';
 import {
@@ -209,8 +213,6 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     this.clearValueSection();
-
-    // TODO(cais): Move this out of the else branch.
     this.createTopRuler();
     this.createLeftRuler();
     this.createValueDivs();
@@ -218,12 +220,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
     if (this.rank > 2) {
       this.slicingControl = new SlicingControl(
-        this.slicingSpecRoot, this.tensorView.spec.shape,
+        this.slicingSpecRoot,
+        this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
           if (dimensionsDiffer(this.slicingSpec, slicingSpec)) {
-            console.log('Slicing dimensions differ!!!');  // DEBUG
-            console.log('slicing spec changed:',
-              JSON.stringify(slicingSpec));  // DEBUG
             this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
             // The dimension arrangement has changed in the slicing spec.
             // The rulers and value divs must be re-created. This is why
@@ -233,7 +233,8 @@ export class TensorWidgetImpl implements TensorWidget {
             this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
             await this.renderRulersAndValueDivs();
           }
-        });
+        }
+      );
       this.slicingControl.render(this.slicingSpec);
     }
   }
@@ -302,7 +303,6 @@ export class TensorWidgetImpl implements TensorWidget {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
           this.slicingSpec.horizontalRange[1] = i + 1;
-          console.log(`Set this.slicingSpec.horizontalRange to ${this.slicingSpec.horizontalRange[1]}`);  // DEBUG
           this.colsCutoff = true;
         }
         break;
@@ -482,9 +482,7 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private async renderRulersAndValueDivs() {
     if (this.slicingControl != null) {
-      console.log('*** Calling setSlicingSpec():', JSON.stringify(this.slicingSpec)); // DEBUG
       this.slicingControl.setSlicingSpec(this.slicingSpec);
-      console.log('*** DONE calling setSlicingSpec()');  // DEBUG
     }
     this.renderTopRuler();
     this.renderLeftRuler();

@@ -13,9 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Shape, TensorViewSlicingSpec} from "./types";
+import {Shape, TensorViewSlicingSpec} from './types';
 
-export type OnSlicingSpecChangeCallback = (slicingSpec: TensorViewSlicingSpec) => void;
+export type OnSlicingSpecChangeCallback = (
+  slicingSpec: TensorViewSlicingSpec
+) => void;
 
 /**
  * UI control for selecting which dimensions to slicing down to 1 and which
@@ -47,19 +49,21 @@ export class SlicingControl {
    * @param initialSlicingSpec The initial slicing spec of the dimension.
    *   DimensionControl will not mutate this object.
    */
-  constructor(private readonly rootDiv: HTMLDivElement,
-              private readonly shape: Shape,
-              private readonly onSlicngSpecChange: OnSlicingSpecChangeCallback) {
+  constructor(
+    private readonly rootDiv: HTMLDivElement,
+    private readonly shape: Shape,
+    private readonly onSlicngSpecChange: OnSlicingSpecChangeCallback
+  ) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
       throw new Error(
-          `Dimension control is not applicable to tensor shapes less than ` +
+        `Dimension control is not applicable to tensor shapes less than ` +
           `3D: received ${this.rank}D tensor shape: ` +
-          `${JSON.stringify(this.shape)}.`);
+          `${JSON.stringify(this.shape)}.`
+      );
     }
     this.createComponents();
   }
-
 
   private createComponents() {
     // Clear the dim group.
@@ -117,9 +121,11 @@ export class SlicingControl {
     }
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
-      dimAndIndex => dimAndIndex.dim);
+      (dimAndIndex) => dimAndIndex.dim
+    );
     const slicingIndices = this.slicingSpec.slicingDimsAndIndices.map(
-      dimAndIndex => dimAndIndex.index);
+      (dimAndIndex) => dimAndIndex.index
+    );
     for (let i = 0; i < this.rank; ++i) {
       const dimControl = this.dimControls[i];
       const dimInput = this.dimInputs[i];
@@ -147,21 +153,25 @@ export class SlicingControl {
           dimControl.addEventListener('click', () => {
             this.clearAllDropdowns();
             dimControl.style.display = 'none';
-            dimInput.style.display = 'inline-block' ;
+            dimInput.style.display = 'inline-block';
           });
 
           // Set change callback for the dim input.
-          dimInput.addEventListener('change',  () => {
+          dimInput.addEventListener('change', () => {
             const newIndex = parseInt(dimInput.value, 10);
-            if (!isFinite(newIndex) || newIndex < 0 || newIndex >= dimSize ||
-                Math.floor(dimSize) != dimSize) {
+            if (
+              !isFinite(newIndex) ||
+              newIndex < 0 ||
+              newIndex >= dimSize ||
+              Math.floor(dimSize) != dimSize
+            ) {
               // Reject invalid value.
-              dimInput.value =
-                `${this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index}`;
+              dimInput.value = `${this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index}`;
               return;
             }
-            this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index =
-              newIndex;
+            this.slicingSpec.slicingDimsAndIndices[
+              slicingDims.indexOf(i)
+            ].index = newIndex;
             dimControl.textContent = `${newIndex}/${dimSize}`;
             this.onSlicngSpecChange(this.slicingSpec);
           });
@@ -179,13 +189,13 @@ export class SlicingControl {
         if (this.slicingSpec.viewingDims[0] === i) {
           // This is a dimension being viewed as the vertical (rows) dimension.
           dimControl.textContent =
-            `Rows: ${this.slicingSpec.verticalRange[0]}-` +
+            `Rows: ${this.slicingSpec.verticalRange[0]}:` +
             `${this.slicingSpec.verticalRange[1]}/${dimSize}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
           // dimension.
           dimControl.textContent =
-            `Cols: ${this.slicingSpec.horizontalRange[0]}-` +
+            `Cols: ${this.slicingSpec.horizontalRange[0]}:` +
             `${this.slicingSpec.horizontalRange[1]}/${dimSize}`;
         }
         dimControl.classList.add('tensor-widget-dim');
@@ -203,18 +213,31 @@ export class SlicingControl {
   }
 
   /**
-   * TODO(cais): Doc string.
+   * Render items in a viewing dimension's dropdown menu.
+   *
+   * The rendering is based on what dimension swappings are possible.
+   * The dropdown menu will be shown if it is non-empty after the menu items are
+   * populated.
+   *
    * @param dropdown
-   * @param dim
+   * @param top The top coordinate of the menu.
+   * @param left The left coordinate of the menu.
+   * @param dim The dimension that the viewing dimension belongs to. E.g., `0`
+   *   for the first dimension.
    */
   private renderDropdownMenuItems(
-    dropdown: HTMLDivElement, top: number, left: number, dim: number) {
+    dropdown: HTMLDivElement,
+    top: number,
+    left: number,
+    dim: number
+  ) {
     // Clear all dropdown menus. Make sure that at any moment, only one dropdown
     // menu is open.
     this.clearAllDropdowns();
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
-      dimAndIndex => dimAndIndex.dim);
+      (dimAndIndex) => dimAndIndex.dim
+    );
     for (let i = 0; i < this.rank; ++i) {
       // Create "Swap with" menu items only with slicing dimensions.
       if (slicingDims.indexOf(i) === -1) {
@@ -222,9 +245,11 @@ export class SlicingControl {
       }
       // Do not allow the second (columns) viewing dimension to be before
       // the first one.
-      if (dim === this.slicingSpec.viewingDims[1] &&
-          i < this.slicingSpec.viewingDims[0]) {
-        continue
+      if (
+        dim === this.slicingSpec.viewingDims[1] &&
+        i < this.slicingSpec.viewingDims[0]
+      ) {
+        continue;
       }
 
       const menuItem = document.createElement('div');
@@ -235,7 +260,9 @@ export class SlicingControl {
         menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-active');
       });
       menuItem.addEventListener('mouseleave', () => {
-        menuItem.classList.remove('tensor-widget-dim-dropdown-menu-item-active');
+        menuItem.classList.remove(
+          'tensor-widget-dim-dropdown-menu-item-active'
+        );
       });
 
       const isFirstViewingDim = this.slicingSpec.viewingDims[0] === dim;
@@ -244,7 +271,7 @@ export class SlicingControl {
         this.slicingSpec.viewingDims[isFirstViewingDim ? 0 : 1] = i;
         this.slicingSpec.slicingDimsAndIndices[k] = {
           dim,
-          index: 0
+          index: 0,
         };
         this.slicingSpec.verticalRange = null;
         this.slicingSpec.horizontalRange = null;
@@ -268,7 +295,7 @@ export class SlicingControl {
   }
 
   private clearAllDropdowns() {
-    this.dropdowns.forEach(dropdown => {
+    this.dropdowns.forEach((dropdown) => {
       if (dropdown != null) {
         while (dropdown.firstChild) {
           dropdown.removeChild(dropdown.firstChild);
@@ -278,9 +305,6 @@ export class SlicingControl {
   }
 
   setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
-    // TODO(cais): See if there is a change in slicingDimsAndIndices and
-    // if there is any change in viewingDims, and if so, call createComponents()
-    // before calling render().
     this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
     this.render(this.slicingSpec);
   }
