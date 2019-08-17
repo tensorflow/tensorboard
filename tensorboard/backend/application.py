@@ -532,3 +532,40 @@ def _get_event_file_active_filter(flags):
   if inactive_secs < 0:
     return lambda timestamp: True
   return lambda timestamp: timestamp + inactive_secs >= time.time()
+
+
+class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
+  """Shim EventMultiplexer to use when in read-only DB mode.
+
+  In read-only DB mode, the EventMultiplexer is nonfunctional - there is no
+  logdir to reload, and the data is all exposed via SQL. This class represents
+  the do-nothing EventMultiplexer for that purpose, which serves only as a
+  conduit for DB-related parameters.
+
+  The load APIs raise exceptions if called, and the read APIs always
+  return empty results.
+  """
+  def __init__(self, db_uri, db_connection_provider):
+    """Constructor for `_DbModeMultiplexer`.
+
+    Args:
+      db_uri: A URI to the database file in use.
+      db_connection_provider: Provider function for creating a DB connection.
+    """
+    logger.info('_DbModeMultiplexer initializing for %s', db_uri)
+    super(_DbModeMultiplexer, self).__init__()
+    self.db_uri = db_uri
+    self.db_connection_provider = db_connection_provider
+    logger.info('_DbModeMultiplexer done initializing')
+
+  def AddRun(self, path, name=None):
+    """Unsupported."""
+    raise NotImplementedError()
+
+  def AddRunsFromDirectory(self, path, name=None):
+    """Unsupported."""
+    raise NotImplementedError()
+
+  def Reload(self):
+    """Unsupported."""
+    raise NotImplementedError()
