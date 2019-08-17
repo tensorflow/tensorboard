@@ -129,13 +129,12 @@ class MeshPluginTest(tf.test.TestCase):
     self.context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=self.multiplexer)
     self.plugin = mesh_plugin.MeshPlugin(self.context)
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin],
-        self.multiplexer,
-        reload_interval=0,
-        path_prefix="")
-    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+    # Wait until after plugin construction to reload the multiplexer because the
+    # plugin caches data from the multiplexer upon construction and this affects
+    # logic tested later down.
     self.multiplexer.Reload()
+    wsgi_app = application.TensorBoardWSGI([self.plugin])
+    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
     self.routes = self.plugin.get_plugin_apps()
 
   def tearDown(self):
