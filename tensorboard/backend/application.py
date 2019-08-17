@@ -121,17 +121,16 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   loading_multiplexer = multiplexer
   reload_interval = flags.reload_interval
   db_uri = flags.db
+  db_connection_provider = None
   # For DB import mode, create a DB file if we weren't given one.
   if flags.db_import and not flags.db:
     tmpdir = tempfile.mkdtemp(prefix='tbimport')
     atexit.register(shutil.rmtree, tmpdir)
     db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
-  db_module, db_connection_provider = get_database_info(db_uri)
   if flags.db_import:
     # DB import mode.
-    if db_module != sqlite3:
-      raise base_plugin.FlagsError('--db_import is only compatible with sqlite DBs')
     logger.info('Importing logdir into DB at %s', db_uri)
+    db_connection_provider = create_sqlite_connection_provider(db_uri)
     loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
@@ -139,10 +138,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   elif flags.db:
     # DB read-only mode, never load event logs.
     reload_interval = -1
+    db_connection_provider = create_sqlite_connection_provider(db_uri)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       data_provider=data_provider,
-      db_module=db_module,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,
       flags=flags,
@@ -492,28 +491,6 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
     raise ValueError('unrecognized reload_task: %s' % reload_task)
 
 
-def get_database_info(db_uri):
-  """Returns TBContext fields relating to SQL database.
-
-  Args:
-    db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
-
-  Returns:
-    A tuple with the db_module and db_connection_provider TBContext fields. If
-    db_uri was empty, then (None, None) is returned.
-
-  Raises:
-    ValueError: If db_uri scheme is not supported.
-  """
-  if not db_uri:
-    return None, None
-  scheme = urlparse.urlparse(db_uri).scheme
-  if scheme == 'sqlite':
-    return sqlite3, create_sqlite_connection_provider(db_uri)
-  else:
-    raise ValueError('Only sqlite DB URIs are supported now: ' + db_uri)
-
-
 def create_sqlite_connection_provider(db_uri):
   """Returns function that returns SQLite Connection objects.
 
@@ -529,7 +506,7 @@ def create_sqlite_connection_provider(db_uri):
   """
   uri = urlparse.urlparse(db_uri)
   if uri.scheme != 'sqlite':
-    raise ValueError('Scheme is not sqlite: ' + db_uri)
+    raise ValueError('Only sqlite DB URIs are supported: ' + db_uri)
   if uri.netloc:
     raise ValueError('Can not connect to SQLite over network: ' + db_uri)
   if uri.path == ':memory:':
