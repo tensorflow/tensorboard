@@ -160,7 +160,8 @@ def TensorBoardWSGIApp(
 
   Args:
     flags: An argparse.Namespace containing TensorBoard CLI flags.
-    plugins: A list of TBLoader subclasses for the plugins to load.
+    plugins: A list of plugins, which can be provided as TBPlugin subclasses
+        or TBLoader instances or subclasses.
     assets_zip_provider: See TBContext documentation for more information.
     data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
         be `None` if `flags.generic_data` is set to `"false"` in which case
@@ -191,7 +192,8 @@ def TensorBoardWSGIApp(
       plugin_name_to_instance=plugin_name_to_instance,
       window_title=flags.window_title)
   tbplugins = []
-  for loader in plugins:
+  for plugin_spec in plugins:
+    loader = make_plugin_loader(plugin_spec)
     plugin = loader.load(context)
     if plugin is None:
       continue
@@ -601,3 +603,22 @@ class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
   def Reload(self):
     """Unsupported."""
     raise NotImplementedError()
+
+
+def make_plugin_loader(plugin):
+  """Returns a plugin loader for the given plugin.
+
+  Args:
+    plugin: A TBPlugin subclass, or a TBLoader instance or subclass.
+
+  Returns:
+    A TBLoader for the given plugin.
+  """
+  if isinstance(plugin, base_plugin.TBLoader):
+    return plugin
+  if isinstance(plugin, type):
+    if issubclass(plugin, base_plugin.TBLoader):
+      return plugin()
+    if issubclass(plugin, base_plugin.TBPlugin):
+      return base_plugin.BasicLoader(plugin)
+  raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin,))
