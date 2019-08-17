@@ -14,8 +14,7 @@
 # ==============================================================================
 """TensorBoard WSGI Application Logic.
 
-TensorBoardApplication constructs TensorBoard as a WSGI application.
-It handles serving static assets, and implements TensorBoard data APIs.
+Provides TensorBoardWSGIApp for building a TensorBoard WSGI app.
 """
 
 from __future__ import absolute_import
@@ -147,9 +146,35 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     path_to_run = parse_event_files_spec(flags.logdir)
     start_reloading_multiplexer(
         multiplexer, path_to_run, reload_interval, flags.reload_task)
+  return TensorBoardWSGIApp(
+      flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
 
-  db_uri = getattr(multiplexer, 'db_uri', None)
-  db_connection_provider = getattr(multiplexer, 'db_connection_provider', None)
+
+def TensorBoardWSGIApp(
+    flags,
+    plugins,
+    data_provider=None,
+    assets_zip_provider=None,
+    deprecated_multiplexer=None):
+  """Constructs a TensorBoard WSGI app from plugins and data providers.
+
+  Args:
+    flags: An argparse.Namespace containing TensorBoard CLI flags.
+    plugins: A list of TBLoader subclasses for the plugins to load.
+    assets_zip_provider: See TBContext documentation for more information.
+    data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
+        be `None` if `flags.generic_data` is set to `"false"` in which case
+        `deprecated_multiplexer` must be passed instead.
+    deprecated_multiplexer: Optional instance of EventMultiplexer to use
+        for any plugins not yet enabled for the DataProvider API. Required if
+        the data_provider argument is not passed.
+
+  Returns:
+    A WSGI application that implements the TensorBoard backend.
+  """
+  db_uri = getattr(deprecated_multiplexer, 'db_uri', None)
+  db_connection_provider = getattr(
+      deprecated_multiplexer, 'db_connection_provider', None)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       data_provider=data_provider,
@@ -157,18 +182,18 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       db_uri=db_uri,
       flags=flags,
       logdir=flags.logdir,
-      multiplexer=multiplexer,
+      multiplexer=deprecated_multiplexer,
       assets_zip_provider=assets_zip_provider,
       plugin_name_to_instance=plugin_name_to_instance,
       window_title=flags.window_title)
-  plugins = []
-  for loader in plugin_loaders:
+  tbplugins = []
+  for loader in plugins:
     plugin = loader.load(context)
     if plugin is None:
       continue
-    plugins.append(plugin)
+    tbplugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGI(plugins, flags.path_prefix)
+  return TensorBoardWSGI(tbplugins, flags.path_prefix)
 
 
 class TensorBoardWSGI(object):
