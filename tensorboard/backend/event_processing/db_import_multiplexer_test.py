@@ -47,8 +47,7 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     self.multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_connection_provider=self.db_connection_provider,
         purge_orphaned_data=False,
-        max_reload_threads=1,
-        use_import_op=False)
+        max_reload_threads=1)
 
   def _get_runs(self):
     db = self.db_connection_provider()
