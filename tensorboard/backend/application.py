@@ -107,31 +107,20 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   :type plugin_loaders: list[base_plugin.TBLoader]
   :rtype: TensorBoardWSGI
   """
-  event_file_active_filter = _get_event_file_active_filter(flags)
-  multiplexer = event_multiplexer.EventMultiplexer(
-      size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=tensor_size_guidance_from_flags(flags),
-      purge_orphaned_data=flags.purge_orphaned_data,
-      max_reload_threads=flags.max_reload_threads,
-      event_file_active_filter=event_file_active_filter)
-  if flags.generic_data == 'false':
-    data_provider = None
-  else:
-    data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
-  loading_multiplexer = multiplexer
+  data_provider = None
+  multiplexer = None
   reload_interval = flags.reload_interval
-  db_uri = flags.db
-  db_connection_provider = None
-  # For DB import mode, create a DB file if we weren't given one.
-  if flags.db_import and not flags.db:
-    tmpdir = tempfile.mkdtemp(prefix='tbimport')
-    atexit.register(shutil.rmtree, tmpdir)
-    db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
   if flags.db_import:
     # DB import mode.
-    logger.info('Importing logdir into DB at %s', db_uri)
+    db_uri = flags.db
+    # Create a temporary DB file if we weren't given one.
+    if not db_uri:
+      tmpdir = tempfile.mkdtemp(prefix='tbimport')
+      atexit.register(shutil.rmtree, tmpdir)
+      db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
     db_connection_provider = create_sqlite_connection_provider(db_uri)
-    loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
+    logger.info('Importing logdir into DB at %s', db_uri)
+    multiplexer = db_import_multiplexer.DbImportMultiplexer(
         db_uri=db_uri,
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
@@ -139,7 +128,28 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   elif flags.db:
     # DB read-only mode, never load event logs.
     reload_interval = -1
-    db_connection_provider = create_sqlite_connection_provider(db_uri)
+    db_connection_provider = create_sqlite_connection_provider(flags.db)
+    multiplexer = _DbModeMultiplexer(flags.db, db_connection_provider)
+  else:
+    # Regular logdir loading mode.
+    multiplexer = event_multiplexer.EventMultiplexer(
+        size_guidance=DEFAULT_SIZE_GUIDANCE,
+        tensor_size_guidance=tensor_size_guidance_from_flags(flags),
+        purge_orphaned_data=flags.purge_orphaned_data,
+        max_reload_threads=flags.max_reload_threads,
+        event_file_active_filter=_get_event_file_active_filter(flags))
+    if flags.generic_data != 'false':
+      data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
+
+  if reload_interval >= 0:
+    # We either reload the multiplexer once when TensorBoard starts up, or we
+    # continuously reload the multiplexer.
+    path_to_run = parse_event_files_spec(flags.logdir)
+    start_reloading_multiplexer(
+        multiplexer, path_to_run, reload_interval, flags.reload_task)
+
+  db_uri = getattr(multiplexer, 'db_uri', None)
+  db_connection_provider = getattr(multiplexer, 'db_connection_provider', None)
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       data_provider=data_provider,
@@ -158,13 +168,6 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       continue
     plugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-
-  if reload_interval >= 0:
-    # We either reload the multiplexer once when TensorBoard starts up, or we
-    # continuously reload the multiplexer.
-    path_to_run = parse_event_files_spec(flags.logdir)
-    start_reloading_multiplexer(
-        loading_multiplexer, path_to_run, reload_interval, flags.reload_task)
   return TensorBoardWSGI(plugins, flags.path_prefix)
 
 
