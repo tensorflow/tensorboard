@@ -19,7 +19,7 @@ env:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tf-nightly
+    - TF_VERSION_ID=tf-nightly==1.15.0.dev20190816
     - TF_VERSION_ID=tf-nightly-2.0-preview
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
