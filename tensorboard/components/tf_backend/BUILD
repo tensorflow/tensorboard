@@ -17,6 +17,7 @@ tf_web_library(
         "router.ts",
         "runsStore.ts",
         "tf-backend.html",
+        "tf-backend.ts",
         "urlPathHelpers.ts",
     ],
     path = "/tf-backend",
@@ -25,6 +26,7 @@ tf_web_library(
         ":type",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
 )

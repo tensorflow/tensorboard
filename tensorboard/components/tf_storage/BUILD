@@ -11,6 +11,7 @@ tf_web_library(
         "listeners.ts",
         "storage.ts",
         "tf-storage.html",
+        "tf-storage.ts",
     ],
     path = "/tf-storage",
     visibility = ["//visibility:public"],
