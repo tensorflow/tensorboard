@@ -132,6 +132,9 @@ class MeshPluginTest(tf.test.TestCase):
     # Wait until after plugin construction to reload the multiplexer because the
     # plugin caches data from the multiplexer upon construction and this affects
     # logic tested later down.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2579): Eliminate the
+    # caching of data at construction time and move this Reload() up to just
+    # after the multiplexer is created.
     self.multiplexer.Reload()
     wsgi_app = application.TensorBoardWSGI([self.plugin])
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
