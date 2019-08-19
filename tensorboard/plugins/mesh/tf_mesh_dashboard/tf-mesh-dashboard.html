@@ -90,10 +90,16 @@ limitations under the License.
         </div>
         <div class="sidebar-section layers-selector">
           <div class="line-item">
-            <paper-checkbox id="show-bounding-box" checked="{{_showBoundingBox}}">Show bounding box</paper-checkbox>
+            <paper-checkbox
+              id="show-bounding-box"
+              checked="{{_showBoundingBox}}"
+              >Show bounding box</paper-checkbox
+            >
           </div>
           <div class="line-item">
-            <paper-checkbox id="show-axes" checked="{{_showAxes}}">Show axes</paper-checkbox>
+            <paper-checkbox id="show-axes" checked="{{_showAxes}}"
+              >Show axes</paper-checkbox
+            >
           </div>
         </div>
       </div>
@@ -284,10 +290,10 @@ limitations under the License.
           '_showBoundingBox',
           {defaultValue: false, useLocalStorage: true}
         ),
-        _showAxesObserver: tf_storage.getBooleanObserver(
-          '_showAxes',
-          {defaultValue: false, useLocalStorage: true}
-        ),
+        _showAxesObserver: tf_storage.getBooleanObserver('_showAxes', {
+          defaultValue: false,
+          useLocalStorage: true,
+        }),
         _getAllChildren() {
           return this.root.querySelectorAll('tf-mesh-loader');
         },
