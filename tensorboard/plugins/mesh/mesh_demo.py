@@ -55,6 +55,8 @@ def run():
 
   # Read sample PLY file.
   vertices, colors, faces = demo_utils.read_ascii_ply(FLAGS.mesh_path)
+  if colors is None:
+    raise ValueError('Demo requires PLY file containing vertex colors')
 
   # Add batch dimension.
   vertices = np.expand_dims(vertices, 0)

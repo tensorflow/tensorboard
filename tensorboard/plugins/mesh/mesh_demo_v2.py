@@ -30,7 +30,11 @@ from tensorboard.plugins.mesh import demo_utils
 
 flags.DEFINE_string('logdir', '/tmp/mesh_demo',
                     'Directory to write event logs to.')
-flags.DEFINE_string('mesh_path', None, 'Path to PLY file to visualize.')
+flags.DEFINE_string('mesh_path',
+                    None,
+                    'Path to PLY file to visualize. For an example, download '
+                    'https://people.sc.fsu.edu/~jburkardt/data/ply/teapot.ply')
+flags.DEFINE_string('tag_name', 'mesh_color_tensor', 'Summary tag to use.')
 
 FLAGS = flags.FLAGS
 
@@ -42,11 +46,14 @@ _MAX_STEPS = 10
 
 def train_step(vertices, faces, colors, config_dict, step):
   """Executes summary as a train step."""
-  # Change colors over time.
-  t = float(step) / _MAX_STEPS
-  transformed_colors = t * (255 - colors) + (1 - t) * colors
+  if colors is not None:
+    # Change colors over time.
+    t = float(step) / _MAX_STEPS
+    transformed_colors = t * (255 - colors) + (1 - t) * colors
+  else:
+    transformed_colors = None
   mesh_summary.mesh(
-      'mesh_color_tensor', vertices=vertices, faces=faces,
+      FLAGS.tag_name, vertices=vertices, faces=faces,
       colors=transformed_colors, config_dict=config_dict, step=step)
 
 
@@ -70,7 +77,8 @@ def run():
   # Add batch dimension.
   vertices = np.expand_dims(vertices, 0)
   faces = np.expand_dims(faces, 0)
-  colors = np.expand_dims(colors, 0)
+  if colors is not None:
+    colors = np.expand_dims(colors, 0)
 
   # Create summary writer.
   writer = tf.summary.create_file_writer(FLAGS.logdir)
