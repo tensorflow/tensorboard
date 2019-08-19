@@ -79,10 +79,9 @@ class ScalarsPluginTest(tf.test.TestCase):
   def set_up_db(self):
     self.db_path = os.path.join(self.get_temp_dir(), 'db.db')
     self.db_uri = 'sqlite:' + self.db_path
-    db_module, db_connection_provider = application.get_database_info(
+    db_connection_provider = application.create_sqlite_connection_provider(
         self.db_uri)
     context = base_plugin.TBContext(
-        db_module=db_module,
         db_connection_provider=db_connection_provider,
         db_uri=self.db_uri)
     self.core_plugin = core_plugin.CorePlugin(context)
