@@ -86,7 +86,6 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
                          debug_urls=self.debug_server_url)
     return z, run_options
 
-  @test_util.run_v1_only('Ops differ. Similar to [1].')
   def testExtractGatedGrpcTensorsFoundGatedGrpcOps(self):
     with tf.compat.v1.Session() as sess:
       z, run_options = self._createTestGraphAndRunOptions(sess, gated_grpc=True)
@@ -115,7 +114,7 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertIn(('d', 0, 'DebugIdentity'), gated_debug_ops)
 
       if not tensorflow_python_tf2.enabled():
-        # Variable reading ops are different in TF1 and TF2.
+        # NOTE(#1705): Variable reading ops are different in TF1 and TF2.
         self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
         self.assertIn(('b/read', 0, 'DebugIdentity'), gated_debug_ops)
         self.assertIn(('c/read', 0, 'DebugIdentity'), gated_debug_ops)
@@ -155,9 +154,6 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertEqual([], gated_debug_ops)
 
 
-@test_util.run_v1_only((
-    'Graph creates different op structure in v2. See '
-    'debug_graphs_helper_test.py[1].'))
 class BaseExpandedNodeNameTest(tf.test.TestCase):
 
   def testMaybeBaseExpandedNodeName(self):
