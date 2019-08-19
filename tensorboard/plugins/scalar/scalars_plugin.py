@@ -93,11 +93,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         element_name='tf-scalar-dashboard',
     )
 
-  def index_impl(self):
+  def index_impl(self, experiment=None):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
     if self._data_provider:
       mapping = self._data_provider.list_scalars(
-          experiment_id=None,  # experiment support not yet implemented
+          experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
       )
       result = {run: {} for run in mapping}
@@ -155,7 +155,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       # logic.
       SAMPLE_COUNT = 1000
       all_scalars = self._data_provider.read_scalars(
-          experiment_id=None,  # experiment support not yet implemented
+          experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
           downsample=SAMPLE_COUNT,
           run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
@@ -224,7 +224,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def tags_route(self, request):
-    index = self.index_impl()
+    experiment = request.args.get('experiment', '')
+    index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
@@ -233,7 +234,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
-    experiment = request.args.get('experiment')
+    experiment = request.args.get('experiment', '')
     output_format = request.args.get('format')
     (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
     return http_util.Respond(request, body, mime_type)

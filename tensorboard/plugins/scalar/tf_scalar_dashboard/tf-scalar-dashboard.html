@@ -309,7 +309,13 @@ limitations under the License.
         });
       },
       _fetchTags() {
-        const url = tf_backend.getRouter().pluginRoute('scalars', '/tags');
+        const url = tf_backend
+          .getRouter()
+          .pluginRoute(
+            'scalars',
+            '/tags',
+            new URLSearchParams({experiment: this._getExperimentId()})
+          );
         return this._requestManager.request(url).then((runToTagInfo) => {
           if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
@@ -345,13 +351,20 @@ limitations under the License.
           selectedRuns,
           query
         );
+        const experiment = this._getExperimentId();
         categories.forEach((category) => {
           category.items = category.items.map((item) => ({
             tag: item.tag,
-            series: item.runs.map((run) => ({run, tag: item.tag})),
+            series: item.runs.map((run) => ({run, tag: item.tag, experiment})),
           }));
         });
         this.updateArrayProp('_categories', categories, this._getCategoryKey);
+      },
+
+      _getExperimentId() {
+        return (
+          new URLSearchParams(window.location.search).get('experiment') || ''
+        );
       },
 
       _tagMetadata(category, runToTagsInfo, item) {
