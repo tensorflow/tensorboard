@@ -122,7 +122,7 @@ var vz_mesh;
       '_updateScene(_currentStep.*, _meshViewer)',
       '_debouncedFetchMesh(_currentStep)',
       '_updateView(selectedView)',
-      '_updateLayers(showAxes, showBoundingBox)',
+      '_updateLayers(showAxes, showBoundingBox, _meshViewer)',
     ],
 
     _computeRunColor: function(run) {
@@ -150,9 +150,6 @@ var vz_mesh;
         this._onCameraPositionChange.bind(this)
       );
       this._meshViewer = meshViewer;
-      if (this._layers) {
-        this._meshViewer.setLayersConfig(this._layers);
-      }
     },
 
     /**
@@ -213,7 +210,7 @@ var vz_mesh;
         showBoundingBox: showBoundingBox,
       };
       if (!this._meshViewer) return;
-      this._meshViewer.setLayers(this._layers);
+      this._meshViewer.setLayersConfig(this._layers);
       this._updateScene();
     },
 
