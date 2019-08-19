@@ -305,23 +305,6 @@ class EventMultiplexer(object):
     accumulator = self.GetAccumulator(run)
     return accumulator.FirstEventTimestamp()
 
-  def Scalars(self, run, tag):
-    """Retrieve the scalar events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.ScalarEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Scalars(tag)
-
   def Graph(self, run):
     """Retrieve the graph associated with the provided run.
 
@@ -370,23 +353,6 @@ class EventMultiplexer(object):
     """
     accumulator = self.GetAccumulator(run)
     return accumulator.RunMetadata(tag)
-
-  def Audio(self, run, tag):
-    """Retrieve the audio events associated with a run and tag.
-
-    Args:
-      run: A string name of the run for which values are retrieved.
-      tag: A string name of the tag for which values are retrieved.
-
-    Raises:
-      KeyError: If the run is not found, or the tag is not available for
-        the given run.
-
-    Returns:
-      An array of `event_accumulator.AudioEvents`.
-    """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Audio(tag)
 
   def Tensors(self, run, tag):
     """Retrieve the tensor events associated with a run and tag.
