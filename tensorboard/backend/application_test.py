@@ -692,14 +692,15 @@ class DbTest(tb_test.TestCase):
 
   def testSqliteDb(self):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
-    db_module, db_connection_provider = application.get_database_info(db_uri)
-    self.assertTrue(hasattr(db_module, 'Date'))
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:
           c.execute('create table peeps (name text)')
           c.execute('insert into peeps (name) values (?)', ('justine',))
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with contextlib.closing(conn.cursor()) as c:
         c.execute('select name from peeps')
@@ -707,7 +708,8 @@ class DbTest(tb_test.TestCase):
 
   def testTransactionRollback(self):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:
@@ -727,7 +729,8 @@ class DbTest(tb_test.TestCase):
     # NOTE: This is a terrible idea. Don't do this.
     db_uri = ('sqlite:' + os.path.join(self.get_temp_dir(), 'db') +
               '?isolation_level=null')
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:

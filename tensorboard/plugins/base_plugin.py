@@ -153,7 +153,6 @@ class TBContext(object):
       assets_zip_provider=None,
       data_provider=None,
       db_connection_provider=None,
-      db_module=None,
       db_uri=None,
       flags=None,
       logdir=None,
@@ -181,9 +180,6 @@ class TBContext(object):
           function is cheap. The returned connection must only be used by a
           single thread. Things like connection pooling are considered
           implementation details of the provider.
-      db_module: A PEP-249 DB Module, e.g. sqlite3. This is useful for accessing
-          things like date time constructors. This value will be None if we are
-          not in SQL mode and multiplexer should be used instead.
       db_uri: The string db URI TensorBoard was started with. If this is set,
           the logdir should be None.
       flags: An object of the runtime flags provided to TensorBoard to their
@@ -203,7 +199,6 @@ class TBContext(object):
     self.assets_zip_provider = assets_zip_provider
     self.data_provider = data_provider
     self.db_connection_provider = db_connection_provider
-    self.db_module = db_module
     self.db_uri = db_uri
     self.flags = flags
     self.logdir = logdir
