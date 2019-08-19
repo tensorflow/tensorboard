@@ -37,6 +37,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
+from tensorflow.python import tf2 as tensorflow_python_tf2
 from tensorflow.python.debug.lib import grpc_debug_test_server
 
 from tensorboard.compat.proto import config_pb2
@@ -108,15 +109,18 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       gated_debug_ops = [
           (item[0], item[2], item[3]) for item in gated_debug_ops]
 
-      # TODO(#1705): TF 2.0 breaks below.
       self.assertIn(('a', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('b', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('b/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('c', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('c/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('d', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('d/read', 0, 'DebugIdentity'), gated_debug_ops)
+
+      if not tensorflow_python_tf2.enabled():
+        # Variable reading ops are different in TF1 and TF2.
+        self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
+        self.assertIn(('b/read', 0, 'DebugIdentity'), gated_debug_ops)
+        self.assertIn(('c/read', 0, 'DebugIdentity'), gated_debug_ops)
+        self.assertIn(('d/read', 0, 'DebugIdentity'), gated_debug_ops)
+
       self.assertIn(('x', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('y', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('z', 0, 'DebugIdentity'), gated_debug_ops)
@@ -174,9 +178,14 @@ class BaseExpandedNodeNameTest(tf.test.TestCase):
       self.assertEqual(
           'bar/b/read',
           graph_wrapper.maybe_base_expanded_node_name('bar/b/read'))
-      # TODO(#1705): TF 2.0 tf.add creates nested nodes.
-      self.assertEqual(
-          'baz/c', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
+
+      if tensorflow_python_tf2.enabled():
+        # NOTE(#1705): TF 2.0 tf.add creates nested nodes.
+        self.assertEqual(
+            'baz/c/(c)', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
+      else:
+        self.assertEqual(
+            'baz/c', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
 
 
 if __name__ == '__main__':
