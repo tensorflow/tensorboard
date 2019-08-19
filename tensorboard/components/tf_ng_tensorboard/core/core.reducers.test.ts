@@ -12,14 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createAction, props} from '@ngrx/store';
-import {PluginId} from '../types/api';
+import {expect} from 'chai';
 
-// HACK: Below import is for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-import * as _typeHackModels from '@ngrx/store/src/models';
+import * as actions from './core.actions';
+import {reducers} from './core.reducers';
 
-export const changePlugin = createAction(
-  'CHANGE_PLUGIN',
-  props<{plugin: PluginId}>()
-);
+describe('core reducer', () => {
+  describe('#changePlugin', () => {
+    it('sets activePlugin to the one in action payload', () => {
+      const state = {activePlugin: 'foo'};
+      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+
+      expect(nextState).to.have.property('activePlugin', 'bar');
+    });
+  });
+});

@@ -30,6 +30,6 @@ export class AppComponent {
     // TODO(stephanwlee): Instead of hardcoding it, consider reading it off of the
     // tf_dashboard.registry. It is current infeasible unless Angular source is also
     // compiled with JSCompiler.
-    this.store.dispatch(changePlugin({plugin: 'meowth'}));
+    this.store.dispatch(changePlugin({plugin: 'Core'}));
   }
 }

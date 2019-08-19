@@ -47,9 +47,11 @@ export interface Dashboard {
   /**
    * Whether or not tf-tensorboard reload functionality should be disabled.
    *
-   * If true, then: 1) the reload button in the top right corner of the
-   * TensorBoard UI will be shaded out; and 2) the timer that triggers the
-   * reload() method to be called every few seconds will be disabled.
+   * If true, then:
+   *   1. the reload button in the top right corner of the TensorBoard UI
+   *      will be shaded out
+   *   2. the timer that triggers the reload() method to be called every few
+   *      seconds will be disabled.
    */
   isReloadDisabled: boolean;
 }
