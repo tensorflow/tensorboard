@@ -20,6 +20,8 @@ import {EffectsModule} from '@ngrx/effects';
 
 import {AppComponent} from './app.component';
 import {CoreModule} from './core/core.module';
+import {PluginsModule} from './plugins/plugins.module';
+
 import {ROOT_REDUCERS, metaReducers} from './reducers';
 
 import {HeaderModule} from './header/header.module';
@@ -31,6 +33,7 @@ import {HeaderModule} from './header/header.module';
     BrowserAnimationsModule,
     CoreModule,
     HeaderModule,
+    PluginsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       metaReducers,
       runtimeChecks: {
