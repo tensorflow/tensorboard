@@ -146,7 +146,7 @@ Polymer({
         'cameraPositionChange', this._onCameraPositionChange.bind(this));
     this._meshViewer = meshViewer;
     if (this._layers) {
-      this._meshViewer.setLayers(this._layers);
+      this._meshViewer.setLayersConfig(this._layers);
     }
   },
 
