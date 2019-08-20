@@ -157,42 +157,14 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       continue
     plugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGIApp(flags.logdir, plugins, loading_multiplexer,
-                            reload_interval, flags.path_prefix,
-                            flags.reload_task)
 
-
-def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                       path_prefix='', reload_task='auto'):
-  """Constructs the TensorBoard application.
-
-  Args:
-    logdir: the logdir spec that describes where data will be loaded.
-      may be a directory, or comma,separated list of directories, or colons
-      can be used to provide named directories
-    plugins: A list of base_plugin.TBPlugin subclass instances.
-    multiplexer: The EventMultiplexer with TensorBoard data to serve
-    reload_interval: How often (in seconds) to reload the Multiplexer.
-      Zero means reload just once at startup; negative means never load.
-    path_prefix: A prefix of the path when app isn't served from root.
-    reload_task: Indicates the type of background task to reload with.
-
-  Returns:
-    A WSGI application that implements the TensorBoard backend.
-
-  Raises:
-    ValueError: If something is wrong with the plugin configuration.
-
-  :type plugins: list[base_plugin.TBPlugin]
-  :rtype: TensorBoardWSGI
-  """
-  path_to_run = parse_event_files_spec(logdir)
   if reload_interval >= 0:
     # We either reload the multiplexer once when TensorBoard starts up, or we
     # continuously reload the multiplexer.
-    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval,
-                                reload_task)
-  return TensorBoardWSGI(plugins, path_prefix)
+    path_to_run = parse_event_files_spec(flags.logdir)
+    start_reloading_multiplexer(
+        loading_multiplexer, path_to_run, reload_interval, flags.reload_task)
+  return TensorBoardWSGI(plugins, flags.path_prefix)
 
 
 class TensorBoardWSGI(object):
