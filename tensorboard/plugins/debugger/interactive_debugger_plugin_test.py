@@ -55,21 +55,16 @@ class InteractiveDebuggerPluginTest(tf.test.TestCase):
     super(InteractiveDebuggerPluginTest, self).setUp()
 
     self._dummy_logdir = tempfile.mkdtemp()
-    self._dummy_multiplexer = event_multiplexer.EventMultiplexer({})
+    dummy_multiplexer = event_multiplexer.EventMultiplexer({})
     self._debugger_port = portpicker.pick_unused_port()
     self._debugger_url = 'grpc://localhost:%d' % self._debugger_port
     context = base_plugin.TBContext(logdir=self._dummy_logdir,
-                                    multiplexer=self._dummy_multiplexer)
+                                    multiplexer=dummy_multiplexer)
     self._debugger_plugin = (
         interactive_debugger_plugin.InteractiveDebuggerPlugin(context))
     self._debugger_plugin.listen(self._debugger_port)
 
-    wsgi_app = application.TensorBoardWSGIApp(
-        self._dummy_logdir,
-        [self._debugger_plugin],
-        self._dummy_multiplexer,
-        reload_interval=0,
-        path_prefix='')
+    wsgi_app = application.TensorBoardWSGI([self._debugger_plugin])
     self._server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
   def tearDown(self):
