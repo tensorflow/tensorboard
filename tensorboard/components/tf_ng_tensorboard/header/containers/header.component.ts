@@ -12,17 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {enableProdMode} from '@angular/core';
-import {platformBrowser} from '@angular/platform-browser';
-import {AppModuleNgFactory} from './app.module.ngfactory';
-import 'zone.js/dist/zone.js'; // Angular runtime dep
+import {Component} from '@angular/core';
+import {Store, select} from '@ngrx/store';
 
-// TODO(stephanwlee): Create dev mode and conditionally enable this.
-enableProdMode();
+import {State, getActivePlugin} from '../../core/core.reducers';
 
-// Bootstrap needs to happen after body is ready but we cannot reliably
-// controls the order in which script gets loaded (Vulcanization inlines
-// the script in <head>).
-window.addEventListener('DOMContentLoaded', () => {
-  platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);
-});
+import * as _typeHackRxjs from 'rxjs';
+
+@Component({
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
+})
+export class HeaderComponent {
+  activePlugin$ = this.store.pipe(select(getActivePlugin));
+  constructor(private store: Store<State>) {}
+}

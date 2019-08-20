@@ -12,17 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {enableProdMode} from '@angular/core';
-import {platformBrowser} from '@angular/platform-browser';
-import {AppModuleNgFactory} from './app.module.ngfactory';
-import 'zone.js/dist/zone.js'; // Angular runtime dep
+import {NgModule} from '@angular/core';
+// Uses `async` pipe.
+import {CommonModule} from '@angular/common';
 
-// TODO(stephanwlee): Create dev mode and conditionally enable this.
-enableProdMode();
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatToolbarModule} from '@angular/material/toolbar';
 
-// Bootstrap needs to happen after body is ready but we cannot reliably
-// controls the order in which script gets loaded (Vulcanization inlines
-// the script in <head>).
-window.addEventListener('DOMContentLoaded', () => {
-  platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);
-});
+import {HeaderComponent} from './containers/header.component';
+import {CoreModule} from '../core/core.module';
+
+@NgModule({
+  declarations: [HeaderComponent],
+  exports: [HeaderComponent],
+  providers: [],
+  imports: [MatToolbarModule, MatTabsModule, CommonModule, CoreModule],
+})
+export class HeaderModule {}
