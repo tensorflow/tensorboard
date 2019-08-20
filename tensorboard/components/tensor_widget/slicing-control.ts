@@ -198,7 +198,9 @@ export class SlicingControl {
             ) {
               // Reject invalid value.
               dimInput.value = String(
-                this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index);
+                this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)]
+                  .index
+              );
               return;
             }
             this.slicingSpec.slicingDimsAndIndices[
