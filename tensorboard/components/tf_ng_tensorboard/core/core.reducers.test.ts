@@ -12,16 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import {expect} from 'chai';
 
-import {AppRoutingModule} from './app-routing.module';
-import {AppComponent} from './app.component';
+import * as actions from './core.actions';
+import {reducers} from './core.reducers';
 
-@NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, AppRoutingModule],
-  providers: [],
-  bootstrap: [AppComponent],
-})
-export class AppModule {}
+describe('core reducer', () => {
+  describe('#changePlugin', () => {
+    it('sets activePlugin to the one in action payload', () => {
+      const state = {activePlugin: 'foo'};
+      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+
+      expect(nextState).to.have.property('activePlugin', 'bar');
+    });
+  });
+});
