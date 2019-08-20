@@ -135,16 +135,6 @@ class FakePlugin(base_plugin.TBPlugin):
     )
 
 
-class FakePluginLoader(base_plugin.TBLoader):
-  """Pass-through loader for FakePlugin with arbitrary arguments."""
-
-  def __init__(self, **kwargs):
-    self._kwargs = kwargs
-
-  def load(self, context):
-    return FakePlugin(context, **self._kwargs)
-
-
 class ApplicationTest(tb_test.TestCase):
   def setUp(self):
     plugins = [
@@ -529,21 +519,23 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.app = application.standard_tensorboard_wsgi(
         FakeFlags(logdir=self.get_temp_dir()),
         [
-            FakePluginLoader(
-                plugin_name='foo',
-                is_active_value=True,
-                routes_mapping={'/foo_route': self._foo_handler},
-                construction_callback=self._construction_callback),
-            FakePluginLoader(
-                plugin_name='bar',
-                is_active_value=True,
-                routes_mapping={
-                    '/bar_route': self._bar_handler,
-                    '/wildcard/*': self._wildcard_handler,
-                    '/wildcard/special/*': self._wildcard_special_handler,
-                    '/wildcard/special/exact': self._foo_handler,
-                },
-                construction_callback=self._construction_callback),
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='foo',
+              is_active_value=True,
+              routes_mapping={'/foo_route': self._foo_handler},
+              construction_callback=self._construction_callback)),
+          base_plugin.BasicLoader(functools.partial(
+              FakePlugin,
+              plugin_name='bar',
+              is_active_value=True,
+              routes_mapping={
+                  '/bar_route': self._bar_handler,
+                  '/wildcard/*': self._wildcard_handler,
+                  '/wildcard/special/*': self._wildcard_special_handler,
+                  '/wildcard/special/exact': self._foo_handler,
+              },
+              construction_callback=self._construction_callback)),
         ],
         dummy_assets_zip_provider)
 
