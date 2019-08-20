@@ -53,7 +53,7 @@ export class SlicingControl {
    * @param rootDiv The div element in which all the UI components will be
    *   rendered.
    * @param shape Shape of the tensor.
-   * @param onSlicngSpecChange User specified callback for slicing spec changes
+   * @param onSlicingSpecChange User specified callback for slicing spec changes
    *   triggered by user interactions with this SlicingControl. The callback
    *   will be invoked for changes in:
    *   - which dimensions are used for slicing and which for viewing
@@ -62,7 +62,7 @@ export class SlicingControl {
   constructor(
     private readonly rootDiv: HTMLDivElement,
     private readonly shape: Shape,
-    private readonly onSlicngSpecChange?: OnSlicingSpecChangeCallback
+    private readonly onSlicingSpecChange?: OnSlicingSpecChangeCallback
   ) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
@@ -171,13 +171,13 @@ export class SlicingControl {
       if (slicingDims.indexOf(i) !== -1) {
         // This is a dimension being sliced down to a size of 1.
         const currentIndex = slicingIndices[slicingDims.indexOf(i)];
-        dimControl.textContent = `${currentIndex}`;
+        dimControl.textContent = String(currentIndex);
 
         dimInput.classList.add('tensor-widget-dim');
         dimInput.type = 'number';
         dimInput.min = '0';
-        dimInput.max = `${dimSize - 1}`;
-        dimInput.value = `${currentIndex}`;
+        dimInput.max = String(dimSize - 1);
+        dimInput.value = String(currentIndex);
 
         // When the dim control is clicked, it becomes a number input.
         if (!this.dimControlsListenerAttached[i]) {
@@ -197,14 +197,15 @@ export class SlicingControl {
               Math.floor(dimSize) != dimSize
             ) {
               // Reject invalid value.
-              dimInput.value = `${this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index}`;
+              dimInput.value = String(
+                this.slicingSpec.slicingDimsAndIndices[slicingDims.indexOf(i)].index);
               return;
             }
             this.slicingSpec.slicingDimsAndIndices[
               slicingDims.indexOf(i)
             ].index = newIndex;
-            dimControl.textContent = `${newIndex}`;
-            this.onSlicngSpecChange(this.slicingSpec);
+            dimControl.textContent = String(newIndex);
+            this.onSlicingSpecChange(this.slicingSpec);
           });
 
           // When defocusing (blurring) from the dim input, it changes back into
@@ -308,8 +309,8 @@ export class SlicingControl {
         };
         this.slicingSpec.verticalRange = null;
         this.slicingSpec.horizontalRange = null;
-        if (this.onSlicngSpecChange) {
-          this.onSlicngSpecChange(this.slicingSpec);
+        if (this.onSlicingSpecChange) {
+          this.onSlicingSpecChange(this.slicingSpec);
         }
       });
     }
