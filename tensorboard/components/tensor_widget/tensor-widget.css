@@ -18,6 +18,56 @@ limitations under the License.
   position: relative;
 }
 
+.tensor-widget-dim {
+  border: 1px solid rgb(160, 160, 160);
+  display: inline-block;
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
+  margin-left: 15px;
+  margin-right: 15px;
+  padding: 2px;
+}
+
+.tensor-widget-dim-comma {
+  color: rgb(128, 128, 128);
+  display: inline-block;
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
+}
+
+.tensor-widget-dim-highlighted {
+  border: 1px solid rgb(100, 180, 255);
+  font-weight: bold;
+}
+
+.tensor-widget-dim-brackets {
+  color: rgb(128, 128, 128);
+  display: inline-block;
+  font-size: 8pt;
+}
+
+.tensor-widget-dim-dropdown {
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(128, 128, 128);
+  box-shadow: 2px 2px 2px #b0b0b0;
+  cursor: pointer;
+  width: 180px;
+  z-index: 1000;
+}
+
+.tensor-widget-dim-dropdown-menu-item {
+  border-bottom: 1px solid rgb(180, 180, 180);
+  font-size: 12px;
+  padding: 3px;
+}
+
+.tensor-widget-dim-dropdown-menu-item-active {
+  background-color: rgb(100, 180, 255);
+  color: rgb(255, 255, 255);
+}
+
 .tensor-widget-dtype {
   align-content: center;
   color: rgb(60, 60, 60);
@@ -73,6 +123,16 @@ limitations under the License.
 
 .tensor-widget-shape-value {
   display: inline-block;
+}
+
+.tensor-widget-slicing-group {
+  background-color: rgb(250, 250, 250);
+  border-bottom: 1px solid rgb(190, 190, 190);
+  display: block;
+  height: 18px;
+  text-align: center;
+  padding-bottom: 5px;
+  padding-top: 5px;
 }
 
 .tensor-widget-tensor-name {
