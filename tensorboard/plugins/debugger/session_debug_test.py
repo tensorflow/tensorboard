@@ -60,7 +60,7 @@ class SessionDebugTestBase(tf.test.TestCase):
         target=self._debug_data_server.start_the_debugger_data_receiving_server)
     self._server_thread.start()
 
-    self.assertTrue(self._poll_server_till_success(30, 0.2))
+    self.assertTrue(self._poll_server_till_success(50, 0.2))
 
   def tearDown(self):
     self._debug_data_server.stop_server()
@@ -72,7 +72,7 @@ class SessionDebugTestBase(tf.test.TestCase):
     tf.reset_default_graph()
 
   def _poll_server_till_success(self, max_tries, poll_interval_seconds):
-    for i in range(max_tries):
+    for _ in range(max_tries):
       try:
         with tf.Session() as sess:
           a_init_val = np.array([42.0])
