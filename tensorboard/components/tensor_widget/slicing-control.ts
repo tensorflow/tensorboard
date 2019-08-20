@@ -37,6 +37,8 @@ export class SlicingControl {
   private dimControls: HTMLDivElement[];
   // Input elements for selecting the slices in sliced dimensions.
   private dimInputs: HTMLInputElement[];
+  // Displayed commas.
+  private commas: HTMLDivElement[];
   // Dropdown mini-menus to allow swapping a viewed dimension with another
   // dimension.
   private dropdowns: HTMLDivElement[];
@@ -86,6 +88,7 @@ export class SlicingControl {
     }
     this.dimControls = [];
     this.dimInputs = [];
+    this.commas = [];
     this.dropdowns = [];
     this.dimControlsListenerAttached = [];
 
@@ -98,6 +101,7 @@ export class SlicingControl {
     for (let i = 0; i < this.rank; ++i) {
       const dimControl = document.createElement('div');
       dimControl.classList.add('tensor-widget-dim');
+      dimControl.title = `Dimension ${i}: size=${this.shape[i]}`;
       this.rootDiv.appendChild(dimControl);
       this.dimControls.push(dimControl);
 
@@ -110,6 +114,15 @@ export class SlicingControl {
       dimInput.style.display = 'none';
       this.rootDiv.appendChild(dimInput);
       this.dimInputs.push(dimInput);
+
+      if (i < this.rank - 1) {
+        // Render a comma
+        const comma = document.createElement('div');
+        comma.classList.add('tensor-widget-dim-comma');
+        comma.textContent = ',';
+        this.rootDiv.appendChild(comma);
+        this.commas.push(comma);
+      }
 
       const dropdown = document.createElement('div');
       dropdown.classList.add('tensor-widget-dim-dropdown');

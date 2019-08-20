@@ -29,6 +29,14 @@ limitations under the License.
   padding: 2px;
 }
 
+.tensor-widget-dim-comma {
+  color: rgb(128, 128, 128);
+  display: inline-block;
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
+}
+
 .tensor-widget-dim-highlighted {
   border: 1px solid rgb(100, 180, 255);
   font-weight: bold;
