@@ -605,11 +605,11 @@ class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
     raise NotImplementedError()
 
 
-def make_plugin_loader(plugin):
+def make_plugin_loader(plugin_spec):
   """Returns a plugin loader for the given plugin.
 
   Args:
-    plugin: A TBPlugin subclass, or a TBLoader instance or subclass.
+    plugin_spec: A TBPlugin subclass, or a TBLoader instance or subclass.
 
   Returns:
     A TBLoader for the given plugin.

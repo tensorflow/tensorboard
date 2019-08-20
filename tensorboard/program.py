@@ -125,12 +125,6 @@ class TensorBoard(object):
       server_class: An optional factory for a `TensorBoardServer` to use
         for serving the TensorBoard WSGI app. If provided, its callable
         signature should match that of `TensorBoardServer.__init__`.
-
-    :type plugins: list[Union[base_plugin.TBLoader,
-                              Type[base_plugin.TBLoader],
-                              Type[base_plugin.TBPlugin]]]
-    :type assets_zip_provider: () -> file
-    :type server_class: class
     """
     if plugins is None:
       from tensorboard import default
