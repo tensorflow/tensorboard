@@ -172,9 +172,13 @@ def TensorBoardWSGIApp(
   Returns:
     A WSGI application that implements the TensorBoard backend.
   """
-  db_uri = getattr(deprecated_multiplexer, 'db_uri', None)
-  db_connection_provider = getattr(
-      deprecated_multiplexer, 'db_connection_provider', None)
+  db_uri = None
+  db_connection_provider = None
+  if isinstance(
+      deprecated_multiplexer,
+      (db_import_multiplexer.DbImportMultiplexer, _DbModeMultiplexer)):
+    db_uri = deprecated_multiplexer.db_uri
+    db_connection_provider = deprecated_multiplexer.db_connection_provider
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
       data_provider=data_provider,
