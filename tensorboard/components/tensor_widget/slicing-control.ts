@@ -273,15 +273,18 @@ export class SlicingControl {
       (dimAndIndex) => dimAndIndex.dim
     );
     for (let i = 0; i < this.rank; ++i) {
-      // Create "Swap with" menu items only with slicing dimensions.
+      // Create "Swap with" menu items only with slicing dimensions, i.e., not
+      // with viewing dimensions.
       if (slicingDims.indexOf(i) === -1) {
         continue;
       }
-      // Do not allow the second (columns) viewing dimension to be before
+      // Also, do not allow the second (columns) viewing dimension to be before
       // the first one.
       if (
-        dim === this.slicingSpec.viewingDims[1] &&
-        i < this.slicingSpec.viewingDims[0]
+        (dim === this.slicingSpec.viewingDims[1] &&
+          i <= this.slicingSpec.viewingDims[0]) ||
+        (dim == this.slicingSpec.viewingDims[0] &&
+          i >= this.slicingSpec.viewingDims[1])
       ) {
         continue;
       }
