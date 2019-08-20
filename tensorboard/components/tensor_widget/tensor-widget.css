@@ -22,6 +22,8 @@ limitations under the License.
   border: 1px solid rgb(160, 160, 160);
   display: inline-block;
   font-size: 12px;
+  height: 14px;
+  line-height: 14px;
   margin-left: 15px;
   margin-right: 15px;
   padding: 2px;

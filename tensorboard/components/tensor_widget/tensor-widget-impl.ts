@@ -17,7 +17,7 @@ import {isIntegerDType, isFloatDType} from './dtype-utils';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
-  dimensionsDiffer,
+  areSlicingSpecsCompatible,
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {formatTensorName, numericValueToString} from './string-utils';
@@ -223,7 +223,7 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpecRoot,
         this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
-          if (dimensionsDiffer(this.slicingSpec, slicingSpec)) {
+          if (!areSlicingSpecsCompatible(this.slicingSpec, slicingSpec)) {
             this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
             // The dimension arrangement has changed in the slicing spec.
             // The rulers and value divs must be re-created. This is why

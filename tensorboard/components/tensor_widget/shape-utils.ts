@@ -82,23 +82,27 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
 }
 
 /**
- * Check if two slicing specs involve different dimension arrangements.
+ * Check if two slicing specs involve the compatible dimension arrangements.
+ *
+ * "Compatible dimension arrangement" means the same dimensions are used
+ * for viewing and the same dimensions are used for slcing.
  *
  * Note that the slicing indicies in the slicing dimensions are ignored.
+ * So are the ordering of the slicing dimensions.
  *
  * @param spec0
  * @param spec1
- * @return `true` if and only if the slicing dimensions and/or the viewing
- *   dimensions differ between the `spec0` and `spec1`.
+ * @return `true` if and only if the slicing dimensions and the viewing
+ *   dimensions are compatible between `spec0` and `spec1`.
  */
-export function dimensionsDiffer(
+export function areSlicingSpecsCompatible(
   spec0: TensorViewSlicingSpec,
   spec1: TensorViewSlicingSpec
 ): boolean {
   if (spec0.viewingDims[0] !== spec1.viewingDims[0]) {
-    return true;
+    return false;
   } else if (spec0.viewingDims[1] !== spec1.viewingDims[1]) {
-    return true;
+    return false;
   } else {
     // Check the slicing dimension.
     const slicingDims0 = spec0.slicingDimsAndIndices.map(
@@ -109,6 +113,6 @@ export function dimensionsDiffer(
       (dimAndIndex) => dimAndIndex.dim
     );
     slicingDims1.sort();
-    return JSON.stringify(slicingDims0) !== JSON.stringify(slicingDims1);
+    return JSON.stringify(slicingDims0) === JSON.stringify(slicingDims1);
   }
 }

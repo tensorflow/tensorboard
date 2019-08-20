@@ -155,7 +155,7 @@ export class SlicingControl {
       if (slicingDims.indexOf(i) !== -1) {
         // This is a dimension being sliced down to a size of 1.
         const currentIndex = slicingIndices[slicingDims.indexOf(i)];
-        dimControl.textContent = `${currentIndex}/${dimSize}`;
+        dimControl.textContent = `${currentIndex}`;
 
         dimInput.classList.add('tensor-widget-dim');
         dimInput.type = 'number';
@@ -187,7 +187,7 @@ export class SlicingControl {
             this.slicingSpec.slicingDimsAndIndices[
               slicingDims.indexOf(i)
             ].index = newIndex;
-            dimControl.textContent = `${newIndex}/${dimSize}`;
+            dimControl.textContent = `${newIndex}`;
             this.onSlicngSpecChange(this.slicingSpec);
           });
 
@@ -204,14 +204,14 @@ export class SlicingControl {
         if (this.slicingSpec.viewingDims[0] === i) {
           // This is a dimension being viewed as the vertical (rows) dimension.
           dimControl.textContent =
-            `Rows: ${this.slicingSpec.verticalRange[0]}:` +
-            `${this.slicingSpec.verticalRange[1]}/${dimSize}`;
+            `🡙: ${this.slicingSpec.verticalRange[0]}:` +
+            `${this.slicingSpec.verticalRange[1]}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
           // dimension.
           dimControl.textContent =
-            `Cols: ${this.slicingSpec.horizontalRange[0]}:` +
-            `${this.slicingSpec.horizontalRange[1]}/${dimSize}`;
+            `🡘: ${this.slicingSpec.horizontalRange[0]}:` +
+            `${this.slicingSpec.horizontalRange[1]}`;
         }
         dimControl.classList.add('tensor-widget-dim');
         if (!this.dimControlsListenerAttached[i]) {

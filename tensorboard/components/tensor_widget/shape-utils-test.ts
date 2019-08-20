@@ -18,7 +18,7 @@ import {expect} from 'chai';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
-  dimensionsDiffer,
+  areSlicingSpecsCompatible,
 } from './shape-utils';
 import {TensorViewSlicingSpec} from './types';
 
@@ -154,7 +154,7 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(dimensionsDiffer(spec0, spec1)).to.be.false;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.true;
   });
 
   it('Different slicing indices are ignored', () => {
@@ -188,10 +188,10 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(dimensionsDiffer(spec0, spec1)).to.be.false;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.true;
   });
 
-  it('Differen slicing and viewing dimensions are captured', () => {
+  it('Different slicing and viewing dimensions are captured', () => {
     const spec0: TensorViewSlicingSpec = {
       slicingDimsAndIndices: [
         {
@@ -222,6 +222,6 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(dimensionsDiffer(spec0, spec1)).to.be.true;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.false;
   });
 });
