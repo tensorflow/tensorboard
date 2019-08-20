@@ -12,17 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {enableProdMode} from '@angular/core';
-import {platformBrowser} from '@angular/platform-browser';
-import {AppModuleNgFactory} from './app.module.ngfactory';
-import 'zone.js/dist/zone.js'; // Angular runtime dep
+import {expect} from 'chai';
 
-// TODO(stephanwlee): Create dev mode and conditionally enable this.
-enableProdMode();
+import * as actions from './core.actions';
+import {reducers} from './core.reducers';
 
-// Bootstrap needs to happen after body is ready but we cannot reliably
-// controls the order in which script gets loaded (Vulcanization inlines
-// the script in <head>).
-window.addEventListener('DOMContentLoaded', () => {
-  platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);
+describe('core reducer', () => {
+  describe('#changePlugin', () => {
+    it('sets activePlugin to the one in action payload', () => {
+      const state = {activePlugin: 'foo'};
+      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+
+      expect(nextState).to.have.property('activePlugin', 'bar');
+    });
+  });
 });

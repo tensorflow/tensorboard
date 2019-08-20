@@ -13,10 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
+import {Store, select} from '@ngrx/store';
+import {State, getActivePlugin} from './core/core.reducers';
+import {changePlugin} from './core/core.actions';
+import {PluginId} from './types/api';
 
 @Component({
   selector: 'tf-ng-tensorboard',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor(private store: Store<State>) {}
+
+  ngOnInit() {
+    // TODO(stephanwlee): Instead of hardcoding it, consider reading it off of the
+    // tf_dashboard.registry. It is current infeasible unless Angular source is also
+    // compiled with JSCompiler.
+    this.store.dispatch(changePlugin({plugin: 'Core'}));
+  }
+}

@@ -33,6 +33,7 @@ ts_library(
         "dtype-utils.ts",
         "health-pill-types.ts",
         "shape-utils.ts",
+        "slicing-control.ts",
         "string-utils.ts",
         "tensor-widget.ts",
         "tensor-widget-impl.ts",
