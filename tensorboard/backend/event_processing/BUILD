@@ -262,6 +262,7 @@ py_library(
     deps = [
         ":directory_watcher",
         ":event_file_loader",
+        ":event_multiplexer",
         ":io_wrapper",
         ":sqlite_writer",
         "//tensorboard:data_compat",
