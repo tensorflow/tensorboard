@@ -34,7 +34,6 @@ export class SlicingControl {
   private slicingSpec: TensorViewSlicingSpec;
 
   // Constituent UI components.
-  // private rootDiv: HTMLDivElement;
   private dimControls: HTMLDivElement[];
   // Input elements for selecting the slices in sliced dimensions.
   private dimInputs: HTMLInputElement[];
@@ -125,6 +124,10 @@ export class SlicingControl {
     this.bracketDivs[1].textContent = ']';
     this.bracketDivs[1].classList.add('tensor-widget-dim-brackets');
     this.rootDiv.appendChild(this.bracketDivs[1]);
+
+    this.rootDiv.addEventListener('mouseleave', () => {
+      this.clearAllDropdowns();
+    });
   }
 
   /**
@@ -204,13 +207,13 @@ export class SlicingControl {
         if (this.slicingSpec.viewingDims[0] === i) {
           // This is a dimension being viewed as the vertical (rows) dimension.
           dimControl.textContent =
-            `🡙: ${this.slicingSpec.verticalRange[0]}:` +
+            `🡙 ${this.slicingSpec.verticalRange[0]}:` +
             `${this.slicingSpec.verticalRange[1]}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
           // dimension.
           dimControl.textContent =
-            `🡘: ${this.slicingSpec.horizontalRange[0]}:` +
+            `🡘 ${this.slicingSpec.horizontalRange[0]}:` +
             `${this.slicingSpec.horizontalRange[1]}`;
         }
         dimControl.classList.add('tensor-widget-dim');
@@ -273,11 +276,13 @@ export class SlicingControl {
       dropdown.appendChild(menuItem);
       menuItem.addEventListener('mouseenter', () => {
         menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-active');
+        this.dimControls[i].classList.add('tensor-widget-dim-highlighted');
       });
       menuItem.addEventListener('mouseleave', () => {
         menuItem.classList.remove(
           'tensor-widget-dim-dropdown-menu-item-active'
         );
+        this.dimControls[i].classList.remove('tensor-widget-dim-highlighted');
       });
 
       const isFirstViewingDim = this.slicingSpec.viewingDims[0] === dim;
@@ -329,6 +334,7 @@ export class SlicingControl {
         while (dropdown.firstChild) {
           dropdown.removeChild(dropdown.firstChild);
         }
+        dropdown.style.display = 'none';
       }
     });
   }

@@ -85,7 +85,7 @@ export function getDefaultSlicingSpec(shape: Shape): TensorViewSlicingSpec {
  * Check if two slicing specs involve the compatible dimension arrangements.
  *
  * "Compatible dimension arrangement" means the same dimensions are used
- * for viewing and the same dimensions are used for slcing.
+ * for viewing and the same dimensions are used for slicing.
  *
  * Note that the slicing indicies in the slicing dimensions are ignored.
  * So are the ordering of the slicing dimensions.
