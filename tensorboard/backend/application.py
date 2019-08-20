@@ -614,11 +614,11 @@ def make_plugin_loader(plugin_spec):
   Returns:
     A TBLoader for the given plugin.
   """
-  if isinstance(plugin, base_plugin.TBLoader):
-    return plugin
-  if isinstance(plugin, type):
-    if issubclass(plugin, base_plugin.TBLoader):
-      return plugin()
-    if issubclass(plugin, base_plugin.TBPlugin):
-      return base_plugin.BasicLoader(plugin)
-  raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin,))
+  if isinstance(plugin_spec, base_plugin.TBLoader):
+    return plugin_spec
+  if isinstance(plugin_spec, type):
+    if issubclass(plugin_spec, base_plugin.TBLoader):
+      return plugin_spec()
+    if issubclass(plugin_spec, base_plugin.TBPlugin):
+      return base_plugin.BasicLoader(plugin_spec)
+  raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
