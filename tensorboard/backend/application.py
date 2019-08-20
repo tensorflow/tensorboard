@@ -165,9 +165,9 @@ def TensorBoardWSGIApp(
     data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
         be `None` if `flags.generic_data` is set to `"false"` in which case
         `deprecated_multiplexer` must be passed instead.
-    deprecated_multiplexer: Optional instance of EventMultiplexer to use
-        for any plugins not yet enabled for the DataProvider API. Required if
-        the data_provider argument is not passed.
+    deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
+        to use for any plugins not yet enabled for the DataProvider API.
+        Required if the data_provider argument is not passed.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
