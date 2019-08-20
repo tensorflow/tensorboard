@@ -49,15 +49,11 @@ tf.disable_v2_behavior()
 class SessionDebugTestBase(tf.test.TestCase):
 
   def setUp(self):
-    print("In setUp()")
     self._debugger_data_server_grpc_port = portpicker.pick_unused_port()
     self._debug_url = (
         "grpc://localhost:%d" % self._debugger_data_server_grpc_port)
     self._logdir = tempfile.mkdtemp(prefix="tensorboard_dds_")
 
-    print("tf_debug.__file__ = ")  # DEBUG
-    print(tf_debug.__file__)  # DEBUG
-    # assert False  # DEBUG
     self._debug_data_server = debugger_server_lib.DebuggerDataServer(
         self._debugger_data_server_grpc_port, self._logdir, always_flush=True)
     self._server_thread = threading.Thread(
@@ -77,13 +73,11 @@ class SessionDebugTestBase(tf.test.TestCase):
 
   def _poll_server_till_success(self, max_tries, poll_interval_seconds):
     for i in range(max_tries):
-      print("In _poll_server_till_success() 150: i = %d" % i)  # DEBUG
       try:
         with tf.Session() as sess:
           a_init_val = np.array([42.0])
           a_init = tf.constant(a_init_val, shape=[1], name="a_init")
           a = tf.Variable(a_init, name="a")
-          print("In _poll_server_till_success() 200")  # DEBUG
 
           run_options = tf.RunOptions(output_partition_graphs=True)
           tf_debug.watch_graph(run_options,
@@ -92,7 +86,6 @@ class SessionDebugTestBase(tf.test.TestCase):
                                debug_urls=[self._debug_url])
 
           sess.run(a.initializer, options=run_options)
-          print("In _poll_server_till_success() 300")  # DEBUG
           return True
       except tf.errors.FailedPreconditionError as exc:
         time.sleep(poll_interval_seconds)
