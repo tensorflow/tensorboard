@@ -35,15 +35,18 @@ import time
 
 import numpy as np
 import portpicker  # pylint: disable=import-error
-import tensorflow as tf  # pylint: disable=wrong-import-order
+import tensorflow.compat.v1 as tf  # pylint: disable=wrong-import-order
 from tensorflow.python import debug as tf_debug  # pylint: disable=wrong-import-order
 
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
 from tensorboard.util import test_util
 
+# These unit tests for Debugger Plugin V1 are tied to TF1.x behavior
+# (`tf.Session`s).
+tf.disable_v2_behavior()
 
-@test_util.run_v1_only("Server fails to come up. Requires study.")
+
 class SessionDebugTestBase(tf.test.TestCase):
 
   def setUp(self):
@@ -67,17 +70,17 @@ class SessionDebugTestBase(tf.test.TestCase):
     if os.path.isdir(self._logdir):
       shutil.rmtree(self._logdir)
 
-    tf.compat.v1.reset_default_graph()
+    tf.reset_default_graph()
 
   def _poll_server_till_success(self, max_tries, poll_interval_seconds):
     for _ in range(max_tries):
       try:
-        with tf.compat.v1.Session() as sess:
+        with tf.Session() as sess:
           a_init_val = np.array([42.0])
           a_init = tf.constant(a_init_val, shape=[1], name="a_init")
           a = tf.Variable(a_init, name="a")
 
-          run_options = tf.compat.v1.RunOptions(output_partition_graphs=True)
+          run_options = tf.RunOptions(output_partition_graphs=True)
           tf_debug.watch_graph(run_options,
                                sess.graph,
                                debug_ops=["DebugNumericSummary"],
@@ -125,7 +128,7 @@ class SessionDebugTestBase(tf.test.TestCase):
   def _check_health_pills_in_events_file(self,
                                          events_file_path,
                                          debug_key_to_tensors):
-    reader = tf.compat.v1.python_io.tf_record_iterator(events_file_path)
+    reader = tf.python_io.tf_record_iterator(events_file_path)
     event_read = tf.Event()
 
     # The first event in the file should contain the events version, which is
@@ -159,7 +162,7 @@ class SessionDebugTestBase(tf.test.TestCase):
             health_pills[debug_key][i])
 
   def testRunSimpleNetworkoWithInfAndNaNWorks(self):
-    with tf.compat.v1.Session() as sess:
+    with tf.Session() as sess:
       x_init_val = np.array([[2.0], [-1.0]])
       y_init_val = np.array([[0.0], [-0.25]])
       z_init_val = np.array([[0.0, 3.0], [-1.0, 0.0]])
@@ -171,14 +174,14 @@ class SessionDebugTestBase(tf.test.TestCase):
       z_init = tf.constant(z_init_val, shape=[2, 2])
       z = tf.Variable(z_init, name="z")
 
-      u = tf.compat.v1.div(x, y, name="u")  # Produces an Inf.
+      u = tf.div(x, y, name="u")  # Produces an Inf.
       v = tf.matmul(z, u, name="v")  # Produces NaN and Inf.
 
       sess.run(x.initializer)
       sess.run(y.initializer)
       sess.run(z.initializer)
 
-      run_options = tf.compat.v1.RunOptions(output_partition_graphs=True)
+      run_options = tf.RunOptions(output_partition_graphs=True)
       tf_debug.watch_graph(run_options,
                            sess.graph,
                            debug_ops=["DebugNumericSummary"],
@@ -221,18 +224,18 @@ class SessionDebugTestBase(tf.test.TestCase):
     self.assertEqual(0, report[1].pos_inf_event_count)
 
   def testMultipleInt32ValuesOverMultipleRunsAreRecorded(self):
-    with tf.compat.v1.Session() as sess:
+    with tf.Session() as sess:
       x_init_val = np.array([10], dtype=np.int32)
       x_init = tf.constant(x_init_val, shape=[1], name="x_init")
       x = tf.Variable(x_init, name="x")
 
       x_inc_val = np.array([2], dtype=np.int32)
       x_inc = tf.constant(x_inc_val, name="x_inc")
-      inc_x = tf.compat.v1.assign_add(x, x_inc, name="inc_x")
+      inc_x = tf.assign_add(x, x_inc, name="inc_x")
 
       sess.run(x.initializer)
 
-      run_options = tf.compat.v1.RunOptions(output_partition_graphs=True)
+      run_options = tf.RunOptions(output_partition_graphs=True)
       tf_debug.watch_graph(run_options,
                            sess.graph,
                            debug_ops=["DebugNumericSummary"],
@@ -266,7 +269,7 @@ class SessionDebugTestBase(tf.test.TestCase):
     # Before any Session runs, the report ought to be empty.
     self.assertEqual([], self._debug_data_server.numerics_alert_report())
 
-    with tf.compat.v1.Session() as sess:
+    with tf.Session() as sess:
       x_init_val = np.array([[2.0], [-1.0]])
       y_init_val = np.array([[0.0], [-0.25]])
       z_init_val = np.array([[0.0, 3.0], [-1.0, 0.0]])
@@ -278,7 +281,7 @@ class SessionDebugTestBase(tf.test.TestCase):
       z_init = tf.constant(z_init_val, shape=[2, 2])
       z = tf.Variable(z_init, name="z")
 
-      u = tf.compat.v1.div(x, y, name="u")  # Produces an Inf.
+      u = tf.div(x, y, name="u")  # Produces an Inf.
       v = tf.matmul(z, u, name="v")  # Produces NaN and Inf.
 
       sess.run(x.initializer)
@@ -287,7 +290,7 @@ class SessionDebugTestBase(tf.test.TestCase):
 
       run_options_list = []
       for i in range(num_threads):
-        run_options = tf.compat.v1.RunOptions(output_partition_graphs=True)
+        run_options = tf.RunOptions(output_partition_graphs=True)
         # Use different grpc:// URL paths so that each thread opens a separate
         # gRPC stream to the debug data server, simulating multi-worker setting.
         tf_debug.watch_graph(run_options,
