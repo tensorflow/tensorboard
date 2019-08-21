@@ -37,6 +37,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
+# See discussion on issue #1996 for private module import justification.
 from tensorflow.python import tf2 as tensorflow_python_tf2
 from tensorflow.python.debug.lib import grpc_debug_test_server
 
@@ -112,13 +113,6 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       self.assertIn(('b', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('c', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('d', 0, 'DebugIdentity'), gated_debug_ops)
-
-      if not tensorflow_python_tf2.enabled():
-        # NOTE(#1705): Variable reading ops are different in TF1 and TF2.
-        self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
-        self.assertIn(('b/read', 0, 'DebugIdentity'), gated_debug_ops)
-        self.assertIn(('c/read', 0, 'DebugIdentity'), gated_debug_ops)
-        self.assertIn(('d/read', 0, 'DebugIdentity'), gated_debug_ops)
 
       self.assertIn(('x', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('y', 0, 'DebugIdentity'), gated_debug_ops)

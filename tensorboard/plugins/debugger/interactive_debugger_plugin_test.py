@@ -44,6 +44,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import interactive_debugger_plugin
 from tensorboard.util import test_util
 
+# Debugger Plugin V1 is tied to TF1.x behavior (`tf.Session`s).
 tf = tensorflow.compat.v1
 tf.disable_v2_behavior()
 
