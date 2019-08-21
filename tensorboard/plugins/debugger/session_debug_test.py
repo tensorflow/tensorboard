@@ -35,15 +35,15 @@ import time
 
 import numpy as np
 import portpicker  # pylint: disable=import-error
-import tensorflow  # pylint: disable=wrong-import-order
+import tensorflow.compat.v1 as tf  # pylint: disable=wrong-import-order
 from tensorflow.python import debug as tf_debug  # pylint: disable=wrong-import-order
 
 from tensorboard.plugins.debugger import constants
 from tensorboard.plugins.debugger import debugger_server_lib
 from tensorboard.util import test_util
 
-# Debugger Plugin V1 is tied to TF1.x behavior (`tf.Session`s).
-tf = tensorflow.compat.v1
+# These unit tests for Debugger Plugin V1 are tied to TF1.x behavior
+# (`tf.Session`s).
 tf.disable_v2_behavior()
 
 
