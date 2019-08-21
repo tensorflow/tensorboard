@@ -27,8 +27,8 @@
     "webpack": "^3.5.5"
   },
   "dependencies": {
-    "@jupyter-widgets/base": ">=1.0.0",
-    "@jupyter-widgets/jupyterlab-manager": ">=0.38.1"
+    "@jupyter-widgets/base": "^1.0.0",
+    "@jupyter-widgets/jupyterlab-manager": ">=0.38.1 <2.0.0"
   },
   "jupyterlab": {
     "extension": "lib/labplugin"
