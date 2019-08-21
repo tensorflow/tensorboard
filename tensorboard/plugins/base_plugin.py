@@ -257,10 +257,10 @@ class BasicLoader(TBLoader):
 
     :param plugin_class: :class:`TBPlugin`
     """
-    self._plugin_class = plugin_class
+    self.plugin_class = plugin_class
 
   def load(self, context):
-    return self._plugin_class(context)
+    return self.plugin_class(context)
 
 
 class FlagsError(ValueError):
