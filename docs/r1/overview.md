@@ -5,7 +5,7 @@ TensorFlow runs and graphs.
 
 This overview covers the key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
-using TensorBoard, see the [summaries guide][summaries.md].
+using TensorBoard, see the [summaries guide](summaries.md).
 For in-depth information on the Graph Visualizer, see the [graphs guide](graphs.md).
 
 You may also want to watch
