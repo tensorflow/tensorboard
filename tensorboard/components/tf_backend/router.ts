@@ -22,7 +22,7 @@ namespace tf_backend {
       params?: URLSearchParams
     ) => string;
     pluginsListing: () => string;
-    runs: () => string;
+    runs: (experiment?: string) => string;
     runsForExperiment: (id: tf_backend.ExperimentId) => string;
   }
 
@@ -53,7 +53,11 @@ namespace tf_backend {
         );
       },
       pluginsListing: () => createDataPath(dataDir, '/plugins_listing'),
-      runs: () => createDataPath(dataDir, '/runs'),
+      runs: (experiment?: string) => {
+        const searchParams = new URLSearchParams();
+        searchParams.set('experiment', experiment || '');
+        return createDataPath(dataDir, '/runs', searchParams);
+      },
       runsForExperiment: (id) => {
         return createDataPath(
           dataDir,
@@ -69,6 +73,13 @@ namespace tf_backend {
    */
   export function getRouter(): Router {
     return _router;
+  }
+
+  /**
+   * @return {string} the experiment ID for the currently loaded page
+   */
+  export function getExperimentId() {
+    return new URLSearchParams(window.location.search).get('experiment') || '';
   }
 
   /**
