@@ -87,7 +87,6 @@ ts_web_test_suite(
     bootstrap = [
         "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
         "@npm//:node_modules/reflect-metadata/Reflect.js",
-        # "@npm//:node_modules/zone.js/dist/zone.js",
     ],
     runtime_deps = [
         "//tensorboard/components/tf_ng_tensorboard/testing:initialize_testbed",
