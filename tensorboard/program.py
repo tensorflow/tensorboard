@@ -425,7 +425,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     # Without an explicit host, we default to serving on all interfaces,
     # and will attempt to serve both IPv4 and IPv6 traffic through one
     # socket.
-    self._auto_wildcard = not host
+    self._auto_wildcard = host == '*'
     if self._auto_wildcard:
       host = self._get_wildcard_address(port)
 

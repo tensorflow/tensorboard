@@ -304,10 +304,12 @@ path, as in:
         '--host',
         metavar='ADDR',
         type=str,
-        default='',
+        default='localhost',
         help='''\
-What host to listen to. Defaults to serving on all interfaces. Other
-commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
+What host to listen to. Defaults to %(default)r, which will only be
+accessible by the local machine. Pass the special value '*' to dual-bind
+to both '::' and '0.0.0.0', which will serve to the entire local network
+on both IPv4 and IPv6.
 ''')
 
     parser.add_argument(
