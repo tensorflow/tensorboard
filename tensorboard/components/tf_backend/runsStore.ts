@@ -17,19 +17,13 @@ namespace tf_backend {
     private _runs: string[] = [];
 
     load() {
-      const url = getRouter().runs(this._getExperimentId());
+      const url = tf_backend.getRouter().runs(tf_backend.getExperimentId());
       return this.requestManager.request(url).then((newRuns) => {
         if (!_.isEqual(this._runs, newRuns)) {
           this._runs = newRuns;
           this.emitChange();
         }
       });
-    }
-
-    _getExperimentId() {
-      return (
-        new URLSearchParams(window.location.search).get('experiment') || ''
-      );
     }
 
     /**

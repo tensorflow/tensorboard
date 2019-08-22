@@ -314,7 +314,7 @@ limitations under the License.
           .pluginRoute(
             'scalars',
             '/tags',
-            new URLSearchParams({experiment: this._getExperimentId()})
+            new URLSearchParams({experiment: tf_backend.getExperimentId()})
           );
         return this._requestManager.request(url).then((runToTagInfo) => {
           if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
@@ -351,7 +351,7 @@ limitations under the License.
           selectedRuns,
           query
         );
-        const experiment = this._getExperimentId();
+        const experiment = tf_backend.getExperimentId();
         categories.forEach((category) => {
           category.items = category.items.map((item) => ({
             tag: item.tag,
@@ -359,12 +359,6 @@ limitations under the License.
           }));
         });
         this.updateArrayProp('_categories', categories, this._getCategoryKey);
-      },
-
-      _getExperimentId() {
-        return (
-          new URLSearchParams(window.location.search).get('experiment') || ''
-        );
       },
 
       _tagMetadata(category, runToTagsInfo, item) {

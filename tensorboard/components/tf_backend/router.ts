@@ -76,6 +76,13 @@ namespace tf_backend {
   }
 
   /**
+   * @return {string} the experiment ID for the currently loaded page
+   */
+  export function getExperimentId() {
+    return new URLSearchParams(window.location.search).get('experiment') || '';
+  }
+
+  /**
    * Set the global router, to be returned by future calls to `getRouter`.
    * You may wish to invoke this if you are running a demo server with a
    * custom path prefix, or if you have customized the TensorBoard backend
