@@ -504,13 +504,14 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_graphics_lib",
       licenses = ["notice"],  # MIT
       sha256_urls = {
-          "76ebbb763969cad7f66fadf24d97a8beec6b6e9c64da568139ad739a1c46ba14": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+          "76ebbb763969cad7f66fadf24d97a8beec6b6e9c64da568139ad739a1c46ba14":
+          [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/a1ca505f1900c2ba45ddfedae4f4002cd5822de7/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/a1ca505f1900c2ba45ddfedae4f4002cd5822de7/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
           ],
-          "0e25af04903d91bb4471d2abc6035ed35c1681993a269feff32ba404a7d9bb9f": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+          "bdfb15b98d068ab7416b6d45307ee6c743bb5d5a77e22bb1b59cf19e9b771161": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/a1ca505f1900c2ba45ddfedae4f4002cd5822de7/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/a1ca505f1900c2ba45ddfedae4f4002cd5822de7/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )

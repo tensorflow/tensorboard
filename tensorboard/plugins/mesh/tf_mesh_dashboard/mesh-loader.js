@@ -205,12 +205,11 @@ var vz_mesh;
      * @private
      */
     _updateLayers: function(showAxes, showBoundingBox) {
-      this._layers = {
+      if (!this._meshViewer) return;
+      this._meshViewer.setLayersConfig({
         showAxes: showAxes,
         showBoundingBox: showBoundingBox,
-      };
-      if (!this._meshViewer) return;
-      this._meshViewer.setLayersConfig(this._layers);
+      });
       this._updateScene();
     },
 
