@@ -28,9 +28,8 @@ limitations under the License.
       into the HTML.
     -->
     <template is="dom-repeat" items="[[_parts]]" as="part"
-      >[[part.contents]]<template is="dom-if" if="[[!part.last]]"
-        ><wbr /></template
-    ></template>
+      >[[part]]<wbr
+    /></template>
   </template>
   <script>
     Polymer({
@@ -38,34 +37,25 @@ limitations under the License.
       properties: {
         /** The value to render with word breaks. */
         value: String,
-        /**
-         * Insert a word-break after each match of this regex.
-         *
-         * This `RegExp` object will not be mutated.
-         */
-        delimiterPattern: {
-          type: Object /* RegExp */,
-          value: /([\/=\-_,])/,
-        },
         _parts: {
           type: Array /* {contents: string, last: boolean}[] */,
-          computed: '_computeParts(value, delimiterPattern)',
+          computed: '_computeParts(value)',
         },
       },
-      _computeParts(value, delimiterPattern) {
+      _computeParts(value) {
         const result = [];
+        const delimiterPattern = /[/=_,-]/;
         if (value == null) {
           value = '';
         }
         while (true) {
           const idx = value.search(delimiterPattern);
           if (idx === -1) {
-            result.push({contents: value, last: true});
+            result.push(value);
             break;
           } else {
-            const part = value.slice(0, idx + 1);
+            result.push(value.slice(0, idx + 1));
             value = value.slice(idx + 1);
-            result.push({contents: part, last: false});
           }
         }
         return result;
