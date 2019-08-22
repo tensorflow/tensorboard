@@ -32,7 +32,11 @@ var tf_backend;
                 return createDataPath(dataDir + '/plugin', `/${pluginName}${route}`, params);
             },
             pluginsListing: () => createDataPath(dataDir, '/plugins_listing'),
-            runs: () => createDataPath(dataDir, '/runs'),
+            runs: (experiment) => {
+                const searchParams = new URLSearchParams();
+                searchParams.set('experiment', experiment || '');
+                return createDataPath(dataDir, '/runs', searchParams);
+            },
             runsForExperiment: (id) => {
                 return createDataPath(dataDir, '/experiment_runs', createSearchParam({ experiment: String(id) }));
             },
@@ -46,6 +50,13 @@ var tf_backend;
         return _router;
     }
     tf_backend.getRouter = getRouter;
+    /**
+     * @return {string} the experiment ID for the currently loaded page
+     */
+    function getExperimentId() {
+        return new URLSearchParams(window.location.search).get('experiment') || '';
+    }
+    tf_backend.getExperimentId = getExperimentId;
     /**
      * Set the global router, to be returned by future calls to `getRouter`.
      * You may wish to invoke this if you are running a demo server with a

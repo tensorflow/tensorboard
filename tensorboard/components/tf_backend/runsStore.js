@@ -20,7 +20,7 @@ var tf_backend;
             this._runs = [];
         }
         load() {
-            const url = tf_backend.getRouter().runs();
+            const url = tf_backend.getRouter().runs(tf_backend.getExperimentId());
             return this.requestManager.request(url).then((newRuns) => {
                 if (!_.isEqual(this._runs, newRuns)) {
                     this._runs = newRuns;

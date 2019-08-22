@@ -76,16 +76,16 @@ var tf_backend;
                 });
                 it('leading slash in pathPrefix is an absolute path', () => {
                     const router = tf_backend.createRouter('/data/');
-                    assert.equal(router.runs(), '/data/runs');
+                    assert.equal(router.runs(), '/data/runs?experiment=');
                 });
                 it('returns complete pathname when pathPrefix omits slash', () => {
                     const router = tf_backend.createRouter('data/');
-                    assert.equal(router.runs(), 'data/runs');
+                    assert.equal(router.runs(), 'data/runs?experiment=');
                 });
                 it('does not prune many leading slashes that forms full url', () => {
                     const router = tf_backend.createRouter('///data/hello');
-                    // This becomes 'http://data/hello/runs'
-                    assert.equal(router.runs(), '///data/hello/runs');
+                    // This becomes 'http://data/hello/runs?experiment='
+                    assert.equal(router.runs(), '///data/hello/runs?experiment=');
                 });
                 it('returns correct value for #environment', () => {
                     assert.equal(router.environment(), 'data/environment');
@@ -118,7 +118,7 @@ var tf_backend;
                     assert.equal(router.pluginsListing(), 'data/plugins_listing');
                 });
                 it('returns correct value for #runs', () => {
-                    assert.equal(router.runs(), 'data/runs');
+                    assert.equal(router.runs(), 'data/runs?experiment=');
                 });
                 it('returns correct value for #runsForExperiment', () => {
                     assert.equal(router.runsForExperiment(1), 'data/experiment_runs?experiment=1');
