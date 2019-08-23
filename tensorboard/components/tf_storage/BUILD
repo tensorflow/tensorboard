@@ -18,6 +18,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 
