@@ -247,7 +247,11 @@ class ScalarsPluginTest(tf.test.TestCase):
 
   @with_runs([_RUN_WITH_HISTOGRAM])
   def test_active_with_histogram(self, plugin):
-    self.assertFalse(plugin.is_active())
+    if plugin._data_provider:
+      # Hack, for now.
+      self.assertTrue(plugin.is_active())
+    else:
+      self.assertFalse(plugin.is_active())
 
   @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
   def test_active_with_all(self, plugin):
