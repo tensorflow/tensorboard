@@ -16,6 +16,7 @@ import {DebugElement} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSelectModule} from '@angular/material/select';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -50,7 +51,12 @@ describe('header.component', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatTabsModule, MatToolbarModule, NoopAnimationsModule],
+      imports: [
+        MatTabsModule,
+        MatToolbarModule,
+        NoopAnimationsModule,
+        MatSelectModule,
+      ],
       providers: [
         provideMockStore({initialState: createInitialState()}),
         HeaderComponent,
