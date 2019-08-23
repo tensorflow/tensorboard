@@ -3746,7 +3746,7 @@ limitations under the License.
           let closest = -1;
           const useL2Distance = this.facetDistSwitch == 'L2';
           for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDist(
+            let dist = this.getDistL1L2(
               this.visdata[selected],
               this.visdata[i],
               useL2Distance
@@ -3784,6 +3784,7 @@ limitations under the License.
           }
         },
 
+
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
           const modelInferenceValueStr = this.strWithModelName_(
@@ -3801,11 +3802,9 @@ limitations under the License.
             ) {
               continue;
             }
-            let dist = this.getDist(
-              this.visdata[selected],
-              this.visdata[i],
-              this.nearestCounterfactualDist == 'L2'
-            );
+            // TODO(tolgab) benchmark this backend call, may need to pull it
+            // out of for loop for custom distance metric
+            let dist = this.getDist(selected, i, this.nearestCounterfactualDist == 'L2');
             if (dist < closestDist) {
               closestDist = dist;
               closest = i;
@@ -3821,10 +3820,34 @@ limitations under the License.
           }
         },
 
+        getDist: function(ex_ind1, ex_ind2, useL2Distance){
+          if (this.customDistanceFunctionSet) {
+              const dist = this.getCustomDist(ex_ind1, ex_ind2);
+          } else {
+            const ex1 = this.visdata[ex_ind1]
+            const ex2 = this.visdata[ex_ind2]
+            const dist = this.getDistL1L2(ex1, ex2,
+                                      useL2Distance)
+          }
+          return dist
+        },
+
+        /**
+         * Gets custom distance using backend.
+        */
+        getCustomDist: function(ex_ind1, ex_ind2){
+          if (!this.local) {
+            return 0
+          }
+          const urlParams = {ex1: ex_ind1,
+                             ex2: ex_ind2}
+          this.fire('compute-custom-distance', urlParams)
+        },
+
         /**
          * Gets distance between two examples using L1 or L2 distance.
          */
-        getDist: function(a, b, useL2Distance) {
+        getDistL1L2: function(a, b, useL2Distance) {
           let dist = 0;
           const allKeys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
           for (let featIndex = 0; featIndex < allKeys.length; featIndex++) {

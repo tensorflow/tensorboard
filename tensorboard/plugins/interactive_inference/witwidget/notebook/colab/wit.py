@@ -50,6 +50,11 @@ def infer_mutants(wit_id, details):
 output.register_callback('notebook.InferMutants', infer_mutants)
 
 
+def compute_custom_distance(wit_id, details):
+  WitWidget.widgets[wit_id].compute_custom_distance(details)
+output.register_callback('notebook.ComputeCustomDistance', compute_custom_distance)
+
+
 # HTML/javascript for the WIT frontend.
 WIT_HTML = """
   <tf-interactive-inference-dashboard id="wit" local>
@@ -65,6 +70,10 @@ WIT_HTML = """
       wit.addEventListener("infer-examples", e => {{
         google.colab.kernel.invokeFunction(
           'notebook.InferExamples', [id], {{}});
+      }});
+      wit.addEventListener("compute-custom-distance", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.ComputeCustomDistance', [id, e.detail.index1, e.detail.index2], {{}});
       }});
       wit.addEventListener("delete-example", e => {{
         google.colab.kernel.invokeFunction(

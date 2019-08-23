@@ -60,6 +60,9 @@ class WitWidgetBase(object):
     self.compare_custom_predict_fn = (
       config.get('compare_custom_predict_fn')
       if 'compare_custom_predict_fn' in config else None)
+    self.custom_distance_fn = (
+      config.get('custom_distance_fn')
+      if 'custom_distance_fn' in config else None)
     self.adjust_prediction_fn = (
       config.get('adjust_prediction')
       if 'adjust_prediction' in config else None)
