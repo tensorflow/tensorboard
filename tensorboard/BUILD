@@ -54,8 +54,8 @@ py_test(
     size = "small",
     srcs = ["lib_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//tensorboard:internal"],
     tags = ["support_notf"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":lib",
         "@org_pythonhosted_six",
@@ -95,8 +95,8 @@ py_test(
     size = "small",
     srcs = ["manager_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//tensorboard:internal"],
     tags = ["support_notf"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
         ":test",
@@ -111,11 +111,14 @@ py_test(
     name = "manager_e2e_test",
     size = "large",  # spawns subprocesses, sleeps, makes requests to localhost
     timeout = "moderate",
+    srcs = ["manager_e2e_test.py"],
+    data = [
+        ":tensorboard",
+    ],
     # On Python 2, this test fails about 0.5% of the time when run with
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
     flaky = True,
-    srcs = ["manager_e2e_test.py"],
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -123,9 +126,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
-    ],
-    data = [
-        ":tensorboard",
     ],
 )
 
@@ -204,11 +204,11 @@ py_library(
         "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
+        "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
-        "//tensorboard/plugins/mesh:mesh_plugin",
     ],
 )
 
@@ -241,11 +241,23 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "dev_build",
+    # consider changing this to fastbuild
+    values = {"compilation_mode": "dbg"},
+)
+
+config_setting(
+    name = "dev_flag",
+    values = {"define": "dev=true"},
+)
+
 tensorboard_zip_file(
     name = "webfiles",
     deps = [":assets"],
 )
 
+# TODO(stephanwlee): add ng_index.html to the srcs when it is ready for mass consumption.
 tf_web_library(
     name = "assets",
     srcs = [
@@ -255,7 +267,11 @@ tf_web_library(
     path = "/",
     deps = [
         "@com_google_fonts_roboto",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": ["//tensorboard/components:ng_tensorboard"],
+        "//tensorboard:dev_flag": ["//tensorboard/components:ng_tensorboard"],
+        "//conditions:default": [],
+    }),
 )
 
 py_library(
@@ -432,9 +448,9 @@ py_library(
 
 py_test(
     name = "lazy_test",
+    size = "small",
     srcs = ["lazy_test.py"],
     srcs_version = "PY2AND3",
-    size = "small",
     tags = ["support_notf"],
     deps = [
         ":lazy",

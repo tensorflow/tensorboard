@@ -7,15 +7,10 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
     name = "tensorboard",
-    srcs = [
-        "analytics.html",
-        "tensorboard.html",
-    ],
+    srcs = ["tensorboard.html"],
     path = "/",
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
+        ":lib",
     ],
 )
 
@@ -28,10 +23,53 @@ tensorboard_html_binary(
 )
 
 tf_web_library(
+    name = "lib",
+    srcs = [
+        "analytics.html",
+        "lib.html",
+    ],
+    path = "/",
+    deps = [
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_tensorboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "lib_binary",
+    compile = True,
+    input_path = "/lib.html",
+    output_path = "/lib_binary.html",
+    deps = [":lib"],
+)
+
+tf_web_library(
+    name = "ng_tensorboard",
+    srcs = [
+        "ng_tensorboard.html",
+    ],
+    path = "/",
+    deps = [
+        ":lib_binary",
+        "//tensorboard/components/tf_ng_tensorboard",
+        "//tensorboard/components/tf_ng_tensorboard:material_theme",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "ng_index",
+    input_path = "/ng_tensorboard.html",
+    output_path = "/ng_index.html",
+    deps = [":ng_tensorboard"],
+)
+
+tf_web_library(
     name = "trace_viewer",
     srcs = ["trace_viewer.html"],
     path = "/",
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_trace_viewer",
     ],
 )
