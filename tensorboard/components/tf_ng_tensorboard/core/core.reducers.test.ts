@@ -52,20 +52,25 @@ describe('core reducer', () => {
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
-      expect(nextState).to.have.property('plugins', createPluginsListing());
+      expect(nextState).to.have.deep.property(
+        'plugins',
+        createPluginsListing()
+      );
     });
   });
 
   describe('pluginsListingLoaded', () => {
     it('sets plugins with the payload', () => {
       const state = {activePlugin: 'foo', plugins: {}};
-
       const nextState = reducers(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.property('plugins', createPluginsListing());
+      expect(nextState).to.have.deep.property(
+        'plugins',
+        createPluginsListing()
+      );
     });
 
     it('sets activePlugin to the first plugin (by key order) when not defined', () => {
