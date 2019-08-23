@@ -16,6 +16,9 @@ limitations under the License.
  * This is a fork from https://github.com/angular/angular-bazel-example/blob/master/src/rxjs_shims.js that
  * is originally licensed as below.
  * This fork reformat the code using prettier.
+ * This shim is required as long as we use rxjs (even in a transitive dependency) and Karma based testing
+ * that uses concatjs to create a bundle. Concatjs drastically improves speed of incremental build but
+ * it requires modules to use UMD style.
  */
 /**
  * @license
