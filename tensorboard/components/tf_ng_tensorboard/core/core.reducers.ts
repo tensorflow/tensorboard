@@ -46,9 +46,7 @@ const initialState: CoreState = {
 const reducer = createReducer(
   initialState,
   on(actions.changePlugin, (state: CoreState, {plugin}) => {
-    return Object.assign({}, state, {
-      activePlugin: plugin,
-    });
+    return {...state, activePlugin: plugin};
   }),
   on(actions.pluginsListingLoaded, (state: CoreState, {plugins}) => {
     const [firstPlugin] = Object.keys(plugins);

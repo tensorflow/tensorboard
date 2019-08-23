@@ -1,9 +1,9 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("@npm_bazel_karma//:defs.bzl", "ts_web_test_suite")
 load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("@npm_bazel_karma//:defs.bzl", "ts_web_test_suite")
 
 licenses(["notice"])  # Apache 2.0
 

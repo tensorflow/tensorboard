@@ -19,7 +19,6 @@ limitations under the License.
   <mat-tab-group
     [selectedIndex]="activePluginIndex$ | async"
     (selectedIndexChange)="onPluginSelectionChanged($event)"
-    dynamicHeight="true"
   >
     <mat-tab *ngFor="let plugin of plugins$ | async" [label]="plugin.tab_name">
     </mat-tab>

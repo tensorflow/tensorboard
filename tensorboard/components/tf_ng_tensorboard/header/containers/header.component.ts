@@ -51,7 +51,7 @@ export class HeaderComponent {
   constructor(private store: Store<State>) {}
 
   onPluginSelectionChanged(index: number) {
-    const index$ = of(index as number);
+    const index$ = of(index);
     combineLatest(this.plugins$, index$).subscribe(([plugins, index]) => {
       this.store.dispatch(changePlugin({plugin: plugins[index].id}));
     });

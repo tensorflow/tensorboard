@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
 import {of} from 'rxjs';
-import {map, mergeMap, catchError} from 'rxjs/operators';
+import {map, flatMap, catchError} from 'rxjs/operators';
 import {CoreService} from './core.service';
 import {
   coreLoaded,
@@ -31,7 +31,7 @@ export class CoreEffects {
   loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(coreLoaded),
-      mergeMap(() =>
+      flatMap(() =>
         this.coreService
           .fetchPluginsListing()
           .pipe(

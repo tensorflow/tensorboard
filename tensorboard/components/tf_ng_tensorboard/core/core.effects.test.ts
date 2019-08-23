@@ -18,17 +18,14 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import {Actions} from '@ngrx/effects';
-import {Action} from '@ngrx/store';
 import {provideMockActions} from '@ngrx/effects/testing';
+import {Action} from '@ngrx/store';
 import {ReplaySubject} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
 import * as coreActions from './core.actions';
 import {CoreService} from './core.service';
-import {PluginsListing} from '../types/api';
-
-import * as _typeHackEffects from '@ngrx/effects';
-import * as _typeHackStore from '@ngrx/store';
+import {PluginsListing, LoadingMechanismType} from '../types/api';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
@@ -41,7 +38,7 @@ describe('core.effects', () => {
       imports: [HttpClientTestingModule],
       providers: [provideMockActions(action), CoreEffects, CoreService],
     }).compileComponents();
-    coreEffects = TestBed.get<CoreEffects>(CoreEffects);
+    coreEffects = TestBed.get(CoreEffects);
     httpMock = TestBed.get(HttpTestingController);
   });
 
@@ -55,7 +52,7 @@ describe('core.effects', () => {
         disable_reload: false,
         enabled: true,
         loading_mechanism: {
-          type: 'NONE',
+          type: LoadingMechanismType.NONE,
         },
         tab_name: 'Core',
         remove_dom: false,

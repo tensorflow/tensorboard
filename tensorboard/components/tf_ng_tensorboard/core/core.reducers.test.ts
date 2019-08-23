@@ -16,24 +16,26 @@ import {expect} from 'chai';
 
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
-import {PluginMetadata} from '../types/api';
+import {PluginMetadata, LoadingMechanismType} from '../types/api';
 
 function createDefaultPluginMetadata(name: string): PluginMetadata {
   return {
     disable_reload: false,
     enabled: true,
     loading_mechanism: {
-      type: 'NONE',
+      type: LoadingMechanismType.NONE,
     },
     tab_name: name,
     remove_dom: false,
   };
 }
 
-const DEFAULT_PLUGINS_LISTING = {
-  core: createDefaultPluginMetadata('Core'),
-  scalars: createDefaultPluginMetadata('Scalars'),
-};
+function createPluginsListing() {
+  return {
+    core: createDefaultPluginMetadata('Core'),
+    scalars: createDefaultPluginMetadata('Scalars'),
+  };
+}
 
 describe('core reducer', () => {
   describe('#changePlugin', () => {
@@ -46,11 +48,11 @@ describe('core reducer', () => {
     });
 
     it('does not change plugins when activePlugin changes', () => {
-      const state = {activePlugin: 'foo', plugins: DEFAULT_PLUGINS_LISTING};
+      const state = {activePlugin: 'foo', plugins: createPluginsListing()};
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
-      expect(nextState).to.have.property('plugins', DEFAULT_PLUGINS_LISTING);
+      expect(nextState).to.have.property('plugins', createPluginsListing());
     });
   });
 
@@ -60,10 +62,10 @@ describe('core reducer', () => {
 
       const nextState = reducers(
         state,
-        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.property('plugins', DEFAULT_PLUGINS_LISTING);
+      expect(nextState).to.have.property('plugins', createPluginsListing());
     });
 
     it('sets activePlugin to the first plugin (by key order) when not defined', () => {
@@ -71,7 +73,7 @@ describe('core reducer', () => {
 
       const nextState = reducers(
         state,
-        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
       expect(nextState).to.have.property('activePlugin', 'core');
@@ -82,7 +84,7 @@ describe('core reducer', () => {
 
       const nextState = reducers(
         state,
-        actions.pluginsListingLoaded({plugins: DEFAULT_PLUGINS_LISTING})
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
       expect(nextState).to.have.property('activePlugin', 'foo');
