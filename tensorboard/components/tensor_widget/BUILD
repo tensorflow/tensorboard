@@ -32,6 +32,7 @@ ts_library(
     srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "selection.ts",
         "shape-utils.ts",
         "slicing-control.ts",
         "string-utils.ts",
@@ -47,6 +48,7 @@ ts_library(
     testonly = True,
     srcs = [
         "dtype-utils-test.ts",
+        "selection-test.ts",
         "shape-utils-test.ts",
         "string-utils-test.ts",
     ],

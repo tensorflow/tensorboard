@@ -19,8 +19,37 @@ import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
   areSlicingSpecsCompatible,
+  size,
 } from './shape-utils';
 import {TensorViewSlicingSpec} from './types';
+
+describe('size', () => {
+  it('scalar', () => {
+    expect(size([])).to.equal(1);
+  });
+
+  it('1D', () => {
+    expect(size([3])).to.equal(3);
+    expect(size([0])).to.equal(0);
+  });
+
+  it('2D', () => {
+    expect(size([3, 4])).to.equal(12);
+    expect(size([3, 0])).to.equal(0);
+    expect(size([0, 3])).to.equal(0);
+  });
+
+  it('3D', () => {
+    expect(size([3, 4, 5])).to.equal(60);
+    expect(size([3, 0, 5])).to.equal(0);
+    expect(size([0, 4, 5])).to.equal(0);
+  });
+
+  it('4D', () => {
+    expect(size([2, 3, 4, 5])).to.equal(120);
+    expect(size([2, 3, 0, 5])).to.equal(0);
+  });
+});
 
 describe('formatShapeForDisplay', () => {
   it('returns string scalar for []', () => {

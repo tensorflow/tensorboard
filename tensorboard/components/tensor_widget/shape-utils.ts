@@ -19,6 +19,14 @@ import {Shape, TensorViewSlicingSpec} from './types';
  * Tensor shape utilities for tensor widget.
  */
 
+export function size(shape: Shape): number {
+  let output = 1;
+  shape.forEach(dimSize => {
+    output *= dimSize;
+  });
+  return output;
+}
+
 /**
  * Format tensor shape as a string for display.
  *
