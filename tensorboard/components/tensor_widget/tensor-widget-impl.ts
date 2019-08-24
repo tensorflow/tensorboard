@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {TensorElementSelection, CellSelectionStatus} from './selection';
+import {
+  TensorElementSelection,
+  CellSelectionStatus,
+  SelectionMoveDirection,
+} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -214,6 +218,51 @@ export class TensorWidgetImpl implements TensorWidget {
         event.preventDefault();
         await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
       });
+
+      // Add event listener for the value section.
+      this.valueSection.tabIndex = 1024;
+      this.valueSection.addEventListener('keydown', (event) => {
+        const UP_KEYCODE = 38;
+        const DOWN_KEYCODE = 40;
+        const LEFT_KEYCODE = 37;
+        const RIGHT_KEYCODE = 39;
+        const VALID_KEYCODES = [
+          UP_KEYCODE,
+          DOWN_KEYCODE,
+          LEFT_KEYCODE,
+          RIGHT_KEYCODE,
+        ];
+        if (
+          this.selection != null &&
+          VALID_KEYCODES.indexOf(event.keyCode) !== -1
+        ) {
+          event.stopPropagation();
+          event.preventDefault();
+          let newSlicingSpec: TensorViewSlicingSpec;
+          if (event.keyCode === 38) {
+            // Up.
+            newSlicingSpec = this.selection.move(SelectionMoveDirection.UP);
+          } else if (event.keyCode === 40) {
+            // Down.
+            newSlicingSpec = this.selection.move(SelectionMoveDirection.DOWN);
+          } else if (event.keyCode === 37) {
+            // Left.
+            newSlicingSpec = this.selection.move(SelectionMoveDirection.LEFT);
+          } else if (event.keyCode === 39) {
+            // Right.
+            newSlicingSpec = this.selection.move(SelectionMoveDirection.RIGHT);
+          }
+          if (newSlicingSpec === null) {
+            // No slicing spec change. Simply update the selection rendering.
+            this.renderSelection();
+          } else {
+            // Slicing spec has changed. Update the value divs, which includes
+            // the rendering of selection.
+            this.slicingSpec = newSlicingSpec;
+            this.renderRulersAndValueDivs();
+          }
+        }
+      });
     }
 
     this.clearValueSection();
@@ -264,13 +313,12 @@ export class TensorWidgetImpl implements TensorWidget {
       this.valueSection.appendChild(this.topRuler);
       this.topRulerTicks = [];
 
-      // TODO(cais): Conditionally set wheel event listener: only when
-      // an element or mutiple elements are selected in the TensorWidget,
-      // when selection is supported.
       this.topRuler.addEventListener('wheel', async (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
+        if (this.selection != null) {
+          event.stopPropagation();
+          event.preventDefault();
+          await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
+        }
       });
     }
 
@@ -387,13 +435,15 @@ export class TensorWidgetImpl implements TensorWidget {
         // valueDiv.setAttribute('indices', JSON.stringify());
         valueDiv.addEventListener('click', () => {
           const rowStart =
-            (this.slicingSpec.verticalRange == null ||
-             this.slicingSpec.verticalRange[0] == null) ? 0 :
-            this.slicingSpec.verticalRange[0] + i;
+            this.slicingSpec.verticalRange == null ||
+            this.slicingSpec.verticalRange[0] == null
+              ? 0
+              : this.slicingSpec.verticalRange[0] + i;
           const colStart =
-            (this.slicingSpec.horizontalRange == null ||
-             this.slicingSpec.horizontalRange[0] == null) ? 0 :
-            this.slicingSpec.horizontalRange[0] + j;
+            this.slicingSpec.horizontalRange == null ||
+            this.slicingSpec.horizontalRange[0] == null
+              ? 0
+              : this.slicingSpec.horizontalRange[0] + j;
           // TODO(cais): Support multi-row, multi-column selection.
           const rowCount = 1;
           const colCount = 1;
@@ -403,12 +453,13 @@ export class TensorWidgetImpl implements TensorWidget {
             rowStart,
             colStart,
             rowCount,
-            colCount);
+            colCount
+          );
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          const indices = this.calculateIndices(i, j);
-          console.log('Hover:', indices);  // DEBUG
+          // const indices = this.calculateIndices(i, j);
+          // TODO(cais): Show detailed value tip.
         });
       }
     }
@@ -507,6 +558,9 @@ export class TensorWidgetImpl implements TensorWidget {
     this.renderSelection();
   }
 
+  /**
+   * Update the rendering of the selected value cells (if any).
+   */
   private renderSelection() {
     if (this.selection == null) {
       return;
@@ -525,18 +579,19 @@ export class TensorWidgetImpl implements TensorWidget {
         const status = this.selection.getElementStatus(indices);
         if (status != null && status.length > 0) {
           valueDiv.classList.add('tensor-widget-value-div-selection');
-          if (status.indexOf(CellSelectionStatus.TOP_EDGE) !== -1) {
-            valueDiv.classList.add('tensor-widget-value-div-selection-top');
-          }
-          if (status.indexOf(CellSelectionStatus.BOTTOM_EDGE) !== -1) {
-            valueDiv.classList.add('tensor-widget-value-div-selection-bottom');
-          }
-          if (status.indexOf(CellSelectionStatus.LEFT_EDGE) !== -1) {
-            valueDiv.classList.add('tensor-widget-value-div-selection-left');
-          }
-          if (status.indexOf(CellSelectionStatus.RIGHT_EDGE) !== -1) {
-            valueDiv.classList.add('tensor-widget-value-div-selection-right');
-          }
+          status.forEach((statusItem) => {
+            if (statusItem === CellSelectionStatus.TOP_EDGE) {
+              valueDiv.classList.add('tensor-widget-value-div-selection-top');
+            } else if (statusItem === CellSelectionStatus.BOTTOM_EDGE) {
+              valueDiv.classList.add(
+                'tensor-widget-value-div-selection-bottom'
+              );
+            } else if (statusItem === CellSelectionStatus.LEFT_EDGE) {
+              valueDiv.classList.add('tensor-widget-value-div-selection-left');
+            } else if (statusItem === CellSelectionStatus.RIGHT_EDGE) {
+              valueDiv.classList.add('tensor-widget-value-div-selection-right');
+            }
+          });
         }
       }
     }
@@ -545,9 +600,11 @@ export class TensorWidgetImpl implements TensorWidget {
   private calculateIndices(row: number, col: number): number[] {
     const indices: number[] = [];
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
-      (dimAndIndex) => dimAndIndex.dim);
+      (dimAndIndex) => dimAndIndex.dim
+    );
     const slicingIndices = this.slicingSpec.slicingDimsAndIndices.map(
-        (dimAndIndex) => dimAndIndex.index);
+      (dimAndIndex) => dimAndIndex.index
+    );
     for (let i = 0; i < this.rank; ++i) {
       if (slicingDims.indexOf(i) !== -1) {
         indices.push(slicingIndices[slicingDims.indexOf(i)]);

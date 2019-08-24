@@ -29,6 +29,13 @@ export enum CellSelectionStatus {
   BOTTOM_EDGE,
 }
 
+export enum SelectionMoveDirection {
+  UP = 1,
+  DOWN,
+  LEFT,
+  RIGHT,
+}
+
 /**
  * The selection state within a n-dimensional tensor.
  */
@@ -40,8 +47,6 @@ export class TensorElementSelection {
   private colStart: number;
   private rowCount: number;
   private colCount: number;
-  private rowEnd: number;
-  private colEnd: number;
 
   /** TODO(cais): Doc string. */
   constructor(
@@ -89,8 +94,6 @@ export class TensorElementSelection {
     this.colStart = colStart == null ? 0 : colStart;
     this.rowCount = rowCount == null ? 1 : rowCount;
     this.colCount = colCount == null ? 1 : colCount;
-    this.rowEnd = this.rowStart + this.rowCount;
-    this.colEnd = this.colStart + this.colCount;
   }
 
   private rank(): number {
@@ -117,6 +120,9 @@ export class TensorElementSelection {
 
     let status: CellSelectionStatus[] | null = null;
 
+    const rowEnd = this.rowStart + this.rowCount;
+    const colEnd = this.colStart + this.colCount;
+
     // Second, check the viewing dims.
     if (this.viewDims.length === 0) {
       if (indices.length === 0) {
@@ -132,7 +138,7 @@ export class TensorElementSelection {
       return status;
     } else if (this.viewDims.length === 1) {
       const rowDim = this.viewDims[0];
-      if (indices[rowDim] >= this.rowStart && indices[rowDim] < this.rowEnd) {
+      if (indices[rowDim] >= this.rowStart && indices[rowDim] < rowEnd) {
         if (status == null) {
           status = [];
         }
@@ -140,7 +146,7 @@ export class TensorElementSelection {
         if (indices[rowDim] === this.rowStart) {
           status.push(CellSelectionStatus.TOP_EDGE);
         }
-        if (indices[rowDim] === this.rowEnd - 1) {
+        if (indices[rowDim] === rowEnd - 1) {
           status.push(CellSelectionStatus.BOTTOM_EDGE);
         }
         status.push(CellSelectionStatus.LEFT_EDGE);
@@ -152,9 +158,9 @@ export class TensorElementSelection {
       const colDim = this.viewDims[1];
       if (
         indices[rowDim] >= this.rowStart &&
-        indices[rowDim] < this.rowEnd &&
+        indices[rowDim] < rowEnd &&
         indices[colDim] >= this.colStart &&
-        indices[colDim] < this.colEnd
+        indices[colDim] < colEnd
       ) {
         if (status == null) {
           status = [];
@@ -163,13 +169,13 @@ export class TensorElementSelection {
         if (indices[rowDim] === this.rowStart) {
           status.push(CellSelectionStatus.TOP_EDGE);
         }
-        if (indices[rowDim] === this.rowEnd - 1) {
+        if (indices[rowDim] === rowEnd - 1) {
           status.push(CellSelectionStatus.BOTTOM_EDGE);
         }
         if (indices[colDim] === this.colStart) {
           status.push(CellSelectionStatus.LEFT_EDGE);
         }
-        if (indices[colDim] === this.colEnd - 1) {
+        if (indices[colDim] === colEnd - 1) {
           status.push(CellSelectionStatus.RIGHT_EDGE);
         }
       }
@@ -177,5 +183,71 @@ export class TensorElementSelection {
     } else {
       throw new Error(`Unexpected length of viewDims: ${this.viewDims}`);
     }
+  }
+
+  public move(direction: SelectionMoveDirection): TensorViewSlicingSpec | null {
+    let viewRangeChanged = false;
+    if (direction === SelectionMoveDirection.UP) {
+      if (this.rowStart > 0) {
+        this.rowStart--;
+        if (
+          this.slicingSpec.verticalRange != null &&
+          this.rowStart < this.slicingSpec.verticalRange[0]
+        ) {
+          this.slicingSpec.verticalRange[0]--;
+          this.slicingSpec.verticalRange[1]--;
+          viewRangeChanged = true;
+        }
+      }
+    } else if (direction === SelectionMoveDirection.DOWN) {
+      if (
+        this.slicingSpec.viewingDims != null &&
+        this.slicingSpec.viewingDims[0] != null &&
+        this.rowStart < this.shape[this.slicingSpec.viewingDims[0]] - 1
+      ) {
+        this.rowStart++;
+        if (
+          this.slicingSpec.verticalRange != null &&
+          this.rowStart >= this.slicingSpec.verticalRange[1]
+        ) {
+          const increment = 1;
+          this.slicingSpec.verticalRange[0] += increment;
+          this.slicingSpec.verticalRange[1] += increment;
+          viewRangeChanged = true;
+        }
+      }
+    } else if (direction === SelectionMoveDirection.LEFT) {
+      if (this.colStart > 0) {
+        this.colStart--;
+        if (
+          this.slicingSpec.horizontalRange != null &&
+          this.colStart < this.slicingSpec.horizontalRange[0]
+        ) {
+          this.slicingSpec.horizontalRange[0]--;
+          this.slicingSpec.horizontalRange[1]--;
+          viewRangeChanged = true;
+        }
+      }
+    } else if (direction === SelectionMoveDirection.RIGHT) {
+      if (
+        this.slicingSpec.viewingDims != null &&
+        this.slicingSpec.viewingDims[1] != null &&
+        this.colStart < this.shape[this.slicingSpec.viewingDims[1]] - 1
+      ) {
+        this.colStart++;
+        if (
+          this.slicingSpec.horizontalRange != null &&
+          this.colStart >= this.slicingSpec.horizontalRange[1]
+        ) {
+          this.slicingSpec.horizontalRange[0]++;
+          this.slicingSpec.horizontalRange[1]++;
+          viewRangeChanged = true;
+        }
+      }
+    }
+    // Moving the selection causes the selection size to collapse to 1x1.
+    this.rowCount = 1;
+    this.colCount = 1;
+    return viewRangeChanged ? this.slicingSpec : null;
   }
 }
