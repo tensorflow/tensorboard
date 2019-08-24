@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
+import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -61,6 +62,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
   // Current slicing specification for the underlying tensor.
   protected slicingSpec: TensorViewSlicingSpec;
+
+  // Element selection.
+  protected selection: TensorElementSelection;
 
   constructor(
     private readonly rootElement: HTMLDivElement,
@@ -380,6 +384,12 @@ export class TensorWidgetImpl implements TensorWidget {
         valueDiv.classList.add('tensor-widget-value-div');
         this.valueRows[i].appendChild(valueDiv);
         this.valueDivs[i].push(valueDiv);
+        // valueDiv.setAttribute('indices', JSON.stringify());
+        valueDiv.addEventListener('click', () => {
+          const indices = this.calculateIndices(i, j);
+          console.log(  // DEBUG
+              `Value cell clicked: indices = ${JSON.stringify(indices)}`);
+        });
       }
     }
   }
@@ -474,6 +484,24 @@ export class TensorWidgetImpl implements TensorWidget {
         }
       }
     }
+  }
+
+  private calculateIndices(row: number, col: number): number[] {
+    const indices: number[] = [];
+    const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
+      (dimAndIndex) => dimAndIndex.dim);
+    const slicingIndices = this.slicingSpec.slicingDimsAndIndices.map(
+        (dimAndIndex) => dimAndIndex.index);
+    for (let i = 0; i < this.rank; ++i) {
+      if (slicingDims.indexOf(i) !== -1) {
+        indices.push(slicingIndices[slicingDims.indexOf(i)]);
+      } else if (i === this.slicingSpec.viewingDims[0]) {
+        indices.push(this.slicingSpec.verticalRange[0] + row);
+      } else if (i === this.slicingSpec.viewingDims[1]) {
+        indices.push(this.slicingSpec.horizontalRange[0] + col);
+      }
+    }
+    return indices;
   }
 
   /**
