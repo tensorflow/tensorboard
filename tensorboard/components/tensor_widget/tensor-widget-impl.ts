@@ -538,7 +538,6 @@ export class TensorWidgetImpl implements TensorWidget {
     const values = await this.tensorView.view(this.slicingSpec);
     // TODO(cais): Once health pills are available, use the min / max values to determine
     // # of decimal places.
-    // TODO(cais): Add hover popup card for the value divs.
     if (this.rank === 0) {
       const valueDiv = this.valueDivs[0][0];
       valueDiv.textContent = numericValueToString(
