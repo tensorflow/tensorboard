@@ -38,6 +38,14 @@ export enum SelectionMoveDirection {
 
 /**
  * The selection state within a n-dimensional tensor.
+ *
+ * This class keeps track of what element(s) are selected in the
+ * current viewing dimensions of the tensor. It provides capabiliities to:
+ * - Query whether a given set of indices falls into the selection, and
+ * - if so, whether it belongs to any of the four edges of selection.
+ * - When a selection is moved, what the new selection is and
+ * - if the new selection falls out of the current slicing spec, how the
+ *   slicing spec ought to be updated to accommodate it.
  */
 export class TensorElementSelection {
   private sliceDims: number[];
@@ -48,7 +56,20 @@ export class TensorElementSelection {
   private rowCount: number;
   private colCount: number;
 
-  /** TODO(cais): Doc string. */
+  /**
+   * Constructor of TensorElementSelection
+   * @param shape Shape of the tensor in which the viewing and selection is
+   *   taking place.
+   * @param slicingSpec The current slicing spec for the tensor.
+   * @param rowStart The starting row of selection, within the indices
+   *   framework of the original tensor (i.e., *not* with respect to the
+   *   slicing spec.)
+   * @param colStart The starting column of selection, within the indices
+   *   framework of the original tensor (i.e., *not* with respect to the
+   *   slicing spec.)
+   * @param rowCount How many rows are selected.
+   * @param colCount How many columns are selected.
+   */
   constructor(
     private readonly shape: Shape,
     readonly slicingSpec: TensorViewSlicingSpec,
@@ -100,7 +121,16 @@ export class TensorElementSelection {
     return this.shape.length;
   }
 
-  /** TODO(cais): Doc string. */
+  /**
+   * Compute whether a given set of indices falls into the selection.
+   *
+   * ... and if so, whether the set of indices belongs to any of the four
+   * edges of the selected region.
+   *
+   * @param indices
+   * @return Cell selection status, if the set of indices falls into the
+   *   selection. `null` otherwise.
+   */
   public getElementStatus(indices: number[]): CellSelectionStatus[] | null {
     if (indices.length !== this.rank()) {
       throw new Error(
@@ -185,6 +215,21 @@ export class TensorElementSelection {
     }
   }
 
+  /**
+   * Move the selection.
+   *
+   * Updates the state of the object accordingly. It disallows going off the
+   * edges.
+   *
+   * Moving a multi-element selection always causes the selection to
+   * collapse to a single element.
+   *
+   * @param direction Direction in which this movement is being made.
+   * @return If the selection movement doesn't necessitate an update to the
+   *   slicing spec (i.e., if the new single element selection is within
+   *   the current slicing spec), `null`. Else, a new `TensorViewSlicingSpec`
+   *   object that can accommodate the new single-element selection.
+   */
   public move(direction: SelectionMoveDirection): TensorViewSlicingSpec | null {
     let viewRangeChanged = false;
     if (direction === SelectionMoveDirection.UP) {
