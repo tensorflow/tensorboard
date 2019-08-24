@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {TensorElementSelection} from './selection';
+import {TensorElementSelection, CellSelectionStatus} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -386,9 +386,29 @@ export class TensorWidgetImpl implements TensorWidget {
         this.valueDivs[i].push(valueDiv);
         // valueDiv.setAttribute('indices', JSON.stringify());
         valueDiv.addEventListener('click', () => {
+          const rowStart =
+            (this.slicingSpec.verticalRange == null ||
+             this.slicingSpec.verticalRange[0] == null) ? 0 :
+            this.slicingSpec.verticalRange[0] + i;
+          const colStart =
+            (this.slicingSpec.horizontalRange == null ||
+             this.slicingSpec.horizontalRange[0] == null) ? 0 :
+            this.slicingSpec.horizontalRange[0] + j;
+          // TODO(cais): Support multi-row, multi-column selection.
+          const rowCount = 1;
+          const colCount = 1;
+          this.selection = new TensorElementSelection(
+            this.tensorView.spec.shape,
+            this.slicingSpec,
+            rowStart,
+            colStart,
+            rowCount,
+            colCount);
+          this.renderSelection();
+        });
+        valueDiv.addEventListener('mouseenter', () => {
           const indices = this.calculateIndices(i, j);
-          console.log(  // DEBUG
-              `Value cell clicked: indices = ${JSON.stringify(indices)}`);
+          console.log('Hover:', indices);  // DEBUG
         });
       }
     }
@@ -480,6 +500,42 @@ export class TensorWidgetImpl implements TensorWidget {
             );
           } else {
             valueDiv.textContent = '';
+          }
+        }
+      }
+    }
+    this.renderSelection();
+  }
+
+  private renderSelection() {
+    if (this.selection == null) {
+      return;
+    }
+    const numRows = this.valueDivs.length;
+    const numCols = this.valueDivs[0].length;
+    for (let i = 0; i < numRows; ++i) {
+      for (let j = 0; j < numCols; ++j) {
+        const valueDiv = this.valueDivs[i][j];
+        valueDiv.classList.remove('tensor-widget-value-div-selection');
+        valueDiv.classList.remove('tensor-widget-value-div-selection-top');
+        valueDiv.classList.remove('tensor-widget-value-div-selection-bottom');
+        valueDiv.classList.remove('tensor-widget-value-div-selection-left');
+        valueDiv.classList.remove('tensor-widget-value-div-selection-right');
+        const indices = this.calculateIndices(i, j);
+        const status = this.selection.getElementStatus(indices);
+        if (status != null && status.length > 0) {
+          valueDiv.classList.add('tensor-widget-value-div-selection');
+          if (status.indexOf(CellSelectionStatus.TOP_EDGE) !== -1) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-top');
+          }
+          if (status.indexOf(CellSelectionStatus.BOTTOM_EDGE) !== -1) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-bottom');
+          }
+          if (status.indexOf(CellSelectionStatus.LEFT_EDGE) !== -1) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-left');
+          }
+          if (status.indexOf(CellSelectionStatus.RIGHT_EDGE) !== -1) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-right');
           }
         }
       }

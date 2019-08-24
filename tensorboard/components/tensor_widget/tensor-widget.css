@@ -198,6 +198,26 @@ limitations under the License.
   width: 45px;
 }
 
+.tensor-widget-value-div-selection {
+  font-weight: bold;
+}
+
+.tensor-widget-value-div-selection-bottom {
+  border-bottom: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-left {
+  border-left: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-right {
+  border-right: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-top {
+  border-top: 0.5px solid blue;
+}
+
 .tensor-widget-value-section {
   --border-style: 1px solid rgb(140, 140, 140);
   --ruler-background-color: rgb(210, 210, 210);
