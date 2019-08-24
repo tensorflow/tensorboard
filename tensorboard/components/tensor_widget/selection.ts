@@ -29,6 +29,9 @@ export enum CellSelectionStatus {
   BOTTOM_EDGE,
 }
 
+/**
+ * Possible directions of selection movement.
+ */
 export enum SelectionMoveDirection {
   UP = 1,
   DOWN,

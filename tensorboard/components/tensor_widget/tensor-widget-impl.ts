@@ -624,6 +624,14 @@ export class TensorWidgetImpl implements TensorWidget {
     }
   }
 
+  /**
+   * Calcualte the set of indices that a value div currently maps to.
+   * @param row Row index of the value div, 0-based. This is with respect
+   *   to the 2D array of value divs that the widget currently possess, not
+   *   with respect to the indices of the underlying tensor. Same below.
+   * @param col Column indices of the value div, 0-based.
+   * @return The set of indices of the underlying tensor.
+   */
   private calculateIndices(row: number, col: number): number[] {
     const indices: number[] = [];
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
