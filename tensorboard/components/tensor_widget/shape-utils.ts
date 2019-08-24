@@ -21,7 +21,7 @@ import {Shape, TensorViewSlicingSpec} from './types';
 
 export function size(shape: Shape): number {
   let output = 1;
-  shape.forEach(dimSize => {
+  shape.forEach((dimSize) => {
     output *= dimSize;
   });
   return output;

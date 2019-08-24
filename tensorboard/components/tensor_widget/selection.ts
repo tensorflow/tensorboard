@@ -44,27 +44,33 @@ export class TensorElementSelection {
   private colEnd: number;
 
   /** TODO(cais): Doc string. */
-  constructor(private readonly shape: Shape,
-              readonly slicingSpec: TensorViewSlicingSpec,
-              rowStart?: number,
-              colStart?: number,
-              rowCount?: number,
-              colCount?: number) {
+  constructor(
+    private readonly shape: Shape,
+    readonly slicingSpec: TensorViewSlicingSpec,
+    rowStart?: number,
+    colStart?: number,
+    rowCount?: number,
+    colCount?: number
+  ) {
     if (size(this.shape) === 0) {
       throw new Error(
-          `TensorElementSelection doesn't support tensor with zero elements.`);
+        `TensorElementSelection doesn't support tensor with zero elements.`
+      );
     }
 
     this.sliceDims = slicingSpec.slicingDimsAndIndices.map(
-        dimAndIndex => dimAndIndex.dim);
+      (dimAndIndex) => dimAndIndex.dim
+    );
     this.sliceIndices = slicingSpec.slicingDimsAndIndices.map(
-        dimAndIndex => dimAndIndex.index);
+      (dimAndIndex) => dimAndIndex.index
+    );
 
     // Sanity check the size of the the slicing dimensions.
     if (this.rank() > 0 && this.sliceDims.length >= this.rank()) {
       throw new Error(
-          `Expected sliceDims to have a length less than rank ${this.rank}, ` +
-          `but got length ${this.sliceDims.length}`);
+        `Expected sliceDims to have a length less than rank ${this.rank}, ` +
+          `but got length ${this.sliceDims.length}`
+      );
     }
 
     // Determine the viewing dimensions.
@@ -92,11 +98,12 @@ export class TensorElementSelection {
   }
 
   /** TODO(cais): Doc string. */
-  public getElementStatus(indices: number[]): CellSelectionStatus[]|null {
+  public getElementStatus(indices: number[]): CellSelectionStatus[] | null {
     if (indices.length !== this.rank()) {
       throw new Error(
-          `Expected indices to have a rank of ${this.rank}, ` +
-          `but got ${indices.length} ([${indices}])`);
+        `Expected indices to have a rank of ${this.rank}, ` +
+          `but got ${indices.length} ([${indices}])`
+      );
     }
 
     // First, make sure that the indices belongs to a selected slice.
@@ -108,7 +115,7 @@ export class TensorElementSelection {
       }
     }
 
-    let status: CellSelectionStatus[]|null = null;
+    let status: CellSelectionStatus[] | null = null;
 
     // Second, check the viewing dims.
     if (this.viewDims.length === 0) {
@@ -143,8 +150,12 @@ export class TensorElementSelection {
     } else if (this.viewDims.length === 2) {
       const rowDim = this.viewDims[0];
       const colDim = this.viewDims[1];
-      if (indices[rowDim] >= this.rowStart && indices[rowDim] < this.rowEnd &&
-          indices[colDim] >= this.colStart && indices[colDim] < this.colEnd) {
+      if (
+        indices[rowDim] >= this.rowStart &&
+        indices[rowDim] < this.rowEnd &&
+        indices[colDim] >= this.colStart &&
+        indices[colDim] < this.colEnd
+      ) {
         if (status == null) {
           status = [];
         }
