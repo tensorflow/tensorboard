@@ -33,6 +33,8 @@ import {
   TensorViewSlicingSpec,
 } from './types';
 
+const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
+
 /**
  * Implementation of TensorWidget.
  */
@@ -53,6 +55,7 @@ export class TensorWidgetImpl implements TensorWidget {
   protected leftRulerTicks: HTMLDivElement[];
   protected valueRows: HTMLDivElement[];
   protected valueDivs: HTMLDivElement[][];
+  protected valueTooltip: HTMLDivElement;
 
   // The UI slicing control used by 3D+ tensors.
   protected slicingControl: SlicingControl;
@@ -210,12 +213,13 @@ export class TensorWidgetImpl implements TensorWidget {
       this.valueSection.classList.add('tensor-widget-value-section');
       this.rootElement.appendChild(this.valueSection);
 
-      // TODO(cais): Conditionally set wheel event listener: only when an
-      // element or mutiple elements are selected in the TensorWidget,
-      // when selection is supported.
       this.valueSection.addEventListener('wheel', async (event) => {
+        if (this.selection == null) {
+          return;
+        }
         event.stopPropagation();
         event.preventDefault();
+        this.hideValueTooltip();
         await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
       });
 
@@ -238,6 +242,7 @@ export class TensorWidgetImpl implements TensorWidget {
         ) {
           event.stopPropagation();
           event.preventDefault();
+          this.hideValueTooltip();
           let newSlicingSpec: TensorViewSlicingSpec;
           if (event.keyCode === UP_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.UP);
@@ -310,11 +315,13 @@ export class TensorWidgetImpl implements TensorWidget {
       this.topRulerTicks = [];
 
       this.topRuler.addEventListener('wheel', async (event) => {
-        if (this.selection != null) {
-          event.stopPropagation();
-          event.preventDefault();
-          await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
+        if (this.selection == null) {
+          return;
         }
+        event.stopPropagation();
+        event.preventDefault();
+        this.hideValueTooltip();
+        await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
       });
     }
 
@@ -428,7 +435,6 @@ export class TensorWidgetImpl implements TensorWidget {
         valueDiv.classList.add('tensor-widget-value-div');
         this.valueRows[i].appendChild(valueDiv);
         this.valueDivs[i].push(valueDiv);
-        // valueDiv.setAttribute('indices', JSON.stringify());
         valueDiv.addEventListener('click', () => {
           const rowStart =
             this.slicingSpec.verticalRange == null ||
@@ -454,8 +460,25 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          // const indices = this.calculateIndices(i, j);
-          // TODO(cais): Show detailed value tip.
+          const detailedValue = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
+          if (detailedValue == null) {
+            return;
+          }
+          const rootRect = this.rootElement.getBoundingClientRect();
+          const valueRect = valueDiv.getBoundingClientRect();
+          const valueHeight = valueRect.bottom - valueRect.top;
+          const valueWidth = valueRect.right - valueRect.left;
+          const indices = this.calculateIndices(i, j);
+          this.drawValueTooltip(
+            indices,
+            detailedValue,
+            valueRect.top - rootRect.top + valueHeight * 0.8,
+            valueRect.left - rootRect.left + valueWidth * 0.75
+          );
+          this.valueTooltip.style.display = 'block';
+        });
+        valueDiv.addEventListener('mouseleave', () => {
+          this.hideValueTooltip();
         });
       }
     }
@@ -517,20 +540,25 @@ export class TensorWidgetImpl implements TensorWidget {
     // # of decimal places.
     // TODO(cais): Add hover popup card for the value divs.
     if (this.rank === 0) {
-      this.valueDivs[0][0].textContent = numericValueToString(
+      const valueDiv = this.valueDivs[0][0];
+      valueDiv.textContent = numericValueToString(
         values as number,
         isIntegerDType(this.tensorView.spec.dtype)
       );
+      valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(values));
     } else if (this.rank === 1) {
       for (let i = 0; i < numRows; ++i) {
         const valueDiv = this.valueDivs[i][0];
         if (i < (values as number[]).length) {
+          const value = values[i];
           valueDiv.textContent = numericValueToString(
-            values[i],
+            value,
             isIntegerDType(this.tensorView.spec.dtype)
           );
+          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
         } else {
           valueDiv.textContent = '';
+          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, undefined);
         }
       }
     } else if (this.rank >= 2) {
@@ -541,12 +569,15 @@ export class TensorWidgetImpl implements TensorWidget {
             i < (values as number[][]).length &&
             j < (values[i] as number[]).length
           ) {
+            const value = values[i][j];
             valueDiv.textContent = numericValueToString(
-              values[i][j],
+              value,
               isIntegerDType(this.tensorView.spec.dtype)
             );
+            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
           } else {
             valueDiv.textContent = '';
+            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, undefined);
           }
         }
       }
@@ -611,6 +642,48 @@ export class TensorWidgetImpl implements TensorWidget {
       }
     }
     return indices;
+  }
+
+  /**
+   * Draw tooltip for detailed indices and value.
+   * @param indices Indices of the element for which the tooltip is to be drawn.
+   * @param value Value of the element.
+   * @param top Top coordinate (in pixels) of the tooltip.
+   * @param left Left coordinate (in pixels) of the tooltip.
+   */
+  private drawValueTooltip(
+    indices: number[],
+    value: number | boolean | string,
+    top: number,
+    left: number
+  ) {
+    if (this.valueTooltip == null) {
+      this.valueTooltip = document.createElement('div');
+      this.valueTooltip.classList.add('tensor-widget-value-tooltip');
+      this.rootElement.appendChild(this.valueTooltip);
+    }
+
+    while (this.valueTooltip.firstChild) {
+      this.valueTooltip.removeChild(this.valueTooltip.firstChild);
+    }
+    const indicesDiv = document.createElement('div');
+    indicesDiv.classList.add('tensor-widget-value-tooltip-indices');
+    indicesDiv.textContent = `Indices: ${JSON.stringify(indices)}`;
+    this.valueTooltip.appendChild(indicesDiv);
+
+    const valueDiv = document.createElement('div');
+    valueDiv.classList.add('tensor-widget-value-tooltip-value');
+    valueDiv.textContent = `${value}`;
+    this.valueTooltip.appendChild(valueDiv);
+
+    this.valueTooltip.style.top = `${top}px`;
+    this.valueTooltip.style.left = `${left}px`;
+  }
+
+  private hideValueTooltip() {
+    if (this.valueTooltip != null) {
+      this.valueTooltip.style.display = 'none';
+    }
   }
 
   /**
