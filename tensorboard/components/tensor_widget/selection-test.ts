@@ -45,6 +45,8 @@ describe('TensorElementSelection', () => {
       viewingDims: [0],
       verticalRange: [0, 5],
     }
+    // Vertical viewing ranges is  unimportant for selection
+    // calculation, but are included for completeness.
     const selection = new TensorElementSelection(shape, slicingSpec, 0, 0, 5, 1);
     expect(selection.getElementStatus([0])).to.eql([
       CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
@@ -59,7 +61,7 @@ describe('TensorElementSelection', () => {
     expect(selection.getElementStatus([9])).to.eql(null);
   });
 
-  it('2D shape', () => {
+  it('2D shape: multiple rows and multiple columns', () => {
     const shape = [10, 10];
     const slicingSpec: TensorViewSlicingSpec = {
       slicingDimsAndIndices: [],
@@ -67,6 +69,8 @@ describe('TensorElementSelection', () => {
       verticalRange: [0, 5],
       horizontalRange: [0, 5],
     }
+    // Vertical and horizontal viewing ranges are unimportant for selection
+    // calculation, but are included for completeness.
     const selection = new TensorElementSelection(shape, slicingSpec, 0, 0, 3, 4);
     expect(selection.getElementStatus([0, 0])).to.eql([
       CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
@@ -86,5 +90,105 @@ describe('TensorElementSelection', () => {
       CellSelectionStatus.SELECTED, CellSelectionStatus.BOTTOM_EDGE]);
     expect(selection.getElementStatus([3, 4])).to.eql(null);
     expect(selection.getElementStatus([9, 9])).to.eql(null);
+  });
+
+  it('2D shape: single row, multiple columns', () => {
+    const shape = [10, 10];
+    const slicingSpec: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [],
+      viewingDims: [0, 1],
+      verticalRange: [0, 5],
+      horizontalRange: [0, 5],
+    }
+    // Vertical and horizontal viewing ranges are unimportant for selection
+    // calculation, but are included for completeness.
+    const selection = new TensorElementSelection(shape, slicingSpec, 1, 0, 1, 4);
+    expect(selection.getElementStatus([0, 0])).to.eql(null);
+    expect(selection.getElementStatus([1, 0])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.BOTTOM_EDGE, CellSelectionStatus.LEFT_EDGE]);
+    expect(selection.getElementStatus([1, 1])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.BOTTOM_EDGE]);
+    expect(selection.getElementStatus([1, 3])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.BOTTOM_EDGE, CellSelectionStatus.RIGHT_EDGE]);
+    expect(selection.getElementStatus([2, 0])).to.eql(null);
+    expect(selection.getElementStatus([2, 1])).to.eql(null);
+  });
+
+  it('2D shape: multiple rows, single column', () => {
+    const shape = [10, 10];
+    const slicingSpec: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [],
+      viewingDims: [0, 1],
+      verticalRange: [0, 5],
+      horizontalRange: [0, 5],
+    }
+    // Vertical and horizontal viewing ranges are unimportant for selection
+    // calculation, but are included for completeness.
+    const selection = new TensorElementSelection(shape, slicingSpec, 5, 7, 3, 1);
+    expect(selection.getElementStatus([0, 0])).to.eql(null);
+    expect(selection.getElementStatus([5, 7])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.LEFT_EDGE, CellSelectionStatus.RIGHT_EDGE]);
+    expect(selection.getElementStatus([7, 7])).to.eql([
+        CellSelectionStatus.SELECTED, CellSelectionStatus.BOTTOM_EDGE,
+        CellSelectionStatus.LEFT_EDGE, CellSelectionStatus.RIGHT_EDGE]);
+    expect(selection.getElementStatus([8, 7])).to.eql(null);
+  });
+
+  it('2D shape: single row, single column', () => {
+    const shape = [10, 10];
+    const slicingSpec: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [],
+      viewingDims: [0, 1],
+      verticalRange: [0, 5],
+      horizontalRange: [0, 5],
+    }
+    // Vertical and horizontal viewing ranges are unimportant for selection
+    // calculation, but are included for completeness.
+    const selection = new TensorElementSelection(shape, slicingSpec, 5, 7, 1, 1);
+    expect(selection.getElementStatus([0, 0])).to.eql(null);
+    expect(selection.getElementStatus([4, 7])).to.eql(null);
+    expect(selection.getElementStatus([6, 7])).to.eql(null);
+    expect(selection.getElementStatus([5, 6])).to.eql(null);
+    expect(selection.getElementStatus([5, 8])).to.eql(null);
+    expect(selection.getElementStatus([5, 7])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.BOTTOM_EDGE, CellSelectionStatus.LEFT_EDGE,
+      CellSelectionStatus.RIGHT_EDGE]);
+  });
+
+  it('3D shape: multiple rows, multiple columns', () => {
+    const shape = [4, 10, 10];
+    const slicingSpec: TensorViewSlicingSpec = {
+      slicingDimsAndIndices: [{
+        dim: 0,
+        index: 2
+      }],
+      viewingDims: [0, 1],
+      verticalRange: [0, 5],
+      horizontalRange: [0, 5],
+    }
+    // Vertical and horizontal viewing ranges are unimportant for selection
+    // calculation, but are included for completeness.
+    const selection = new TensorElementSelection(shape, slicingSpec, 5, 7, 3, 2);
+    expect(selection.getElementStatus([0, 0, 0])).to.eql(null);
+    expect(selection.getElementStatus([2, 0, 0])).to.eql(null);
+    expect(selection.getElementStatus([3, 5, 7])).to.eql(null);
+    expect(selection.getElementStatus([3, 5, 8])).to.eql(null);
+    expect(selection.getElementStatus([2, 5, 7])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.LEFT_EDGE]);
+    expect(selection.getElementStatus([2, 5, 8])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.TOP_EDGE,
+      CellSelectionStatus.RIGHT_EDGE]);
+    expect(selection.getElementStatus([2, 7, 7])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.BOTTOM_EDGE,
+      CellSelectionStatus.LEFT_EDGE]);
+    expect(selection.getElementStatus([2, 7, 8])).to.eql([
+      CellSelectionStatus.SELECTED, CellSelectionStatus.BOTTOM_EDGE,
+      CellSelectionStatus.RIGHT_EDGE]);
   });
 });

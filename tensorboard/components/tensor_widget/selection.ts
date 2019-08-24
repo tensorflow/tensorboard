@@ -60,41 +60,12 @@ export class TensorElementSelection {
     this.sliceIndices = slicingSpec.slicingDimsAndIndices.map(
         dimAndIndex => dimAndIndex.index);
 
-    // TODO(cais): Remove.
-    // if (this.slicingSpec.slicingDimsAndIndices == null) {
-    //   if (this.sliceIndices != null) {
-    //     throw new Error(
-    //         `sliceIndices is not null/undefined when sliceDims is ` +
-    //         `null/undefined`);
-    //   }
-    //   this.sliceDims = [];
-    //   this.sliceIndices = [];
-    // }
-
     // Sanity check the size of the the slicing dimensions.
     if (this.rank() > 0 && this.sliceDims.length >= this.rank()) {
       throw new Error(
           `Expected sliceDims to have a length less than rank ${this.rank}, ` +
           `but got length ${this.sliceDims.length}`);
     }
-
-    // Sanity check the slicing dimensions.
-    // for (const sliceDim of this.sliceDims) {
-    //   if (sliceDim > this.rank()) {
-    //     throw new Error(
-    //         `Slicing dimension (${sliceDim}) exceeds rank ` +
-    //         `(${this.rank})`);
-    //   }
-    //   if (sliceDim < 0) {
-    //     throw new Error(
-    //         `Slicing dimension cannot be negative (${sliceDim})`);
-    //   }
-    //   if ((sliceDim)) {
-    //     throw new Error(
-    //         `Slicing dimension is expected to be an integer. ` +
-    //         `But got ${this.sliceDims}`);
-    //   }
-    // }
 
     // Determine the viewing dimensions.
     this.viewDims = [];
@@ -158,14 +129,11 @@ export class TensorElementSelection {
         if (status == null) {
           status = [];
         }
-        console.log('Selected!');  // DEBUG
         status.push(CellSelectionStatus.SELECTED);
         if (indices[rowDim] === this.rowStart) {
-          console.log('1D top edge');  // DEBUG
           status.push(CellSelectionStatus.TOP_EDGE);
         }
         if (indices[rowDim] === this.rowEnd - 1) {
-          console.log('1D top edge');  // DEBUG
           status.push(CellSelectionStatus.BOTTOM_EDGE);
         }
         status.push(CellSelectionStatus.LEFT_EDGE);
@@ -173,17 +141,13 @@ export class TensorElementSelection {
       }
       return status;
     } else if (this.viewDims.length === 2) {
-      // console.log('2D case', this.rowStart, this.rowEnd, this.colStart, this.colEnd);  // DEBUG
       const rowDim = this.viewDims[0];
       const colDim = this.viewDims[1];
-      // console.log(`rowDim = ${rowDim}; colDim = ${colDim}`);  // DEBUG
-      // console.log(`indices =`, indices);  // DEBUG
       if (indices[rowDim] >= this.rowStart && indices[rowDim] < this.rowEnd &&
           indices[colDim] >= this.colStart && indices[colDim] < this.colEnd) {
         if (status == null) {
           status = [];
         }
-        console.log('Selected');
         status.push(CellSelectionStatus.SELECTED);
         if (indices[rowDim] === this.rowStart) {
           status.push(CellSelectionStatus.TOP_EDGE);
