@@ -250,4 +250,20 @@ export class TensorElementSelection {
     this.colCount = 1;
     return viewRangeChanged ? this.slicingSpec : null;
   }
+
+  public getRowStart(): number {
+    return this.rowStart;
+  }
+
+  public getRowCount(): number {
+    return this.rowCount;
+  }
+
+  public getColStart(): number {
+    return this.colStart;
+  }
+
+  public getColCount(): number {
+    return this.colCount;
+  }
 }

@@ -239,17 +239,13 @@ export class TensorWidgetImpl implements TensorWidget {
           event.stopPropagation();
           event.preventDefault();
           let newSlicingSpec: TensorViewSlicingSpec;
-          if (event.keyCode === 38) {
-            // Up.
+          if (event.keyCode === UP_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.UP);
-          } else if (event.keyCode === 40) {
-            // Down.
+          } else if (event.keyCode === DOWN_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.DOWN);
-          } else if (event.keyCode === 37) {
-            // Left.
+          } else if (event.keyCode === LEFT_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.LEFT);
-          } else if (event.keyCode === 39) {
-            // Right.
+          } else if (event.keyCode === RIGHT_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.RIGHT);
           }
           if (newSlicingSpec === null) {
