@@ -12,13 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_backend {
+namespace tf_storage {
   // HACK: this Polymer component allows stores to be accessible from
   // tf-ng-tensorboard by exposing otherwise mangled smybols.
   Polymer({
-    is: 'tf-backend',
-    environmentStore: tf_backend.environmentStore,
-    experimentsStore: tf_backend.experimentsStore,
-    runsStore: tf_backend.runsStore,
+    is: 'tf-storage',
+    tf_storage: tf_storage,
   });
-} // namespace tf_backend
+} // namespace tf_storage

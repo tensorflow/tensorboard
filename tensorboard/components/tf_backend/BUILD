@@ -17,7 +17,7 @@ tf_web_library(
         "router.ts",
         "runsStore.ts",
         "tf-backend.html",
-        "tf-backend.ts",
+        "tf-backend-polymer.ts",
         "urlPathHelpers.ts",
     ],
     path = "/tf-backend",
@@ -45,8 +45,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_backend"],
     destdir = "tf-backend",
     deps = [
-        "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/tf_imports:polymer_lib",
+        "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_sorting:legacy",
     ],
 )
