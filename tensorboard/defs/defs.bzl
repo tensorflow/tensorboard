@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -31,4 +31,14 @@ def tf_js_binary(compile, **kwargs):
 
 def tf_ts_library(tsconfig=None, **kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library."""
+
+    # ts_library doesn't have the tsconfig argument internally, but does
+    # have it externally.
     ts_library(tsconfig=tsconfig, **kwargs)
+
+def tf_ts_devserver(entry_module=None, index_html=None, **kwargs):
+    """TensorBoard wrapper for the rule for a TypeScript dev server."""
+
+    # ts_devserver doesn't have the entry_module or index_html internally,
+    # but does have those externally.
+    ts_devserver(entry_module=entry_module, index_html=index_html, **kwargs)
