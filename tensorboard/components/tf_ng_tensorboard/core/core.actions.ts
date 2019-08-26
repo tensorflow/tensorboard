@@ -20,16 +20,16 @@ import {PluginId, PluginsListing} from '../types/api';
 import * as _typeHackModels from '@ngrx/store/src/models';
 
 export const changePlugin = createAction(
-  '[CORE] CHANGE_PLUGIN',
+  '[Core] Plugin Changed',
   props<{plugin: PluginId}>()
 );
 
-export const coreLoaded = createAction('[CORE] LOADED');
+export const coreLoaded = createAction('[Core] Loaded');
 
 export const pluginsListingLoaded = createAction(
-  '[CORE] FETCH_PLUGINS_LISTING_SUCCESSFUL',
+  '[Core] PluginListing Fetch Successful',
   props<{plugins: PluginsListing}>()
 );
 export const pluginsListingFailed = createAction(
-  '[CORE] FETCH_PLUGINS_LISTING_FAILED'
+  '[Core] PluginListing Fetch Failed'
 );

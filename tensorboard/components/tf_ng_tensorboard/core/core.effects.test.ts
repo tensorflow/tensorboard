@@ -17,7 +17,6 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import {Actions} from '@ngrx/effects';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action} from '@ngrx/store';
 import {ReplaySubject} from 'rxjs';
@@ -25,6 +24,7 @@ import {ReplaySubject} from 'rxjs';
 import {CoreEffects} from './core.effects';
 import * as coreActions from './core.actions';
 import {CoreService} from './core.service';
+
 import {PluginsListing, LoadingMechanismType} from '../types/api';
 
 describe('core.effects', () => {
@@ -58,9 +58,8 @@ describe('core.effects', () => {
         remove_dom: false,
       },
     };
-
     // Assertion/exception in the subscribe does not fail the test.
-    // Restore the result
+    // Store the result
     let res = null;
     const promise = coreEffects.loadPluginsListing$.subscribe((action) => {
       res = action;
