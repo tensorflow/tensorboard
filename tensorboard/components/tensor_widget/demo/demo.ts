@@ -49,15 +49,52 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
         (dimAndIndex) => dimAndIndex.dim
       );
       const slicingIndices = slicingSpec.slicingDimsAndIndices.map(
-        (dimAndIndex) => dimAndIndex.index
+        (dimAndIndex) => {
+          if (dimAndIndex.index === null) {
+            throw new Error(
+              `
+              Unspecified index encountered in slicing spec: ` +
+                `${JSON.stringify(slicingSpec)}`
+            );
+          }
+          return dimAndIndex.index;
+        }
       );
 
       const begins: number[] = [];
       const sizes: number[] = [];
+
       if (x.rank === 1) {
+        if (
+          slicingSpec.verticalRange === null ||
+          slicingSpec.verticalRange[0] === null ||
+          slicingSpec.verticalRange[1] === null
+        ) {
+          throw new Error(
+            'Missing or incomplete vertical range for 1D tensor.'
+          );
+        }
         begins.push(slicingSpec.verticalRange[0]);
         sizes.push(slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]);
       } else if (x.rank > 1) {
+        if (
+          slicingSpec.horizontalRange === null ||
+          slicingSpec.horizontalRange[0] === null ||
+          slicingSpec.horizontalRange[1] === null
+        ) {
+          throw new Error(
+            `Missing or incomplete horizontalRange range for ${x.rank}D tensor.`
+          );
+        }
+        if (
+          slicingSpec.verticalRange === null ||
+          slicingSpec.verticalRange[0] === null ||
+          slicingSpec.verticalRange[1] === null
+        ) {
+          throw new Error(
+            `Missing or incomplete vertical range for ${x.rank}D tensor.`
+          );
+        }
         for (let i = 0; i < x.rank; ++i) {
           if (slicingDims.indexOf(i) !== -1) {
             // This is a slicing dimension. Get the slicing index.
@@ -114,8 +151,9 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
 }
 
 function demo() {
-  document.getElementById('tensor-widget-version').textContent =
-    tensorWidget.VERSION;
+  (document.getElementById(
+    'tensor-widget-version'
+  ) as HTMLDivElement).textContent = tensorWidget.VERSION;
 
   /////////////////////////////////////////////////////////////
   // float32 scalar.

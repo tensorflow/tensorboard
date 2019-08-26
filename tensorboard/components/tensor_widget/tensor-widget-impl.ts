@@ -42,11 +42,11 @@ export class TensorWidgetImpl implements TensorWidget {
   protected infoSubsection: HTMLDivElement;
   protected slicingSpecRoot: HTMLDivElement;
   protected valueSection: HTMLDivElement;
-  protected topRuler: HTMLDivElement;
+  protected topRuler: HTMLDivElement | null = null;
   protected baseRulerTick: HTMLDivElement;
   protected topRulerTicks: HTMLDivElement[];
   protected leftRulerTicks: HTMLDivElement[];
-  protected valueRows: HTMLDivElement[];
+  protected valueRows: HTMLDivElement[] | null = null;
   protected valueDivs: HTMLDivElement[][];
 
   // The UI slicing control used by 3D+ tensors.
@@ -302,6 +302,11 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().right >= rootElementRight) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
+          if (this.slicingSpec.horizontalRange === null) {
+            throw new Error(
+              `Missing horizontal range for ${this.rank}D tensor.`
+            );
+          }
           this.slicingSpec.horizontalRange[1] = i + 1;
           this.colsCutoff = true;
         }
@@ -309,6 +314,9 @@ export class TensorWidgetImpl implements TensorWidget {
       }
     }
     if (!this.colsCutoff && this.rank >= 2) {
+      if (this.slicingSpec.horizontalRange === null) {
+        throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+      }
       this.slicingSpec.horizontalRange[1] = maxNumCols;
     }
   }
@@ -347,6 +355,9 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 1) {
+          if (this.slicingSpec.verticalRange === null) {
+            throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+          }
           this.slicingSpec.verticalRange[1] = i + 1;
           this.rowsCutoff = true;
         }
@@ -354,6 +365,9 @@ export class TensorWidgetImpl implements TensorWidget {
       }
     }
     if (!this.rowsCutoff && this.rank >= 1) {
+      if (this.slicingSpec.verticalRange === null) {
+        throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+      }
       this.slicingSpec.verticalRange[1] = maxNumRows;
     }
   }
@@ -370,6 +384,10 @@ export class TensorWidgetImpl implements TensorWidget {
    * (based on the current slicing spec).
    */
   private createValueDivs() {
+    if (this.valueRows === null) {
+      throw new Error('Value rows are unexpectedly uninitialized.');
+    }
+
     this.valueDivs = [];
     const numCols = this.topRulerTicks.length;
     const numRows = this.valueRows.length;
@@ -395,6 +413,9 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpec.viewingDims[1]
       ];
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
+        if (this.slicingSpec.horizontalRange === null) {
+          throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+        }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
         if (colIndex < numCols) {
           this.topRulerTicks[i].textContent = `${colIndex}`;
@@ -416,6 +437,9 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpec.viewingDims[0]
       ];
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
+        if (this.slicingSpec.verticalRange === null) {
+          throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
+        }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
         if (rowIndex < numRows) {
           this.leftRulerTicks[i].textContent = `${rowIndex}`;
@@ -503,6 +527,9 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar or 1D tensor.
       return;
     }
+    if (this.slicingSpec.horizontalRange === null) {
+      throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+    }
     const indexUpperBound = this.tensorView.spec.shape[
       this.slicingSpec.viewingDims[1]
     ];
@@ -536,6 +563,13 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar.
       return;
     }
+    if (this.slicingSpec.verticalRange === null) {
+      throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+    }
+    if (this.valueRows === null) {
+      throw new Error('Vertical scrolling failed due to missing value rows.');
+    }
+
     const indexUpperBound = this.tensorView.spec.shape[
       this.slicingSpec.viewingDims[0]
     ];
@@ -564,6 +598,12 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll vertically when all rows are shown.
       return;
     }
+    if (this.slicingSpec.verticalRange === null) {
+      throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+    }
+    if (this.valueRows === null) {
+      throw new Error('Vertical scrolling failed due to missing value rows.');
+    }
     const currRowIndex = this.slicingSpec.verticalRange[0];
     if (direction === 'down') {
       const numRowsShown = this.valueRows.length - 1;
@@ -589,6 +629,11 @@ export class TensorWidgetImpl implements TensorWidget {
     if (!this.colsCutoff) {
       // Cannot scroll horizontally when all rows are shown.
       return;
+    }
+    if (this.slicingSpec.horizontalRange === null) {
+      throw new Error(
+        `Horizontal scrolling failed due to missing horizontal range.`
+      );
     }
     const currColIndex = this.slicingSpec.horizontalRange[0];
     if (direction === 'right') {

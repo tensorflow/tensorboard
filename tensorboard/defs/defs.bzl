@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@npm_bazel_typescript//:index.bzl", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -27,3 +28,7 @@ def tf_js_binary(compile, **kwargs):
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
     rollup_bundle(**kwargs)
+
+def tf_ts_library(tsconfig=None, **kwargs):
+    """TensorBoard wrapper for the rule for a TypeScript library."""
+    ts_library(tsconfig=tsconfig, **kwargs)
