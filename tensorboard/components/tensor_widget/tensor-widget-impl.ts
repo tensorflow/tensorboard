@@ -38,26 +38,26 @@ export class TensorWidgetImpl implements TensorWidget {
   protected rank: number;
 
   // Constituent UI elements.
-  protected headerSection: HTMLDivElement;
-  protected infoSubsection: HTMLDivElement;
-  protected slicingSpecRoot: HTMLDivElement;
-  protected valueSection: HTMLDivElement;
+  protected headerSection: HTMLDivElement|null = null;
+  protected infoSubsection: HTMLDivElement|null = null;
+  protected slicingSpecRoot: HTMLDivElement|null = null;
+  protected valueSection: HTMLDivElement| null = null;
   protected topRuler: HTMLDivElement | null = null;
-  protected baseRulerTick: HTMLDivElement;
-  protected topRulerTicks: HTMLDivElement[];
-  protected leftRulerTicks: HTMLDivElement[];
-  protected valueRows: HTMLDivElement[] | null = null;
-  protected valueDivs: HTMLDivElement[][];
+  protected baseRulerTick: HTMLDivElement|null = null;
+  protected topRulerTicks: HTMLDivElement[] = [];
+  protected leftRulerTicks: HTMLDivElement[] = [];
+  protected valueRows: HTMLDivElement[] = [];
+  protected valueDivs: HTMLDivElement[][] = [];
 
   // The UI slicing control used by 3D+ tensors.
-  protected slicingControl: SlicingControl;
+  protected slicingControl: SlicingControl|null = null;
 
   // Whether the height of the root element is insufficient to display
   // all the rows (vertical dimension under currrent slicing) at once.
-  protected rowsCutoff: boolean;
+  protected rowsCutoff: boolean = false;
   // Whether the height of the root element is insufficient to display
   // all the columns rows (horizontal dimension under currrent slicing) at once.
-  protected colsCutoff: boolean;
+  protected colsCutoff: boolean = false;
 
   // Current slicing specification for the underlying tensor.
   protected slicingSpec: TensorViewSlicingSpec;
@@ -124,6 +124,10 @@ export class TensorWidgetImpl implements TensorWidget {
    * Render the info subsection of the header section.
    */
   private renderInfo() {
+    if (this.headerSection === null) {
+      throw new Error(
+        'Rendering tensor info failed due to mising header section');
+    }
     if (this.infoSubsection == null) {
       this.infoSubsection = document.createElement('div');
       this.infoSubsection.classList.add('tensor-widget-info');
@@ -142,6 +146,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the optional name in the info subsection. */
   private renderName() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor name failed due to missing info subsection.');
+    }
     if (this.options.name == null || this.options.name.length === 0) {
       return;
     }
@@ -155,6 +163,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the dtype in the info subsection. */
   private renderDType() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor dtype failed due to missing info subsection.');
+    }
     const dTypeControl = document.createElement('div');
     dTypeControl.classList.add('tensor-widget-dtype');
 
@@ -172,6 +184,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the shape in the info subsection. */
   private renderShape() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor shape failed due to missing info subsection.');
+    }
     const shapeTagDiv = document.createElement('div');
     shapeTagDiv.classList.add('tensor-widget-shape');
     const shapeTagLabel = document.createElement('div');
@@ -191,7 +207,7 @@ export class TensorWidgetImpl implements TensorWidget {
    * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
-    if (this.rank > 2 && this.slicingSpecRoot == null) {
+    if (this.rank > 2 && this.slicingSpecRoot === null) {
       this.slicingSpecRoot = document.createElement('div');
       this.slicingSpecRoot.classList.add('tensor-widget-slicing-group');
       this.rootElement.appendChild(this.slicingSpecRoot);
@@ -220,7 +236,7 @@ export class TensorWidgetImpl implements TensorWidget {
 
     if (this.rank > 2) {
       this.slicingControl = new SlicingControl(
-        this.slicingSpecRoot,
+        this.slicingSpecRoot as HTMLDivElement,
         this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
           if (!areSlicingSpecsCompatible(this.slicingSpec, slicingSpec)) {
@@ -240,11 +256,14 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   private clearValueSection() {
+    if (this.valueSection === null) {
+      return;
+    }
     while (this.valueSection.firstChild) {
       this.valueSection.removeChild(this.valueSection.firstChild);
     }
     this.topRuler = null;
-    this.valueRows = null;
+    this.valueRows = [];
   }
 
   /**
@@ -254,6 +273,10 @@ export class TensorWidgetImpl implements TensorWidget {
    * column-wise ruler blocks.
    */
   private createTopRuler() {
+    if (this.valueSection === null) {
+      throw new Error(
+        'Failed to create top ruler due to missing value section.');
+    }
     if (this.topRuler == null) {
       this.topRuler = document.createElement('div');
       this.topRuler.classList.add('tenesor-widget-top-ruler');
@@ -322,6 +345,10 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   private createLeftRuler() {
+    if (this.valueSection === null) {
+      throw new Error(
+        'Failed to create left ruler due to missing value section.');
+    }
     if (this.valueRows == null) {
       this.valueRows = [];
       this.leftRulerTicks = [];
