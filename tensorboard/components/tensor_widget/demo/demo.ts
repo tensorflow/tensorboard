@@ -14,11 +14,39 @@ limitations under the License.
 ==============================================================================*/
 
 import * as tensorWidget from '../tensor-widget';
-import {TensorViewSlicingSpec} from '../types';
+import {TensorViewSlicingSpec, TensorView} from '../types';
 
 // TODO(cais): Find a way to import tfjs-core here, instead of depending on
 // a global variable.
 declare const tf: any;
+
+/** Check horizontal and vertical ranges are fully specified in slicing spec. */
+function checkSpecifiedHorizontalAndVerticalRanges(
+  slicingSpec: TensorViewSlicingSpec,
+  rank: number,
+  verticalOnly = false
+) {
+  if (!verticalOnly) {
+    if (
+      slicingSpec.horizontalRange === null ||
+      slicingSpec.horizontalRange[0] === null ||
+      slicingSpec.horizontalRange[1] === null
+    ) {
+      throw new Error(
+        `Missing or incomplete horizontalRange range for ${rank}D tensor.`
+      );
+    }
+  }
+  if (
+    slicingSpec.verticalRange === null ||
+    slicingSpec.verticalRange[0] === null ||
+    slicingSpec.verticalRange[1] === null
+  ) {
+    throw new Error(
+      `Missing or incomplete verticalRange range for ${rank}D tensor.`
+    );
+  }
+}
 
 /**
  * Convert a TensorFlow.js tensor to a TensorView.
@@ -54,7 +82,7 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
             throw new Error(
               `
               Unspecified index encountered in slicing spec: ` +
-                `${JSON.stringify(slicingSpec)}`
+                `${JSON.stringify(slicingSpec, null, 2)}`
             );
           }
           return dimAndIndex.index;
@@ -65,36 +93,12 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
       const sizes: number[] = [];
 
       if (x.rank === 1) {
-        if (
-          slicingSpec.verticalRange === null ||
-          slicingSpec.verticalRange[0] === null ||
-          slicingSpec.verticalRange[1] === null
-        ) {
-          throw new Error(
-            'Missing or incomplete vertical range for 1D tensor.'
-          );
-        }
-        begins.push(slicingSpec.verticalRange[0]);
-        sizes.push(slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]);
+        checkSpecifiedHorizontalAndVerticalRanges(slicingSpec, x.rank, true);
+        const verticalRange = slicingSpec.verticalRange as [number, number];
+        begins.push(verticalRange[0]);
+        sizes.push(verticalRange[1] - verticalRange[0]);
       } else if (x.rank > 1) {
-        if (
-          slicingSpec.horizontalRange === null ||
-          slicingSpec.horizontalRange[0] === null ||
-          slicingSpec.horizontalRange[1] === null
-        ) {
-          throw new Error(
-            `Missing or incomplete horizontalRange range for ${x.rank}D tensor.`
-          );
-        }
-        if (
-          slicingSpec.verticalRange === null ||
-          slicingSpec.verticalRange[0] === null ||
-          slicingSpec.verticalRange[1] === null
-        ) {
-          throw new Error(
-            `Missing or incomplete vertical range for ${x.rank}D tensor.`
-          );
-        }
+        checkSpecifiedHorizontalAndVerticalRanges(slicingSpec, x.rank);
         for (let i = 0; i < x.rank; ++i) {
           if (slicingDims.indexOf(i) !== -1) {
             // This is a slicing dimension. Get the slicing index.
@@ -102,17 +106,20 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
             sizes.push(1);
           } else {
             // This is one of the viewing dimension(s).
-            const viewDimIndex = slicingSpec.viewingDims.indexOf(i);
-            if (viewDimIndex === 0) {
-              begins.push(slicingSpec.verticalRange[0]);
-              sizes.push(
-                slicingSpec.verticalRange[1] - slicingSpec.verticalRange[0]
-              );
+            if (slicingSpec.viewingDims.indexOf(i) === 0) {
+              const verticalRange = slicingSpec.verticalRange as [
+                number,
+                number
+              ];
+              begins.push(verticalRange[0]);
+              sizes.push(verticalRange[1] - verticalRange[0]);
             } else {
-              begins.push(slicingSpec.horizontalRange[0]);
-              sizes.push(
-                slicingSpec.horizontalRange[1] - slicingSpec.horizontalRange[0]
-              );
+              const horizontalRange = slicingSpec.horizontalRange as [
+                number,
+                number
+              ];
+              begins.push(horizontalRange[0]);
+              sizes.push(horizontalRange[1] - horizontalRange[0]);
             }
           }
         }

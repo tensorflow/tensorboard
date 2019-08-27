@@ -97,11 +97,3 @@ ts_config(
     src = "tsconfig.json",
     deps = [],
 )
-
-
-# filegroup(
-#     name = "tensor_widget_css",
-#     srcs = [
-#         "tensor-widget.css",
-#     ],
-# )

@@ -31,7 +31,7 @@ export class SlicingControl {
   private rank: number;
 
   // The current slicing spec.
-  private slicingSpec: TensorViewSlicingSpec|null = null;
+  private slicingSpec: TensorViewSlicingSpec | null = null;
 
   // Constituent UI components.
   private dimControls: HTMLDivElement[] = [];
@@ -48,7 +48,7 @@ export class SlicingControl {
     null,
   ];
 
-  private dimControlsListenerAttached: boolean[] = []
+  private dimControlsListenerAttached: boolean[] = [];
 
   /**
    * Constructor of SlicingControl.
@@ -65,7 +65,7 @@ export class SlicingControl {
   constructor(
     private readonly rootDiv: HTMLDivElement,
     private readonly shape: Shape,
-    private readonly onSlicingSpecChange?: OnSlicingSpecChangeCallback
+    private readonly onSlicingSpecChange: OnSlicingSpecChangeCallback = () => {}
   ) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
@@ -155,7 +155,8 @@ export class SlicingControl {
     }
     if (this.slicingSpec === null) {
       throw new Error(
-        'Slicing control rendering failed due to missing slicing spec.');
+        'Slicing control rendering failed due to missing slicing spec.'
+      );
     }
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
@@ -198,7 +199,8 @@ export class SlicingControl {
           dimInput.addEventListener('change', () => {
             if (this.slicingSpec === null) {
               throw new Error(
-                'Slicing control change callback failed due to missing spec.');
+                'Slicing control change callback failed due to missing spec.'
+              );
             }
             const newIndex = parseInt(dimInput.value, 10);
             if (
@@ -218,9 +220,7 @@ export class SlicingControl {
               slicingDims.indexOf(i)
             ].index = newIndex;
             dimControl.textContent = String(newIndex);
-            if (this.onSlicingSpecChange != null) {
-              this.onSlicingSpecChange(this.slicingSpec);
-            }
+            this.onSlicingSpecChange(this.slicingSpec);
           });
 
           // When defocusing (blurring) from the dim input, it changes back into
@@ -287,7 +287,8 @@ export class SlicingControl {
     if (this.slicingSpec === null) {
       throw new Error(
         'Slicing control cannot render dropdown menu items due to missing ' +
-        'slicing spec.');
+          'slicing spec.'
+      );
     }
 
     // Clear all dropdown menus. Make sure that at any moment, only one dropdown
@@ -333,7 +334,8 @@ export class SlicingControl {
       menuItem.addEventListener('click', () => {
         if (this.slicingSpec === null) {
           throw new Error(
-            'Dimension swapping failed due to missing slicing spec');
+            'Dimension swapping failed due to missing slicing spec'
+          );
         }
         const k = slicingDims.indexOf(i);
         this.slicingSpec.viewingDims[isFirstViewingDim ? 0 : 1] = i;
