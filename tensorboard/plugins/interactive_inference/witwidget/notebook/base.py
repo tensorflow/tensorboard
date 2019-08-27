@@ -77,8 +77,11 @@ class WitWidgetBase(object):
       if 'compare_adjust_example' in config else None)
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
+      copied_config['uses_custom_distance_fn'] = True
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'custom_distance_fn' in copied_config:
+      del copied_config['custom_distance_fn']
     if 'adjust_prediction' in copied_config:
       del copied_config['adjust_prediction']
     if 'compare_adjust_prediction' in copied_config:
@@ -113,6 +116,10 @@ class WitWidgetBase(object):
     """
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
+
+  def compute_custom_distance_impl(self, index, params):
+    ex = self.examples[index]
+    return self.custom_distance_fn(ex, self.examples, params)
 
   def json_to_proto(self, json):
     ex = (tf.train.SequenceExample()

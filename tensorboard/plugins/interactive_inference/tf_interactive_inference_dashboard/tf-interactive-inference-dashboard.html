@@ -3746,7 +3746,7 @@ limitations under the License.
           let closest = -1;
           const useL2Distance = this.facetDistSwitch == 'L2';
           for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDistL1L2(
+            let dist = this.getDist(
               this.visdata[selected],
               this.visdata[i],
               useL2Distance
@@ -3784,9 +3784,51 @@ limitations under the License.
           }
         },
 
+        computeClosestCounterfactual: function(input_str) {
+        // Distances are indexed by example ids
+          console.log(input_str)
+          // const modelInferenceValueStr = this.strWithModelName_(
+          //   inferenceValueStr,
+          //   this.nearestCounterfactualModelIndex
+          // );
+          // let closestDist = Number.POSITIVE_INFINITY;
+          // let closest = -1;
+          // for (let i = 0; i < this.visdata.length; i++) {
+          //   // Skip examples with the same inference class as the selected
+          //   // examples.
+          //   if (
+          //     this.visdata[exInd][modelInferenceValueStr] ==
+          //     this.visdata[i][modelInferenceValueStr]
+          //   ) {
+          //     continue;
+          //   }
+          //   let dist = distances[i];
+          //   if (dist < closestDist) {
+          //     closestDist = dist;
+          //     closest = i;
+          //   }
+          // }
+          // if (closest != -1) {
+          //   // Display the counterfactual in dive and example viewer.
+          //   this.comparedIndices = [closest];
+          //   this.counterfactualExampleAndInference = this.examplesAndInferences[
+          //     closest
+          //   ];
+          //   this.compareTitle = 'Counterfactual value(s)';
+          // }
+        },
 
-        findClosestCounterfactual_: function() {
+        findClosestCounterfactual: function() {
           const selected = this.selected[0];
+          // Custom distance function can only be used when local
+          if (this.local && this.customDistanceFunctionSet){
+            requestDistanceWithCallback(selected,
+                                        'computeClosestCounterfactual',
+                                        '');
+            return;
+          }
+
+          // If not using custom distance function compute counterfactuals here.
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
@@ -3802,9 +3844,9 @@ limitations under the License.
             ) {
               continue;
             }
-            // TODO(tolgab) benchmark this backend call, may need to pull it
-            // out of for loop for custom distance metric
-            let dist = this.getDist(selected, i, this.nearestCounterfactualDist == 'L2');
+            let dist = this.getDist(this.visdata[selected],
+                                    this.visdata[i],
+                                    this.nearestCounterfactualDist == 'L2');
             if (dist < closestDist) {
               closestDist = dist;
               closest = i;
@@ -3820,34 +3862,31 @@ limitations under the License.
           }
         },
 
-        getDist: function(ex_ind1, ex_ind2, useL2Distance){
-          if (this.customDistanceFunctionSet) {
-              const dist = this.getCustomDist(ex_ind1, ex_ind2);
-          } else {
-            const ex1 = this.visdata[ex_ind1]
-            const ex2 = this.visdata[ex_ind2]
-            const dist = this.getDistL1L2(ex1, ex2,
-                                      useL2Distance)
-          }
-          return dist
-        },
+        // getDist: function(ex_ind1, ex_ind2, useL2Distance){
+        //   if (this.customDistanceFunctionSet) {
+        //       const dist = this.getCustomDist(ex_ind1, ex_ind2);
+        //   } else {
+        //     const ex1 = this.visdata[ex_ind1]
+        //     const ex2 = this.visdata[ex_ind2]
+        //     const dist = this.getDistL1L2(ex1, ex2,
+        //                               useL2Distance)
+        //   }
+        //   return dist
+        // },
 
-        /**
-         * Gets custom distance using backend.
-        */
-        getCustomDist: function(ex_ind1, ex_ind2){
-          if (!this.local) {
-            return 0
-          }
-          const urlParams = {ex1: ex_ind1,
-                             ex2: ex_ind2}
+        // Call backend for distance computation, backend calls callback function
+        // with computed distances and parameters
+        requestDistanceWithCallback: function(exInd, callbackFun, callbackParams){
+          const urlParams = {index: exInd,
+                             callback: callbackFun,
+                             params: callbackParams}
           this.fire('compute-custom-distance', urlParams)
         },
 
         /**
          * Gets distance between two examples using L1 or L2 distance.
          */
-        getDistL1L2: function(a, b, useL2Distance) {
+        getDist: function(a, b, useL2Distance) {
           let dist = 0;
           const allKeys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
           for (let featIndex = 0; featIndex < allKeys.length; featIndex++) {
