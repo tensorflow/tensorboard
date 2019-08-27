@@ -80,9 +80,8 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
         (dimAndIndex) => {
           if (dimAndIndex.index === null) {
             throw new Error(
-              `
-              Unspecified index encountered in slicing spec: ` +
-                `${JSON.stringify(slicingSpec, null, 2)}`
+              'Unspecified index encountered in slicing spec: ' +
+                JSON.stringify(slicingSpec, null, 2)
             );
           }
           return dimAndIndex.index;

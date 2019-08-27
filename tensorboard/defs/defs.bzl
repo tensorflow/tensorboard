@@ -32,13 +32,9 @@ def tf_js_binary(compile, **kwargs):
 def tf_ts_library(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library."""
 
-    # ts_library doesn't have the tsconfig argument internally, but does
-    # have it externally.
     ts_library(**kwargs)
 
 def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
 
-    # ts_devserver doesn't have the entry_module or index_html internally,
-    # but does have those externally.
     ts_devserver(**kwargs)
