@@ -40,17 +40,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.store = store;
         }
         ngOnInit() {
-            // TODO(stephanwlee): Instead of hardcoding it, consider reading it off of the
-            // tf_dashboard.registry. It is current infeasible unless Angular source is also
-            // compiled with JSCompiler.
-            this.store.dispatch(core_actions_1.changePlugin({ plugin: 'Core' }));
+            this.store.dispatch(core_actions_1.coreLoaded());
         }
     };
     AppComponent = __decorate([
         core_1.Component({
             selector: 'tf-ng-tensorboard',
             template: "<!--\n@license\nCopyright 2019 The TensorFlow Authors. All Rights Reserved.\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n-->\n<div>\n  <app-header></app-header>\n</div>\n",
-            styles: ["/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n==============================================================================*/\n"]
+            styles: ["/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n==============================================================================*/\nhtml,\nbody {\n  font-family: Roboto, sans-serif;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n"]
         }),
         __metadata("design:paramtypes", [store_1.Store])
     ], AppComponent);

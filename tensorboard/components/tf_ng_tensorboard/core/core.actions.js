@@ -24,5 +24,8 @@
     limitations under the License.
     ==============================================================================*/
     const store_1 = require("@ngrx/store");
-    exports.changePlugin = store_1.createAction('CHANGE_PLUGIN', store_1.props());
+    exports.changePlugin = store_1.createAction('[Core] Plugin Changed', store_1.props());
+    exports.coreLoaded = store_1.createAction('[Core] Loaded');
+    exports.pluginsListingLoaded = store_1.createAction('[Core] PluginListing Fetch Successful', store_1.props());
+    exports.pluginsListingFailed = store_1.createAction('[Core] PluginListing Fetch Failed');
 });

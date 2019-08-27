@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("@npm_bazel_karma//:defs.bzl", "ts_web_test_suite")
 load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
@@ -75,5 +76,23 @@ ng_module(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
+    ],
+)
+
+# Karma has overhead of bootstrap/tearDown. Combine as much testcases
+# as possible into one test target and use test sharding to speed up.
+ts_web_test_suite(
+    name = "karma_test",
+    srcs = [],
+    bootstrap = [
+        "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
+        "@npm//:node_modules/reflect-metadata/Reflect.js",
+    ],
+    runtime_deps = [
+        "//tensorboard/components/tf_ng_tensorboard/testing:initialize_testbed",
+    ],
+    deps = [
+        "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
     ],
 )

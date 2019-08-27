@@ -10,7 +10,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define("org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/app.module", ["require", "exports", "@angular/platform-browser", "@angular/platform-browser/animations", "@angular/core", "@ngrx/store", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/app.component", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/core/core.module", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/reducers", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/header/header.module"], factory);
+        define("org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/app.module", ["require", "exports", "@angular/platform-browser", "@angular/platform-browser/animations", "@angular/core", "@ngrx/store", "@ngrx/effects", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/app.component", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/core/core.module", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/reducers", "org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/header/header.module"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -33,6 +33,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     const animations_1 = require("@angular/platform-browser/animations");
     const core_1 = require("@angular/core");
     const store_1 = require("@ngrx/store");
+    const effects_1 = require("@ngrx/effects");
     const app_component_1 = require("org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/app.component");
     const core_module_1 = require("org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/core/core.module");
     const reducers_1 = require("org_tensorflow_tensorboard/tensorboard/components/tf_ng_tensorboard/reducers");
@@ -56,6 +57,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         strictActionSerializability: true,
                     },
                 }),
+                effects_1.EffectsModule.forRoot([]),
             ],
             providers: [],
             bootstrap: [app_component_1.AppComponent],

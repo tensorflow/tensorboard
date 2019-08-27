@@ -29,4 +29,10 @@
         ActiveDashboardsLoadState[ActiveDashboardsLoadState["LOADED"] = 1] = "LOADED";
         ActiveDashboardsLoadState[ActiveDashboardsLoadState["FAILED"] = 2] = "FAILED";
     })(ActiveDashboardsLoadState = exports.ActiveDashboardsLoadState || (exports.ActiveDashboardsLoadState = {}));
+    var LoadingMechanismType;
+    (function (LoadingMechanismType) {
+        LoadingMechanismType["CUSTOM_ELEMENT"] = "CUSTOM_ELEMENT";
+        LoadingMechanismType["IFRAME"] = "IFRAME";
+        LoadingMechanismType["NONE"] = "NONE";
+    })(LoadingMechanismType = exports.LoadingMechanismType || (exports.LoadingMechanismType = {}));
 });

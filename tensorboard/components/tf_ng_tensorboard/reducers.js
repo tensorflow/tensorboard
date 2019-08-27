@@ -38,7 +38,7 @@
     }
     exports.logger = logger;
     // TODO(stephanwlee): Create dev mode and conditionally enable this.
-    exports.metaReducers = false ? [logger] : [];
+    exports.metaReducers = true ? [logger] : [];
     exports.ROOT_REDUCERS = new core_1.InjectionToken('Root reducers token', {
         factory: () => ({}),
     });
