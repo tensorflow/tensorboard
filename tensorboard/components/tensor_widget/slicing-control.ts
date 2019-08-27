@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {getDefaultSlicingSpec} from './shape-utils';
 import {Shape, TensorViewSlicingSpec} from './types';
 
 export type OnSlicingSpecChangeCallback = (
@@ -31,7 +32,7 @@ export class SlicingControl {
   private rank: number;
 
   // The current slicing spec.
-  private slicingSpec: TensorViewSlicingSpec | null = null;
+  private slicingSpec: TensorViewSlicingSpec;
 
   // Constituent UI components.
   private dimControls: HTMLDivElement[] = [];
@@ -76,6 +77,7 @@ export class SlicingControl {
       );
     }
     this.createComponents();
+    this.slicingSpec = getDefaultSlicingSpec(shape);
   }
 
   /**
