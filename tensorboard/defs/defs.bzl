@@ -29,16 +29,16 @@ def tf_js_binary(compile, **kwargs):
     # Discard it.
     rollup_bundle(**kwargs)
 
-def tf_ts_library(tsconfig=None, **kwargs):
+def tf_ts_library(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library."""
 
     # ts_library doesn't have the tsconfig argument internally, but does
     # have it externally.
-    ts_library(tsconfig=tsconfig, **kwargs)
+    ts_library(**kwargs)
 
-def tf_ts_devserver(entry_module=None, index_html=None, **kwargs):
+def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
 
     # ts_devserver doesn't have the entry_module or index_html internally,
     # but does have those externally.
-    ts_devserver(entry_module=entry_module, index_html=index_html, **kwargs)
+    ts_devserver(**kwargs)
