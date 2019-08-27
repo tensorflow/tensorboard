@@ -20,38 +20,37 @@ export enum ActiveDashboardsLoadState {
 
 export type PluginId = string;
 
-/** Registration for a plugin dashboard UI. */
-export interface Dashboard {
-  /**
-   * Name of the element for the dashboard (excluding the angle brackets on
-   * either side). For instance, tf-scalar-dashboard. Used to select the
-   * correct dashboard when a user enters it.
-   */
-  elementName: string;
-
-  /**
-   * The name of the plugin associated with this dashboard. This string must
-   * match the PLUGIN_NAME specified by the backend of the plugin. Each plugin
-   * can be associated with no more than 1 plugin - this also means that each
-   * dashboard has a unique plugin field.
-   */
-  plugin: PluginId;
-
-  /**
-   * The string to show in the menu item for this dashboard within the
-   * navigation bar. That tab name may differ from the plugin name. For
-   * instance, the tab name should not use underscores to separate words.
-   */
-  tabName: string;
-
-  /**
-   * Whether or not tf-tensorboard reload functionality should be disabled.
-   *
-   * If true, then:
-   *   1. the reload button in the top right corner of the TensorBoard UI
-   *      will be shaded out
-   *   2. the timer that triggers the reload() method to be called every few
-   *      seconds will be disabled.
-   */
-  isReloadDisabled: boolean;
+export enum LoadingMechanismType {
+  CUSTOM_ELEMENT = 'CUSTOM_ELEMENT',
+  IFRAME = 'IFRAME',
+  NONE = 'NONE',
 }
+
+export interface CustomElementLoadingMechanism {
+  type: LoadingMechanismType.CUSTOM_ELEMENT;
+  element_name: string;
+}
+
+export interface IframeLoadingMechanism {
+  type: LoadingMechanismType.IFRAME;
+  module_path: string;
+}
+
+export interface NoLoadingMechanism {
+  type: LoadingMechanismType.NONE;
+}
+
+export interface PluginMetadata {
+  disable_reload: boolean;
+  enabled: boolean;
+  loading_mechanism:
+    | CustomElementLoadingMechanism
+    | IframeLoadingMechanism
+    | NoLoadingMechanism;
+  tab_name: string;
+  remove_dom: boolean;
+}
+
+export type PluginsListing = {
+  [pluginName: string]: PluginMetadata;
+};
