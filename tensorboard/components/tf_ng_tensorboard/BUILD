@@ -93,6 +93,7 @@ ts_web_test_suite(
     ],
     deps = [
         "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
     ],
 )
