@@ -21,8 +21,8 @@ import {createPluginMetadata} from './test_util';
 
 function createPluginsListing() {
   return {
-    core: createDefaultPluginMetadata('Core'),
-    scalars: createDefaultPluginMetadata('Scalars'),
+    core: createPluginMetadata('Core'),
+    scalars: createPluginMetadata('Scalars'),
   };
 }
 

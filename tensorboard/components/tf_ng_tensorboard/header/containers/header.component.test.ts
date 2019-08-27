@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {DebugElement} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {MatTabsModule, MatTab} from '@angular/material/tabs';
+import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -29,8 +29,7 @@ import {createPluginMetadata} from '../../core/test_util';
 
 import * as _typeHackStore from '@ngrx/store';
 
-describe('heaader.component', () => {
-  let component: HeaderComponent;
+describe('header.component', () => {
   let store: MockStore<State>;
 
   function createCoreState(): CoreState {
@@ -58,7 +57,6 @@ describe('heaader.component', () => {
       ],
       declarations: [HeaderComponent],
     }).compileComponents();
-    component = TestBed.get(HeaderComponent);
     store = TestBed.get(Store);
   });
 
@@ -66,7 +64,7 @@ describe('heaader.component', () => {
     expect(el.nativeElement.innerText.trim().toUpperCase()).toBe(text);
   }
 
-  it('renders the plugins list', () => {
+  it('renders pluginsList', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
@@ -77,7 +75,7 @@ describe('heaader.component', () => {
     assertDebugElementText(els[1], 'BARBER');
   });
 
-  it('updates tab list when pluginsList update', async () => {
+  it('updates list of tabs when pluginsList updates', async () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
