@@ -61,7 +61,7 @@ export class PluginsComponent {
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {
-    for (let element of this.pluginInstances.values()) {
+    for (const element of this.pluginInstances.values()) {
       element.style.display = 'none';
     }
 
@@ -76,19 +76,21 @@ export class PluginsComponent {
   private appendPlugin(plugin: UiPluginMetadata) {
     const pluginId = plugin.id;
 
-    let element = null;
+    let pluginElement = null;
     switch (plugin.loading_mechanism.type) {
       case LoadingMechanismType.CUSTOM_ELEMENT: {
         const customElementPlugin = plugin.loading_mechanism as CustomElementLoadingMechanism;
-        element = document.createElement(customElementPlugin.element_name);
-        this.pluginsContainer.nativeElement.appendChild(element);
+        pluginElement = document.createElement(
+          customElementPlugin.element_name
+        );
+        this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }
       case LoadingMechanismType.IFRAME: {
         const iframePlugin = plugin.loading_mechanism as IframeLoadingMechanism;
-        element = document.createElement('iframe');
-        this.pluginsContainer.nativeElement.appendChild(element);
-        const subdocument = element.contentDocument;
+        pluginElement = document.createElement('iframe');
+        this.pluginsContainer.nativeElement.appendChild(pluginElement);
+        const subdocument = pluginElement.contentDocument;
         const script = subdocument.createElement('script');
         const baseHrefString = JSON.stringify(
           new URL(`data/${pluginId}/`, window.location.href)
@@ -99,13 +101,13 @@ export class PluginsComponent {
           // (in the inline script rather than the host) are needed to
           // work around a Firefox bug:
           // https://github.com/tensorflow/tensorboard/issues/2536
-          `setTimeout(() => {\n`,
-          `  const base = document.createElement("base");\n`,
-          `  base.setAttribute("href", ${baseHrefString});\n`,
-          `  document.head.appendChild(base);\n`,
-          `  import(${moduleString}).then((m) => void m.render());\n`,
-          `}, 0);\n`,
-        ].join('');
+          `setTimeout(() => {`,
+          `  const base = document.createElement("base");`,
+          `  base.setAttribute("href", ${baseHrefString});`,
+          `  document.head.appendChild(base);`,
+          `  import(${moduleString}).then((m) => void m.render());`,
+          `}, 0);`,
+        ].join('\n');
         subdocument.body.appendChild(script);
         break;
       }
@@ -115,9 +117,9 @@ export class PluginsComponent {
       default:
         console.error('Unexpected plugin');
     }
-    if (element) {
-      element.id = pluginId;
-      this.pluginInstances.set(pluginId, element);
+    if (pluginElement) {
+      pluginElement.id = pluginId;
+      this.pluginInstances.set(pluginId, pluginElement);
     }
   }
 }
