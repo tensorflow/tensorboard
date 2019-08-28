@@ -118,8 +118,9 @@ class WitWidgetBase(object):
     self.updated_example_indices = set(range(len(examples)))
 
   def compute_custom_distance_impl(self, index, params):
-    ex = self.examples[index]
-    return self.custom_distance_fn(ex, self.examples, params)
+    # ex = self.examples[index]
+    print('compute_custom_distance_impl')
+    return self.custom_distance_fn('ex', self.examples, params)
 
   def json_to_proto(self, json):
     ex = (tf.train.SequenceExample()

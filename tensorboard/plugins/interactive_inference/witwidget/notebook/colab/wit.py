@@ -50,8 +50,8 @@ def infer_mutants(wit_id, details):
 output.register_callback('notebook.InferMutants', infer_mutants)
 
 
-def compute_custom_distance(wit_id, index1, index2):
-  WitWidget.widgets[wit_id].compute_custom_distance(index1, index2)
+def compute_custom_distance(wit_id, index, callback_name, params):
+  WitWidget.widgets[wit_id].compute_custom_distance(index, callback_name, params)
 output.register_callback('notebook.ComputeCustomDistance', compute_custom_distance)
 
 
@@ -73,7 +73,7 @@ WIT_HTML = """
       }});
       wit.addEventListener("compute-custom-distance", e => {{
         google.colab.kernel.invokeFunction(
-          'notebook.ComputeCustomDistance', [id, e.detail.index1, e.detail.index2], {{}});
+          'notebook.ComputeCustomDistance', [id, e.detail.index, e.detail.callback, e.detail.params], {{}});
       }});
       wit.addEventListener("delete-example", e => {{
         google.colab.kernel.invokeFunction(
@@ -110,7 +110,8 @@ WIT_HTML = """
       }};
 
       window.distanceCallback = callback_dict => {{
-        wit[callback_dict.callback_fn]('hello')
+        console.log('distancecallback')
+        wit['computeClosestCounterfactual']('hello')
       }};
 
       window.spriteCallback = spriteUrl => {{
@@ -165,7 +166,7 @@ WIT_HTML = """
           wit.selectedLabelFeature = config['target_feature'];
         }}
         if ('uses_custom_distance_fn' in config) {{
-          wit.customDistanceFunctionSet = True;
+          wit.customDistanceFunctionSet = 1;
         }}
       }};
       window.updateExamplesCallback = examples => {{
@@ -274,9 +275,10 @@ class WitWidget(base.WitWidgetBase):
     self._generate_sprite()
 
   def compute_custom_distance(self, index, callback_fn, params):
-    distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
+    # distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
                                                                 params['distance_params'])
-    callback_dict = {'distances':distances, 'ex_ind':index, 'callback_fn':callback_fn, 'params':params['callback_params']}
+    # callback_dict = {'distances':distances, 'ex_ind':index, 'callback_fn':callback_fn, 'params':params['callback_params']}
+    callback_dict = {'a':1}
     output.eval_js("""distanceCallback({callback_dict})""".format(
         callback_dict=json.dumps(callback_dict)))
 

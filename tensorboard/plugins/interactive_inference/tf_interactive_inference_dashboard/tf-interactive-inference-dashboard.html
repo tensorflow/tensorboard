@@ -3818,11 +3818,11 @@ limitations under the License.
           // }
         },
 
-        findClosestCounterfactual: function() {
+        findClosestCounterfactual_: function() {
           const selected = this.selected[0];
           // Custom distance function can only be used when local
           if (this.local && this.customDistanceFunctionSet){
-            requestDistanceWithCallback(selected,
+            this.requestDistanceWithCallback(selected,
                                         'computeClosestCounterfactual',
                                         '');
             return;
@@ -3877,6 +3877,7 @@ limitations under the License.
         // Call backend for distance computation, backend calls callback function
         // with computed distances and parameters
         requestDistanceWithCallback: function(exInd, callbackFun, callbackParams){
+          console.log('requestDistanceWithCallback');
           const urlParams = {index: exInd,
                              callback: callbackFun,
                              params: callbackParams}
