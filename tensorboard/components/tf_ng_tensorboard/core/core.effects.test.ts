@@ -25,6 +25,8 @@ import {CoreEffects} from './core.effects';
 import * as coreActions from './core.actions';
 import {CoreService} from './core.service';
 
+import {createPluginMetadata} from './test_util';
+
 import {PluginsListing, LoadingMechanismType} from '../types/api';
 
 describe('core.effects', () => {
@@ -48,15 +50,7 @@ describe('core.effects', () => {
 
   it('fetches plugins listing and fires success action', () => {
     const pluginsListing: PluginsListing = {
-      core: {
-        disable_reload: false,
-        enabled: true,
-        loading_mechanism: {
-          type: LoadingMechanismType.NONE,
-        },
-        tab_name: 'Core',
-        remove_dom: false,
-      },
+      core: createPluginMetadata('Core'),
     };
     // Assertion/exception in the subscribe does not fail the test.
     // Store the result

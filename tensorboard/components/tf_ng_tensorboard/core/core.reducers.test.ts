@@ -17,23 +17,12 @@ import {expect} from 'chai';
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
 import {PluginMetadata, LoadingMechanismType} from '../types/api';
-
-function createDefaultPluginMetadata(name: string): PluginMetadata {
-  return {
-    disable_reload: false,
-    enabled: true,
-    loading_mechanism: {
-      type: LoadingMechanismType.NONE,
-    },
-    tab_name: name,
-    remove_dom: false,
-  };
-}
+import {createPluginMetadata} from './test_util';
 
 function createPluginsListing() {
   return {
-    core: createDefaultPluginMetadata('Core'),
-    scalars: createDefaultPluginMetadata('Scalars'),
+    core: createPluginMetadata('Core'),
+    scalars: createPluginMetadata('Scalars'),
   };
 }
 

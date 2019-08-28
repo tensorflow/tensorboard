@@ -22,6 +22,15 @@ ng_module(
 )
 
 ts_library(
+    name = "test_util",
+    testonly = True,
+    srcs = ["test_util.ts"],
+    deps = [
+        "//tensorboard/components/tf_ng_tensorboard/types",
+    ],
+)
+
+ts_library(
     name = "core_effects_test_lib",
     testonly = True,
     srcs = [
@@ -30,6 +39,7 @@ ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":core",
+        ":test_util",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
@@ -49,6 +59,7 @@ ng_module(
     ],
     deps = [
         ":core",
+        ":test_util",
         "@npm//@types/jasmine",
         "@npm//chai",
     ],
