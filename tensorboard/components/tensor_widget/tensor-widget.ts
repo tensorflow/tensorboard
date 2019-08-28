@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-/* tslint:disable */
-
 import {TensorWidgetImpl} from './tensor-widget-impl';
 import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
 
