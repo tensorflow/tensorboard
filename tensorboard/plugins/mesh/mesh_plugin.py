@@ -145,9 +145,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer and any(six.itervalues(all_runs)))
 
   def frontend_metadata(self):
-    return super(MeshPlugin, self).frontend_metadata()._replace(
-        element_name='mesh-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='mesh-dashboard')
 
   def _get_sample(self, tensor_event, sample):
     """Returns a single sample from a batch of samples."""

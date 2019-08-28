@@ -128,8 +128,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
   def frontend_metadata(self):
-    base = super(FakePlugin, self).frontend_metadata()
-    return base._replace(
+    return base_plugin.FrontendMetadata(
         element_name=self._element_name_value,
         es_module_path=self._es_module_path_value,
     )

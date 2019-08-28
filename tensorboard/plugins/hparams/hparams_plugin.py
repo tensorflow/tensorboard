@@ -84,9 +84,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
         metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(HParamsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-hparams-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-hparams-dashboard')
 
   # ---- /experiment -----------------------------------------------------------
   @wrappers.Request.application

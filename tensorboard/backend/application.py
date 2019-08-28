@@ -323,13 +323,22 @@ class TensorBoardWSGI(object):
           'Plugin listing: is_active() for %s took %0.3f seconds',
           plugin.plugin_name, elapsed)
 
-      plugin_metadata = plugin.frontend_metadata()._asdict()
-      if plugin_metadata['tab_name'] is None:
-        plugin_metadata['tab_name'] = plugin.plugin_name
-      plugin_metadata['enabled'] = is_active
+      plugin_metadata = plugin.frontend_metadata()
+      output_metadata = {
+          'disable_reload': plugin_metadata.disable_reload,
+          'enabled': is_active,
+          # loading_mechanism set below
+          'remove_dom': plugin_metadata.remove_dom,
+          # tab_name set below
+      }
 
-      es_module_handler = plugin_metadata.pop('es_module_path')
-      element_name = plugin_metadata.pop('element_name')
+      if plugin_metadata.tab_name is not None:
+        output_metadata['tab_name'] = plugin_metadata.tab_name
+      else:
+        output_metadata['tab_name'] = plugin.plugin_name
+
+      es_module_handler = plugin_metadata.es_module_path
+      element_name = plugin_metadata.element_name
       if element_name is not None and es_module_handler is not None:
         logger.error(
             'Plugin %r declared as both legacy and iframed; skipping',
@@ -355,9 +364,9 @@ class TensorBoardWSGI(object):
         loading_mechanism = {
             'type': 'NONE',
         }
-      plugin_metadata['loading_mechanism'] = loading_mechanism
+      output_metadata['loading_mechanism'] = loading_mechanism
 
-      response[plugin.plugin_name] = plugin_metadata
+      response[plugin.plugin_name] = output_metadata
     return http_util.Respond(request, response, 'application/json')
 
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
