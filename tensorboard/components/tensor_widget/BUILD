@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tf_jasmine_node_test", "tf_ts_config", "tf_js_binary", "tf_ts_devserver", "tf_ts_library")
+load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
+load("//tensorboard/defs:defs.bzl", "tf_ts_config", "tf_js_binary", "tf_ts_devserver", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -57,7 +58,7 @@ tf_ts_library(
     ],
 )
 
-tf_jasmine_node_test(
+jasmine_node_test(
     name = "test",
     srcs = [":test_lib"],
     deps = [
