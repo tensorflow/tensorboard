@@ -506,7 +506,7 @@ export class TensorWidgetImpl implements TensorWidget {
         const valueDiv = this.valueDivs[i][0];
         if (i < (values as number[]).length) {
           valueDiv.textContent = numericValueToString(
-            values[i],
+            (values as number[])[i],
             isIntegerDType(this.tensorView.spec.dtype)
           );
         } else {
@@ -519,10 +519,10 @@ export class TensorWidgetImpl implements TensorWidget {
           const valueDiv = this.valueDivs[i][j];
           if (
             i < (values as number[][]).length &&
-            j < (values[i] as number[]).length
+            j < (values as number[][])[i].length
           ) {
             valueDiv.textContent = numericValueToString(
-              values[i][j],
+              (values as number[][])[i][j],
               isIntegerDType(this.tensorView.spec.dtype)
             );
           } else {
