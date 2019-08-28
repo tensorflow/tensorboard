@@ -56,6 +56,7 @@ describe('TensorElementSelection', () => {
       slicingDimsAndIndices: [],
       viewingDims: [0],
       verticalRange: [0, 5],
+      horizontalRange: null,
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.
@@ -354,6 +355,7 @@ describe('Moving selection', () => {
       slicingDimsAndIndices: [],
       viewingDims: [0],
       verticalRange: [0, 5],
+      horizontalRange: null,
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.

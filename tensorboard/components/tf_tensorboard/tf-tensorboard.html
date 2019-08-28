@@ -742,7 +742,7 @@ limitations under the License.
           workingSet.delete(d.plugin);
         });
         activeDashboards.forEach((d) => {
-          workingSet.delete(d.plugin);
+          workingSet.delete(d);
         });
         return workingSet.size > 0;
       },

@@ -49,8 +49,8 @@ export enum SelectionMoveDirection {
  *   slicing spec ought to be updated to accommodate it.
  */
 export class TensorElementSelection {
-  private sliceDims: number[];
-  private sliceIndices: number[];
+  private sliceDims: number[] = [];
+  private sliceIndices: number[] = [];
   private viewDims: number[];
   private rowStart: number;
   private colStart: number;
@@ -85,12 +85,17 @@ export class TensorElementSelection {
       );
     }
 
-    this.sliceDims = slicingSpec.slicingDimsAndIndices.map(
-      (dimAndIndex) => dimAndIndex.dim
-    );
-    this.sliceIndices = slicingSpec.slicingDimsAndIndices.map(
-      (dimAndIndex) => dimAndIndex.index
-    );
+    for (let i = 0; i < slicingSpec.slicingDimsAndIndices.length; ++i) {
+      this.sliceDims.push(slicingSpec.slicingDimsAndIndices[i].dim);
+      const index = slicingSpec.slicingDimsAndIndices[i].index;
+      if (index === null) {
+        throw new Error(
+          `Failed to create TensorElementSelection due to ` +
+            `undetermined slicing index at dimension ${i}`
+        );
+      }
+      this.sliceIndices.push(index);
+    }
 
     // Sanity check the size of the the slicing dimensions.
     if (this.rank() > 0 && this.sliceDims.length >= this.rank()) {
@@ -233,6 +238,26 @@ export class TensorElementSelection {
    */
   public move(direction: SelectionMoveDirection): TensorViewSlicingSpec | null {
     let viewRangeChanged = false;
+    if (this.rank() === 0) {
+      // No-op for a scalar.
+      return null;
+    }
+    if (
+      this.rank() === 1 &&
+      (direction === SelectionMoveDirection.LEFT ||
+        direction === SelectionMoveDirection.RIGHT)
+    ) {
+      // No-op for moving left or right in a 1D tensor.
+      return null;
+    }
+
+    if (
+      this.slicingSpec.verticalRange === null ||
+      this.slicingSpec.verticalRange[1] === null
+    ) {
+      throw new Error(`Failed to move odue to undetermined vertical range.`);
+    }
+
     if (direction === SelectionMoveDirection.UP) {
       if (this.rowStart > 0) {
         this.rowStart--;
@@ -270,7 +295,7 @@ export class TensorElementSelection {
           this.colStart < this.slicingSpec.horizontalRange[0]
         ) {
           this.slicingSpec.horizontalRange[0]--;
-          this.slicingSpec.horizontalRange[1]--;
+          (this.slicingSpec.horizontalRange[1] as number)--;
           viewRangeChanged = true;
         }
       }
@@ -283,10 +308,10 @@ export class TensorElementSelection {
         this.colStart++;
         if (
           this.slicingSpec.horizontalRange != null &&
-          this.colStart >= this.slicingSpec.horizontalRange[1]
+          this.colStart >= (this.slicingSpec.horizontalRange[1] as number)
         ) {
           this.slicingSpec.horizontalRange[0]++;
-          this.slicingSpec.horizontalRange[1]++;
+          (this.slicingSpec.horizontalRange[1] as number)++;
           viewRangeChanged = true;
         }
       }
