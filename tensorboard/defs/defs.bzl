@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""External-only delegates for various BUILD rules."""
+
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
@@ -38,3 +41,8 @@ def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
 
     ts_devserver(**kwargs)
+
+def tf_jasmine_node_test(**kwargs):
+    """TensorBoard wrapper for the rule for the Jasmine Node.js test."""
+
+    jasmine_node_test(**kwargs)
