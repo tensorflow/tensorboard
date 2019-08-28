@@ -6,6 +6,7 @@
     "noResolve": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "lib": [

@@ -15,7 +15,7 @@
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
+load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -31,6 +31,11 @@ def tf_js_binary(compile, **kwargs):
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
     rollup_bundle(**kwargs)
+
+def tf_ts_config(**kwargs):
+    """TensorBoard wrapper for the rule for a TypeScript configuration."""
+
+    ts_config(**kwargs)
 
 def tf_ts_library(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library."""

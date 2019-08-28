@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/* tslint:disable */
+
 import {BaseTensorHealthPill} from './health-pill-types';
 
 export type Shape = ReadonlyArray<number>;
