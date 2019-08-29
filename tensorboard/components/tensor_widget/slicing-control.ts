@@ -28,7 +28,7 @@ export type OnSlicingSpecChangeCallback = (
  * Used for tensors with rank (dimensionality) 3 or higher.
  */
 export class SlicingControl {
-  private rank: number;
+  private readonly rank: number;
 
   // The current slicing spec.
   private slicingSpec: TensorViewSlicingSpec;
@@ -43,7 +43,7 @@ export class SlicingControl {
   // dimension.
   private dropdowns: HTMLDivElement[];
   // Static divs that display brackets ("[" and "]") on the two sides.
-  private bracketDivs: [HTMLDivElement, HTMLDivElement] = [null, null];
+  private readonly bracketDivs: [HTMLDivElement, HTMLDivElement] = [null, null];
 
   private dimControlsListenerAttached: boolean[];
 

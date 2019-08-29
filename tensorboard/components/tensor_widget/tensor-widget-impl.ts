@@ -41,7 +41,7 @@ const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
 /** An implementation of TensorWidget single-tensor view. */
 export class TensorWidgetImpl implements TensorWidget {
-  private options: TensorWidgetOptions;
+  private readonly options: TensorWidgetOptions;
   protected rank: number;
 
   // Constituent UI elements.
