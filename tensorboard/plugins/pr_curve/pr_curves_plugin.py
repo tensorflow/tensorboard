@@ -341,7 +341,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
     return any(six.itervalues(all_runs))
 
   def frontend_metadata(self):
-    return super(PrCurvesPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-pr-curve-dashboard',
         tab_name='PR Curves',
     )

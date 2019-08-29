@@ -7,11 +7,11 @@ load("@npm_bazel_typescript//:defs.bzl", "ts_library")
 ng_module(
     name = "core",
     srcs = [
-        "core.actions.js",
-        "core.effects.js",
-        "core.module.js",
-        "core.reducers.js",
-        "core.service.js",
+        "core.actions.ts",
+        "core.effects.ts",
+        "core.module.ts",
+        "core.reducers.ts",
+        "core.service.ts",
     ],
     deps = [
         "//tensorboard/components/tf_ng_tensorboard/types",

@@ -62,9 +62,9 @@ ng_module(
 ng_module(
     name = "app",
     srcs = [
-        "app.component.js",
-        "app.module.js",
-        "reducers.js",
+        "app.component.ts",
+        "app.module.ts",
+        "reducers.ts",
     ],
     assets = [
         "app.component.css",

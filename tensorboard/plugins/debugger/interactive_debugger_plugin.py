@@ -162,9 +162,7 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     # TODO(#2338): Keep this in sync with the `registerDashboard` call
     # on the frontend until that call is removed.
-    return super(InteractiveDebuggerPlugin, self).frontend_metadata()._replace(
-        element_name='tf-debugger-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-debugger-dashboard')
 
   @wrappers.Request.application
   def _serve_ack(self, request):

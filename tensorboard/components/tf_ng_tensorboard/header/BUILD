@@ -9,7 +9,7 @@ ng_module(
     name = "header",
     srcs = [
         "containers/header.component.ts",
-        "header.module.js",
+        "header.module.ts",
     ],
     assets = [
         "containers/header.component.css",

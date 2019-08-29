@@ -108,7 +108,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(CustomScalarsPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-custom-scalar-dashboard',
         tab_name='Custom Scalars',
     )
