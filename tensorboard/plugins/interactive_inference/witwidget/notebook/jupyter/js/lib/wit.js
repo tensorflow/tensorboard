@@ -36,7 +36,11 @@ var WITView = widgets.DOMWidgetView.extend({
     this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
     this.model.on('change:sprite', this.spriteChanged, this);
     this.model.on('change:error', this.backendError, this);
-    this.model.on('change:custom_distance_dict', this.customDistanceComputed, this);
+    this.model.on(
+      'change:custom_distance_dict',
+      this.customDistanceComputed,
+      this
+    );
   },
 
   /**
@@ -266,9 +270,11 @@ var WITView = widgets.DOMWidgetView.extend({
       return;
     }
     const custom_distance_dict = this.model.get('custom_distance_dict');
-    this.view_[custom_distance_dict.callback_fn](custom_distance_dict.exInd,
-                                                 custom_distance_dict.distances,
-                                                 custom_distance_dict.params)
+    this.view_[custom_distance_dict.callback_fn](
+      custom_distance_dict.exInd,
+      custom_distance_dict.distances,
+      custom_distance_dict.params
+    );
   },
 });
 

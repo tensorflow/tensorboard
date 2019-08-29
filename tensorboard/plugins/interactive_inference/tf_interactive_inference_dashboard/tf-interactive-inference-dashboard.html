@@ -3785,7 +3785,7 @@ limitations under the License.
         },
 
         computeClosestCounterfactual: function(exInd, distances) {
-        // Distances are indexed by example ids
+          // Distances are indexed by example ids
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
@@ -3820,10 +3820,12 @@ limitations under the License.
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
           // Custom distance function can only be used when local
-          if (this.local && this.customDistanceFunctionSet){
-            this.requestDistanceWithCallback(selected,
-                                        'computeClosestCounterfactual',
-                                        {callbackParams:{}, distanceParams:{}});
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              'computeClosestCounterfactual',
+              {callbackParams: {}, distanceParams: {}}
+            );
             return;
           }
 
@@ -3843,9 +3845,11 @@ limitations under the License.
             ) {
               continue;
             }
-            let dist = this.getDist(this.visdata[selected],
-                                    this.visdata[i],
-                                    this.nearestCounterfactualDist == 'L2');
+            let dist = this.getDist(
+              this.visdata[selected],
+              this.visdata[i],
+              this.nearestCounterfactualDist == 'L2'
+            );
             if (dist < closestDist) {
               closestDist = dist;
               closest = i;
@@ -3863,11 +3867,13 @@ limitations under the License.
 
         // Call backend for distance computation, backend calls callback function
         // with computed distances and parameters
-        requestDistanceWithCallback: function(exInd, callbackFun, params){
-          const urlParams = {index: exInd,
-                             callback: callbackFun,
-                             params: params}
-          this.fire('compute-custom-distance', urlParams)
+        requestDistanceWithCallback: function(exInd, callbackFun, params) {
+          const urlParams = {
+            index: exInd,
+            callback: callbackFun,
+            params: params,
+          };
+          this.fire('compute-custom-distance', urlParams);
         },
 
         /**
