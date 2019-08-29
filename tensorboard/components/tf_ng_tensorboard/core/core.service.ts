@@ -12,34 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-mat-toolbar {
-  align-items: center;
-  display: flex;
-  height: 64px;
-  overflow: hidden;
-  width: 100%;
-}
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 
-mat-tab-group {
-  align-self: stretch;
-}
+import {PluginsListing} from '../types/api';
 
-.brand,
-.settings {
-  flex: 0 0 auto;
-}
+import * as _typeHackRxjs from 'rxjs';
 
-.mat-tab-group {
-  flex: 1 1 auto;
-  overflow: hidden;
-}
+@Injectable()
+export class CoreService {
+  constructor(private http: HttpClient) {}
 
-/deep/ .tb-toolbar .mat-tab-header,
-/deep/ .tb-toolbar .mat-tab-labels,
-/deep/ .tb-toolbar .mat-tab-label {
-  height: 100%;
-}
-
-/deep/ .tb-toolbar .mat-tab-label {
-  text-transform: uppercase;
+  fetchPluginsListing() {
+    return this.http.get<PluginsListing>('data/plugins_listing');
+  }
 }

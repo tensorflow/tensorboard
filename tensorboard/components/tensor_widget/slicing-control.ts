@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {getDefaultSlicingSpec} from './shape-utils';
 import {Shape, TensorViewSlicingSpec} from './types';
 
 export type OnSlicingSpecChangeCallback = (
@@ -34,18 +35,21 @@ export class SlicingControl {
   private slicingSpec: TensorViewSlicingSpec;
 
   // Constituent UI components.
-  private dimControls: HTMLDivElement[];
+  private dimControls: HTMLDivElement[] = [];
   // Input elements for selecting the slices in sliced dimensions.
-  private dimInputs: HTMLInputElement[];
+  private dimInputs: HTMLInputElement[] = [];
   // Displayed commas.
-  private commas: HTMLDivElement[];
+  private commas: HTMLDivElement[] = [];
   // Dropdown mini-menus to allow swapping a viewed dimension with another
   // dimension.
-  private dropdowns: HTMLDivElement[];
+  private dropdowns: HTMLDivElement[] = [];
   // Static divs that display brackets ("[" and "]") on the two sides.
-  private readonly bracketDivs: [HTMLDivElement, HTMLDivElement] = [null, null];
+  private readonly bracketDivs: [
+    HTMLDivElement | null,
+    HTMLDivElement | null
+  ] = [null, null];
 
-  private dimControlsListenerAttached: boolean[];
+  private dimControlsListenerAttached: boolean[] = [];
 
   /**
    * Constructor of SlicingControl.
@@ -62,7 +66,7 @@ export class SlicingControl {
   constructor(
     private readonly rootDiv: HTMLDivElement,
     private readonly shape: Shape,
-    private readonly onSlicingSpecChange?: OnSlicingSpecChangeCallback
+    private readonly onSlicingSpecChange: OnSlicingSpecChangeCallback = () => {}
   ) {
     this.rank = this.shape.length;
     if (this.rank < 3) {
@@ -73,6 +77,7 @@ export class SlicingControl {
       );
     }
     this.createComponents();
+    this.slicingSpec = getDefaultSlicingSpec(shape);
   }
 
   /**
@@ -150,6 +155,11 @@ export class SlicingControl {
     if (slicingSpec != null) {
       this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
     }
+    if (this.slicingSpec === null) {
+      throw new Error(
+        'Slicing control rendering failed due to missing slicing spec.'
+      );
+    }
 
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
       (dimAndIndex) => dimAndIndex.dim
@@ -189,6 +199,11 @@ export class SlicingControl {
 
           // Set change callback for the dim input.
           dimInput.addEventListener('change', () => {
+            if (this.slicingSpec === null) {
+              throw new Error(
+                'Slicing control change callback failed due to missing spec.'
+              );
+            }
             const newIndex = parseInt(dimInput.value, 10);
             if (
               !isFinite(newIndex) ||
@@ -222,12 +237,18 @@ export class SlicingControl {
       } else {
         if (this.slicingSpec.viewingDims[0] === i) {
           // This is a dimension being viewed as the vertical (rows) dimension.
+          if (this.slicingSpec.verticalRange === null) {
+            throw new Error('Missing vertical range.');
+          }
           dimControl.textContent =
             `🡙 ${this.slicingSpec.verticalRange[0]}:` +
             `${this.slicingSpec.verticalRange[1]}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
           // dimension.
+          if (this.slicingSpec.horizontalRange === null) {
+            throw new Error('Missing horizontal range.');
+          }
           dimControl.textContent =
             `🡘 ${this.slicingSpec.horizontalRange[0]}:` +
             `${this.slicingSpec.horizontalRange[1]}`;
@@ -265,6 +286,13 @@ export class SlicingControl {
     left: number,
     dim: number
   ) {
+    if (this.slicingSpec === null) {
+      throw new Error(
+        'Slicing control cannot render dropdown menu items due to missing ' +
+          'slicing spec.'
+      );
+    }
+
     // Clear all dropdown menus. Make sure that at any moment, only one dropdown
     // menu is open.
     this.clearAllDropdowns();
@@ -306,6 +334,11 @@ export class SlicingControl {
 
       const isFirstViewingDim = this.slicingSpec.viewingDims[0] === dim;
       menuItem.addEventListener('click', () => {
+        if (this.slicingSpec === null) {
+          throw new Error(
+            'Dimension swapping failed due to missing slicing spec'
+          );
+        }
         const k = slicingDims.indexOf(i);
         this.slicingSpec.viewingDims[isFirstViewingDim ? 0 : 1] = i;
         this.slicingSpec.slicingDimsAndIndices[k] = {
@@ -344,6 +377,9 @@ export class SlicingControl {
    */
   setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
     this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+    if (this.slicingSpec === null) {
+      throw new Error('Cannot set slicing spec to null.');
+    }
     this.render(this.slicingSpec);
   }
 

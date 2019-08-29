@@ -19,7 +19,7 @@ import {
   on,
   createFeatureSelector,
 } from '@ngrx/store';
-import {PluginId} from '../types/api';
+import {PluginId, PluginsListing} from '../types/api';
 import * as actions from './core.actions';
 
 // HACK: These imports are for type inference.
@@ -31,20 +31,28 @@ export const CORE_FEATURE_KEY = 'core';
 
 export interface CoreState {
   activePlugin: PluginId;
+  plugins: PluginsListing;
 }
 
 export interface State {
   [CORE_FEATURE_KEY]: CoreState;
 }
 
-const initialState = {};
+const initialState: CoreState = {
+  activePlugin: null,
+  plugins: {},
+};
 
 const reducer = createReducer(
   initialState,
   on(actions.changePlugin, (state: CoreState, {plugin}) => {
-    return {
-      activePlugin: plugin,
-    };
+    return {...state, activePlugin: plugin};
+  }),
+  on(actions.pluginsListingLoaded, (state: CoreState, {plugins}) => {
+    const [firstPlugin] = Object.keys(plugins);
+    let activePlugin =
+      state.activePlugin !== null ? state.activePlugin : firstPlugin;
+    return {activePlugin, plugins};
   })
 );
 
@@ -60,5 +68,12 @@ export const getActivePlugin = createSelector(
   selectCoreState,
   (state: CoreState): PluginId => {
     return state.activePlugin;
+  }
+);
+
+export const getPlugins = createSelector(
+  selectCoreState,
+  (state: CoreState): PluginsListing => {
+    return state.plugins;
   }
 );

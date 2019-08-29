@@ -45,33 +45,34 @@ export class TensorWidgetImpl implements TensorWidget {
   protected rank: number;
 
   // Constituent UI elements.
-  protected headerSection: HTMLDivElement;
-  protected infoSubsection: HTMLDivElement;
-  protected slicingSpecRoot: HTMLDivElement;
-  protected valueSection: HTMLDivElement;
-  protected topRuler: HTMLDivElement;
-  protected baseRulerTick: HTMLDivElement;
-  protected topRulerTicks: HTMLDivElement[];
-  protected leftRulerTicks: HTMLDivElement[];
-  protected valueRows: HTMLDivElement[];
-  protected valueDivs: HTMLDivElement[][];
-  protected valueTooltip: HTMLDivElement;
+  protected headerSection: HTMLDivElement | null = null;
+  protected infoSubsection: HTMLDivElement | null = null;
+  protected slicingSpecRoot: HTMLDivElement | null = null;
+  protected valueSection: HTMLDivElement | null = null;
+  protected topRuler: HTMLDivElement | null = null;
+  protected baseRulerTick: HTMLDivElement | null = null;
+  protected topRulerTicks: HTMLDivElement[] = [];
+  protected leftRulerTicks: HTMLDivElement[] = [];
+  protected valueRows: HTMLDivElement[] = [];
+  protected valueDivs: HTMLDivElement[][] = [];
+
+  protected valueTooltip: HTMLDivElement | null = null;
 
   // The UI slicing control used by 3D+ tensors.
-  protected slicingControl: SlicingControl;
+  protected slicingControl: SlicingControl | null = null;
 
   // Whether the height of the root element is insufficient to display
   // all the rows (vertical dimension under currrent slicing) at once.
-  protected rowsCutoff: boolean;
+  protected rowsCutoff: boolean = false;
   // Whether the height of the root element is insufficient to display
   // all the columns rows (horizontal dimension under currrent slicing) at once.
-  protected colsCutoff: boolean;
+  protected colsCutoff: boolean = false;
 
   // Current slicing specification for the underlying tensor.
   protected slicingSpec: TensorViewSlicingSpec;
 
   // Element selection.
-  protected selection: TensorElementSelection;
+  protected selection: TensorElementSelection | null = null;
 
   constructor(
     private readonly rootElement: HTMLDivElement,
@@ -135,6 +136,11 @@ export class TensorWidgetImpl implements TensorWidget {
    * Render the info subsection of the header section.
    */
   private renderInfo() {
+    if (this.headerSection === null) {
+      throw new Error(
+        'Rendering tensor info failed due to mising header section'
+      );
+    }
     if (this.infoSubsection == null) {
       this.infoSubsection = document.createElement('div');
       this.infoSubsection.classList.add('tensor-widget-info');
@@ -153,6 +159,11 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the optional name in the info subsection. */
   private renderName() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor name failed due to missing info subsection.'
+      );
+    }
     if (this.options.name == null || this.options.name.length === 0) {
       return;
     }
@@ -166,6 +177,11 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the dtype in the info subsection. */
   private renderDType() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor dtype failed due to missing info subsection.'
+      );
+    }
     const dTypeControl = document.createElement('div');
     dTypeControl.classList.add('tensor-widget-dtype');
 
@@ -183,6 +199,11 @@ export class TensorWidgetImpl implements TensorWidget {
 
   /** Render the shape in the info subsection. */
   private renderShape() {
+    if (this.infoSubsection == null) {
+      throw new Error(
+        'Rendering tensor shape failed due to missing info subsection.'
+      );
+    }
     const shapeTagDiv = document.createElement('div');
     shapeTagDiv.classList.add('tensor-widget-shape');
     const shapeTagLabel = document.createElement('div');
@@ -202,7 +223,7 @@ export class TensorWidgetImpl implements TensorWidget {
    * Fill in the content of the value divs given the current slicing spec.
    */
   private async renderValues() {
-    if (this.rank > 2 && this.slicingSpecRoot == null) {
+    if (this.rank > 2 && this.slicingSpecRoot === null) {
       this.slicingSpecRoot = document.createElement('div');
       this.slicingSpecRoot.classList.add('tensor-widget-slicing-group');
       this.rootElement.appendChild(this.slicingSpecRoot);
@@ -243,7 +264,7 @@ export class TensorWidgetImpl implements TensorWidget {
           event.stopPropagation();
           event.preventDefault();
           this.hideValueTooltip();
-          let newSlicingSpec: TensorViewSlicingSpec;
+          let newSlicingSpec: TensorViewSlicingSpec | null = null;
           if (event.keyCode === UP_KEYCODE) {
             newSlicingSpec = this.selection.move(SelectionMoveDirection.UP);
           } else if (event.keyCode === DOWN_KEYCODE) {
@@ -274,7 +295,7 @@ export class TensorWidgetImpl implements TensorWidget {
 
     if (this.rank > 2) {
       this.slicingControl = new SlicingControl(
-        this.slicingSpecRoot,
+        this.slicingSpecRoot as HTMLDivElement,
         this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
           if (!areSlicingSpecsCompatible(this.slicingSpec, slicingSpec)) {
@@ -294,11 +315,14 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   private clearValueSection() {
+    if (this.valueSection === null) {
+      return;
+    }
     while (this.valueSection.firstChild) {
       this.valueSection.removeChild(this.valueSection.firstChild);
     }
     this.topRuler = null;
-    this.valueRows = null;
+    this.valueRows = [];
   }
 
   /**
@@ -308,6 +332,11 @@ export class TensorWidgetImpl implements TensorWidget {
    * column-wise ruler blocks.
    */
   private createTopRuler() {
+    if (this.valueSection === null) {
+      throw new Error(
+        'Failed to create top ruler due to missing value section.'
+      );
+    }
     if (this.topRuler == null) {
       this.topRuler = document.createElement('div');
       this.topRuler.classList.add('tenesor-widget-top-ruler');
@@ -357,6 +386,11 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().right >= rootElementRight) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
+          if (this.slicingSpec.horizontalRange === null) {
+            throw new Error(
+              `Missing horizontal range for ${this.rank}D tensor.`
+            );
+          }
           this.slicingSpec.horizontalRange[1] = i + 1;
           this.colsCutoff = true;
         }
@@ -364,11 +398,19 @@ export class TensorWidgetImpl implements TensorWidget {
       }
     }
     if (!this.colsCutoff && this.rank >= 2) {
+      if (this.slicingSpec.horizontalRange === null) {
+        throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+      }
       this.slicingSpec.horizontalRange[1] = maxNumCols;
     }
   }
 
   private createLeftRuler() {
+    if (this.valueSection === null) {
+      throw new Error(
+        'Failed to create left ruler due to missing value section.'
+      );
+    }
     if (this.valueRows == null) {
       this.valueRows = [];
       this.leftRulerTicks = [];
@@ -402,6 +444,9 @@ export class TensorWidgetImpl implements TensorWidget {
       if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 1) {
+          if (this.slicingSpec.verticalRange === null) {
+            throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+          }
           this.slicingSpec.verticalRange[1] = i + 1;
           this.rowsCutoff = true;
         }
@@ -409,6 +454,9 @@ export class TensorWidgetImpl implements TensorWidget {
       }
     }
     if (!this.rowsCutoff && this.rank >= 1) {
+      if (this.slicingSpec.verticalRange === null) {
+        throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+      }
       this.slicingSpec.verticalRange[1] = maxNumRows;
     }
   }
@@ -425,6 +473,10 @@ export class TensorWidgetImpl implements TensorWidget {
    * (based on the current slicing spec).
    */
   private createValueDivs() {
+    if (this.valueRows === null) {
+      throw new Error('Value rows are unexpectedly uninitialized.');
+    }
+
     this.valueDivs = [];
     const numCols = this.topRulerTicks.length;
     const numRows = this.valueRows.length;
@@ -461,7 +513,7 @@ export class TensorWidgetImpl implements TensorWidget {
         });
         valueDiv.addEventListener('mouseenter', () => {
           const detailedValue = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
-          if (detailedValue == null) {
+          if (!detailedValue) {
             return;
           }
           const rootRect = this.rootElement.getBoundingClientRect();
@@ -475,7 +527,6 @@ export class TensorWidgetImpl implements TensorWidget {
             valueRect.top - rootRect.top + valueHeight * 0.8,
             valueRect.left - rootRect.left + valueWidth * 0.75
           );
-          this.valueTooltip.style.display = 'block';
         });
         valueDiv.addEventListener('mouseleave', () => {
           this.hideValueTooltip();
@@ -495,6 +546,9 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpec.viewingDims[1]
       ];
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
+        if (this.slicingSpec.horizontalRange === null) {
+          throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+        }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
         if (colIndex < numCols) {
           this.topRulerTicks[i].textContent = `${colIndex}`;
@@ -516,6 +570,9 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpec.viewingDims[0]
       ];
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
+        if (this.slicingSpec.verticalRange === null) {
+          throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
+        }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
         if (rowIndex < numRows) {
           this.leftRulerTicks[i].textContent = `${rowIndex}`;
@@ -557,7 +614,7 @@ export class TensorWidgetImpl implements TensorWidget {
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
         } else {
           valueDiv.textContent = '';
-          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, undefined);
+          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
         }
       }
     } else if (this.rank >= 2) {
@@ -576,7 +633,7 @@ export class TensorWidgetImpl implements TensorWidget {
             valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
           } else {
             valueDiv.textContent = '';
-            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, undefined);
+            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
           }
         }
       }
@@ -641,10 +698,33 @@ export class TensorWidgetImpl implements TensorWidget {
     );
     for (let i = 0; i < this.rank; ++i) {
       if (slicingDims.indexOf(i) !== -1) {
-        indices.push(slicingIndices[slicingDims.indexOf(i)]);
+        const index = slicingIndices[slicingDims.indexOf(i)];
+        if (index === null) {
+          throw new Error(
+            `Failed to calculate indices: ` +
+              `Undetermined index at dimension ${i}`
+          );
+        }
+        indices.push(index);
       } else if (i === this.slicingSpec.viewingDims[0]) {
+        if (
+          this.slicingSpec.verticalRange === null ||
+          this.slicingSpec.verticalRange[0] === null
+        ) {
+          throw new Error(
+            'Failed to calculate indices to do undertermined vertical range.'
+          );
+        }
         indices.push(this.slicingSpec.verticalRange[0] + row);
       } else if (i === this.slicingSpec.viewingDims[1]) {
+        if (
+          this.slicingSpec.horizontalRange === null ||
+          this.slicingSpec.horizontalRange[0] === null
+        ) {
+          throw new Error(
+            'Failed to calculate indices to do undertermined vertical range.'
+          );
+        }
         indices.push(this.slicingSpec.horizontalRange[0] + col);
       }
     }
@@ -664,7 +744,7 @@ export class TensorWidgetImpl implements TensorWidget {
     top: number,
     left: number
   ) {
-    if (this.valueTooltip == null) {
+    if (this.valueTooltip === null) {
       this.valueTooltip = document.createElement('div');
       this.valueTooltip.classList.add('tensor-widget-value-tooltip');
       this.rootElement.appendChild(this.valueTooltip);
@@ -685,6 +765,7 @@ export class TensorWidgetImpl implements TensorWidget {
 
     this.valueTooltip.style.top = `${top}px`;
     this.valueTooltip.style.left = `${left}px`;
+    this.valueTooltip.style.display = 'block';
   }
 
   private hideValueTooltip() {
@@ -720,6 +801,9 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar or 1D tensor.
       return;
     }
+    if (this.slicingSpec.horizontalRange === null) {
+      throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
+    }
     const indexUpperBound = this.tensorView.spec.shape[
       this.slicingSpec.viewingDims[1]
     ];
@@ -753,6 +837,13 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll the display of a scalar.
       return;
     }
+    if (this.slicingSpec.verticalRange === null) {
+      throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+    }
+    if (this.valueRows === null) {
+      throw new Error('Vertical scrolling failed due to missing value rows.');
+    }
+
     const indexUpperBound = this.tensorView.spec.shape[
       this.slicingSpec.viewingDims[0]
     ];
@@ -781,6 +872,12 @@ export class TensorWidgetImpl implements TensorWidget {
       // Cannot scroll vertically when all rows are shown.
       return;
     }
+    if (this.slicingSpec.verticalRange === null) {
+      throw new Error(`Missing vertical range for ${this.rank}D tensor.`);
+    }
+    if (this.valueRows === null) {
+      throw new Error('Vertical scrolling failed due to missing value rows.');
+    }
     const currRowIndex = this.slicingSpec.verticalRange[0];
     if (direction === 'down') {
       const numRowsShown = this.valueRows.length - 1;
@@ -806,6 +903,11 @@ export class TensorWidgetImpl implements TensorWidget {
     if (!this.colsCutoff) {
       // Cannot scroll horizontally when all rows are shown.
       return;
+    }
+    if (this.slicingSpec.horizontalRange === null) {
+      throw new Error(
+        `Horizontal scrolling failed due to missing horizontal range.`
+      );
     }
     const currColIndex = this.slicingSpec.horizontalRange[0];
     if (direction === 'right') {
