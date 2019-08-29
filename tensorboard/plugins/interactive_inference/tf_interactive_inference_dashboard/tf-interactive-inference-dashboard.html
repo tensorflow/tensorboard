@@ -3784,38 +3784,39 @@ limitations under the License.
           }
         },
 
-        computeClosestCounterfactual: function(input_str) {
+        computeClosestCounterfactual: function(exInd, distances) {
         // Distances are indexed by example ids
-          console.log(input_str)
-          // const modelInferenceValueStr = this.strWithModelName_(
-          //   inferenceValueStr,
-          //   this.nearestCounterfactualModelIndex
-          // );
-          // let closestDist = Number.POSITIVE_INFINITY;
-          // let closest = -1;
-          // for (let i = 0; i < this.visdata.length; i++) {
-          //   // Skip examples with the same inference class as the selected
-          //   // examples.
-          //   if (
-          //     this.visdata[exInd][modelInferenceValueStr] ==
-          //     this.visdata[i][modelInferenceValueStr]
-          //   ) {
-          //     continue;
-          //   }
-          //   let dist = distances[i];
-          //   if (dist < closestDist) {
-          //     closestDist = dist;
-          //     closest = i;
-          //   }
-          // }
-          // if (closest != -1) {
-          //   // Display the counterfactual in dive and example viewer.
-          //   this.comparedIndices = [closest];
-          //   this.counterfactualExampleAndInference = this.examplesAndInferences[
-          //     closest
-          //   ];
-          //   this.compareTitle = 'Counterfactual value(s)';
-          // }
+          // console.log("computeClosestCounterfactual", distances, exInd)
+          const modelInferenceValueStr = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          let closestDist = Number.POSITIVE_INFINITY;
+          let closest = -1;
+          for (let i = 0; i < this.visdata.length; i++) {
+            // Skip examples with the same inference class as the selected
+            // examples.
+            if (
+              this.visdata[exInd][modelInferenceValueStr] ==
+              this.visdata[i][modelInferenceValueStr]
+            ) {
+              continue;
+            }
+            let dist = distances[i];
+            if (dist < closestDist) {
+              closestDist = dist;
+              closest = i;
+            }
+          }
+          if (closest != -1) {
+            console.log("computeClosestCounterfactual", exInd, closest, closestDist)
+            // Display the counterfactual in dive and example viewer.
+            this.comparedIndices = [closest];
+            this.counterfactualExampleAndInference = this.examplesAndInferences[
+              closest
+            ];
+            this.compareTitle = 'Counterfactual value(s)';
+          }
         },
 
         findClosestCounterfactual_: function() {
@@ -3824,7 +3825,7 @@ limitations under the License.
           if (this.local && this.customDistanceFunctionSet){
             this.requestDistanceWithCallback(selected,
                                         'computeClosestCounterfactual',
-                                        '');
+                                        {callbackParams:{}, distanceParams:{}});
             return;
           }
 
@@ -3862,25 +3863,13 @@ limitations under the License.
           }
         },
 
-        // getDist: function(ex_ind1, ex_ind2, useL2Distance){
-        //   if (this.customDistanceFunctionSet) {
-        //       const dist = this.getCustomDist(ex_ind1, ex_ind2);
-        //   } else {
-        //     const ex1 = this.visdata[ex_ind1]
-        //     const ex2 = this.visdata[ex_ind2]
-        //     const dist = this.getDistL1L2(ex1, ex2,
-        //                               useL2Distance)
-        //   }
-        //   return dist
-        // },
-
         // Call backend for distance computation, backend calls callback function
         // with computed distances and parameters
-        requestDistanceWithCallback: function(exInd, callbackFun, callbackParams){
+        requestDistanceWithCallback: function(exInd, callbackFun, params){
           console.log('requestDistanceWithCallback');
           const urlParams = {index: exInd,
                              callback: callbackFun,
-                             params: callbackParams}
+                             params: params}
           this.fire('compute-custom-distance', urlParams)
         },
 

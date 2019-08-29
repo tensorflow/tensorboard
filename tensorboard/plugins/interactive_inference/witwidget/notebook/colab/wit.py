@@ -110,8 +110,8 @@ WIT_HTML = """
       }};
 
       window.distanceCallback = callback_dict => {{
-        console.log('distancecallback')
-        wit['computeClosestCounterfactual']('hello')
+        console.log('distancecallback-', callback_dict.callback_fn)
+        wit[callback_dict.callback_fn](callback_dict.exInd, callback_dict.distances)
       }};
 
       window.spriteCallback = spriteUrl => {{
@@ -275,10 +275,13 @@ class WitWidget(base.WitWidgetBase):
     self._generate_sprite()
 
   def compute_custom_distance(self, index, callback_fn, params):
-    # distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
-                                                                params['distance_params'])
+    print(params)
+    distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
+                                                                params['distanceParams'])
     # callback_dict = {'distances':distances, 'ex_ind':index, 'callback_fn':callback_fn, 'params':params['callback_params']}
-    callback_dict = {'a':1}
+    # callback_dict = {'distances':[index-i for i in range(len(self.examples))], 'exInd':index}
+    # callback_dict = {'distances':distances, 'exInd':index, 'callback_fn':'computeClosestCounterfactual'}
+    callback_dict = {'distances':distances, 'exInd':index, 'callback_fn':callback_fn, 'params':params['callbackParams']}
     output.eval_js("""distanceCallback({callback_dict})""".format(
         callback_dict=json.dumps(callback_dict)))
 
