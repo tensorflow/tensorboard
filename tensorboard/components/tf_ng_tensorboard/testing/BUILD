@@ -1,6 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 filegroup(
     name = "test_support_lib",
@@ -11,7 +11,7 @@ filegroup(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "initialize_testbed",
     testonly = 1,
     srcs = [

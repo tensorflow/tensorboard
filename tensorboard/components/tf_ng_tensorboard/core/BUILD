@@ -2,7 +2,7 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:defs.bzl", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 ng_module(
     name = "core",
@@ -21,7 +21,7 @@ ng_module(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "test_util",
     testonly = True,
     srcs = ["test_util.ts"],
@@ -30,7 +30,7 @@ ts_library(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "core_effects_test_lib",
     testonly = True,
     srcs = [
