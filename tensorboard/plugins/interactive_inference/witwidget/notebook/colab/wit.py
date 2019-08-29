@@ -106,12 +106,14 @@ WIT_HTML = """
         wit.labelVocab = inferences.label_vocab;
         wit.inferences = inferences.inferences;
         wit.attributions = {{indices: wit.inferences.indices,
-                            attributions: inferences.attributions}}
+                            attributions: inferences.attributions}};
       }};
 
       window.distanceCallback = callback_dict => {{
         console.log('distancecallback-', callback_dict.callback_fn)
-        wit[callback_dict.callback_fn](callback_dict.exInd, callback_dict.distances)
+        wit[callback_dict.callback_fn](callback_dict.exInd,
+                                       callback_dict.distances,
+                                       callback_dict.params);
       }};
 
       window.spriteCallback = spriteUrl => {{
