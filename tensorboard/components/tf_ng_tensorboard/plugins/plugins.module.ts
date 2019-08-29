@@ -12,26 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-html,
-body {
-  font-family: Roboto, sans-serif;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+import {NgModule} from '@angular/core';
 
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
+import {PluginsComponent} from './plugins.component';
+import {CoreModule} from '../core/core.module';
 
-app-header {
-  flex: 0 0;
-}
-
-.plugins {
-  flex: 1 1;
-  overflow: auto;
-  position: relative;
-}
+@NgModule({
+  declarations: [PluginsComponent],
+  exports: [PluginsComponent],
+  imports: [CoreModule],
+})
+export class PluginsModule {}

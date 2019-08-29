@@ -73,6 +73,7 @@ ng_module(
     deps = [
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
+        "//tensorboard/components/tf_ng_tensorboard/plugins",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
@@ -94,6 +95,7 @@ ts_web_test_suite(
     deps = [
         "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
         "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
         "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
     ],
 )
