@@ -36,6 +36,7 @@ var WITView = widgets.DOMWidgetView.extend({
     this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
     this.model.on('change:sprite', this.spriteChanged, this);
     this.model.on('change:error', this.backendError, this);
+    this.model.on('change:custom_distance_dict', this.customDistanceComputed, this);
   },
 
   /**
@@ -118,12 +119,17 @@ var WITView = widgets.DOMWidgetView.extend({
       this.model.set('get_eligible_features', i);
       this.touch();
     });
-
     this.inferMutantsCounter = 0;
     this.view_.addEventListener('infer-mutants', (e) => {
       e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
       this.model.set('infer_mutants', e.detail);
       this.mutantFeature = e.detail.feature_name;
+      this.touch();
+    });
+    this.computeDistanceCounter = 0;
+    this.view_.addEventListener('compute-custom-distance', (e) => {
+      e.detail['compute_distance_counter'] = this.computeDistanceCounter++;
+      this.model.set('compute_custom_distance', e.detail);
       this.touch();
     });
     this.setupComplete = true;
@@ -228,6 +234,11 @@ var WITView = widgets.DOMWidgetView.extend({
     if ('target_feature' in config) {
       this.view_.selectedLabelFeature = config['target_feature'];
     }
+    if ('uses_custom_distance_fn' in config) {
+      this.view_.customDistanceFunctionSet = 1;
+    } else {
+      this.view_.customDistanceFunctionSet = 0;
+    }
   },
   spriteChanged: function() {
     if (!this.setupComplete) {
@@ -245,6 +256,19 @@ var WITView = widgets.DOMWidgetView.extend({
   backendError: function() {
     const error = this.model.get('error');
     this.view_.handleError(error['msg']);
+  },
+  customDistanceComputed: function() {
+    if (!this.setupComplete) {
+      if (this.isViewReady()) {
+        this.setupView();
+      }
+      requestAnimationFrame(() => this.customDistanceComputed());
+      return;
+    }
+    const custom_distance_dict = this.model.get('custom_distance_dict');
+    this.view_[custom_distance_dict.callback_fn](custom_distance_dict.exInd,
+                                                 custom_distance_dict.distances,
+                                                 custom_distance_dict.params)
   },
 });
 

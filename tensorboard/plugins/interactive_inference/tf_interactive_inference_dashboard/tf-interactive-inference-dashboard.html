@@ -3786,7 +3786,6 @@ limitations under the License.
 
         computeClosestCounterfactual: function(exInd, distances) {
         // Distances are indexed by example ids
-          // console.log("computeClosestCounterfactual", distances, exInd)
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
@@ -3809,7 +3808,6 @@ limitations under the License.
             }
           }
           if (closest != -1) {
-            console.log("computeClosestCounterfactual", exInd, closest, closestDist)
             // Display the counterfactual in dive and example viewer.
             this.comparedIndices = [closest];
             this.counterfactualExampleAndInference = this.examplesAndInferences[
@@ -3866,7 +3864,6 @@ limitations under the License.
         // Call backend for distance computation, backend calls callback function
         // with computed distances and parameters
         requestDistanceWithCallback: function(exInd, callbackFun, params){
-          console.log('requestDistanceWithCallback');
           const urlParams = {index: exInd,
                              callback: callbackFun,
                              params: params}

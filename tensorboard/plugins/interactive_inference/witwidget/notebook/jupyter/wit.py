@@ -48,6 +48,8 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   mutant_charts_counter = Int(0)
   sprite = Unicode('').tag(sync=True)
   error = Dict(dict()).tag(sync=True)
+  compute_custom_distance = Dict(dict()).tag(sync=True)
+  custom_distance_dict = Dict(dict()).tag(sync=True)
 
   def __init__(self, config_builder, height=1000):
     """Constructor for Jupyter notebook WitWidget.
@@ -118,6 +120,22 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
     self.updated_example_indices = set([
         i if i < index else i - 1 for i in self.updated_example_indices])
     self._generate_sprite()
+
+  @observe('compute_custom_distance')
+  def _compute_custom_distance(self, change):
+    info = self.compute_custom_distance
+    index = info['index']
+    params = info['params']
+    callback_fn = info['callback']
+    try:
+      distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
+                                                       params['distanceParams'])
+      self.custom_distance_dict = {'distances':distances,
+                                   'exInd':index,
+                                   'callback_fn':callback_fn,
+                                   'params':params['callbackParams']}
+    except Exception as e:
+      self._report_error(e)
 
   def _generate_sprite(self):
     sprite = base.WitWidgetBase.create_sprite(self)
