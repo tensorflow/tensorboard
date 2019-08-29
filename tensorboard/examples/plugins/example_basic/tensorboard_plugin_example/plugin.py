@@ -48,9 +48,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
     }
 
   def frontend_metadata(self):
-    return super(ExamplePlugin, self).frontend_metadata()._replace(
-        es_module_path="/index.js",
-    )
+    return base_plugin.FrontendMetadata(es_module_path="/index.js")
 
   @wrappers.Request.application
   def _serve_js(self, request):

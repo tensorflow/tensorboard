@@ -94,9 +94,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(ScalarsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-scalar-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-scalar-dashboard')
 
   def index_impl(self, experiment=None):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""

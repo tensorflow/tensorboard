@@ -43,8 +43,7 @@ class InactiveDebuggerPlugin(base_plugin.TBPlugin):
     return False
 
   def frontend_metadata(self):
-    return super(InactiveDebuggerPlugin, self).frontend_metadata()._replace(
-        element_name='tf-debugger-dashboard')
+    return base_plugin.FrontendMetadata(element_name='tf-debugger-dashboard')
 
   def get_plugin_apps(self):
     return {
