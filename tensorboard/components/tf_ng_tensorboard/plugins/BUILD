@@ -1,7 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("@npm_bazel_typescript//:defs.bzl", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -23,7 +23,7 @@ ng_module(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "plugins_component_test_lib",
     testonly = True,
     srcs = [
