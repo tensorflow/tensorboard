@@ -82,11 +82,11 @@ install_bazel_dependencies()
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "665d9d0653a8a18b5aec5c27cac77af18933e4550a342ef9dd6a33b60802921b",
-    strip_prefix = "tensorflow-f4e64ca17ce392da2d3fa3959d3d8bdd27de2b39",
+    sha256 = "9b838466b71f5c53bf9c2015704bd1f431511bf49e363fc7b0af64b00ddf35be",
+    strip_prefix = "tensorflow-dad4197fcf00186df0fe2842228750f484d72b40",
     urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/f4e64ca17ce392da2d3fa3959d3d8bdd27de2b39.tar.gz",  # 2019-06-19
-        "https://github.com/tensorflow/tensorflow/archive/f4e64ca17ce392da2d3fa3959d3d8bdd27de2b39.tar.gz",
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/dad4197fcf00186df0fe2842228750f484d72b40.tar.gz",  # 2019-06-24
+        "https://github.com/tensorflow/tensorflow/archive/dad4197fcf00186df0fe2842228750f484d72b40.tar.gz",
     ],
 )
 
