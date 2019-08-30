@@ -74,12 +74,21 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def _serve_greetings(self, request):
-    run = request.args["run"]
-    tag = request.args["tag"]
-    data = [
-        np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
-            .decode("utf-8")
-        for event in self._multiplexer.Tensors(run, tag)
-    ]
+    run = request.args.get("run")
+    tag = request.args.get("tag")
+    if run is None or tag is None:
+      return werkzeug.Response(
+          "Must specify run and tag",
+          content_type="text/plain",
+          code=400,
+      )
+    try:
+      data = [
+          np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
+              .decode("utf-8")
+          for event in self._multiplexer.Tensors(run, tag)
+      ]
+    except KeyError:
+      raise werkzeug.exceptions.BadRequest("Invalid run or tag")
     contents = json.dumps(data, sort_keys=True)
     return werkzeug.Response(contents, content_type="application/json")
