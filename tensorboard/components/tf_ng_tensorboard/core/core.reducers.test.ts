@@ -16,7 +16,6 @@ import {expect} from 'chai';
 
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
-import {PluginMetadata, LoadingMechanismType} from '../types/api';
 import {createPluginMetadata} from './test_util';
 
 function createPluginsListing() {

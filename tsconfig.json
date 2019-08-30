@@ -6,6 +6,9 @@
     "noResolve": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strictPropertyInitialization": true,
     "lib": ["dom", "es2018"],
     "types": []
   }

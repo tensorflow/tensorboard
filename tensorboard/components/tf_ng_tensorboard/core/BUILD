@@ -14,10 +14,12 @@ ng_module(
         "core.service.ts",
     ],
     deps = [
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
@@ -40,6 +42,8 @@ tf_ts_library(
     deps = [
         ":core",
         ":test_util",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http_testing",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
@@ -60,6 +64,7 @@ ng_module(
     deps = [
         ":core",
         ":test_util",
+        "@npm//@types/chai",
         "@npm//@types/jasmine",
         "@npm//chai",
     ],
@@ -67,7 +72,10 @@ ng_module(
 
 jasmine_node_test(
     name = "core_jasmine_test",
-    deps = [
+    srcs = [
         ":core_reducers_test_lib",
+    ],
+    deps = [
+        "@npm//chai",
     ],
 )

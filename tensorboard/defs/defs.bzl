@@ -14,6 +14,7 @@
 """External-only delegates for various BUILD rules."""
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@npm_bazel_karma//:defs.bzl", "karma_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
@@ -45,3 +46,24 @@ def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
 
     ts_devserver(**kwargs)
+
+def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs):
+    """TensorBoard wrapper for the rule for a Karma web test suite.
+
+    It has Angular specific configurations that we want as defaults.
+    """
+
+    karma_web_test_suite(
+        srcs = [],
+        bootstrap = bootstrap + [
+            "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
+            "@npm//:node_modules/reflect-metadata/Reflect.js",
+        ],
+        runtime_deps = runtime_deps + [
+            "//tensorboard/components/tf_ng_tensorboard/testing:initialize_testbed",
+        ],
+        deps = deps + [
+            "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
+        ],
+        **kwargs
+    )
