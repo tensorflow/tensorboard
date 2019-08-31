@@ -411,10 +411,8 @@ export class TensorWidgetImpl implements TensorWidget {
         'Failed to create left ruler due to missing value section.'
       );
     }
-    if (this.valueRows == null) {
-      this.valueRows = [];
-      this.leftRulerTicks = [];
-    }
+    this.valueRows = [];
+    this.leftRulerTicks = [];
 
     if (this.rank >= 1) {
       this.slicingSpec.verticalRange = [0, null];

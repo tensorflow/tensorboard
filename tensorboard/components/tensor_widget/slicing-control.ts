@@ -241,7 +241,7 @@ export class SlicingControl {
             throw new Error('Missing vertical range.');
           }
           dimControl.textContent =
-            `🡙 ${this.slicingSpec.verticalRange[0]}:` +
+            `↕ ${this.slicingSpec.verticalRange[0]}:` +
             `${this.slicingSpec.verticalRange[1]}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
@@ -250,7 +250,7 @@ export class SlicingControl {
             throw new Error('Missing horizontal range.');
           }
           dimControl.textContent =
-            `🡘 ${this.slicingSpec.horizontalRange[0]}:` +
+            `↔ ${this.slicingSpec.horizontalRange[0]}:` +
             `${this.slicingSpec.horizontalRange[1]}`;
         }
         dimControl.classList.add('tensor-widget-dim');

@@ -20,7 +20,7 @@ import {Shape, TensorViewSlicingSpec} from './types';
  */
 
 /** Compute total element count based on shape. */
-export function size(shape: Shape): number {
+export function numElements(shape: Shape): number {
   let output = 1;
   shape.forEach((dimSize) => {
     output *= dimSize;

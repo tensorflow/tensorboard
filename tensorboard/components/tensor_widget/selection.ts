@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {size} from './shape-utils';
+import {numElements} from './shape-utils';
 import {Shape, TensorViewSlicingSpec} from './types';
 
 /**
@@ -79,7 +79,7 @@ export class TensorElementSelection {
     rowCount?: number,
     colCount?: number
   ) {
-    if (size(this.shape) === 0) {
+    if (numElements(this.shape) === 0) {
       throw new Error(
         `TensorElementSelection doesn't support tensor with zero elements.`
       );
@@ -281,9 +281,8 @@ export class TensorElementSelection {
           this.slicingSpec.verticalRange != null &&
           this.rowStart >= this.slicingSpec.verticalRange[1]
         ) {
-          const increment = 1;
-          this.slicingSpec.verticalRange[0] += increment;
-          this.slicingSpec.verticalRange[1] += increment;
+          this.slicingSpec.verticalRange[0]++;
+          this.slicingSpec.verticalRange[1]++;
           viewRangeChanged = true;
         }
       }
