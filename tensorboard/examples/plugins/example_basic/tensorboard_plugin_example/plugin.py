@@ -77,11 +77,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
     run = request.args.get("run")
     tag = request.args.get("tag")
     if run is None or tag is None:
-      return werkzeug.Response(
-          "Must specify run and tag",
-          content_type="text/plain",
-          code=400,
-      )
+      raise werkzeug.exceptions.BadRequest("Must specify run and tag")
     try:
       data = [
           np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
