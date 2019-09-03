@@ -51,8 +51,10 @@ output.register_callback('notebook.InferMutants', infer_mutants)
 
 
 def compute_custom_distance(wit_id, index, callback_name, params):
-  WitWidget.widgets[wit_id].compute_custom_distance(index, callback_name, params)
-output.register_callback('notebook.ComputeCustomDistance', compute_custom_distance)
+  WitWidget.widgets[wit_id].compute_custom_distance(index, callback_name,
+                                                    params)
+output.register_callback('notebook.ComputeCustomDistance',
+                         compute_custom_distance)
 
 
 # HTML/javascript for the WIT frontend.
@@ -73,7 +75,9 @@ WIT_HTML = """
       }});
       wit.addEventListener("compute-custom-distance", e => {{
         google.colab.kernel.invokeFunction(
-          'notebook.ComputeCustomDistance', [id, e.detail.index, e.detail.callback, e.detail.params], {{}});
+          'notebook.ComputeCustomDistance',
+          [id, e.detail.index, e.detail.callback, e.detail.params],
+          {{}});
       }});
       wit.addEventListener("delete-example", e => {{
         google.colab.kernel.invokeFunction(
@@ -85,7 +89,9 @@ WIT_HTML = """
       }});
       wit.addEventListener("update-example", e => {{
         google.colab.kernel.invokeFunction(
-          'notebook.UpdateExample', [id, e.detail.index, e.detail.example], {{}});
+          'notebook.UpdateExample',
+          [id, e.detail.index, e.detail.example],
+          {{}});
       }});
       wit.addEventListener('get-eligible-features', e => {{
         google.colab.kernel.invokeFunction(
@@ -109,10 +115,10 @@ WIT_HTML = """
                             attributions: inferences.attributions}};
       }};
 
-      window.distanceCallback = callback_dict => {{
-        wit[callback_dict.callback_fn](callback_dict.exInd,
-                                       callback_dict.distances,
-                                       callback_dict.params);
+      window.distanceCallback = callbackDict => {{
+        wit[callbackDict.callback_fn](callbackDict.exInd,
+                                       callbackDict.distances,
+                                       callbackDict.params);
       }};
 
       window.spriteCallback = spriteUrl => {{
@@ -278,11 +284,20 @@ class WitWidget(base.WitWidgetBase):
     self._generate_sprite()
 
   def compute_custom_distance(self, index, callback_fn, params):
-    distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
-                                                                params['distanceParams'])
-    callback_dict = {'distances':distances, 'exInd':index, 'callback_fn':callback_fn, 'params':params['callbackParams']}
-    output.eval_js("""distanceCallback({callback_dict})""".format(
-        callback_dict=json.dumps(callback_dict)))
+    try:
+      distances = base.WitWidgetBase.compute_custom_distance_impl(
+          self, index, params['distanceParams'])
+      callback_dict = {
+          'distances': distances,
+          'exInd': index,
+          'callback_fn': callback_fn,
+          'params': params['callbackParams']
+      }
+      output.eval_js("""distanceCallback({callback_dict})""".format(
+          callback_dict=json.dumps(callback_dict)))
+    except Exception as e:
+      output.eval_js(
+          """backendError({error})""".format(error=json.dumps({'msg': str(e)})))
 
   def get_eligible_features(self):
     features_list = base.WitWidgetBase.get_eligible_features_impl(self)

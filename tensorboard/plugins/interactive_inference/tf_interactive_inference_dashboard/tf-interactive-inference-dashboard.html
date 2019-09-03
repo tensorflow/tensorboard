@@ -1418,6 +1418,7 @@ limitations under the License.
                               Show nearest counterfactual datapoint
                             </paper-toggle-button>
                           </div>
+                          <template is="dom-if" if="[[customDistanceFunctionSet]]">
                           <paper-radio-group
                             selected="{{nearestCounterfactualDist}}"
                           >
@@ -1428,6 +1429,10 @@ limitations under the License.
                               >L2</paper-radio-button
                             >
                           </paper-radio-group>
+                          </template>
+                          <template is="dom-if" if="[[!customDistanceFunctionSet]]">
+                            Using custom distance function.
+                          </template>
                           <paper-dropdown-menu
                             label="Model:"
                             no-label-float
@@ -3819,7 +3824,8 @@ limitations under the License.
 
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
-          // Custom distance function can only be used when local
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
           if (this.local && this.customDistanceFunctionSet) {
             this.requestDistanceWithCallback(
               selected,
@@ -3829,7 +3835,6 @@ limitations under the License.
             return;
           }
 
-          // If not using custom distance function compute counterfactuals here.
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
