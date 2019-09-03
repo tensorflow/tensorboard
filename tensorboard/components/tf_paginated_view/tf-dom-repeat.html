@@ -180,7 +180,7 @@ limitations under the License.
         if (!this._domBootstrapped) return;
 
         Array.from(this._renderedTemplateInst.values()).forEach((inst) => {
-          inst.notifyPath('active', this._contentActive, true /* fromAbove */);
+          inst.notifyPath('active', this._contentActive);
         });
       },
 
@@ -211,7 +211,7 @@ limitations under the License.
           if (this._renderedTemplateInst.has(key)) {
             this._renderedTemplateInst
               .get(key)
-              .notifyPath(this.as, event.value, true /* fromAbove */);
+              .notifyPath(this.as, event.value);
           } else {
             console.warn(
               `Expected '${key}' to exist in the DOM but ` +
@@ -233,7 +233,7 @@ limitations under the License.
           this._lruCachedItems.delete(key);
           this._renderedTemplateInst
             .get(key)
-            .notifyPath('active', this._contentActive, true /* fromAbove */);
+            .notifyPath('active', this._contentActive);
         } else {
           const prop = {[this.as]: item, active: this._contentActive};
           const inst = new this._ctor(prop);
@@ -257,9 +257,7 @@ limitations under the License.
         Polymer.dom(node.parentNode).removeChild(node);
         const key = this._getItemKey(item);
         this._lruCachedItems.set(key, node);
-        this._renderedTemplateInst
-          .get(key)
-          .notifyPath('active', false, true /* fromAbove */);
+        this._renderedTemplateInst.get(key).notifyPath('active', false);
       },
 
       _trimCache() {
