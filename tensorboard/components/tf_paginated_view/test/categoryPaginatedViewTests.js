@@ -136,6 +136,27 @@ var tf_paginated_view;
             yield flushAllP();
             expect(_getPageCount()).to.equal(5);
         }));
+        it('sets all items to active=true when opened is true', () => {
+            expect(getItem('id0').hasAttribute('active')).to.be.true;
+            expect(getItem('id1').hasAttribute('active')).to.be.true;
+        });
+        it('sets all items to active=false when opened is false', () => __awaiter(this, void 0, void 0, function* () {
+            querySelector('button').click();
+            yield flushAllP();
+            expect(getItem('id0').hasAttribute('active')).to.be.false;
+            expect(getItem('id1').hasAttribute('active')).to.be.false;
+        }));
+        it('sets item to inactive when it is out of view', () => __awaiter(this, void 0, void 0, function* () {
+            // The DOM will be removed from document but it will be updated. Hold
+            // references to them here.
+            const item0 = getItem('id0');
+            const item1 = getItem('id1');
+            yield goNext();
+            expect(item0.hasAttribute('active')).to.be.false;
+            expect(item1.hasAttribute('active')).to.be.false;
+            expect(getItem('id2').hasAttribute('active')).to.be.true;
+            expect(getItem('id3').hasAttribute('active')).to.be.true;
+        }));
         function _getPageCount() {
             return view.$.view._pageCount;
         }

@@ -268,6 +268,11 @@ limitations under the License.
           readOnly: true,
         },
 
+        _contentActive: {
+          type: Boolean,
+          computed: '_computeContentActive(opened)',
+        },
+
         disablePagination: {
           type: Boolean,
           value: false,
@@ -391,6 +396,10 @@ limitations under the License.
 
       _togglePane() {
         this._setOpened(!this.opened);
+      },
+
+      _computeContentActive() {
+        return this.opened;
       },
 
       _onPaneRenderedChanged(newRendered, oldRendered) {
