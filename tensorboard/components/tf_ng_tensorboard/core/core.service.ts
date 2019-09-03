@@ -17,7 +17,7 @@ import {HttpClient} from '@angular/common/http';
 
 import {PluginsListing} from '../types/api';
 
-import * as _typeHackRxjs from 'rxjs';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
 export class CoreService {

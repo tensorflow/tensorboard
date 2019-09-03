@@ -14,16 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
-import {State, getPlugins, getActivePlugin} from '../core/core.reducers';
 import {filter} from 'rxjs/operators';
 
-import * as _typeHackRxjs from 'rxjs';
+import {State, getPlugins, getActivePlugin} from '../core/core.reducers';
 import {
   PluginMetadata,
   LoadingMechanismType,
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
 } from '../types/api';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 interface UiPluginMetadata extends PluginMetadata {
   id: string;
@@ -32,7 +33,7 @@ interface UiPluginMetadata extends PluginMetadata {
 const activePlugin = createSelector(
   getPlugins,
   getActivePlugin,
-  (plugins, id): UiPluginMetadata => {
+  (plugins, id): UiPluginMetadata | null => {
     if (!id || !plugins) return null;
     return Object.assign({id}, plugins[id]);
   }
@@ -57,7 +58,7 @@ export class PluginsComponent {
     // an iframe) when the `activePlugin` changes.
     this.activePlugin$
       .pipe(filter(Boolean))
-      .subscribe((plugin) => this.renderPlugin(plugin));
+      .subscribe((plugin) => this.renderPlugin(plugin as UiPluginMetadata));
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {
@@ -66,7 +67,8 @@ export class PluginsComponent {
     }
 
     if (this.pluginInstances.has(plugin.id)) {
-      this.pluginInstances.get(plugin.id).style.display = null;
+      const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
+      instance.style.display = null;
       return;
     }
 
@@ -90,7 +92,7 @@ export class PluginsComponent {
         const iframePlugin = plugin.loading_mechanism as IframeLoadingMechanism;
         pluginElement = document.createElement('iframe');
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
-        const subdocument = pluginElement.contentDocument;
+        const subdocument = pluginElement.contentDocument as HTMLDocument;
         const script = subdocument.createElement('script');
         const baseHrefString = JSON.stringify(
           new URL(`data/${pluginId}/`, window.location.href)

@@ -17,7 +17,7 @@ import {Store} from '@ngrx/store';
 import {State} from './core/core.reducers';
 import {coreLoaded} from './core/core.actions';
 
-import * as _typeHackRxjs from 'rxjs';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'tf-ng-tensorboard',

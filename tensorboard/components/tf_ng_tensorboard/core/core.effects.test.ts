@@ -27,7 +27,7 @@ import {CoreService} from './core.service';
 
 import {createPluginMetadata} from './test_util';
 
-import {PluginsListing, LoadingMechanismType} from '../types/api';
+import {PluginsListing} from '../types/api';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
@@ -55,15 +55,16 @@ describe('core.effects', () => {
     // Assertion/exception in the subscribe does not fail the test.
     // Store the result
     let res = null;
-    const promise = coreEffects.loadPluginsListing$.subscribe((action) => {
-      res = action;
+    coreEffects.loadPluginsListing$.subscribe((action) => {
+      res = action as Action;
     });
     action.next(coreActions.coreLoaded());
     // Flushing the request response invokes above subscription sychronously.
     httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
 
-    expect(res).toEqual(
-      coreActions.pluginsListingLoaded({plugins: pluginsListing})
-    );
+    const expected = coreActions.pluginsListingLoaded({
+      plugins: pluginsListing,
+    });
+    expect(res).toEqual(expected as any);
   });
 });
