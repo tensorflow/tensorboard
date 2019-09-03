@@ -27,27 +27,37 @@ export enum LoadingMechanismType {
 }
 
 export interface CustomElementLoadingMechanism {
+  /** @export */
   type: LoadingMechanismType.CUSTOM_ELEMENT;
+  /** @export */
   element_name: string;
 }
 
 export interface IframeLoadingMechanism {
+  /** @export */
   type: LoadingMechanismType.IFRAME;
+  /** @export */
   module_path: string;
 }
 
 export interface NoLoadingMechanism {
+  /** @export */
   type: LoadingMechanismType.NONE;
 }
 
 export interface PluginMetadata {
+  /** @export */
   disable_reload: boolean;
+  /** @export */
   enabled: boolean;
+  /** @export */
   loading_mechanism:
     | CustomElementLoadingMechanism
     | IframeLoadingMechanism
     | NoLoadingMechanism;
+  /** @export */
   tab_name: string;
+  /** @export */
   remove_dom: boolean;
 }
 

@@ -22,7 +22,7 @@ import {PluginsComponent} from './plugins.component';
 import {PluginId, LoadingMechanismType} from '../types/api';
 import {State, CORE_FEATURE_KEY} from '../core/core.reducers';
 
-import * as _typeHackStore from '@ngrx/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('plugins.component', () => {
   let store: MockStore<State>;

@@ -37,8 +37,6 @@ import {HeaderModule} from './header/header.module';
     StoreModule.forRoot(ROOT_REDUCERS, {
       metaReducers,
       runtimeChecks: {
-        strictStateImmutability: true,
-        strictActionImmutability: true,
         strictStateSerializability: true,
         strictActionSerializability: true,
       },

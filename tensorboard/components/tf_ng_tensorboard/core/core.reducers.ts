@@ -24,13 +24,13 @@ import * as actions from './core.actions';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-import * as _typeHackSelector from '@ngrx/store/src/selector';
-import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 export const CORE_FEATURE_KEY = 'core';
 
 export interface CoreState {
-  activePlugin: PluginId;
+  activePlugin: PluginId | null;
   plugins: PluginsListing;
 }
 
@@ -66,7 +66,7 @@ const selectCoreState = createFeatureSelector<State, CoreState>(
 
 export const getActivePlugin = createSelector(
   selectCoreState,
-  (state: CoreState): PluginId => {
+  (state: CoreState): PluginId | null => {
     return state.activePlugin;
   }
 );

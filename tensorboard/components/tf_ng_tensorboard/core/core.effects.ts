@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
 import {of} from 'rxjs';
 import {map, flatMap, catchError} from 'rxjs/operators';
+
 import {CoreService} from './core.service';
 import {
   coreLoaded,
@@ -23,11 +24,16 @@ import {
   pluginsListingFailed,
 } from './core.actions';
 
-import * as _typeHackRxjs from 'rxjs';
-import * as _typeHackNgrx from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+/** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
 
 @Injectable()
 export class CoreEffects {
+  /**
+   * Requires to be exported for JSCompiler. JSCompiler, otherwise,
+   * think it is unused property and deadcode eliminate away.
+   */
+  /** @export */
   loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(coreLoaded),

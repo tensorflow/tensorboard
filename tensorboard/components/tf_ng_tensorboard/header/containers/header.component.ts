@@ -19,7 +19,7 @@ import {combineLatest, of} from 'rxjs';
 import {State, getActivePlugin, getPlugins} from '../../core/core.reducers';
 import {changePlugin} from '../../core/core.actions';
 
-import * as _typeHackRxjs from 'rxjs';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const selectPlugins = createSelector(
   getPlugins,
