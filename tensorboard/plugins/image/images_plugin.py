@@ -164,7 +164,12 @@ class ImagesPlugin(base_plugin.TBPlugin):
     tag = request.args.get('tag')
     run = request.args.get('run')
     sample = int(request.args.get('sample', 0))
-    response = self._image_response_for_run(run, tag, sample)
+    try:
+      response = self._image_response_for_run(run, tag, sample)
+    except KeyError:
+      return http_util.Respond(
+          request, 'Invalid run or tag', 'text/plain', code=400
+      )
     return http_util.Respond(request, response, 'application/json')
 
   def _image_response_for_run(self, run, tag, sample):
@@ -325,9 +330,14 @@ class ImagesPlugin(base_plugin.TBPlugin):
     """Serves an individual image."""
     run = request.args.get('run')
     tag = request.args.get('tag')
-    index = int(request.args.get('index'))
-    sample = int(request.args.get('sample', 0))
-    data = self._get_individual_image(run, tag, index, sample)
+    index = int(request.args.get('index', '0'))
+    sample = int(request.args.get('sample', '0'))
+    try:
+      data = self._get_individual_image(run, tag, index, sample)
+    except (KeyError, IndexError):
+      return http_util.Respond(
+          request, 'Invalid run, tag, index, or sample', 'text/plain', code=400
+      )
     image_type = imghdr.what(None, data)
     content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
     return http_util.Respond(request, data, content_type)
