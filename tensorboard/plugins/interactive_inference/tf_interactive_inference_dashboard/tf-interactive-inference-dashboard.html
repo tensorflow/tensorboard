@@ -1418,19 +1418,25 @@ limitations under the License.
                               Show nearest counterfactual datapoint
                             </paper-toggle-button>
                           </div>
-                          <template is="dom-if" if="[[customDistanceFunctionSet]]">
-                          <paper-radio-group
-                            selected="{{nearestCounterfactualDist}}"
+                          <template
+                            is="dom-if"
+                            if="[[customDistanceFunctionSet]]"
                           >
-                            <paper-radio-button name="L1"
-                              >L1</paper-radio-button
+                            <paper-radio-group
+                              selected="{{nearestCounterfactualDist}}"
                             >
-                            <paper-radio-button name="L2"
-                              >L2</paper-radio-button
-                            >
-                          </paper-radio-group>
+                              <paper-radio-button name="L1"
+                                >L1</paper-radio-button
+                              >
+                              <paper-radio-button name="L2"
+                                >L2</paper-radio-button
+                              >
+                            </paper-radio-group>
                           </template>
-                          <template is="dom-if" if="[[!customDistanceFunctionSet]]">
+                          <template
+                            is="dom-if"
+                            if="[[!customDistanceFunctionSet]]"
+                          >
                             Using custom distance function.
                           </template>
                           <paper-dropdown-menu
