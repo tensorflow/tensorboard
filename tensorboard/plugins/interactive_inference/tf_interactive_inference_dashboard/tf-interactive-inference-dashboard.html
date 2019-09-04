@@ -1420,7 +1420,7 @@ limitations under the License.
                           </div>
                           <template
                             is="dom-if"
-                            if="[[customDistanceFunctionSet]]"
+                            if="[[!customDistanceFunctionSet]]"
                           >
                             <paper-radio-group
                               selected="{{nearestCounterfactualDist}}"
@@ -1435,7 +1435,7 @@ limitations under the License.
                           </template>
                           <template
                             is="dom-if"
-                            if="[[!customDistanceFunctionSet]]"
+                            if="[[customDistanceFunctionSet]]"
                           >
                             Using custom distance function.
                           </template>
