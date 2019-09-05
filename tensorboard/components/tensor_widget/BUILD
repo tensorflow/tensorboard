@@ -1,8 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_config", "tf_js_binary", "tf_ts_devserver", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -27,7 +26,7 @@ tf_js_binary(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "tensor_widget_lib",
     srcs = [
         "dtype-utils.ts",
@@ -40,9 +39,10 @@ ts_library(
         "types.ts",
         "version.ts",
     ],
+    tsconfig = ":tsconfig",
 )
 
-ts_library(
+tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
@@ -50,7 +50,6 @@ ts_library(
         "shape-utils-test.ts",
         "string-utils-test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":tensor_widget_lib",
         "@npm//@types/chai",
@@ -61,23 +60,25 @@ ts_library(
 
 jasmine_node_test(
     name = "test",
-    deps = [":test_lib"],
+    srcs = [":test_lib"],
+    deps = [
+        "@npm//chai",
+    ],
 )
 
-ts_library(
+tf_ts_library(
     name = "demo_lib",
     srcs = [
         "demo/demo.ts",
     ],
-    tsconfig = "//:tsconfig-test",
+    tsconfig = ":tsconfig",
     deps = [
         ":tensor_widget_lib",
     ],
 )
 
-ts_devserver(
+tf_ts_devserver(
     name = "dev_server",
-    entry_module = "tensor-widget",
     index_html = "demo/demo.html",
     serving_path = "/bundle.js",
     static_files = [
@@ -88,4 +89,10 @@ ts_devserver(
     deps = [
         ":demo_lib",
     ],
+)
+
+tf_ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+    deps = [],
 )

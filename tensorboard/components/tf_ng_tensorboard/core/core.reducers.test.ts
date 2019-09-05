@@ -16,14 +16,71 @@ import {expect} from 'chai';
 
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
+import {createPluginMetadata} from './test_util';
+
+function createPluginsListing() {
+  return {
+    core: createPluginMetadata('Core'),
+    scalars: createPluginMetadata('Scalars'),
+  };
+}
 
 describe('core reducer', () => {
   describe('#changePlugin', () => {
     it('sets activePlugin to the one in action payload', () => {
-      const state = {activePlugin: 'foo'};
+      const state = {activePlugin: 'foo', plugins: {}};
+
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
       expect(nextState).to.have.property('activePlugin', 'bar');
+    });
+
+    it('does not change plugins when activePlugin changes', () => {
+      const state = {activePlugin: 'foo', plugins: createPluginsListing()};
+
+      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+
+      expect(nextState).to.have.deep.property(
+        'plugins',
+        createPluginsListing()
+      );
+    });
+  });
+
+  describe('pluginsListingLoaded', () => {
+    it('sets plugins with the payload', () => {
+      const state = {activePlugin: 'foo', plugins: {}};
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(nextState).to.have.deep.property(
+        'plugins',
+        createPluginsListing()
+      );
+    });
+
+    it('sets activePlugin to the first plugin (by key order) when not defined', () => {
+      const state = {activePlugin: null, plugins: {}};
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(nextState).to.have.property('activePlugin', 'core');
+    });
+
+    it('does not change activePlugin when already defined', () => {
+      const state = {activePlugin: 'foo', plugins: {}};
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(nextState).to.have.property('activePlugin', 'foo');
     });
   });
 });

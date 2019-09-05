@@ -128,11 +128,20 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
   def frontend_metadata(self):
-    base = super(FakePlugin, self).frontend_metadata()
-    return base._replace(
+    return base_plugin.FrontendMetadata(
         element_name=self._element_name_value,
         es_module_path=self._es_module_path_value,
     )
+
+
+class FakePluginLoader(base_plugin.TBLoader):
+  """Pass-through loader for FakePlugin with arbitrary arguments."""
+
+  def __init__(self, **kwargs):
+    self._kwargs = kwargs
+
+  def load(self, context):
+    return FakePlugin(context, **self._kwargs)
 
 
 class ApplicationTest(tb_test.TestCase):
@@ -357,6 +366,26 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
       application.TensorBoardWSGI([self._make_plugin('runaway')])
 
 
+class MakePluginLoaderTest(tb_test.TestCase):
+
+  def testMakePluginLoader_pluginClass(self):
+    loader = application.make_plugin_loader(FakePlugin)
+    self.assertIsInstance(loader, base_plugin.BasicLoader)
+    self.assertIs(loader.plugin_class, FakePlugin)
+
+  def testMakePluginLoader_pluginLoaderClass(self):
+    loader = application.make_plugin_loader(FakePluginLoader)
+    self.assertIsInstance(loader, FakePluginLoader)
+
+  def testMakePluginLoader_pluginLoader(self):
+    loader = FakePluginLoader()
+    self.assertIs(loader, application.make_plugin_loader(loader))
+
+  def testMakePluginLoader_invalidType(self):
+    with six.assertRaisesRegex(self, TypeError, 'FakePlugin'):
+      application.make_plugin_loader(FakePlugin())
+
+
 class GetEventFileActiveFilterTest(tb_test.TestCase):
 
   def testDisabled(self):
@@ -519,23 +548,21 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.app = application.standard_tensorboard_wsgi(
         FakeFlags(logdir=self.get_temp_dir()),
         [
-          base_plugin.BasicLoader(functools.partial(
-              FakePlugin,
-              plugin_name='foo',
-              is_active_value=True,
-              routes_mapping={'/foo_route': self._foo_handler},
-              construction_callback=self._construction_callback)),
-          base_plugin.BasicLoader(functools.partial(
-              FakePlugin,
-              plugin_name='bar',
-              is_active_value=True,
-              routes_mapping={
-                  '/bar_route': self._bar_handler,
-                  '/wildcard/*': self._wildcard_handler,
-                  '/wildcard/special/*': self._wildcard_special_handler,
-                  '/wildcard/special/exact': self._foo_handler,
-              },
-              construction_callback=self._construction_callback)),
+            FakePluginLoader(
+                plugin_name='foo',
+                is_active_value=True,
+                routes_mapping={'/foo_route': self._foo_handler},
+                construction_callback=self._construction_callback),
+            FakePluginLoader(
+                plugin_name='bar',
+                is_active_value=True,
+                routes_mapping={
+                    '/bar_route': self._bar_handler,
+                    '/wildcard/*': self._wildcard_handler,
+                    '/wildcard/special/*': self._wildcard_special_handler,
+                    '/wildcard/special/exact': self._foo_handler,
+                },
+                construction_callback=self._construction_callback),
         ],
         dummy_assets_zip_provider)
 

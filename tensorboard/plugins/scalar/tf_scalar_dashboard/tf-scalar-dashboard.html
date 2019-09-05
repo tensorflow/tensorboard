@@ -156,7 +156,7 @@ limitations under the License.
             >
               <template>
                 <tf-scalar-card
-                  active="[[active]"
+                  active="[[active]]"
                   data-to-load="[[item.series]]"
                   ignore-y-outliers="[[_ignoreYOutliers]]"
                   multi-experiments="[[_getMultiExperiments(dataSelection)]]"
@@ -309,7 +309,13 @@ limitations under the License.
         });
       },
       _fetchTags() {
-        const url = tf_backend.getRouter().pluginRoute('scalars', '/tags');
+        const url = tf_backend
+          .getRouter()
+          .pluginRoute(
+            'scalars',
+            '/tags',
+            new URLSearchParams({experiment: tf_backend.getExperimentId()})
+          );
         return this._requestManager.request(url).then((runToTagInfo) => {
           if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
@@ -345,10 +351,11 @@ limitations under the License.
           selectedRuns,
           query
         );
+        const experiment = tf_backend.getExperimentId();
         categories.forEach((category) => {
           category.items = category.items.map((item) => ({
             tag: item.tag,
-            series: item.runs.map((run) => ({run, tag: item.tag})),
+            series: item.runs.map((run) => ({run, tag: item.tag, experiment})),
           }));
         });
         this.updateArrayProp('_categories', categories, this._getCategoryKey);

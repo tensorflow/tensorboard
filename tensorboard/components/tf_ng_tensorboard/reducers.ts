@@ -37,7 +37,7 @@ export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
 }
 
 // TODO(stephanwlee): Create dev mode and conditionally enable this.
-export const metaReducers: MetaReducer<any>[] = false ? [logger] : [];
+export const metaReducers: MetaReducer<any>[] = true ? [logger] : [];
 
 export const ROOT_REDUCERS = new InjectionToken<
   ActionReducerMap<State, Action>

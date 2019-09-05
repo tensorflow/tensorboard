@@ -1,7 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -10,7 +10,6 @@ tf_web_library(
     name = "tf_ng_tensorboard",
     srcs = [
         ":tf_ng_tensorboard_binary.js",
-        "@npm//:node_modules/zone.js/dist/zone.js",
     ],
     path = "/tf-ng-tensorboard",
     deps = [
@@ -34,6 +33,8 @@ tf_js_binary(
     entry_point = ":main.ts",
     deps = [
         ":ng_main",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/material",
@@ -70,10 +71,24 @@ ng_module(
         "app.component.html",
     ],
     deps = [
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
+        "//tensorboard/components/tf_ng_tensorboard/plugins",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+    ],
+)
+
+# Karma has overhead of bootstrap/tearDown. Combine as much testcases
+# as possible into one test target and use test sharding to speed up.
+tf_ng_web_test_suite(
+    name = "karma_test",
+    deps = [
+        "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
     ],
 )

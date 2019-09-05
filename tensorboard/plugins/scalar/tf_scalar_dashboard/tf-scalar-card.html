@@ -241,7 +241,7 @@ limitations under the License.
                 new URLSearchParams({
                   tag,
                   run,
-                  experiment: experiment ? experiment.id : '',
+                  experiment: experiment || '',
                 })
               );
             };
@@ -252,7 +252,12 @@ limitations under the License.
         _downloadUrlFn: {
           type: Function,
           value: function() {
-            return (tag, run) => this.getDataLoadUrl({tag, run});
+            return (tag, run) =>
+              this.getDataLoadUrl({
+                tag,
+                run,
+                experiment: tf_backend.getExperimentId(),
+              });
           },
         },
 

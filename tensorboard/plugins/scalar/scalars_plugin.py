@@ -71,6 +71,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The scalars plugin is active iff any run has at least one scalar tag."""
+    if self._data_provider:
+      # We don't have an experiment ID, and modifying the backend core
+      # to provide one would break backward compatibility. Hack for now.
+      return True
+
     if self._db_connection_provider:
       # The plugin is active if one relevant tag can be found in the database.
       db = self._db_connection_provider()
@@ -89,15 +94,13 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(ScalarsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-scalar-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-scalar-dashboard')
 
-  def index_impl(self):
+  def index_impl(self, experiment=None):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
     if self._data_provider:
       mapping = self._data_provider.list_scalars(
-          experiment_id=None,  # experiment support not yet implemented
+          experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
       )
       result = {run: {} for run in mapping}
@@ -155,7 +158,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       # logic.
       SAMPLE_COUNT = 1000
       all_scalars = self._data_provider.read_scalars(
-          experiment_id=None,  # experiment support not yet implemented
+          experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
           downsample=SAMPLE_COUNT,
           run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
@@ -224,16 +227,21 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def tags_route(self, request):
-    index = self.index_impl()
+    experiment = request.args.get('experiment', '')
+    index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
   def scalars_route(self, request):
     """Given a tag and single run, return array of ScalarEvents."""
-    # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
-    experiment = request.args.get('experiment')
+    experiment = request.args.get('experiment', '')
     output_format = request.args.get('format')
-    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+    try:
+      (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+    except KeyError:
+      return http_util.Respond(
+          request, 'Invalid run or tag', 'text/plain', code=400
+      )
     return http_util.Respond(request, body, mime_type)

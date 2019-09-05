@@ -24,18 +24,39 @@ import six
 
 from tensorboard import program
 from tensorboard import test as tb_test
+from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 
 
 class TensorBoardTest(tb_test.TestCase):
   """Tests the TensorBoard program."""
 
-  def testConfigure(self):
-    # Many useful flags are defined under the core plugin.
-    tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader()])
-    tb.configure(logdir='foo')
-    self.assertStartsWith(tb.flags.logdir, 'foo')
+  def testPlugins_pluginClass(self):
+    tb = program.TensorBoard(plugins=[core_plugin.CorePlugin])
+    self.assertIsInstance(tb.plugin_loaders[0], base_plugin.BasicLoader)
+    self.assertIs(tb.plugin_loaders[0].plugin_class, core_plugin.CorePlugin)
 
+  def testPlugins_pluginLoaderClass(self):
+    tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader])
+    self.assertIsInstance(tb.plugin_loaders[0], core_plugin.CorePluginLoader)
+
+  def testPlugins_pluginLoader(self):
+    loader = core_plugin.CorePluginLoader()
+    tb = program.TensorBoard(plugins=[loader])
+    self.assertIs(tb.plugin_loaders[0], loader)
+
+  def testPlugins_invalidType(self):
+    plugin_instance = core_plugin.CorePlugin(base_plugin.TBContext())
+    with six.assertRaisesRegex(self, TypeError, 'CorePlugin'):
+      tb = program.TensorBoard(plugins=[plugin_instance])
+
+  def testConfigure(self):
+    tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader])
+    tb.configure(logdir='foo')
+    self.assertEqual(tb.flags.logdir, 'foo')
+
+  def testConfigure_unknownFlag(self):
+    tb = program.TensorBoard(plugins=[core_plugin.CorePlugin])
     with six.assertRaisesRegex(self, ValueError, 'Unknown TensorBoard flag'):
       tb.configure(foo='bar')
 

@@ -11,12 +11,14 @@ tf_web_library(
         "listeners.ts",
         "storage.ts",
         "tf-storage.html",
+        "tf-storage-polymer.ts",
     ],
     path = "/tf-storage",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:polymer",
     ],
 )
 
