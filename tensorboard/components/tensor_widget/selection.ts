@@ -19,12 +19,11 @@ import {Shape, TensorViewSlicingSpec} from './types';
 /**
  * The possible status of a selected cell.
  */
-export enum CellSelectionStatus {
-  SELECTED = 1,
-  LEFT_EDGE,
-  RIGHT_EDGE,
-  TOP_EDGE,
-  BOTTOM_EDGE,
+export interface CellSelectionStatus {
+  topEdge?: boolean;
+  bottomEdge?: boolean;
+  leftEdge?: boolean;
+  rightEdge?: boolean;
 }
 
 /**
@@ -41,7 +40,7 @@ export enum SelectionMoveDirection {
  * The selection state within a n-dimensional tensor.
  *
  * This class keeps track of what element(s) are selected in the
- * current viewing dimensions of the tensor. It provides capabiliities to:
+ * current viewing dimensions of the tensor. It provides capabilities to:
  * - Query whether a given set of indices falls into the selection, and
  * - if so, whether it belongs to any of the four edges of selection.
  * - When a selection is moved, what the new selection is and
@@ -49,6 +48,7 @@ export enum SelectionMoveDirection {
  *   slicing spec ought to be updated to accommodate it.
  */
 export class TensorElementSelection {
+  private readonly slicingSpec: TensorViewSlicingSpec;
   private sliceDims: number[] = [];
   private sliceIndices: number[] = [];
   private viewDims: number[];
@@ -56,6 +56,7 @@ export class TensorElementSelection {
   private colStart: number;
   private rowCount: number;
   private colCount: number;
+  private readonly rank: number;
 
   /**
    * Constructor of TensorElementSelection
@@ -73,7 +74,7 @@ export class TensorElementSelection {
    */
   constructor(
     private readonly shape: Shape,
-    readonly slicingSpec: TensorViewSlicingSpec,
+    slicingSpec: TensorViewSlicingSpec,
     rowStart?: number,
     colStart?: number,
     rowCount?: number,
@@ -84,6 +85,10 @@ export class TensorElementSelection {
         `TensorElementSelection doesn't support tensor with zero elements.`
       );
     }
+
+    // Make a defensive copy of the slicingSpec to avoid mutating the one
+    // provided by the caller.
+    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
 
     for (let i = 0; i < slicingSpec.slicingDimsAndIndices.length; ++i) {
       this.sliceDims.push(slicingSpec.slicingDimsAndIndices[i].dim);
@@ -97,8 +102,10 @@ export class TensorElementSelection {
       this.sliceIndices.push(index);
     }
 
+    this.rank = this.shape.length;
+
     // Sanity check the size of the the slicing dimensions.
-    if (this.rank() > 0 && this.sliceDims.length >= this.rank()) {
+    if (this.rank > 0 && this.sliceDims.length >= this.rank) {
       throw new Error(
         `Expected sliceDims to have a length less than rank ${this.rank}, ` +
           `but got length ${this.sliceDims.length}`
@@ -107,7 +114,7 @@ export class TensorElementSelection {
 
     // Determine the viewing dimensions.
     this.viewDims = [];
-    for (let i = 0; i < this.rank(); ++i) {
+    for (let i = 0; i < this.rank; ++i) {
       if (this.sliceDims.indexOf(i) === -1) {
         this.viewDims.push(i);
       }
@@ -123,10 +130,6 @@ export class TensorElementSelection {
     this.colCount = colCount == null ? 1 : colCount;
   }
 
-  private rank(): number {
-    return this.shape.length;
-  }
-
   /**
    * Compute whether a given set of indices falls into the selection.
    *
@@ -137,8 +140,8 @@ export class TensorElementSelection {
    * @return Cell selection status, if the set of indices falls into the
    *   selection. `null` otherwise.
    */
-  public getElementStatus(indices: number[]): CellSelectionStatus[] | null {
-    if (indices.length !== this.rank()) {
+  public getElementStatus(indices: number[]): CellSelectionStatus | null {
+    if (indices.length !== this.rank) {
       throw new Error(
         `Expected indices to have a rank of ${this.rank}, ` +
           `but got ${indices.length} ([${indices}])`
@@ -154,7 +157,7 @@ export class TensorElementSelection {
       }
     }
 
-    let status: CellSelectionStatus[] | null = null;
+    let status: CellSelectionStatus | null = null;
 
     const rowEnd = this.rowStart + this.rowCount;
     const colEnd = this.colStart + this.colCount;
@@ -162,31 +165,26 @@ export class TensorElementSelection {
     // Second, check the viewing dims.
     if (this.viewDims.length === 0) {
       if (indices.length === 0) {
-        if (status == null) {
-          status = [];
-        }
-        status.push(CellSelectionStatus.SELECTED);
-        status.push(CellSelectionStatus.TOP_EDGE);
-        status.push(CellSelectionStatus.BOTTOM_EDGE);
-        status.push(CellSelectionStatus.LEFT_EDGE);
-        status.push(CellSelectionStatus.RIGHT_EDGE);
+        status = {
+          topEdge: true,
+          bottomEdge: true,
+          leftEdge: true,
+          rightEdge: true,
+        };
       }
       return status;
     } else if (this.viewDims.length === 1) {
       const rowDim = this.viewDims[0];
       if (indices[rowDim] >= this.rowStart && indices[rowDim] < rowEnd) {
-        if (status == null) {
-          status = [];
-        }
-        status.push(CellSelectionStatus.SELECTED);
+        status = {};
         if (indices[rowDim] === this.rowStart) {
-          status.push(CellSelectionStatus.TOP_EDGE);
+          status.topEdge = true;
         }
         if (indices[rowDim] === rowEnd - 1) {
-          status.push(CellSelectionStatus.BOTTOM_EDGE);
+          status.bottomEdge = true;
         }
-        status.push(CellSelectionStatus.LEFT_EDGE);
-        status.push(CellSelectionStatus.RIGHT_EDGE);
+        status.leftEdge = true;
+        status.rightEdge = true;
       }
       return status;
     } else if (this.viewDims.length === 2) {
@@ -198,21 +196,18 @@ export class TensorElementSelection {
         indices[colDim] >= this.colStart &&
         indices[colDim] < colEnd
       ) {
-        if (status == null) {
-          status = [];
-        }
-        status.push(CellSelectionStatus.SELECTED);
+        status = {};
         if (indices[rowDim] === this.rowStart) {
-          status.push(CellSelectionStatus.TOP_EDGE);
+          status.topEdge = true;
         }
         if (indices[rowDim] === rowEnd - 1) {
-          status.push(CellSelectionStatus.BOTTOM_EDGE);
+          status.bottomEdge = true;
         }
         if (indices[colDim] === this.colStart) {
-          status.push(CellSelectionStatus.LEFT_EDGE);
+          status.leftEdge = true;
         }
         if (indices[colDim] === colEnd - 1) {
-          status.push(CellSelectionStatus.RIGHT_EDGE);
+          status.rightEdge = true;
         }
       }
       return status;
@@ -238,12 +233,12 @@ export class TensorElementSelection {
    */
   public move(direction: SelectionMoveDirection): TensorViewSlicingSpec | null {
     let viewRangeChanged = false;
-    if (this.rank() === 0) {
+    if (this.rank === 0) {
       // No-op for a scalar.
       return null;
     }
     if (
-      this.rank() === 1 &&
+      this.rank === 1 &&
       (direction === SelectionMoveDirection.LEFT ||
         direction === SelectionMoveDirection.RIGHT)
     ) {
@@ -255,7 +250,7 @@ export class TensorElementSelection {
       this.slicingSpec.verticalRange === null ||
       this.slicingSpec.verticalRange[1] === null
     ) {
-      throw new Error(`Failed to move odue to undetermined vertical range.`);
+      throw new Error(`Failed to move due to undetermined vertical range.`);
     }
 
     if (direction === SelectionMoveDirection.UP) {

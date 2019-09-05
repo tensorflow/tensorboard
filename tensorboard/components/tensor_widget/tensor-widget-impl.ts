@@ -658,21 +658,20 @@ export class TensorWidgetImpl implements TensorWidget {
         valueDiv.classList.remove('tensor-widget-value-div-selection-right');
         const indices = this.calculateIndices(i, j);
         const status = this.selection.getElementStatus(indices);
-        if (status != null && status.length > 0) {
+        if (status !== null) {
           valueDiv.classList.add('tensor-widget-value-div-selection');
-          status.forEach((statusItem) => {
-            if (statusItem === CellSelectionStatus.TOP_EDGE) {
-              valueDiv.classList.add('tensor-widget-value-div-selection-top');
-            } else if (statusItem === CellSelectionStatus.BOTTOM_EDGE) {
-              valueDiv.classList.add(
-                'tensor-widget-value-div-selection-bottom'
-              );
-            } else if (statusItem === CellSelectionStatus.LEFT_EDGE) {
-              valueDiv.classList.add('tensor-widget-value-div-selection-left');
-            } else if (statusItem === CellSelectionStatus.RIGHT_EDGE) {
-              valueDiv.classList.add('tensor-widget-value-div-selection-right');
-            }
-          });
+          if (status.topEdge) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-top');
+          }
+          if (status.bottomEdge) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-bottom');
+          }
+          if (status.leftEdge) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-left');
+          }
+          if (status.rightEdge) {
+            valueDiv.classList.add('tensor-widget-value-div-selection-right');
+          }
         }
       }
     }
