@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {numElements} from './shape-utils';
-import {Shape, TensorViewSlicingSpec} from './types';
+import {Shape, TensorViewSlicingSpec, TensorView} from './types';
 
 /**
  * The possible status of a selected cell.
@@ -29,16 +29,12 @@ export interface CellSelectionStatus {
 /**
  * Possible directions of selection movement.
  */
-export enum SelectionMoveDirection {
+export enum MoveDirection {
   UP = 1,
   DOWN,
   LEFT,
   RIGHT,
 }
-
-export type OnSlicingSpecChangeCallback = (
-  slicingSpec: TensorViewSlicingSpec
-) => void;
 
 /**
  * The selection state within a n-dimensional tensor.
@@ -52,7 +48,6 @@ export type OnSlicingSpecChangeCallback = (
  *   slicing spec ought to be updated to accommodate it.
  */
 export class TensorElementSelection {
-  private slicingSpec: TensorViewSlicingSpec;
   private sliceDims: number[] = [];
   private sliceIndices: number[] = [];
   private viewDims: number[];
@@ -82,17 +77,13 @@ export class TensorElementSelection {
     rowStart?: number,
     colStart?: number,
     rowCount?: number,
-    colCount?: number,
-    private readonly onSlicingSpecChange: OnSlicingSpecChangeCallback | null = null
+    colCount?: number
   ) {
     if (numElements(this.shape) === 0) {
       throw new Error(
         `TensorElementSelection doesn't support tensor with zero elements.`
       );
     }
-
-    // NOTE: Make a copy to avoid mutate the input one.
-    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
 
     for (let i = 0; i < slicingSpec.slicingDimsAndIndices.length; ++i) {
       this.sliceDims.push(slicingSpec.slicingDimsAndIndices[i].dim);
@@ -208,10 +199,6 @@ export class TensorElementSelection {
     return status;
   }
 
-  public setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
-    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
-  }
-
   /**
    * Move the selection.
    *
@@ -221,98 +208,89 @@ export class TensorElementSelection {
    * Moving a multi-element selection always causes the selection to
    * collapse to a single element.
    *
-   * If the slicing spec has changed as a result of this move, and the
-   * `onSlicingSpecChange` callback is specified, the callback will be invoked.
-   *
    * @param direction Direction in which this movement is being made.
+   * @param current slicing spec.
+   * @return The direction in which the vertical or horizontal viewing range
+   *   of the slicing spec should change. This is just an advisory.
+   *   It is up to the caller to actually update the slicing spec.
    */
-  public move(direction: SelectionMoveDirection): void {
-    let viewRangeChanged = false;
-    // let newSlicingSpec: TensorViewSlicingSpec | null = null;
+  public move(
+    direction: MoveDirection,
+    slicingSpec: TensorViewSlicingSpec
+  ): MoveDirection | null {
+    let moveDirection: MoveDirection | null = null;
     if (this.rank === 0) {
       // No-op for a scalar.
-      return;
+      return null;
     }
     if (
       this.rank === 1 &&
-      (direction === SelectionMoveDirection.LEFT ||
-        direction === SelectionMoveDirection.RIGHT)
+      (direction === MoveDirection.LEFT || direction === MoveDirection.RIGHT)
     ) {
       // No-op for moving left or right in a 1D tensor.
-      return;
+      return null;
     }
 
     if (
-      this.slicingSpec.verticalRange === null ||
-      this.slicingSpec.verticalRange[1] === null
+      slicingSpec.verticalRange === null ||
+      slicingSpec.verticalRange[1] === null
     ) {
       throw new Error(`Failed to move due to undetermined vertical range.`);
     }
 
-    if (direction === SelectionMoveDirection.UP) {
+    if (direction === MoveDirection.UP) {
       if (this.rowStart > 0) {
         this.rowStart--;
         if (
-          this.slicingSpec.verticalRange != null &&
-          this.rowStart < this.slicingSpec.verticalRange[0]
+          slicingSpec.verticalRange != null &&
+          this.rowStart < slicingSpec.verticalRange[0]
         ) {
-          (this.slicingSpec.verticalRange as [number, number])[0]--;
-          (this.slicingSpec.verticalRange as [number, number])[1]--;
-          viewRangeChanged = true;
+          moveDirection = MoveDirection.UP;
         }
       }
-    } else if (direction === SelectionMoveDirection.DOWN) {
+    } else if (direction === MoveDirection.DOWN) {
       if (
-        this.slicingSpec.viewingDims != null &&
-        this.slicingSpec.viewingDims[0] != null &&
-        this.rowStart < this.shape[this.slicingSpec.viewingDims[0]] - 1
+        slicingSpec.viewingDims != null &&
+        slicingSpec.viewingDims[0] != null &&
+        this.rowStart < this.shape[slicingSpec.viewingDims[0]] - 1
       ) {
         this.rowStart++;
         if (
-          this.slicingSpec.verticalRange != null &&
-          this.rowStart >= this.slicingSpec.verticalRange[1]
+          slicingSpec.verticalRange != null &&
+          this.rowStart >= slicingSpec.verticalRange[1]
         ) {
-          (this.slicingSpec.verticalRange as [number, number])[0]++;
-          (this.slicingSpec.verticalRange as [number, number])[1]++;
-          viewRangeChanged = true;
+          moveDirection = MoveDirection.DOWN;
         }
       }
-    } else if (direction === SelectionMoveDirection.LEFT) {
+    } else if (direction === MoveDirection.LEFT) {
       if (this.colStart > 0) {
         this.colStart--;
         if (
-          this.slicingSpec.horizontalRange != null &&
-          this.colStart < this.slicingSpec.horizontalRange[0]
+          slicingSpec.horizontalRange != null &&
+          this.colStart < slicingSpec.horizontalRange[0]
         ) {
-          (this.slicingSpec.horizontalRange as [number, number])[0]--;
-          (this.slicingSpec.horizontalRange as [number, number])[1]--;
-          viewRangeChanged = true;
+          moveDirection = MoveDirection.LEFT;
         }
       }
-    } else if (direction === SelectionMoveDirection.RIGHT) {
+    } else if (direction === MoveDirection.RIGHT) {
       if (
-        this.slicingSpec.viewingDims != null &&
-        this.slicingSpec.viewingDims[1] != null &&
-        this.colStart < this.shape[this.slicingSpec.viewingDims[1]] - 1
+        slicingSpec.viewingDims != null &&
+        slicingSpec.viewingDims[1] != null &&
+        this.colStart < this.shape[slicingSpec.viewingDims[1]] - 1
       ) {
         this.colStart++;
         if (
-          this.slicingSpec.horizontalRange != null &&
-          this.colStart >= (this.slicingSpec.horizontalRange[1] as number)
+          slicingSpec.horizontalRange != null &&
+          this.colStart >= (slicingSpec.horizontalRange[1] as number)
         ) {
-          (this.slicingSpec.horizontalRange as [number, number])[0]++;
-          (this.slicingSpec.horizontalRange as [number, number])[1]++;
-          viewRangeChanged = true;
+          moveDirection = MoveDirection.RIGHT;
         }
       }
     }
     // Moving the selection causes the selection size to collapse to 1x1.
     this.rowCount = 1;
     this.colCount = 1;
-
-    if (viewRangeChanged && this.onSlicingSpecChange !== null) {
-      this.onSlicingSpecChange(this.slicingSpec);
-    }
+    return moveDirection;
   }
 
   public getRowStart(): number {

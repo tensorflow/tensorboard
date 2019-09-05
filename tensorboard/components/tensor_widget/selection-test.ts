@@ -18,7 +18,7 @@ limitations under the License.
 import {expect} from 'chai';
 
 import {Shape, TensorViewSlicingSpec, TensorView} from './types';
-import {SelectionMoveDirection, TensorElementSelection} from './selection';
+import {MoveDirection, TensorElementSelection} from './selection';
 
 describe('TensorElementSelection', () => {
   it('Scalar shape', () => {
@@ -331,39 +331,31 @@ describe('Moving selection', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    let receivedSlicingSpec: TensorViewSlicingSpec | undefined;
     const selection = new TensorElementSelection(
       shape,
       slicingSpec,
       0,
       0,
       1,
-      1,
-      (slicingSpec: TensorViewSlicingSpec) => {
-        receivedSlicingSpec = slicingSpec;
-      }
+      1
     );
     // All movements on a scalar selection leads to no change.
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getRowCount()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
     expect(selection.getColCount()).to.equal(1);
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getRowCount()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
     expect(selection.getColCount()).to.equal(1);
-    selection.move(SelectionMoveDirection.LEFT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getRowCount()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
     expect(selection.getColCount()).to.equal(1);
-    selection.move(SelectionMoveDirection.RIGHT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getRowCount()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
@@ -380,65 +372,41 @@ describe('Moving selection', () => {
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.
-    let receivedSlicingSpec: TensorViewSlicingSpec | undefined;
     const selection = new TensorElementSelection(
       shape,
       slicingSpec,
       0,
       0,
       5,
-      1,
-      (slicingSpec: TensorViewSlicingSpec) => {
-        receivedSlicingSpec = slicingSpec;
-      }
+      1
     );
     // Null effects from left-right movements.
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
-    selection.move(SelectionMoveDirection.LEFT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
-    selection.move(SelectionMoveDirection.RIGHT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
     // Effective movements without changing slicing spec.
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(2);
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(3);
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(4);
     // Movement causes updates to slicing spec.
-    selection.move(SelectionMoveDirection.DOWN);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+      MoveDirection.DOWN
+    );
     expect(selection.getRowStart()).to.equal(5);
 
-    expect(
-      ((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange as [
-        number,
-        number
-      ])[0]
-    ).to.equal(1);
-    expect(
-      ((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange as [
-        number,
-        number
-      ])[1]
-    ).to.equal(6);
-
     // Cannnot move anymore.
-    receivedSlicingSpec = undefined;
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(5);
   });
 
@@ -452,75 +420,45 @@ describe('Moving selection', () => {
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.
-    let receivedSlicingSpec: TensorViewSlicingSpec | undefined;
     const selection = new TensorElementSelection(
       shape,
       slicingSpec,
       0,
       0,
       1,
-      1,
-      (slicingSpec: TensorViewSlicingSpec) => {
-        receivedSlicingSpec = slicingSpec;
-      }
+      1
     );
     // Null effects from up and left movements.
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
-    selection.move(SelectionMoveDirection.LEFT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
     // Non-null effect from down movement.
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
     // Non-null effect from right movement.
-    selection.move(SelectionMoveDirection.RIGHT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(1);
     // Next down movement should cause a slicinng spec change.
-    selection.move(SelectionMoveDirection.DOWN);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+      MoveDirection.DOWN
+    );
     expect(selection.getRowStart()).to.equal(2);
     expect(selection.getColStart()).to.equal(1);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [1, 3]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([0, 2]);
     // Next right movement should cause a slicing spec change.
-    selection.move(SelectionMoveDirection.RIGHT);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.equal(
+      MoveDirection.RIGHT
+    );
     expect(selection.getRowStart()).to.equal(2);
     expect(selection.getColStart()).to.equal(2);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [1, 3]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([1, 3]);
-
-    // Movinng back up.
-    receivedSlicingSpec = undefined;
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+    // Moving back up.
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(2);
-
-    // Next up movement should cause a slicing spec change.
-    selection.move(SelectionMoveDirection.UP);
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(2);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [0, 2]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([1, 3]);
   });
 
   it('2D moving with setSlicingSpec reflects new spec', () => {
@@ -533,17 +471,13 @@ describe('Moving selection', () => {
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.
-    let receivedSlicingSpec: TensorViewSlicingSpec | undefined;
     const selection = new TensorElementSelection(
       shape,
       slicingSpec,
       1,
       1,
       1,
-      1,
-      (slicingSpec: TensorViewSlicingSpec) => {
-        receivedSlicingSpec = slicingSpec;
-      }
+      1
     );
 
     const newSlicingSpec: TensorViewSlicingSpec = {
@@ -552,13 +486,10 @@ describe('Moving selection', () => {
       verticalRange: [1, 3],
       horizontalRange: [1, 3],
     };
-    selection.setSlicingSpec(newSlicingSpec);
     // With the new slicing spec set, the downward move should lead to no update
     // in the slicing spec, and neither should the rightward move.
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
-    selection.move(SelectionMoveDirection.RIGHT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, newSlicingSpec)).to.be.null;
+    expect(selection.move(MoveDirection.RIGHT, newSlicingSpec)).to.be.null;
   });
 
   it('3D moving', () => {
@@ -576,72 +507,45 @@ describe('Moving selection', () => {
     };
     // Vertical viewing ranges is  unimportant for selection
     // calculation, but are included for completeness.
-    let receivedSlicingSpec: TensorViewSlicingSpec | undefined;
     const selection = new TensorElementSelection(
       shape,
       slicingSpec,
       0,
       0,
       1,
-      1,
-      (slicingSpec: TensorViewSlicingSpec) => {
-        receivedSlicingSpec = slicingSpec;
-      }
+      1
     );
     // Null effects from up and left movements.
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
-    selection.move(SelectionMoveDirection.LEFT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(0);
     expect(selection.getColStart()).to.equal(0);
     // Non-null effect from down movement.
-    selection.move(SelectionMoveDirection.DOWN);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(0);
     // Non-null effect from right movement.
-    selection.move(SelectionMoveDirection.RIGHT);
-    expect(receivedSlicingSpec).to.be.undefined;
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(1);
     // Next down movement should cause a slicinng spec change.
-    selection.move(SelectionMoveDirection.DOWN);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+      MoveDirection.DOWN
+    );
     expect(selection.getRowStart()).to.equal(2);
     expect(selection.getColStart()).to.equal(1);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [1, 3]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([0, 2]);
     // Next right movement should cause a slicing spec change.
-    selection.move(SelectionMoveDirection.RIGHT);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.equal(
+      MoveDirection.RIGHT
+    );
     expect(selection.getRowStart()).to.equal(2);
     expect(selection.getColStart()).to.equal(2);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [1, 3]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([1, 3]);
-    // Movinng back up.
-    receivedSlicingSpec = undefined;
-    selection.move(SelectionMoveDirection.UP);
-    expect(receivedSlicingSpec).to.be.undefined;
+
+    // Moving back up.
+    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
     expect(selection.getRowStart()).to.equal(1);
     expect(selection.getColStart()).to.equal(2);
-    // Next up movement should cause a slicing spec change.
-    selection.move(SelectionMoveDirection.UP);
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(2);
-    expect((receivedSlicingSpec as TensorViewSlicingSpec).verticalRange).to.eql(
-      [0, 2]
-    );
-    expect(
-      (receivedSlicingSpec as TensorViewSlicingSpec).horizontalRange
-    ).to.eql([1, 3]);
   });
 });

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {TensorElementSelection, SelectionMoveDirection} from './selection';
+import {TensorElementSelection, MoveDirection} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -260,16 +260,45 @@ export class TensorWidgetImpl implements TensorWidget {
           event.stopPropagation();
           event.preventDefault();
           this.hideValueTooltip();
+          let slicingMoveDirection: MoveDirection | null = null;
+          let moveDirection: MoveDirection | null = null;
           if (event.keyCode === UP_KEYCODE) {
-            this.selection.move(SelectionMoveDirection.UP);
+            moveDirection = MoveDirection.UP;
           } else if (event.keyCode === DOWN_KEYCODE) {
-            this.selection.move(SelectionMoveDirection.DOWN);
+            moveDirection = MoveDirection.DOWN;
           } else if (event.keyCode === LEFT_KEYCODE) {
-            this.selection.move(SelectionMoveDirection.LEFT);
+            moveDirection = MoveDirection.LEFT;
           } else if (event.keyCode === RIGHT_KEYCODE) {
-            this.selection.move(SelectionMoveDirection.RIGHT);
+            moveDirection = MoveDirection.RIGHT;
           }
-          this.renderSelection();
+
+          if (moveDirection !== null) {
+            slicingMoveDirection = this.selection.move(
+              moveDirection,
+              this.slicingSpec
+            );
+          }
+
+          // The selection movement may necessitate a change in the vertical or
+          // horizontal view.
+          if (slicingMoveDirection === null) {
+            this.renderSelection();
+          } else {
+            if (slicingMoveDirection === MoveDirection.UP) {
+              (this.slicingSpec.verticalRange as [number, number])[0]--;
+              (this.slicingSpec.verticalRange as [number, number])[1]--;
+            } else if (slicingMoveDirection === MoveDirection.DOWN) {
+              (this.slicingSpec.verticalRange as [number, number])[0]++;
+              (this.slicingSpec.verticalRange as [number, number])[1]++;
+            } else if (slicingMoveDirection === MoveDirection.LEFT) {
+              (this.slicingSpec.horizontalRange as [number, number])[0]--;
+              (this.slicingSpec.horizontalRange as [number, number])[1]--;
+            } else if (slicingMoveDirection === MoveDirection.RIGHT) {
+              (this.slicingSpec.horizontalRange as [number, number])[0]++;
+              (this.slicingSpec.horizontalRange as [number, number])[1]++;
+            }
+            this.renderRulersAndValueDivs();
+          }
         }
       });
     }
@@ -492,11 +521,7 @@ export class TensorWidgetImpl implements TensorWidget {
             rowStart,
             colStart,
             rowCount,
-            colCount,
-            (newSlicingSpec: TensorViewSlicingSpec) => {
-              this.slicingSpec = newSlicingSpec;
-              this.renderRulersAndValueDivs();
-            }
+            colCount
           );
           this.renderSelection();
         });
@@ -807,9 +832,6 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.slicingSpec.horizontalRange[1] > maxCol) {
       this.slicingSpec.horizontalRange[1] = maxCol;
     }
-    if (this.selection !== null) {
-      this.selection.setSlicingSpec(this.slicingSpec);
-    }
 
     await this.renderRulersAndValueDivs();
   }
@@ -849,9 +871,6 @@ export class TensorWidgetImpl implements TensorWidget {
     const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
     if (this.slicingSpec.verticalRange[1] > maxRow) {
       this.slicingSpec.verticalRange[1] = maxRow;
-    }
-    if (this.selection !== null) {
-      this.selection.setSlicingSpec(this.slicingSpec);
     }
 
     await this.renderRulersAndValueDivs();
