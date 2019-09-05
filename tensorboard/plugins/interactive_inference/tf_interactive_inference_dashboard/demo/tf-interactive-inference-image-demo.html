@@ -142,6 +142,14 @@ limitations under the License.
                   this.$.dash.selectedLabelFeature = 'Smiling';
                 }, 1000);
               });
+              for (let i = 0; i < indices.length; i++) {
+                const idx = +indices[i];
+                const tensor = await this.convertExToTensor(this.data[idx]);
+                const avgColor = await tf.mean(tf.mean(tensor, 0), 0).data();
+                console.log(avgColor)
+                this.avgColors[idx] = avgColor;
+                tensor.dispose();
+              }
             } else {
               const tensorArr = [];
               for (let i = 0; i < indices.length; i++) {
