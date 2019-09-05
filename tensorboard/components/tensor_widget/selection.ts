@@ -36,6 +36,10 @@ export enum SelectionMoveDirection {
   RIGHT,
 }
 
+export type OnSlicingSpecChangeCallback = (
+  slicingSpec: TensorViewSlicingSpec
+) => void;
+
 /**
  * The selection state within a n-dimensional tensor.
  *
@@ -48,6 +52,7 @@ export enum SelectionMoveDirection {
  *   slicing spec ought to be updated to accommodate it.
  */
 export class TensorElementSelection {
+  private slicingSpec: TensorViewSlicingSpec;
   private sliceDims: number[] = [];
   private sliceIndices: number[] = [];
   private viewDims: number[];
@@ -73,11 +78,12 @@ export class TensorElementSelection {
    */
   constructor(
     private readonly shape: Shape,
-    private slicingSpec: TensorViewSlicingSpec,
+    slicingSpec: TensorViewSlicingSpec,
     rowStart?: number,
     colStart?: number,
     rowCount?: number,
-    colCount?: number
+    colCount?: number,
+    private readonly onSlicingSpecChange: OnSlicingSpecChangeCallback | null = null
   ) {
     if (numElements(this.shape) === 0) {
       throw new Error(
@@ -85,10 +91,8 @@ export class TensorElementSelection {
       );
     }
 
-    // NOTE: slicingSpec is not made a defensive copy of, because the caller
-    // may alter it (e.g., due to scrolling unrelated to the selection), and
-    // we want the external slicingSpec change to be reflected during the
-    // move() call below. This is why move() makes copy of the old slicingSpec.
+    // NOTE: Make a copy to avoid mutate the input one.
+    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
 
     for (let i = 0; i < slicingSpec.slicingDimsAndIndices.length; ++i) {
       this.sliceDims.push(slicingSpec.slicingDimsAndIndices[i].dim);
@@ -172,21 +176,16 @@ export class TensorElementSelection {
           rightEdge: true,
         };
       }
-      return status;
     } else if (this.viewDims.length === 1) {
       const rowDim = this.viewDims[0];
       if (indices[rowDim] >= this.rowStart && indices[rowDim] < rowEnd) {
-        status = {};
-        if (indices[rowDim] === this.rowStart) {
-          status.topEdge = true;
-        }
-        if (indices[rowDim] === rowEnd - 1) {
-          status.bottomEdge = true;
-        }
-        status.leftEdge = true;
-        status.rightEdge = true;
+        status = {
+          topEdge: indices[rowDim] === this.rowStart,
+          bottomEdge: indices[rowDim] === rowEnd - 1,
+          leftEdge: true,
+          rightEdge: true,
+        };
       }
-      return status;
     } else if (this.viewDims.length === 2) {
       const rowDim = this.viewDims[0];
       const colDim = this.viewDims[1];
@@ -196,24 +195,21 @@ export class TensorElementSelection {
         indices[colDim] >= this.colStart &&
         indices[colDim] < colEnd
       ) {
-        status = {};
-        if (indices[rowDim] === this.rowStart) {
-          status.topEdge = true;
-        }
-        if (indices[rowDim] === rowEnd - 1) {
-          status.bottomEdge = true;
-        }
-        if (indices[colDim] === this.colStart) {
-          status.leftEdge = true;
-        }
-        if (indices[colDim] === colEnd - 1) {
-          status.rightEdge = true;
-        }
+        status = {
+          topEdge: indices[rowDim] === this.rowStart,
+          bottomEdge: indices[rowDim] === rowEnd - 1,
+          leftEdge: indices[colDim] === this.colStart,
+          rightEdge: indices[colDim] === colEnd - 1,
+        };
       }
-      return status;
     } else {
       throw new Error(`Unexpected length of viewDims: ${this.viewDims}`);
     }
+    return status;
+  }
+
+  public setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
+    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
   }
 
   /**
@@ -225,18 +221,17 @@ export class TensorElementSelection {
    * Moving a multi-element selection always causes the selection to
    * collapse to a single element.
    *
+   * If the slicing spec has changed as a result of this move, and the
+   * `onSlicingSpecChange` callback is specified, the callback will be invoked.
+   *
    * @param direction Direction in which this movement is being made.
-   * @return If the selection movement doesn't necessitate an update to the
-   *   slicing spec (i.e., if the new single element selection is within
-   *   the current slicing spec), `null`. Else, a new `TensorViewSlicingSpec`
-   *   object that can accommodate the new single-element selection.
    */
-  public move(direction: SelectionMoveDirection): TensorViewSlicingSpec | null {
-    // let viewRangeChanged = false;
-    let newSlicingSpec: TensorViewSlicingSpec | null = null;
+  public move(direction: SelectionMoveDirection): void {
+    let viewRangeChanged = false;
+    // let newSlicingSpec: TensorViewSlicingSpec | null = null;
     if (this.rank === 0) {
       // No-op for a scalar.
-      return null;
+      return;
     }
     if (
       this.rank === 1 &&
@@ -244,7 +239,7 @@ export class TensorElementSelection {
         direction === SelectionMoveDirection.RIGHT)
     ) {
       // No-op for moving left or right in a 1D tensor.
-      return null;
+      return;
     }
 
     if (
@@ -261,11 +256,9 @@ export class TensorElementSelection {
           this.slicingSpec.verticalRange != null &&
           this.rowStart < this.slicingSpec.verticalRange[0]
         ) {
-          newSlicingSpec = JSON.parse(
-            JSON.stringify(this.slicingSpec)
-          ) as TensorViewSlicingSpec;
-          (newSlicingSpec.verticalRange as [number, number])[0]--;
-          (newSlicingSpec.verticalRange as [number, number])[1]--;
+          (this.slicingSpec.verticalRange as [number, number])[0]--;
+          (this.slicingSpec.verticalRange as [number, number])[1]--;
+          viewRangeChanged = true;
         }
       }
     } else if (direction === SelectionMoveDirection.DOWN) {
@@ -279,11 +272,9 @@ export class TensorElementSelection {
           this.slicingSpec.verticalRange != null &&
           this.rowStart >= this.slicingSpec.verticalRange[1]
         ) {
-          newSlicingSpec = JSON.parse(
-            JSON.stringify(this.slicingSpec)
-          ) as TensorViewSlicingSpec;
-          (newSlicingSpec.verticalRange as [number, number])[0]++;
-          (newSlicingSpec.verticalRange as [number, number])[1]++;
+          (this.slicingSpec.verticalRange as [number, number])[0]++;
+          (this.slicingSpec.verticalRange as [number, number])[1]++;
+          viewRangeChanged = true;
         }
       }
     } else if (direction === SelectionMoveDirection.LEFT) {
@@ -293,11 +284,9 @@ export class TensorElementSelection {
           this.slicingSpec.horizontalRange != null &&
           this.colStart < this.slicingSpec.horizontalRange[0]
         ) {
-          newSlicingSpec = JSON.parse(
-            JSON.stringify(this.slicingSpec)
-          ) as TensorViewSlicingSpec;
-          (newSlicingSpec.horizontalRange as [number, number])[0]--;
-          (newSlicingSpec.horizontalRange as [number, number])[1]--;
+          (this.slicingSpec.horizontalRange as [number, number])[0]--;
+          (this.slicingSpec.horizontalRange as [number, number])[1]--;
+          viewRangeChanged = true;
         }
       }
     } else if (direction === SelectionMoveDirection.RIGHT) {
@@ -311,11 +300,9 @@ export class TensorElementSelection {
           this.slicingSpec.horizontalRange != null &&
           this.colStart >= (this.slicingSpec.horizontalRange[1] as number)
         ) {
-          newSlicingSpec = JSON.parse(
-            JSON.stringify(this.slicingSpec)
-          ) as TensorViewSlicingSpec;
-          (newSlicingSpec.horizontalRange as [number, number])[0]++;
-          (newSlicingSpec.horizontalRange as [number, number])[1]++;
+          (this.slicingSpec.horizontalRange as [number, number])[0]++;
+          (this.slicingSpec.horizontalRange as [number, number])[1]++;
+          viewRangeChanged = true;
         }
       }
     }
@@ -323,10 +310,9 @@ export class TensorElementSelection {
     this.rowCount = 1;
     this.colCount = 1;
 
-    if (newSlicingSpec !== null) {
-      this.slicingSpec = newSlicingSpec;
+    if (viewRangeChanged && this.onSlicingSpecChange !== null) {
+      this.onSlicingSpecChange(this.slicingSpec);
     }
-    return newSlicingSpec;
   }
 
   public getRowStart(): number {

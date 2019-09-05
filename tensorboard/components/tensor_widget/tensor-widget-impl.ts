@@ -14,11 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {
-  TensorElementSelection,
-  CellSelectionStatus,
-  SelectionMoveDirection,
-} from './selection';
+import {TensorElementSelection, SelectionMoveDirection} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -264,25 +260,16 @@ export class TensorWidgetImpl implements TensorWidget {
           event.stopPropagation();
           event.preventDefault();
           this.hideValueTooltip();
-          let newSlicingSpec: TensorViewSlicingSpec | null = null;
           if (event.keyCode === UP_KEYCODE) {
-            newSlicingSpec = this.selection.move(SelectionMoveDirection.UP);
+            this.selection.move(SelectionMoveDirection.UP);
           } else if (event.keyCode === DOWN_KEYCODE) {
-            newSlicingSpec = this.selection.move(SelectionMoveDirection.DOWN);
+            this.selection.move(SelectionMoveDirection.DOWN);
           } else if (event.keyCode === LEFT_KEYCODE) {
-            newSlicingSpec = this.selection.move(SelectionMoveDirection.LEFT);
+            this.selection.move(SelectionMoveDirection.LEFT);
           } else if (event.keyCode === RIGHT_KEYCODE) {
-            newSlicingSpec = this.selection.move(SelectionMoveDirection.RIGHT);
+            this.selection.move(SelectionMoveDirection.RIGHT);
           }
-          if (newSlicingSpec === null) {
-            // No slicing spec change. Simply update the selection rendering.
-            this.renderSelection();
-          } else {
-            // Slicing spec has changed. Update the value divs, which includes
-            // the rendering of selection.
-            this.slicingSpec = newSlicingSpec;
-            this.renderRulersAndValueDivs();
-          }
+          this.renderSelection();
         }
       });
     }
@@ -505,7 +492,11 @@ export class TensorWidgetImpl implements TensorWidget {
             rowStart,
             colStart,
             rowCount,
-            colCount
+            colCount,
+            (newSlicingSpec: TensorViewSlicingSpec) => {
+              this.slicingSpec = newSlicingSpec;
+              this.renderRulersAndValueDivs();
+            }
           );
           this.renderSelection();
         });
@@ -678,14 +669,14 @@ export class TensorWidgetImpl implements TensorWidget {
   }
 
   /**
-   * Calcualte the set of indices that a value div currently maps to.
-   * @param row Row index of the value div, 0-based. This is with respect
+   * Calculate the set of indices that a value div currently maps to.
+   * @param viewRow Row index of the value div, 0-based. This is with respect
    *   to the 2D array of value divs that the widget currently possess, not
    *   with respect to the indices of the underlying tensor. Same below.
-   * @param col Column indices of the value div, 0-based.
+   * @param viewCol Column indices of the value div, 0-based.
    * @return The set of indices of the underlying tensor.
    */
-  private calculateIndices(row: number, col: number): number[] {
+  private calculateIndices(viewRow: number, viewCol: number): number[] {
     const indices: number[] = [];
     const slicingDims = this.slicingSpec.slicingDimsAndIndices.map(
       (dimAndIndex) => dimAndIndex.dim
@@ -709,20 +700,20 @@ export class TensorWidgetImpl implements TensorWidget {
           this.slicingSpec.verticalRange[0] === null
         ) {
           throw new Error(
-            'Failed to calculate indices to do undertermined vertical range.'
+            'Failed to calculate indices due to undertermined vertical range.'
           );
         }
-        indices.push(this.slicingSpec.verticalRange[0] + row);
+        indices.push(this.slicingSpec.verticalRange[0] + viewRow);
       } else if (i === this.slicingSpec.viewingDims[1]) {
         if (
           this.slicingSpec.horizontalRange === null ||
           this.slicingSpec.horizontalRange[0] === null
         ) {
           throw new Error(
-            'Failed to calculate indices to do undertermined vertical range.'
+            'Failed to calculate indices due to undertermined vertical range.'
           );
         }
-        indices.push(this.slicingSpec.horizontalRange[0] + col);
+        indices.push(this.slicingSpec.horizontalRange[0] + viewCol);
       }
     }
     return indices;
@@ -816,6 +807,9 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.slicingSpec.horizontalRange[1] > maxCol) {
       this.slicingSpec.horizontalRange[1] = maxCol;
     }
+    if (this.selection !== null) {
+      this.selection.setSlicingSpec(this.slicingSpec);
+    }
 
     await this.renderRulersAndValueDivs();
   }
@@ -855,6 +849,9 @@ export class TensorWidgetImpl implements TensorWidget {
     const maxRow = this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
     if (this.slicingSpec.verticalRange[1] > maxRow) {
       this.slicingSpec.verticalRange[1] = maxRow;
+    }
+    if (this.selection !== null) {
+      this.selection.setSlicingSpec(this.slicingSpec);
     }
 
     await this.renderRulersAndValueDivs();
