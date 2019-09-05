@@ -53,7 +53,7 @@ limitations under the License.
         labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
-        avgColors: Array,
+        avgColors: {type: Object, value: () => ({})},
       },
       ready: async function() {
         this.$.dash.modelName = 'demo';
@@ -147,8 +147,9 @@ limitations under the License.
               for (let i = 0; i < indices.length; i++) {
                 const idx = +indices[i];
                 const tensor = await this.convertExToTensor(this.data[idx]);
-                console.log(tensor.shape)
-                // this.avgColors.push(tf.mean(tensor, axis))
+                const avgColor = await tf.mean(tf.mean(tensor, 0), 0).data();
+                console.log(avgColor)
+                this.avgColors[idx] = avgColor;
                 tensorArr.push(tensor);
               }
               const tensors = tf.concat(tensorArr);
@@ -157,6 +158,7 @@ limitations under the License.
               input = d(input, tf.scalar(255));
               const res = this.model.predict(input, {batchSize: 128});
               const predValues = await res.data();
+              console.log(this.avgColors)
               input.dispose();
               tensors.dispose();
               tensorArr.forEach((tensor) => tensor.dispose());
