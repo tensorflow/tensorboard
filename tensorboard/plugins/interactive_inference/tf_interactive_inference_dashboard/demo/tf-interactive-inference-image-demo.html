@@ -53,6 +53,7 @@ limitations under the License.
         labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
+        avgColors: Array,
       },
       ready: async function() {
         this.$.dash.modelName = 'demo';
@@ -102,6 +103,28 @@ limitations under the License.
             this.indicesToInfer = newIndicesToInfer;
             this.updateSprite();
           });
+          this.$.dash.addEventListener('compute-custom-distance', (e) => {
+            const ex = this.data[e.detail.index];
+            console.log(this.images[e.detail.index])
+            // const newIndicesToInfer = {};
+            // const oldIndicesToInfer = Object.keys(this.indicesToInfer);
+            // for (let i = 0; i < oldIndicesToInfer.length; i++) {
+            //   const idx = oldIndicesToInfer[i];
+            //   if (idx < e.detail.index) {
+            //     newIndicesToInfer[idx] = true;
+            //   } else {
+            //     newIndicesToInfer[idx - 1] = true;
+            //   }
+            // }
+            // this.indicesToInfer = newIndicesToInfer;
+            // this.updateSprite();[id, e.detail.index, e.detail.callback, e.detail.params]
+      //       window.distanceCallback = callbackDict => {{
+      //   wit[callbackDict.callback_fn](callbackDict.exInd,
+      //                                  callbackDict.distances,
+      //                                  callbackDict.params);
+      // }};
+          });
+          this.$.dash.customDistanceFunctionSet = true;
           this.$.dash.addEventListener('infer-examples', async (e) => {
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
@@ -124,6 +147,8 @@ limitations under the License.
               for (let i = 0; i < indices.length; i++) {
                 const idx = +indices[i];
                 const tensor = await this.convertExToTensor(this.data[idx]);
+                console.log(tensor.shape)
+                // this.avgColors.push(tf.mean(tensor, axis))
                 tensorArr.push(tensor);
               }
               const tensors = tf.concat(tensorArr);
