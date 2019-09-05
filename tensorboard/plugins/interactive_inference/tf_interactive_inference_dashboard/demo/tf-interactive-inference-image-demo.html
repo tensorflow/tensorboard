@@ -53,7 +53,6 @@ limitations under the License.
         labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
-        avgColors: {type: Object, value: () => ({})},
       },
       ready: async function() {
         this.$.dash.modelName = 'demo';
@@ -103,31 +102,6 @@ limitations under the License.
             this.indicesToInfer = newIndicesToInfer;
             this.updateSprite();
           });
-          this.$.dash.addEventListener('compute-custom-distance', (e) => {
-            const imColor = this.avgColors[e.detail.index]
-            let closestDist = Number.POSITIVE_INFINITY;
-            let closest = -1;
-            const indices = Object.keys(this.avgColors);
-            for (let i = 0; i < indices.length; i++) {
-              let distance = 0;
-              const index = indices[i];
-              const compareColor = this.avgColors[index];
-              for (let j = 0; j < imColor.length; j++) {
-                distance = distance + Math.abs(imColor[j] - compareColor[j]);
-              }
-              if (distance < closestDist) {
-                closestDist = distance;
-                closest = i;
-              }
-            }
-            // this.updateSprite();[id, e.detail.index, e.detail.callback, e.detail.params]
-      //       window.distanceCallback = callbackDict => {{
-      //   wit[callbackDict.callback_fn](callbackDict.exInd,
-      //                                  callbackDict.distances,
-      //                                  callbackDict.params);
-      // }};
-          });
-          this.$.dash.customDistanceFunctionSet = true;
           this.$.dash.addEventListener('infer-examples', async (e) => {
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
@@ -145,21 +119,11 @@ limitations under the License.
                   this.$.dash.selectedLabelFeature = 'Smiling';
                 }, 1000);
               });
-              for (let i = 0; i < indices.length; i++) {
-                const idx = +indices[i];
-                const tensor = await this.convertExToTensor(this.data[idx]);
-                const avgColor = await tf.mean(tf.mean(tensor, 0), 0).data();
-                this.avgColors[idx] = avgColor;
-                tensor.dispose();
-              }
             } else {
               const tensorArr = [];
               for (let i = 0; i < indices.length; i++) {
                 const idx = +indices[i];
                 const tensor = await this.convertExToTensor(this.data[idx]);
-                const avgColor = await tf.mean(tf.mean(tensor, 0), 0).data();
-                console.log(avgColor)
-                this.avgColors[idx] = avgColor;
                 tensorArr.push(tensor);
               }
               const tensors = tf.concat(tensorArr);
@@ -168,7 +132,6 @@ limitations under the License.
               input = d(input, tf.scalar(255));
               const res = this.model.predict(input, {batchSize: 128});
               const predValues = await res.data();
-              console.log(this.avgColors)
               input.dispose();
               tensors.dispose();
               tensorArr.forEach((tensor) => tensor.dispose());
