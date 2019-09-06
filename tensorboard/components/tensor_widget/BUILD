@@ -9,6 +9,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tensor_widget",
     srcs = [
+        "tensor-widget.css",
+        "tensor-widget.html",
         ":tensor_widget_binary.js",
     ],
     path = "/tensor-widget",

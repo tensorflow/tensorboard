@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../tensor-widget/tensor-widget.html" />
 <link rel="import" href="../tf-imports/polymer.html" />
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../tf-backend/tf-backend.html" />
@@ -51,7 +52,7 @@ limitations under the License.
           </div>
         </td>
       </tr>
-      <tr>
+      <tr class="tensor-value-value-tr">
         <td>
           <div>
             <paper-item id="debug-op"></paper-item>
@@ -105,6 +106,11 @@ limitations under the License.
               src$="[[_dataImageSrc]]"
             />
           </template>
+          <template is="dom-if" if="[[_isValueTensorWidget]]">
+            <div class="tensor-value-widget">
+              Tensor Widget Goes Here
+            </div>
+          </template>
         </td>
       </tr>
     </table>
@@ -156,6 +162,10 @@ limitations under the License.
         cursor: pointer;
         font-size: 90%;
         color: blue;
+      }
+      .tensor-value-widget {
+        height: 300px;
+        width: 450px;
       }
       #slicing,
       #time-indices {
@@ -216,6 +226,7 @@ limitations under the License.
       observers: ['_updateTimeIndicesToggle(timeIndices)'],
 
       ready() {
+        console.log('In tensor value view ready():', tensor_widget_binary);  // DEBUG
         this.renderTensorValue();
       },
 
@@ -262,18 +273,24 @@ limitations under the License.
           const tensorData = isSingleTimeStep
             ? response.tensor_data[0]
             : response.tensor_data;
+          console.log('In response then() block: tensorData:', tensorData);  // DEBUG
           if (tensorRankWithTime === 0) {
             // Scalar.
             this._setVisualizationType('scalar');
             this.set('_dataScalar', tensorData);
           } else if (tensorRankWithTime === 1) {
-            this._setVisualizationType('lineChart');
-            let xyData = {x: [], y: tensorData};
-            // TODO(cais): For history mode, this should be time steps.
-            for (let i = 0; i < tensorData.length; ++i) {
-              xyData['x'].push(i + 1);
-            }
-            this.set('_lineChartData', xyData);
+            this._setVisualizationType('widget');
+            const widgetDiv = this.root.querySelectorAll('.tensor-value-widget');
+            console.log(`widgetDiv:`, widgetDiv);  // DEBUG
+
+            // TODO(cais): Restore 1D linechart.
+            // this._setVisualizationType('lineChart');
+            // let xyData = {x: [], y: tensorData};
+            // // TODO(cais): For history mode, this should be time steps.
+            // for (let i = 0; i < tensorData.length; ++i) {
+            //   xyData['x'].push(i + 1);
+            // }
+            // this.set('_lineChartData', xyData);
           } else if (tensorRankWithTime >= 2) {
             this._setVisualizationType('image');
             this.set('_dataImageSrc', 'data:image/png;base64,' + tensorData);
@@ -322,14 +339,22 @@ limitations under the License.
           this.set('_isValueScalar', true);
           this.set('_isValueLineChart', false);
           this.set('_isValueImage', false);
+          this.set('_isValueTensorWidget', false);
         } else if (visualizationType === 'lineChart') {
           this.set('_isValueScalar', false);
           this.set('_isValueLineChart', true);
           this.set('_isValueImage', false);
+          this.set('_isValueTensorWidget', false);
         } else if (visualizationType === 'image') {
           this.set('_isValueScalar', false);
           this.set('_isValueLineChart', false);
           this.set('_isValueImage', true);
+          this.set('_isValueTensorWidget', false);
+        } else if (visualizationType === 'widget') {
+          this.set('_isValueScalar', false);
+          this.set('_isValueLineChart', false);
+          this.set('_isValueImage', false);
+          this.set('_isValueTensorWidget', true);
         } else {
           console.error('Invalid visualizationType:', visualizationType);
         }
