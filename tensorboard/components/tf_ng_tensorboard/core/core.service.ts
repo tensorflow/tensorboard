@@ -21,7 +21,7 @@ import {PluginsListing} from '../types/api';
 
 @Injectable()
 export class CoreService {
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   fetchPluginsListing() {
     return this.http.get<PluginsListing>('data/plugins_listing');
