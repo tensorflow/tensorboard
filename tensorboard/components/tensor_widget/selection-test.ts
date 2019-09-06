@@ -17,8 +17,8 @@ limitations under the License.
 
 import {expect} from 'chai';
 
-import {Shape, TensorViewSlicingSpec, TensorView} from './types';
-import {MoveDirection, TensorElementSelection} from './selection';
+import {MoveDirection, Shape, TensorViewSlicingSpec, TensorView} from './types';
+import {TensorElementSelection} from './selection';
 
 describe('TensorElementSelection', () => {
   it('Scalar shape', () => {

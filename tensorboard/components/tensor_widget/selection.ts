@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {numElements} from './shape-utils';
-import {Shape, TensorViewSlicingSpec, TensorView} from './types';
+import {MoveDirection, Shape, TensorViewSlicingSpec} from './types';
 
 /**
  * The possible status of a selected cell.
@@ -24,16 +24,6 @@ export interface CellSelectionStatus {
   bottomEdge?: boolean;
   leftEdge?: boolean;
   rightEdge?: boolean;
-}
-
-/**
- * Possible directions of selection movement.
- */
-export enum MoveDirection {
-  UP = 1,
-  DOWN,
-  LEFT,
-  RIGHT,
 }
 
 /**

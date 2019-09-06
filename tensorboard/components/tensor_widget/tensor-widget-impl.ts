@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {isIntegerDType, isFloatDType} from './dtype-utils';
-import {TensorElementSelection, MoveDirection} from './selection';
+import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -23,6 +23,7 @@ import {
 import {SlicingControl} from './slicing-control';
 import {formatTensorName, numericValueToString} from './string-utils';
 import {
+  MoveDirection,
   TensorView,
   TensorWidget,
   TensorWidgetOptions,
@@ -237,7 +238,9 @@ export class TensorWidgetImpl implements TensorWidget {
         event.stopPropagation();
         event.preventDefault();
         this.hideValueTooltip();
-        await this.scrollUpOrDown(event.deltaY > 0 ? 'down' : 'up');
+        await this.scrollUpOrDown(
+          event.deltaY > 0 ? MoveDirection.DOWN : MoveDirection.UP
+        );
       });
 
       // Add event listener for the value section.
@@ -283,14 +286,16 @@ export class TensorWidgetImpl implements TensorWidget {
           // horizontal view.
           if (slicingMoveDirection === null) {
             this.renderSelection();
-          } else if (slicingMoveDirection === MoveDirection.UP) {
-            this.scrollUpOrDown('up');
-          } else if (slicingMoveDirection === MoveDirection.DOWN) {
-            this.scrollUpOrDown('down');
-          } else if (slicingMoveDirection === MoveDirection.LEFT) {
-            this.scrollLeftOrRight('left');
-          } else if (slicingMoveDirection === MoveDirection.RIGHT) {
-            this.scrollLeftOrRight('right');
+          } else if (
+            slicingMoveDirection === MoveDirection.UP ||
+            slicingMoveDirection === MoveDirection.DOWN
+          ) {
+            this.scrollUpOrDown(slicingMoveDirection);
+          } else if (
+            slicingMoveDirection === MoveDirection.LEFT ||
+            slicingMoveDirection === MoveDirection.RIGHT
+          ) {
+            this.scrollLeftOrRight(slicingMoveDirection);
           }
         }
       });
@@ -359,7 +364,9 @@ export class TensorWidgetImpl implements TensorWidget {
         event.stopPropagation();
         event.preventDefault();
         this.hideValueTooltip();
-        await this.scrollLeftOrRight(event.deltaY > 0 ? 'right' : 'left');
+        await this.scrollLeftOrRight(
+          event.deltaY > 0 ? MoveDirection.RIGHT : MoveDirection.LEFT
+        );
       });
     }
 
@@ -869,7 +876,9 @@ export class TensorWidgetImpl implements TensorWidget {
     await this.renderRulersAndValueDivs();
   }
 
-  protected async scrollUpOrDown(direction: 'down' | 'up') {
+  protected async scrollUpOrDown(
+    direction: MoveDirection.UP | MoveDirection.DOWN
+  ) {
     if (this.rank === 0) {
       // Cannot scroll the display of a scalar.
       return;
@@ -885,7 +894,7 @@ export class TensorWidgetImpl implements TensorWidget {
       throw new Error('Vertical scrolling failed due to missing value rows.');
     }
     const currRowIndex = this.slicingSpec.verticalRange[0];
-    if (direction === 'down') {
+    if (direction === MoveDirection.DOWN) {
       const numRowsShown = this.valueRows.length - 1;
       const maxRow =
         this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]] -
@@ -894,14 +903,16 @@ export class TensorWidgetImpl implements TensorWidget {
         await this.scrollVertically(currRowIndex + 1);
       }
     } else {
-      // direction is 'up'.
+      // direction is up.
       if (currRowIndex - 1 >= 0) {
         await this.scrollVertically(currRowIndex - 1);
       }
     }
   }
 
-  protected async scrollLeftOrRight(direction: 'left' | 'right') {
+  protected async scrollLeftOrRight(
+    direction: MoveDirection.LEFT | MoveDirection.RIGHT
+  ) {
     if (this.rank <= 1) {
       // Cannot horizontally scroll the display a scalar or 1D tensor.
       return;
@@ -916,7 +927,7 @@ export class TensorWidgetImpl implements TensorWidget {
       );
     }
     const currColIndex = this.slicingSpec.horizontalRange[0];
-    if (direction === 'right') {
+    if (direction === MoveDirection.RIGHT) {
       const numColsShown = this.topRulerTicks.length - 1;
       const maxCol =
         this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]] -
@@ -925,7 +936,7 @@ export class TensorWidgetImpl implements TensorWidget {
         await this.scrollHorizontally(currColIndex + 1);
       }
     } else {
-      // direction is 'left'.
+      // direction is left.
       if (currColIndex - 1 >= 0) {
         await this.scrollHorizontally(currColIndex - 1);
       }
