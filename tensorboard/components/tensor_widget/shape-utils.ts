@@ -19,6 +19,15 @@ import {Shape, TensorViewSlicingSpec} from './types';
  * Tensor shape utilities for tensor widget.
  */
 
+/** Compute total element count based on shape. */
+export function numElements(shape: Shape): number {
+  let output = 1;
+  shape.forEach((dimSize) => {
+    output *= dimSize;
+  });
+  return output;
+}
+
 /**
  * Format tensor shape as a string for display.
  *
