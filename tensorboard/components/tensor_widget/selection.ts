@@ -208,7 +208,7 @@ export class TensorElementSelection {
     direction: MoveDirection,
     slicingSpec: TensorViewSlicingSpec
   ): MoveDirection | null {
-    let moveDirection: MoveDirection | null = null;
+    let slicingMoveDirection: MoveDirection | null = null;
     if (this.rank === 0) {
       // No-op for a scalar.
       return null;
@@ -235,7 +235,7 @@ export class TensorElementSelection {
           slicingSpec.verticalRange != null &&
           this.rowStart < slicingSpec.verticalRange[0]
         ) {
-          moveDirection = MoveDirection.UP;
+          slicingMoveDirection = MoveDirection.UP;
         }
       }
     } else if (direction === MoveDirection.DOWN) {
@@ -249,7 +249,7 @@ export class TensorElementSelection {
           slicingSpec.verticalRange != null &&
           this.rowStart >= slicingSpec.verticalRange[1]
         ) {
-          moveDirection = MoveDirection.DOWN;
+          slicingMoveDirection = MoveDirection.DOWN;
         }
       }
     } else if (direction === MoveDirection.LEFT) {
@@ -259,7 +259,7 @@ export class TensorElementSelection {
           slicingSpec.horizontalRange != null &&
           this.colStart < slicingSpec.horizontalRange[0]
         ) {
-          moveDirection = MoveDirection.LEFT;
+          slicingMoveDirection = MoveDirection.LEFT;
         }
       }
     } else if (direction === MoveDirection.RIGHT) {
@@ -273,14 +273,14 @@ export class TensorElementSelection {
           slicingSpec.horizontalRange != null &&
           this.colStart >= (slicingSpec.horizontalRange[1] as number)
         ) {
-          moveDirection = MoveDirection.RIGHT;
+          slicingMoveDirection = MoveDirection.RIGHT;
         }
       }
     }
     // Moving the selection causes the selection size to collapse to 1x1.
     this.rowCount = 1;
     this.colCount = 1;
-    return moveDirection;
+    return slicingMoveDirection;
   }
 
   public getRowStart(): number {
