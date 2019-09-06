@@ -165,6 +165,24 @@ limitations under the License.
   white-space: nowrap;
 }
 
+.tensor-widget-value-tooltip {
+  background-color: rgb(240, 240, 240);
+  border: 1px solid rgb(160, 160, 160);
+  box-shadow: 1px 1px 1px #b0b0b0;
+  display: none;
+  font-size: 13px;
+  padding: 5px;
+  position: absolute;
+}
+
+.tensor-widget-value-tooltip-indices {
+  font-weight: bold;
+}
+
+.tensor-widget-value-tooltip-value {
+  margin-top: 20px;
+}
+
 .tensor-widget-top-ruler-tick {
   background-color: var(--ruler-background-color);
   border-bottom: var(--border-style);
@@ -196,6 +214,26 @@ limitations under the License.
   user-select: none;
   vertical-align: middle;
   width: 45px;
+}
+
+.tensor-widget-value-div-selection {
+  font-weight: bold;
+}
+
+.tensor-widget-value-div-selection-bottom {
+  border-bottom: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-left {
+  border-left: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-right {
+  border-right: 0.5px solid blue;
+}
+
+.tensor-widget-value-div-selection-top {
+  border-top: 0.5px solid blue;
 }
 
 .tensor-widget-value-section {

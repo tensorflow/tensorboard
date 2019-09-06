@@ -29,7 +29,7 @@ export type OnSlicingSpecChangeCallback = (
  * Used for tensors with rank (dimensionality) 3 or higher.
  */
 export class SlicingControl {
-  private rank: number;
+  private readonly rank: number;
 
   // The current slicing spec.
   private slicingSpec: TensorViewSlicingSpec;
@@ -44,10 +44,10 @@ export class SlicingControl {
   // dimension.
   private dropdowns: HTMLDivElement[] = [];
   // Static divs that display brackets ("[" and "]") on the two sides.
-  private bracketDivs: [HTMLDivElement | null, HTMLDivElement | null] = [
-    null,
-    null,
-  ];
+  private readonly bracketDivs: [
+    HTMLDivElement | null,
+    HTMLDivElement | null
+  ] = [null, null];
 
   private dimControlsListenerAttached: boolean[] = [];
 
@@ -241,7 +241,7 @@ export class SlicingControl {
             throw new Error('Missing vertical range.');
           }
           dimControl.textContent =
-            `🡙 ${this.slicingSpec.verticalRange[0]}:` +
+            `↕ ${this.slicingSpec.verticalRange[0]}:` +
             `${this.slicingSpec.verticalRange[1]}`;
         } else {
           // This is a dimension being viewed as the horizontal (columns)
@@ -250,7 +250,7 @@ export class SlicingControl {
             throw new Error('Missing horizontal range.');
           }
           dimControl.textContent =
-            `🡘 ${this.slicingSpec.horizontalRange[0]}:` +
+            `↔ ${this.slicingSpec.horizontalRange[0]}:` +
             `${this.slicingSpec.horizontalRange[1]}`;
         }
         dimControl.classList.add('tensor-widget-dim');
