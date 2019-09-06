@@ -217,6 +217,30 @@ class ScalarTimeSeries(object):
   def display_name(self):
     return self._display_name
 
+  def __eq__(self, other):
+    if not isinstance(other, ScalarTimeSeries):
+      return False
+    if self._max_step != other._max_step:
+      return False
+    if self._max_wall_time != other._max_wall_time:
+      return False
+    if self._plugin_content != other._plugin_content:
+      return False
+    if self._description != other._description:
+      return False
+    if self._display_name != other._display_name:
+      return False
+    return True
+
+  def __hash__(self):
+    return hash((
+        self._max_step,
+        self._max_wall_time,
+        self._plugin_content,
+        self._description,
+        self._display_name,
+    ))
+
   def __repr__(self):
     return "ScalarTimeSeries(%s)" % ", ".join((
         "max_step=%r" % (self._max_step,),
@@ -256,6 +280,20 @@ class ScalarDatum(object):
   @property
   def value(self):
     return self._value
+
+  def __eq__(self, other):
+    if not isinstance(other, ScalarDatum):
+      return False
+    if self._step != other._step:
+      return False
+    if self._wall_time != other._wall_time:
+      return False
+    if self._value != other._value:
+      return False
+    return True
+
+  def __hash__(self):
+    return hash((self._step, self._wall_time, self._value))
 
   def __repr__(self):
     return "ScalarDatum(%s)" % ", ".join((
