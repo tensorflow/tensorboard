@@ -283,21 +283,14 @@ export class TensorWidgetImpl implements TensorWidget {
           // horizontal view.
           if (slicingMoveDirection === null) {
             this.renderSelection();
-          } else {
-            if (slicingMoveDirection === MoveDirection.UP) {
-              (this.slicingSpec.verticalRange as [number, number])[0]--;
-              (this.slicingSpec.verticalRange as [number, number])[1]--;
-            } else if (slicingMoveDirection === MoveDirection.DOWN) {
-              (this.slicingSpec.verticalRange as [number, number])[0]++;
-              (this.slicingSpec.verticalRange as [number, number])[1]++;
-            } else if (slicingMoveDirection === MoveDirection.LEFT) {
-              (this.slicingSpec.horizontalRange as [number, number])[0]--;
-              (this.slicingSpec.horizontalRange as [number, number])[1]--;
-            } else if (slicingMoveDirection === MoveDirection.RIGHT) {
-              (this.slicingSpec.horizontalRange as [number, number])[0]++;
-              (this.slicingSpec.horizontalRange as [number, number])[1]++;
-            }
-            this.renderRulersAndValueDivs();
+          } else if (slicingMoveDirection === MoveDirection.UP) {
+            this.scrollUpOrDown('up');
+          } else if (slicingMoveDirection === MoveDirection.DOWN) {
+            this.scrollUpOrDown('down');
+          } else if (slicingMoveDirection === MoveDirection.LEFT) {
+            this.scrollLeftOrRight('left');
+          } else if (slicingMoveDirection === MoveDirection.RIGHT) {
+            this.scrollLeftOrRight('right');
           }
         }
       });
