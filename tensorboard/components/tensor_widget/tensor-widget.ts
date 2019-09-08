@@ -19,8 +19,6 @@ import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
 export {Shape, TensorView} from './types';
 export {VERSION} from './version';
 
-console.log('In tensor-widget.ts'); // DEBUG
-
 /**
  * Create an instance of tensor widget.
  * @param rootElement The element in which the tensor widget will be endered.

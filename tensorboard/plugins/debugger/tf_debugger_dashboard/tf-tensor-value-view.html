@@ -167,8 +167,11 @@ limitations under the License.
       }
       #tensor-widget {
         border: 1px solid rgb(160, 160, 160);
-        height: 300px;
-        width: 480px;
+        /* box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        -webkit-box-sizing: content-box; */
+        height: 280px;
+        width: 484px;
       }
       #slicing,
       #time-indices {
@@ -221,6 +224,7 @@ limitations under the License.
         border: 1px solid rgb(128, 128, 128);
         box-shadow: 2px 2px 2px #b0b0b0;
         cursor: pointer;
+        /* position: fixed; */
         width: 180px;
         z-index: 1000;
       }

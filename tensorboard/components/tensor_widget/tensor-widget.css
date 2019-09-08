@@ -53,6 +53,7 @@ limitations under the License.
   border: 1px solid rgb(128, 128, 128);
   box-shadow: 2px 2px 2px #b0b0b0;
   cursor: pointer;
+  /* position: fixed; */
   width: 180px;
   z-index: 1000;
 }

@@ -363,6 +363,14 @@ export class SlicingControl {
       dropdown.style.top = `${top}px`;
       dropdown.style.left = `${left}px`;
       dropdown.style.display = 'block';
+
+      // Check the actual position of the dropdown menu and make sure
+      // that it's actually aligned with the dim control.
+      const actualRect = dropdown.getBoundingClientRect();
+      const topOffset = actualRect.top - top;
+      const leftOffset = actualRect.left - left;
+      dropdown.style.top = (top - topOffset).toFixed(1) + 'px';
+      dropdown.style.left = (left - leftOffset).toFixed(1) + 'px';
     }
   }
 

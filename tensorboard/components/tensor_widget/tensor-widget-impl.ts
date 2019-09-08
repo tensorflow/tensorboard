@@ -354,6 +354,9 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.topRuler == null) {
       this.topRuler = document.createElement('div');
       this.topRuler.classList.add('tenesor-widget-top-ruler');
+      // Force nowrap as this is important to ensure the correct number
+      // of columns.
+      this.topRuler.style.whiteSpace = 'nowrap';
       this.valueSection.appendChild(this.topRuler);
       this.topRulerTicks = [];
 
@@ -399,7 +402,7 @@ export class TensorWidgetImpl implements TensorWidget {
       tick.classList.add('tensor-widget-top-ruler-tick');
       this.topRuler.appendChild(tick);
       this.topRulerTicks.push(tick);
-      if (tick.getBoundingClientRect().right >= rootElementRight - 1) {
+      if (tick.getBoundingClientRect().right >= rootElementRight) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
           if (this.slicingSpec.horizontalRange === null) {
@@ -455,7 +458,7 @@ export class TensorWidgetImpl implements TensorWidget {
       tick.classList.add('tensor-widget-top-ruler-tick');
       row.appendChild(tick);
       this.leftRulerTicks.push(tick);
-      if (tick.getBoundingClientRect().bottom >= rootElementBottom - 1) {
+      if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 1) {
           if (this.slicingSpec.verticalRange === null) {
