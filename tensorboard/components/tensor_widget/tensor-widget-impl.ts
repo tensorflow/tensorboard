@@ -607,8 +607,6 @@ export class TensorWidgetImpl implements TensorWidget {
     const numRows = this.valueDivs.length;
     const numCols = this.valueDivs[0].length;
     const values = await this.tensorView.view(this.slicingSpec);
-    console.log('view values:', values);  // DEBUG
-    console.log(`this.rank = ${this.rank}`);  // DEBUG
     // TODO(cais): Once health pills are available, use the min / max values to determine
     // # of decimal places.
     if (this.rank === 0) {
@@ -642,7 +640,6 @@ export class TensorWidgetImpl implements TensorWidget {
             j < (values as number[][])[i].length
           ) {
             const value = (values as number[][])[i][j];
-            console.log(`${i},${j}: value = ${value}`);  // DEBUG
             valueDiv.textContent = numericValueToString(
               value,
               isIntegerDType(this.tensorView.spec.dtype)

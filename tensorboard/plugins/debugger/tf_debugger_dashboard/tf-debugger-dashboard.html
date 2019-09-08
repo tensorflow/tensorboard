@@ -1144,6 +1144,7 @@ limitations under the License.
           this._setTopRightTensorValuesToActive();
           // Use setTimeout() so that the DOMs in the top-right tabs have a
           // chance to update.
+          console.log(`tensorData:`, tensorData);  // DEBUG
           setTimeout(() => {
             const multiView = this.$$('#tensorValueMultiView');
             multiView.addView({
@@ -1153,6 +1154,8 @@ limitations under the License.
               nodeName: tensorData.nodeName,
               maybeBaseExpandedNodeName: tensorData.maybeBaseExpandedNodeName,
               debugOp: tensorData.debugOp,
+              dtype: tensorData.dtype,
+              shape: tensorData.shape,
               slicing: tf_debugger_dashboard.getDefaultSlicing(
                 tensorData.shape
               ),
