@@ -100,10 +100,8 @@ def process_buffers_for_display(s, limit=40):
     A single processed buffer or a nested array of processed buffers.
   """
   if isinstance(s, (list, tuple)):
-    # print("process_buffers_for_display(): 100")  # DEBUG
     return [process_buffers_for_display(elem, limit=limit) for elem in s]
   else:
-    # print("process_buffers_for_display(): 200")  # DEBUG
     length = len(s)
     if length > limit:
       return (binascii.b2a_qp(s[:limit]) +
@@ -136,9 +134,6 @@ def array_view(array, slicing=None, mapping=None):
   sliced_array = (array[command_parser._parse_slices(slicing)] if slicing
                   else array)
 
-  # print("slicing = %s" % slicing)  # DEBUG
-  # print("sliced:array = %s" % sliced_array)  # DEBUG
-
   if np.isscalar(sliced_array) and str(dtype) == 'string':
     # When a string Tensor (for which dtype is 'object') is sliced down to only
     # one element, it becomes a string, instead of an numpy array.
@@ -165,7 +160,6 @@ def array_view(array, slicing=None, mapping=None):
       health_pill = health_pill_calc.calc_health_pill(array)
       return dtype, shape, health_pill
     elif mapping is None or mapping == '' or  mapping.lower() == 'none':
-      # print("sliced_array.tolist():",  sliced_array.tolist())  # DEBUG
       return dtype, shape, sliced_array.tolist()
     else:
       raise ValueError("Invalid mapping: %s" % mapping)

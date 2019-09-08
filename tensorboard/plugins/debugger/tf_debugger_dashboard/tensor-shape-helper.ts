@@ -53,7 +53,6 @@ namespace tf_debugger_dashboard {
       );
     } else {
       // 3D+ tensor: Leave it to the slicing UI of tensor widget.
-      console.log('Returning null slicing for 3D+ tensor');  // DEBUG
       return null;
     }
   }

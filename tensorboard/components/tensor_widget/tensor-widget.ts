@@ -19,7 +19,7 @@ import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
 export {Shape, TensorView} from './types';
 export {VERSION} from './version';
 
-console.log('In tensor-widget.ts');  // DEBUG
+console.log('In tensor-widget.ts'); // DEBUG
 
 /**
  * Create an instance of tensor widget.

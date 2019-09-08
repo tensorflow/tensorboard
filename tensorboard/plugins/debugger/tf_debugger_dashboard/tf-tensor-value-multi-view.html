@@ -107,7 +107,6 @@ limitations under the License.
       },
 
       _redrawViews(views) {
-        console.log('_redrawViews()');  // DEBUG
         const multiViewContainer = this.$$('#multi-tensor-view-container');
 
         // First, clear all current views.
@@ -117,7 +116,6 @@ limitations under the License.
         });
 
         _.forEach(views, (view) => {
-          console.log('Calling addView()');  // DEBUG
           this.addView(view);
         });
       },
@@ -135,6 +133,8 @@ limitations under the License.
                 viewId: tensorView.viewId,
                 tensorName: tensorView.tensorName,
                 debugOp: tensorView.debugOp,
+                dtype: tensorView.dtype,
+                shape: tensorView.shape,
                 slicing: tensorView.slicing,
                 timeIndices: tensorView.timeIndices,
               });

@@ -399,7 +399,7 @@ export class TensorWidgetImpl implements TensorWidget {
       tick.classList.add('tensor-widget-top-ruler-tick');
       this.topRuler.appendChild(tick);
       this.topRulerTicks.push(tick);
-      if (tick.getBoundingClientRect().right >= rootElementRight) {
+      if (tick.getBoundingClientRect().right >= rootElementRight - 1) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 2) {
           if (this.slicingSpec.horizontalRange === null) {
@@ -455,7 +455,7 @@ export class TensorWidgetImpl implements TensorWidget {
       tick.classList.add('tensor-widget-top-ruler-tick');
       row.appendChild(tick);
       this.leftRulerTicks.push(tick);
-      if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
+      if (tick.getBoundingClientRect().bottom >= rootElementBottom - 1) {
         // The tick has gone out of the right bound of the tensor widget.
         if (this.rank >= 1) {
           if (this.slicingSpec.verticalRange === null) {
