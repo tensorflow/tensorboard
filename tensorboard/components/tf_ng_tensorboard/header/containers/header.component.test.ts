@@ -27,7 +27,7 @@ import {changePlugin} from '../../core/core.actions';
 import {State, CoreState, CORE_FEATURE_KEY} from '../../core/core.reducers';
 import {createPluginMetadata} from '../../core/test_util';
 
-import * as _typeHackStore from '@ngrx/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('header.component', () => {
   let store: MockStore<State>;

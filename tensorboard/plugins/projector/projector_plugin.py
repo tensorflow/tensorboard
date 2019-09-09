@@ -307,7 +307,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     return False
 
   def frontend_metadata(self):
-    return super(ProjectorPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         es_module_path='/index.js',
         disable_reload=True,
     )

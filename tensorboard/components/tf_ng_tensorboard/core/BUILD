@@ -2,7 +2,7 @@ package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:defs.bzl", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 ng_module(
     name = "core",
@@ -14,14 +14,16 @@ ng_module(
         "core.service.ts",
     ],
     deps = [
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "test_util",
     testonly = True,
     srcs = ["test_util.ts"],
@@ -30,7 +32,7 @@ ts_library(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "core_effects_test_lib",
     testonly = True,
     srcs = [
@@ -40,6 +42,8 @@ ts_library(
     deps = [
         ":core",
         ":test_util",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http_testing",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
@@ -60,6 +64,7 @@ ng_module(
     deps = [
         ":core",
         ":test_util",
+        "@npm//@types/chai",
         "@npm//@types/jasmine",
         "@npm//chai",
     ],
@@ -67,7 +72,10 @@ ng_module(
 
 jasmine_node_test(
     name = "core_jasmine_test",
-    deps = [
+    srcs = [
         ":core_reducers_test_lib",
+    ],
+    deps = [
+        "@npm//chai",
     ],
 )

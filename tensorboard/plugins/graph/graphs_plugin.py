@@ -72,7 +72,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer and self.info_impl())
 
   def frontend_metadata(self):
-    return super(GraphsPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-graph-dashboard',
         # TODO(@chihuahua): Reconcile this setting with Health Pills.
         disable_reload=True,

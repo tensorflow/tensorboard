@@ -111,7 +111,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     # TODO(#2338): Keep this in sync with the `registerDashboard` call
     # on the frontend until that call is removed.
-    return super(InteractiveInferencePlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-interactive-inference-dashboard',
         tab_name='What-If Tool',
     )

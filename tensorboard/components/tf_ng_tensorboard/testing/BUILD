@@ -1,6 +1,8 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+licenses(["notice"])
 
 filegroup(
     name = "test_support_lib",
@@ -11,14 +13,14 @@ filegroup(
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "initialize_testbed",
     testonly = 1,
     srcs = [
         "initialize_testbed.ts",
     ],
     deps = [
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser-dynamic",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_dynamic_testing",
     ],
 )

@@ -94,9 +94,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(ScalarsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-scalar-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-scalar-dashboard')
 
   def index_impl(self, experiment=None):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
@@ -236,10 +234,14 @@ class ScalarsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def scalars_route(self, request):
     """Given a tag and single run, return array of ScalarEvents."""
-    # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
     experiment = request.args.get('experiment', '')
     output_format = request.args.get('format')
-    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+    try:
+      (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
+    except KeyError:
+      return http_util.Respond(
+          request, 'Invalid run or tag', 'text/plain', code=400
+      )
     return http_util.Respond(request, body, mime_type)

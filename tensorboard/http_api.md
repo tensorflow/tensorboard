@@ -38,6 +38,8 @@ The `logdir` argument is the path of the directory that contains events files.
 Returns a dict mapping from plugin name to an object that describes a
 plugin, with the following keys:
 
+  - `disable_reload`: Boolean. Whether to disable the reload button and
+    auto-reload timer.
   - `enabled`: Boolean. Indicates whether the plugin is active. A plugin
     might be inactive, for instance, if it lacks relevant data.
   - `loading_mechanism`: One of:

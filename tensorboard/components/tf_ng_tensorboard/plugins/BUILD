@@ -6,20 +6,18 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 licenses(["notice"])  # Apache 2.0
 
 ng_module(
-    name = "header",
+    name = "plugins",
     srcs = [
-        "containers/header.component.ts",
-        "header.module.ts",
+        "plugins.component.ts",
+        "plugins.module.ts",
     ],
     assets = [
-        "containers/header.component.css",
-        "containers/header.component.html",
+        "plugins.component.css",
+        "plugins.component.html",
     ],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
         "//tensorboard/components/tf_ng_tensorboard/core",
-        "@npm//@angular/common",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -27,20 +25,17 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "test_lib",
+    name = "plugins_component_test_lib",
     testonly = True,
     srcs = [
-        "containers/header.component.test.ts",
+        "plugins.component.test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
-        ":header",
+        ":plugins",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
-        "//tensorboard/components/tf_ng_tensorboard/core:test_util",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
