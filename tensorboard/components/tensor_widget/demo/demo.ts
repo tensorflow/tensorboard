@@ -130,6 +130,8 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
           ? x
           : tf.tidy(() => {
               if (x.dtype === 'string') {
+                // Work around the TensorFlow.js limitation that `tf.slice()`
+                // doesn't support the string dtype yet.
                 const array = x.arraySync();
                 if (x.rank === 2) {
                   let strMatrix: string[][] = array.slice(

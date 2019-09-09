@@ -123,6 +123,7 @@ def _comm_tensor_data(device_name,
       if tensor_dtype == 'string' and tensor_value is not None:
         tensor_values = tensor_helper.process_buffers_for_display(
             tensor_values, limit=STRING_ELEMENT_MAX_LEN)
+
   return {
       'type': 'tensor',
       'timestamp': wall_time,
