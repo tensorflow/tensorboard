@@ -98,3 +98,17 @@ export function booleanValueToString(
   const falseStr = shortForm ? 'F' : 'False';
   return value ? trueStr : falseStr;
 }
+
+/**
+ * Format a string value as a display-friendly string.
+ * @param value
+ * @param lengthLimit
+ * @return Formatted string.
+ */
+export function stringValueToString(value: string, lengthLimit = 4) {
+  if (value.length > lengthLimit) {
+    return value.slice(0, lengthLimit - 1) + '…';
+  } else {
+    return value;
+  }
+}

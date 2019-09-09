@@ -129,11 +129,29 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
         x.rank === 0
           ? x
           : tf.tidy(() => {
-              let output = x.slice(begins, sizes);
-              if (slicingDims != null) {
-                output = output.squeeze(slicingDims);
+              if (x.dtype === 'string') {
+                const array = x.arraySync();
+                if (x.rank === 2) {
+                  let strMatrix: string[][] = array.slice(
+                    begins[0],
+                    begins[0] + sizes[0]
+                  );
+                  strMatrix = strMatrix.map((strArray) =>
+                    strArray.slice(begins[1], begins[1] + sizes[1])
+                  );
+                  return tf.tensor2d(strMatrix);
+                } else {
+                  throw new Error(
+                    `Slicing ${x.rank}D string tensor is not implemented`
+                  );
+                }
+              } else {
+                let output = x.slice(begins, sizes);
+                if (slicingDims != null) {
+                  output = output.squeeze(slicingDims);
+                }
+                return output;
               }
-              return output;
             });
 
       const retval = (await sliced.array()) as
@@ -236,6 +254,53 @@ function demo() {
     name: 'booleanTensor',
   });
   tensorWidget6.render();
+
+  /////////////////////////////////////////////////////////////
+  // 2D string tensor.
+  const tensorDiv7 = document.getElementById('tensor7') as HTMLDivElement;
+  const tensorView7 = tensorToTensorView(
+    tf.tensor2d(
+      [
+        'Lorem',
+        '永和九年',
+        'ipsum',
+        '岁在癸丑',
+        'dolor',
+        '暮春之初',
+        'sit',
+        '会于会稽山阴之兰亭',
+        'amet',
+        '修稧事也',
+        ',',
+        '群贤毕至',
+        'consectetur',
+        '少长咸集',
+        'adipiscing',
+        '此地有崇山峻领',
+        'elit',
+        '茂林修竹',
+        ',',
+        '又有清流激湍',
+        'sed',
+        '映带左右',
+        'do',
+        '引以为流觞曲水',
+        'eiusmod',
+        '列坐其次',
+        'tempor',
+        '',
+        'incididunt',
+        '',
+        'ut',
+        '',
+      ],
+      [16, 2]
+    )
+  );
+  const tensorWidget7 = tensorWidget.tensorWidget(tensorDiv7, tensorView7, {
+    name: 'LoremIpsum 兰亭集序',
+  });
+  tensorWidget7.render();
 }
 
 demo();

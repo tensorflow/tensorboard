@@ -40,3 +40,8 @@ export function isFloatDType(dtype: string): boolean {
 export function isBooleanDType(dtype: string): boolean {
   return dtype.toLowerCase() === 'bool' || dtype.toLowerCase() === 'boolean';
 }
+
+/** Determime if a data type is a string type. */
+export function isStringDType(dtype: string): boolean {
+  return dtype.toLowerCase() === 'str' || dtype.toLowerCase() === 'string';
+}

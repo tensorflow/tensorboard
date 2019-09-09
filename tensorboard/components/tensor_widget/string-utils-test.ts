@@ -21,6 +21,7 @@ import {
   formatTensorName,
   numericValueToString,
   TENSOR_NAME_LENGTH_CUTOFF,
+  stringValueToString,
 } from './string-utils';
 
 function stringRepeat(str: string, times: number) {
@@ -292,5 +293,19 @@ describe('booleanValueToString', () => {
     const shortForm = false;
     expect(booleanValueToString(1, shortForm)).to.eql('True');
     expect(booleanValueToString(0, shortForm)).to.eql('False');
+  });
+});
+
+describe('stringValueToString', () => {
+  it('cutoff with default length limit', () => {
+    expect(stringValueToString('')).to.eql('');
+    expect(stringValueToString('ABC')).to.eql('ABC');
+    expect(stringValueToString('ABCDE')).to.eql('ABC…');
+  });
+
+  it('cutoff with custom length limit', () => {
+    const lengthLimit = 2;
+    expect(stringValueToString('', lengthLimit)).to.eql('');
+    expect(stringValueToString('ABC', lengthLimit)).to.eql('A…');
   });
 });

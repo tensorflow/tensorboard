@@ -13,7 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {isBooleanDType, isFloatDType, isIntegerDType} from './dtype-utils';
+import {
+  isBooleanDType,
+  isFloatDType,
+  isIntegerDType,
+  isStringDType,
+} from './dtype-utils';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -22,9 +27,10 @@ import {
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {
+  booleanValueToString,
   formatTensorName,
   numericValueToString,
-  booleanValueToString,
+  stringValueToString,
 } from './string-utils';
 import {
   MoveDirection,
@@ -36,7 +42,7 @@ import {
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
-type ValueClass = 'numeric' | 'boolean';
+type ValueClass = 'numeric' | 'boolean' | 'string';
 
 /**
  * Implementation of TensorWidget.
@@ -102,7 +108,8 @@ export class TensorWidgetImpl implements TensorWidget {
     if (
       !isIntegerDType(this.tensorView.spec.dtype) &&
       !isFloatDType(this.tensorView.spec.dtype) &&
-      !isBooleanDType(this.tensorView.spec.dtype)
+      !isBooleanDType(this.tensorView.spec.dtype) &&
+      !isStringDType(this.tensorView.spec.dtype)
     ) {
       throw new Error(
         `Rendering dtype ${this.tensorView.spec.dtype} is not supported yet.`
@@ -536,13 +543,17 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          let detailedValue: number|boolean|string|null =
-            valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
-          if (!detailedValue) {
+          let detailedValue:
+            | number
+            | boolean
+            | string
+            | null = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
+          const valueClass = this.getValueClass();
+          if (valueClass !== 'string' && !detailedValue) {
             return;
           }
 
-          if (this.getValueClass() === 'boolean') {
+          if (valueClass === 'boolean') {
             detailedValue = detailedValue === '1';
           }
 
@@ -553,7 +564,7 @@ export class TensorWidgetImpl implements TensorWidget {
           const indices = this.calculateIndices(i, j);
           this.drawValueTooltip(
             indices,
-            detailedValue,
+            detailedValue as string | number | boolean,
             valueRect.top - rootRect.top + valueHeight * 0.8,
             valueRect.left - rootRect.left + valueWidth * 0.75
           );
@@ -637,7 +648,7 @@ export class TensorWidgetImpl implements TensorWidget {
           i < (values as number[][]).length &&
           j < (values as number[][])[i].length
         ) {
-          const value = (values as number[][] | boolean[][])[i][j];
+          const value = (values as number[][] | boolean[][] | string[][])[i][j];
           if (valueClass === 'numeric') {
             valueDiv.textContent = numericValueToString(
               value as number,
@@ -645,6 +656,8 @@ export class TensorWidgetImpl implements TensorWidget {
             );
           } else if (valueClass === 'boolean') {
             valueDiv.textContent = booleanValueToString(value as boolean);
+          } else if (valueClass === 'string') {
+            valueDiv.textContent = stringValueToString(value as string);
           }
 
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
@@ -777,11 +790,17 @@ export class TensorWidgetImpl implements TensorWidget {
     const valueDiv = document.createElement('div');
     valueDiv.classList.add('tensor-widget-value-tooltip-value');
 
-    if (this.getValueClass() === 'numeric') {
-      valueDiv.textContent = `${value}`;
-    } else {
+    if (this.getValueClass() === 'boolean') {
       const shortForm = false;
       valueDiv.textContent = booleanValueToString(value as boolean, shortForm);
+      valueDiv.textContent = `${value}`;
+    } else if (this.getValueClass() === 'string') {
+      const lengthLimit = 500;
+      valueDiv.textContent = `Length-${
+        (value as string).length
+      } string: "${stringValueToString(value as string, lengthLimit)}"`;
+    } else {
+      valueDiv.textContent = `${value}`;
     }
 
     this.valueTooltip.appendChild(valueDiv);
@@ -959,6 +978,12 @@ export class TensorWidgetImpl implements TensorWidget {
 
   private getValueClass(): ValueClass {
     const dtype = this.tensorView.spec.dtype;
-    return isIntegerDType(dtype) || isFloatDType(dtype) ? 'numeric' : 'boolean';
+    if (isIntegerDType(dtype) || isFloatDType(dtype)) {
+      return 'numeric';
+    } else if (isBooleanDType(dtype)) {
+      return 'boolean';
+    } else {
+      return 'string';
+    }
   }
 }
