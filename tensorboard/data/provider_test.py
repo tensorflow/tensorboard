@@ -63,6 +63,24 @@ class ScalarTimeSeriesTest(tb_test.TestCase):
     self.assertIn(repr(x.description), repr_)
     self.assertIn(repr(x.display_name), repr_)
 
+  def test_eq(self):
+    x1 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x2 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x3 = provider.ScalarTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_hash(self):
+    x1 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x2 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x3 = provider.ScalarTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+    self.assertEqual(hash(x1), hash(x2))
+    # The next check is technically not required by the `__hash__`
+    # contract, but _should_ pass; failure on this assertion would at
+    # least warrant some scrutiny.
+    self.assertNotEqual(hash(x1), hash(x3))
+
 
 class ScalarDatumTest(tb_test.TestCase):
   def test_repr(self):
@@ -71,6 +89,24 @@ class ScalarDatumTest(tb_test.TestCase):
     self.assertIn(repr(x.step), repr_)
     self.assertIn(repr(x.wall_time), repr_)
     self.assertIn(repr(x.value), repr_)
+
+  def test_eq(self):
+    x1 = provider.ScalarDatum(step=12, wall_time=0.25, value=1.25)
+    x2 = provider.ScalarDatum(step=12, wall_time=0.25, value=1.25)
+    x3 = provider.ScalarDatum(step=23, wall_time=3.25, value=-0.5)
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_hash(self):
+    x1 = provider.ScalarDatum(step=12, wall_time=0.25, value=1.25)
+    x2 = provider.ScalarDatum(step=12, wall_time=0.25, value=1.25)
+    x3 = provider.ScalarDatum(step=23, wall_time=3.25, value=-0.5)
+    self.assertEqual(hash(x1), hash(x2))
+    # The next check is technically not required by the `__hash__`
+    # contract, but _should_ pass; failure on this assertion would at
+    # least warrant some scrutiny.
+    self.assertNotEqual(hash(x1), hash(x3))
 
 
 class RunTagFilterTest(tb_test.TestCase):
