@@ -162,7 +162,6 @@ limitations under the License.
 
 .tensor-widget-top-ruler {
   height: 24px;
-  overflow-x: hidden;
   white-space: nowrap;
 }
 
