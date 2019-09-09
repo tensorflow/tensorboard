@@ -13,14 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
-  export enum Mode {
-    DB,
-    LOGDIR,
-  }
-
   interface Environment {
     dataLocation: string;
-    mode: Mode;
     windowTitle: string;
   }
 
@@ -32,7 +26,6 @@ namespace tf_backend {
       return this.requestManager.request(url).then((result) => {
         const environment = {
           dataLocation: result.data_location,
-          mode: result.mode == 'db' ? Mode.DB : Mode.LOGDIR,
           windowTitle: result.window_title,
         };
         if (_.isEqual(this.environment, environment)) return;
