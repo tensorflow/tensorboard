@@ -29,7 +29,7 @@ interface UiPluginMetadata extends PluginMetadata {
   id: PluginId;
 }
 
-const selectPlugins = createSelector(
+const getUiPlugins = createSelector(
   getPlugins,
   (listing): UiPluginMetadata[] =>
     Object.keys(listing).map((key) =>
@@ -37,13 +37,13 @@ const selectPlugins = createSelector(
     )
 );
 
-const selectDisabledPlugins = createSelector(
-  selectPlugins,
+const getDisabledPlugins = createSelector(
+  getUiPlugins,
   (plugins): UiPluginMetadata[] => plugins.filter((plugin) => !plugin.enabled)
 );
 
-const selectActivePluginIndex = createSelector(
-  selectPlugins,
+const getActivePluginIndex = createSelector(
+  getUiPlugins,
   getActivePlugin,
   (plugins, activePlugin) => {
     return plugins.findIndex((plugin) => plugin.id === activePlugin);
@@ -57,11 +57,9 @@ const selectActivePluginIndex = createSelector(
 })
 export class HeaderComponent {
   readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
-  readonly activePluginIndex$ = this.store.pipe(
-    select(selectActivePluginIndex)
-  );
-  readonly plugins$ = this.store.pipe(select(selectPlugins));
-  readonly disabledPlugins$ = this.store.pipe(select(selectDisabledPlugins));
+  readonly activePluginIndex$ = this.store.pipe(select(getActivePluginIndex));
+  readonly plugins$ = this.store.pipe(select(getUiPlugins));
+  readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
 
   constructor(private readonly store: Store<State>) {}
 
