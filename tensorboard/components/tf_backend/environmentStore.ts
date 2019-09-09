@@ -46,10 +46,6 @@ namespace tf_backend {
       return this.environment ? this.environment.dataLocation : '';
     }
 
-    public getMode(): Mode {
-      return this.environment ? this.environment.mode : null;
-    }
-
     public getWindowTitle(): string {
       return this.environment ? this.environment.windowTitle : '';
     }
