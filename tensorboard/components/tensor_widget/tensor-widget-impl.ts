@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {isIntegerDType, isFloatDType} from './dtype-utils';
+import {isBooleanDType, isFloatDType, isIntegerDType} from './dtype-utils';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -21,7 +21,11 @@ import {
   areSlicingSpecsCompatible,
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
-import {formatTensorName, numericValueToString} from './string-utils';
+import {
+  formatTensorName,
+  numericValueToString,
+  booleanValueToString,
+} from './string-utils';
 import {
   MoveDirection,
   TensorView,
@@ -31,6 +35,8 @@ import {
 } from './types';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
+
+type ValueClass = 'numeric' | 'boolean';
 
 /**
  * Implementation of TensorWidget.
@@ -95,7 +101,8 @@ export class TensorWidgetImpl implements TensorWidget {
     this.renderHeader();
     if (
       !isIntegerDType(this.tensorView.spec.dtype) &&
-      !isFloatDType(this.tensorView.spec.dtype)
+      !isFloatDType(this.tensorView.spec.dtype) &&
+      !isBooleanDType(this.tensorView.spec.dtype)
     ) {
       throw new Error(
         `Rendering dtype ${this.tensorView.spec.dtype} is not supported yet.`
@@ -529,10 +536,16 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          const detailedValue = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
+          let detailedValue: number|boolean|string|null =
+            valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
           if (!detailedValue) {
             return;
           }
+
+          if (this.getValueClass() === 'boolean') {
+            detailedValue = detailedValue === '1';
+          }
+
           const rootRect = this.rootElement.getBoundingClientRect();
           const valueRect = valueDiv.getBoundingClientRect();
           const valueHeight = valueRect.bottom - valueRect.top;
@@ -609,52 +622,39 @@ export class TensorWidgetImpl implements TensorWidget {
   private async renderValueDivs() {
     const numRows = this.valueDivs.length;
     const numCols = this.valueDivs[0].length;
-    const values = await this.tensorView.view(this.slicingSpec);
-    // TODO(cais): Once health pills are available, use the min / max values to determine
-    // # of decimal places.
+    let values = await this.tensorView.view(this.slicingSpec);
     if (this.rank === 0) {
-      const valueDiv = this.valueDivs[0][0];
-      valueDiv.textContent = numericValueToString(
-        values as number,
-        isIntegerDType(this.tensorView.spec.dtype)
-      );
-      valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(values));
+      values = [[values as number]];
     } else if (this.rank === 1) {
-      for (let i = 0; i < numRows; ++i) {
-        const valueDiv = this.valueDivs[i][0];
-        if (i < (values as number[]).length) {
-          const value = (values as number[])[i];
-          valueDiv.textContent = numericValueToString(
-            value,
-            isIntegerDType(this.tensorView.spec.dtype)
-          );
+      values = (values as number[]).map((v) => [v]);
+    }
+
+    const valueClass = this.getValueClass();
+    for (let i = 0; i < numRows; ++i) {
+      for (let j = 0; j < numCols; ++j) {
+        const valueDiv = this.valueDivs[i][j];
+        if (
+          i < (values as number[][]).length &&
+          j < (values as number[][])[i].length
+        ) {
+          const value = (values as number[][] | boolean[][])[i][j];
+          if (valueClass === 'numeric') {
+            valueDiv.textContent = numericValueToString(
+              value as number,
+              isIntegerDType(this.tensorView.spec.dtype)
+            );
+          } else if (valueClass === 'boolean') {
+            valueDiv.textContent = booleanValueToString(value as boolean);
+          }
+
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
         } else {
           valueDiv.textContent = '';
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
         }
       }
-    } else if (this.rank >= 2) {
-      for (let i = 0; i < numRows; ++i) {
-        for (let j = 0; j < numCols; ++j) {
-          const valueDiv = this.valueDivs[i][j];
-          if (
-            i < (values as number[][]).length &&
-            j < (values as number[][])[i].length
-          ) {
-            const value = (values as number[][])[i][j];
-            valueDiv.textContent = numericValueToString(
-              value,
-              isIntegerDType(this.tensorView.spec.dtype)
-            );
-            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
-          } else {
-            valueDiv.textContent = '';
-            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
-          }
-        }
-      }
     }
+
     this.renderSelection();
   }
 
@@ -776,7 +776,14 @@ export class TensorWidgetImpl implements TensorWidget {
 
     const valueDiv = document.createElement('div');
     valueDiv.classList.add('tensor-widget-value-tooltip-value');
-    valueDiv.textContent = `${value}`;
+
+    if (this.getValueClass() === 'numeric') {
+      valueDiv.textContent = `${value}`;
+    } else {
+      const shortForm = false;
+      valueDiv.textContent = booleanValueToString(value as boolean, shortForm);
+    }
+
     this.valueTooltip.appendChild(valueDiv);
 
     this.valueTooltip.style.top = `${top}px`;
@@ -948,5 +955,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
   async navigateToIndices(indices: number[]) {
     throw new Error('navigateToIndices() is not implemented yet.');
+  }
+
+  private getValueClass(): ValueClass {
+    const dtype = this.tensorView.spec.dtype;
+    return isIntegerDType(dtype) || isFloatDType(dtype) ? 'numeric' : 'boolean';
   }
 }

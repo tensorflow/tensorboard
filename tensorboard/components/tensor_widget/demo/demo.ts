@@ -184,7 +184,7 @@ function demo() {
   tensorWidget1.render();
 
   /////////////////////////////////////////////////////////////
-  // 2D float32 scalar.
+  // 2D float32 tensor.
   const tensor2Div = document.getElementById('tensor2') as HTMLDivElement;
   const tensorView2 = tensorToTensorView(tf.randomNormal([128, 64]));
   const tensorWidget2 = tensorWidget.tensorWidget(tensor2Div, tensorView2, {
@@ -193,7 +193,7 @@ function demo() {
   tensorWidget2.render();
 
   /////////////////////////////////////////////////////////////
-  // 2D float32 scalar with NaN and Infinities in it.
+  // 2D float32 tensor with NaN and Infinities in it.
   const tensorDiv3 = document.getElementById('tensor3') as HTMLDivElement;
   const tensorView3 = tensorToTensorView(
     tf.tensor2d([[NaN, -Infinity], [Infinity, 0]])
@@ -205,7 +205,7 @@ function demo() {
   tensorWidget3.render();
 
   /////////////////////////////////////////////////////////////
-  // 3D float32 scalar, without the optional name.
+  // 3D float32 tensor, without the optional name.
   const tensorDiv4 = document.getElementById('tensor4') as HTMLDivElement;
   const tensorView4 = tensorToTensorView(
     tf.linspace(0, (64 * 32 * 50 - 1) / 100, 64 * 32 * 50).reshape([64, 32, 50])
@@ -214,7 +214,7 @@ function demo() {
   tensorWidget4.render();
 
   /////////////////////////////////////////////////////////////
-  // 4D float32 scalar, without the optional name.
+  // 4D float32 tensor, without the optional name.
   const tensorDiv5 = document.getElementById('tensor5') as HTMLDivElement;
   const tensorView5 = tensorToTensorView(
     tf
@@ -225,6 +225,17 @@ function demo() {
     name: 'FourDimensionalTensor',
   });
   tensorWidget5.render();
+
+  /////////////////////////////////////////////////////////////
+  // 3D boolean tensor.
+  const tensorDiv6 = document.getElementById('tensor6') as HTMLDivElement;
+  const tensorView6 = tensorToTensorView(
+    tf.tensor3d([false, true, false, true, true, false, true, false], [2, 2, 2])
+  );
+  const tensorWidget6 = tensorWidget.tensorWidget(tensorDiv6, tensorView6, {
+    name: 'booleanTensor',
+  });
+  tensorWidget6.render();
 }
 
 demo();

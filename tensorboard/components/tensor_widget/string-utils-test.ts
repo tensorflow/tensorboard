@@ -16,6 +16,7 @@ limitations under the License.
 import {expect} from 'chai';
 
 import {
+  booleanValueToString,
   ELLIPSES,
   formatTensorName,
   numericValueToString,
@@ -273,5 +274,23 @@ describe('numericValueToString', () => {
   it('Large magnitude negative integers are formatted correctly', () => {
     const isInteger = true;
     expect(numericValueToString(-12345678, isInteger)).to.equal('-1.23e+7');
+  });
+});
+
+describe('booleanValueToString', () => {
+  it('correct return values for boolean arguments', () => {
+    expect(booleanValueToString(true)).to.eql('T');
+    expect(booleanValueToString(false)).to.eql('F');
+    const shortForm = false;
+    expect(booleanValueToString(true, shortForm)).to.eql('True');
+    expect(booleanValueToString(false, shortForm)).to.eql('False');
+  });
+
+  it('correct return values for number arguments', () => {
+    expect(booleanValueToString(1)).to.eql('T');
+    expect(booleanValueToString(0)).to.eql('F');
+    const shortForm = false;
+    expect(booleanValueToString(1, shortForm)).to.eql('True');
+    expect(booleanValueToString(0, shortForm)).to.eql('False');
   });
 });

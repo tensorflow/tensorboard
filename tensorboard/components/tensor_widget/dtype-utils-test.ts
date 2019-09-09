@@ -15,7 +15,7 @@ limitations under the License.
 
 import {expect} from 'chai';
 
-import {isIntegerDType, isFloatDType} from './dtype-utils';
+import {isBooleanDType, isFloatDType, isIntegerDType} from './dtype-utils';
 
 describe('isIntegerDType', () => {
   it('returns true for unsigned ints', () => {
@@ -65,7 +65,26 @@ describe('isFloatDType', () => {
     expect(isFloatDType('int32')).to.be.false;
     expect(isFloatDType('uint32')).to.be.false;
     expect(isFloatDType('complex64')).to.be.false;
-    expect(isIntegerDType('complex128')).to.be.false;
-    expect(isIntegerDType('resource')).to.be.false;
+    expect(isFloatDType('complex128')).to.be.false;
+    expect(isFloatDType('resource')).to.be.false;
+  });
+});
+
+describe('isBooleanDType', () => {
+  it('returns true for booleans', () => {
+    expect(isBooleanDType('bool')).to.be.true;
+    expect(isBooleanDType('boolean')).to.be.true;
+    expect(isBooleanDType('Boolean')).to.be.true;
+  });
+
+  it('returns false for negative cases', () => {
+    expect(isBooleanDType('string')).to.be.false;
+    expect(isBooleanDType('int32')).to.be.false;
+    expect(isBooleanDType('uint32')).to.be.false;
+    expect(isBooleanDType('float32')).to.be.false;
+    expect(isBooleanDType('float64')).to.be.false;
+    expect(isBooleanDType('complex64')).to.be.false;
+    expect(isBooleanDType('complex128')).to.be.false;
+    expect(isBooleanDType('resource')).to.be.false;
   });
 });

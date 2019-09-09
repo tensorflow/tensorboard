@@ -82,3 +82,19 @@ export function numericValueToString(
     }
   }
 }
+
+/**
+ * Format a boolean value as a human-readiable string.
+ * @param value
+ * @param shortForm Returns full-length string (i.e., 'true' or 'false') if and
+ *   only if this is `true`.
+ * @returns Formatted string.
+ */
+export function booleanValueToString(
+  value: boolean | number,
+  shortForm = true
+): string {
+  const trueStr = shortForm ? 'T' : 'True';
+  const falseStr = shortForm ? 'F' : 'False';
+  return value ? trueStr : falseStr;
+}
