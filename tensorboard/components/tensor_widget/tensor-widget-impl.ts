@@ -543,27 +543,14 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          // The DETAILED_VALUE_ATTR_KEY attribute of the value div holds a
-          // "detailed" string representation of the value of the corresponding
-          // tensor element. It is detailed in the sense that it has as many
-          // decimal points as supported by JavaScript's string representation
-          // of numbers, in the case of float dtypes. The only exceptions
-          // are very long string elements, which we still truncate in order
-          // to avoid overtaxing the DOM.
-          const valueAttr = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
-          if (!valueAttr) {
+          // On mouse hover, show a tooltip that displays the element's
+          // value in a more detailed fashion.
+          const detailedValueTooltipString = valueDiv.getAttribute(
+            DETAILED_VALUE_ATTR_KEY
+          );
+          if (detailedValueTooltipString === null) {
             return;
           }
-          let detailedValue: number | boolean | string = JSON.parse(valueAttr);
-          const valueClass = this.getValueClass();
-          if (valueClass !== 'string' && !detailedValue) {
-            return;
-          }
-
-          if (valueClass === 'boolean') {
-            detailedValue = detailedValue === '1';
-          }
-
           const rootRect = this.rootElement.getBoundingClientRect();
           const valueRect = valueDiv.getBoundingClientRect();
           const valueHeight = valueRect.bottom - valueRect.top;
@@ -571,7 +558,7 @@ export class TensorWidgetImpl implements TensorWidget {
           const indices = this.calculateIndices(i, j);
           this.drawValueTooltip(
             indices,
-            detailedValue as string | number | boolean,
+            detailedValueTooltipString,
             valueRect.top - rootRect.top + valueHeight * 0.8,
             valueRect.left - rootRect.left + valueWidth * 0.75
           );
@@ -663,28 +650,19 @@ export class TensorWidgetImpl implements TensorWidget {
               value as number,
               isIntegerDType(this.tensorView.spec.dtype)
             );
-            valueDiv.setAttribute(
-              DETAILED_VALUE_ATTR_KEY,
-              JSON.stringify(value)
-            );
           } else if (valueClass === 'boolean') {
             valueDiv.textContent = booleanValueToDisplayString(
               value as boolean
             );
-            valueDiv.setAttribute(
-              DETAILED_VALUE_ATTR_KEY,
-              JSON.stringify(value)
-            );
           } else if (valueClass === 'string') {
             valueDiv.textContent = stringValueToDisplayString(value as string);
-            const lengthLimit = 500; // Avoid storing too much data in the DOM.
-            valueDiv.setAttribute(
-              DETAILED_VALUE_ATTR_KEY,
-              JSON.stringify(
-                stringValueToDisplayString(value as string, lengthLimit)
-              )
-            );
           }
+          // The attribute set below will be rendered in a tooltip that appears
+          // on mouse hovering.
+          valueDiv.setAttribute(
+            DETAILED_VALUE_ATTR_KEY,
+            this.getDetailedValueTooltipString(value)
+          );
         } else {
           valueDiv.textContent = '';
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
@@ -693,6 +671,30 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     this.renderSelection();
+  }
+
+  /**
+   * Get a "detailed" string representation of the value of the corresponding
+   * tensor element. It is detailed in the sense that it has as many
+   * decimal points as supported by JavaScript's string representation
+   * of numbers, in the case of float dtypes. The only exceptions
+   * are very long string elements, which we still truncate in order
+   * to avoid overtaxing the DOM.
+   */
+  private getDetailedValueTooltipString(
+    value: boolean | number | string
+  ): string {
+    if (typeof value === 'boolean') {
+      const shortForm = false;
+      return booleanValueToDisplayString(value as boolean, shortForm);
+    } else if (typeof value === 'string') {
+      const lengthLimit = 500;
+      return `Length-${
+        (value as string).length
+      } string: "${stringValueToDisplayString(value, lengthLimit)}"`;
+    } else {
+      return String(value);
+    }
   }
 
   /**
@@ -787,13 +789,14 @@ export class TensorWidgetImpl implements TensorWidget {
   /**
    * Draw tooltip for detailed indices and value.
    * @param indices Indices of the element for which the tooltip is to be drawn.
-   * @param value Value of the element.
+   * @param detailedValueString A string describing the value in a detailed way,
+   *   e.g., with sufficient number of decimal points for a float number value.
    * @param top Top coordinate (in pixels) of the tooltip.
    * @param left Left coordinate (in pixels) of the tooltip.
    */
   private drawValueTooltip(
     indices: number[],
-    value: number | boolean | string,
+    detailedValueString: string,
     top: number,
     left: number
   ) {
@@ -813,24 +816,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
     const valueDiv = document.createElement('div');
     valueDiv.classList.add('tensor-widget-value-tooltip-value');
-
-    if (this.getValueClass() === 'boolean') {
-      const shortForm = false;
-      valueDiv.textContent = booleanValueToDisplayString(
-        value as boolean,
-        shortForm
-      );
-      valueDiv.textContent = `${value}`;
-    } else if (this.getValueClass() === 'string') {
-      valueDiv.textContent = `Length-${
-        (value as string).length
-      } string: "${stringValueToDisplayString(value as string)}"`;
-    } else {
-      valueDiv.textContent = `${value}`;
-    }
+    valueDiv.textContent = detailedValueString;
 
     this.valueTooltip.appendChild(valueDiv);
-
     this.valueTooltip.style.top = `${top}px`;
     this.valueTooltip.style.left = `${left}px`;
     this.valueTooltip.style.display = 'block';
