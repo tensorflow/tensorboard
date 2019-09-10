@@ -3755,31 +3755,50 @@ limitations under the License.
           this.$.distancedialog.toggle();
         },
 
-        addDistanceMetric: function() {
-          this.facetDistFeatureNames.push(this.facetDistFeatureName);
+        requestAddDistanceMetric: function() {
           const selected = this.selected[0];
-          let closestDist = Number.POSITIVE_INFINITY;
-          let closest = -1;
-          const useL2Distance = this.facetDistSwitch == 'L2';
-          for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDist(
-              this.visdata[selected],
-              this.visdata[i],
-              useL2Distance
+          const params = {callbackParams: {'featureName':this.facetDistFeatureName},
+               distanceParams: {}}
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              'finalizeAddDistanceMetric',
+              params
             );
-            this.visdata[i][this.facetDistFeatureName] = dist;
+            return;
+          } else {
+            const dists = [];
+            const useL2Distance = this.facetDistSwitch == 'L2';
+            for (let i = 0; i < this.visdata.length; i++) {
+              dists.push(this.getDist(
+                this.visdata[selected],
+                this.visdata[i],
+                useL2Distance
+              ));
+            }
+            this.finalizeAddDistanceMetric(selected, dists, params.callbackParams)
+          }
+        },
+
+        finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
+          const facetDistFeatureName = callbackParams.facetDistFeatureName;
+          this.facetDistFeatureNames.push(facetDistFeatureName);
+          for (let i = 0; i < this.visdata.length; i++) {
+            this.visdata[i][facetDistFeatureName] = distances[i];
           }
           this.refreshDive_();
           if (this.facetDistSetting == 'colorBy') {
-            this.$.dive.colorBy = this.facetDistFeatureName;
+            this.$.dive.colorBy = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalFacet') {
-            this.$.dive.verticalFacet = this.facetDistFeatureName;
+            this.$.dive.verticalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalFacet') {
-            this.$.dive.horizontalFacet = this.facetDistFeatureName;
+            this.$.dive.horizontalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalPosition') {
-            this.$.dive.verticalPosition = this.facetDistFeatureName;
+            this.$.dive.verticalPosition = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalPosition') {
-            this.$.dive.horizontalPosition = this.facetDistFeatureName;
+            this.$.dive.horizontalPosition = facetDistFeatureName;
           }
         },
 
