@@ -16,10 +16,12 @@ limitations under the License.
 import {expect} from 'chai';
 
 import {
+  booleanValueToDisplayString,
   ELLIPSES,
   formatTensorName,
   numericValueToString,
   TENSOR_NAME_LENGTH_CUTOFF,
+  stringValueToDisplayString,
 } from './string-utils';
 
 function stringRepeat(str: string, times: number) {
@@ -273,5 +275,46 @@ describe('numericValueToString', () => {
   it('Large magnitude negative integers are formatted correctly', () => {
     const isInteger = true;
     expect(numericValueToString(-12345678, isInteger)).to.equal('-1.23e+7');
+  });
+});
+
+describe('booleanValueToString', () => {
+  it('correct return values for boolean arguments', () => {
+    expect(booleanValueToDisplayString(true)).to.eql('T');
+    expect(booleanValueToDisplayString(false)).to.eql('F');
+    const shortForm = false;
+    expect(booleanValueToDisplayString(true, shortForm)).to.eql('True');
+    expect(booleanValueToDisplayString(false, shortForm)).to.eql('False');
+  });
+
+  it('correct return values for number arguments', () => {
+    expect(booleanValueToDisplayString(1)).to.eql('T');
+    expect(booleanValueToDisplayString(0)).to.eql('F');
+    const shortForm = false;
+    expect(booleanValueToDisplayString(1, shortForm)).to.eql('True');
+    expect(booleanValueToDisplayString(0, shortForm)).to.eql('False');
+  });
+});
+
+describe('stringValueToString', () => {
+  it('cutoff with default length limit', () => {
+    expect(stringValueToDisplayString('')).to.eql('');
+    expect(stringValueToDisplayString('ABC')).to.eql('ABC');
+    expect(stringValueToDisplayString('ABCDE')).to.eql('ABC…');
+  });
+
+  it('cutoff with custom length limit', () => {
+    const lengthLimit = 2;
+    expect(stringValueToDisplayString('', lengthLimit)).to.eql('');
+    expect(stringValueToDisplayString('ABC', lengthLimit)).to.eql('A…');
+  });
+
+  it('cutoff with explicitly disabled limit', () => {
+    expect(stringValueToDisplayString('', null)).to.eql('');
+    expect(stringValueToDisplayString('ABC', null)).to.eql('ABC');
+    expect(stringValueToDisplayString('ABCDE', null)).to.eql('ABCDE');
+    expect(stringValueToDisplayString(stringRepeat('V', 1000), null)).to.eql(
+      stringRepeat('V', 1000)
+    );
   });
 });
