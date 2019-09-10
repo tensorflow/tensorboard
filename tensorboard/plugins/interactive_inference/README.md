@@ -20,7 +20,7 @@ or
 [Colab](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb)
 notebook.
 
-## [I don’t want to read this document. Can I just play with a demo?](#demoInstructions)
+## I don’t want to read this document. Can I just play with a demo?
 
 Check out the large set of web and colab demos in the
 [demo section of the What-If Tool website](https://pair-code.github.io/what-if-tool/index.html#demos).
@@ -288,7 +288,7 @@ for all options you can provide, including how to specify other model types
 (defaults to binary classification) and how to specify an optional second model
 to compare to the first model.
 
-### [How do I enable it for use in a Jupyter notebook?](#jupyterInstall)
+### How do I enable it for use in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
 ```sh
 pip install witwidget
@@ -306,7 +306,7 @@ jupyter nbextension enable --py --sys-prefix witwidget
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
 
-### [How do I enable it for use in a Colab notebook?](#colabInstall)
+### How do I enable it for use in a Colab notebook?
 Install the widget into the runtime of the notebook kernel by running a cell
 containing:
 ```

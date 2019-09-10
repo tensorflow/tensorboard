@@ -22,14 +22,14 @@ when testing WIT in TensorBoard).
    `source ~/tf/bin/activate`
 2. Run TensorBoard, WIT notebooks, and/or WIT demos
    `cd ~/github/tensorboard`
-    - For WIT demos, follow the directions in the [README](./README.md#demoInstructions).
+    - For WIT demos, follow the directions in the [README](./README.md#i-dont-want-to-read-this-document-can-i-just-play-with-a-demo).
         1. `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:<demoRule>`
         2. Navigate to `http://localhost:6006/tf-interactive-inference-dashboard/<demoName>.html`
     - For use in notebook mode, build the witwidget pip package locally and use it in a notebook.
         1. `rm -rf /tmp/wit-pip` (if it already exists)
         2. `bazel run tensorboard/plugins/interactive_inference/witwidget/pip_package:build_pip_package`
         3. Install the package
-            - For use in Jupyter notebooks, install and enable the locally-build pip package per instructions in the [README](./README#jupyterInstall), but instead use `pip install <pathToBuiltPipPackageWhlFile>`, then launch the jupyter notebook kernel.
+            - For use in Jupyter notebooks, install and enable the locally-build pip package per instructions in the [README](./README.md##how-do-i-enable-it-for-use-in-a-jupyter-notebook), but instead use `pip install <pathToBuiltPipPackageWhlFile>`, then launch the jupyter notebook kernel.
             - For use in Colab notebooks, upload the package to the notebook and install it from there
                 1. In a notebook cell, to upload a file from local disk, run
                     ```
@@ -37,15 +37,14 @@ when testing WIT in TensorBoard).
                     uploaded = files.upload()
                     ```
                 2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`
-    - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir)
+    - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir).  
       `bazel run tensorboard -- --logdir /tmp`
-        1. WIT needs a served model to query, so serve your trained model through the TF serving docker container
+        1. WIT needs a served model to query, so serve your trained model through the TF serving docker container.  
            `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel>,target=/models/my_model/ -e MODEL_NAME=my_model -t tensorflow/serving`
-            - When developing model comparison, serve multiple models at once using the [proper config](#multipleModels)
+            - When developing model comparison, serve multiple models at once using the proper config as seen in the appendix.  
                 `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel1>,target=/models/my_model1 -e When you want to shutdown the served model, find the container ID and stop the container.MODEL_NAME=my_model_1 --mount type=bind,source=<pathToSavedModel2>,target=/models/my_model_2 -e MODEL_NAME=my_model_2 When you want to shutdown the served model, find the container ID and stop the container.--mount type=bind,source=<pathToConfigFile>,target=/models/models.config -t tensorflow/serving --model_config_file="/models/models.config"`
-        2. Navigate to the WIT tab in TensorBoard and set-up WIT (`http://localhost:6006/#whatif&inferenceAddress=localhost%3A8500&modelName=my_model`).
-        
-        The inferenceAddress and modelName settings point to the model you served in the previous step. Set all other appropriate options and click “accept”.
+        2. Navigate to the WIT tab in TensorBoard and set-up WIT (`http://localhost:6006/#whatif&inferenceAddress=localhost%3A8500&modelName=my_model`).  
+           The inferenceAddress and modelName settings point to the model you served in the previous step. Set all other appropriate options and click “accept”.
         3. When you want to shutdown the served model, find the container ID and stop the container.
             ```
             sudo docker container ls
@@ -67,7 +66,7 @@ when testing WIT in TensorBoard).
 
 
 [utils/common_utils.py](./utils/common_utils.py) - utilities common to other python files  
-[utils/inference_utils.py](./utils/inference_utils.py) - utility functions for running inference requests through a model
+[utils/inference_utils.py](./utils/inference_utils.py) - utility functions for running inference requests through a model  
 [utils/inference_utils_test.py](./utils/inference_utils_test.py) - UT  
 [utils/platform_utils.py](./utils/platform_utils.py) - functions specific to the open-source implementation (loading examples from disk, calling to servo)  
 [utils/test_utils.py](./utils/test_utils.py) - helper functions for UTs  
@@ -97,7 +96,7 @@ when testing WIT in TensorBoard).
 
 ## Appendix
 
-###[Serving multiple models: models.config contents](#multipleModels)
+### Serving multiple models: models.config contents
 
 ```
 model_config_list: {
