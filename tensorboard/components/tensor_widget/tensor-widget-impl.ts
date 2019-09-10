@@ -668,7 +668,9 @@ export class TensorWidgetImpl implements TensorWidget {
               JSON.stringify(value)
             );
           } else if (valueClass === 'boolean') {
-            valueDiv.textContent = booleanValueToDisplayString(value as boolean);
+            valueDiv.textContent = booleanValueToDisplayString(
+              value as boolean
+            );
             valueDiv.setAttribute(
               DETAILED_VALUE_ATTR_KEY,
               JSON.stringify(value)
@@ -814,7 +816,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
     if (this.getValueClass() === 'boolean') {
       const shortForm = false;
-      valueDiv.textContent = booleanValueToDisplayString(value as boolean, shortForm);
+      valueDiv.textContent = booleanValueToDisplayString(
+        value as boolean,
+        shortForm
+      );
       valueDiv.textContent = `${value}`;
     } else if (this.getValueClass() === 'string') {
       valueDiv.textContent = `Length-${
