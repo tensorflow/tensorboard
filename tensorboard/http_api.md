@@ -150,14 +150,15 @@ Example response:
 
 ## `data/environment`
 
-Returns environment in which the TensorBoard app is running. Possible values of
-the `mode` are: `db` and `logdir`.
+Returns environment in which the TensorBoard app is running.
+
+The `data_location` is a user-readable string describing the source from which
+TensorBoard is reading data, such as a directory on disk or a SQLite database.
 
 Example response:
 
     {
       "window_title": "Custom Name",
-      "mode": "db",
       "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
     }
 
