@@ -16,12 +16,12 @@ limitations under the License.
 import {expect} from 'chai';
 
 import {
-  booleanValueToString,
+  booleanValueToDisplayString,
   ELLIPSES,
   formatTensorName,
   numericValueToString,
   TENSOR_NAME_LENGTH_CUTOFF,
-  stringValueToString,
+  stringValueToDisplayString,
 } from './string-utils';
 
 function stringRepeat(str: string, times: number) {
@@ -280,32 +280,41 @@ describe('numericValueToString', () => {
 
 describe('booleanValueToString', () => {
   it('correct return values for boolean arguments', () => {
-    expect(booleanValueToString(true)).to.eql('T');
-    expect(booleanValueToString(false)).to.eql('F');
+    expect(booleanValueToDisplayString(true)).to.eql('T');
+    expect(booleanValueToDisplayString(false)).to.eql('F');
     const shortForm = false;
-    expect(booleanValueToString(true, shortForm)).to.eql('True');
-    expect(booleanValueToString(false, shortForm)).to.eql('False');
+    expect(booleanValueToDisplayString(true, shortForm)).to.eql('True');
+    expect(booleanValueToDisplayString(false, shortForm)).to.eql('False');
   });
 
   it('correct return values for number arguments', () => {
-    expect(booleanValueToString(1)).to.eql('T');
-    expect(booleanValueToString(0)).to.eql('F');
+    expect(booleanValueToDisplayString(1)).to.eql('T');
+    expect(booleanValueToDisplayString(0)).to.eql('F');
     const shortForm = false;
-    expect(booleanValueToString(1, shortForm)).to.eql('True');
-    expect(booleanValueToString(0, shortForm)).to.eql('False');
+    expect(booleanValueToDisplayString(1, shortForm)).to.eql('True');
+    expect(booleanValueToDisplayString(0, shortForm)).to.eql('False');
   });
 });
 
 describe('stringValueToString', () => {
   it('cutoff with default length limit', () => {
-    expect(stringValueToString('')).to.eql('');
-    expect(stringValueToString('ABC')).to.eql('ABC');
-    expect(stringValueToString('ABCDE')).to.eql('ABC…');
+    expect(stringValueToDisplayString('')).to.eql('');
+    expect(stringValueToDisplayString('ABC')).to.eql('ABC');
+    expect(stringValueToDisplayString('ABCDE')).to.eql('ABC…');
   });
 
   it('cutoff with custom length limit', () => {
     const lengthLimit = 2;
-    expect(stringValueToString('', lengthLimit)).to.eql('');
-    expect(stringValueToString('ABC', lengthLimit)).to.eql('A…');
+    expect(stringValueToDisplayString('', lengthLimit)).to.eql('');
+    expect(stringValueToDisplayString('ABC', lengthLimit)).to.eql('A…');
+  });
+
+  it('cutoff with explicitly disabled limit', () => {
+    expect(stringValueToDisplayString('', null)).to.eql('');
+    expect(stringValueToDisplayString('ABC', null)).to.eql('ABC');
+    expect(stringValueToDisplayString('ABCDE', null)).to.eql('ABCDE');
+    expect(stringValueToDisplayString(stringRepeat('V', 1000), null)).to.eql(
+      stringRepeat('V', 1000)
+    );
   });
 });

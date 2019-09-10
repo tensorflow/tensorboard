@@ -27,10 +27,10 @@ import {
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {
-  booleanValueToString,
+  booleanValueToDisplayString,
   formatTensorName,
   numericValueToString,
-  stringValueToString,
+  stringValueToDisplayString,
 } from './string-utils';
 import {
   MoveDirection,
@@ -543,11 +543,18 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          let detailedValue:
-            | number
-            | boolean
-            | string
-            | null = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
+          // The DETAILED_VALUE_ATTR_KEY attribute of the value div holds a
+          // "detailed" string representation of the value of the corresponding
+          // tensor element. It is detailed in the sense that it has as many
+          // decimal points as supported by JavaScript's string representation
+          // of numbers, in the case of float dtypes. The only exceptions
+          // are very long string elements, which we still truncate in order
+          // to avoid overtaxing the DOM.
+          const valueAttr = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
+          if (!valueAttr) {
+            return;
+          }
+          let detailedValue: number | boolean | string = JSON.parse(valueAttr);
           const valueClass = this.getValueClass();
           if (valueClass !== 'string' && !detailedValue) {
             return;
@@ -650,17 +657,32 @@ export class TensorWidgetImpl implements TensorWidget {
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
           if (valueClass === 'numeric') {
+            // TODO(cais): Once health pills are available, use the min/max
+            // values to determine the number of decimal places.
             valueDiv.textContent = numericValueToString(
               value as number,
               isIntegerDType(this.tensorView.spec.dtype)
             );
+            valueDiv.setAttribute(
+              DETAILED_VALUE_ATTR_KEY,
+              JSON.stringify(value)
+            );
           } else if (valueClass === 'boolean') {
-            valueDiv.textContent = booleanValueToString(value as boolean);
+            valueDiv.textContent = booleanValueToDisplayString(value as boolean);
+            valueDiv.setAttribute(
+              DETAILED_VALUE_ATTR_KEY,
+              JSON.stringify(value)
+            );
           } else if (valueClass === 'string') {
-            valueDiv.textContent = stringValueToString(value as string);
+            valueDiv.textContent = stringValueToDisplayString(value as string);
+            const lengthLimit = 500; // Avoid storing too much data in the DOM.
+            valueDiv.setAttribute(
+              DETAILED_VALUE_ATTR_KEY,
+              JSON.stringify(
+                stringValueToDisplayString(value as string, lengthLimit)
+              )
+            );
           }
-
-          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
         } else {
           valueDiv.textContent = '';
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
@@ -792,13 +814,12 @@ export class TensorWidgetImpl implements TensorWidget {
 
     if (this.getValueClass() === 'boolean') {
       const shortForm = false;
-      valueDiv.textContent = booleanValueToString(value as boolean, shortForm);
+      valueDiv.textContent = booleanValueToDisplayString(value as boolean, shortForm);
       valueDiv.textContent = `${value}`;
     } else if (this.getValueClass() === 'string') {
-      const lengthLimit = 500;
       valueDiv.textContent = `Length-${
         (value as string).length
-      } string: "${stringValueToString(value as string, lengthLimit)}"`;
+      } string: "${stringValueToDisplayString(value as string)}"`;
     } else {
       valueDiv.textContent = `${value}`;
     }
