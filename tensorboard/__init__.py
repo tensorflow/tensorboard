@@ -66,6 +66,12 @@ from tensorboard import version
 # additional discussion.
 
 
+@lazy.lazy_load('tensorboard.errors')
+def errors():
+  import importlib  # pylint: disable=g-import-not-at-top
+  return importlib.import_module('tensorboard.errors')
+
+
 @lazy.lazy_load('tensorboard.notebook')
 def notebook():
   import importlib  # pylint: disable=g-import-not-at-top
