@@ -684,14 +684,14 @@ export class TensorWidgetImpl implements TensorWidget {
   private getDetailedValueTooltipString(
     value: boolean | number | string
   ): string {
-    if (typeof value === 'boolean') {
+    if (this.getValueClass() === 'boolean') {
       const shortForm = false;
       return booleanValueToDisplayString(value as boolean, shortForm);
-    } else if (typeof value === 'string') {
+    } else if (this.getValueClass() === 'string') {
       const lengthLimit = 500;
       return `Length-${
         (value as string).length
-      } string: "${stringValueToDisplayString(value, lengthLimit)}"`;
+      } string: "${stringValueToDisplayString(value as string, lengthLimit)}"`;
     } else {
       return String(value);
     }
