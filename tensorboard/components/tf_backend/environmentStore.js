@@ -14,18 +14,12 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
-    let Mode;
-    (function (Mode) {
-        Mode[Mode["DB"] = 0] = "DB";
-        Mode[Mode["LOGDIR"] = 1] = "LOGDIR";
-    })(Mode = tf_backend.Mode || (tf_backend.Mode = {}));
     class EnvironmentStore extends tf_backend.BaseStore {
         load() {
             const url = tf_backend.getRouter().environment();
             return this.requestManager.request(url).then((result) => {
                 const environment = {
                     dataLocation: result.data_location,
-                    mode: result.mode == 'db' ? Mode.DB : Mode.LOGDIR,
                     windowTitle: result.window_title,
                 };
                 if (_.isEqual(this.environment, environment))
@@ -36,9 +30,6 @@ var tf_backend;
         }
         getDataLocation() {
             return this.environment ? this.environment.dataLocation : '';
-        }
-        getMode() {
-            return this.environment ? this.environment.mode : null;
         }
         getWindowTitle() {
             return this.environment ? this.environment.windowTitle : '';
