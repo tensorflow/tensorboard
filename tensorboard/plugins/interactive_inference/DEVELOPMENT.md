@@ -29,7 +29,7 @@ when testing WIT in TensorBoard).
         1. `rm -rf /tmp/wit-pip` (if it already exists)
         2. `bazel run tensorboard/plugins/interactive_inference/witwidget/pip_package:build_pip_package`
         3. Install the package
-            - For use in Jupyter notebooks, install and enable the locally-build pip package per instructions in the [README](./README.md##how-do-i-enable-it-for-use-in-a-jupyter-notebook), but instead use `pip install <pathToBuiltPipPackageWhlFile>`, then launch the jupyter notebook kernel.
+            - For use in Jupyter notebooks, install and enable the locally-build pip package per instructions in the [README](./README.md#how-do-i-enable-it-for-use-in-a-jupyter-notebook), but instead use `pip install <pathToBuiltPipPackageWhlFile>`, then launch the jupyter notebook kernel.
             - For use in Colab notebooks, upload the package to the notebook and install it from there
                 1. In a notebook cell, to upload a file from local disk, run
                     ```
