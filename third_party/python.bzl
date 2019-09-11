@@ -47,22 +47,22 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_html5lib",
         urls = [
-            "http://mirror.tensorflow.org/github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",
-            "https://github.com/html5lib/html5lib-python/archive/0.9999999.tar.gz",  # identical to 1.0b8
+            "http://mirror.tensorflow.org/github.com/html5lib/html5lib-python/archive/1.0.1.tar.gz",
+            "https://github.com/html5lib/html5lib-python/archive/1.0.1.tar.gz",
         ],
-        sha256 = "184257f98539159a433e2a2197309657ae1283b4c44dbd9c87b2f02ff36adce8",
-        strip_prefix = "html5lib-python-0.9999999",
+        sha256 = "fabbebd6a55d07842087f13849076eeed350aa8bb6c9ec840f6a6aba9388db06",
+        strip_prefix = "html5lib-python-1.0.1",
         build_file = str(Label("//third_party:html5lib.BUILD")),
     )
 
     http_archive(
         name = "org_mozilla_bleach",
         urls = [
-            "http://mirror.tensorflow.org/github.com/mozilla/bleach/archive/v1.5.tar.gz",
-            "https://github.com/mozilla/bleach/archive/v1.5.tar.gz",
+            "http://mirror.tensorflow.org/github.com/mozilla/bleach/archive/v2.0.tar.gz",
+            "https://github.com/mozilla/bleach/archive/v2.0.tar.gz",
         ],
-        strip_prefix = "bleach-1.5",
-        sha256 = "0d68713d02ba4148c417ab1637dd819333d96929a34401d0233947bec0881ad8",
+        strip_prefix = "bleach-2.0",
+        sha256 = "789dcf3e7daf79c4c78518c6ebafd51bbaf111ac4263a97c08cf8d6a27eda820",
         build_file = str(Label("//third_party:bleach.BUILD")),
     )
 
@@ -75,6 +75,28 @@ def tensorboard_python_workspace():
         strip_prefix = "Werkzeug-0.15.4",
         sha256 = "a0b915f0815982fb2a09161cb8f31708052d0951c3ba433ccc5e1aa276507ca6",
         build_file = str(Label("//third_party:werkzeug.BUILD")),
+    )
+
+    http_archive(
+        name = "org_pythonhosted_webencodings",
+        urls = [
+            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/0b/02/ae6ceac1baeda530866a85075641cec12989bd8d31af6d5ab4a3e8c92f47/webencodings-0.5.1.tar.gz",
+            "https://files.pythonhosted.org/packages/0b/02/ae6ceac1baeda530866a85075641cec12989bd8d31af6d5ab4a3e8c92f47/webencodings-0.5.1.tar.gz",
+        ],
+        strip_prefix = "webencodings-0.5.1",
+        sha256 = "b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923",
+        build_file = str(Label("//third_party:webencodings.BUILD")),
+        patches = [
+            # The `webencodings` PyPI package is licensed as BSD, and
+            # the Git repository has a LICENSE file, but this license
+            # file is not included in the actual .tar.gz archive
+            # downloaded from PyPI. This was fixed in PR #13 [1], so any
+            # future releases of `webencodings` should not have this
+            # problem. Until then, we patch in the license file by hand.
+            #
+            # [1]: https://github.com/gsnedders/python-webencodings/pull/13
+            "//third_party:webencodings_license.patch",
+        ],
     )
 
     # We use `mock==1.0.0` because later versions depend on `pbr`, which

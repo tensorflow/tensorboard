@@ -15,16 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-imports/vaadin-split-layout.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html" />
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-imports/vaadin-split-layout.html" />
 
 <!--
 The tf-hparams-query-pane element implements controls for querying the
@@ -41,31 +41,32 @@ TODO(erez): Add aggregation controls for repeated sessions.
           <vaadin-split-layout vertical id="hyperparameters-metrics">
             <div class="section hyperparameters">
               <div class="section-title">Hyperparameters</div>
-              <template is="dom-repeat"
-                        items="{{_hparams}}"
-                        as="hparam">
+              <template is="dom-repeat" items="{{_hparams}}" as="hparam">
                 <div class="hparam">
                   <paper-checkbox
                     checked="{{hparam.displayed}}"
-                    class="hparam-checkbox">
+                    class="hparam-checkbox"
+                  >
                     [[_hparamName(hparam.info)]]
                   </paper-checkbox>
                   <!-- Precisely one of the templates below will be stamped.-->
                   <!-- 1. A list of checkboxes -->
-                  <template is="dom-if"
-                            if="[[hparam.filter.domainDiscrete]]">
-                    <template is="dom-repeat"
-                              items="[[hparam.filter.domainDiscrete]]">
-                      <paper-checkbox checked="{{item.checked}}"
-                                      class="discrete-value-checkbox"
-                                      on-change="_queryServer">
+                  <template is="dom-if" if="[[hparam.filter.domainDiscrete]]">
+                    <template
+                      is="dom-repeat"
+                      items="[[hparam.filter.domainDiscrete]]"
+                    >
+                      <paper-checkbox
+                        checked="{{item.checked}}"
+                        class="discrete-value-checkbox"
+                        on-change="_queryServer"
+                      >
                         [[_prettyPrint(item.value)]]
                       </paper-checkbox>
                     </template>
                   </template>
                   <!-- 2. A numeric interval -->
-                  <template is="dom-if"
-                            if="[[hparam.filter.interval]]">
+                  <template is="dom-if" if="[[hparam.filter.interval]]">
                     <paper-input
                       label="Min"
                       value="{{hparam.filter.interval.min.value}}"
@@ -73,7 +74,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
                       on-value-changed="_queryServer"
                       error-message="Invalid input"
                       invalid="[[hparam.filter.interval.min.invalid]]"
-                      placeholder="-infinity">
+                      placeholder="-infinity"
+                    >
                     </paper-input>
                     <paper-input
                       label="Max"
@@ -82,15 +84,17 @@ TODO(erez): Add aggregation controls for repeated sessions.
                       on-value-changed="_queryServer"
                       error-message="Invalid input"
                       invalid="[[hparam.filter.interval.max.invalid]]"
-                      placeholder="+infinity">
+                      placeholder="+infinity"
+                    >
                     </paper-input>
                   </template>
                   <!-- 3. A regexp -->
-                  <template is="dom-if"
-                            if="[[hparam.filter.regexp]]">
-                    <paper-input label="Regular expression"
-                                 value={{hparam.filter.regexp}}
-                                 on-value-changed="_queryServer">
+                  <template is="dom-if" if="[[hparam.filter.regexp]]">
+                    <paper-input
+                      label="Regular expression"
+                      value="{{hparam.filter.regexp}}"
+                      on-value-changed="_queryServer"
+                    >
                     </paper-input>
                   </template>
                 </div>
@@ -98,9 +102,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
             </div>
             <div class="section metrics">
               <div class="section-title">Metrics</div>
-              <template is="dom-repeat"
-                        items="{{_metrics}}"
-                        as="metric">
+              <template is="dom-repeat" items="{{_metrics}}" as="metric">
                 <div class="metric">
                   <!-- TODO(erez): Make it easier to handle a large number of
                        metrics:
@@ -114,7 +116,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
                        scalars.-->
                   <paper-checkbox
                     checked="{{metric.displayed}}"
-                    class="metric-checkbox">
+                    class="metric-checkbox"
+                  >
                     [[_metricName(metric.info)]]
                   </paper-checkbox>
                   <div class="inline-element">
@@ -125,7 +128,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
                       on-value-changed="_queryServer"
                       error-message="Invalid input"
                       invalid="{{metric.filter.interval.min.invalid}}"
-                      placeholder="-infinity">
+                      placeholder="-infinity"
+                    >
                     </paper-input>
                   </div>
                   <div class="inline-element">
@@ -136,7 +140,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
                       on-value-changed="_queryServer"
                       error-message="Invalid input"
                       invalid="{{metric.filter.interval.max.invalid}}"
-                      placeholder="+infinity">
+                      placeholder="+infinity"
+                    >
                     </paper-input>
                   </div>
                 </div>
@@ -145,11 +150,11 @@ TODO(erez): Add aggregation controls for repeated sessions.
           </vaadin-split-layout>
           <div class="section status">
             <div class="section-title">Status</div>
-            <template is="dom-repeat"
-                      items="[[_statuses]]"
-                      as="status">
-              <paper-checkbox checked="{{status.allowed}}"
-                              on-change="_queryServer">
+            <template is="dom-repeat" items="[[_statuses]]" as="status">
+              <paper-checkbox
+                checked="{{status.allowed}}"
+                on-change="_queryServer"
+              >
                 [[status.displayName]]
               </paper-checkbox>
             </template>
@@ -158,63 +163,70 @@ TODO(erez): Add aggregation controls for repeated sessions.
         <vaadin-split-layout vertical id="sorting-paging">
           <div class="section sorting">
             <div class="section-title">Sorting</div>
-            <paper-dropdown-menu label="Sort by"
-                                 on-selected-item-changed="_queryServer"
-                                 horizontal-align="left">
-              <paper-menu class="dropdown-content"
-                          slot="dropdown-content"
-                          selected="{{_sortByIndex}}"
-                          on-selected-item-changed="_queryServer">
-                <template is="dom-repeat"
-                          items="[[_hparams]]"
-                          as="hparam">
+            <paper-dropdown-menu
+              label="Sort by"
+              on-selected-item-changed="_queryServer"
+              horizontal-align="left"
+            >
+              <paper-listbox
+                class="dropdown-content"
+                slot="dropdown-content"
+                selected="{{_sortByIndex}}"
+                on-selected-item-changed="_queryServer"
+              >
+                <template is="dom-repeat" items="[[_hparams]]" as="hparam">
                   <paper-item>
                     [[_hparamName(hparam.info)]]
                   </paper-item>
                 </template>
-                <template is="dom-repeat"
-                          items="[[_metrics]]"
-                          as="metric">
+                <template is="dom-repeat" items="[[_metrics]]" as="metric">
                   <paper-item>
                     [[_metricName(metric.info)]]
                   </paper-item>
                 </template>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
-            <paper-dropdown-menu label="Direction"
-                                 on-selected-item-changed="_queryServer"
-                                 horizontal-align="left">
-              <paper-menu class="dropdown-content"
-                          slot="dropdown-content"
-                          selected="{{_sortDirection}}">
+            <paper-dropdown-menu
+              label="Direction"
+              on-selected-item-changed="_queryServer"
+              horizontal-align="left"
+            >
+              <paper-listbox
+                class="dropdown-content"
+                slot="dropdown-content"
+                selected="{{_sortDirection}}"
+              >
                 <paper-item>Ascending</paper-item>
                 <paper-item>Descending</paper-item>
-              </paper-menu>
+              </paper-listbox>
             </paper-dropdown-menu>
           </div>
           <div class="section paging">
             <div class="section-title">Paging</div>
             <div>
-              Number of matching session groups:
-              [[_totalSessionGroupsCountStr]]
+              Number of matching session groups: [[_totalSessionGroupsCountStr]]
             </div>
             <div class="inline-element page-number-input">
-              <paper-input label="Page #"
-                           value="{{_pageNumberInput.value}}"
-                           allowed-pattern="[0-9]"
-                           error-message="Invalid input"
-                           invalid="[[_pageNumberInput.invalid]]"
-                           on-value-changed="_queryServer">
-                <div slot="suffix"> / [[_pageCountStr]]</div>
+              <paper-input
+                label="Page #"
+                value="{{_pageNumberInput.value}}"
+                allowed-pattern="[0-9]"
+                error-message="Invalid input"
+                invalid="[[_pageNumberInput.invalid]]"
+                on-value-changed="_queryServer"
+              >
+                <div slot="suffix" class="page-suffix">/ [[_pageCountStr]]</div>
               </paper-input>
             </div>
             <div class="inline-element page-size-input">
-              <paper-input label="Max # of session groups per page:"
-                           value="{{_pageSizeInput.value}}"
-                           allowed-pattern="[0-9]"
-                           error-message="Invalid input"
-                           invalid="[[_pageSizeInput.invalid]]"
-                           on-value-changed="_queryServer">
+              <paper-input
+                label="Max # of session groups per page:"
+                value="{{_pageSizeInput.value}}"
+                allowed-pattern="[0-9]"
+                error-message="Invalid input"
+                invalid="[[_pageSizeInput.invalid]]"
+                on-value-changed="_queryServer"
+              >
               </paper-input>
             </div>
           </div>
@@ -277,13 +289,16 @@ TODO(erez): Add aggregation controls for repeated sessions.
         flex-shrink: 0;
         flex-grow: 0;
       }
-      .discrete-value-checkbox, .metric-checkbox, .hparam-checkbox {
+      .discrete-value-checkbox,
+      .metric-checkbox,
+      .hparam-checkbox {
         display: block;
       }
       .discrete-value-checkbox {
         margin-left: 20px;
       }
-      .hparam, .metric {
+      .hparam,
+      .metric {
         display: block;
       }
       .inline-element {
@@ -300,8 +315,11 @@ TODO(erez): Add aggregation controls for repeated sessions.
       vaadin-split-layout {
         height: 100%;
       }
-      paper-menu {
+      paper-listbox {
         max-height: 15em;
+      }
+      .page-suffix {
+        white-space: nowrap;
       }
     </style>
   </template>
@@ -372,21 +390,21 @@ TODO(erez): Add aggregation controls for repeated sessions.
               visibleSchema: {
                 hparamInfos: [],
                 metricInfos: [],
-              }
+              },
             };
           },
           readOnly: true,
-          notify: true
+          notify: true,
         },
 
         // The latest list of session groups received from the server.
         // See the comments in the _buildListSessionGroupsRequest() methods for
         // more details.
         sessionGroups: {
-          type:Array,
+          type: Array,
           value: () => [],
           readOnly: true,
-          notify: true
+          notify: true,
         },
 
         // ---- Private properties --------------------------------------------
@@ -450,12 +468,12 @@ TODO(erez): Add aggregation controls for repeated sessions.
           type: Array,
           value: () => {
             return [
-              {value: "STATUS_UNKNOWN", displayName: "Unknown", allowed: true},
-              {value: "STATUS_SUCCESS", displayName: "Success", allowed: true},
-              {value: "STATUS_FAILURE", displayName: "Failure", allowed: true},
-              {value: "STATUS_RUNNING", displayName: "Running", allowed: true}
+              {value: 'STATUS_UNKNOWN', displayName: 'Unknown', allowed: true},
+              {value: 'STATUS_SUCCESS', displayName: 'Success', allowed: true},
+              {value: 'STATUS_FAILURE', displayName: 'Failure', allowed: true},
+              {value: 'STATUS_RUNNING', displayName: 'Running', allowed: true},
             ];
-          }
+          },
         },
 
         // A promise that resolves after the initial getExperiment network RPC
@@ -464,10 +482,10 @@ TODO(erez): Add aggregation controls for repeated sessions.
         _getExperimentResolved: {
           type: Object,
           value: function() {
-            return new Promise(resolve=>{
+            return new Promise((resolve) => {
               this._resolveGetExperiment = resolve;
             });
-          }
+          },
         },
 
         // The resolve() callback for the _getExperimentResolved promise.
@@ -481,7 +499,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
           type: Object,
           value: () => {
             return new tf_backend.Canceller();
-          }
+          },
         },
 
         // The index of the "column" by which to sort. HParams column indices
@@ -497,30 +515,30 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // The value and invalid properties of the 'page-size' input box.
         _pageSizeInput: {
           type: Object,
-          value: {value: "100", invalid: false}
+          value: {value: '100', invalid: false},
         },
 
         // The value and invalid properties of the 'page-number' input box.
         _pageNumberInput: {
           type: Object,
-          value: {value: "1", invalid: false}
+          value: {value: '1', invalid: false},
         },
 
         // The string displaying the total number of pages or '?' if unknown.
         _pageCountStr: {
           type: String,
-          value: "?"
+          value: '?',
         },
 
         // The string displaying the total number of session groups matched
         // by the query, or 'unknown' if the server didn't send that
         // information.
         _totalSessionGroupsCountStr: String,
-      }  /* properties */,
+      } /* properties */,
 
       observers: [
         '_computeExperimentAndRelatedProps(backend, experimentName)',
-        '_updateConfiguration(_hparams.*, _metrics.*)'
+        '_updateConfiguration(_hparams.*, _metrics.*)',
       ],
 
       reload() {
@@ -532,19 +550,21 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // once on element initialization.
       _computeExperimentAndRelatedProps() {
         const utils = tf.hparams.utils;
-        if (utils.isNullOrUndefined(this.backend)
-            || utils.isNullOrUndefined(this.experimentName)) {
+        if (
+          utils.isNullOrUndefined(this.backend) ||
+          utils.isNullOrUndefined(this.experimentName)
+        ) {
           return;
         }
         const experimentRequest = {
-          experimentName: this.experimentName
+          experimentName: this.experimentName,
         };
-        this.backend.getExperiment(experimentRequest).then(experiment=>{
+        this.backend.getExperiment(experimentRequest).then((experiment) => {
           if (_.isEqual(experiment, this._experiment)) {
             // No need to update anything if there are no changes.
             return;
           }
-          this.set("_experiment", experiment);
+          this.set('_experiment', experiment);
           this._computeHParams();
           this._computeMetrics();
           this._queryServer();
@@ -559,18 +579,18 @@ TODO(erez): Add aggregation controls for repeated sessions.
         this._experiment.hparamInfos.forEach((anInfo, index) => {
           const hparam = {
             info: anInfo,
-            displayed: (index < kNumHParamsToDisplayByDefault),
-            filter: {}
+            displayed: index < kNumHParamsToDisplayByDefault,
+            filter: {},
           };
           if (hparam.info.hasOwnProperty('domainDiscrete')) {
-            hparam.filter.domainDiscrete = []
-            hparam.info.domainDiscrete.forEach(val => {
+            hparam.filter.domainDiscrete = [];
+            hparam.info.domainDiscrete.forEach((val) => {
               hparam.filter.domainDiscrete.push({
                 value: val,
                 checked: true,
               });
             });
-          } else if (hparam.info.type === "DATA_TYPE_BOOL") {
+          } else if (hparam.info.type === 'DATA_TYPE_BOOL') {
             hparam.filter.domainDiscrete = [
               {
                 value: false,
@@ -579,23 +599,27 @@ TODO(erez): Add aggregation controls for repeated sessions.
               {
                 value: true,
                 checked: true,
-              }
+              },
             ];
-          } else if (hparam.info.type === "DATA_TYPE_FLOAT64") {
+          } else if (hparam.info.type === 'DATA_TYPE_FLOAT64') {
             hparam.filter.interval = {
-              min: {value: "",  // Empty string means -infinity.
-                    invalid: false},
-              max: {value: "",  // Empty string means +infinity.
-                    invalid: false},
-            }
-          } else if (hparam.info.type === "DATA_TYPE_STRING") {
-            hparam.filter.regexp = ""
+              min: {
+                value: '', // Empty string means -infinity.
+                invalid: false,
+              },
+              max: {
+                value: '', // Empty string means +infinity.
+                invalid: false,
+              },
+            };
+          } else if (hparam.info.type === 'DATA_TYPE_STRING') {
+            hparam.filter.regexp = '';
           } else {
-            console.warn("unknown hparam.info.type: %s", hparam.info.type)
+            console.warn('unknown hparam.info.type: %s', hparam.info.type);
           }
           result.push(hparam);
         });
-        this.set("_hparams", result);
+        this.set('_hparams', result);
       },
 
       // Updates the _metrics property from the _experiment property.
@@ -609,25 +633,34 @@ TODO(erez): Add aggregation controls for repeated sessions.
             info: info,
             filter: {
               interval: {
-                min: {value: "",  // Empty string means -infinity
-                      invalid: false},
-                max: {value: "",  // Empty string means +infinity
-                      invalid: false},
+                min: {
+                  value: '', // Empty string means -infinity
+                  invalid: false,
+                },
+                max: {
+                  value: '', // Empty string means +infinity
+                  invalid: false,
+                },
               },
             },
-            displayed: (index < kNumMetricsToDisplayByDefault)
+            displayed: index < kNumMetricsToDisplayByDefault,
           };
           result.push(metric);
         });
-        this.set("_metrics", result);
+        this.set('_metrics', result);
       },
 
       _computeSchema() {
+        if (!this._hparams || !this._metrics) {
+          return {hparamColumns: [], metricColumns: []};
+        }
         return {
-          hparamColumns: this._hparams.map(
-              hparam => ({hparamInfo: hparam.info})),
-          metricColumns: this._metrics.map(
-              metric => ({metricInfo: metric.info})),
+          hparamColumns: this._hparams.map((hparam) => ({
+            hparamInfo: hparam.info,
+          })),
+          metricColumns: this._metrics.map((metric) => ({
+            metricInfo: metric.info,
+          })),
         };
       },
 
@@ -636,25 +669,28 @@ TODO(erez): Add aggregation controls for repeated sessions.
           this._setConfiguration({
             schema: this._computeSchema(),
             columnsVisibility: this._computeColumnsVisibility(),
-            visibleSchema: this._computeVisibleSchema()
+            visibleSchema: this._computeVisibleSchema(),
           });
         });
       },
 
       _computeColumnsVisibility() {
-        return this._hparams.map(hparam => hparam.displayed)
-            .concat(this._metrics.map(metric => metric.displayed));
+        if (!this._hparams || !this._metrics) return [];
+        return this._hparams
+          .map((hparam) => hparam.displayed)
+          .concat(this._metrics.map((metric) => metric.displayed));
       },
 
       _computeVisibleSchema() {
-        const newHParamInfos =
-              this._hparams
-                .filter(hparam => hparam.displayed)
-                .map(hparam => hparam.info);
-        const newMetricInfos =
-              this._metrics
-                  .filter(metric => metric.displayed)
-                  .map(metric => metric.info);
+        if (!this._hparams || !this._metrics) {
+          return {hparamInfos: [], metricInfos: []};
+        }
+        const newHParamInfos = this._hparams
+          .filter((hparam) => hparam.displayed)
+          .map((hparam) => hparam.info);
+        const newMetricInfos = this._metrics
+          .filter((metric) => metric.displayed)
+          .map((metric) => metric.info);
         return {
           hparamInfos: newHParamInfos,
           metricInfos: newMetricInfos,
@@ -664,7 +700,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // Sends a query to the server for the list of session groups.
       // Asynchronously updates the sessionGroups property with the response.
       _queryServer() {
-        this.debounce("queryServer", ()=>this._queryServerNoDebounce(), 100);
+        this.debounce('queryServer', () => this._queryServerNoDebounce(), 100);
       },
 
       // Directly queries the server without a debounce, called in queryServer()
@@ -672,29 +708,31 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // 'undefined') when the ListSessionGroups RPC returns.
       _queryServerNoDebounce() {
         return this._sendListSessionGroupsRequest().then(
-            this._listSessionGroupsCanceller.cancellable(
-                ({value, cancelled}) => {
-                  if (cancelled) {
-                    return;
-                  }
-                  // The server may not support a "totalSize" field in
-                  // which case this field would be negative, and we
-                  // populate the page count with a "?".
-                  if (value.totalSize >= 0) {
-                    const pageSize = +this._pageSizeInput.value;
-                    this.set(
-                        "_pageCountStr",
-                        String(Math.ceil(value.totalSize / pageSize)));
-                    this.set(
-                        "_totalSessionGroupsCountStr", value.totalSize);
-                  } else {
-                    this.set("_pageCountStr", "?");
-                    this.set(
-                        "_totalSessionGroupsCountStr", "Unknown");
-                  }
-                  tf.hparams.utils.setArrayObservably(
-                      this, "sessionGroups", value.sessionGroups);
-                }));
+          this._listSessionGroupsCanceller.cancellable(({value, cancelled}) => {
+            if (cancelled) {
+              return;
+            }
+            // The server may not support a "totalSize" field in
+            // which case this field would be negative, and we
+            // populate the page count with a "?".
+            if (value.totalSize >= 0) {
+              const pageSize = +this._pageSizeInput.value;
+              this.set(
+                '_pageCountStr',
+                String(Math.ceil(value.totalSize / pageSize))
+              );
+              this.set('_totalSessionGroupsCountStr', value.totalSize);
+            } else {
+              this.set('_pageCountStr', '?');
+              this.set('_totalSessionGroupsCountStr', 'Unknown');
+            }
+            tf.hparams.utils.setArrayObservably(
+              this,
+              'sessionGroups',
+              value.sessionGroups
+            );
+          })
+        );
       },
 
       _sendListSessionGroupsRequest() {
@@ -744,27 +782,23 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // object. We work with paths, rather than the object, so that we
         // can make observable changes.
         function parseInputInterval(inputIntervalPath) {
-          const minValueStr = _this.get(inputIntervalPath + ".min.value");
+          const minValueStr = _this.get(inputIntervalPath + '.min.value');
           console.assert(minValueStr !== undefined);
           // The protobuffer JSON mapping maps the strings "-Infinity" and
           // "Infinity" to the floating-point infinity and -infinity values.
-          const minValue =
-                minValueStr === "" ? "-Infinity" : +minValueStr;
-          _this.set(inputIntervalPath + ".min.invalid",
-                    isNaN(minValue));
+          const minValue = minValueStr === '' ? '-Infinity' : +minValueStr;
+          _this.set(inputIntervalPath + '.min.invalid', isNaN(minValue));
           queryValid = queryValid && !isNaN(minValue);
-          const maxValueStr = _this.get(inputIntervalPath + ".max.value");
+          const maxValueStr = _this.get(inputIntervalPath + '.max.value');
           console.assert(maxValueStr !== undefined);
-          const maxValue =
-                maxValueStr === "" ? "Infinity" : +maxValueStr;
-          _this.set(inputIntervalPath + ".max.invalid",
-                    isNaN(maxValue));
+          const maxValue = maxValueStr === '' ? 'Infinity' : +maxValueStr;
+          _this.set(inputIntervalPath + '.max.invalid', isNaN(maxValue));
           queryValid = queryValid && !isNaN(maxValue);
           if (isNaN(minValue) || isNaN(maxValue)) {
             return null;
           }
           return {minValue: minValue, maxValue: maxValue};
-        };
+        }
         // Parses the value of an input object of the form:
         // {value: string, invalid: boolean} as a positive integer and returns
         // the integer or null if the parsing fails.
@@ -775,11 +809,11 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // with paths, rather than the object, so that we can make observable
         // changes.
         function parseInputAsPositiveInt(inputPath) {
-          const inputValueStr = _this.get(inputPath + ".value");
+          const inputValueStr = _this.get(inputPath + '.value');
           console.assert(inputValueStr !== undefined);
           const result = +inputValueStr;
-          const validResult = Number.isInteger(result) && (result > 0);
-          _this.set(inputPath + ".invalid", !validResult);
+          const validResult = Number.isInteger(result) && result > 0;
+          _this.set(inputPath + '.invalid', !validResult);
           queryValid = queryValid && validResult;
           if (validResult) {
             return result;
@@ -788,29 +822,33 @@ TODO(erez): Add aggregation controls for repeated sessions.
         }
 
         // Build the allowed status filters.
-        const allowedStatuses =
-              this._statuses.filter(s=>s.allowed).map(s=>s.value);
+        const allowedStatuses = this._statuses
+          .filter((s) => s.allowed)
+          .map((s) => s.value);
 
         let colParams = [];
         // Build the hparams filters in the request.
         this._hparams.forEach((hparam, index) => {
-          let colParam = {hparam: hparam.info.name}
+          let colParam = {hparam: hparam.info.name};
           if (hparam.filter.domainDiscrete) {
             colParam.filterDiscrete = [];
-            hparam.filter.domainDiscrete.forEach(filterVal => {
+            hparam.filter.domainDiscrete.forEach((filterVal) => {
               if (filterVal.checked) {
-                colParam.filterDiscrete.push(filterVal.value)
+                colParam.filterDiscrete.push(filterVal.value);
               }
             });
           } else if (hparam.filter.interval) {
             colParam.filterInterval = parseInputInterval(
-                "_hparams." + index + ".filter.interval");
+              '_hparams.' + index + '.filter.interval'
+            );
           } else if (hparam.filter.regexp) {
-            colParam.filterRegexp = hparam.filter.regexp
+            colParam.filterRegexp = hparam.filter.regexp;
           } else {
             console.error(
-                "hparam.filter with no domainDiscrete, interval or regexp" +
-                  " properties set: %s", hparam)
+              'hparam.filter with no domainDiscrete, interval or regexp' +
+                ' properties set: %s',
+              hparam
+            );
             return null;
           }
           colParams.push(colParam);
@@ -821,29 +859,32 @@ TODO(erez): Add aggregation controls for repeated sessions.
           let colParam = {
             metric: metric.info.name,
             filterInterval: parseInputInterval(
-                "_metrics." + index + ".filter.interval"),
+              '_metrics.' + index + '.filter.interval'
+            ),
           };
           colParams.push(colParam);
         });
 
         // Sorting.
         // TODO(erez): Support sorting by multiple columns.
-        if (this._sortByIndex !== undefined &&
-            this._sortDirection !== undefined) {
+        if (
+          this._sortByIndex !== undefined &&
+          this._sortDirection !== undefined
+        ) {
           if (!(this._sortByIndex in colParams)) {
             console.error(
-              "No column in colParams with index sortByIndex: %s",
-              this._sortByIndex);
+              'No column in colParams with index sortByIndex: %s',
+              this._sortByIndex
+            );
             return null;
           }
-          colParams[this._sortByIndex].order = (this._sortDirection === 0
-                                                ? "ORDER_ASC"
-                                                : "ORDER_DESC");
+          colParams[this._sortByIndex].order =
+            this._sortDirection === 0 ? 'ORDER_ASC' : 'ORDER_DESC';
         }
 
         // Paging.
-        const pageNum = parseInputAsPositiveInt("_pageNumberInput");
-        const pageSize = parseInputAsPositiveInt("_pageSizeInput");
+        const pageNum = parseInputAsPositiveInt('_pageNumberInput');
+        const pageSize = parseInputAsPositiveInt('_pageSizeInput');
         if (!queryValid) {
           return null;
         }

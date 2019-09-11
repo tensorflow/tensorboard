@@ -15,34 +15,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-input/paper-textarea.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-progress/paper-progress.html">
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../paper-toast/paper-toast.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-graph/tf-graph.html">
-<link rel="import" href="../tf-graph-loader/tf-graph-loader.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="health-pills.html">
-<link rel="import" href="tf-debugger-continue-dialog.html">
-<link rel="import" href="tf-debugger-initial-dialog.html">
-<link rel="import" href="tf-debugger-resizer.html">
-<link rel="import" href="tf-op-selector.html">
-<link rel="import" href="tf-session-runs-view.html">
-<link rel="import" href="tf-source-code-view.html">
-<link rel="import" href="tf-tensor-data-summary.html">
-<link rel="import" href="tf-tensor-value-multi-view.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-input/paper-textarea.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-progress/paper-progress.html" />
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html" />
+<link rel="import" href="../paper-toast/paper-toast.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
+<link rel="import" href="../tf-graph/tf-graph.html" />
+<link rel="import" href="../tf-graph-loader/tf-graph-loader.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
+<link rel="import" href="../tf-tensorboard/registry.html" />
+<link rel="import" href="health-pills.html" />
+<link rel="import" href="tf-debugger-continue-dialog.html" />
+<link rel="import" href="tf-debugger-initial-dialog.html" />
+<link rel="import" href="tf-debugger-resizer.html" />
+<link rel="import" href="tf-op-selector.html" />
+<link rel="import" href="tf-session-runs-view.html" />
+<link rel="import" href="tf-source-code-view.html" />
+<link rel="import" href="tf-tensor-data-summary.html" />
+<link rel="import" href="tf-tensor-value-multi-view.html" />
 
 <dom-module id="tf-debugger-dashboard">
   <template>
@@ -51,23 +51,31 @@ limitations under the License.
     <!-- TODO(caisq, chihuahua): This shouldn't be a dialog. It should be a prettier
       widget that supports showing both text, curves and images. -->
     <tf-dashboard-layout>
-      <div class="sidebar" id="left-pane">
+      <div class="sidebar" slot="sidebar" id="left-pane">
         <div id="node-entries" class="node-entries">
           <div class="debugger-section-title">Runtime Node List</div>
           <div class="toggle-source-code">
             Show Code:
-            <paper-toggle-button class="toggle-source-code" id="show-source-code">
-            </paper-toggle-button>
+            <paper-toggle-button
+              class="toggle-source-code"
+              id="show-source-code"
+              checked="{{_sourceCodeShown}}"
+            ></paper-toggle-button>
           </div>
           <tf-op-selector
-              debug-watches=[[_debugWatches]]
-              debug-watch-change="[[_createDebugWatchChangeHandler()]]"
-              node-clicked="[[_createNodeClickedHandler()]]"
-              force-expand-and-check-node-name="[[_forceExpandAndCheckNodeName]]"
-              force-expand-node-name="[[_forceExpandNodeName]]">
+            debug-watches="[[_debugWatches]]"
+            debug-watch-change="[[_createDebugWatchChangeHandler()]]"
+            node-clicked="[[_createNodeClickedHandler()]]"
+            force-expand-and-check-node-name="[[_forceExpandAndCheckNodeName]]"
+            force-expand-node-name="[[_forceExpandNodeName]]"
+          >
           </tf-op-selector>
         </div>
-        <div id="source-code-view-div" class="source-code-view-div" hidden$="{{!_sourceCodeShown}}">
+        <div
+          id="source-code-view-div"
+          class="source-code-view-div"
+          hidden$="{{!_sourceCodeShown}}"
+        >
           <div class="debugger-section-title">Source Code</div>
           <tf-source-code-view
             id="sourceCodeView"
@@ -81,7 +89,8 @@ limitations under the License.
         <tf-debugger-resizer
           current-length="{{_leftPaneWidth}}"
           min-length="[[_minleftPaneWidth]]"
-          max-length="[[_maxleftPaneWidth]]">
+          max-length="[[_maxleftPaneWidth]]"
+        >
         </tf-debugger-resizer>
         <div>
           <tf-session-runs-view
@@ -89,68 +98,77 @@ limitations under the License.
             latest-session-run="[[_latestSessionRun]]"
             session-run-key-to-device-names="[[_sessionRunKey2DeviceNames]]"
             sole-active="[[_sessionRunSoleActive]]"
-            node-or-tensor-clicked="[[_createFeedFetchTargetClickedHandler()]]">
+            node-or-tensor-clicked="[[_createFeedFetchTargetClickedHandler()]]"
+          >
           </tf-session-runs-view>
         </div>
         <div class="buttons-container">
           <paper-button raised class="continue-button" on-click="_step">
-              <span>[[_stepButtonText]]</span>
+            <span>[[_stepButtonText]]</span>
           </paper-button>
           <tf-debugger-continue-dialog
             id="continueDialog"
             session-run-go="[[_createSessionRunGo()]]"
             tensor-condition-go="[[_createTensorConditionGo()]]"
-            force-continuation-stop="[[_createForceContinuationStop()]]">
+            force-continuation-stop="[[_createForceContinuationStop()]]"
+          >
           </tf-debugger-continue-dialog>
         </div>
         <div class="container">
-          <tf-graph-loader id="loader"
-              out-graph-hierarchy="{{graphHierarchy}}"
-              out-graph="{{graph}}"
-              out-stats="{{stats}}"
-              progress="{{_graphProgress}}"
+          <tf-graph-loader
+            id="loader"
+            out-graph-hierarchy="{{graphHierarchy}}"
+            out-graph="{{graph}}"
+            out-stats="{{stats}}"
+            progress="{{_graphProgress}}"
           ></tf-graph-loader>
         </div>
       </div>
-      <div class="center" id="center-content">
+      <div class="center" slot="center" id="center-content">
         <div id="top-right-quadrant">
           <paper-tabs selected="0" selected="{{_topRightSelected}}">
             <template is="dom-repeat" items="[[_topRightTabs]]">
               <paper-tab id="[[item.id]]">[[item.name]]</paper-tab>
             </template>
           </paper-tabs>
-          <span id="runtime-graph-device-name">
-          </span>
-          <paper-dropdown-menu
-            id="active-runtime-graph-device-name"
-            no-label-float="true"
-            label="Device name"
-            selected-item-label="{{_activeRuntimeGraphDeviceName}}"
-          >
-            <paper-menu class="dropdown-content" slot="dropdown-content">
-              <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
-                <paper-item no-label-float=true>[[item]]</paper-item>
-              </template>
-            </paper-menu>
-          </paper-dropdown-menu>
-          <paper-spinner-lite
-            class="spinner"
-            id="top-right-spinner"
-            hidden="[[!_busy]]"
-            active="[[_busy]]">
-          </paper-spinner-lite>
-          <paper-progress id="top-right-progress-bar" value="0"></paper-progress>
+          <div class="runtime-graph-device">
+            <span id="runtime-graph-device-name"> </span>
+            <paper-dropdown-menu
+              id="active-runtime-graph-device-name"
+              no-label-float="true"
+              label="Device name"
+              selected-item-label="{{_activeRuntimeGraphDeviceName}}"
+            >
+              <paper-listbox class="dropdown-content" slot="dropdown-content">
+                <template is="dom-repeat" items="[[_activeSessionRunDevices]]">
+                  <paper-item no-label-float="true">[[item]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <paper-spinner-lite
+              class="spinner"
+              id="top-right-spinner"
+              hidden="[[!_busy]]"
+              active="[[_busy]]"
+            >
+            </paper-spinner-lite>
+          </div>
+          <paper-progress
+            id="top-right-progress-bar"
+            value="0"
+          ></paper-progress>
           <template is="dom-if" if="[[_isTopRightRuntimeGraphsActive]]">
             <div id="graph-container">
-              <tf-graph id="graph"
-                  graph-hierarchy="[[graphHierarchy]]"
-                  basic-graph="[[graph]]"
-                  stats="[[stats]]"
-                  progress="{{_graphProgress}}"
-                  color-by="structure"
-                  color-by-params="{{colorByParams}}"
-                  render-hierarchy="{{_renderHierarchy}}"
-                  node-context-menu-items="[[_createNodeContextMenuItems()]]"
+              <tf-graph
+                id="graph"
+                graph-hierarchy="[[graphHierarchy]]"
+                basic-graph="[[graph]]"
+                stats="[[stats]]"
+                progress="{{_graphProgress}}"
+                color-by="structure"
+                color-by-params="{{colorByParams}}"
+                render-hierarchy="{{_renderHierarchy}}"
+                node-context-menu-items="[[_createNodeContextMenuItems()]]"
               ></tf-graph>
               <div class="context-menu"></div>
             </div>
@@ -159,7 +177,8 @@ limitations under the License.
             <tf-tensor-value-multi-view
               id="tensorValueMultiView"
               continue-to-callback="[[_createContinueToCallback()]]"
-              tensor-name-clicked="[[_createNodeClickedHandler()]]">
+              tensor-name-clicked="[[_createNodeClickedHandler()]]"
+            >
             </tf-tensor-value-multi-view>
           </template>
         </div>
@@ -168,7 +187,8 @@ limitations under the License.
           is-horizontal="true"
           current-length="{{_topRightQuadrantHeight}}"
           min-length="[[_minTopRightQuadrantHeight]]"
-          max-length="[[_maxTopRightQuadrantHeight]]">
+          max-length="[[_maxTopRightQuadrantHeight]]"
+        >
         </tf-debugger-resizer>
 
         <div id="tensor-data" class="tensor-data">
@@ -179,7 +199,8 @@ limitations under the License.
             continue-to-callback="[[_createContinueToCallback()]]"
             highlighted-node-name="[[_highlightNodeName]]"
             tensor-name-clicked="[[_createNodeClickedHandler()]]"
-            get-health-pill="[[_createGetHealthPill()]]">
+            get-health-pill="[[_createGetHealthPill()]]"
+          >
           </tf-tensor-data-summary>
         </div>
       </div>
@@ -196,7 +217,7 @@ limitations under the License.
         bottom: 0;
         overflow: hidden;
       }
-      :host paper-toast {
+      paper-toast {
         text-align: center;
         font-size: 110%;
         width: 40vw;
@@ -204,8 +225,8 @@ limitations under the License.
       }
       tf-dashboard-layout {
         --tf-dashboard-layout-sidebar-basis: auto;
-        --tf-dashboard-layout-sidebar-max-width: unset;
-        --tf-dashboard-layout-sidebar-min-width: unset;
+        --tf-dashboard-layout-sidebar-max-width: none;
+        --tf-dashboard-layout-sidebar-min-width: none;
       }
       .debugger-section-title {
         font-size: 110%;
@@ -251,6 +272,11 @@ limitations under the License.
       }
       #x-type-selector paper-button {
         margin: 5px 3px;
+      }
+      .runtime-graph-device {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
       }
       #runtime-graph-device-name {
         font-size: 85%;
@@ -365,16 +391,16 @@ limitations under the License.
         font-size: 80%;
         float: right;
       }
-      /deep/ .context-menu ul {
+      .context-menu ul {
         list-style-type: none;
         margin: 0;
         padding: 0;
         cursor: default;
       }
-      /deep/ .context-menu ul li {
+      .context-menu ul li {
         padding: 4px 16px;
       }
-      /deep/ .context-menu ul li:hover {
+      .context-menu ul li:hover {
         background-color: #f3913e;
         color: white;
       }
@@ -382,7 +408,8 @@ limitations under the License.
       paper-input {
         width: 200px;
       }
-      .inline, paper-item {
+      .inline,
+      paper-item {
         display: inline;
       }
 
@@ -390,25 +417,28 @@ limitations under the License.
         height: 300px;
         position: relative;
       }
+      [hidden] {
+        display: none;
+      }
     </style>
   </template>
   <script src="tensor-shape-helper.js"></script>
   <script>
-    const _COMPUTE_WINDOW_HEIGHT = () => (
-        window.innerHeight ||
-        document.documentElement.clientHeight ||
-        document.body.clientHeight);
-    const _COMPUTE_WINDOW_WIDTH = () => (
-        window.innerWidth ||
-        document.documentElement.clientWidth ||
-        document.body.clientWidth);
-    const _TENSORBOARD_HEADER_HEIGHT = 70
+    const _COMPUTE_WINDOW_HEIGHT = () =>
+      window.innerHeight ||
+      document.documentElement.clientHeight ||
+      document.body.clientHeight;
+    const _COMPUTE_WINDOW_WIDTH = () =>
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      document.body.clientWidth;
+    const _TENSORBOARD_HEADER_HEIGHT = 70;
     const _DEFAULT_LEFT_PANE_WIDTH = 450;
     const _MAIN_CONTENT_LEFT_PADDING = 8;
     const _MIN_TOP_RIGHT_QUADRANT_HEIGHT = 200;
     // Default to about half the available height.
-    const _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT = (
-        _COMPUTE_WINDOW_HEIGHT() - _TENSORBOARD_HEADER_HEIGHT) / 2;
+    const _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT =
+      (_COMPUTE_WINDOW_HEIGHT() - _TENSORBOARD_HEADER_HEIGHT) / 2;
 
     Polymer({
       is: 'tf-debugger-dashboard',
@@ -431,26 +461,26 @@ limitations under the License.
         },
         _topRightSelected: {
           type: String,
-          value: "0",
+          value: '0',
           observer: '_topRightSelectedChanged',
         },
 
         _longPollCount: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
         },
         _stepButtonText: {
-            type: String,
-            value: 'Step',
+          type: String,
+          value: 'Step',
         },
         _continueButtonText: {
-            type: String,
-            value: 'Continue...',
+          type: String,
+          value: 'Continue...',
         },
 
         _tensorViewIdCounter: {
-            type: Number,
-            value: 0,
+          type: Number,
+          value: 0,
         },
 
         isReloadDisabled: {
@@ -481,7 +511,8 @@ limitations under the License.
           type: Object,
           value: {},
         },
-        _activeSessionRunKey: {   // TODO(cais): Maybe deduplicate with below.
+        _activeSessionRunKey: {
+          // TODO(cais): Maybe deduplicate with below.
           type: String,
           value: null,
         },
@@ -547,6 +578,7 @@ limitations under the License.
         _sourceCodeShown: {
           type: Boolean,
           value: false,
+          observer: '_showSourceCodeChanged',
         },
 
         _graphProgress: {
@@ -565,8 +597,9 @@ limitations under the License.
 
         _leftPaneWidth: {
           type: Number,
-          value: tf_storage.getNumberInitializer(
-              '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
+          value: tf_storage.getNumberInitializer('_leftPaneWidth', {
+            defaultValue: _DEFAULT_LEFT_PANE_WIDTH,
+          }),
           observer: '_leftPaneWidthObserver',
         },
 
@@ -578,7 +611,8 @@ limitations under the License.
 
         _maxleftPaneWidth: {
           type: Number,
-          computed: '_computeMaxleftPaneWidth(_windowWidth, _maxMainContentWidth, _resizerWidth)',
+          computed:
+            '_computeMaxleftPaneWidth(_windowWidth, _maxMainContentWidth, _resizerWidth)',
         },
 
         _maxMainContentWidth: {
@@ -589,9 +623,9 @@ limitations under the License.
 
         _topRightQuadrantHeight: {
           type: Number,
-          value: tf_storage.getNumberInitializer(
-              '_topRightQuadrantHeight',
-              {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}),
+          value: tf_storage.getNumberInitializer('_topRightQuadrantHeight', {
+            defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT,
+          }),
           observer: '_topRightQuadrantHeightObserver',
         },
 
@@ -603,7 +637,8 @@ limitations under the License.
 
         _maxTopRightQuadrantHeight: {
           type: Number,
-          computed: '_computeMaxTopRightQuadrantHeight(_windowHeight, _resizerWidth)',
+          computed:
+            '_computeMaxTopRightQuadrantHeight(_windowHeight, _resizerWidth)',
         },
 
         _resizerWidth: {
@@ -637,32 +672,33 @@ limitations under the License.
       },
 
       observers: [
-        "_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)",
-        "_sizeDashboardRegions(_leftPaneWidth, _topRightQuadrantHeight, _windowWidth)",
-        "_graphProgressUpdated(_graphProgress)",
+        '_onActiveRuntimeGraphDeviceNameChange(_activeRuntimeGraphDeviceName)',
+        '_sizeDashboardRegions(_leftPaneWidth, _topRightQuadrantHeight, _windowWidth)',
+        '_graphProgressUpdated(_graphProgress)',
       ],
-      listeners: {
-        'show-source-code.change': '_showSourceCodeChanged',
-      },
 
       ready() {
         this._handleWindowResize();
-        window.addEventListener('resize', () => {
-          this._handleWindowResize();
-        }, false);
+        window.addEventListener(
+          'resize',
+          () => {
+            this._handleWindowResize();
+          },
+          false
+        );
 
         this.reload();
       },
 
       long_poll() {
         const parameters = {
-          'pos': ++this._longPollCount,
+          pos: ++this._longPollCount,
         };
         let path = tf_backend.getRouter().pluginRoute('debugger', '/comm');
         path = tf_backend.addParams(path, parameters);
         // Uncomment the following line for debugging.
         // console.log('Sending long-polling request to: ', path);
-        this._requestManager.request(path).then(response => {
+        this._requestManager.request(path).then((response) => {
           const responseType = response['type'];
           const responseData = response['data'];
           if (responseType === 'meta') {
@@ -673,21 +709,28 @@ limitations under the License.
             const previousRunKey = this._activeSessionRunKey;
             this.set('_activeSessionRunKey', runKey);
             this.set('_latestSessionRun', {
-              'feeds': feedNames,
-              'fetches': fetchNames,
-              'targets': targetNames,
+              feeds: feedNames,
+              fetches: fetchNames,
+              targets: targetNames,
             });
             this.set('_sessionRunSoleActive', true);
             if (this._sessionRunKey2DeviceNames[runKey] === undefined) {
               this._sessionRunKey2DeviceNames[runKey] = [];
               this.set('_activeSessionRunDevices', []);
             } else {
-              this.set('_activeSessionRunDevices',
-                       this._sessionRunKey2DeviceNames[runKey]);
+              this.set(
+                '_activeSessionRunDevices',
+                this._sessionRunKey2DeviceNames[runKey]
+              );
             }
 
-            const runInfo = 'Feeds: ' + feedNames + '; Fetches: ' +
-                fetchNames + '; Targets: ' + targetNames;
+            const runInfo =
+              'Feeds: ' +
+              feedNames +
+              '; Fetches: ' +
+              fetchNames +
+              '; Targets: ' +
+              targetNames;
             this._currentSessionRunInfo = runInfo;
             if (this._sessionRunCounters.hasOwnProperty(runInfo)) {
               this._sessionRunCounters[runInfo] += 1;
@@ -700,7 +743,7 @@ limitations under the License.
             // Do not refresh node list if we are in continue model and the
             // the Sesssion.run key hasn't changed.
             const toProcessNewSessionRun =
-                !this._continueToType || !_.isEqual(previousRunKey, runKey);
+              !this._continueToType || !_.isEqual(previousRunKey, runKey);
             if (toProcessNewSessionRun) {
               this._processGatedGrpcDebugOps(runKey, false);
               this._announceNewSessionRun();
@@ -708,8 +751,8 @@ limitations under the License.
           } else if (responseType === 'tensor') {
             const deviceName = responseData['device_name'];
             const nodeName = responseData['node_name'];
-            const maybeBaseExpandedNodeName = responseData[
-                'maybe_base_expanded_node_name'];
+            const maybeBaseExpandedNodeName =
+              responseData['maybe_base_expanded_node_name'];
 
             if (this._activeRuntimeGraphDeviceName != deviceName) {
               // The logic here is a workaround. When the device name needs to
@@ -724,8 +767,10 @@ limitations under the License.
                 // in continue mode.
                 if (this._isTopRightRuntimeGraphsActive) {
                   this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
-                  this.set('_forceExpandNodeName',
-                           deviceName + '/' + maybeBaseExpandedNodeName);
+                  this.set(
+                    '_forceExpandNodeName',
+                    deviceName + '/' + maybeBaseExpandedNodeName
+                  );
                 }
               }
             }
@@ -744,11 +789,12 @@ limitations under the License.
             });
 
             this._maybeUpdateTensorValueViews(
-                tensorName, responseData['debug_op']);
+              tensorName,
+              responseData['debug_op']
+            );
             this.set('_busy', false);
           } else {
-            console.error(
-                'Invalid long-polling response type: ', responseType);
+            console.error('Invalid long-polling response type: ', responseType);
           }
 
           if (this._continueToType != null) {
@@ -777,7 +823,10 @@ limitations under the License.
             // to true.
           } else if (this._continueToType === 'op') {
             this._processContinueToOp(responseType === 'meta', responseData);
-          } else if (this._continueToType != null && this._continueToType !== '') {
+          } else if (
+            this._continueToType != null &&
+            this._continueToType !== ''
+          ) {
             console.error('Invalid _continueToType:', this._continueToType);
           }
         }
@@ -785,7 +834,7 @@ limitations under the License.
 
       _processContinueToSessionRun(isSessionRunBeginning) {
         if (isSessionRunBeginning) {
-          this.set('_continueToCounter',  this._continueToCounter + 1);
+          this.set('_continueToCounter', this._continueToCounter + 1);
         }
         if (this._continueToCounter < this._continueToCounterTarget) {
           this._step();
@@ -802,12 +851,19 @@ limitations under the License.
           this._announceNewSessionRun();
         }
         const deviceName = responseData['device_name'];
-        const maybeBaseExpandedNodeName = responseData['maybe_base_expanded_node_name'];
+        const maybeBaseExpandedNodeName =
+          responseData['maybe_base_expanded_node_name'];
         const notBaseExpandedNodeName =
-            maybeBaseExpandedNodeName == null ? null :
-            tf_debugger_dashboard.removeNodeNameBaseExpansion(maybeBaseExpandedNodeName);
-        if (deviceName + '/' + maybeBaseExpandedNodeName === this._continueToTarget ||
-            deviceName + '/' + notBaseExpandedNodeName === this._continueToTarget) {
+          maybeBaseExpandedNodeName == null
+            ? null
+            : tf_debugger_dashboard.removeNodeNameBaseExpansion(
+                maybeBaseExpandedNodeName
+              );
+        if (
+          deviceName + '/' + maybeBaseExpandedNodeName ===
+            this._continueToTarget ||
+          deviceName + '/' + notBaseExpandedNodeName === this._continueToTarget
+        ) {
           this._clearContinueTo();
           if (this._sourceCodeShown) {
             this.set('_sourceFocusNodeName', notBaseExpandedNodeName);
@@ -823,11 +879,13 @@ limitations under the License.
           return;
         }
         let anyTensorMatch = false;
-        _.forEach(multiView.getViews(), valueView => {
-          if (valueView.tensorName === tensorName &&
-              valueView.debugOp === debugOp) {
+        _.forEach(multiView.getViews(), (valueView) => {
+          if (
+            valueView.tensorName === tensorName &&
+            valueView.debugOp === debugOp
+          ) {
             anyTensorMatch = true;
-            return false;  // lodash break.
+            return false; // lodash break.
           }
         });
         if (anyTensorMatch) {
@@ -841,22 +899,23 @@ limitations under the License.
         }
 
         this.set('alreadyStarted', true);
-        const url = tf_backend.getRouter().pluginRoute(
-            'debugger', '/debugger_grpc_host_port');
-        this._requestManager.request(url).then(response => {
-          // TODO(cais): If the TDP backend is not activated, display message
+        const url = tf_backend
+          .getRouter()
+          .pluginRoute('debugger', '/debugger_grpc_host_port');
+        this._requestManager.request(url).then((response) => {
+          // TODO(cais): If the Debugger Plugin backend is not activated, display message
           // informing the user of that.
-          this.$.initialDialog.openDialog(response.host, response.port);
-        }).catch(error => {
-          this.$.initialDialog.openDisabledDialog();
-        }).then(() => {
-          // Initiate long-polling.
-          this.long_poll();
+          if (response.port > 0) {
+            this.$.initialDialog.openDialog(response.host, response.port);
+            // Initiate long-polling.
+            this.long_poll();
+          } else {
+            this.$.initialDialog.openDisabledDialog();
+          }
         });
       },
 
       _showSourceCodeChanged(event) {
-        this.set('_sourceCodeShown', event.target.active);
         if (this._sourceCodeShown) {
           this.$$('#node-entries').style.height = '40%';
           this.$.sourceCodeView.render();
@@ -865,27 +924,31 @@ limitations under the License.
         }
       },
 
-      _showToast(text) {  // TODO(cais): Move to Scrolling Message View.
+      _showToast(text) {
+        // TODO(cais): Move to Scrolling Message View.
         this.$.toast.setAttribute('text', text);
         this.$.toast.open();
       },
       _announceNewSessionRun() {
         this._showToast(
-            'Session.run() #' + this._sessionRunTotalCounter + ' is starting.');
+          'Session.run() #' + this._sessionRunTotalCounter + ' is starting.'
+        );
       },
 
       _displayGraph(runKey, deviceName) {
         const parameters = {
-          'run_key': JSON.stringify(runKey),
-          'device_name': deviceName,
+          run_key: JSON.stringify(runKey),
+          device_name: deviceName,
         };
         const baseUrl = '/data/plugin/debugger/debugger_graph';
         const url = tf_backend.addParams(baseUrl, parameters);
-        this.$.loader.datasets = [{
-          "name": "/debugger_graph",
-          "path": url,
-        }];
-        this.$.loader.set("selectedDataset", 0);
+        this.$.loader.datasets = [
+          {
+            name: '/debugger_graph',
+            path: url,
+          },
+        ];
+        this.$.loader.set('selectedDataset', 0);
       },
 
       _processGatedGrpcDebugOps(runKey, pollingForFirstGraph) {
@@ -896,13 +959,15 @@ limitations under the License.
         }
 
         const parameters = {
-          'mode': 'retrieve_all',
-          'run_key': JSON.stringify(runKey),
+          mode: 'retrieve_all',
+          run_key: JSON.stringify(runKey),
         };
-        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const baseUrl = tf_backend
+          .getRouter()
+          .pluginRoute('debugger', '/gated_grpc');
         const url = tf_backend.addParams(baseUrl, parameters);
         let debugWatches = [];
-        this._requestManager.request(url).then(response => {
+        this._requestManager.request(url).then((response) => {
           if (response['device_names'].length == 0) {
             if (!pollingForFirstGraph) {
               // Not even a single device / runtime GraphDef has been received
@@ -921,24 +986,33 @@ limitations under the License.
           let lastDeviceName = null;
           for (const deviceName in response['gated_grpc_tensors']) {
             if (response['gated_grpc_tensors'].hasOwnProperty(deviceName)) {
-              if (this._sessionRunKey2DeviceNames[runKey].indexOf(deviceName) === -1) {
+              if (
+                this._sessionRunKey2DeviceNames[runKey].indexOf(deviceName) ===
+                -1
+              ) {
                 this._sessionRunKey2DeviceNames[runKey].push(deviceName);
                 this.$.sessionRunsView.updateNumDevices(
-                    this._sessionRunKey2DeviceNames[runKey].length);
+                  this._sessionRunKey2DeviceNames[runKey].length
+                );
               }
-              this.set('_activeSessionRunDevices',
-                       this._sessionRunKey2DeviceNames[runKey].slice());
-              lastDeviceName =
-                  this._activeSessionRunDevices[this._activeSessionRunDevices.length - 1];
+              this.set(
+                '_activeSessionRunDevices',
+                this._sessionRunKey2DeviceNames[runKey].slice()
+              );
+              lastDeviceName = this._activeSessionRunDevices[
+                this._activeSessionRunDevices.length - 1
+              ];
 
-              const gatedGrpcTensors = response['gated_grpc_tensors'][deviceName];
+              const gatedGrpcTensors =
+                response['gated_grpc_tensors'][deviceName];
               for (let i = 0; i < gatedGrpcTensors.length; ++i) {
-                debugWatches.push(
-                    {'device_name': deviceName,
-                     'node_name': gatedGrpcTensors[i][0],
-                     'op_type': gatedGrpcTensors[i][1],
-                     'output_slot': gatedGrpcTensors[i][2],
-                     'debug_op': gatedGrpcTensors[i][3]});
+                debugWatches.push({
+                  device_name: deviceName,
+                  node_name: gatedGrpcTensors[i][0],
+                  op_type: gatedGrpcTensors[i][1],
+                  output_slot: gatedGrpcTensors[i][2],
+                  debug_op: gatedGrpcTensors[i][3],
+                });
               }
             }
           }
@@ -946,7 +1020,9 @@ limitations under the License.
           if (lastDeviceName != null) {
             this.set('_activeRuntimeGraphDeviceName', lastDeviceName);
             // TODO(cais): Make automatic updating of the selected device name work?
-            const dropdownMenu = Polymer.dom(this.$$('#active-runtime-graph-device-name'));
+            const dropdownMenu = Polymer.dom(
+              this.$$('#active-runtime-graph-device-name')
+            );
             if (dropdownMenu != null) {
               dropdownMenu.setAttribute('selected', lastDeviceName);
             }
@@ -955,7 +1031,7 @@ limitations under the License.
           // Sort the debug watches and maybe base-expand the leaf nodes.
           tf_debugger_dashboard.sortAndBaseExpandDebugWatches(debugWatches);
           this.set('_debugWatches', debugWatches);
-          this.$.sourceCodeView.render(debugWatches);  // TODO(cais): Is debugWatches necessary?
+          this.$.sourceCodeView.render(debugWatches); // TODO(cais): Is debugWatches necessary?
         });
       },
       _createDebugWatchChangeHandler() {
@@ -963,18 +1039,24 @@ limitations under the License.
         // directly passed to the property binding. This is because the handler
         // references other properties of this component, and so the execution
         // context of the function (this) must be bound to the dashboard.
-        return ((debugObject, checked) => {
+        return (debugObject, checked) => {
           const state = checked ? 'break' : 'disable';
           // TODO(cais): Investigate why this is fired twice sometimes.
           this._requestBreakpointStateChange(
-              tf_debugger_dashboard.getCleanNodeName(
-                  debugObject.device_name + '/' + debugObject.node_name),
-              debugObject.output_slot, debugObject.debug_op, state);
-        });
+            tf_debugger_dashboard.getCleanNodeName(
+              debugObject.device_name + '/' + debugObject.node_name
+            ),
+            debugObject.output_slot,
+            debugObject.debug_op,
+            state
+          );
+        };
       },
       _focusOnGraphNode(deviceName, nodeName) {
-        if (deviceName != null &&
-            this._activeRuntimeGraphDeviceName !== deviceName) {
+        if (
+          deviceName != null &&
+          this._activeRuntimeGraphDeviceName !== deviceName
+        ) {
           this.set('_activeRuntimeGraphDeviceName', deviceName);
         }
         this._setTopRightRuntimeGraphsToActive();
@@ -998,8 +1080,9 @@ limitations under the License.
             // To deal with case 1, we use the non-expanded node name.
             // To deal with case 2, we check whether `nodeMap[nodeName]` equal
             // `null` again before setting `selectedNode` below.
-            nodeName =
-                tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName);
+            nodeName = tf_debugger_dashboard.removeNodeNameBaseExpansion(
+              nodeName
+            );
           }
           if (nodeMap[nodeName] != null) {
             graph.set('selectedNode', nodeName);
@@ -1008,7 +1091,7 @@ limitations under the License.
         this.set('_highlightNodeName', deviceName + '/' + nodeName);
       },
       _createNodeClickedHandler() {
-        return((deviceName, nodeName, skipSource) => {
+        return (deviceName, nodeName, skipSource) => {
           // Args:
           //   deviceName: Name of the device.
           //   nodeName: Base-expanded node name.
@@ -1016,35 +1099,44 @@ limitations under the License.
           if (this._sourceCodeShown && skipSource !== true) {
             // If the source view is active, highlight the source lines.
             this.set(
-                '_sourceFocusNodeName',
-                tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+              '_sourceFocusNodeName',
+              tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName)
+            );
           }
           this._focusOnGraphNode(deviceName, nodeName);
           this.set('_forceExpandNodeName', deviceName + '/' + nodeName);
-        });
+        };
       },
       _createFeedFetchTargetClickedHandler() {
-        return((graphElementName) => {
+        return (graphElementName) => {
           let nodeName = graphElementName;
           // If it is a tensor name, get the node name.
           if (nodeName.indexOf(':') !== -1) {
             nodeName = nodeName.slice(0, nodeName.indexOf(':'));
           }
           // Find the debug watch that matches the clicked node.
-          const matchingDebugWatch = _.find(this._debugWatches, debugWatch => {
-            // Take into account the possibility of base-expanded node names.
-            return (debugWatch.node_name === nodeName ||
-                debugWatch.node_name.indexOf(nodeName) === 0 &&
-                debugWatch.node_name[nodeName.length] === '(');
-          });
+          const matchingDebugWatch = _.find(
+            this._debugWatches,
+            (debugWatch) => {
+              // Take into account the possibility of base-expanded node names.
+              return (
+                debugWatch.node_name === nodeName ||
+                (debugWatch.node_name.indexOf(nodeName) === 0 &&
+                  debugWatch.node_name[nodeName.length] === '(')
+              );
+            }
+          );
           if (matchingDebugWatch == null) {
             this._showToast(
-              'Node \'' + nodeName + '\' is not in the runtime graph of the ' +
-              'current Session.run or does not have a debug op attached.');
+              "Node '" +
+                nodeName +
+                "' is not in the runtime graph of the " +
+                'current Session.run or does not have a debug op attached.'
+            );
           } else {
             this._focusOnGraphNode(matchingDebugWatch.device_name, nodeName);
           }
-        });
+        };
       },
 
       _createTensorDataExpandHandler() {
@@ -1052,7 +1144,7 @@ limitations under the License.
           this._setTopRightTensorValuesToActive();
           // Use setTimeout() so that the DOMs in the top-right tabs have a
           // chance to update.
-          setTimeout(() =>  {
+          setTimeout(() => {
             const multiView = this.$$('#tensorValueMultiView');
             multiView.addView({
               viewId: this._createTensorViewId(),
@@ -1061,7 +1153,11 @@ limitations under the License.
               nodeName: tensorData.nodeName,
               maybeBaseExpandedNodeName: tensorData.maybeBaseExpandedNodeName,
               debugOp: tensorData.debugOp,
-              slicing: tf_debugger_dashboard.getDefaultSlicing(tensorData.shape),
+              dtype: tensorData.dtype,
+              shape: tensorData.shape,
+              slicing: tf_debugger_dashboard.getDefaultSlicing(
+                tensorData.shape
+              ),
               timeIndices: '-1',
             });
           }, 10);
@@ -1069,7 +1165,7 @@ limitations under the License.
       },
 
       _createTensorViewId() {
-        const id = "debugger-tensor-view-" + this._tensorViewIdCounter;
+        const id = 'debugger-tensor-view-' + this._tensorViewIdCounter;
         this._tensorViewIdCounter++;
         return id;
       },
@@ -1083,16 +1179,18 @@ limitations under the License.
               return 'Expand and highlight';
             },
             action: (elem, d, i) => {
-              const nodeName =
-                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
+              const nodeName = tf_debugger_dashboard.getCleanNodeName(
+                elem.node.name
+              );
               const nodeNameWithDevice =
-                  this._activeRuntimeGraphDeviceName + '/' + elem.node.name;
+                this._activeRuntimeGraphDeviceName + '/' + elem.node.name;
               this.set('_forceExpandNodeName', nodeNameWithDevice);
               this.set('_highlightNodeName', nodeNameWithDevice);
               if (this._sourceCodeShown) {
                 this.set(
-                    '_sourceFocusNodeName',
-                    tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+                  '_sourceFocusNodeName',
+                  tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName)
+                );
               }
             },
           },
@@ -1101,14 +1199,18 @@ limitations under the License.
               return 'Add breakpoint';
             },
             action: (elem, d, i) => {
-              const nodeName =
-                  tf_debugger_dashboard.getCleanNodeName(elem.node.name);
-              this.set('_forceExpandAndCheckNodeName',
-                       this._activeRuntimeGraphDeviceName + '/' + elem.node.name);
+              const nodeName = tf_debugger_dashboard.getCleanNodeName(
+                elem.node.name
+              );
+              this.set(
+                '_forceExpandAndCheckNodeName',
+                this._activeRuntimeGraphDeviceName + '/' + elem.node.name
+              );
               if (this._sourceCodeShown) {
                 this.set(
-                    '_sourceFocusNodeName',
-                    tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName));
+                  '_sourceFocusNodeName',
+                  tf_debugger_dashboard.removeNodeNameBaseExpansion(nodeName)
+                );
               }
             },
           },
@@ -1119,13 +1221,20 @@ limitations under the License.
             action: (elem, d, i) => {
               if (['_Arg', '_Retval'].indexOf(elem.node.op) !== -1) {
                 this._showToast(
-                    'Cannot continue to node "' + elem.node.name +
-                    '", due to op type "' + elem.node.op + '".');
+                  'Cannot continue to node "' +
+                    elem.node.name +
+                    '", due to op type "' +
+                    elem.node.op +
+                    '".'
+                );
                 return;
               }
-              this._continueToNode(this._activeRuntimeGraphDeviceName, elem.node.name);
+              this._continueToNode(
+                this._activeRuntimeGraphDeviceName,
+                elem.node.name
+              );
             },
-          }
+          },
         ];
       },
 
@@ -1133,17 +1242,23 @@ limitations under the License.
       _createGetHealthPill() {
         return (watchKey, deviceName, maybeBaseExpandedNodeName, callback) => {
           const parameters = {
-            'watch_key': watchKey,
-            'time_indices': '-1',   // '-1' means the latest time point.
-            'mapping': 'health-pill',
+            watch_key: watchKey,
+            time_indices: '-1', // '-1' means the latest time point.
+            mapping: 'health-pill',
           };
-          const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/tensor_data');
+          const baseUrl = tf_backend
+            .getRouter()
+            .pluginRoute('debugger', '/tensor_data');
           const url = tf_backend.addParams(baseUrl, parameters);
-          this._requestManager.request(url).then(response => {
+          this._requestManager.request(url).then((response) => {
             const healthPill = response.tensor_data[0];
             callback(healthPill);
             this._conditionalHealthPillStop(
-                watchKey, deviceName, maybeBaseExpandedNodeName, healthPill);
+              watchKey,
+              deviceName,
+              maybeBaseExpandedNodeName,
+              healthPill
+            );
           });
         };
       },
@@ -1151,23 +1266,32 @@ limitations under the License.
       // Under 'TensorCondition' continuation type, check health pills and stop
       // when they meet the given condition.
       _conditionalHealthPillStop(
-          watchKey, deviceName, maybeBaseExpandedNodeName, healthPill) {
+        watchKey,
+        deviceName,
+        maybeBaseExpandedNodeName,
+        healthPill
+      ) {
         if (this._continueToType !== 'TensorCondition') {
           return;
         }
-        if (tf_debugger_dashboard.checkHealthPillAgainstTensorConditionKey(
-                this._continueToTarget, healthPill,
-                this._continueToCounterTarget)) {
+        if (
+          tf_debugger_dashboard.checkHealthPillAgainstTensorConditionKey(
+            this._continueToTarget,
+            healthPill,
+            this._continueToCounterTarget
+          )
+        ) {
           this.set('_continueStop', true);
-          const nodeName =
-              tf_debugger_dashboard.removeNodeNameBaseExpansion(maybeBaseExpandedNodeName);
+          const nodeName = tf_debugger_dashboard.removeNodeNameBaseExpansion(
+            maybeBaseExpandedNodeName
+          );
           if (this._sourceCodeShown) {
             // If the source view is active, highlight the source lines.
             this.set('_sourceFocusNodeName', nodeName);
           }
           this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
           const nodeNameWithDeviceName =
-              deviceName + '/' + maybeBaseExpandedNodeName;
+            deviceName + '/' + maybeBaseExpandedNodeName;
           this.set('_forceExpandNodeName', nodeNameWithDeviceName);
           // Wait a little for any concurrent ongoing row rendering in the
           // Tensor Value Overview table to settle before focusing on the
@@ -1176,21 +1300,34 @@ limitations under the License.
             this.set('_highlightNodeName', null);
             this.set('_highlightNodeName', nodeNameWithDeviceName);
           }, 100);
-          this._showToast('Tensor condition "' + this._continueToTarget +
-                          '" is met by watch key: "' + watchKey + '".\n' +
-                          'Stopping continuation.');
+          this._showToast(
+            'Tensor condition "' +
+              this._continueToTarget +
+              '" is met by watch key: "' +
+              watchKey +
+              '".\n' +
+              'Stopping continuation.'
+          );
         }
       },
 
       _continueToNode(deviceName, baseExpandedNodeName) {
-        const cleanNodeName = tf_debugger_dashboard.getCleanNodeName(baseExpandedNodeName);
+        const cleanNodeName = tf_debugger_dashboard.getCleanNodeName(
+          baseExpandedNodeName
+        );
         const nodeNameWithDevice = deviceName + '/' + baseExpandedNodeName;
-        this._requestBreakpointStateChange(cleanNodeName, 0, 'DebugIdentity', 'break');
+        this._requestBreakpointStateChange(
+          cleanNodeName,
+          0,
+          'DebugIdentity',
+          'break'
+        );
         this.set('_forceExpandAndCheckNodeName', nodeNameWithDevice);
         if (this._sourceCodeShown) {
           this.set(
-              '_sourceFocusNodeName',
-              tf_debugger_dashboard.removeNodeNameBaseExpansion(cleanNodeName));
+            '_sourceFocusNodeName',
+            tf_debugger_dashboard.removeNodeNameBaseExpansion(cleanNodeName)
+          );
         }
         this._setContinueTo('op', nodeNameWithDevice);
         this.$.continueDialog.updateContinueButtonText(true);
@@ -1204,14 +1341,19 @@ limitations under the License.
       },
 
       _onActiveRuntimeGraphDeviceNameChange(deviceName) {
-        const deviceNameElement = Polymer.dom(this.$$('#runtime-graph-device-name'));
+        const deviceNameElement = Polymer.dom(
+          this.$$('#runtime-graph-device-name')
+        );
         if (this._activeSessionRunDevices.length > 0) {
           let deviceGraphLabel = deviceName;
           deviceGraphLabel +=
-               ' (device ' + (this._activeSessionRunDevices.indexOf(deviceName) + 1) +
-               ' of ' + this._activeSessionRunDevices.length + ')';
+            ' (device ' +
+            (this._activeSessionRunDevices.indexOf(deviceName) + 1) +
+            ' of ' +
+            this._activeSessionRunDevices.length +
+            ')';
           if (this._isTopRightRuntimeGraphsActive) {
-            if (deviceNameElement != null ) {
+            if (deviceNameElement != null) {
               deviceNameElement.textContent = deviceGraphLabel;
             }
           }
@@ -1237,13 +1379,15 @@ limitations under the License.
         // First, check to see if any new device GraphDef(s) have arrived and if
         // so, retrieve them.
         const parameters = {
-          'mode': 'retrieve_device_names',
-          'run_key': JSON.stringify(this._activeSessionRunKey),
+          mode: 'retrieve_device_names',
+          run_key: JSON.stringify(this._activeSessionRunKey),
         };
-        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const baseUrl = tf_backend
+          .getRouter()
+          .pluginRoute('debugger', '/gated_grpc');
         const url = tf_backend.addParams(baseUrl, parameters);
         let debugWatches = [];
-        this._requestManager.request(url).then(response => {
+        this._requestManager.request(url).then((response) => {
           let anyNewDevices = false;
           for (let i = 0; i < response['device_names'].length; ++i) {
             const deviceName = response['device_names'][i];
@@ -1253,7 +1397,7 @@ limitations under the License.
             }
           }
           const url = tf_backend.getRouter().pluginRoute('debugger', '/ack');
-          this._requestManager.request(url).then(response => {
+          this._requestManager.request(url).then((response) => {
             if (anyNewDevices) {
               // If there are new device(s), display them in the graph
               // visualizer and the node list, to allow user to select
@@ -1269,7 +1413,10 @@ limitations under the License.
       _createSessionRunGo() {
         return (continueNum) => {
           this._setContinueTo(
-              'SessionRun', this._currentSessionRunInfo, continueNum);
+            'SessionRun',
+            this._currentSessionRunInfo,
+            continueNum
+          );
           this._step();
         };
       },
@@ -1289,8 +1436,10 @@ limitations under the License.
       _createForceContinuationStop() {
         return () => {
           this._showToast(
-              'Continuation of type "' + this._continueToType +
-              '" was interrupted by user.');
+            'Continuation of type "' +
+              this._continueToType +
+              '" was interrupted by user.'
+          );
           this.set('_continueStop', true);
         };
       },
@@ -1319,23 +1468,30 @@ limitations under the License.
 
       _createContinueToCallback() {
         return (deviceName, maybeBaseExpandedNodeName) => {
-          const nodeNameWithDevice = deviceName + '/' + maybeBaseExpandedNodeName;
+          const nodeNameWithDevice =
+            deviceName + '/' + maybeBaseExpandedNodeName;
           this._setContinueTo('op', nodeNameWithDevice);
           this._step();
           if (this._isTopRightRuntimeGraphsActive) {
             this._focusOnGraphNode(deviceName, maybeBaseExpandedNodeName);
           }
-          this.set('_forceExpandNodeName',
-                   deviceName + '/' + maybeBaseExpandedNodeName);
+          this.set(
+            '_forceExpandNodeName',
+            deviceName + '/' + maybeBaseExpandedNodeName
+          );
         };
       },
 
       _topRightSelectedChanged(topRightSelected) {
         const selectedId = this._topRightTabs[topRightSelected].id;
-        this.set('_isTopRightRuntimeGraphsActive',
-                 selectedId === 'tab-runtime-graphs');
-        this.set('_isTopRightTensorValuesActive',
-                 selectedId === 'tab-tensor-values');
+        this.set(
+          '_isTopRightRuntimeGraphsActive',
+          selectedId === 'tab-runtime-graphs'
+        );
+        this.set(
+          '_isTopRightTensorValuesActive',
+          selectedId === 'tab-tensor-values'
+        );
       },
       _setTopRightRuntimeGraphsToActive() {
         this.set('_topRightSelected', '0');
@@ -1360,16 +1516,18 @@ limitations under the License.
         // TODO(cais): Add deviceName to args, to handle cases in which there are
         // duplicate node names across devices (rare).
         const parameters = {
-          'mode': 'set_state',
-          'node_name': nodeName,
-          'output_slot': outputSlot,
-          'debug_op': debugOp,
-          'state': newState,
+          mode: 'set_state',
+          node_name: nodeName,
+          output_slot: outputSlot,
+          debug_op: debugOp,
+          state: newState,
         };
-        const baseUrl = tf_backend.getRouter().pluginRoute('debugger', '/gated_grpc');
+        const baseUrl = tf_backend
+          .getRouter()
+          .pluginRoute('debugger', '/gated_grpc');
         const url = tf_backend.addParams(baseUrl, parameters);
         this.set('_busy', true);
-        this._requestManager.request(url).then(response => {
+        this._requestManager.request(url).then((response) => {
           this.set('_busy', false);
           console.log('Breakpoint set_state response: ', response);
         });
@@ -1392,9 +1550,10 @@ limitations under the License.
         this.set('_windowHeight', _COMPUTE_WINDOW_HEIGHT());
 
         this._sizeDashboardRegions(
-            this._leftPaneWidth,
-            this._topRightQuadrantHeight,
-            this._windowWidth);
+          this._leftPaneWidth,
+          this._topRightQuadrantHeight,
+          this._windowWidth
+        );
       },
       _computeMaxleftPaneWidth(windowWidth, maxMainContentWidth, resizerWidth) {
         // Do not let the main content exceed this width when the user
@@ -1408,31 +1567,28 @@ limitations under the License.
         return windowHeight - resizerWidth - _TENSORBOARD_HEADER_HEIGHT;
       },
       _sizeDashboardRegions(
-          leftPaneWidth, topRightQuadrantHeight, windowWidth) {
+        leftPaneWidth,
+        topRightQuadrantHeight,
+        windowWidth
+      ) {
         this.$$('#left-pane').style.width = leftPaneWidth + 'px';
-        const contentWidth = windowWidth -
-            leftPaneWidth -
-            this._resizerWidth -
-            _MAIN_CONTENT_LEFT_PADDING;
+        const contentWidth =
+          windowWidth -
+          leftPaneWidth -
+          this._resizerWidth -
+          _MAIN_CONTENT_LEFT_PADDING;
         this.$$('#center-content').style.width = contentWidth + 'px';
         const height = topRightQuadrantHeight - this._resizerWidth;
         this.$$('#top-right-quadrant').style.height = height + 'px';
         this.$$('#tensor-data').style.top = topRightQuadrantHeight + 'px';
       },
-      _leftPaneWidthObserver: tf_storage.getNumberObserver(
-          '_leftPaneWidth', {defaultValue: _DEFAULT_LEFT_PANE_WIDTH}),
+      _leftPaneWidthObserver: tf_storage.getNumberObserver('_leftPaneWidth', {
+        defaultValue: _DEFAULT_LEFT_PANE_WIDTH,
+      }),
       _topRightQuadrantHeightObserver: tf_storage.getNumberObserver(
-          '_topRightQuadrantHeight',
-          {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}),
+        '_topRightQuadrantHeight',
+        {defaultValue: _DEFAULT_TOP_RIGHT_QUADRANT_HEIGHT}
+      ),
     });
-
-    // TODO(#2338): Remove this, and set up the "no debugger enabled"
-    // message properly. Keep this in sync with `frontend_metadata` in
-    // both `debugger_plugin.py` and `interactive_debugger_plugin.py`.
-    tf_tensorboard.registerDashboard({
-      plugin: 'debugger',
-      elementName: 'tf-debugger-dashboard',
-    });
-
   </script>
 </dom-module>

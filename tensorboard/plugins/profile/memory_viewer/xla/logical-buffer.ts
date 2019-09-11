@@ -11,36 +11,36 @@ limitations under the License.
 ==============================================================================*/
 
 namespace memory_viewer_xla_lb {
-
-/**
- * HLO logical buffer representation.
- * @final
- */
-export class LogicalBuffer {
-  id: number;
-  size: number;
-  computationName: string|undefined = '';
-  instructionName: string|undefined = '';
-  shapeIndex: number[] = [];
-
-  constructor(buffer) {
-    this.id = parseInt(buffer.id, 10);
-    this.size = parseInt(buffer.size, 10);
-    this.initBufferLocation_(buffer.definedAt);
-  }
-
   /**
-   * Constructs the computation, instruction and its shape index, which
-   * uniquely identifies a point where a buffer is defined.
+   * HLO logical buffer representation.
+   * @final
    */
-  private initBufferLocation_(location) {
-    if (!location) {
-      return;
-    }
-    this.computationName = location.computationName;
-    this.instructionName = location.instructionName;
-    this.shapeIndex = location.shapeIndex.map((item) => parseInt(item, 10));
-  }
-}
+  export class LogicalBuffer {
+    id: number;
+    size: number;
+    color: number;
+    computationName: string | undefined = '';
+    instructionName: string | undefined = '';
+    shapeIndex: number[] = [];
 
+    constructor(buffer) {
+      this.id = parseInt(buffer.id, 10);
+      this.size = parseInt(buffer.size, 10);
+      this.color = parseInt(buffer.color, 10);
+      this.initBufferLocation_(buffer.definedAt);
+    }
+
+    /**
+     * Constructs the computation, instruction and its shape index, which
+     * uniquely identifies a point where a buffer is defined.
+     */
+    private initBufferLocation_(location) {
+      if (!location) {
+        return;
+      }
+      this.computationName = location.computationName;
+      this.instructionName = location.instructionName;
+      this.shapeIndex = location.shapeIndex.map((item) => parseInt(item, 10));
+    }
+  }
 } // namespace memory_viewer_xla_lb

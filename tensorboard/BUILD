@@ -149,6 +149,7 @@ py_test(
         ":program",
         ":test",
         "//tensorboard/backend:application",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],
@@ -183,7 +184,7 @@ py_library(
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
-        "//tensorboard/plugins/hparams:hparams_plugin_loader",
+        "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
@@ -312,13 +313,6 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-py_library(
-    name = "tf_contrib_ffmpeg",
-    # This is a dummy rule for the open source world, which indicates
-    # that srcs dereference tf.contrib.ffmpeg.
-    visibility = ["//visibility:public"],
-)
-
 filegroup(
     name = "tf_web_library_default_typings",
     srcs = [
@@ -365,7 +359,6 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
-        "//tensorboard/util:test_util",
     ],
 )
 

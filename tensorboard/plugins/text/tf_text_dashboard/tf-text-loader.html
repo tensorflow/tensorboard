@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
-<link rel="import" href="../tf-markdown-view/tf-markdown-view.html">
-<link rel="import" href="../tf-imports/d3.html">
+<link rel="import" href="../paper-material/paper-material.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html" />
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html" />
+<link rel="import" href="../tf-imports/d3.html" />
 
 <!--
 tf-text-loader displays markdown text data from the Text plugin.
@@ -62,7 +62,7 @@ tf-text-loader displays markdown text data from the Text plugin.
       }
       #steps-container {
         border-radius: 3px;
-        border: 2px solid  /* color computed and set as inline style */;
+        border: 2px solid /* color computed and set as inline style */;
         display: block;
         max-height: 500px;
         overflow: auto;
@@ -82,7 +82,7 @@ tf-text-loader displays markdown text data from the Text plugin.
         display: inline-block;
         font-size: 12px;
         font-style: italic;
-        margin-left: -1px;  /* to correct for border */
+        margin-left: -1px; /* to correct for border */
         padding: 3px;
       }
       .step-container:not(:first-child) {
@@ -95,9 +95,8 @@ tf-text-loader displays markdown text data from the Text plugin.
     </style>
   </template>
   <script>
-
     Polymer({
-      is: "tf-text-loader",
+      is: 'tf-text-loader',
       properties: {
         run: String,
         tag: String,
@@ -136,26 +135,26 @@ tf-text-loader displays markdown text data from the Text plugin.
         }
         this._canceller.cancelAll();
         const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(router.pluginRoute("text", "/text"), {
+        const url = tf_backend.addParams(router.pluginRoute('text', '/text'), {
           tag: this.tag,
           run: this.run,
         });
-        const updateTexts = this._canceller.cancellable(result => {
+        const updateTexts = this._canceller.cancellable((result) => {
           if (result.cancelled) {
             return;
           }
-          const data = result.value.map(datum => ({
+          const data = result.value.map((datum) => ({
             wall_time: new Date(datum.wall_time * 1000),
             step: datum.step,
             text: datum.text,
           }));
-          this.set("_texts", data.slice().reverse());
+          this.set('_texts', data.slice().reverse());
         });
         this.requestManager.request(url).then(updateTexts);
       },
       _formatStep(n) {
-        return d3.format(",")(n);
-      }
+        return d3.format(',')(n);
+      },
     });
   </script>
 </dom-module>

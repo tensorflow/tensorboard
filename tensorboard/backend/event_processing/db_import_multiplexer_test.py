@@ -45,10 +45,10 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     db_file_name = os.path.join(self.get_temp_dir(), 'db')
     self.db_connection_provider = lambda: sqlite3.connect(db_file_name)
     self.multiplexer = db_import_multiplexer.DbImportMultiplexer(
+        db_uri='sqlite:' + db_file_name,
         db_connection_provider=self.db_connection_provider,
         purge_orphaned_data=False,
-        max_reload_threads=1,
-        use_import_op=False)
+        max_reload_threads=1)
 
   def _get_runs(self):
     db = self.db_connection_provider()
@@ -150,6 +150,14 @@ class DbImportMultiplexerTest(tf.test.TestCase):
     # There are two items with the same name but with different ids.
     self.assertEqual(self._get_runs(), [os.path.join('some', 'nested', 'name'),
                                         os.path.join('some', 'nested', 'name')])
+
+  def test_empty_read_apis(self):
+    path = self.get_temp_dir()
+    add_event(path)
+    self.assertEmpty(self.multiplexer.Runs())
+    self.multiplexer.AddRunsFromDirectory(path)
+    self.multiplexer.Reload()
+    self.assertEmpty(self.multiplexer.Runs())
 
 
 if __name__ == '__main__':

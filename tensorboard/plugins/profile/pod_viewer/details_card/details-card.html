@@ -17,57 +17,70 @@ limitations under the License.
   details-card is a card that highlights detailed information of a selection.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="pod-viewer-common.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="pod-viewer-common.html" />
 
 <dom-module id="details-card">
-  <style>
-paper-card {
-  max-height: 50vh;
-  overflow-y: auto;
-  --paper-card-header-color: white;
-  --paper-card-header: {
-    background-color: rgb(178,34,34);
-  }
-  width: 100%;
-}
-
-.card-content > div {
-  margin-bottom: 1em;
-  top: -5px;
-}
-
-.value {
-  font-weight: normal;
-  text-align: right;
-}
-
-.info {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.code-style {
-  font-size: 14px;
-  font-weight: normal;
-}
-  </style>
   <template>
+    <style>
+      paper-card {
+        max-height: 50vh;
+        overflow-y: auto;
+        --paper-card-header-color: white;
+        --paper-card-header: {
+          background-color: rgb(178, 34, 34);
+        }
+        width: 100%;
+      }
+
+      .card-content > div {
+        margin-bottom: 1em;
+        top: -5px;
+      }
+
+      .value {
+        font-weight: normal;
+        text-align: right;
+      }
+
+      .info {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .code-style {
+        font-size: 14px;
+        font-weight: normal;
+      }
+    </style>
     <paper-card id="card" heading="[[_name]]" hidden="[[!_name]]" elevation="2">
-      <template is="dom-repeat" items=[[nodes]] as="node">
+      <template is="dom-repeat" items="[[nodes]]" as="node">
         <div class="card-content info">
           <div hidden="[[_isStep(node)]]">
-            <p>Data Transferred: <span class="value">[[_sizeMiB(node.dataSize)]] MiB</span></p>
-            <p>Latency: <span class="value">[[_format(node.durationUs)]] µs</span></p>
-            <p>BW: <span class="value">
-                [[_bandwidth(node.dataSize, node.durationUs)]] GiB/s</span></p>
+            <p>
+              Data Transferred:
+              <span class="value">[[_sizeMiB(node.dataSize)]] MiB</span>
+            </p>
+            <p>
+              Latency:
+              <span class="value">[[_format(node.durationUs)]] µs</span>
+            </p>
+            <p>
+              BW:
+              <span class="value">
+                [[_bandwidth(node.dataSize, node.durationUs)]] GiB/s</span
+              >
+            </p>
           </div>
           <div hidden="[[!_isChannel(node)]]">
-            <p>Send Delay: <span class="value">[[_format(node.sendDelayUs)]] µs</span></p>
-            <p>Hlo Names: </p>
+            <p>
+              Send Delay:
+              <span class="value">[[_format(node.sendDelayUs)]] µs</span>
+            </p>
+            <p>Hlo Names:</p>
             <code class="code-style">
-              <template is="dom-repeat" items=[[node.hloNames]]>
+              <template is="dom-repeat" items="[[node.hloNames]]">
                 "[[item]]"
               </template>
             </code>
@@ -75,16 +88,20 @@ paper-card {
           <div hidden="[[!_hasReplicaGroups(node)]]">
             <p>Replica Groups</p>
             <code class="code-style">
-              <template is="dom-repeat" items=[[node.replicaGroups]]>
-                {[[item.replicaIds]]}<br>
+              <template is="dom-repeat" items="[[node.replicaGroups]]">
+                {[[item.replicaIds]]}<br />
               </template>
             </code>
           </div>
           <div hidden="[[!_isStep(node)]]">
-            <template is="dom-repeat" items=[[stepBreakdownLayers]]>
-              <p>[[item.label]]: <span class="value">
+            <template is="dom-repeat" items="[[stepBreakdownLayers]]">
+              <p>
+                [[item.label]]:
+                <span class="value">
                   [[_getStepBreakdownValue(node, item.key)]] µs
-                  [[_getStepBreakdownPct(node, item.key)]]</span></p>
+                  [[_getStepBreakdownPct(node, item.key)]]</span
+                >
+              </p>
             </template>
           </div>
         </div>

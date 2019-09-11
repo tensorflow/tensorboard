@@ -16,10 +16,10 @@ limitations under the License.
 declare namespace tf.hparams {
   export interface Schema {
     hparamColumn: Array<{
-      hparamInfo: Object,
-    }>,
+      hparamInfo: Object;
+    }>;
     metricColumn: Array<{
-      metricInfo: Object,
-    }>,
+      metricInfo: Object;
+    }>;
   }
 }

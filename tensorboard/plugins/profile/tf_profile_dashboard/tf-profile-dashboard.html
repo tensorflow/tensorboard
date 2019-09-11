@@ -15,28 +15,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-progress/paper-progress.html">
-<link rel="import" href="../paper-radio-group/paper-radio-group.html">
-<link rel="import" href="../paper-toast/paper-toast.html">
-<link rel="import" href="../paper-spinner/paper-spinner.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-graph-controls/tf-graph-controls.html">
-<link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html">
-<link rel="import" href="../tf-overview-page/overview-page.html">
-<link rel="import" href="../tf-op-profile/tf-op-profile.html">
-<link rel="import" href="../tf-profile-common/tf-profile-common.html">
-<link rel="import" href="../memory-viewer/memory-viewer-dashboard.html">
-<link rel="import" href="../pod-viewer/pod-viewer-dashboard.html">
-<link rel="import" href="../google-chart/google-chart-demo.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
-<link rel="import" href="../vz-sorting/vz-sorting.html">
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-progress/paper-progress.html" />
+<link rel="import" href="../paper-radio-group/paper-radio-group.html" />
+<link rel="import" href="../paper-toast/paper-toast.html" />
+<link rel="import" href="../paper-spinner/paper-spinner.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
+<link rel="import" href="../tf-graph-controls/tf-graph-controls.html" />
+<link rel="import" href="../tf-input-pipeline/input-pipeline-analyzer.html" />
+<link rel="import" href="../tf-overview-page/overview-page.html" />
+<link rel="import" href="../tf-op-profile/tf-op-profile.html" />
+<link rel="import" href="../tf-profile-common/tf-profile-common.html" />
+<link rel="import" href="../memory-viewer/memory-viewer-dashboard.html" />
+<link rel="import" href="../pod-viewer/details-card.html" />
+<link rel="import" href="../pod-viewer/pod-viewer-dashboard.html" />
+<link rel="import" href="../google-chart/google-chart-demo.html" />
+<link rel="import" href="../tf-tensorboard/registry.html" />
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html" />
+<link rel="import" href="../vz-sorting/vz-sorting.html" />
 
 <!--
 tf-profile-dashboard displays profiling information for different tools.
@@ -47,743 +48,932 @@ profile run can have multiple tools that present the performance profile as diff
 -->
 
 <dom-module id="tf-profile-dashboard">
-<template>
-<template is="dom-if" if="[[_isState(_topLevelState, 'IN_COLAB')]]">
-  <div style="max-width: 540px; margin: 80px auto 0 auto;">
-    <h3>Profiling isn’t supported in Colab yet.</h3>
-    <p>
-      Please see
-      <a
-        href="https://github.com/tensorflow/tensorboard/issues/1913"
-        rel="noopener"
-        target="_blank"
-      >GitHub issue #1913</a>
-      for more information.
-    </p>
-  </div>
-</template>
-<paper-toast id="toast" duration="0" text="" always-on-top>
-  <paper-button onclick="toast.toggle()" class="yellow-button">Close now!</paper-button>
-</paper-toast>
-<tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
-<paper-dialog id="captureProfileDialog" modal>
-  <paper-input label="Profiler Service URL or TPU name"
-               always-float-label
-               placeholder="localhost:6009"
-               value="{{_profilerServiceAddress}}"
-               auto-validate
-               required></paper-input>
-  <label id="profiler-address-type-label">Address Type:</label>
-  <paper-radio-group selected="{{_profilerServiceAddressType}}"
-                     aria-labelledby="profiler-address-type-label">
-    <paper-radio-button name="ip-address">IP Address</paper-radio-button>
-    <paper-radio-button name="tpu-name">TPU Name</paper-radio-button>
-  </paper-radio-group>
-  <paper-input label="Profiling Duration (milliseconds)"
-               always-float-label
-               type="number"
-               min=1
-               max=600000
-               auto-validate
-               pattern="[0-9]+"
-               error-message="Input is not an integer between 1 to 600000"
-               required
-               value="{{_profileDuration}}"></paper-input>
-
-  <paper-input label="Automatically retry N times when no trace event is collected"
-               always-float-label
-               type="number"
-               min=0
-               max=100
-               auto-validate
-               pattern="[0-9]+"
-               error-message="Input is not an integer between 0 to 100"
-               required
-               value="{{_profileNumRetry}}"></paper-input>
-
-  <div hidden="{{!_shouldShowTpuOptions(_profilerServiceAddressType)}}">
-    <paper-checkbox checked="{{_profileIncludeDatasetOps}}">Trace dataset ops</paper-checkbox>
-    <paper-input label="Subset of worker TPUs to profile (optional)"
-                 always-float-label
-                 placeholder="List of IPs, e.g. 10.4.1.2,10.4.1.3"
-                 value="{{_profileWorkerList}}"></paper-input>
-  </div>
-  <div class="buttons">
-    <paper-button dialog-confirm raised
-                  on-tap="_captureProfile"
-                  disabled$="[[_shouldDisableCaptureProfileButton(_profilerServiceAddress, _profileDuration, _profileNumRetry)]]">
-        Capture</paper-button>
-    <paper-button dialog-confirm>Close</paper-button>
-  </div>
-</paper-dialog>
-<template is="dom-if" if="[[_isState(_topLevelState, 'LOADING')]]">
-  <div id="progress-bar">
-    <div id="progress-msg">[[progress.msg]]</div>
-    <paper-progress value="[[progress.value]]"></paper-progress>
-  </div>
-</template>
-<template is="dom-if" if="[[_isState(_topLevelState, 'DATA_NOT_FOUND')]]">
-  <div style="max-width: 540px; margin: 80px auto 0 auto;">
-    <h3>No profile data was found.</h3>
-
-    <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
-    <paper-spinner class="capture-spinner" active="[[_capturingProfile]]"></paper-spinner>
-
-    <p>If you have a model running on CPU, GPU, or Google Cloud TPU, you may be
-        able to use the above button to capture a profile.
-    <p>If you’re a CPU or GPU user, please use the IP address option. You may want to check out the
-        <a href="https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/docs/r2/tensorboard_profiling_keras.ipynb" rel="noopener" target="_blank">tutorial</a> on how to
-        start a TensorFlow profiler server and profile a Keras model on a GPU.
-    <p>If you're a TPU user, please use the TPU name option and you may want to check out the
-        <a href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
-            rel="noopener" target="_blank">tutorial</a>
-        on how to interpreting the profiling results.
-    <p>If you think profiling is done properly, please see the page of
-        <a href="https://cloud.google.com/tpu/docs/troubleshooting"
+  <template>
+    <template is="dom-if" if="[[_isState(_topLevelState, 'IN_COLAB')]]">
+      <div style="max-width: 540px; margin: 80px auto 0 auto;">
+        <h3>Profiling isn’t supported in Colab yet.</h3>
+        <p>
+          Please see
+          <a
+            href="https://github.com/tensorflow/tensorboard/issues/1913"
             rel="noopener"
-            target="_blank">Google Cloud TPU Troubleshooting and FAQ</a>
-        and consider filing an issue on GitHub.</p>
-  </div>
-</template>
-<template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
-  <tf-dashboard-layout>
-  <div class="sidebar">
-    <div class="allcontrols">
-      <div class="sidebar-section">
-        <paper-button raised on-tap="_openCaptureProfileDialog">Capture Profile</paper-button>
-	<paper-spinner class="capture-spinner" active="[[_capturingProfile]]"></paper-spinner>
+            target="_blank"
+            >GitHub issue #1913</a
+          >
+          for more information.
+        </p>
       </div>
-      <div class="sidebar-section">
-        <div class="title">Runs <span class="counter">([[_datasets.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_run" class="dropdown-content" selected="{{selectedDatasetIndex}}">
-            <template id="run_items" is="dom-repeat" items="[[_datasets]]">
-              <paper-item>[[item.name]]</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
+    </template>
+    <paper-toast id="toast" duration="0" text="" always-on-top>
+      <paper-button onclick="toast.toggle()" class="yellow-button"
+        >Close now!</paper-button
+      >
+    </paper-toast>
+    <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
+    <paper-dialog id="captureProfileDialog" modal>
+      <paper-input
+        label="Profiler Service URL or TPU name"
+        always-float-label
+        placeholder="localhost:6009"
+        value="{{_profilerServiceAddress}}"
+        auto-validate
+        required
+      ></paper-input>
+      <label id="profiler-address-type-label">Address Type:</label>
+      <paper-radio-group
+        selected="{{_profilerServiceAddressType}}"
+        aria-labelledby="profiler-address-type-label"
+      >
+        <paper-radio-button name="ip-address">IP Address</paper-radio-button>
+        <paper-radio-button name="tpu-name">TPU Name</paper-radio-button>
+      </paper-radio-group>
+      <paper-input
+        label="Profiling Duration (milliseconds)"
+        always-float-label
+        type="number"
+        min="1"
+        max="600000"
+        auto-validate
+        pattern="[0-9]+"
+        error-message="Input is not an integer between 1 to 600000"
+        required
+        value="{{_profileDuration}}"
+      ></paper-input>
+
+      <paper-input
+        label="Automatically retry N times when no trace event is collected"
+        always-float-label
+        type="number"
+        min="0"
+        max="100"
+        auto-validate
+        pattern="[0-9]+"
+        error-message="Input is not an integer between 0 to 100"
+        required
+        value="{{_profileNumRetry}}"
+      ></paper-input>
+
+      <div hidden="{{!_shouldShowTpuOptions(_profilerServiceAddressType)}}">
+        <paper-checkbox checked="{{_profileIncludeDatasetOps}}"
+          >Trace dataset ops</paper-checkbox
+        >
+        <paper-input
+          label="Subset of worker TPUs to profile (optional)"
+          always-float-label
+          placeholder="List of IPs, e.g. 10.4.1.2,10.4.1.3"
+          value="{{_profileWorkerList}}"
+        ></paper-input>
       </div>
-      <div class="sidebar-section">
-        <div class="title">Tools <span class="counter">([[_activeToolsList.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_tool" class="dropdown-content" selected="{{selectedToolIndex}}">
-            <template id="tool_items" is="dom-repeat" items="[[_activeToolsList]]">
-              <paper-item>[[item]]</paper-item>
-            </template>
-            <template is="dom-if" if="[[!_hasActiveTools()]]" restamp="true">
-              <paper-item>None</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
+      <div class="buttons">
+        <paper-button
+          dialog-confirm
+          raised
+          on-tap="_captureProfile"
+          disabled$="[[_shouldDisableCaptureProfileButton(_profilerServiceAddress, _profileDuration, _profileNumRetry)]]"
+        >
+          Capture</paper-button
+        >
+        <paper-button dialog-confirm>Close</paper-button>
       </div>
-      <div class="sidebar-section">
-        <div class="title">Hosts <span class="counter">([[_activeHostsList.length]])</span></div>
-        <paper-dropdown-menu no-label-float no-animations noink horizontal-align="left">
-          <paper-listbox id="list_box_host" class="dropdown-content" selected="{{selectedHostIndex}}">
-            <template id="host_items" is="dom-repeat" items="[[_activeHostsList]]">
-              <paper-item>[[_getHostDisplayName(item)]]</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
+    </paper-dialog>
+    <template is="dom-if" if="[[_isState(_topLevelState, 'LOADING')]]">
+      <div id="progress-bar">
+        <div id="progress-msg">[[progress.msg]]</div>
+        <paper-progress value="[[progress.value]]"></paper-progress>
       </div>
-      <div class="sidebar-section details-container">
-        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'op_profile')]]" restamp="true">
-          <tf-op-details
-            hidden="[[!_activeOpDetails]]"
-            node="[[_activeOpDetails]]"
-          ></tp-op-details>
-        </template>
-        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
-          <buffer-details
-            hidden="[[!_activeBufferDetails]]"
-            node="[[_activeBufferDetails]]"
-          ></buffer-details>
-        </template>
-        <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
-          <details-card
-            hidden="[[!_activePodDetails]]"
-            nodes="[[_activePodDetails]]"
-          ></details-card>
+    </template>
+    <template is="dom-if" if="[[_isState(_topLevelState, 'DATA_NOT_FOUND')]]">
+      <div style="max-width: 540px; margin: 80px auto 0 auto;">
+        <h3>No profile data was found.</h3>
+
+        <paper-button raised on-tap="_openCaptureProfileDialog"
+          >Capture Profile</paper-button
+        >
+        <paper-spinner
+          class="capture-spinner"
+          active="[[_capturingProfile]]"
+        ></paper-spinner>
+
+        <p>
+          If you have a model running on CPU, GPU, or Google Cloud TPU, you may
+          be able to use the above button to capture a profile.
+        </p>
+
+        <p>
+          If you’re a CPU or GPU user, please use the IP address option. You may
+          want to check out the
+          <a
+            href="https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/docs/r2/tensorboard_profiling_keras.ipynb"
+            rel="noopener"
+            target="_blank"
+            >tutorial</a
+          >
+          on how to start a TensorFlow profiler server and profile a Keras model
+          on a GPU.
+        </p>
+
+        <p>
+          If you're a TPU user, please use the TPU name option and you may want
+          to check out the
+          <a
+            href="https://cloud.google.com/tpu/docs/cloud-tpu-tools"
+            rel="noopener"
+            target="_blank"
+            >tutorial</a
+          >
+          on how to interpreting the profiling results.
+        </p>
+
+        <p>
+          If you think profiling is done properly, please see the page of
+          <a
+            href="https://cloud.google.com/tpu/docs/troubleshooting"
+            rel="noopener"
+            target="_blank"
+            >Google Cloud TPU Troubleshooting and FAQ</a
+          >
+          and consider filing an issue on GitHub.
+        </p>
       </div>
-    </div>
-  </div>
-  <div class="center">
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'trace_viewer')]]" restamp="true">
-      <iframe
-        id="tv_iframe"
-        height="100%"
-        width="100%"
-        src$="[[_traceDataUrl]]">
-      </iframe>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'op_profile')]]" restamp="true">
-      <tf-op-profile
-        _data="[[_opProfileData]]"
-        active="{{_activeOpDetails}}"
-      ></tf-op-profile>
+    <template is="dom-if" if="[[_isState(_topLevelState, 'ACTIVE')]]">
+      <tf-dashboard-layout>
+        <div class="sidebar" slot="sidebar">
+          <div class="allcontrols">
+            <div class="sidebar-section">
+              <paper-button raised on-tap="_openCaptureProfileDialog"
+                >Capture Profile</paper-button
+              >
+              <paper-spinner
+                class="capture-spinner"
+                active="[[_capturingProfile]]"
+              ></paper-spinner>
+            </div>
+            <div class="sidebar-section">
+              <div class="title">
+                Runs <span class="counter">([[_datasets.length]])</span>
+              </div>
+              <paper-dropdown-menu
+                no-label-float
+                no-animations
+                noink
+                horizontal-align="left"
+              >
+                <paper-listbox
+                  id="list_box_run"
+                  slot="dropdown-content"
+                  selected="{{selectedDatasetIndex}}"
+                >
+                  <template
+                    id="run_items"
+                    is="dom-repeat"
+                    items="[[_datasets]]"
+                  >
+                    <paper-item>[[item.name]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class="sidebar-section">
+              <div class="title">
+                Tools <span class="counter">([[_activeToolsList.length]])</span>
+              </div>
+              <paper-dropdown-menu
+                no-label-float
+                no-animations
+                noink
+                horizontal-align="left"
+              >
+                <paper-listbox
+                  id="list_box_tool"
+                  slot="dropdown-content"
+                  selected="{{selectedToolIndex}}"
+                >
+                  <template
+                    id="tool_items"
+                    is="dom-repeat"
+                    items="[[_activeToolsList]]"
+                  >
+                    <paper-item>[[item]]</paper-item>
+                  </template>
+                  <template
+                    is="dom-if"
+                    if="[[!_hasActiveTools()]]"
+                    restamp="true"
+                  >
+                    <paper-item>None</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class="sidebar-section">
+              <div class="title">
+                Hosts <span class="counter">([[_activeHostsList.length]])</span>
+              </div>
+              <paper-dropdown-menu
+                no-label-float
+                no-animations
+                noink
+                horizontal-align="left"
+              >
+                <paper-listbox
+                  id="list_box_host"
+                  slot="dropdown-content"
+                  selected="{{selectedHostIndex}}"
+                >
+                  <template
+                    id="host_items"
+                    is="dom-repeat"
+                    items="[[_activeHostsList]]"
+                  >
+                    <paper-item>[[_getHostDisplayName(item)]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class="sidebar-section details-container">
+              <template
+                is="dom-if"
+                if="[[_isCurrentTool(_toolInScope, 'op_profile')]]"
+                restamp="true"
+              >
+                <tf-op-details
+                  hidden="[[!_activeOpDetails]]"
+                  node="[[_activeOpDetails]]"
+                ></tf-op-details>
+              </template>
+              <template
+                is="dom-if"
+                if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]"
+                restamp="true"
+              >
+                <buffer-details
+                  hidden="[[!_activeBufferDetails]]"
+                  node="[[_activeBufferDetails]]"
+                ></buffer-details>
+              </template>
+              <template
+                is="dom-if"
+                if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]"
+                restamp="true"
+              >
+                <details-card
+                  hidden="[[!_activePodDetails]]"
+                  nodes="[[_activePodDetails]]"
+                ></details-card>
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="center" slot="center">
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'trace_viewer')]]"
+            restamp="true"
+          >
+            <iframe
+              id="tv_iframe"
+              height="100%"
+              width="100%"
+              src$="[[_traceDataUrl]]"
+            >
+            </iframe>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'op_profile')]]"
+            restamp="true"
+          >
+            <tf-op-profile
+              _data="[[_opProfileData]]"
+              active="{{_activeOpDetails}}"
+            ></tf-op-profile>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'input_pipeline_analyzer')]]"
+            restamp="true"
+          >
+            <input-pipeline-analyzer
+              _data="[[_inputPipelineData]]"
+            ></input-pipeline-analyzer>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'overview_page')]]"
+            restamp="true"
+          >
+            <overview-page _data="[[_overviewPageData]]"></overview-page>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]"
+            restamp="true"
+          >
+            <pod-viewer-dashboard
+              data="[[_podViewerData]]"
+              active-details="{{_activePodDetails}}"
+            ></pod-viewer-dashboard>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]"
+            restamp="true"
+          >
+            <memory-viewer-dashboard
+              _data="[[_memoryViewerData]]"
+              active="{{_activeBufferDetails}}"
+            ></memory-viewer-dashboard>
+          </template>
+          <template
+            is="dom-if"
+            if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]"
+            restamp="true"
+          >
+            <google-chart-demo
+              _data="[[_googleChartDemoData]]"
+            ></google-chart-demo>
+          </template>
+        </div>
+      </tf-dashboard-layout>
     </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'input_pipeline_analyzer')]]" restamp="true">
-      <input-pipeline-analyzer _data="[[_inputPipelineData]]"></input-pipeline-analyzer>
-    </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'overview_page')]]" restamp="true">
-      <overview-page _data="[[_overviewPageData]]"></overview-page>
-    </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'pod_viewer')]]" restamp="true">
-      <pod-viewer-dashboard
-        data="[[_podViewerData]]"
-        active-details="{{_activePodDetails}}"
-      ></pod-viewer-dashboard>
-    </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'memory_viewer')]]" restamp="true">
-      <memory-viewer-dashboard
-        _data="[[_memoryViewerData]]"
-        active="{{_activeBufferDetails}}"
-      ></memory-viewer-dashboard>
-    </template>
-    <template is="dom-if" if="[[_isCurrentTool(_toolInScope, 'google_chart_demo')]]" restamp="true">
-      <google-chart-demo _data="[[_googleChartDemoData]]"></google-chart-demo>
-    </template>
-  </div>
-  </tf-dashboard-layout>
-</template>
-<style include="dashboard-style"></style>
+    <style include="dashboard-style"></style>
 
-<style>
-  .center {
-    position: relative;
-    height: 100%;
-  }
-  iframe {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-  }
-  #progress-bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: absolute;
-    top: 40px;
-    left: 0;
-    font-size: 13px;
-  }
-  #progress-msg {
-    width: 400px;
-    margin-bottom: 5px;
-  }
-  paper-progress {
-    width: 400px;
-    --paper-progress-height: 6px;
-    --paper-progress-active-color: #f3913e;
-  }
-  paper-dropdown-menu {
-    width: 100%;
-  }
-  .details-container {
-    padding-right: 5px;
-  }
-  tf-op-details,
-  buffer-details,
-  details-card {
-    width: 100%;
-    will-change: transform;
-  }
-  .yellow-button {
-    color: #eeff41;
-    text-transform: none;
-  }
-  .capture-spinner {
-    padding-left: 5px;
-    vertical-align: middle;
-  }
-</style>
+    <style>
+      .center {
+        position: relative;
+        height: 100%;
+      }
+      iframe {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      #progress-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        position: absolute;
+        top: 40px;
+        left: 0;
+        font-size: 13px;
+      }
+      #progress-msg {
+        width: 400px;
+        margin-bottom: 5px;
+      }
+      paper-progress {
+        width: 400px;
+        --paper-progress-height: 6px;
+        --paper-progress-active-color: #f3913e;
+      }
+      paper-dropdown-menu {
+        width: 100%;
+      }
+      .details-container {
+        padding-right: 5px;
+      }
+      tf-op-details,
+      buffer-details,
+      details-card {
+        width: 100%;
+        will-change: transform;
+      }
+      .yellow-button {
+        color: #eeff41;
+        text-transform: none;
+      }
+      .capture-spinner {
+        padding-left: 5px;
+        vertical-align: middle;
+      }
+    </style>
+  </template>
+  <script>
+    'use strict';
 
-</template>
-<script>
-  "use strict";
-
-  /**
-   * The main state of the profile dashboard (as distinct from any
-   * subtool states).
-   *
-   * @enum {string}
-   */
-  const TopLevelState = {
     /**
-     * Indicates that we are in a Colab notebook environment. The
-     * profile dashboard does not work well in Colab; the trace viewer
-     * does not work at all. If in Colab, we'll show only an explanatory
-     * message.
-     */
-    "IN_COLAB": "IN_COLAB",
-    /**
-     * Indicates that there are no runs with profile data.
-     */
-    "DATA_NOT_FOUND": "DATA_NOT_FOUND",
-    /**
-     * Indicates that we're loading data. This may be the case on the
-     * initial load or when the user switches tools.
-     */
-    "LOADING": "LOADING",
-    /**
-     * Indicates that a tool is active (data has finished loading).
-     */
-    "ACTIVE": "ACTIVE",
-  };
-
-  (function() {
-
-  const PLUGIN_NAME = 'profile';
-
-  Polymer({
-    is: "tf-profile-dashboard",
-    properties: {
-      _requestManager: {
-        type: Object,
-        value: () => new tf_backend.RequestManager(),
-      },
-      _isAttached: Boolean,
-      _isAvailable: Boolean,
-      // Whether this dashboard is initialized. This dashboard should only be
-      // initialized once.
-      _initialized: Boolean,
-      _dataNotFound: Boolean,
-      _datasets: {
-        type: Array,
-        notify: true,
-        observer: '_datasetsChanged'
-      },
-      _activeToolsList: {
-        type: Array,
-        computed: '_getActiveToolsList(selectedDatasetIndex, _datasets)',
-        observer: '_activeToolsChanged'
-      },
-      _activeHostsList: {
-        type: Array,
-        observer: '_activeHostsChanged'
-      },
-      _inColab: {
-        type: Boolean,
-        value: () => !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
-        readOnly: true,
-      },
-      /** @type {TopLevelState} */
-      _topLevelState: {
-        type: String,
-        computed: '_computeTopLevelState(_inColab, _dataNotFound, progress)',
-        readOnly: true,
-      },
-      /**
-       * @type {{value: number, msg: string}}
-       *
-       * A number between 0 and 100 denoting the % of progress
-       * for the progress bar and the displayed message.
-       */
-      progress: {
-        type: Object,
-        notify: true,
-      },
-      selectedDatasetIndex: {
-        type: Number,
-        notify: true,
-        value: 0,
-      },
-      selectedToolIndex: {
-        type: Number,
-        notify: true,
-        value: 0,
-      },
-      selectedHostIndex: {
-        type: Number,
-        notify: true,
-        value: 0,
-      },
-      // The endpoint that serves trace viewer app.
-      traceViewerBaseUrl: {
-        type: String,
-        value: "trace_viewer_index.html",
-      },
-      _profilerServiceAddress: String,
-      _profilerServiceAddressType: {
-        type: String,
-        value: "ip-address",
-      },
-      _profileDuration: {
-        type: String,
-        value: "1000",
-      },
-      _profileNumRetry: {
-        type: String,
-        value: "3",
-      },
-      _profileWorkerList: {
-        type: String,
-      },
-      _profileIncludeDatasetOps: {
-        type: Boolean,
-        value: true,
-      },
-      // The URL for the trace data being display.
-      _traceDataUrl: {
-        type: String,
-        value: "",
-      },
-      _opProfileData: {
-        type: Object,
-      },
-      _inputPipelineData: {
-        type: Object,
-      },
-      _overviewPageData: {
-        type: Object,
-      },
-      _memoryViewerData: {
-        type: Object,
-      },
-      _podViewerData: {
-        type: Object,
-      },
-      _googleChartDemoData: {
-        type: Object,
-      },
-      _selectedDatasetName: {
-        type: String,
-        notify: true,
-        computed: '_getSelectedDatasetName(selectedDatasetIndex, _datasets)'
-      },
-      _selectedToolName: {
-        type: String,
-        notify: true,
-        computed: '_getSelected(selectedToolIndex, _activeToolsList)'
-      },
-      _selectedHostName: {
-        type: String,
-        notify: true,
-        computed: '_getSelected(selectedHostIndex, _activeHostsList)'
-      },
-      _toolInScope: {
-        type: String,
-      },
-      _activeOpDetails: {
-        type: Object,
-        value: () => {},
-      },
-      _activeBufferDetails: {
-        type: Object,
-        value: () => {},
-      },
-      _activePodDetails: {
-        type: Array,
-      },
-      _capturingProfile: {
-	type: Boolean,
-	value: false,
-      },
-    },
-    reload: function() {
-    },
-    ready: function() {
-    },
-    observers: [
-      '_maybeInitializeDashboard(_isAttached, _isAvailable)',
-      '_maybeUpdateData(_selectedHostName)',
-      '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
-    ],
-    attached: function() {
-      this.set('_isAttached', true);
-      // Check if the plugin was created
-      this._requestManager
-          // TODO(#2338): The plugins listing is probably not the right
-          // source of truth.
-          .request(tf_backend.getRouter().pluginsListing())
-          .then(plugins => {
-            if (!(PLUGIN_NAME in plugins)) {
-              // The plugin was not created and so either didn't have
-              // TensorFlow or had an old version
-              this.$.initialDialog.openOldTensorFlowDialog('1.14');
-              this.set('_isAvailable', false);
-            } else {
-              // The plugin was created
-              this.$.initialDialog.closeDialog();
-              this.set('_isAvailable', true);
-            }
-          });
-    },
-    detached: function() {
-      this.set('_isAttached', false);
-    },
-    _openCaptureProfileDialog: function() {
-      this.$.captureProfileDialog.open();
-    },
-    _shouldDisableCaptureProfileButton: function(
-        profilerServiceAddress, profileDuration, numRetry) {
-      return !profilerServiceAddress || profileDuration === ""
-          || numRetry === "";
-    },
-    _shouldShowTpuOptions: function(profilerServiceAddressType) {
-      return profilerServiceAddressType == 'tpu-name';
-    },
-    _captureProfile: function() {
-      this._capturingProfile = true;
-      const captureProfileUrl = tf_backend.addParams(
-          tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
-          {
-            service_addr: this._profilerServiceAddress.trim(),
-            is_tpu_name: this._profilerServiceAddressType == 'tpu-name',
-            duration: this._profileDuration,
-            worker_list: this._profileWorkerList,
-            include_dataset_ops: this._profileIncludeDatasetOps,
-            num_retry: this._profileNumRetry,
-          });
-      this._requestManager.request(captureProfileUrl).then((json) => {
-	this._capturingProfile = false;
-        if (json.error != null) {
-	  // Profiling API specific error.
-	  this._showToast(
-	      'Failed to capture profile: ' + json.error);
-	  return;
-        }
-        this._showToast(json.result);	
-      }).catch((error) => {
-	this._capturingProfile = false;
-	// Network error.
-        this._showToast("Failed to capture profile: " + error);
-      });
-    },
-    _showToast(text) {
-      this.$.toast.text = text;
-      this.$.toast.open();
-    },
-    _maybeInitializeDashboard: function(isAttached, isAvailable) {
-      if (this._initialized || !isAttached || !isAvailable) {
-        // Either this dashboard is already initialized ... or we are not yet
-        // ready to initialize.
-        return;
-      }
-      // Set this to true so we only initialize once.
-      this._initialized = true;
-      const profileTagsURL =
-        tf_backend.getRouter().pluginRoute('profile', '/tools');
-      // Reset the progress bar to 0.
-      this.set('progress', {
-        value: 0,
-        msg: ''
-      });
-      let parent = this;
-      let tracker = tf.profile.util.getTracker(this);
-      tf.profile.util.runTask('Loading datasets', 20, () => {
-        console.log('start counting');
-        return parent._requestManager.request(profileTagsURL);
-      }, tracker)
-      .then((runToTool) => {
-        return tf.profile.util.runTask(
-            'Processing datasets', 70, () => {
-              return new Promise(function(resolve, reject) {
-                parent._processRunToTool(runToTool);
-                resolve(null);
-              });
-            }, tracker);
-      })
-      .then(() => {
-        return tf.profile.util.runTask(
-            'Done', 10, () => null, tracker);
-      });
-    },
-    _processRunToTool: function(runToTool) {
-        var datasets = _.map(runToTool, (tools, run) => ({
-          name: run,
-          activeTools: tools,
-        }));
-        datasets.sort((a, b) => {
-          // The run name is currently a timestamp like "YYYY-MM-DD_HH:MM:SS".
-          // Sort runs by timestamp in reversed order so that the latest run
-          // comes first.
-          return 0 - vz_sorting.compareTagNames(a.name, b.name);
-        });
-        this.set('_dataNotFound', datasets.length === 0);
-        this.set('_datasets', datasets);
-    },
-    // Return the item selected from the list
-    _getSelected: function(index, li) {
-      if (index == null) return;
-      if (li && index >= 0 && index < li.length) {
-        return li[index];
-      }
-      return null;
-    },
-    _getSelectedDatasetName: function(selectedDatasetIndex, datasets){
-      if (selectedDatasetIndex == null) return;
-      if (datasets && selectedDatasetIndex >= 0 &&
-          selectedDatasetIndex < datasets.length) {
-        return datasets[selectedDatasetIndex].name;
-      }
-      return '';
-    },
-     _getActiveToolsList: function(selectedDatasetIndex, datasets) {
-      if (selectedDatasetIndex == null) return;
-      if (datasets && selectedDatasetIndex >= 0 &&
-          selectedDatasetIndex < datasets.length) {
-        this.selectedToolIndex = 0;
-        return datasets[selectedDatasetIndex].activeTools;
-      }
-      return [];
-    },
-    _maybeUpdateData: function(hostName) {
-      if (hostName == null) return;
-      var datasetName = this._selectedDatasetName;
-      var toolName = this._selectedToolName;
-      if (datasetName == null || toolName == null) return;
-      this._toolInScope = "undefined";
-      if (toolName.startsWith("trace_viewer")) {
-        var trace_data_url = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('profile', '/data'),
-            {tag: toolName,
-             run: datasetName,
-             host: hostName});
-        // Pass the URL of trace data via GET parameter to the iframed trace
-        // viewer app.
-        var is_streaming = toolName.endsWith('@');
-        this._traceDataUrl = this.traceViewerBaseUrl + '?trace_data_url=' +
-            encodeURIComponent(trace_data_url) +
-            '&is_streaming=' + is_streaming;
-        this._toolInScope = "trace_viewer";
-        return;
-      } else {
-        // Reset the progress bar to 0.
-        this.set('progress', {
-          value: 0,
-          msg: ''
-        });
-        let parent = this;
-        let tracker = tf.profile.util.getTracker(this);
-        tf.profile.util.runTask('Reading ' + toolName + ' tool data', 20,
-          () => {
-            return parent._requestManager.request(tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute('profile', '/data'),
-              {tag: toolName, host: hostName, run: datasetName}))
-          }, tracker)
-        .catch(error => {})
-        .then((data) => {
-          return tf.profile.util.runTask('Done', 80, () => {
-              parent._updateToolData(toolName, data);
-            }, tracker);
-        });
-      }
-    },
-
-   _updateToolData: function(toolName, data) {
-     switch(toolName) {
-       case "op_profile":
-          this._opProfileData = data;
-          this._toolInScope = "op_profile";
-          break;
-       case "input_pipeline_analyzer":
-          this._inputPipelineData = data;
-          this._toolInScope = "input_pipeline_analyzer";
-          break;
-       case "overview_page":
-          this._overviewPageData = data;
-          this._toolInScope = "overview_page";
-          break;
-      case "memory_viewer":
-          this._memoryViewerData = data;
-          this._toolInScope = "memory_viewer";
-          break;
-      case "pod_viewer":
-          this._podViewerData = data;
-          this._toolInScope = "pod_viewer";
-          break;
-      case "google_chart_demo":
-          this._googleChartDemoData = data;
-          this._toolInScope = "google_chart_demo";
-          break;
-      }
-    },
-    _maybeUpdateActiveHosts: function(datasetName, toolName) {
-       if(datasetName == null || toolName == null) return null;
-       var profileHostsUrl = tf_backend.addParams(
-            tf_backend.getRouter().pluginRoute('profile', '/hosts'),
-            {tag: toolName,
-             run: datasetName,
-            });
-       this._requestManager.request(profileHostsUrl).then((hostList) => {
-           this.set('_activeHostsList', hostList.sort((a, b) => {
-               return vz_sorting.compareTagNames(a, b);}
-           ));
-       });
-    },
-    _datasetsChanged: function(newDatasets, oldDatasets) {
-      if (this._datasets) {
-        this.selectedDatasetIndex = 0;
-      }
-    },
-    _activeToolsChanged: function(oldActiveTools, newActiveTools) {
-      // Same tool can have differernt index in different runs, therefore we
-      // force a change of 'selectedToolIndex', to make sure the label of the
-      // dropdown-menu is synced.
-      if (this._activeToolsList) {
-         this.async(function() {
-          this.set('selectedToolIndex', -1);
-          this.set('selectedToolIndex', 0);
-        }.bind(this));
-      }
-    },
-    _activeHostsChanged: function(oldActiveHosts, newActiveHosts) {
-      if (this._activeHostsList) {
-        this.async(function() {
-          this.set('selectedHostIndex', -1);
-          this.set('selectedHostIndex', 0);
-        }.bind(this));
-      }
-    },
-    _isCurrentTool: function(current, expected) {
-      return current == expected;
-    },
-    _hasActiveTools: function() {
-      if (this._activeToolsList && this._activeToolsList.length > 0) {
-        return true;
-      }
-      return false;
-    },
-    _getHostDisplayName: function(host) {
-      // For old traces without a host prefix in file name, return default for
-      // backward compatibility.
-      if (host == null) return "";
-      if (host == "") return "default";
-      // Otherwise, remove the seperator, e.g. "host1_" => "host1".
-      return host.slice(0, -1);
-    },
-    _computeTopLevelState: function(inColab, dataNotFound, progress) {
-      if (inColab)
-        return "IN_COLAB";
-      if (dataNotFound)
-        return "DATA_NOT_FOUND";
-      if (!progress || progress.value < 100)
-        return "LOADING";
-      return "ACTIVE";
-    },
-    /**
-     * Check whether the two given states are equal.
+     * The main state of the profile dashboard (as distinct from any
+     * subtool states).
      *
-     * @param {TopLevelState} topLevelState
-     * @param {TopLevelState} candidateState
+     * @enum {string}
      */
-    _isState: function(actualState, candidateState) {
-      return actualState === candidateState;
-    },
-  });
+    const TopLevelState = {
+      /**
+       * Indicates that we are in a Colab notebook environment. The
+       * profile dashboard does not work well in Colab; the trace viewer
+       * does not work at all. If in Colab, we'll show only an explanatory
+       * message.
+       */
+      IN_COLAB: 'IN_COLAB',
+      /**
+       * Indicates that there are no runs with profile data.
+       */
+      DATA_NOT_FOUND: 'DATA_NOT_FOUND',
+      /**
+       * Indicates that we're loading data. This may be the case on the
+       * initial load or when the user switches tools.
+       */
+      LOADING: 'LOADING',
+      /**
+       * Indicates that a tool is active (data has finished loading).
+       */
+      ACTIVE: 'ACTIVE',
+    };
 
-  // TODO(#2338): Remove this, and set up the "no TF" message properly.
-  // Keep this in sync with `frontend_metadata` in `profile_plugin.py`.
-  tf_tensorboard.registerDashboard({
-    plugin: PLUGIN_NAME,
-    elementName: 'tf-profile-dashboard',
-    isReloadDisabled: true,
-  });
+    (function() {
+      const PLUGIN_NAME = 'profile';
 
-  })();
-</script>
+      Polymer({
+        is: 'tf-profile-dashboard',
+        properties: {
+          _requestManager: {
+            type: Object,
+            value: () => new tf_backend.RequestManager(),
+          },
+          _isAttached: Boolean,
+          _isAvailable: Boolean,
+          // Whether this dashboard is initialized. This dashboard should only be
+          // initialized once.
+          _initialized: Boolean,
+          _dataNotFound: Boolean,
+          _datasets: {
+            type: Array,
+            notify: true,
+            observer: '_datasetsChanged',
+          },
+          _activeToolsList: {
+            type: Array,
+            computed: '_getActiveToolsList(selectedDatasetIndex, _datasets)',
+            observer: '_activeToolsChanged',
+          },
+          _activeHostsList: {
+            type: Array,
+            observer: '_activeHostsChanged',
+          },
+          _inColab: {
+            type: Boolean,
+            value: () => !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
+            readOnly: true,
+          },
+          /** @type {TopLevelState} */
+          _topLevelState: {
+            type: String,
+            computed:
+              '_computeTopLevelState(_inColab, _dataNotFound, progress)',
+            readOnly: true,
+          },
+          /**
+           * @type {{value: number, msg: string}}
+           *
+           * A number between 0 and 100 denoting the % of progress
+           * for the progress bar and the displayed message.
+           */
+          progress: {
+            type: Object,
+            notify: true,
+          },
+          selectedDatasetIndex: {
+            type: Number,
+            notify: true,
+            value: 0,
+          },
+          selectedToolIndex: {
+            type: Number,
+            notify: true,
+            value: 0,
+          },
+          selectedHostIndex: {
+            type: Number,
+            notify: true,
+            value: 0,
+          },
+          // The endpoint that serves trace viewer app.
+          traceViewerBaseUrl: {
+            type: String,
+            value: 'trace_viewer_index.html',
+          },
+          _profilerServiceAddress: String,
+          _profilerServiceAddressType: {
+            type: String,
+            value: 'ip-address',
+          },
+          _profileDuration: {
+            type: String,
+            value: '1000',
+          },
+          _profileNumRetry: {
+            type: String,
+            value: '3',
+          },
+          _profileWorkerList: {
+            type: String,
+          },
+          _profileIncludeDatasetOps: {
+            type: Boolean,
+            value: true,
+          },
+          // The URL for the trace data being display.
+          _traceDataUrl: {
+            type: String,
+            value: '',
+          },
+          _opProfileData: {
+            type: Object,
+          },
+          _inputPipelineData: {
+            type: Object,
+          },
+          _overviewPageData: {
+            type: Object,
+          },
+          _memoryViewerData: {
+            type: Object,
+          },
+          _podViewerData: {
+            type: Object,
+          },
+          _googleChartDemoData: {
+            type: Object,
+          },
+          _selectedDatasetName: {
+            type: String,
+            notify: true,
+            computed:
+              '_getSelectedDatasetName(selectedDatasetIndex, _datasets)',
+          },
+          _selectedToolName: {
+            type: String,
+            notify: true,
+            computed: '_getSelected(selectedToolIndex, _activeToolsList)',
+          },
+          _selectedHostName: {
+            type: String,
+            notify: true,
+            computed: '_getSelected(selectedHostIndex, _activeHostsList)',
+          },
+          _toolInScope: {
+            type: String,
+          },
+          _activeOpDetails: {
+            type: Object,
+            value: () => {},
+          },
+          _activeBufferDetails: {
+            type: Object,
+            value: () => {},
+          },
+          _activePodDetails: {
+            type: Array,
+          },
+          _capturingProfile: {
+            type: Boolean,
+            value: false,
+          },
+        },
+        reload: function() {},
+        ready: function() {},
+        observers: [
+          '_maybeInitializeDashboard(_isAttached, _isAvailable)',
+          '_maybeUpdateData(_selectedHostName)',
+          '_maybeUpdateActiveHosts(_selectedDatasetName, _selectedToolName)',
+        ],
+        attached: function() {
+          this.set('_isAttached', true);
+          // Check if the plugin was created
+          this._requestManager
+            // TODO(#2338): The plugins listing is probably not the right
+            // source of truth.
+            .request(tf_backend.getRouter().pluginsListing())
+            .then((plugins) => {
+              if (!(PLUGIN_NAME in plugins)) {
+                // The plugin was not created and so either didn't have
+                // TensorFlow or had an old version
+                this.$.initialDialog.openOldTensorFlowDialog('1.14');
+                this.set('_isAvailable', false);
+              } else {
+                // The plugin was created
+                this.$.initialDialog.closeDialog();
+                this.set('_isAvailable', true);
+              }
+            });
+        },
+        detached: function() {
+          this.set('_isAttached', false);
+        },
+        _openCaptureProfileDialog: function() {
+          this.$.captureProfileDialog.open();
+        },
+        _shouldDisableCaptureProfileButton: function(
+          profilerServiceAddress,
+          profileDuration,
+          numRetry
+        ) {
+          return (
+            !profilerServiceAddress || profileDuration === '' || numRetry === ''
+          );
+        },
+        _shouldShowTpuOptions: function(profilerServiceAddressType) {
+          return profilerServiceAddressType == 'tpu-name';
+        },
+        _captureProfile: function() {
+          this._capturingProfile = true;
+          const captureProfileUrl = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('profile', '/capture_profile'),
+            {
+              service_addr: this._profilerServiceAddress.trim(),
+              is_tpu_name: this._profilerServiceAddressType == 'tpu-name',
+              duration: this._profileDuration,
+              worker_list: this._profileWorkerList,
+              include_dataset_ops: this._profileIncludeDatasetOps,
+              num_retry: this._profileNumRetry,
+            }
+          );
+          this._requestManager
+            .request(captureProfileUrl)
+            .then((json) => {
+              this._capturingProfile = false;
+              if (json.error != null) {
+                // Profiling API specific error.
+                this._showToast('Failed to capture profile: ' + json.error);
+                return;
+              }
+              this._showToast(json.result);
+            })
+            .catch((error) => {
+              this._capturingProfile = false;
+              // Network error.
+              this._showToast('Failed to capture profile: ' + error);
+            });
+        },
+        _showToast(text) {
+          this.$.toast.text = text;
+          this.$.toast.open();
+        },
+        _maybeInitializeDashboard: function(isAttached, isAvailable) {
+          if (this._initialized || !isAttached || !isAvailable) {
+            // Either this dashboard is already initialized ... or we are not yet
+            // ready to initialize.
+            return;
+          }
+          // Set this to true so we only initialize once.
+          this._initialized = true;
+          const profileTagsURL = tf_backend
+            .getRouter()
+            .pluginRoute('profile', '/tools');
+          // Reset the progress bar to 0.
+          this.set('progress', {
+            value: 0,
+            msg: '',
+          });
+          let parent = this;
+          let tracker = tf.profile.util.getTracker(this);
+          tf.profile.util
+            .runTask(
+              'Loading datasets',
+              20,
+              () => {
+                console.log('start counting');
+                return parent._requestManager.request(profileTagsURL);
+              },
+              tracker
+            )
+            .then((runToTool) => {
+              return tf.profile.util.runTask(
+                'Processing datasets',
+                70,
+                () => {
+                  return new Promise(function(resolve, reject) {
+                    parent._processRunToTool(runToTool);
+                    resolve(null);
+                  });
+                },
+                tracker
+              );
+            })
+            .then(() => {
+              return tf.profile.util.runTask('Done', 10, () => null, tracker);
+            });
+        },
+        _processRunToTool: function(runToTool) {
+          var datasets = _.map(runToTool, (tools, run) => ({
+            name: run,
+            activeTools: tools,
+          }));
+          datasets.sort((a, b) => {
+            // The run name is currently a timestamp like "YYYY-MM-DD_HH:MM:SS".
+            // Sort runs by timestamp in reversed order so that the latest run
+            // comes first.
+            return 0 - vz_sorting.compareTagNames(a.name, b.name);
+          });
+          this.set('_dataNotFound', datasets.length === 0);
+          this.set('_datasets', datasets);
+        },
+        // Return the item selected from the list
+        _getSelected: function(index, li) {
+          if (index == null) return;
+          if (li && index >= 0 && index < li.length) {
+            return li[index];
+          }
+          return null;
+        },
+        _getSelectedDatasetName: function(selectedDatasetIndex, datasets) {
+          if (selectedDatasetIndex == null) return;
+          if (
+            datasets &&
+            selectedDatasetIndex >= 0 &&
+            selectedDatasetIndex < datasets.length
+          ) {
+            return datasets[selectedDatasetIndex].name;
+          }
+          return '';
+        },
+        _getActiveToolsList: function(selectedDatasetIndex, datasets) {
+          if (selectedDatasetIndex == null) return;
+          if (
+            datasets &&
+            selectedDatasetIndex >= 0 &&
+            selectedDatasetIndex < datasets.length
+          ) {
+            this.selectedToolIndex = 0;
+            return datasets[selectedDatasetIndex].activeTools;
+          }
+          return [];
+        },
+        _maybeUpdateData: function(hostName) {
+          if (hostName == null) return;
+          var datasetName = this._selectedDatasetName;
+          var toolName = this._selectedToolName;
+          if (datasetName == null || toolName == null) return;
+          this._toolInScope = 'undefined';
+          if (toolName.startsWith('trace_viewer')) {
+            var trace_data_url = tf_backend.addParams(
+              tf_backend.getRouter().pluginRoute('profile', '/data'),
+              {tag: toolName, run: datasetName, host: hostName}
+            );
+            // Pass the URL of trace data via GET parameter to the iframed trace
+            // viewer app.
+            var is_streaming = toolName.endsWith('@');
+            this._traceDataUrl =
+              this.traceViewerBaseUrl +
+              '?trace_data_url=' +
+              encodeURIComponent(trace_data_url) +
+              '&is_streaming=' +
+              is_streaming;
+            this._toolInScope = 'trace_viewer';
+            return;
+          } else {
+            // Reset the progress bar to 0.
+            this.set('progress', {
+              value: 0,
+              msg: '',
+            });
+            let parent = this;
+            let tracker = tf.profile.util.getTracker(this);
+            tf.profile.util
+              .runTask(
+                'Reading ' + toolName + ' tool data',
+                20,
+                () => {
+                  return parent._requestManager.request(
+                    tf_backend.addParams(
+                      tf_backend.getRouter().pluginRoute('profile', '/data'),
+                      {tag: toolName, host: hostName, run: datasetName}
+                    )
+                  );
+                },
+                tracker
+              )
+              .catch((error) => {})
+              .then((data) => {
+                return tf.profile.util.runTask(
+                  'Done',
+                  80,
+                  () => {
+                    parent._updateToolData(toolName, data);
+                  },
+                  tracker
+                );
+              });
+          }
+        },
+
+        _updateToolData: function(toolName, data) {
+          switch (toolName) {
+            case 'op_profile':
+              this._opProfileData = data;
+              this._toolInScope = 'op_profile';
+              break;
+            case 'input_pipeline_analyzer':
+              this._inputPipelineData = data;
+              this._toolInScope = 'input_pipeline_analyzer';
+              break;
+            case 'overview_page':
+              this._overviewPageData = data;
+              this._toolInScope = 'overview_page';
+              break;
+            case 'memory_viewer':
+              this._memoryViewerData = data;
+              this._toolInScope = 'memory_viewer';
+              break;
+            case 'pod_viewer':
+              this._podViewerData = data;
+              this._toolInScope = 'pod_viewer';
+              break;
+            case 'google_chart_demo':
+              this._googleChartDemoData = data;
+              this._toolInScope = 'google_chart_demo';
+              break;
+          }
+        },
+        _maybeUpdateActiveHosts: function(datasetName, toolName) {
+          if (datasetName == null || toolName == null) return null;
+          this._activeHostsList = [];
+          var profileHostsUrl = tf_backend.addParams(
+            tf_backend.getRouter().pluginRoute('profile', '/hosts'),
+            {tag: toolName, run: datasetName}
+          );
+          this._requestManager.request(profileHostsUrl).then((hostList) => {
+            this.set(
+              '_activeHostsList',
+              hostList.sort((a, b) => {
+                return vz_sorting.compareTagNames(a, b);
+              })
+            );
+          });
+        },
+        _datasetsChanged: function(newDatasets, oldDatasets) {
+          if (this._datasets) {
+            this.selectedDatasetIndex = 0;
+          }
+        },
+        _activeToolsChanged: function(oldActiveTools, newActiveTools) {
+          // Same tool can have differernt index in different runs, therefore we
+          // force a change of 'selectedToolIndex', to make sure the label of the
+          // dropdown-menu is synced.
+          if (this._activeToolsList) {
+            this.async(
+              function() {
+                this.set('selectedToolIndex', -1);
+                this.set('selectedToolIndex', 0);
+              }.bind(this)
+            );
+          }
+        },
+        _activeHostsChanged: function(oldActiveHosts, newActiveHosts) {
+          if (this._activeHostsList) {
+            this.async(
+              function() {
+                this.set('selectedHostIndex', -1);
+                this.set('selectedHostIndex', 0);
+              }.bind(this)
+            );
+          }
+        },
+        _isCurrentTool: function(current, expected) {
+          return current == expected;
+        },
+        _hasActiveTools: function() {
+          if (this._activeToolsList && this._activeToolsList.length > 0) {
+            return true;
+          }
+          return false;
+        },
+        _getHostDisplayName: function(host) {
+          // For old traces without a host prefix in file name, return default for
+          // backward compatibility.
+          if (host == null) return '';
+          if (host == '') return 'default';
+          // Otherwise, remove the seperator, e.g. "host1_" => "host1".
+          return host.slice(0, -1);
+        },
+        _computeTopLevelState: function(inColab, dataNotFound, progress) {
+          if (inColab) return 'IN_COLAB';
+          if (dataNotFound) return 'DATA_NOT_FOUND';
+          if (!progress || progress.value < 100) return 'LOADING';
+          return 'ACTIVE';
+        },
+        /**
+         * Check whether the two given states are equal.
+         *
+         * @param {TopLevelState} topLevelState
+         * @param {TopLevelState} candidateState
+         */
+        _isState: function(actualState, candidateState) {
+          return actualState === candidateState;
+        },
+      });
+
+      // TODO(#2338): Remove this, and set up the "no TF" message properly.
+      // Keep this in sync with `frontend_metadata` in `profile_plugin.py`.
+      tf_tensorboard.registerDashboard({
+        plugin: PLUGIN_NAME,
+        elementName: 'tf-profile-dashboard',
+        isReloadDisabled: true,
+      });
+    })();
+  </script>
 </dom-module>

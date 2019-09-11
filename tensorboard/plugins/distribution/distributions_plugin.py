@@ -69,7 +69,7 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     return self._histograms_plugin.is_active()
 
   def frontend_metadata(self):
-    return super(DistributionsPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-distribution-dashboard',
     )
 

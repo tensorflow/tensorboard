@@ -28,8 +28,11 @@ var WITView = widgets.DOMWidgetView.extend({
     this.model.on('change:examples', this.examplesChanged, this);
     this.model.on('change:config', this.configChanged, this);
     this.model.on('change:inferences', this.inferencesChanged, this);
-    this.model.on('change:eligible_features',
-        this.eligibleFeaturesChanged, this);
+    this.model.on(
+      'change:eligible_features',
+      this.eligibleFeaturesChanged,
+      this
+    );
     this.model.on('change:mutant_charts', this.mutantChartsChanged, this);
     this.model.on('change:sprite', this.spriteChanged, this);
     this.model.on('change:error', this.backendError, this);
@@ -39,8 +42,8 @@ var WITView = widgets.DOMWidgetView.extend({
    * Loads up the WIT element.
    */
   loadAndCreateWhatIfToolElement: function() {
-    const height = parseInt(
-      this.model.attributes.layout.attributes.height, 10) - 20;
+    const height =
+      parseInt(this.model.attributes.layout.attributes.height, 10) - 20;
     const iframe = document.createElement('iframe');
 
     // Adjust WIT html location if running in a jupyter notebook
@@ -76,9 +79,11 @@ var WITView = widgets.DOMWidgetView.extend({
   isViewReady: function() {
     // Checks if the iframe has been created, WIT has been created in the iframe
     // and WIT has completed setup and its methods are created.
-    return this.iframe.contentDocument &&
+    return (
+      this.iframe.contentDocument &&
       this.iframe.contentDocument.getElementById('wit') &&
-      this.iframe.contentDocument.getElementById('wit').updateExampleContents;
+      this.iframe.contentDocument.getElementById('wit').updateExampleContents
+    );
   },
 
   /**
@@ -88,37 +93,39 @@ var WITView = widgets.DOMWidgetView.extend({
     this.view_ = this.iframe.contentDocument.getElementById('wit');
     // Add listeners for changes from WIT Polymer element. Passes changes
     // along to python.
-    this.view_.addEventListener('infer-examples', e => {
+    this.view_.addEventListener('infer-examples', (e) => {
       let i = this.model.get('infer') + 1;
       this.model.set('infer', i);
       this.touch();
     });
-    this.view_.addEventListener('delete-example', e => {
-      this.model.set('delete_example', {'index': e.detail.index});
+    this.view_.addEventListener('delete-example', (e) => {
+      this.model.set('delete_example', {index: e.detail.index});
       this.touch();
     });
-    this.view_.addEventListener('duplicate-example', e => {
-      this.model.set('duplicate_example', {'index': e.detail.index});
+    this.view_.addEventListener('duplicate-example', (e) => {
+      this.model.set('duplicate_example', {index: e.detail.index});
       this.touch();
     });
-    this.view_.addEventListener('update-example', e => {
-      this.model.set('update_example',
-          {'index': e.detail.index, 'example': e.detail.example});
+    this.view_.addEventListener('update-example', (e) => {
+      this.model.set('update_example', {
+        index: e.detail.index,
+        example: e.detail.example,
+      });
       this.touch();
     });
-    this.view_.addEventListener('get-eligible-features', e => {
+    this.view_.addEventListener('get-eligible-features', (e) => {
       let i = this.model.get('get_eligible_features') + 1;
       this.model.set('get_eligible_features', i);
       this.touch();
     });
 
-    this.view_.addEventListener('sort-eligible-features', e => {
+    this.view_.addEventListener('sort-eligible-features', (e) => {
       this.model.set('sort_eligible_features', e.detail);
       this.touch();
     });
 
     this.inferMutantsCounter = 0;
-    this.view_.addEventListener('infer-mutants', e => {
+    this.view_.addEventListener('infer-mutants', (e) => {
       e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
       this.model.set('infer_mutants', e.detail);
       this.mutantFeature = e.detail.feature_name;
@@ -153,8 +160,10 @@ var WITView = widgets.DOMWidgetView.extend({
     const inferences = this.model.get('inferences');
     this.view_.labelVocab = inferences['label_vocab'];
     this.view_.inferences = inferences['inferences'];
-    this.view_.attributions = {indices: this.view_.inferences.indices,
-      attributions: inferences['attributions']}
+    this.view_.attributions = {
+      indices: this.view_.inferences.indices,
+      attributions: inferences['attributions'],
+    };
   },
   eligibleFeaturesChanged: function() {
     if (!this.setupComplete) {
@@ -176,8 +185,11 @@ var WITView = widgets.DOMWidgetView.extend({
       return;
     }
     const chartInfo = this.model.get('mutant_charts');
-    this.view_.makeChartForFeature(chartInfo.chartType, this.mutantFeature,
-        chartInfo.data);
+    this.view_.makeChartForFeature(
+      chartInfo.chartType,
+      this.mutantFeature,
+      chartInfo.data
+    );
   },
   configChanged: function() {
     if (!this.setupComplete) {
@@ -242,5 +254,5 @@ var WITView = widgets.DOMWidgetView.extend({
 });
 
 module.exports = {
-  WITView : WITView
+  WITView: WITView,
 };

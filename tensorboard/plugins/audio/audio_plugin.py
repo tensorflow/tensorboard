@@ -63,9 +63,7 @@ class AudioPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(AudioPlugin, self).frontend_metadata()._replace(
-        element_name='tf-audio-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-audio-dashboard')
 
   def _index_impl(self):
     """Return information about the tags in each run.
@@ -142,7 +140,12 @@ class AudioPlugin(base_plugin.TBPlugin):
     sample = int(request.args.get('sample', 0))
 
     events = self._multiplexer.Tensors(run, tag)
-    response = self._audio_response_for_run(events, run, tag, sample)
+    try:
+      response = self._audio_response_for_run(events, run, tag, sample)
+    except KeyError:
+      return http_util.Respond(
+          request, 'Invalid run or tag', 'text/plain', code=400
+      )
     return http_util.Respond(request, response, 'application/json')
 
   def _audio_response_for_run(self, tensor_events, run, tag, sample):
@@ -212,10 +215,15 @@ class AudioPlugin(base_plugin.TBPlugin):
     """Serve encoded audio data."""
     tag = request.args.get('tag')
     run = request.args.get('run')
-    index = int(request.args.get('index'))
-    sample = int(request.args.get('sample', 0))
-    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
-    data = tensor_util.make_ndarray(events[index].tensor_proto)[sample, 0]
+    index = int(request.args.get('index', '0'))
+    sample = int(request.args.get('sample', '0'))
+    try:
+      events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
+      data = tensor_util.make_ndarray(events[index].tensor_proto)[sample, 0]
+    except (KeyError, IndexError):
+      return http_util.Respond(
+          request, 'Invalid run, tag, index, or sample', 'text/plain', code=400
+      )
     mime_type = self._get_mime_type(run, tag)
     return http_util.Respond(request, data, mime_type)
 

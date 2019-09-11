@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="run-color-style.html">
-<link rel="import" href="scrollbar-style.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-checkbox/paper-checkbox.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="run-color-style.html" />
+<link rel="import" href="scrollbar-style.html" />
 
 <!--
 tf-filterable-checkbox-list creates a list of checkboxes with a filter input at
@@ -38,9 +38,9 @@ Properties out:
 
 -->
 <dom-module id="tf-filterable-checkbox-list">
-  <style include="scrollbar-style"></style>
-  <style include="run-color-style"></style>
   <template>
+    <style include="scrollbar-style"></style>
+    <style include="run-color-style"></style>
     <div class="item">
       <paper-input
         id="input"
@@ -84,85 +84,85 @@ Properties out:
       </div>
     </template>
     <style>
-    paper-input {
-      --paper-input-container-focus-color: var(--tb-orange-strong);
-      --paper-input-container-input: {
-        font-size: 14px;
-      };
-      --paper-input-container-label: {
-        font-size: 14px;
-      };
-    }
-
-    paper-checkbox {
-      --paper-checkbox-ink-size: 40px;
-      --paper-checkbox-label: {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        word-break: break-word;
+      paper-input {
+        --paper-input-container-focus-color: var(--tb-orange-strong);
+        --paper-input-container-input: {
+          font-size: 14px;
+        }
+        --paper-input-container-label: {
+          font-size: 14px;
+        }
       }
-    }
 
-    .subtitle {
-      color: var(--paper-grey-700);
-      font-size: 13px;
-    }
+      paper-checkbox {
+        --paper-checkbox-ink-size: 40px;
+        --paper-checkbox-label: {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-break: break-word;
+        }
+      }
 
-    paper-menu-button {
-      padding: 0;
-    }
+      .subtitle {
+        color: var(--paper-grey-700);
+        font-size: 13px;
+      }
 
-    paper-ripple {
-      top: 12px;
-      left: 0;
-      right: 0;
-      bottom: 8px;
-    }
+      paper-menu-button {
+        padding: 0;
+      }
 
-    .dropdown-content {
-      padding: 10px 0;
-    }
+      paper-ripple {
+        top: 12px;
+        left: 0;
+        right: 0;
+        bottom: 8px;
+      }
 
-    .input {
-      width: 100%;
-    }
+      .dropdown-content {
+        padding: 10px 0;
+      }
 
-    .item {
-      align-items: center;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: row;
-      font-family: inherit;
-      font-size: 14px;
-      line-height: 24px;
-      margin: 3px 0;
-      padding: 0 16px;
-      max-width: var(--tf-filterable-checkbox-list-content-max-width, 450px);
-    }
+      .input {
+        width: 100%;
+      }
 
-    .matches {
-      max-height: 300px;
-      overflow-y: auto;
-      padding: 5px 0;
-    }
+      .item {
+        align-items: center;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 24px;
+        margin: 3px 0;
+        padding: 0 16px;
+        max-width: var(--tf-filterable-checkbox-list-content-max-width, 450px);
+      }
 
-    .checkbox {
-      width: 100%;
-      display: flex;
-      padding: 5px 0;
-      align-items: center;
-    }
+      .matches {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 5px 0;
+      }
 
-    .empty-match {
-      color: var(--paper-grey-600);
-      font-size: 14px;
-    }
+      .checkbox {
+        width: 100%;
+        display: flex;
+        padding: 5px 0;
+        align-items: center;
+      }
 
-    .x-button {
-      width: 100%;
-    }
+      .empty-match {
+        color: var(--paper-grey-600);
+        font-size: 14px;
+      }
+
+      .x-button {
+        width: 100%;
+      }
     </style>
   </template>
   <script src="tf-filterable-checkbox-list.js"></script>

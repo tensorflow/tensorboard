@@ -15,26 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/paper-styles.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <dom-module id="scrollbar-style">
   <template>
     <style>
-      .scrollbar::-webkit-scrollbar-track
-      {
+      .scrollbar::-webkit-scrollbar-track {
         visibility: hidden;
       }
 
-      .scrollbar::-webkit-scrollbar
-      {
+      .scrollbar::-webkit-scrollbar {
         width: 10px;
       }
 
-      .scrollbar::-webkit-scrollbar-thumb
-      {
+      .scrollbar::-webkit-scrollbar-thumb {
         border-radius: 10px;
-        -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,.3);
+        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
         background-color: var(--paper-grey-500);
         color: var(--paper-grey-900);
       }

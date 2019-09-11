@@ -14,84 +14,104 @@ limitations under the License.
 ==============================================================================*/
 
 module tf.graph.scene.contextmenu {
+  /** Function that converts data to a title string. */
+  export interface TitleFunction {
+    (data: any): string;
+  }
 
-/** Function that converts data to a title string. */
-export interface TitleFunction {
-  (data: any): string;
-}
+  /** Function that takes action based on item clicked in the context menu. */
+  export interface ActionFunction {
+    (elem: any, d: any, i: number): void;
+  }
 
-/** Function that takes action based on item clicked in the context menu. */
-export interface ActionFunction {
-  (elem: any, d: any, i: number): void;
-}
+  /**
+   * The interface for an item in the context menu
+   */
+  export interface ContextMenuItem {
+    title: TitleFunction;
+    action: ActionFunction;
+  }
 
-/**
- * The interface for an item in the context menu
- */
-export interface ContextMenuItem {
-  title: TitleFunction;
-  action: ActionFunction;
-}
-
-/**
- * Returns the top and left distance of the scene element from the top left
- * corner of the screen.
- */
-function getOffset(sceneElement) {
+  /**
+   * Returns the top and left distance of the scene element from the top left
+   * corner of the screen.
+   */
+  function getOffset(sceneElement) {
     let leftDistance = 0;
     let topDistance = 0;
     let currentElement = sceneElement;
-    while (currentElement &&
-           currentElement.offsetLeft >= 0 &&
-           currentElement.offsetTop >= 0) {
-        leftDistance += currentElement.offsetLeft - currentElement.scrollLeft;
-        topDistance += currentElement.offsetTop - currentElement.scrollTop;
-        currentElement = currentElement.offsetParent;
+    while (
+      currentElement &&
+      currentElement.offsetLeft >= 0 &&
+      currentElement.offsetTop >= 0
+    ) {
+      leftDistance += currentElement.offsetLeft - currentElement.scrollLeft;
+      topDistance += currentElement.offsetTop - currentElement.scrollTop;
+      currentElement = currentElement.offsetParent;
     }
     return {
-        left: leftDistance,
-        top: topDistance
+      left: leftDistance,
+      top: topDistance,
     };
-}
+  }
 
-/**
- * Returns the event listener, which can be used as an argument for the d3
- * selection.on function. Renders the context menu that is to be displayed
- * in response to the event.
- */
-export function getMenu(sceneElement, menu: ContextMenuItem[]) {
-  let menuSelection = d3.select('.context-menu');
-  // Close the menu when anything else is clicked.
-  d3.select('body').on(
-      'click.context', function() { menuSelection.style('display', 'none'); });
+  /**
+   * Returns the event listener, which can be used as an argument for the d3
+   * selection.on function. Renders the context menu that is to be displayed
+   * in response to the event.
+   */
+  export function getMenu(
+    sceneElement: tf.graph.scene.TfGraphScene,
+    menu: ContextMenuItem[]
+  ) {
+    const menuNode = sceneElement.getContextMenu();
+    const menuSelection = d3.select(sceneElement.getContextMenu());
 
-  // Function called to populate the context menu.
-  return function(data, index: number): void {
-    // Position and display the menu.
-    let event = <MouseEvent>d3.event;
-    const sceneOffset = getOffset(sceneElement);
-    menuSelection
-      .style('display', 'block')
-      .style('left', (event.clientX - sceneOffset.left + 1) + 'px')
-      .style('top', (event.clientY - sceneOffset.top + 1) + 'px');
+    // Function called to populate the context menu.
+    return function(data, index: number): void {
+      // Position and display the menu.
+      let event = <MouseEvent>d3.event;
+      const sceneOffset = getOffset(sceneElement);
+      menuSelection
+        .style('display', 'block')
+        .style('left', event.clientX - sceneOffset.left + 1 + 'px')
+        .style('top', event.clientY - sceneOffset.top + 1 + 'px');
 
-    // Stop the event from propagating further.
-    event.preventDefault();
-    event.stopPropagation();
+      // Stop the event from propagating further.
+      event.preventDefault();
+      event.stopPropagation();
 
-    // Add provided items to the context menu.
-    menuSelection.html('');
-    let list = menuSelection.append('ul');
-    list.selectAll('li')
+      function maybeCloseMenu(event?: any) {
+        if (event && event.composedPath().includes(menuNode)) {
+          return;
+        }
+        menuSelection.style('display', 'none');
+        document.body.removeEventListener('mousedown', maybeCloseMenu, {
+          capture: true,
+        });
+      }
+      // Dismiss and remove the click listener as soon as there is a mousedown
+      // on the document. We use capture listener so no component can stop
+      // context menu from dismissing due to stopped propagation.
+      document.body.addEventListener('mousedown', maybeCloseMenu, {
+        capture: true,
+      });
+
+      // Add provided items to the context menu.
+      menuSelection.html('');
+      let list = menuSelection.append('ul');
+      list
+        .selectAll('li')
         .data(menu)
         .enter()
         .append('li')
-        .html(function(d) { return d.title(data); })
         .on('click', (d, i) => {
           d.action(this, data, index);
-          menuSelection.style('display', 'none');
+          maybeCloseMenu();
+        })
+        .html(function(d) {
+          return d.title(data);
         });
-  };
-};
-
+    };
+  }
 } // close module

@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
 
 <!--
 tf-option-selector is a simple component that has buttons as content and
@@ -29,7 +29,7 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
       <div class="content-wrapper"><slot></slot></div>
     </div>
     <style>
-      .content-wrapper ::content > * {
+      .content-wrapper ::slotted(*) > * {
         width: 30%;
         font-size: 13px;
         background: none;
@@ -37,13 +37,13 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
         color: var(--tb-ui-dark-accent);
       }
 
-      .content-wrapper ::content :first-of-type {
+      .content-wrapper ::slotted(*) :first-of-type {
         margin-left: 0;
       }
 
-      .content-wrapper ::content .selected {
+      .content-wrapper ::slotted(*) .selected {
         background-color: var(--tb-ui-dark-accent);
-        color: white!important;
+        color: white !important;
       }
 
       h3 {
@@ -59,20 +59,22 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
   </template>
   <script>
     Polymer({
-      is: "tf-option-selector",
+      is: 'tf-option-selector',
       properties: {
         name: String,
         selectedId: {
           type: String,
           notify: true,
-          observer: '_selectedIdChanged'
-        }
+          observer: '_selectedIdChanged',
+        },
       },
       attached: function() {
         this.async(function() {
-          this.getEffectiveChildren().forEach(function(node) {
-            this.listen(node, 'tap', '_selectTarget');
-          }.bind(this));
+          this.getEffectiveChildren().forEach(
+            function(node) {
+              this.listen(node, 'tap', '_selectTarget');
+            }.bind(this)
+          );
         });
       },
       _selectTarget: function(e) {
@@ -85,10 +87,10 @@ provides a "selectedId" property that is one of the IDs of the buttons inside it
         }
 
         this.getEffectiveChildren().forEach(function(node) {
-          node.classList.remove("selected");
+          node.classList.remove('selected');
         });
-        selected.classList.add("selected");
-      }
+        selected.classList.add('selected');
+      },
     });
   </script>
 </dom-module>

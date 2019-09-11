@@ -14,21 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-radio-button/paper-radio-button.html">
-<link rel="import" href="../paper-radio-group/paper-radio-group.html">
-<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../tf-imports/d3.html" />
+<link
+  rel="import"
+  href="../iron-autogrow-textarea/iron-autogrow-textarea.html"
+/>
+<link rel="import" href="../iron-icons/iron-icons.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="../paper-checkbox/paper-checkbox.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-radio-button/paper-radio-button.html" />
+<link rel="import" href="../paper-radio-group/paper-radio-group.html" />
+<link rel="import" href="../paper-slider/paper-slider.html" />
 
-<dom-module id='vz-example-viewer'>
+<dom-module id="vz-example-viewer">
   <template>
     <style id="linter-paper-button-style">
       /**
@@ -54,7 +57,7 @@ limitations under the License.
       }
 
       .value-list {
-        width:100%;
+        width: 100%;
       }
 
       .slider-holder {
@@ -85,7 +88,7 @@ limitations under the License.
 
       .saliency-legend-label {
         font-size: 12px;
-        color: #3C4043;
+        color: #3c4043;
       }
 
       .outer {
@@ -110,25 +113,25 @@ limitations under the License.
       }
 
       iron-autogrow-textarea {
-        border: 1px solid #FFFFFF;
+        border: 1px solid #ffffff;
         border-radius: 4px;
         font-size: 14px;
         -moz-appearance: none;
         -webkit-appearance: none;
         --iron-autogrow-textarea: {
-          color: #3C4043;
+          color: #3c4043;
         }
       }
 
       iron-autogrow-textarea.value-same {
         --iron-autogrow-textarea: {
-          color: #5F6368;
+          color: #5f6368;
         }
       }
 
       iron-autogrow-textarea.value-different {
         --iron-autogrow-textarea: {
-          color: #34A853;
+          color: #34a853;
           font-weight: 500;
         }
       }
@@ -137,7 +140,7 @@ limitations under the License.
         text-align: left;
         margin: 4px;
         padding: 4px 8px;
-        color: #3C4043;
+        color: #3c4043;
       }
 
       .value-pill:hover {
@@ -170,7 +173,7 @@ limitations under the License.
         padding-left: 4px;
         margin: 4px 20px 4px 8px;
         justify-content: space-between;
-        color:#80868b;
+        color: #80868b;
       }
 
       .feature-name-text {
@@ -179,7 +182,7 @@ limitations under the License.
         min-width: 150px;
         font-size: 14px;
         margin-top: 4px;
-        color: #3C4043;
+        color: #3c4043;
         line-height: 1.6em;
         text-overflow: ellipsis;
         white-space: pre-wrap;
@@ -208,7 +211,7 @@ limitations under the License.
 
       .slider {
         --paper-slider-input: {
-          width: 100px
+          width: 100px;
         }
       }
 
@@ -243,7 +246,7 @@ limitations under the License.
       .delete-value-button {
         position: absolute;
         background: #ffe603;
-        color: #5F6368;
+        color: #5f6368;
         border-radius: 12px;
         max-width: 24px;
         max-height: 24px;
@@ -315,7 +318,7 @@ limitations under the License.
 
       .image-bottom-bar {
         width: 100%;
-        background: #3C4043;
+        background: #3c4043;
       }
 
       .image-upload-input {
@@ -340,7 +343,7 @@ limitations under the License.
 
       .control-button {
         background-color: white;
-        border: 1px solid #DADCE0;
+        border: 1px solid #dadce0;
         color: var(--tb-orange-dark);
         font-size: 14px;
         font-weight: 500;
@@ -350,7 +353,7 @@ limitations under the License.
       }
 
       .control-button[disabled] {
-        color: #DADCE0;
+        color: #dadce0;
       }
 
       .value-text {
@@ -358,12 +361,17 @@ limitations under the License.
       }
 
       .compare-value-text {
-        border-bottom: 2px solid #34A853;
+        border-bottom: 2px solid #34a853;
       }
     </style>
     <div class="outer">
       <template is="dom-if" if="[[showSearchBox]]">
-        <paper-input value="{{featureSearchValue}}" label="Search" class="filter-input" no-label-float>
+        <paper-input
+          value="{{featureSearchValue}}"
+          label="Search"
+          class="filter-input"
+          no-label-float
+        >
           <iron-icon icon="icons:search" prefix></iron-icon>
         </paper-input>
       </template>
@@ -385,62 +393,122 @@ limitations under the License.
             <div class="feature-name-text">[[feat.name]]</div>
             <div class="value-pills-holder">
               <paper-card id="[[getImageCardId(feat.name)]]" class="imagecard">
-                <img class="image" src$="[[getImageSrc(feat.name)]]"
-                      id="[[getImageId(feat.name)]]"></img>
-                <canvas id="[[getCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
-                <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                <img
+                  class="image"
+                  src$="[[getImageSrc(feat.name)]]"
+                  id="[[getImageId(feat.name)]]"
+                />
+                <canvas
+                  id="[[getCanvasId(feat.name)]]"
+                  data-feature="[[feat.name]]"
+                ></canvas>
+                <template
+                  is="dom-if"
+                  if="[[shouldShowImageControls(hasImage, allowImageControls)]]"
+                >
                   <div>Image windowing (contrast)</div>
                   <div class="slider-holder indent">
-                    <div class="slider-label windowing-label">Window center:</div>
-                    <paper-slider class="slider" editable=true  max="255"
-                                  immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                    <div class="slider-label windowing-label">
+                      Window center:
+                    </div>
+                    <paper-slider
+                      class="slider"
+                      editable="true"
+                      max="255"
+                      immediate-value="{{windowCenter}}"
+                      value="[[windowCenter]]"
+                    >
                     </paper-slider>
                   </div>
                   <div class="slider-holder indent">
-                    <div class="slider-label windowing-label">Window width:</div>
-                    <paper-slider class="slider" editable=true  max="512" min="1"
-                                  immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                    <div class="slider-label windowing-label">
+                      Window width:
+                    </div>
+                    <paper-slider
+                      class="slider"
+                      editable="true"
+                      max="512"
+                      min="1"
+                      immediate-value="{{windowWidth}}"
+                      value="[[windowWidth]]"
+                    >
                     </paper-slider>
                   </div>
                   <div class="flex-controls">
                     <div class="scale-label">Image scale percentage:</div>
-                    <paper-input no-label-float type="number" min="10" max="500"
-                                  value="{{imageScalePercentage}}">
+                    <paper-input
+                      no-label-float
+                      type="number"
+                      min="10"
+                      max="500"
+                      value="{{imageScalePercentage}}"
+                    >
                     </paper-input>
-                    <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
+                    <paper-button
+                      class="control-button"
+                      on-click="updateImages"
+                      class="image-scale-button"
+                    >
                       set
                     </paper-button>
                   </div>
                 </template>
                 <div class="image-bottom-bar">
-                  <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                      icon="file-upload" on-click="uploadImageClicked" data-feature="[[feat.name]]" title="Upload image">
+                  <paper-icon-button
+                    class$="[[getUploadImageClass(readonly)]]"
+                    icon="file-upload"
+                    on-click="uploadImageClicked"
+                    data-feature="[[feat.name]]"
+                    title="Upload image"
+                  >
                   </paper-icon-button>
-                  <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
-                      data-feature="[[feat.name]]"
-                      data-index="[[index]]">
+                  <paper-input
+                    class="image-upload-input"
+                    type="file"
+                    on-change="handleImageUpload"
+                    data-feature="[[feat.name]]"
+                    data-index="[[index]]"
+                  >
                   </paper-input>
                 </div>
               </paper-card>
             </div>
             <template is="dom-if" if="[[compareMode]]">
               <div class="value-pills-holder">
-                <paper-card id="[[getCompareImageCardId(feat.name)]]" class="imagecard">
-                  <img class="image" src$="[[getCompareImageSrc(feat.name)]]"
-                        id="[[getCompareImageId(feat.name)]]"></img>
-                  <canvas id="[[getCompareCanvasId(feat.name)]]" data-feature="[[feat.name]]"></canvas>
-                  <div class="image-bottom-bar">
-                  </div>
+                <paper-card
+                  id="[[getCompareImageCardId(feat.name)]]"
+                  class="imagecard"
+                >
+                  <img
+                    class="image"
+                    src$="[[getCompareImageSrc(feat.name)]]"
+                    id="[[getCompareImageId(feat.name)]]"
+                  />
+                  <canvas
+                    id="[[getCompareCanvasId(feat.name)]]"
+                    data-feature="[[feat.name]]"
+                  ></canvas>
+                  <div class="image-bottom-bar"></div>
                 </paper-card>
               </div>
             </template>
-            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
-                              on-click="featureMoreClicked"
-                              data-feature="[[feat.name]]"></paper-icon-button>
-            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
-                          horizontal-align="right" vertical-align="bottom">
+            <paper-icon-button
+              icon="more-horiz"
+              class$="[[getAddValueButtonClass(readonly)]]"
+              on-click="featureMoreClicked"
+              data-feature="[[feat.name]]"
+            ></paper-icon-button>
+            <paper-dialog
+              id="[[getFeatureDialogId(feat.name)]]"
+              horizontal-align="right"
+              vertical-align="bottom"
+            >
               <div class="feature-dialog">
-                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                <paper-button
+                  data-feature="[[feat.name]]"
+                  on-click="deleteFeature"
+                  class="feature-dialog-button"
+                >
                   Delete feature
                 </paper-button>
               </div>
@@ -451,31 +519,52 @@ limitations under the License.
           <div class="feature-name">
             <div class="feature-name-text">[[feat.name]]</div>
             <div class="flex-controls value-pills-holder">
-              <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
-                <template is="dom-repeat" items="[[getFeatureValues(feat.name)]]" as="value">
-                  <iron-autogrow-textarea class$="[[getInputPillClass(feat.name, displayMode)]]"
-                        readonly$="[[readonly]]"
-                        on-input="onValueChanged"
-                        on-focus="onInputFocus"
-                        on-blur="onInputBlur"
-                        data-feature="[[feat.name]]"
-                        data-index="[[index]]"
-                        value="[[value]]">
+              <template
+                is="dom-if"
+                if="[[isExpanded(feat.name, expandAllFeatures)]]"
+              >
+                <template
+                  is="dom-repeat"
+                  items="[[getFeatureValues(feat.name)]]"
+                  as="value"
+                >
+                  <iron-autogrow-textarea
+                    class$="[[getInputPillClass(feat.name, displayMode)]]"
+                    readonly$="[[readonly]]"
+                    on-input="onValueChanged"
+                    on-focus="onInputFocus"
+                    on-blur="onInputBlur"
+                    data-feature="[[feat.name]]"
+                    data-index="[[index]]"
+                    value="[[value]]"
+                  >
                   </iron-autogrow-textarea>
                 </template>
               </template>
-              <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
-                <iron-autogrow-textarea class$="[[getInputPillClass(feat.name, displayMode)]]"
+              <template
+                is="dom-if"
+                if="[[!isExpanded(feat.name, expandAllFeatures)]]"
+              >
+                <iron-autogrow-textarea
+                  class$="[[getInputPillClass(feat.name, displayMode)]]"
                   readonly$="[[readonly]]"
                   on-input="onValueChanged"
                   on-focus="onInputFocus"
                   on-blur="onInputBlur"
                   data-feature="[[feat.name]]"
                   data-index="[[zeroIndex]]"
-                  value="[[getFirstFeatureValue(feat.name)]]">
+                  value="[[getFirstFeatureValue(feat.name)]]"
+                >
                 </iron-autogrow-textarea>
-                <template is="dom-if" if="[[featureHasMultipleValues(feat.name)]]">
-                  <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getInputPillClass(feat.name, displayMode)]]">
+                <template
+                  is="dom-if"
+                  if="[[featureHasMultipleValues(feat.name)]]"
+                >
+                  <paper-button
+                    data-feature="[[feat.name]]"
+                    on-click="expandFeature"
+                    class$="[[getInputPillClass(feat.name, displayMode)]]"
+                  >
                     ...
                   </paper-button>
                 </template>
@@ -483,21 +572,42 @@ limitations under the License.
             </div>
             <template is="dom-if" if="[[compareMode]]">
               <div class="flex-controls value-pills-holder">
-                <template is="dom-if" if="[[isExpanded(feat.name, expandAllFeatures)]]">
-                  <template is="dom-repeat" items="[[getCompareFeatureValues(feat.name)]]" as="value">
-                    <iron-autogrow-textarea class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
-                          readonly
-                          value="[[value]]">
+                <template
+                  is="dom-if"
+                  if="[[isExpanded(feat.name, expandAllFeatures)]]"
+                >
+                  <template
+                    is="dom-repeat"
+                    items="[[getCompareFeatureValues(feat.name)]]"
+                    as="value"
+                  >
+                    <iron-autogrow-textarea
+                      class$="[[getCompareInputClass(feat.name, displayMode, index)]]"
+                      readonly
+                      value="[[value]]"
+                    >
                     </iron-autogrow-textarea>
                   </template>
                 </template>
-                <template is="dom-if" if="[[!isExpanded(feat.name, expandAllFeatures)]]">
-                  <iron-autogrow-textarea class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
+                <template
+                  is="dom-if"
+                  if="[[!isExpanded(feat.name, expandAllFeatures)]]"
+                >
+                  <iron-autogrow-textarea
+                    class$="[[getCompareInputClass(feat.name, displayMode, zeroIndex)]]"
                     readonly
-                    value="[[getFirstCompareFeatureValue(feat.name)]]">
+                    value="[[getFirstCompareFeatureValue(feat.name)]]"
+                  >
                   </iron-autogrow-textarea>
-                  <template is="dom-if" if="[[compareFeatureHasMultipleValues(feat.name)]]">
-                    <paper-button data-feature="[[feat.name]]" on-click="expandFeature" class$="[[getCompareInputClass(feat.name, displayMode)]]">
+                  <template
+                    is="dom-if"
+                    if="[[compareFeatureHasMultipleValues(feat.name)]]"
+                  >
+                    <paper-button
+                      data-feature="[[feat.name]]"
+                      on-click="expandFeature"
+                      class$="[[getCompareInputClass(feat.name, displayMode)]]"
+                    >
                       ...
                     </paper-button>
                   </template>
@@ -505,16 +615,30 @@ limitations under the License.
               </div>
             </template>
 
-            <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"
-                              on-click="featureMoreClicked"
-                              data-feature="[[feat.name]]"></paper-icon-button>
-            <paper-dialog id="[[getFeatureDialogId(feat.name)]]"
-                          horizontal-align="right" vertical-align="bottom">
+            <paper-icon-button
+              icon="more-horiz"
+              class$="[[getAddValueButtonClass(readonly)]]"
+              on-click="featureMoreClicked"
+              data-feature="[[feat.name]]"
+            ></paper-icon-button>
+            <paper-dialog
+              id="[[getFeatureDialogId(feat.name)]]"
+              horizontal-align="right"
+              vertical-align="bottom"
+            >
               <div class="feature-dialog">
-                <paper-button data-feature="[[feat.name]]" on-click="deleteFeature" class="feature-dialog-button">
+                <paper-button
+                  data-feature="[[feat.name]]"
+                  on-click="deleteFeature"
+                  class="feature-dialog-button"
+                >
                   Delete feature
                 </paper-button>
-                <paper-button data-feature="[[feat.name]]" on-click="addValue" class="feature-dialog-button">
+                <paper-button
+                  data-feature="[[feat.name]]"
+                  on-click="addValue"
+                  class="feature-dialog-button"
+                >
                   Add feature value
                 </paper-button>
               </div>
@@ -525,76 +649,141 @@ limitations under the License.
       <template is="dom-if" if="[[isSeqExample(maxSeqNumber)]]">
         <div class="slider-holder">
           <div class="slider-label">Sequence Number:</div>
-          <paper-slider class="slider" editable=true max="[[maxSeqNumber]]" value="{{seqNumber}}">
+          <paper-slider
+            class="slider"
+            editable="true"
+            max="[[maxSeqNumber]]"
+            value="{{seqNumber}}"
+          >
           </paper-slider>
         </div>
-        <template is="dom-repeat" items="[[filteredSeqFeaturesList]]" as="seqfeat">
+        <template
+          is="dom-repeat"
+          items="[[filteredSeqFeaturesList]]"
+          as="seqfeat"
+        >
           <div class="seqfeat">
             <template is="dom-if" if="[[isImage(seqfeat.name)]]">
               <div class="feature-name">
                 <div class="feature-name-text">[[seqfeat.name]]</div>
                 <div class="value-pills-holder">
-                  <paper-card id="[[getImageCardId(seqfeat.name)]]" class="imagecard">
-                    <img class="image" src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
-                        id="[[getImageId(seqfeat.name)]]"></img>
-                    <canvas id="[[getCanvasId(seqfeat.name)]]"
-                        data-feature="[[seqfeat.name]]"
-                        data-seq-num="[[seqNumber]]"></canvas>
-                    <template is="dom-if" if="[[shouldShowImageControls(hasImage, allowImageControls)]]">
+                  <paper-card
+                    id="[[getImageCardId(seqfeat.name)]]"
+                    class="imagecard"
+                  >
+                    <img
+                      class="image"
+                      src$="[[getSeqImageSrc(seqfeat.name, seqNumber)]]"
+                      id="[[getImageId(seqfeat.name)]]"
+                    />
+                    <canvas
+                      id="[[getCanvasId(seqfeat.name)]]"
+                      data-feature="[[seqfeat.name]]"
+                      data-seq-num="[[seqNumber]]"
+                    ></canvas>
+                    <template
+                      is="dom-if"
+                      if="[[shouldShowImageControls(hasImage, allowImageControls)]]"
+                    >
                       <div class="image-controls">
                         <div>Image windowing (contrast)</div>
                         <div class="slider-holder indent">
-                          <div class="slider-label windowing-label">Window center:</div>
-                          <paper-slider class="slider" editable=true  max="255"
-                                        immediate-value="{{windowCenter}}" value="[[windowCenter]]">
+                          <div class="slider-label windowing-label">
+                            Window center:
+                          </div>
+                          <paper-slider
+                            class="slider"
+                            editable="true"
+                            max="255"
+                            immediate-value="{{windowCenter}}"
+                            value="[[windowCenter]]"
+                          >
                           </paper-slider>
                         </div>
                         <div class="slider-holder indent">
-                          <div class="slider-label windowing-label">Window width:</div>
-                          <paper-slider class="slider" editable=true  max="512" min="1"
-                                        immediate-value="{{windowWidth}}" value="[[windowWidth]]">
+                          <div class="slider-label windowing-label">
+                            Window width:
+                          </div>
+                          <paper-slider
+                            class="slider"
+                            editable="true"
+                            max="512"
+                            min="1"
+                            immediate-value="{{windowWidth}}"
+                            value="[[windowWidth]]"
+                          >
                           </paper-slider>
                         </div>
                         <div class="flex-controls">
                           <div class="scale-label">Image scale percentage:</div>
-                          <paper-input no-label-float type="number" min="10" max="500"
-                                        value="{{imageScalePercentage}}">
+                          <paper-input
+                            no-label-float
+                            type="number"
+                            min="10"
+                            max="500"
+                            value="{{imageScalePercentage}}"
+                          >
                           </paper-input>
-                          <paper-button class="control-button" on-click="updateImages" class="image-scale-button">
+                          <paper-button
+                            class="control-button"
+                            on-click="updateImages"
+                            class="image-scale-button"
+                          >
                             set
                           </paper-button>
                         </div>
                       </div>
                     </template>
                     <div class="image-bottom-bar">
-                      <paper-icon-button class$="[[getUploadImageClass(readonly)]]"
-                          icon="file-upload" on-click="uploadImageClicked" data-feature="[[seqfeat.name]]" title="Upload image">
+                      <paper-icon-button
+                        class$="[[getUploadImageClass(readonly)]]"
+                        icon="file-upload"
+                        on-click="uploadImageClicked"
+                        data-feature="[[seqfeat.name]]"
+                        title="Upload image"
+                      >
                       </paper-icon-button>
-                      <paper-input class="image-upload-input" type="file" on-change="handleImageUpload"
-                          data-feature="[[seqfeat.name]]"
-                          data-index="[[index]]"
-                          data-seq-num="[[seqNumber]]">
+                      <paper-input
+                        class="image-upload-input"
+                        type="file"
+                        on-change="handleImageUpload"
+                        data-feature="[[seqfeat.name]]"
+                        data-index="[[index]]"
+                        data-seq-num="[[seqNumber]]"
+                      >
                       </paper-input>
                     </div>
                   </paper-card>
                 </div>
                 <template is="dom-if" if="[[compareMode]]">
                   <div class="value-pills-holder">
-                    <paper-card id="[[getCompareImageCardId(seqfeat.name)]]" class="imagecard">
-                      <img class="image" src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
-                          id="[[getCompareImageId(seqfeat.name)]]"></img>
-                      <canvas id="[[getCompareCanvasId(seqfeat.name)]]"
-                          data-feature="[[seqfeat.name]]"
-                          data-seq-num="[[seqNumber]]"></canvas>
-                      <div class="image-bottom-bar">
-                      </div>
+                    <paper-card
+                      id="[[getCompareImageCardId(seqfeat.name)]]"
+                      class="imagecard"
+                    >
+                      <img
+                        class="image"
+                        src$="[[getCompareSeqImageSrc(seqfeat.name, seqNumber)]]"
+                        id="[[getCompareImageId(seqfeat.name)]]"
+                      />
+                      <canvas
+                        id="[[getCompareCanvasId(seqfeat.name)]]"
+                        data-feature="[[seqfeat.name]]"
+                        data-seq-num="[[seqNumber]]"
+                      ></canvas>
+                      <div class="image-bottom-bar"></div>
                     </paper-card>
                   </div>
                 </template>
-                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-icon-button
+                  icon="more-horiz"
+                  class$="[[getAddValueButtonClass(readonly)]]"
+                ></paper-icon-button>
                 <paper-dialog>
-                  <paper-button data-feature="[[seqfeat.name]]"
-                                on-click="deleteFeature">
+                  <paper-button
+                    data-feature="[[seqfeat.name]]"
+                    on-click="deleteFeature"
+                  >
                     Delete feature
                   </paper-button>
                 </paper-dialog>
@@ -604,24 +793,35 @@ limitations under the License.
               <div class="feature-name">
                 <div class="feature-name-text">[[seqfeat.name]]</div>
                 <div class="flex-controls value-pills-holder">
-                  <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
-                    <template is="dom-repeat"
-                              items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
-                              as="seqvalue">
-                      <iron-autogrow-textarea class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
-                          readonly$="[[readonly]]"
-                          on-input="onValueChanged"
-                          on-focus="onInputFocus"
-                          on-blur="onInputBlur"
-                          data-feature="[[seqfeat.name]]"
-                          data-index="[[index]]"
-                          data-seq-num="[[seqNumber]]"
-                          value="[[seqvalue]]">
+                  <template
+                    is="dom-if"
+                    if="[[isExpanded(seqfeat.name, expandAllFeatures)]]"
+                  >
+                    <template
+                      is="dom-repeat"
+                      items="[[getSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                      as="seqvalue"
+                    >
+                      <iron-autogrow-textarea
+                        class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                        readonly$="[[readonly]]"
+                        on-input="onValueChanged"
+                        on-focus="onInputFocus"
+                        on-blur="onInputBlur"
+                        data-feature="[[seqfeat.name]]"
+                        data-index="[[index]]"
+                        data-seq-num="[[seqNumber]]"
+                        value="[[seqvalue]]"
+                      >
                       </iron-autogrow-textarea>
                     </template>
                   </template>
-                  <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
-                    <iron-autogrow-textarea class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                  <template
+                    is="dom-if"
+                    if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]"
+                  >
+                    <iron-autogrow-textarea
+                      class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
                       readonly$="[[readonly]]"
                       on-input="onValueChanged"
                       on-focus="onInputFocus"
@@ -629,10 +829,18 @@ limitations under the License.
                       data-feature="[[seqfeat.name]]"
                       data-index="[[zeroIndex]]"
                       data-seq-num="[[seqNumber]]"
-                      value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                      value="[[getFirstSeqFeatureValue(seqfeat.name, seqNumber)]]"
+                    >
                     </iron-autogrow-textarea>
-                    <template is="dom-if" if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
-                      <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getInputPillClass(seqfeat.name, displayMode)]]">
+                    <template
+                      is="dom-if"
+                      if="[[seqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]"
+                    >
+                      <paper-button
+                        data-feature="[[seqfeat.name]]"
+                        on-click="expandFeature"
+                        class$="[[getInputPillClass(seqfeat.name, displayMode)]]"
+                      >
                         ...
                       </paper-button>
                     </template>
@@ -640,36 +848,65 @@ limitations under the License.
                 </div>
                 <template is="dom-if" if="[[compareMode]]">
                   <div class="flex-controls value-pills-holder">
-                    <template is="dom-if" if="[[isExpanded(seqfeat.name, expandAllFeatures)]]">
-                      <template is="dom-repeat"
-                                items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
-                                as="seqvalue">
-                        <iron-autogrow-textarea class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
-                            readonly
-                            value="[[seqvalue]]">
+                    <template
+                      is="dom-if"
+                      if="[[isExpanded(seqfeat.name, expandAllFeatures)]]"
+                    >
+                      <template
+                        is="dom-repeat"
+                        items="[[getCompareSeqFeatureValues(seqfeat.name, seqNumber)]]"
+                        as="seqvalue"
+                      >
+                        <iron-autogrow-textarea
+                          class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, index)]]"
+                          readonly
+                          value="[[seqvalue]]"
+                        >
                         </iron-autogrow-textarea>
                       </template>
                     </template>
-                    <template is="dom-if" if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]">
-                      <iron-autogrow-textarea class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
+                    <template
+                      is="dom-if"
+                      if="[[!isExpanded(seqfeat.name, expandAllFeatures)]]"
+                    >
+                      <iron-autogrow-textarea
+                        class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber, zeroIndex)]]"
                         readonly
-                        value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]">
+                        value="[[getFirstCompareSeqFeatureValue(seqfeat.name, seqNumber)]]"
+                      >
                       </iron-autogrow-textarea>
-                      <template is="dom-if" if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]">
-                        <paper-button data-feature="[[seqfeat.name]]" on-click="expandFeature" class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber)]]">
+                      <template
+                        is="dom-if"
+                        if="[[compareSeqFeatureHasMultipleValues(seqfeat.name, seqNumber)]]"
+                      >
+                        <paper-button
+                          data-feature="[[seqfeat.name]]"
+                          on-click="expandFeature"
+                          class$="[[getSeqCompareInputClass(seqfeat.name, displayMode, seqNumber)]]"
+                        >
                           ...
                         </paper-button>
                       </template>
                     </template>
                   </div>
                 </template>
-                <paper-icon-button icon="more-horiz" class$="[[getAddValueButtonClass(readonly)]]"></paper-icon-button>
+                <paper-icon-button
+                  icon="more-horiz"
+                  class$="[[getAddValueButtonClass(readonly)]]"
+                ></paper-icon-button>
                 <paper-dialog>
-                  <paper-button data-feature="[[seqfeat.name]]"
-                                on-click="deleteFeature">
+                  <paper-button
+                    data-feature="[[seqfeat.name]]"
+                    on-click="deleteFeature"
+                  >
                     Delete feature
                   </paper-button>
-                  <paper-button data-feature="[[seqfeat.name]]" data-seq-num="[[seqNumber]]" on-click="addValue" class="feature-dialog-button">
+                  <paper-button
+                    data-feature="[[seqfeat.name]]"
+                    data-seq-num="[[seqNumber]]"
+                    on-click="addValue"
+                    class="feature-dialog-button"
+                  >
                     Add feature value
                   </paper-button>
                 </paper-dialog>
@@ -678,8 +915,12 @@ limitations under the License.
           </div>
         </template>
       </template>
-      <paper-icon-button on-click="openAddFeatureDialog" icon="add" title="Add feature"
-                    class$="[[getAddValueButtonClass(readonly)]]">
+      <paper-icon-button
+        on-click="openAddFeatureDialog"
+        icon="add"
+        title="Add feature"
+        class$="[[getAddValueButtonClass(readonly)]]"
+      >
       </paper-icon-button>
       <div class$="[[getSaliencyControlsHolderClass(saliency)]]">
         <div class="saliency-legend-label">Attribution legend</div>
@@ -688,20 +929,34 @@ limitations under the License.
         </div>
       </div>
     </div>
-    <paper-icon-button id="deletevalue" icon="delete" class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
-        data-feature="[[focusedFeatureName]]" data-index="[[focusedFeatureValueIndex]]"
-        data-seq-num="[[focusedSeqNumber]]" on-click="deleteValue" title="Delete value">
+    <paper-icon-button
+      id="deletevalue"
+      icon="delete"
+      class$="[[getDeleteValueButtonClass(readonly, showDeleteValueButton)]]"
+      data-feature="[[focusedFeatureName]]"
+      data-index="[[focusedFeatureValueIndex]]"
+      data-seq-num="[[focusedSeqNumber]]"
+      on-click="deleteValue"
+      title="Delete value"
+    >
     </paper-icon-button>
     <paper-dialog id="addFeatureDialog">
       <h2>Add Feature</h2>
-      <paper-input label="Feature name" value="{{newFeatureName}}"></paper-input>
+      <paper-input
+        label="Feature name"
+        value="{{newFeatureName}}"
+      ></paper-input>
       <paper-radio-group selected="{{newFeatureType}}">
         <paper-radio-button name="int">Int</paper-radio-button>
         <paper-radio-button name="float">Float</paper-radio-button>
         <paper-radio-button name="bytes">Bytes</paper-radio-button>
       </paper-radio-group>
-      <paper-button dialog-dismiss class="control-button" on-click="addFeature"
-                    disabled="[[!shouldEnableAddFeature(newFeatureName)]]">
+      <paper-button
+        dialog-dismiss
+        class="control-button"
+        on-click="addFeature"
+        disabled="[[!shouldEnableAddFeature(newFeatureName)]]"
+      >
         Create
       </paper-button>
     </paper-dialog>

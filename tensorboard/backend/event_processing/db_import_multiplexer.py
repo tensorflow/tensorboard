@@ -31,6 +31,7 @@ from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import sqlite_writer
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
@@ -39,34 +40,37 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-class DbImportMultiplexer(object):
+
+class DbImportMultiplexer(plugin_event_multiplexer.EventMultiplexer):
   """A loading-only `EventMultiplexer` that populates a SQLite DB.
 
-  This EventMultiplexer only loads data; it provides no read APIs.
+  This EventMultiplexer only loads data; the read APIs always return empty
+  results, since all data is accessed instead via SQL against the
+  db_connection_provider wrapped by this multiplexer.
   """
 
   def __init__(self,
+               db_uri,
                db_connection_provider,
                purge_orphaned_data,
-               max_reload_threads,
-               use_import_op):
+               max_reload_threads):
     """Constructor for `DbImportMultiplexer`.
 
     Args:
+      db_uri: A URI to the database file in use.
       db_connection_provider: Provider function for creating a DB connection.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
       max_reload_threads: The max number of threads that TensorBoard can use
         to reload runs. Each thread reloads one run at a time. If not provided,
         reloads runs serially (one after another).
-      use_import_op: If True, use TensorFlow's import_event() op for imports,
-        otherwise use TensorBoard's own sqlite ingestion logic.
     """
-    logger.info('DbImportMultiplexer initializing')
-    self._db_connection_provider = db_connection_provider
+    logger.info('DbImportMultiplexer initializing for %s', db_uri)
+    super(DbImportMultiplexer, self).__init__()
+    self.db_uri = db_uri
+    self.db_connection_provider = db_connection_provider
     self._purge_orphaned_data = purge_orphaned_data
     self._max_reload_threads = max_reload_threads
-    self._use_import_op = use_import_op
     self._event_sink = None
     self._run_loaders = {}
 
@@ -74,23 +78,16 @@ class DbImportMultiplexer(object):
       logger.warn(
           '--db_import does not yet support purging orphaned data')
 
-    conn = self._db_connection_provider()
-    # Extract the file path of the DB from the DB connection.
-    rows = conn.execute('PRAGMA database_list').fetchall()
-    db_name_to_path = {row[1]: row[2] for row in rows}
-    self._db_path = db_name_to_path['main']
-    logger.info('DbImportMultiplexer using db_path %s', self._db_path)
+    conn = self.db_connection_provider()
     # Set the DB in WAL mode so reads don't block writes.
     conn.execute('PRAGMA journal_mode=wal')
     conn.execute('PRAGMA synchronous=normal')  # Recommended for WAL mode
     sqlite_writer.initialize_schema(conn)
     logger.info('DbImportMultiplexer done initializing')
 
-  def _CreateEventSink(self):
-    if self._use_import_op:
-      return _ImportOpEventSink(self._db_path)
-    else:
-      return _SqliteWriterEventSink(self._db_connection_provider)
+  def AddRun(self, path, name=None):
+    """Unsupported; instead use AddRunsFromDirectory."""
+    raise NotImplementedError("Unsupported; use AddRunsFromDirectory()")
 
   def AddRunsFromDirectory(self, path, name=None):
     """Load runs from a directory; recursively walks subdirectories.
@@ -126,7 +123,7 @@ class DbImportMultiplexer(object):
     # Defer event sink creation until needed; this ensures it will only exist in
     # the thread that calls Reload(), since DB connections must be thread-local.
     if not self._event_sink:
-      self._event_sink = self._CreateEventSink()
+      self._event_sink = _SqliteWriterEventSink(self.db_connection_provider)
     # Use collections.deque() for speed when we don't need blocking since it
     # also has thread-safe appends/pops.
     loader_queue = collections.deque(six.itervalues(self._run_loaders))
@@ -253,50 +250,6 @@ class _EventSink(object):
       event_batch: an _EventBatch of event data.
     """
     raise NotImplementedError()
-
-
-class _ImportOpEventSink(_EventSink):
-  """Implementation of EventSink using TF's import_event() op."""
-
-  def __init__(self, db_path):
-    """Constructs an ImportOpEventSink.
-
-    Args:
-      db_path: string, filesystem path of the DB file to open
-    """
-    self._db_path = db_path
-    self._writer_fn_cache = {}
-
-  def _get_writer_fn(self, event_batch):
-    key = (event_batch.experiment_name, event_batch.run_name)
-    if key in self._writer_fn_cache:
-      return self._writer_fn_cache[key]
-    with tf.Graph().as_default():
-      placeholder = tf.compat.v1.placeholder(shape=[], dtype=tf.string)
-      writer = tf.contrib.summary.create_db_writer(
-          self._db_path,
-          experiment_name=event_batch.experiment_name,
-          run_name=event_batch.run_name)
-      with writer.as_default():
-        # TODO(nickfelt): running import_event() one record at a time is very
-        #   slow; we should add an op that accepts a vector of records.
-        import_op = tf.contrib.summary.import_event(placeholder)
-      session = tf.compat.v1.Session()
-      session.run(writer.init())
-      def writer_fn(event_proto):
-        session.run(import_op, feed_dict={placeholder: event_proto})
-    self._writer_fn_cache[key] = writer_fn
-    return writer_fn
-
-  def write_batch(self, event_batch):
-    start = time.time()
-    writer_fn = self._get_writer_fn(event_batch)
-    for event_proto in event_batch.events:
-      writer_fn(event_proto)
-    elapsed = time.time() - start
-    logger.debug(
-        'ImportOpEventSink.WriteBatch() took %0.3f sec for %s events', elapsed,
-        len(event_batch.events))
 
 
 class _SqliteWriterEventSink(_EventSink):

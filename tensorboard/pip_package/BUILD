@@ -93,6 +93,7 @@ genrule(
         "@com_google_fonts_roboto//:LICENSE",
         "@org_mozilla_bleach//:LICENSE",
         "@org_html5lib//:LICENSE",
+        "@org_pythonhosted_webencodings//:LICENSE",
     ],
     outs = ["LICENSE"],
     cmd = "\n".join([

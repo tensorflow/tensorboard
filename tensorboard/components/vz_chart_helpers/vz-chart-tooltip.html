@@ -15,92 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
 
 <!--
-vz-line-chart creates an element that draws a line chart for
-displaying event values.
+vz-chart-tooltip is a generic component that renders a component using the
+portal technique.
 
-This line chart supports drawing multiple lines at the same time, with features
-such as different X scales (linear and temporal), tooltips and smoothing.
+Especially with the shadow DOM, it is hard to make modal/tooltips appear above
+other DOM elements not occuluded by scrollbar. The portal technique essentially
+renders a DOM on body at the end while keeping it accessible by components
+deeply nested inside others. The component tries to keep how/where it is
+rendered transparent from the client DOM.
 
-@element vz-line-chart
+Example usage:
+  <vz-chart-tooltip position="auto" content-component-name="foo-bar">
+  </vz-chart-tooltip>
 -->
 <dom-module id="vz-chart-tooltip">
-  <template>
-    <template id="template">
-      <div class="content">
-        <table>
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </template>
-    <style>
-    :host {
-      pointer-events: none;
-    }
-
-    .content {
-      background: rgba(0, 0, 0, .8);
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
-      color: #fff;
-      opacity: 0;
-      overflow: hidden;
-      pointer-events: none;
-      position: fixed;
-      will-change: transform;
-      z-index: 5;
-    }
-
-    table {
-      font-size: 13px;
-      line-height: 1.4em;
-      margin-top: 10px;
-      padding: 8px;
-    }
-
-    thead {
-      font-size: 14px;
-    }
-
-    tbody {
-      font-size: 13px;
-      line-height: 21px;
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 0 5px;
-    }
-
-    .swatch {
-      border-radius: 50%;
-      display: block;
-      height: 18px;
-      width: 18px;
-    }
-
-    .closest .swatch {
-      box-shadow: inset 0 0 0 2px #fff;
-    }
-
-    th {
-      padding: 0 5px;
-      text-align: left;
-    }
-
-    .distant td:not(.swatch) {
-      opacity: .8;
-    }
-
-    .ghost {
-      opacity: .2;
-      stroke-width: 1px;
-    }
-    </style>
-  </template>
   <script src="vz-chart-tooltip.js"></script>
 </dom-module>

@@ -15,19 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html" />
 
 <dom-module id="tf-debugger-line-chart">
   <template>
-    <vz-line-chart
+    <vz-line-chart2
       x-components-creation-method="[[_lineChartXComponentsCreationMethod]]"
       y-value-accessor="[[_lineChartYValueAccessor]]"
       tooltip-columns="[[_lineChartTooltipColumns]]"
       smoothing-enabled="[[_lineChartSmoothingEnabled]]"
-    ></vz-line-chart>
+    ></vz-line-chart2>
     <style>
-      vz-line-chart {
+      vz-line-chart2 {
         height: 300px;
         position: relative;
       }
@@ -36,7 +36,7 @@ limitations under the License.
 
   <script>
     Polymer({
-      is: "tf-debugger-line-chart",
+      is: 'tf-debugger-line-chart',
       properties: {
         // x and y data for the line plot, with keys 'x' and 'y'. The values
         // are arrays of numbers.
@@ -54,14 +54,14 @@ limitations under the License.
         _lineChartXComponentsCreationMethod: {
           type: Object,
           readOnly: true,
-          value: () => (() => {
+          value: () => () => {
             const scale = new Plottable.Scales.Linear();
             return {
               scale: scale,
               axis: new Plottable.Axes.Numeric(scale, 'bottom'),
-              accessor: d => d.step,
+              accessor: (d) => d.step,
             };
-          }),
+          },
         },
         _lineChartYValueAccessor: {
           type: Object,
@@ -69,7 +69,7 @@ limitations under the License.
           // This function returns a function because polymer calls the outer
           // function to compute the value. We actually want the value of this
           // property to be the inner function.
-          value: () => (d => d.scalar),
+          value: () => (d) => d.scalar,
         },
         _lineChartTooltipColumns: {
           type: Array,
@@ -90,11 +90,10 @@ limitations under the License.
           value: false,
           readOnly: true,
         },
-
       },
 
       observers: [
-        "render(data)",
+        'render(data)',
         // TODO(cais): Add additional data such as yAxis and title.
       ],
 
@@ -102,16 +101,16 @@ limitations under the License.
         if (data == null) {
           return;
         }
-        this.$$('vz-line-chart').setVisibleSeries([this._defaultSeriesName]);
+        const chart = this.$$('vz-line-chart2');
+        chart.setVisibleSeries([this._defaultSeriesName]);
         let seriesData = [];
         const xData = data['x'];
         const yData = data['y'];
         for (let i = 0; i < xData.length; ++i) {
-          seriesData.push({'step': xData[i], 'scalar': yData[i]});
+          seriesData.push({step: xData[i], scalar: yData[i]});
         }
-        this.$$('vz-line-chart').setSeriesData(this._defaultSeriesName, seriesData);
+        chart.setSeriesData(this._defaultSeriesName, seriesData);
       },
     });
   </script>
-
 </dom-module>

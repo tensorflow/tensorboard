@@ -145,9 +145,7 @@ class MeshPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer and any(six.itervalues(all_runs)))
 
   def frontend_metadata(self):
-    return super(MeshPlugin, self).frontend_metadata()._replace(
-        element_name='mesh-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='mesh-dashboard')
 
   def _get_sample(self, tensor_event, sample):
     """Returns a single sample from a batch of samples."""
@@ -228,9 +226,12 @@ class MeshPlugin(base_plugin.TBPlugin):
     """
     step = float(request.args.get('step', 0.0))
     tensor_events = self._collect_tensor_events(request, step)
-    content_type = request.args['content_type']
-    content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(
-        content_type)
+    content_type = request.args.get('content_type')
+    try:
+      content_type = plugin_data_pb2.MeshPluginData.ContentType.Value(
+          content_type)
+    except ValueError:
+      return http_util.Respond(request, 'Bad content_type', 'text/plain', 400)
     sample = int(request.args.get('sample', 0))
 
     response = [

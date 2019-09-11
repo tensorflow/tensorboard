@@ -15,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="tf-audio-loader.html">
+<link rel="import" href="../paper-styles/paper-styles.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="tf-audio-loader.html" />
 
 <!--
 tf-audio-grid creates a grid for examining audio data. The columns correspond
@@ -55,11 +55,7 @@ is high)
       <div id="topRow" class="container">
         <div class="noshrink" id="paddingCell"></div>
         <template is="dom-if" if="[[_tagsExist(tags)]]">
-          <template
-            is="dom-repeat"
-            items="[[runs]]"
-            as="run"
-          >
+          <template is="dom-repeat" items="[[runs]]" as="run">
             <div class="run-name-cell noshrink">
               <span>[[run]]</span>
             </div>
@@ -67,20 +63,12 @@ is high)
         </template>
       </div>
       <div id="bottomContainer" class="container">
-        <template
-          is="dom-repeat"
-          items="[[tags]]"
-          as="tag"
-        >
+        <template is="dom-repeat" items="[[tags]]" as="tag">
           <div class="audio-row container noshrink">
             <div class="tag-name-cell noshrink">
               <span class="tag-name">[[tag]]</span>
             </div>
-            <template
-              is="dom-repeat"
-              items="[[runs]]"
-              as="run"
-            >
+            <template is="dom-repeat" items="[[runs]]" as="run">
               <div class="audio-cell noshrink">
                 <template is="dom-if" if="[[_exists(run, tag, runToAudio.*)]]">
                   <tf-audio-loader
@@ -130,7 +118,7 @@ is high)
         padding-top: 5px;
       }
       .audio-cell {
-        background: #FAFAFA;
+        background: #fafafa;
         width: 300px;
         min-height: var(--audio-cell-min-height);
         border: 1px solid black;
@@ -141,7 +129,7 @@ is high)
       .tag-name-cell {
         width: 300px;
         height: var(--audio-cell-min-height);
-        display:flex;
+        display: flex;
         flex-direction: column;
         justify-content: center;
       }
@@ -165,7 +153,7 @@ is high)
   </template>
   <script>
     Polymer({
-      is: "tf-audio-grid",
+      is: 'tf-audio-grid',
       properties: {
         runToAudio: Object,
         tags: Array,
@@ -175,7 +163,7 @@ is high)
       _tagsExist: function(tags) {
         return tags && tags.length > 0;
       },
-      _exists: function (run, tag) {
+      _exists: function(run, tag) {
         return this.runToAudio[run].indexOf(tag) !== -1;
       },
     });

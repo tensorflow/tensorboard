@@ -54,11 +54,7 @@ class InferencePluginTest(tf.test.TestCase):
     self.context = base_plugin.TBContext(logdir=self.logdir)
     self.plugin = interactive_inference_plugin.InteractiveInferencePlugin(
         self.context)
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.logdir, [self.plugin],
-        multiplexer=event_multiplexer.EventMultiplexer({}),
-        reload_interval=0,
-        path_prefix='')
+    wsgi_app = application.TensorBoardWSGI([self.plugin])
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
   def get_fake_example(self, single_int_value=0):

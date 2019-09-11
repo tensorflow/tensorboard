@@ -21,11 +21,44 @@ from __future__ import print_function
 import sys
 
 import six
+from werkzeug import wrappers
 
+from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.debugger import constants
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
+
+
+class InactiveDebuggerPlugin(base_plugin.TBPlugin):
+  """A placeholder debugger plugin used when no grpc port is specified."""
+
+  plugin_name = constants.DEBUGGER_PLUGIN_NAME
+
+  def __init__(self):
+    pass
+
+  def is_active(self):
+    return False
+
+  def frontend_metadata(self):
+    return base_plugin.FrontendMetadata(element_name='tf-debugger-dashboard')
+
+  def get_plugin_apps(self):
+    return {
+        '/debugger_grpc_host_port': self._serve_debugger_grpc_host_port,
+    }
+
+  @wrappers.Request.application
+  def _serve_debugger_grpc_host_port(self, request):
+    # Respond with a -1 port number to indicate the debugger plugin is
+    # inactive.
+    return http_util.Respond(
+        request,
+        {'host': None, 'port': -1},
+        'application/json')
+
 
 
 class DebuggerPluginLoader(base_plugin.TBLoader):
@@ -91,42 +124,43 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
     Returns:
       A DebuggerPlugin instance or None if it couldn't be loaded.
     """
-    if not (context.flags.debugger_data_server_grpc_port > 0 or
-            context.flags.debugger_port > 0):
-      return None
     flags = context.flags
-    try:
-      # pylint: disable=g-import-not-at-top,unused-import
-      import tensorflow
-    except ImportError:
-      raise ImportError(
-          'To use the debugger plugin, you need to have TensorFlow installed:\n'
-          '  pip install tensorflow')
-    try:
+    if flags.debugger_data_server_grpc_port > 0 or flags.debugger_port > 0:
+      # Verify that the required Python packages are installed.
+      try:
+        # pylint: disable=g-import-not-at-top,unused-import
+        import tensorflow
+      except ImportError:
+        raise ImportError(
+            'To use the debugger plugin, you need to have TensorFlow installed:\n'
+            '  pip install tensorflow')
+
+    if flags.debugger_data_server_grpc_port > 0:
       # pylint: disable=line-too-long,g-import-not-at-top
       from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
-      from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
       # pylint: enable=line-too-long,g-import-not-at-top
-    except ImportError as e:
-      e_type, e_value, e_traceback = sys.exc_info()
-      message = e.msg if hasattr(e, 'msg') else e.message  # Handle py2 vs py3
-      if 'grpc' in message:
-        e_value = ImportError(
-            message +
-            '\n\nTo use the debugger plugin, you need to have '
-            'gRPC installed:\n  pip install grpcio')
-      six.reraise(e_type, e_value, e_traceback)
-    if flags.debugger_port > 0:
-      interactive_plugin = (
-          interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
-      logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
-                   flags.debugger_data_server_grpc_port)
-      interactive_plugin.listen(flags.debugger_port)
-      return interactive_plugin
-    elif flags.debugger_data_server_grpc_port > 0:
+
+      # debugger_data_server_grpc opens the non-interactive Debugger Plugin,
+      # which appears as health pills in the Graph Plugin.
       noninteractive_plugin = debugger_plugin_lib.DebuggerPlugin(context)
       logger.info('Starting Non-interactive Debugger Plugin at gRPC port %d',
                    flags.debugger_data_server_grpc_port)
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin
-    raise AssertionError()
+    elif flags.debugger_port > 0:
+      # pylint: disable=line-too-long,g-import-not-at-top
+      from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
+      # pylint: enable=line-too-long,g-import-not-at-top
+      interactive_plugin = (
+          interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
+      logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
+                  flags.debugger_data_server_grpc_port)
+      interactive_plugin.listen(flags.debugger_port)
+      return interactive_plugin
+    else:
+      # If neither the debugger_data_server_grpc_port flag or the grpc_port
+      # flag is specified, we instantiate a dummy plugin as a placeholder for
+      # the frontend. The dummy plugin will display a message indicating that
+      # the plugin is not active. It'll also display a command snippet to
+      # illustrate how to activate the interactive Debugger Plugin.
+      return InactiveDebuggerPlugin()

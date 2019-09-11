@@ -21,23 +21,23 @@ limitations under the License.
  */
 declare namespace tf.hparams {
   export interface MetricName {
-    group: string,
-    tag: string,
+    group: string;
+    tag: string;
   }
 
   export interface MetricValue {
-    name: MetricName,
-    value: number,
-    trainingStep: number,
-    wallTimeSecs: number,
+    name: MetricName;
+    value: number;
+    trainingStep: number;
+    wallTimeSecs: number;
   }
 
   export interface SessionGroup {
-    name: string,
+    name: string;
     hparams: {
-      [hparamName: string]: bool | number | string,
-    },
-    metric_values: MetricValue[],
-    monitor_url: string
+      [hparamName: string]: bool | number | string;
+    };
+    metric_values: MetricValue[];
+    monitor_url: string;
   }
 }

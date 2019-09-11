@@ -17,159 +17,171 @@ limitations under the License.
   Graph visualizing the pod topology for the pod viewer tool.
 -->
 
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="pod-viewer-common.html">
+<link rel="import" href="../iron-icons/iron-icons.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-menu-button/paper-menu-button.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="pod-viewer-common.html" />
 
-<dom-module id='topology-graph'>
+<dom-module id="topology-graph">
   <template>
     <style is="custom-style">
-.flex-horizontal {
-  @apply --layout-horizontal;
-}
+      .flex-horizontal {
+        @apply --layout-horizontal;
+      }
 
-.flexchild {
-  @apply --layout-flex;
-}
+      .flexchild {
+        @apply --layout-flex;
+      }
 
-:host {
-  display: block;
-  margin-right: 1.5em;
-}
+      :host {
+        display: block;
+        margin-right: 1.5em;
+      }
 
-.cells {
-  fill: #aaa;
-}
+      .cells {
+        fill: #aaa;
+      }
 
-.label {
-  font: 24px sans-serif;
-  text-anchor: start;
-}
+      .label {
+        font: 24px sans-serif;
+        text-anchor: start;
+      }
 
-/* disable text selection */
-svg *::selection,
-svg *::-moz-selection,
-svg *::-webkit-selection {
-  background : transparent;
-}
+      /* disable text selection */
+      svg *::selection,
+      svg *::-moz-selection,
+      svg *::-webkit-selection {
+        background: transparent;
+      }
 
-rect.selection {
-  fill: transparent;
-  stroke: #333;
-  stroke-dasharray: 4px;
-  stroke-opacity: .5;
-}
+      rect.selection {
+        fill: transparent;
+        stroke: #333;
+        stroke-dasharray: 4px;
+        stroke-opacity: 0.5;
+      }
 
-rect.bordered {
-  stroke: #e6e6e6;
-  stroke-width: 2px;
-}
+      rect.bordered {
+        stroke: #e6e6e6;
+        stroke-width: 2px;
+      }
 
-rect.cell-border {
-  stroke: #eee;
-  stroke-width: .3px;
-}
+      rect.cell-border {
+        stroke: #eee;
+        stroke-width: 0.3px;
+      }
 
-rect.cell-selected {
-  stroke: rgb(51,102,153);
-  stroke-width: .5px;
-}
+      rect.cell-selected {
+        stroke: rgb(51, 102, 153);
+        stroke-width: 0.5px;
+      }
 
-rect.cell-hover {
-  stroke: #f00;
-  stroke-width: .3px;
-}
+      rect.cell-hover {
+        stroke: #f00;
+        stroke-width: 0.3px;
+      }
 
-#tooltip {
-  background-color: white;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
-  -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-  height: auto;
-  padding: 10px;
-  pointer-events: none;
-  position: absolute;
-  width: 200px;
-}
+      #tooltip {
+        background-color: white;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        height: auto;
+        padding: 10px;
+        pointer-events: none;
+        position: absolute;
+        width: 200px;
+      }
 
-#tooltip.hidden {
-  display: none;
-}
+      #tooltip.hidden {
+        display: none;
+      }
 
-#tooltip p {
-  font: 12px sans-serif;
-  margin: 0;
-  line-height: 20px;
-}
+      #tooltip p {
+        font: 12px sans-serif;
+        margin: 0;
+        line-height: 20px;
+      }
 
-#overview {
-  margin-left: 20px;
-}
+      #overview {
+        margin-left: 20px;
+      }
 
-paper-item:hover.menu-option {
-  background: #e0e0e0;
-}
+      paper-item:hover.menu-option {
+        background: #e0e0e0;
+      }
 
-paper-slider {
-  --paper-slider-input: {width: 150px}
-}
+      paper-slider {
+        --paper-slider-input: {
+          width: 150px;
+        }
+      }
 
-.metrics-button {
-  height: 60px;
-  width: 60px;
-}
+      .metrics-button {
+        height: 60px;
+        width: 60px;
+      }
 
-.topo-header {
-  margin-left: 16px;
-}
+      .topo-header {
+        margin-left: 16px;
+      }
 
-.control-row-left {
-  align-items: center;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-start;
-  line-height: 50px;
-  margin-left: 16px;
-  text-align: bottom;
-}
+      .control-row-left {
+        align-items: center;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        line-height: 50px;
+        margin-left: 16px;
+        text-align: bottom;
+      }
 
-.metrics-label {
-  padding: 0.5em;
-  text-transform: uppercase;
-}
+      .metrics-label {
+        padding: 0.5em;
+        text-transform: uppercase;
+      }
 
-.topo-title {
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 32px;
-  text-align: bottom;
-  vertical-align: bottom;
-}
+      .topo-title {
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 32px;
+        text-align: bottom;
+        vertical-align: bottom;
+      }
 
-#container {
-  /* Tooltip should position relative to the container. */
-  position: relative;
-}
-</style>
+      #container {
+        /* Tooltip should position relative to the container. */
+        position: relative;
+      }
+    </style>
     <div class="topology-graph">
       <div class="topo-header container flex-horizontal">
-        <div class="control-row-left topo-title">{{_tpuType}} {{_totalCoreCount}}</div>
+        <div class="control-row-left topo-title">
+          {{_tpuType}} {{_totalCoreCount}}
+        </div>
         <span class="control-row-left metrics-label">
-            [[_getSelectedMetricLabel(metrics, selectedMetricIdx)]]</span>
+          [[_getSelectedMetricLabel(metrics, selectedMetricIdx)]]</span
+        >
         <paper-menu-button close-on-activate="true">
-          <paper-icon-button raised icon="arrow-drop-down"
-              slot="dropdown-trigger" class="dropdown-trigger metrics-button">
+          <paper-icon-button
+            raised
+            icon="arrow-drop-down"
+            slot="dropdown-trigger"
+            class="dropdown-trigger metrics-button"
+          >
           </paper-icon-button>
-          <paper-listbox class="dropdown-content" slot="dropdown-content" selected={{selectedMetricIdx}}>
-            <template is="dom-repeat" items=[[metrics]]>
+          <paper-listbox
+            class="dropdown-content"
+            slot="dropdown-content"
+            selected="{{selectedMetricIdx}}"
+          >
+            <template is="dom-repeat" items="[[metrics]]">
               <paper-item value="[[item.key]]">[[item.label]]</paper-item>
             </template>
           </paper-listbox>

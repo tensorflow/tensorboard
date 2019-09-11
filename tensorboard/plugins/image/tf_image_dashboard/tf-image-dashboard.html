@@ -15,21 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html">
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-paginated-view/tf-paginated-view.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="tf-image-loader.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-slider/paper-slider.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link
+  rel="import"
+  href="../tf-categorization-utils/tf-categorization-utils.html"
+/>
+<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html" />
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
+<link
+  rel="import"
+  href="../tf-paginated-view/tf-category-paginated-view.html"
+/>
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
+<link rel="import" href="../tf-tensorboard/registry.html" />
+<link rel="import" href="tf-image-loader.html" />
 
 <!--
 tf-image-dashboard displays a dashboard that loads images from a
@@ -38,12 +44,12 @@ TensorFlow run.
 <dom-module id="tf-image-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar">
+      <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
-            <paper-checkbox
-              checked="{{_actualSize}}"
-            >Show actual image size</paper-checkbox>
+            <paper-checkbox checked="{{_actualSize}}"
+              >Show actual image size</paper-checkbox
+            >
           </div>
         </div>
         <div class="sidebar-section">
@@ -62,11 +68,12 @@ TensorFlow run.
               class="x-button"
               on-tap="_resetBrightness"
               disabled="[[_brightnessIsDefault]]"
-            >Reset</paper-button>
+              >Reset</paper-button
+            >
           </div>
         </div>
         <div class="sidebar-section">
-        <h3 class="tooltip-container">Contrast adjustment</h3>
+          <h3 class="tooltip-container">Contrast adjustment</h3>
           <div class="resettable-slider-container">
             <paper-slider
               min="0"
@@ -81,7 +88,8 @@ TensorFlow run.
               class="x-button"
               on-tap="_resetContrast"
               disabled="[[_contrastIsDefault]]"
-            >Reset</paper-button>
+              >Reset</paper-button
+            >
           </div>
         </div>
         <div class="sidebar-section">
@@ -91,55 +99,62 @@ TensorFlow run.
           ></tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No image data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>You haven’t written any image data to your event files.
-              <li>TensorBoard can’t find your event files.
+              <li>You haven’t written any image data to your event files.</li>
+              <li>TensorBoard can’t find your event files.</li>
             </ul>
+
             <p>
-            If you’re new to using TensorBoard, and want to find out how
-            to add data and set up your event files, check out the
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+              If you’re new to using TensorBoard, and want to find out how to
+              add data and set up your event files, check out the
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
+              and perhaps the
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
+            </p>
+
             <p>
-            If you think TensorBoard is configured properly, please see
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-            and consider filing an issue on GitHub.
+              If you think TensorBoard is configured properly, please see
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
+              and consider filing an issue on GitHub.
+            </p>
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]" opened="[[_shouldOpen(index)]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-image-loader
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          sample="[[item.sample]]"
-                          of-samples="[[item.ofSamples]]"
-                          tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
-                          request-manager="[[_requestManager]]"
-                          actual-size="[[_actualSize]]"
-                          brightness-adjustment="[[_brightnessAdjustment]]"
-                          contrast-percentage="[[_contrastPercentage]]"
-                        ></tf-image-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-image-loader
+                  active="[[active]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  sample="[[item.sample]]"
+                  of-samples="[[item.ofSamples]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  request-manager="[[_requestManager]]"
+                  actual-size="[[_actualSize]]"
+                  brightness-adjustment="[[_brightnessAdjustment]]"
+                  contrast-percentage="[[_contrastPercentage]]"
+                ></tf-image-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -188,8 +203,7 @@ TensorFlow run.
     </style>
   </template>
   <script>
-    "use strict";
-
+    'use strict';
 
     Polymer({
       is: 'tf-image-dashboard',
@@ -252,12 +266,12 @@ TensorFlow run.
       },
       _fetchTags() {
         const url = tf_backend.getRouter().pluginRoute('images', '/tags');
-        return this._requestManager.request(url).then(runToTagInfo => {
+        return this._requestManager.request(url).then((runToTagInfo) => {
           if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
             // No need to update anything if there are no changes.
             return;
           }
-          const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+          const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
           const tags = tf_backend.getTags(runToTag);
           this.set('_dataNotFound', tags.length === 0);
           this.set('_runToTagInfo', runToTagInfo);
@@ -268,7 +282,7 @@ TensorFlow run.
         });
       },
       _reloadImages() {
-        this.querySelectorAll('tf-image-loader').forEach(image => {
+        this.root.querySelectorAll('tf-image-loader').forEach((image) => {
           image.reload();
         });
       },
@@ -291,21 +305,31 @@ TensorFlow run.
       },
 
       _makeCategories(
-          runToTagInfo, selectedRuns, tagFilter, categoriesDomReady) {
-        const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
-        const baseCategories =
-          tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        runToTagInfo,
+        selectedRuns,
+        tagFilter,
+        categoriesDomReady
+      ) {
+        const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+        const baseCategories = tf_categorization_utils.categorizeRunTagCombinations(
+          runToTag,
+          selectedRuns,
+          tagFilter
+        );
         function explodeItem(item) {
           const samples = runToTagInfo[item.run][item.tag].samples;
-          return _.range(samples).map(i => Object.assign({}, item, {
-            sample: i,
-            ofSamples: samples,
-          }));
+          return _.range(samples).map((i) =>
+            Object.assign({}, item, {
+              sample: i,
+              ofSamples: samples,
+            })
+          );
         }
-        const withSamples = baseCategories.map(category =>
+        const withSamples = baseCategories.map((category) =>
           Object.assign({}, category, {
             items: [].concat.apply([], category.items.map(explodeItem)),
-          }));
+          })
+        );
         return withSamples;
       },
       _tagMetadata(runToTagInfo, run, tag) {

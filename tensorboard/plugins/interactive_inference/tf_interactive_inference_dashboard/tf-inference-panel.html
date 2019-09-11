@@ -15,12 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-radio-button/paper-radio-button.html">
-<link rel="import" href="../paper-radio-group/paper-radio-group.html">
-<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-radio-button/paper-radio-button.html" />
+<link rel="import" href="../paper-radio-group/paper-radio-group.html" />
+<link rel="import" href="../tf-storage/tf-storage.html" />
 
 <!--
   Setup dialog for what-if tool.
@@ -88,44 +87,82 @@ limitations under the License.
         --paper-input-container-focus-color: #f57c00;
       }
       paper-radio-button {
-        --paper-radio-button-unchecked-color: #3C4043;
-        --paper-radio-button-unchecked-ink-color: #3C4043;
-        --paper-radio-button-checked-color: #3C4043;
-        --paper-radio-button-checked-ink-color: #3C4043;
+        --paper-radio-button-unchecked-color: #3c4043;
+        --paper-radio-button-unchecked-ink-color: #3c4043;
+        --paper-radio-button-checked-color: #3c4043;
+        --paper-radio-button-checked-ink-color: #3c4043;
       }
     </style>
     <div class="title">Set up your data and model</div>
-    <paper-input always-float-label label="Inference address"
-                 placeholder="[[inferenceAddress1]]" value="{{inferenceAddress1}}">
+    <paper-input
+      always-float-label
+      label="Inference address"
+      placeholder="[[inferenceAddress1]]"
+      value="{{inferenceAddress1}}"
+    >
     </paper-input>
     <div class="flex-holder">
-      <paper-input always-float-label label="Model name" placeholder="[[modelName1]]"
-                  value="{{modelName1}}" class="input-in-row">
+      <paper-input
+        always-float-label
+        label="Model name"
+        placeholder="[[modelName1]]"
+        value="{{modelName1}}"
+        class="input-in-row"
+      >
       </paper-input>
-      <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion1]]"
-                  value="{{modelVersion1}}" class="input-in-row">
+      <paper-input
+        always-float-label
+        label="Model version (optional)"
+        placeholder="[[modelVersion1]]"
+        value="{{modelVersion1}}"
+        class="input-in-row"
+      >
       </paper-input>
-      <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature1]]"
-                  value="{{modelSignature1}}" class="input-in-row">
+      <paper-input
+        always-float-label
+        label="Model signature (optional)"
+        placeholder="[[modelSignature1]]"
+        value="{{modelSignature1}}"
+        class="input-in-row"
+      >
       </paper-input>
     </div>
-    <div hidden$={{hideModelPane2}}>
-      <paper-input always-float-label label="Inference address"
-      placeholder="[[inferenceAddress2]]" value="{{inferenceAddress2}}">
+    <div hidden$="{{hideModelPane2}}">
+      <paper-input
+        always-float-label
+        label="Inference address"
+        placeholder="[[inferenceAddress2]]"
+        value="{{inferenceAddress2}}"
+      >
       </paper-input>
       <div class="flex-holder">
-        <paper-input always-float-label label="Model name" placeholder="[[modelName2]]"
-                    value="{{modelName2}}" class="input-in-row">
+        <paper-input
+          always-float-label
+          label="Model name"
+          placeholder="[[modelName2]]"
+          value="{{modelName2}}"
+          class="input-in-row"
+        >
         </paper-input>
-        <paper-input always-float-label label="Model version (optional)" placeholder="[[modelVersion2]]"
-                    value="{{modelVersion2}}" class="input-in-row">
+        <paper-input
+          always-float-label
+          label="Model version (optional)"
+          placeholder="[[modelVersion2]]"
+          value="{{modelVersion2}}"
+          class="input-in-row"
+        >
         </paper-input>
-        <paper-input always-float-label label="Model signature (optional)" placeholder="[[modelSignature2]]"
-                    value="{{modelSignature2}}" class="input-in-row">
+        <paper-input
+          always-float-label
+          label="Model signature (optional)"
+          placeholder="[[modelSignature2]]"
+          value="{{modelSignature2}}"
+          class="input-in-row"
+        >
         </paper-input>
       </div>
     </div>
-    <div class="add-model-button-holder" hidden$={{!hideModelPane2}}>
+    <div class="add-model-button-holder" hidden$="{{!hideModelPane2}}">
       <paper-button on-tap="addModelClicked_" class="main-button">
         Add another model for comparison
       </paper-button>
@@ -134,7 +171,9 @@ limitations under the License.
       <div>
         <div class="model-type-label">Model Type</div>
         <paper-radio-group selected="{{modelType}}">
-          <paper-radio-button name="classification">Classification</paper-radio-button>
+          <paper-radio-button name="classification"
+            >Classification</paper-radio-button
+          >
           <paper-radio-button name="regression">Regression</paper-radio-button>
         </paper-radio-group>
       </div>
@@ -143,59 +182,98 @@ limitations under the License.
       </paper-checkbox>
     </div>
     <div class="flex-holder">
-      <paper-input always-float-label label="Input tensor name"
-                  placeholder="[[predictInputTensor]]" value="{{predictInputTensor}}"
-                  class="input-in-row"
-                  hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
+      <paper-input
+        always-float-label
+        label="Input tensor name"
+        placeholder="[[predictInputTensor]]"
+        value="{{predictInputTensor}}"
+        class="input-in-row"
+        hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]"
+      >
       </paper-input>
-      <paper-input always-float-label label="Output tensor name"
-                  placeholder="[[predictOutputTensor]]" value="{{predictOutputTensor}}"
-                  class="input-in-row"
-                  hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]">
+      <paper-input
+        always-float-label
+        label="Output tensor name"
+        placeholder="[[predictOutputTensor]]"
+        value="{{predictOutputTensor}}"
+        class="input-in-row"
+        hidden$="[[shouldDisablePredictTensorControls_(usePredictApi)]]"
+      >
       </paper-input>
     </div>
     <div class="flex-holder">
-      <paper-input always-float-label label="Path to examples"
-                  value="{{examplesPath}}" class="flex-grow">
+      <paper-input
+        always-float-label
+        label="Path to examples"
+        value="{{examplesPath}}"
+        class="flex-grow"
+      >
       </paper-input>
       <paper-checkbox checked="{{sequenceExamples}}" class="checkbox">
         SequenceExamples
       </paper-checkbox>
     </div>
     <div class="flex-holder">
-      <paper-input always-float-label type="number" class="input-in-row flex-grow"
-                   label="Maximum number of examples to load"
-                   placeholder="[[maxExamples]]" value="{{maxExamples}}">
+      <paper-input
+        always-float-label
+        type="number"
+        class="input-in-row flex-grow"
+        label="Maximum number of examples to load"
+        placeholder="[[maxExamples]]"
+        value="{{maxExamples}}"
+      >
       </paper-input>
-      <paper-input always-float-label type="number" class="input-in-row flex-grow"
-                   label="Sampling ratio (0.2 = sample ~20% of examples)"
-                   placeholder="[[samplingOdds]]" value="{{samplingOdds}}">
+      <paper-input
+        always-float-label
+        type="number"
+        class="input-in-row flex-grow"
+        label="Sampling ratio (0.2 = sample ~20% of examples)"
+        placeholder="[[samplingOdds]]"
+        value="{{samplingOdds}}"
+      >
       </paper-input>
     </div>
-    <paper-input always-float-label label="Path to label dictionary (optional)"
-                    placeholder="[[labelVocabPath]]"
-                    value="{{labelVocabPath}}"
-                    disabled="[[shouldDisableClassificationControls_(modelType)]]">
+    <paper-input
+      always-float-label
+      label="Path to label dictionary (optional)"
+      placeholder="[[labelVocabPath]]"
+      value="{{labelVocabPath}}"
+      disabled="[[shouldDisableClassificationControls_(modelType)]]"
+    >
     </paper-input>
     <div class="flex-holder">
       <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
       <div>Maps predicted class indices to labels from text file</div>
-      <paper-tooltip class="tooltip" animation-delay="0" position="bottom" offset="0">
-        An optional text file for use with the results of a classification model.
-        Classification models return predicted classes as indices. If a vocab file is
-        provided, each predicted class index will be mapped to a label from this file for use
-        in the display. Each line in the file corresponds to a label, with the first line
-        corresponding to class index 0.
+      <paper-tooltip
+        class="tooltip"
+        animation-delay="0"
+        position="bottom"
+        offset="0"
+      >
+        An optional text file for use with the results of a classification
+        model. Classification models return predicted classes as indices. If a
+        vocab file is provided, each predicted class index will be mapped to a
+        label from this file for use in the display. Each line in the file
+        corresponds to a label, with the first line corresponding to class index
+        0.
       </paper-tooltip>
     </div>
     <div class="flex-holder">
-      <paper-input always-float-label type="number" label="Max classes to display"
-                  placeholder="[[maxClassesToDisplay]]" value="{{maxClassesToDisplay}}"
-                  class="input-in-row" disabled="[[shouldDisableMultiClassControls_(multiClass)]]">
+      <paper-input
+        always-float-label
+        type="number"
+        label="Max classes to display"
+        placeholder="[[maxClassesToDisplay]]"
+        value="{{maxClassesToDisplay}}"
+        class="input-in-row"
+        disabled="[[shouldDisableMultiClassControls_(multiClass)]]"
+      >
       </paper-input>
-      <paper-checkbox disabled="[[shouldDisableClassificationControls_(modelType)]]"
-                      checked="{{multiClass}}"
-                      class="checkbox">
+      <paper-checkbox
+        disabled="[[shouldDisableClassificationControls_(modelType)]]"
+        checked="{{multiClass}}"
+        class="checkbox"
+      >
         Multi-class classification model
       </paper-checkbox>
     </div>
@@ -217,20 +295,22 @@ limitations under the License.
     const defaultPredictInputTensor = 'examples';
 
     Polymer({
-      is: "tf-inference-panel",
+      is: 'tf-inference-panel',
       properties: {
         // Fields for interactive inference plugin.
         examplesPath: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'examplesPath', {defaultValue: defaultExamplesPath}),
+          value: tf_storage.getStringInitializer('examplesPath', {
+            defaultValue: defaultExamplesPath,
+          }),
           observer: 'examplesPathChanged_',
           notify: true,
         },
         hideModelPane2: {
           type: Boolean,
-          value: tf_storage.getBooleanInitializer('hideModelPane2',
-              {defaultValue: defaultHideModelPane2}),
+          value: tf_storage.getBooleanInitializer('hideModelPane2', {
+            defaultValue: defaultHideModelPane2,
+          }),
           observer: 'hideModelPane2Changed_',
         },
         modelName: {
@@ -240,15 +320,17 @@ limitations under the License.
         },
         modelName1: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelName1', {defaultValue: defaultModelName}),
+          value: tf_storage.getStringInitializer('modelName1', {
+            defaultValue: defaultModelName,
+          }),
           observer: 'modelName1Changed_',
           notify: true,
         },
         modelName2: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelName2', {defaultValue: defaultModelName}),
+          value: tf_storage.getStringInitializer('modelName2', {
+            defaultValue: defaultModelName,
+          }),
           observer: 'modelName2Changed_',
           notify: true,
         },
@@ -259,22 +341,25 @@ limitations under the License.
         },
         inferenceAddress1: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'inferenceAddress1', {defaultValue: defaultInferenceAddress}),
+          value: tf_storage.getStringInitializer('inferenceAddress1', {
+            defaultValue: defaultInferenceAddress,
+          }),
           observer: 'inferenceAddress1Changed_',
           notify: true,
         },
         inferenceAddress2: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'inferenceAddress2', {defaultValue: defaultInferenceAddress}),
+          value: tf_storage.getStringInitializer('inferenceAddress2', {
+            defaultValue: defaultInferenceAddress,
+          }),
           observer: 'inferenceAddress2Changed_',
           notify: true,
         },
         modelType: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelType', {defaultValue: defaultModelType}),
+          value: tf_storage.getStringInitializer('modelType', {
+            defaultValue: defaultModelType,
+          }),
           observer: 'modelTypeChanged_',
           notify: true,
         },
@@ -285,15 +370,17 @@ limitations under the License.
         },
         modelVersion1: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelVersion1', {defaultValue: defaultModelVersion}),
+          value: tf_storage.getStringInitializer('modelVersion1', {
+            defaultValue: defaultModelVersion,
+          }),
           observer: 'modelVersion1Changed_',
           notify: true,
         },
         modelVersion2: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelVersion2', {defaultValue: defaultModelVersion}),
+          value: tf_storage.getStringInitializer('modelVersion2', {
+            defaultValue: defaultModelVersion,
+          }),
           observer: 'modelVersion2Changed_',
           notify: true,
         },
@@ -304,78 +391,89 @@ limitations under the License.
         },
         modelSignature1: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelSignature1', {defaultValue: defaultModelSignature}),
+          value: tf_storage.getStringInitializer('modelSignature1', {
+            defaultValue: defaultModelSignature,
+          }),
           observer: 'modelSignature1Changed_',
           notify: true,
         },
         modelSignature2: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'modelSignature2', {defaultValue: defaultModelSignature}),
+          value: tf_storage.getStringInitializer('modelSignature2', {
+            defaultValue: defaultModelSignature,
+          }),
           observer: 'modelSignature2Changed_',
           notify: true,
         },
         maxExamples: {
           type: Number,
-          value: tf_storage.getStringInitializer(
-            'maxExamples', {defaultValue: defaultMaxExamples}),
+          value: tf_storage.getStringInitializer('maxExamples', {
+            defaultValue: defaultMaxExamples,
+          }),
           observer: 'maxExamplesChanged_',
           notify: true,
         },
         labelVocabPath: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
+          value: tf_storage.getStringInitializer('labelVocabPath', {
+            defaultValue: defaultLabelVocabPath,
+          }),
           observer: 'labelVocabPathChanged_',
           notify: true,
         },
         multiClass: {
           type: Boolean,
           notify: true,
-          value: tf_storage.getBooleanInitializer('multiClass',
-              {defaultValue: false}),
+          value: tf_storage.getBooleanInitializer('multiClass', {
+            defaultValue: false,
+          }),
           observer: 'multiClassChanged_',
         },
         sequenceExamples: {
           type: Boolean,
           notify: true,
-          value: tf_storage.getBooleanInitializer('sequenceExamples',
-              {defaultValue: false}),
+          value: tf_storage.getBooleanInitializer('sequenceExamples', {
+            defaultValue: false,
+          }),
           observer: 'sequenceExamplesChanged_',
         },
         maxClassesToDisplay: {
           type: Number,
-          value: tf_storage.getStringInitializer(
-            'maxClassesToDisplay', {defaultValue: defaultMaxClassesToDisplay}),
+          value: tf_storage.getStringInitializer('maxClassesToDisplay', {
+            defaultValue: defaultMaxClassesToDisplay,
+          }),
           observer: 'maxClassesToDisplayChanged_',
           notify: true,
         },
         samplingOdds: {
           type: Number,
-          value: tf_storage.getStringInitializer(
-            'samplingOdds', {defaultValue: defaultSamplingOdds}),
+          value: tf_storage.getStringInitializer('samplingOdds', {
+            defaultValue: defaultSamplingOdds,
+          }),
           observer: 'samplingOddsChanged_',
           notify: true,
         },
         usePredictApi: {
           type: Boolean,
           notify: true,
-          value: tf_storage.getBooleanInitializer('usePredictApi',
-              {defaultValue: false}),
+          value: tf_storage.getBooleanInitializer('usePredictApi', {
+            defaultValue: false,
+          }),
           observer: 'usePredictApiChanged_',
         },
         predictInputTensor: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'predictInputTensor', {defaultValue: defaultPredictInputTensor}),
+          value: tf_storage.getStringInitializer('predictInputTensor', {
+            defaultValue: defaultPredictInputTensor,
+          }),
           observer: 'predictInputTensorChanged_',
           notify: true,
         },
         predictOutputTensor: {
           type: String,
-          value: tf_storage.getStringInitializer(
-            'predictOutputTensor', {defaultValue: defaultPredictOutputTensor}),
+          value: tf_storage.getStringInitializer('predictOutputTensor', {
+            defaultValue: defaultPredictOutputTensor,
+          }),
           observer: 'predictOutputTensorChanged_',
           notify: true,
         },
@@ -388,91 +486,117 @@ limitations under the License.
         'updateModelSignature(modelSignature1, modelSignature2)',
       ],
 
-      updateModelName: function (modelName1, modelName2) {
-        this.modelName = modelName1 + ',' + modelName2
+      updateModelName: function(modelName1, modelName2) {
+        this.modelName = modelName1 + ',' + modelName2;
         // Strip trailing and leading commas in case one model is missing
-        this.modelName = this.modelName.replace(/(^,)|(,$)/g, '')
+        this.modelName = this.modelName.replace(/(^,)|(,$)/g, '');
       },
 
-      updateInferenceAddress: function (inferenceAddress1, inferenceAddress2) {
-        this.inferenceAddress = inferenceAddress1 + ',' + inferenceAddress2
+      updateInferenceAddress: function(inferenceAddress1, inferenceAddress2) {
+        this.inferenceAddress = inferenceAddress1 + ',' + inferenceAddress2;
         // Strip trailing and leading commas in case one model is missing
-        this.inferenceAddress = this.inferenceAddress.replace(/(^,)|(,$)/g, '')
+        this.inferenceAddress = this.inferenceAddress.replace(/(^,)|(,$)/g, '');
       },
 
-      updateModelVersion: function (modelVersion1, modelVersion2) {
+      updateModelVersion: function(modelVersion1, modelVersion2) {
         // Always have comma for optional fields
-        this.modelVersion = modelVersion1 + ',' + modelVersion2
+        this.modelVersion = modelVersion1 + ',' + modelVersion2;
       },
 
-      updateModelSignature: function (modelSignature1, modelSignature2) {
+      updateModelSignature: function(modelSignature1, modelSignature2) {
         // Always have comma for optional fields
-        this.modelSignature = modelSignature1 + ',' + modelSignature2
+        this.modelSignature = modelSignature1 + ',' + modelSignature2;
       },
 
       addModelClicked_: function() {
         this.hideModelPane2 = !this.hideModelPane2;
       },
 
-      examplesPathChanged_: tf_storage.getStringObserver(
-        'examplesPath', {defaultValue: defaultExamplesPath}),
+      examplesPathChanged_: tf_storage.getStringObserver('examplesPath', {
+        defaultValue: defaultExamplesPath,
+      }),
 
-      modelName1Changed_: tf_storage.getStringObserver(
-        'modelName1', {defaultValue: defaultModelName}),
+      modelName1Changed_: tf_storage.getStringObserver('modelName1', {
+        defaultValue: defaultModelName,
+      }),
 
-      modelName2Changed_: tf_storage.getStringObserver(
-        'modelName2', {defaultValue: defaultModelName}),
+      modelName2Changed_: tf_storage.getStringObserver('modelName2', {
+        defaultValue: defaultModelName,
+      }),
 
       inferenceAddress1Changed_: tf_storage.getStringObserver(
-        'inferenceAddress1',  {defaultValue: defaultInferenceAddress}),
+        'inferenceAddress1',
+        {defaultValue: defaultInferenceAddress}
+      ),
 
       inferenceAddress2Changed_: tf_storage.getStringObserver(
-        'inferenceAddress2',  {defaultValue: defaultInferenceAddress}),
+        'inferenceAddress2',
+        {defaultValue: defaultInferenceAddress}
+      ),
 
-      modelTypeChanged_: tf_storage.getStringObserver(
-        'modelType', {defaultValue: defaultModelType}),
+      modelTypeChanged_: tf_storage.getStringObserver('modelType', {
+        defaultValue: defaultModelType,
+      }),
 
-      modelVersion1Changed_: tf_storage.getStringObserver(
-        'modelVersion1', {defaultValue: defaultModelVersion}),
+      modelVersion1Changed_: tf_storage.getStringObserver('modelVersion1', {
+        defaultValue: defaultModelVersion,
+      }),
 
-      modelVersion2Changed_: tf_storage.getStringObserver(
-        'modelVersion2', {defaultValue: defaultModelVersion}),
+      modelVersion2Changed_: tf_storage.getStringObserver('modelVersion2', {
+        defaultValue: defaultModelVersion,
+      }),
 
-      modelSignature1Changed_: tf_storage.getStringObserver(
-        'modelSignature1', {defaultValue: defaultModelSignature}),
+      modelSignature1Changed_: tf_storage.getStringObserver('modelSignature1', {
+        defaultValue: defaultModelSignature,
+      }),
 
-      modelSignature2Changed_: tf_storage.getStringObserver(
-        'modelSignature2', {defaultValue: defaultModelSignature}),
+      modelSignature2Changed_: tf_storage.getStringObserver('modelSignature2', {
+        defaultValue: defaultModelSignature,
+      }),
 
-      maxExamplesChanged_: tf_storage.getStringObserver(
-        'maxExamples', {defaultValue: defaultMaxExamples}),
+      maxExamplesChanged_: tf_storage.getStringObserver('maxExamples', {
+        defaultValue: defaultMaxExamples,
+      }),
 
-      labelVocabPathChanged_: tf_storage.getStringObserver(
-        'labelVocabPath', {defaultValue: defaultLabelVocabPath}),
+      labelVocabPathChanged_: tf_storage.getStringObserver('labelVocabPath', {
+        defaultValue: defaultLabelVocabPath,
+      }),
 
       maxClassesToDisplayChanged_: tf_storage.getStringObserver(
-        'maxClassesToDisplay', {defaultValue: defaultMaxClassesToDisplay}),
+        'maxClassesToDisplay',
+        {defaultValue: defaultMaxClassesToDisplay}
+      ),
 
-      samplingOddsChanged_: tf_storage.getStringObserver(
-        'samplingOdds', {defaultValue: defaultSamplingOdds}),
+      samplingOddsChanged_: tf_storage.getStringObserver('samplingOdds', {
+        defaultValue: defaultSamplingOdds,
+      }),
 
-      multiClassChanged_: tf_storage.getBooleanObserver(
-        'multiClass', {defaultValue: false}),
+      multiClassChanged_: tf_storage.getBooleanObserver('multiClass', {
+        defaultValue: false,
+      }),
 
       sequenceExamplesChanged_: tf_storage.getBooleanObserver(
-        'sequenceExamples', {defaultValue: false}),
+        'sequenceExamples',
+        {defaultValue: false}
+      ),
 
-      hideModelPane2Changed_: tf_storage.getBooleanObserver(
-        'hideModelPane2', {defaultValue: defaultHideModelPane2}),
+      hideModelPane2Changed_: tf_storage.getBooleanObserver('hideModelPane2', {
+        defaultValue: defaultHideModelPane2,
+      }),
 
-      usePredictApiChanged_: tf_storage.getBooleanObserver(
-        'usePredictApi', {defaultValue: false}),
+      usePredictApiChanged_: tf_storage.getBooleanObserver('usePredictApi', {
+        defaultValue: false,
+      }),
 
       predictOutputTensorChanged_: tf_storage.getStringObserver(
-        'predictOutputTensor', {defaultValue: defaultPredictOutputTensor}),
+        'predictOutputTensor',
+        {defaultValue: defaultPredictOutputTensor}
+      ),
 
       predictInputTensorChanged_: tf_storage.getStringObserver(
-        'predictInputTensor', {defaultValue: defaultPredictInputTensor}),
+        'predictInputTensor',
+        {defaultValue: defaultPredictInputTensor}
+      ),
 
       shouldDisableClassificationControls_: function(modelType) {
         return modelType == 'regression';
@@ -484,8 +608,7 @@ limitations under the License.
 
       shouldDisablePredictTensorControls_: function(usePredictApi) {
         return !usePredictApi;
-      }
+      },
     });
-
   </script>
 </dom-module>

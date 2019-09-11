@@ -120,10 +120,11 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     writer.Close()
 
     # Start a server that will receive requests and respond with health pills.
-    self.multiplexer = event_multiplexer.EventMultiplexer({
+    multiplexer = event_multiplexer.EventMultiplexer({
         '.': self.log_dir,
         'run_foo': run_foo_directory,
     })
+    multiplexer.Reload()
     self.debugger_data_server_grpc_port = portpicker.pick_unused_port()
 
     # Fake threading behavior so that threads are synchronous.
@@ -141,12 +142,10 @@ class DebuggerPluginTestBase(tf.test.TestCase):
         self.mock_debugger_data_server_class).start()
 
     self.context = base_plugin.TBContext(
-        logdir=self.log_dir, multiplexer=self.multiplexer)
+        logdir=self.log_dir, multiplexer=multiplexer)
     self.plugin = debugger_plugin.DebuggerPlugin(self.context)
     self.plugin.listen(self.debugger_data_server_grpc_port)
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0,
-        path_prefix='')
+    wsgi_app = application.TensorBoardWSGI([self.plugin])
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
     # The debugger data server should be started at the correct port.

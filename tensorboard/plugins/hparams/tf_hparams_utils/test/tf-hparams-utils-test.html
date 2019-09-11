@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <meta charset="utf-8" />
+    <link rel="import" href="../../tf-imports/polymer.html" />
     <script src="../../web-component-tester/browser.js"></script>
-    <link rel="../../tf-imports/d3.html">
-    <link rel="import" href="../tf-hparams-utils.html">
+    <link rel="import" href="../../tf-imports/d3.html" />
+    <link rel="import" href="../tf-hparams-utils.html" />
   </head>
   <body>
     <script>
@@ -34,21 +34,71 @@ limitations under the License.
           callback = sinon.spy();
         });
         test('pointToRectangleDist', function() {
-          const testCases=[
-            {x:0, y:0, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(2*2+1*1)},
-            {x:3, y:1, x0:1, y0:2, x1:7, y1:5, expected: 1},
-            {x:10, y:0, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(3*3+2*2)},
-            {x:0, y:0, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(2*2+1*1)},
-            {x:3, y:1, x0:1, y0:2, x1:7, y1:5, expected: 1},
-            {x:10, y:0, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(3*3+2*2)},
-            {x:0, y:7, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(2*2+1*1)},
-            {x:3, y:8, x0:1, y0:2, x1:7, y1:5, expected: 3},
-            {x:10, y:7, x0:1, y0:2, x1:7, y1:5, expected: Math.sqrt(3*3+2*2)},
+          const testCases = [
+            {
+              x: 0,
+              y: 0,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(2 * 2 + 1 * 1),
+            },
+            {x: 3, y: 1, x0: 1, y0: 2, x1: 7, y1: 5, expected: 1},
+            {
+              x: 10,
+              y: 0,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(3 * 3 + 2 * 2),
+            },
+            {
+              x: 0,
+              y: 0,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(2 * 2 + 1 * 1),
+            },
+            {x: 3, y: 1, x0: 1, y0: 2, x1: 7, y1: 5, expected: 1},
+            {
+              x: 10,
+              y: 0,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(3 * 3 + 2 * 2),
+            },
+            {
+              x: 0,
+              y: 7,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(2 * 2 + 1 * 1),
+            },
+            {x: 3, y: 8, x0: 1, y0: 2, x1: 7, y1: 5, expected: 3},
+            {
+              x: 10,
+              y: 7,
+              x0: 1,
+              y0: 2,
+              x1: 7,
+              y1: 5,
+              expected: Math.sqrt(3 * 3 + 2 * 2),
+            },
           ];
-          testCases.forEach(t=>{
-            assert.equal(utils.pointToRectangleDist(
-                t.x, t.y, t.x0, t.y0, t.x1, t.y1), t.expected,
-                         "In testCase: " + JSON.stringify(t));
+          testCases.forEach((t) => {
+            assert.equal(
+              utils.pointToRectangleDist(t.x, t.y, t.x0, t.y0, t.x1, t.y1),
+              t.expected,
+              'In testCase: ' + JSON.stringify(t)
+            );
           });
         });
         const quadTree = d3.quadtree([
@@ -59,7 +109,7 @@ limitations under the License.
           [1.5, 15],
           [3, 3],
           [3, 15],
-          [3, 100]
+          [3, 100],
         ]);
         test('quadTreeVisitPointsInRect_EmptyIntersection1', function() {
           utils.quadTreeVisitPointsInRect(quadTree, 0, 0, 1, 1, callback);

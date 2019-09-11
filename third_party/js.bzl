@@ -150,17 +150,6 @@ def tensorboard_js_workspace():
   )
 
   filegroup_external(
-      name = "com_google_javascript_closure_compiler_externs_polymer",
-      licenses = ["notice"],  # Apache 2.0
-      sha256_urls = {
-          "737af73d7b02226e6e1516044a8eb8283376d44f64839979936ca163c00900f4": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
-              "https://raw.githubusercontent.com/google/closure-compiler/v20180402/contrib/externs/polymer-1.0.js",
-          ],
-      },
-  )
-
-  filegroup_external(
       name = "org_threejs",
       # no @license header
       licenses = ["notice"],  # MIT
@@ -325,11 +314,11 @@ def tensorboard_js_workspace():
 
   http_archive(
       name = "ai_google_pair_facets",
-      sha256 = "e3f7b7b3c194c1772d16bdc8b348716c0da59a51daa03ef4503cf06c073caafc",
-      strip_prefix = "facets-0.2.1",
+      sha256 = "e69d44a2b51b0373e6d1e2ec126b92f7927e408080d959010dee501a6fa852c6",
+      strip_prefix = "facets-cd29284009dc0e4d54107a55b978d65d105b7f7f",
       urls = [
-          "http://mirror.tensorflow.org/github.com/pair-code/facets/archive/0.2.1.tar.gz",
-          "https://github.com/pair-code/facets/archive/0.2.1.tar.gz",
+          # TODO(stephanwlee); Unpin after facets make Polymer2 compat release.
+          "https://github.com/pair-code/facets/archive/cd29284009dc0e4d54107a55b978d65d105b7f7f.tar.gz",
       ],
   )
   web_library_external(
@@ -516,12 +505,12 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "76ebbb763969cad7f66fadf24d97a8beec6b6e9c64da568139ad739a1c46ba14": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/array-buffer-data-provider.js",
           ],
-          "caa00bdd80fe10b481f34b34df1b8688316ed8e8a6aaa49ddf9e5e6ac7f202e4": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
-              "https://raw.githubusercontent.com/tensorflow/graphics/ad9dce1aa09d2922304b14e11a2fa1c4652189b5/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+          "0e25af04903d91bb4471d2abc6035ed35c1681993a269feff32ba404a7d9bb9f": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
+              "https://raw.githubusercontent.com/tensorflow/graphics/fa0fc3496d86f0235d614a5f9a27257a1898cae2/tensorflow_graphics/tensorboard/mesh_visualizer/tf_mesh_dashboard/mesh-viewer.js",
           ],
       },
   )

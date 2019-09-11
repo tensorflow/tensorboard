@@ -15,64 +15,71 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="tf-graph-icon.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
+<link rel="import" href="../tf-graph-common/tf-node-icon.html" />
 
 <dom-module id="tf-node-list-item">
-  <style>
-  #list-item {
-    width: 100%;
-    color: #565656;
-    font-size: 11pt;
-    font-weight: 400;
-    position: relative;
-    display: inline-block;
-  }
-
-  #list-item:hover {
-    background-color: var(--google-yellow-100);
-  }
-
-  .clickable {
-    cursor: pointer;
-  }
-
-  #list-item span {
-    margin-left: 40px;
-  }
-
-  #list-item.excluded span {
-    color: #999;
-  }
-
-  #list-item span.edge-label {
-    float: right;
-    font-size: 10px;
-    margin-left: 3px;
-    margin-right: 5px;
-  }
-
-  .node-icon {
-    position: absolute;
-    top: 1px;
-    left: 2px;
-  }
-
-  .faded span {
-    color: var(--tb-graph-faded);
-  }
-  </style>
   <template>
-    <div id="list-item"
-         on-mouseover="_nodeListener"
-         on-mouseout="_nodeListener"
-         on-click="_nodeListener">
+    <style>
+      #list-item {
+        width: 100%;
+        color: #565656;
+        font-size: 11pt;
+        font-weight: 400;
+        position: relative;
+        display: inline-block;
+      }
+
+      #list-item:hover {
+        background-color: var(--google-yellow-100);
+      }
+
+      .clickable {
+        cursor: pointer;
+      }
+
+      #list-item span {
+        margin-left: 40px;
+      }
+
+      #list-item.excluded span {
+        color: #999;
+      }
+
+      #list-item span.edge-label {
+        float: right;
+        font-size: 10px;
+        margin-left: 3px;
+        margin-right: 5px;
+      }
+
+      .node-icon {
+        position: absolute;
+        top: 1px;
+        left: 2px;
+      }
+
+      .faded span {
+        color: var(--tb-graph-faded);
+      }
+    </style>
+    <div
+      id="list-item"
+      on-mouseover="_nodeListener"
+      on-mouseout="_nodeListener"
+      on-click="_nodeListener"
+    >
       <div class$="{{_fadedClass(itemRenderInfo)}}">
-        <tf-graph-icon class="node-icon" height="12"
-            color-by="[[colorBy]]" color-by-params="[[colorByParams]]"
-            node="[[itemNode]]" render-info="[[itemRenderInfo]]"
-            template-index="[[templateIndex]]"></tf-graph-icon>
+        <tf-node-icon
+          class="node-icon"
+          height="12"
+          color-by="[[colorBy]]"
+          color-by-params="[[colorByParams]]"
+          node="[[itemNode]]"
+          render-info="[[itemRenderInfo]]"
+          template-index="[[templateIndex]]"
+        ></tf-node-icon>
         <span title$="[[name]]">[[name]]</span>
         <span class="edge-label">[[edgeLabel]]</span>
       </div>
@@ -105,11 +112,11 @@ limitations under the License.
           name: String,
           itemType: {
             type: String,
-            observer: '_itemTypeChanged'
+            observer: '_itemTypeChanged',
           },
           colorBy: String,
           colorByParams: Object,
-          templateIndex: Function
+          templateIndex: Function,
         },
 
         _itemTypeChanged: function() {
@@ -125,13 +132,13 @@ limitations under the License.
           this.fire('node-list-item-' + event.type, {
             cardNode: this.cardNode.name,
             nodeName: this.name,
-            type: this.itemType
+            type: this.itemType,
           });
         },
 
         _fadedClass: function(itemRenderInfo) {
           return itemRenderInfo && itemRenderInfo.isFadedOut ? 'faded' : '';
-        }
+        },
       });
     })();
   </script>

@@ -17,93 +17,103 @@ limitations under the License.
   pod-viewer is a view within the tf-profile-dashboard.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="details-card.html">
-<link rel="import" href="pod-viewer-common.html">
-<link rel="import" href="stack-bar-chart.html">
-<link rel="import" href="topology-graph.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-slider/paper-slider.html" />
+<link rel="import" href="pod-viewer-common.html" />
+<link rel="import" href="stack-bar-chart.html" />
+<link rel="import" href="topology-graph.html" />
 
 <dom-module id="pod-viewer-dashboard">
   <template>
-<style>
-:host {
-  display: block;
-  margin-right: 1.5em;
-}
+    <style>
+      :host {
+        display: block;
+        margin-right: 1.5em;
+      }
 
-#control {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  overflow: auto;
-  padding: .5em;
-  text-align: bottom;
-  text-transform: uppercase;
-  vertical-align: bottom;
-}
+      #control {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        overflow: auto;
+        padding: 0.5em;
+        text-align: bottom;
+        text-transform: uppercase;
+        vertical-align: bottom;
+      }
 
-.control-row-left {
-  align-items: center;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-start;
-  line-height: 50px;
-  margin-left: 16px;
-  text-align: bottom;
-}
+      .control-row-left {
+        align-items: center;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        line-height: 50px;
+        margin-left: 16px;
+        text-align: bottom;
+      }
 
-paper-slider {
-  --paper-slider-input: {width: 100px}
-  --paper-slider-height: 3px;
-}
+      paper-slider {
+        --paper-slider-input: {
+          width: 100px;
+        }
+        --paper-slider-height: 3px;
+      }
 
-.step-num-text {
-  font-size: 20px;
-  font-weight: bold;
-  padding-left: 1em;
-}
+      .step-num-text {
+        font-size: 20px;
+        font-weight: bold;
+        padding-left: 1em;
+      }
 
-.stack-title {
-  font-size: 24px;
-  line-height: 32px;
-}
+      .stack-title {
+        font-size: 24px;
+        line-height: 32px;
+      }
 
-.bar-chart {
-  overflow: auto;
-}
+      .bar-chart {
+        overflow: auto;
+      }
 
-#title {
-  margin-left: 16px;
-}
+      #title {
+        margin-left: 16px;
+      }
 
-.error-message {
-  color: red;
-  font-size: 32px;
-  font-weight: bold;
-  margin-left: 16px;
-  margin-top: 32px;
-}
-
-</style>
-    <div class="error-message" hidden=[[!_errorMessage]]>
+      .error-message {
+        color: red;
+        font-size: 32px;
+        font-weight: bold;
+        margin-left: 16px;
+        margin-top: 32px;
+      }
+    </style>
+    <div class="error-message" hidden="[[!_errorMessage]]">
       <span>[[_errorMessage]]</span>
     </div>
-    <div id="control" hidden=[[_errorMessage]]>
+    <div id="control" hidden="[[_errorMessage]]">
       <!--
         paper-slider sets which step to show.
       -->
-      <span class="control-row-left">Please select a step
-        <paper-slider min=0 max=[[_maxStepId]] snaps step=1 value={{curStepId}}>
+      <span class="control-row-left"
+        >Please select a step
+        <paper-slider
+          min="0"
+          max="[[_maxStepId]]"
+          snaps
+          step="1"
+          value="{{curStepId}}"
+        >
         </paper-slider>
         <span class="step-num-text">Step [[_getStepNum(_podStatsMap)]]</span>
       </span>
     </div>
-    <div class="pod-viewer-dashboard" hidden=[[_errorMessage]]>
+    <div class="pod-viewer-dashboard" hidden="[[_errorMessage]]">
       <div id="topo-graph">
-        <topology-graph run-environment=[[_runEnvironment]]
-            data=[[_podStatsMap]] metrics=[[_stepBreakdownLayers]]
-            active-bar=[[activeBar]]>
+        <topology-graph
+          run-environment="[[_runEnvironment]]"
+          data="[[_podStatsMap]]"
+          metrics="[[_stepBreakdownLayers]]"
+          active-bar="[[activeBar]]"
+        >
         </topology-graph>
       </div>
       <div id="channel-bars" class="bar-chart" hidden="[[!_channelDb]]">
@@ -111,32 +121,41 @@ paper-slider {
           <div class="stack-title">Latency of Send and Recv channels</div>
           <p>(x-axis: channel id, y-axis: time (µs))</p>
         </div>
-        <stack-bar-chart data=[[_channelDb]]
-                         stack-layers=[[_channelLayers]]
-                         x-domain-func=[[_channelFunc]]
-                         active-bar={{activeBar}}></stack-bar-chart>
+        <stack-bar-chart
+          data="[[_channelDb]]"
+          stack-layers="[[_channelLayers]]"
+          x-domain-func="[[_channelFunc]]"
+          active-bar="{{activeBar}}"
+        ></stack-bar-chart>
       </div>
       <div id="all-reduce-bars" class="bar-chart" hidden="[[!_allReduceDb]]">
         <div id="title">
           <div class="stack-title">
             Duration of all-reduce op or custom fusion for all-reduce
           </div>
-          <p>(x-axis: short names for all-reduces ops (a#) or fusion (f#), y-axis: time (µs))</p>
+          <p>
+            (x-axis: short names for all-reduces ops (a#) or fusion (f#),
+            y-axis: time (µs))
+          </p>
         </div>
-        <stack-bar-chart data=[[_allReduceDb]]
-                         stack-layers=[[_allReduceLayers]]
-                         x-domain-func=[[_allReduceFunc]]
-                         active-bar={{activeBar}}></stack-bar-chart>
+        <stack-bar-chart
+          data="[[_allReduceDb]]"
+          stack-layers="[[_allReduceLayers]]"
+          x-domain-func="[[_allReduceFunc]]"
+          active-bar="{{activeBar}}"
+        ></stack-bar-chart>
       </div>
       <div id="stack-bars" class="bar-chart" hidden="[[!_stepStats]]">
         <div id="title">
           <div class="stack-title">Step breakdown</div>
           <p>(x-axis: global chip id, core id, y-axis: time (µs))</p>
         </div>
-        <stack-bar-chart data=[[_stepStats]]
-                         stack-layers=[[_stepBreakdownLayers]]
-                         x-domain-func=[[_stepBreakdownFunc]]
-                         active-bar={{activeBar}}></stack-bar-chart>
+        <stack-bar-chart
+          data="[[_stepStats]]"
+          stack-layers="[[_stepBreakdownLayers]]"
+          x-domain-func="[[_stepBreakdownFunc]]"
+          active-bar="{{activeBar}}"
+        ></stack-bar-chart>
       </div>
     </div>
   </template>

@@ -44,7 +44,6 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 
-@tensorboard_test_util.run_v1_only('requires tf.Session')
 class MeshPluginTest(tf.test.TestCase):
   """Tests for mesh plugin server."""
 
@@ -57,73 +56,71 @@ class MeshPluginTest(tf.test.TestCase):
     self.log_dir = self.get_temp_dir()
 
     # Create mesh summary.
-    tf.compat.v1.reset_default_graph()
-    sess = tf.compat.v1.Session()
-    point_cloud = test_utils.get_random_mesh(1000)
-    point_cloud_vertices = tf.compat.v1.placeholder(tf.float32,
-                                                    point_cloud.vertices.shape)
+    with tf.compat.v1.Graph().as_default():
+      tf_placeholder = tf.compat.v1.placeholder
+      sess = tf.compat.v1.Session()
+      point_cloud = test_utils.get_random_mesh(1000)
+      point_cloud_vertices = tf_placeholder(
+          tf.float32, point_cloud.vertices.shape
+      )
 
-    mesh_no_color = test_utils.get_random_mesh(2000, add_faces=True)
-    mesh_no_color_extended = test_utils.get_random_mesh(2500, add_faces=True)
-    mesh_no_color_vertices = tf.compat.v1.placeholder(
-        tf.float32, [1, None, 3])
-    mesh_no_color_faces = tf.compat.v1.placeholder(tf.int32,
-                                                   [1, None, 3])
+      mesh_no_color = test_utils.get_random_mesh(2000, add_faces=True)
+      mesh_no_color_extended = test_utils.get_random_mesh(2500, add_faces=True)
+      mesh_no_color_vertices = tf_placeholder(tf.float32, [1, None, 3])
+      mesh_no_color_faces = tf_placeholder(tf.int32, [1, None, 3])
 
-    mesh_color = test_utils.get_random_mesh(
-        3000, add_faces=True, add_colors=True)
-    mesh_color_vertices = tf.compat.v1.placeholder(tf.float32,
-                                                   mesh_color.vertices.shape)
-    mesh_color_faces = tf.compat.v1.placeholder(tf.int32,
-                                                mesh_color.faces.shape)
-    mesh_color_colors = tf.compat.v1.placeholder(tf.uint8,
-                                                 mesh_color.colors.shape)
-    self.data = [
-      point_cloud, mesh_no_color, mesh_no_color_extended, mesh_color]
+      mesh_color = test_utils.get_random_mesh(
+          3000, add_faces=True, add_colors=True)
+      mesh_color_vertices = tf_placeholder(tf.float32, mesh_color.vertices.shape)
+      mesh_color_faces = tf_placeholder(tf.int32, mesh_color.faces.shape)
+      mesh_color_colors = tf_placeholder(tf.uint8, mesh_color.colors.shape)
 
-    # In case when name is present and display_name is not, we will reuse name
-    # as display_name. Summaries below intended to test both cases.
-    self.names = ["point_cloud", "mesh_no_color", "mesh_color"]
-    summary.op(
-        self.names[0],
-        point_cloud_vertices,
-        description="just point cloud")
-    summary.op(
-        self.names[1],
-        mesh_no_color_vertices,
-        faces=mesh_no_color_faces,
-        display_name="name_to_display_in_ui",
-        description="beautiful mesh in grayscale")
-    summary.op(
-        self.names[2],
-        mesh_color_vertices,
-        faces=mesh_color_faces,
-        colors=mesh_color_colors,
-        description="mesh with random colors")
+      self.data = [
+        point_cloud, mesh_no_color, mesh_no_color_extended, mesh_color]
 
-    merged_summary_op = tf.compat.v1.summary.merge_all()
-    self.runs = ["bar"]
-    self.steps = 20
-    bar_directory = os.path.join(self.log_dir, self.runs[0])
-    with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
-      writer.add_graph(sess.graph)
-      for step in range(self.steps):
-        # Alternate between two random meshes with different number of
-        # vertices.
-        no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_extended
-        with patch.object(time, 'time', return_value=step):
-          writer.add_summary(
-              sess.run(
-                  merged_summary_op,
-                  feed_dict={
-                      point_cloud_vertices: point_cloud.vertices,
-                      mesh_no_color_vertices: no_color.vertices,
-                      mesh_no_color_faces: no_color.faces,
-                      mesh_color_vertices: mesh_color.vertices,
-                      mesh_color_faces: mesh_color.faces,
-                      mesh_color_colors: mesh_color.colors,
-                  }),
-              global_step=step)
+      # In case when name is present and display_name is not, we will reuse name
+      # as display_name. Summaries below intended to test both cases.
+      self.names = ["point_cloud", "mesh_no_color", "mesh_color"]
+      summary.op(
+          self.names[0],
+          point_cloud_vertices,
+          description="just point cloud")
+      summary.op(
+          self.names[1],
+          mesh_no_color_vertices,
+          faces=mesh_no_color_faces,
+          display_name="name_to_display_in_ui",
+          description="beautiful mesh in grayscale")
+      summary.op(
+          self.names[2],
+          mesh_color_vertices,
+          faces=mesh_color_faces,
+          colors=mesh_color_colors,
+          description="mesh with random colors")
+
+      merged_summary_op = tf.compat.v1.summary.merge_all()
+      self.runs = ["bar"]
+      self.steps = 20
+      bar_directory = os.path.join(self.log_dir, self.runs[0])
+      with tensorboard_test_util.FileWriterCache.get(bar_directory) as writer:
+        writer.add_graph(sess.graph)
+        for step in range(self.steps):
+          # Alternate between two random meshes with different number of
+          # vertices.
+          no_color = mesh_no_color if step % 2 == 0 else mesh_no_color_extended
+          with patch.object(time, 'time', return_value=step):
+            writer.add_summary(
+                sess.run(
+                    merged_summary_op,
+                    feed_dict={
+                        point_cloud_vertices: point_cloud.vertices,
+                        mesh_no_color_vertices: no_color.vertices,
+                        mesh_no_color_faces: no_color.faces,
+                        mesh_color_vertices: mesh_color.vertices,
+                        mesh_color_faces: mesh_color.faces,
+                        mesh_color_colors: mesh_color.colors,
+                    }),
+                global_step=step)
 
     # Start a server that will receive requests.
     self.multiplexer = event_multiplexer.EventMultiplexer({
@@ -132,13 +129,15 @@ class MeshPluginTest(tf.test.TestCase):
     self.context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=self.multiplexer)
     self.plugin = mesh_plugin.MeshPlugin(self.context)
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin],
-        self.multiplexer,
-        reload_interval=0,
-        path_prefix="")
-    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+    # Wait until after plugin construction to reload the multiplexer because the
+    # plugin caches data from the multiplexer upon construction and this affects
+    # logic tested later down.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2579): Eliminate the
+    # caching of data at construction time and move this Reload() up to just
+    # after the multiplexer is created.
     self.multiplexer.Reload()
+    wsgi_app = application.TensorBoardWSGI([self.plugin])
+    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
     self.routes = self.plugin.get_plugin_apps()
 
   def tearDown(self):

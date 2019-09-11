@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2016 The TensorFlow Authors. All Rights Reserved.
@@ -15,34 +15,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-<link rel="import" href="../tf-graph-loader.html">
-<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../tf-imports/polymer.html" />
+<link rel="import" href="../tf-graph-loader.html" />
+<link rel="import" href="../../iron-demo-helpers/demo-snippet.html" />
 <title>TF Graph Loader Demo</title>
 <demo-snippet>
   <template>
     <dom-module id="tf-graph-loader-demo">
       <template>
         <tf-graph-loader
-            id="loader"
-            datasets="[[_datasets]]"
-            selected-dataset="[[_selectedDataset]]"
-            progress="{{_progress}}">
+          id="loader"
+          datasets="[[_datasets]]"
+          selected-dataset="[[_selectedDataset]]"
+          progress="{{_progress}}"
+        >
         </tf-graph-loader>
       </template>
       <script>
-        "use strict";
+        'use strict';
 
         Polymer({
-          is: "tf-graph-loader-demo",
+          is: 'tf-graph-loader-demo',
           properties: {
             // We tell the graph loader to load a specific pbtxt file.
             _datasets: {
               type: Array,
-              value: [{
-                "name": "Graph with XLA Clusters Specified",
-                "path": "data/graph.pbtxt"
-              }],
+              value: [
+                {
+                  name: 'Graph with XLA Clusters Specified',
+                  path: 'data/graph.pbtxt',
+                },
+              ],
             },
             _selectedDataset: {
               type: Number,
@@ -54,9 +57,7 @@ limitations under the License.
               type: Object,
             },
           },
-          observers: [
-            '_progressUpdated(_progress)',
-          ],
+          observers: ['_progressUpdated(_progress)'],
           _progressUpdated(progress) {
             // console.log the progress.
             console.log('Progress updated.', progress);

@@ -100,7 +100,7 @@ public final class Vulcanize {
   private static final Set<String> legalese = new HashSet<>();
   private static final List<String> licenses = new ArrayList<>();
   private static final List<Webpath> stack = new ArrayList<>();
-  private static final List<SourceFile> externs = new ArrayList<>();
+  private static final Map<String, SourceFile> externs = new LinkedHashMap<>();
   private static final List<SourceFile> sourcesFromJsLibraries = new ArrayList<>();
   private static final Map<Webpath, String> sourcesFromScriptTags = new LinkedHashMap<>();
   private static final Map<Webpath, Node> sourceTags = new LinkedHashMap<>();
@@ -138,7 +138,7 @@ public final class Vulcanize {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
         if (code.contains("@externs")) {
-          externs.add(sourceFile);
+          externs.put(args[i], sourceFile);
         } else {
           sourcesFromJsLibraries.add(sourceFile);
         }
@@ -321,7 +321,14 @@ public final class Vulcanize {
       script = INLINE_SOURCE_MAP_PATTERN.matcher(script).replaceAll("");
     }
     boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
-    if (node.attr("src").endsWith(".min.js")
+
+    if (node.hasAttr("jscomp-externs")) {
+      String filePath = getWebfile(path).toString();
+      SourceFile sourceFile = SourceFile.fromCode(filePath, script);
+      externs.put(filePath, sourceFile);
+      // Remove script tag of extern since it is not needed at the run time.
+      return replaceNode(node, new TextNode("", node.baseUri()));
+    } else if (node.attr("src").endsWith(".min.js")
         || getAttrTransitive(node, "jscomp-nocompile").isPresent()
         || wantsMinify) {
       if (wantsMinify) {
@@ -406,7 +413,7 @@ public final class Vulcanize {
   }
 
   private static Node removeNode(Node node) {
-    return replaceNode(node, new TextNode(""));
+    return replaceNode(node, new TextNode("", node.baseUri()));
   }
 
   private static Path getWebfile(Webpath path) {
@@ -425,8 +432,8 @@ public final class Vulcanize {
     // Nice options.
     options.setColorizeErrorOutput(true);
     options.setContinueAfterErrors(true);
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2017);
-    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
+    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2018);
+    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT_2015);
     options.setGenerateExports(true);
     options.setStrictModeInput(false);
     options.setExtraAnnotationNames(EXTRA_JSDOC_TAGS);
@@ -441,6 +448,9 @@ public final class Vulcanize {
     options.setRemoveUnusedPrototypeProperties(false);
     options.setRemoveUnusedPrototypePropertiesInExterns(false);
     options.setRemoveUnusedClassProperties(false);
+    // Prevent Polymer bound method (invisible to JSComp) to be over-optimized.
+    options.setInlineFunctions(CompilerOptions.Reach.NONE);
+    options.setDevirtualizeMethods(false);
 
     // Dependency management.
     options.setClosurePass(true);
@@ -457,7 +467,7 @@ public final class Vulcanize {
     options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
 
     // Polymer pass.
-    options.setPolymerVersion(1);
+    options.setPolymerVersion(2);
 
     // Debug flags.
     if (testOnly) {
@@ -495,6 +505,13 @@ public final class Vulcanize {
               //             https://github.com/google/closure-compiler/pull/1959
               return CheckLevel.OFF;
             }
+            if (error.sourceName.endsWith("externs/webcomponents-externs.js")) {
+              // TODO(stephanwlee): Figure out why above externs cause variable
+              // declare issue. Seems to do with usage of `let` in Polymer 2.x
+              // branch.
+              // Ref: #2425.
+              return CheckLevel.WARNING;
+            }
             if (IGNORE_PATHS_PATTERN.matcher(error.sourceName).matches()) {
               return CheckLevel.OFF;
             }
@@ -525,10 +542,12 @@ public final class Vulcanize {
       sauce.add(SourceFile.fromCode(source.getKey().toString(), source.getValue()));
     }
 
+    List<SourceFile> externsList = new ArrayList<>(externs.values());
+
     // Compile everything into a single script.
     Compiler compiler = new Compiler();
     compiler.disableThreads();
-    Result result = compiler.compile(externs, sauce, options);
+    Result result = compiler.compile(externsList, sauce, options);
     if (!result.success) {
       System.exit(1);
     }

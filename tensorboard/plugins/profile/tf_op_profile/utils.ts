@@ -13,56 +13,86 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_op_profile {
+  function rgba(red: number, green: number, blue: number, alpha: number) {
+    return (
+      'rgba(' +
+      Math.round(red * 255) +
+      ',' +
+      Math.round(green * 255) +
+      ',' +
+      Math.round(blue * 255) +
+      ',' +
+      alpha +
+      ')'
+    );
+  }
 
-function rgba(red: number, green: number, blue: number, alpha: number) {
-  return "rgba(" + Math.round(red * 255) + "," + Math.round(green * 255) +
-      "," + Math.round(blue * 255) + "," + alpha + ")";
-}
+  /**
+   * Computes a flame color.
+   * @param {number} fraction
+   * @param {number=} brightness
+   * @param {number=} opacity
+   * @param {Function=} curve mapping [0-1] to [0-1]
+   * @return {string} An RGBA color.
+   */
+  export function flameColor(
+    fraction: number,
+    brightness = 1,
+    opacity = 1,
+    curve = Math.sqrt
+  ) {
+    if (isNaN(fraction))
+      return rgba(brightness, brightness, brightness, opacity);
+    fraction = curve(fraction); // Or everything is depressing and red.
+    return fraction < 0.5
+      ? rgba(brightness, 2 * fraction * brightness, 0, opacity)
+      : rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
+  }
 
-/**
- * Computes a flame color.
- * @param {number} fraction
- * @param {number=} brightness
- * @param {number=} opacity
- * @param {Function=} curve mapping [0-1] to [0-1]
- * @return {string} An RGBA color.
- */
-export function flameColor(
-    fraction: number, brightness = 1, opacity = 1, curve = Math.sqrt) {
-  if (isNaN(fraction)) return rgba(brightness, brightness, brightness, opacity);
-  fraction = curve(fraction); // Or everything is depressing and red.
-  return (fraction < 0.5) ?
-    rgba(brightness, 2 * fraction * brightness, 0, opacity) :
-    rgba(2 * (1 - fraction) * brightness, brightness, 0, opacity);
-}
+  export function flopsColor(fraction: number) {
+    return flameColor(fraction, 0.7);
+  }
 
-export function utilization(node: any) {
-  // NaN indicates undefined utilization for fused operations (we can't measure
-  // performance inside a fusion). It could also indicate operations with zero
-  // time, but they currently don't appear in the profile.
-  if (!node || !node.metrics || !node.metrics.time) return 0/0;
-  return node.metrics.flops / node.metrics.time;
-}
+  export function bwColor(fraction: number) {
+    return flameColor(1 - fraction, 0.7);
+  }
 
-export function memoryUtilization(node: any) {
-  // NaN indicates undefined memory utilization (the profile was collected from
-  // older versions of profiler).
-  if (!node || !node.metrics || !node.metrics.memoryBandwidth) return 0/0;
-  return node.metrics.memoryBandwidth;
-}
+  export function utilization(node: any) {
+    // NaN indicates undefined utilization for fused operations (we can't
+    // measure performance inside a fusion). It could also indicate operations
+    // with zero time, but they currently don't appear in the profile.
+    if (!node || !node.metrics || !node.metrics.time) return NaN;
+    return node.metrics.flops / node.metrics.time;
+  }
 
-export function hasMemoryUtilization(node: any) {
-  return node && node.metrics && node.metrics.memoryBandwidth;
-}
+  export function memoryUtilization(node: any) {
+    // NaN indicates undefined memory utilization (the profile was collected
+    // from older versions of profiler).
+    if (!node || !node.metrics || !node.metrics.memoryBandwidth) return NaN;
+    return node.metrics.memoryBandwidth;
+  }
 
-export function hasFlops(node: any) {
-  return node && node.metrics && node.metrics.time;
-}
+  export function hasMemoryUtilization(node: any) {
+    return node && node.metrics && node.metrics.memoryBandwidth;
+  }
 
-export function percent(fraction: number) {
-  if (isNaN(fraction)) return "-";
-  return fraction >= 0.995 ? "100%" : fraction < 0.00001 ? "0.00%" :
-    (fraction * 100).toPrecision(2) + "%";
-}
+  export function hasFlops(node: any) {
+    return node && node.metrics && node.metrics.time;
+  }
 
-}  // namespace tf_op_profile
+  export function percent(fraction: number) {
+    if (isNaN(fraction)) return '-';
+    return fraction >= 0.995
+      ? '100%'
+      : fraction < 0.00001
+      ? '0.00%'
+      : (fraction * 100).toPrecision(2) + '%';
+  }
+  export function timeWasted(node: any) {
+    if (!node || !node.metrics) return NaN;
+    return (
+      node.metrics.time *
+      (1 - Math.max(utilization(node), memoryUtilization(node)))
+    );
+  }
+} // namespace tf_op_profile

@@ -78,7 +78,6 @@ py_library(
         ":metadata",
         ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
         "//tensorboard/util:encoder",
     ],
 )
@@ -108,7 +107,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
-        "//tensorboard/util:test_util",
     ],
 )
 

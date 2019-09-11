@@ -20,8 +20,6 @@ from __future__ import print_function
 
 import json
 import textwrap
-import threading
-import time
 
 # pylint: disable=g-bad-import-order
 # Necessary for an internal test with special behavior for numpy.
@@ -33,13 +31,9 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
-from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
-
-logger = tb_logging.get_logger()
 
 # HTTP routes
 TAGS_ROUTE = '/tags'
@@ -208,19 +202,6 @@ class TextPlugin(base_plugin.TBPlugin):
     """
     self._multiplexer = context.multiplexer
 
-    # Cache the last result of index_impl() so that methods that depend on it
-    # can return without blocking (while kicking off a background thread to
-    # recompute the current index).
-    self._index_cached = None
-
-    # Lock that ensures that only one thread attempts to compute index_impl()
-    # at a given time, since it's expensive.
-    self._index_impl_lock = threading.Lock()
-
-    # Pointer to the current thread computing index_impl(), if any.  This is
-    # stored on TextPlugin only to facilitate testing.
-    self._index_impl_thread = None
-
   def is_active(self):
     """Determines whether this plugin is active.
 
@@ -231,106 +212,23 @@ class TextPlugin(base_plugin.TBPlugin):
     """
     if not self._multiplexer:
       return False
-
-    if self._index_cached is not None:
-      # If we already have computed the index, use it to determine whether
-      # the plugin should be active, and if so, return immediately.
-      if any(self._index_cached.values()):
-        return True
-
-    if self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME):
-      # Text data is present in the multiplexer. No need to further check for
-      # data stored via the outdated plugin assets method.
-      return True
-
-    # We haven't conclusively determined if the plugin should be active. Launch
-    # a thread to compute index_impl() and return False to avoid blocking.
-    self._maybe_launch_index_impl_thread()
-
-    return False
+    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(TextPlugin, self).frontend_metadata()._replace(
-        element_name='tf-text-dashboard',
-    )
-
-  def _maybe_launch_index_impl_thread(self):
-    """Attempts to launch a thread to compute index_impl().
-
-    This may not launch a new thread if one is already running to compute
-    index_impl(); in that case, this function is a no-op.
-    """
-    # Try to acquire the lock for computing index_impl(), without blocking.
-    if self._index_impl_lock.acquire(False):
-      # We got the lock. Start the thread, which will unlock the lock when done.
-      self._index_impl_thread = threading.Thread(
-          target=self._async_index_impl,
-          name='TextPluginIndexImplThread')
-      self._index_impl_thread.start()
-
-  def _async_index_impl(self):
-    """Computes index_impl() asynchronously on a separate thread."""
-    start = time.time()
-    logger.info('TextPlugin computing index_impl() in a new thread')
-    self._index_cached = self.index_impl()
-    self._index_impl_thread = None
-    self._index_impl_lock.release()
-    elapsed = time.time() - start
-    logger.info(
-        'TextPlugin index_impl() thread ending after %0.3f sec', elapsed)
+    return base_plugin.FrontendMetadata(element_name='tf-text-dashboard')
 
   def index_impl(self):
-    run_to_series = self._fetch_run_to_series_from_multiplexer()
-
-    # A previous system of collecting and serving text summaries involved
-    # storing the tags of text summaries within tensors.json files. See if we
-    # are currently using that system. We do not want to drop support for that
-    # use case.
-    name = 'tensorboard_text'
-    run_to_assets = self._multiplexer.PluginAssets(name)
-    for run, assets in run_to_assets.items():
-      if run in run_to_series:
-        # When runs conflict, the summaries created via the new method override.
-        continue
-
-      if 'tensors.json' in assets:
-        tensors_json = self._multiplexer.RetrievePluginAsset(
-            run, name, 'tensors.json')
-        tensors = json.loads(tensors_json)
-        run_to_series[run] = tensors
-      else:
-        # The mapping should contain all runs among its keys.
-        run_to_series[run] = []
-
-    return run_to_series
-
-  def _fetch_run_to_series_from_multiplexer(self):
-    # TensorBoard is obtaining summaries related to the text plugin based on
-    # SummaryMetadata stored within Value protos.
-    mapping = self._multiplexer.PluginRunToTagToContent(
-        metadata.PLUGIN_NAME)
+    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     return {
-        run: list(tag_to_content.keys())
+        run: list(tag_to_content)
         for (run, tag_to_content)
         in six.iteritems(mapping)
     }
 
-  def tags_impl(self):
-    # Recompute the index on demand whenever tags are requested, but do it
-    # in a separate thread to avoid blocking.
-    self._maybe_launch_index_impl_thread()
-
-    # Use the cached index if present. If it's not, just return the result based
-    # on data from the multiplexer, requiring no disk read.
-    if self._index_cached:
-      return self._index_cached
-    else:
-      return self._fetch_run_to_series_from_multiplexer()
-
   @wrappers.Request.application
   def tags_route(self, request):
-    response = self.tags_impl()
-    return http_util.Respond(request, response, 'application/json')
+    index = self.index_impl()
+    return http_util.Respond(request, index, 'application/json')
 
   def text_impl(self, run, tag):
     try:

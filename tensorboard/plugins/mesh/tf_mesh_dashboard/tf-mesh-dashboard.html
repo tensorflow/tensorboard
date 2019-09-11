@@ -14,18 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-categorization-utils/tf-categorization-utils.html">
-<link rel="import" href="../tf-categorization-utils/tf-category-pane.html">
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html">
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html">
-<link rel="import" href="../tf-tensorboard/registry.html">
-<link rel="import" href="tf-mesh-loader.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link
+  rel="import"
+  href="../tf-categorization-utils/tf-categorization-utils.html"
+/>
+<link
+  rel="import"
+  href="../tf-paginated-view/tf-category-paginated-view.html"
+/>
+<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
+<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
+<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
+<link rel="import" href="../tf-tensorboard/registry.html" />
+<link rel="import" href="tf-mesh-loader.html" />
 
 <!--
   A frontend that displays a set of tf-mesh-loaders.
@@ -33,88 +39,114 @@ limitations under the License.
 <dom-module id="mesh-dashboard">
   <template>
     <tf-dashboard-layout>
-      <div class="sidebar all-controls">
-
+      <div slot="sidebar" class="all-controls">
         <div class="sidebar-section view-control">
-            <h3 class="title">Point of view</h3>
-            <div>
-              <paper-radio-group id="view-radio-group" selected="{{_selectedView}}">
-                <paper-radio-button id="all-radio-button" name="all">
-                  Display all points
-                </paper-radio-button>
-                <paper-tooltip animation-delay="0" for="all-radio-button" position="right" offset="0">
-                  Zoom and center camera to display all points at once. Note, that some points could
-                  be too far (i.e. too small) to be visible.
-                </paper-tooltip>
-                <paper-radio-button id="user-radio-button" name="user">
-                  Current view
-                </paper-radio-button>
-                <paper-tooltip animation-delay="0" for="user-radio-button" position="right" offset="0">
-                  Keep current camera position and zoom level.
-                </paper-tooltip>
-                <paper-radio-button id="share-radio-button" name="share">
-                  Share viewpoint
-                </paper-radio-button>
-                <paper-tooltip animation-delay="0" for="share-radio-button" position="right" offset="0">
-                  Share viewpoint among all cameras.
-                </paper-tooltip>
-              </paper-radio-group>
-            </div>
+          <h3 class="title">Point of view</h3>
+          <div>
+            <paper-radio-group
+              id="view-radio-group"
+              selected="{{_selectedView}}"
+            >
+              <paper-radio-button id="all-radio-button" name="all">
+                Display all points
+              </paper-radio-button>
+              <paper-tooltip
+                animation-delay="0"
+                for="all-radio-button"
+                position="right"
+                offset="0"
+              >
+                Zoom and center camera to display all points at once. Note, that
+                some points could be too far (i.e. too small) to be visible.
+              </paper-tooltip>
+              <paper-radio-button id="user-radio-button" name="user">
+                Current view
+              </paper-radio-button>
+              <paper-tooltip
+                animation-delay="0"
+                for="user-radio-button"
+                position="right"
+                offset="0"
+              >
+                Keep current camera position and zoom level.
+              </paper-tooltip>
+              <paper-radio-button id="share-radio-button" name="share">
+                Share viewpoint
+              </paper-radio-button>
+              <paper-tooltip
+                animation-delay="0"
+                for="share-radio-button"
+                position="right"
+                offset="0"
+              >
+                Share viewpoint among all cameras.
+              </paper-tooltip>
+            </paper-radio-group>
+          </div>
         </div>
         <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
       </div>
-      <div class="center">
+      <div slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
             <h3>No point cloud data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>You haven’t written any point cloud data to your event files.
-              <li>TensorBoard can’t find your event files.
+              <li>
+                You haven’t written any point cloud data to your event files.
+              </li>
+              <li>TensorBoard can’t find your event files.</li>
             </ul>
+
             <p>
-            If you’re new to using TensorBoard, and want to find out how
-            to add data and set up your event files, check out the
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
-            and perhaps the <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+              If you’re new to using TensorBoard, and want to find out how to
+              add data and set up your event files, check out the
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
+              and perhaps the
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
+            </p>
+
             <p>
-            If you think TensorBoard is configured properly, please see
-            <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
-            and consider filing an issue on GitHub.
+              If you think TensorBoard is configured properly, please see
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
+              and consider filing an issue on GitHub.
+            </p>
           </div>
         </template>
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-pane category="[[category]]">
-              <tf-paginated-view
-                items="[[category.items]]"
-                pages="{{category._pages}}"
-              >
-                <template is="dom-repeat" items="[[category._pages]]" as="page">
-                  <template is="dom-if" if="[[page.active]]">
-                    <div class="layout horizontal wrap">
-                      <template is="dom-repeat" items="[[page.items]]">
-                        <tf-mesh-loader
-                          active
-                          selected-view="[[_selectedView]]"
-                          run="[[item.run]]"
-                          tag="[[item.tag]]"
-                          sample="[[item.sample]]"
-                          of-samples="[[item.ofSamples]]"
-                          request-manager="[[_requestManager]]"
-                          class="tf-mesh-loader-container"
-                          on-camera-position-change="_onCameraPositionChanged">
-                        </tf-mesh-loader>
-                      </template>
-                    </div>
-                  </template>
-                </template>
-              </tf-paginated-view>
-            </tf-category-pane>
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
+              <template>
+                <tf-mesh-loader
+                  active="[[active]]"
+                  selected-view="[[_selectedView]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  sample="[[item.sample]]"
+                  of-samples="[[item.ofSamples]]"
+                  request-manager="[[_requestManager]]"
+                  class="tf-mesh-loader-container"
+                  on-camera-position-change="_onCameraPositionChanged"
+                >
+                </tf-mesh-loader>
+              </template>
+            </tf-category-paginated-view>
           </template>
         </template>
       </div>
@@ -167,7 +199,7 @@ limitations under the License.
         flex-direction: row;
         flex-wrap: wrap;
       }
-      .tf-mesh-loader-container {
+      tf-mesh-loader {
         width: 480px;
         flex-basis: 480px;
         flex-grow: 1;
@@ -179,18 +211,17 @@ limitations under the License.
   <script>
     // TODO(podlipensky): move js to separate file. b/123597829
     (function() {
-
       Polymer({
-        is: "mesh-dashboard",
+        is: 'mesh-dashboard',
         properties: {
           /**
            * @type {Array<string>} list of runs names to display.
            */
           _selectedRuns: Array,
-          _runToTagInfo: Object,  // map<run: string, tags: string[]>
+          _runToTagInfo: Object, // map<run: string, tags: string[]>
           _dataNotFound: Boolean,
           _tagFilter: {
-            type: String,  // upward bound from paper-input
+            type: String, // upward bound from paper-input
             value: '.*',
           },
           /** @type {String} Defines the behavior for camera location during redraw. */
@@ -210,68 +241,84 @@ limitations under the License.
           },
         },
         ready() {
-          window.addEventListener('resize', () => {
-            this._handleWindowResize();
-          }, false);
+          window.addEventListener(
+            'resize',
+            () => {
+              this._handleWindowResize();
+            },
+            false
+          );
           this.reload();
         },
         _getAllChildren() {
-          return this.querySelectorAll('tf-mesh-loader');
+          return this.root.querySelectorAll('tf-mesh-loader');
         },
         _onCameraPositionChanged(event) {
           if (this._selectedView == 'share') {
-            this._getAllChildren().forEach(g => {
-              if (event.target == g) return;  // Do not update trigger camera.
-              g.setCameraViewpoint(event.detail.position, event.detail.far, event.detail.target);
+            this._getAllChildren().forEach((g) => {
+              if (event.target == g) return; // Do not update trigger camera.
+              g.setCameraViewpoint(
+                event.detail.position,
+                event.detail.far,
+                event.detail.target
+              );
             });
           }
+        },
+        _shouldOpen(index) {
+          return index <= 2;
         },
         reload() {
           this._fetchTags().then(this._reloadMeshes.bind(this));
         },
         _handleWindowResize() {
-          this._getAllChildren().forEach(g => {
+          this._getAllChildren().forEach((g) => {
             g.redraw();
           });
         },
         _fetchTags() {
           const url = tf_backend.getRouter().pluginRoute('mesh', '/tags');
-          return this._requestManager.request(url).then(runToTagInfo => {
+          return this._requestManager.request(url).then((runToTagInfo) => {
             if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
               // No need to update anything if there are no changes.
               return;
             }
-            const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+            const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
             const tags = tf_backend.getTags(runToTag);
             this.set('_dataNotFound', tags.length === 0);
             this.set('_runToTagInfo', runToTagInfo);
           });
         },
         _reloadMeshes() {
-          this._getAllChildren().forEach(g => {
+          this._getAllChildren().forEach((g) => {
             g.reload();
           });
         },
         _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
-          const runToTag = _.mapValues(runToTagInfo, x => Object.keys(x));
+          const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
           const baseCategories = tf_categorization_utils.categorizeRunTagCombinations(
-            runToTag, selectedRuns, tagFilter);
+            runToTag,
+            selectedRuns,
+            tagFilter
+          );
 
           function explodeItem(item) {
             const samples = runToTagInfo[item.run][item.tag].samples;
-            return _.range(samples).map(i => Object.assign({}, item, {
-              sample: i,
-              ofSamples: samples,
-            }));
+            return _.range(samples).map((i) =>
+              Object.assign({}, item, {
+                sample: i,
+                ofSamples: samples,
+              })
+            );
           }
-          const withSamples = baseCategories.map(category =>
+          const withSamples = baseCategories.map((category) =>
             Object.assign({}, category, {
               items: [].concat.apply([], category.items.map(explodeItem)),
-            }));
+            })
+          );
           return withSamples;
-        }
-      });  // End of Polymer constructor call.
-
-    })();  // End of anonymous namespace.
+        },
+      }); // End of Polymer constructor call.
+    })(); // End of anonymous namespace.
   </script>
 </dom-module>

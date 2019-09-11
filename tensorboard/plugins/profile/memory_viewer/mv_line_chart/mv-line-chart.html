@@ -16,16 +16,17 @@ You may obtain a copy of the License at
   mv-line-chart is a line chart for the memory viewer tool.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/plottable.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/plottable.html" />
 
-<dom-module id='mv-line-chart'>
+<dom-module id="mv-line-chart">
   <template>
+    <style include="plottable-style"></style>
     <div class="mv-line-chart">
       <h2>Working Space Size (MiB) vs Program Order (HLO Sequence)</h2>
       <div id="chartdiv" style="width:1200px;height:384px"></div>
-      <div id='maxheap-details'>
+      <div id="maxheap-details">
         <em>Hover over a bar for buffer details to appear on the left.</em>
       </div>
       <h3>By Program Order</h3>

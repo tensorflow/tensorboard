@@ -15,68 +15,69 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-backend/tf-backend.html">
+<link rel="import" href="../tf-backend/tf-backend.html" />
 
 <script>
-/* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
+  /* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
    backend.
    Any implementation with the same public interface can be passed to
    tf-hparams-main as the 'backend' property.
 */
-'use strict';
-var tf;
-(function (tf) {
-  (function (hparams) {
-    class Backend {
-      // Constructs a backend that uses the given tf_backend.requestManager to
-      // send requests. The apiUrl parameter should denote the base
-      // url to use. If useHttpGet is true uses HTTP GET to send a request
-      // otherwise uses HTTP POST. See tensorboard/plugins/hparams/http_api.md
-      // for details on how the requests and responses are encoded in each
-      // scheme (GET or POST).
-      constructor(apiUrl, requestManager, useHttpGet=true) {
-        this._apiUrl = apiUrl;
-        this._requestManager = requestManager;
-        this._useHttpGet = useHttpGet;
-      }
-
-      // In the API methods below, 'request' should be a JSON translated request
-      // protocol buffer and the response is a JSON translated response protocol
-      // buffer. See api.proto for the details.
-
-      getExperiment(experimentRequest) {
-        return this._sendRequest('experiment', experimentRequest);
-      }
-
-      listSessionGroups(listSessionGroupsRequest) {
-        return this._sendRequest('session_groups', listSessionGroupsRequest);
-      }
-
-      listMetricEvals(listMetricEvalsRequest) {
-        return this._sendRequest('metric_evals', listMetricEvalsRequest);
-      }
-
-      // ---- Private methods below -------------------------------------------
-      _sendRequest(methodName, request_proto) {
-        if (this._useHttpGet) {
-          const encodedRequest = encodeURIComponent(
-              JSON.stringify(request_proto));
-          const url = this._apiUrl + '/' + methodName +
-                '?request=' + encodedRequest;
-          return this._requestManager.request(url);
+  'use strict';
+  var tf;
+  (function(tf) {
+    (function(hparams) {
+      class Backend {
+        // Constructs a backend that uses the given tf_backend.requestManager to
+        // send requests. The apiUrl parameter should denote the base
+        // url to use. If useHttpGet is true uses HTTP GET to send a request
+        // otherwise uses HTTP POST. See tensorboard/plugins/hparams/http_api.md
+        // for details on how the requests and responses are encoded in each
+        // scheme (GET or POST).
+        constructor(apiUrl, requestManager, useHttpGet = true) {
+          this._apiUrl = apiUrl;
+          this._requestManager = requestManager;
+          this._useHttpGet = useHttpGet;
         }
-        /* Use POST */
-        const requestOptions = new tf_backend.RequestOptions();
-        requestOptions.withCredentials = true;
-        requestOptions.methodType = 'POST';
-        requestOptions.contentType = 'text/plain';
-        requestOptions.body = JSON.stringify(request_proto);
-        const url = this._apiUrl + '/' + methodName;
-        return this._requestManager.requestWithOptions(url, requestOptions);
-      }
-    }
 
-    hparams.Backend = Backend;
-  })(tf.hparams || (tf.hparams = {}));  // namespace hparams
-})(tf || (tf = {}));  // namespace tf
+        // In the API methods below, 'request' should be a JSON translated request
+        // protocol buffer and the response is a JSON translated response protocol
+        // buffer. See api.proto for the details.
+
+        getExperiment(experimentRequest) {
+          return this._sendRequest('experiment', experimentRequest);
+        }
+
+        listSessionGroups(listSessionGroupsRequest) {
+          return this._sendRequest('session_groups', listSessionGroupsRequest);
+        }
+
+        listMetricEvals(listMetricEvalsRequest) {
+          return this._sendRequest('metric_evals', listMetricEvalsRequest);
+        }
+
+        // ---- Private methods below -------------------------------------------
+        _sendRequest(methodName, request_proto) {
+          if (this._useHttpGet) {
+            const encodedRequest = encodeURIComponent(
+              JSON.stringify(request_proto)
+            );
+            const url =
+              this._apiUrl + '/' + methodName + '?request=' + encodedRequest;
+            return this._requestManager.request(url);
+          }
+          /* Use POST */
+          const requestOptions = new tf_backend.RequestOptions();
+          requestOptions.withCredentials = true;
+          requestOptions.methodType = 'POST';
+          requestOptions.contentType = 'text/plain';
+          requestOptions.body = JSON.stringify(request_proto);
+          const url = this._apiUrl + '/' + methodName;
+          return this._requestManager.requestWithOptions(url, requestOptions);
+        }
+      }
+
+      hparams.Backend = Backend;
+    })(tf.hparams || (tf.hparams = {})); // namespace hparams
+  })(tf || (tf = {})); // namespace tf
 </script>

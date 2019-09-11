@@ -19,6 +19,7 @@ load("@io_bazel_rules_closure//closure/private:java_import_external.bzl", "java_
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:polymer.bzl", "tensorboard_polymer_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
@@ -33,13 +34,17 @@ def tensorboard_workspace():
   tensorboard_typings_workspace()
   tensorboard_js_workspace()
 
+  # Set up TypeScript toolchain.
+  ts_setup_workspace()
+
   http_archive(
       name = "com_google_protobuf_js",
-      strip_prefix = "protobuf-3.6.0/js",
-      sha256 = "50a5753995b3142627ac55cfd496cebc418a2e575ca0236e29033c67bd5665f4",
+      # NOTE: keep the version in sync with the protobuf/protoc version from TF in WORKSPACE.
+      sha256 = "03d2e5ef101aee4c2f6ddcf145d2a04926b9c19e7086944df3842b1b8502b783",
+      strip_prefix = "protobuf-3.8.0/js",
       urls = [
-          "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.6.0.tar.gz",
-          "https://github.com/google/protobuf/archive/v3.6.0.tar.gz",
+          "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.8.0.tar.gz",
+          "https://github.com/google/protobuf/archive/v3.8.0.tar.gz",
       ],
       build_file = "@io_bazel_rules_closure//closure/protobuf:protobuf_js.BUILD",
   )

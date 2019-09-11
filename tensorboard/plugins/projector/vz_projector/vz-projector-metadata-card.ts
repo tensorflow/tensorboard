@@ -13,62 +13,63 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
+  // tslint:disable-next-line
+  export let MetadataCardPolymer = PolymerElement({
+    is: 'vz-projector-metadata-card',
+    properties: {
+      hasMetadata: {type: Boolean, value: false},
+      isCollapsed: {type: Boolean, value: false},
+      collapseIcon: {type: String, value: 'expand-less'},
+      metadata: {type: Array},
+      label: String,
+    },
+  });
 
-// tslint:disable-next-line
-export let MetadataCardPolymer = PolymerElement({
-  is: 'vz-projector-metadata-card',
-  properties: {
-    hasMetadata: {type: Boolean, value: false},
-    isCollapsed: {type: Boolean, value: false},
-    collapseIcon: {type: String, value: 'expand-less'},
-    metadata: {type: Array},
-    label: String
-  }
-});
+  export class MetadataCard extends MetadataCardPolymer {
+    hasMetadata: boolean;
+    isCollapsed: boolean;
+    collapseIcon: string;
+    metadata: Array<{key: string; value: string}>;
+    label: string;
 
-export class MetadataCard extends MetadataCardPolymer {
-  hasMetadata: boolean;
-  isCollapsed: boolean;
-  collapseIcon: string;
-  metadata: Array<{key: string, value: string}>;
-  label: string;
+    private labelOption: string;
+    private pointMetadata: PointMetadata;
 
-  private labelOption: string;
-  private pointMetadata: PointMetadata;
+    /** Handles toggle of metadata-container. */
+    _toggleMetadataContainer() {
+      (this.$$('#metadata-container') as any).toggle();
+      this.isCollapsed = !this.isCollapsed;
+      this.set(
+        'collapseIcon',
+        this.isCollapsed ? 'expand-more' : 'expand-less'
+      );
+    }
 
-  /** Handles toggle of metadata-container. */
-  _toggleMetadataContainer() {
-    (this.$$('#metadata-container') as any).toggle();
-    this.isCollapsed = !this.isCollapsed;
-    this.set('collapseIcon', this.isCollapsed ? 'expand-more' : 'expand-less');
-  }
+    updateMetadata(pointMetadata?: PointMetadata) {
+      this.pointMetadata = pointMetadata;
+      this.hasMetadata = pointMetadata != null;
 
-  updateMetadata(pointMetadata?: PointMetadata) {
-    this.pointMetadata = pointMetadata;
-    this.hasMetadata = (pointMetadata != null);
-
-    if (pointMetadata) {
-      let metadata = [];
-      for (let metadataKey in pointMetadata) {
-        if (!pointMetadata.hasOwnProperty(metadataKey)) {
-          continue;
+      if (pointMetadata) {
+        let metadata = [];
+        for (let metadataKey in pointMetadata) {
+          if (!pointMetadata.hasOwnProperty(metadataKey)) {
+            continue;
+          }
+          metadata.push({key: metadataKey, value: pointMetadata[metadataKey]});
         }
-        metadata.push({key: metadataKey, value: pointMetadata[metadataKey]});
+
+        this.metadata = metadata;
+        this.label = '' + this.pointMetadata[this.labelOption];
       }
+    }
 
-      this.metadata = metadata;
-      this.label = '' + this.pointMetadata[this.labelOption];
+    setLabelOption(labelOption: string) {
+      this.labelOption = labelOption;
+      if (this.pointMetadata) {
+        this.label = '' + this.pointMetadata[this.labelOption];
+      }
     }
   }
 
-  setLabelOption(labelOption: string) {
-    this.labelOption = labelOption;
-    if (this.pointMetadata) {
-      this.label = '' + this.pointMetadata[this.labelOption];
-    }
-  }
-}
-
-document.registerElement(MetadataCard.prototype.is, MetadataCard);
-
-}  // namespace vz_projector
+  customElements.define(MetadataCard.prototype.is, MetadataCard);
+} // namespace vz_projector

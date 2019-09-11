@@ -121,7 +121,6 @@ class EventAccumulatorTest(tf.test.TestCase):
         self.assertEqual(actual[key], expected_value)
 
 
-@test_util.run_v1_only('Uses v1 SummaryWriter and v1 audio summary')
 class MockingEventAccumulatorTest(EventAccumulatorTest):
 
   def setUp(self):
@@ -131,7 +130,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     self._real_generator = ea._GeneratorFromPath
 
     def _FakeAccumulatorConstructor(generator, *args, **kwargs):
-      ea._GeneratorFromPath = lambda x: generator
+      def _FakeGeneratorFromPath(path, event_file_active_filter=None):
+        return generator
+      ea._GeneratorFromPath = _FakeGeneratorFromPath
       return self._real_constructor(generator, *args, **kwargs)
 
     ea.EventAccumulator = _FakeAccumulatorConstructor
@@ -356,15 +357,16 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
-    with self.test_session() as sess:
-      step = tf.compat.v1.placeholder(tf.float32, shape=[])
-      scalar_summary.op('accuracy', 1.0 - 1.0 / (step + tf.constant(1.0)))
-      scalar_summary.op('xent', 1.0 / (step + tf.constant(1.0)))
-      merged = tf.compat.v1.summary.merge_all()
-      writer.add_graph(sess.graph)
-      for i in xrange(10):
-        summ = sess.run(merged, feed_dict={step: float(i)})
-        writer.add_summary(summ, global_step=i)
+    with tf.compat.v1.Graph().as_default():
+      with self.test_session() as sess:
+        step = tf.compat.v1.placeholder(tf.float32, shape=[])
+        scalar_summary.op('accuracy', 1.0 - 1.0 / (step + tf.constant(1.0)))
+        scalar_summary.op('xent', 1.0 / (step + tf.constant(1.0)))
+        merged = tf.compat.v1.summary.merge_all()
+        writer.add_graph(sess.graph)
+        for i in xrange(10):
+          summ = sess.run(merged, feed_dict={step: float(i)})
+          writer.add_summary(summ, global_step=i)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -385,19 +387,20 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
-    with self.test_session() as sess:
-      ipt = tf.random.normal(shape=[5, 441, 2])
-      with tf.name_scope('1'):
-        audio_summary.op('one', ipt, sample_rate=44100, max_outputs=1)
-      with tf.name_scope('2'):
-        audio_summary.op('two', ipt, sample_rate=44100, max_outputs=2)
-      with tf.name_scope('3'):
-        audio_summary.op('three', ipt, sample_rate=44100, max_outputs=3)
-      merged = tf.compat.v1.summary.merge_all()
-      writer.add_graph(sess.graph)
-      for i in xrange(10):
-        summ = sess.run(merged)
-        writer.add_summary(summ, global_step=i)
+    with tf.compat.v1.Graph().as_default():
+      with self.test_session() as sess:
+        ipt = tf.random.normal(shape=[5, 441, 2])
+        with tf.name_scope('1'):
+          audio_summary.op('one', ipt, sample_rate=44100, max_outputs=1)
+        with tf.name_scope('2'):
+          audio_summary.op('two', ipt, sample_rate=44100, max_outputs=2)
+        with tf.name_scope('3'):
+          audio_summary.op('three', ipt, sample_rate=44100, max_outputs=3)
+        merged = tf.compat.v1.summary.merge_all()
+        writer.add_graph(sess.graph)
+        for i in xrange(10):
+          summ = sess.run(merged)
+          writer.add_summary(summ, global_step=i)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -419,23 +422,24 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
-    with self.test_session() as sess:
-      ipt = tf.ones([10, 4, 4, 3], tf.uint8)
-      # This is an interesting example, because the old tf.image_summary op
-      # would throw an error here, because it would be tag reuse.
-      # Using the tf node name instead allows argument re-use to the image
-      # summary.
-      with tf.name_scope('1'):
-        image_summary.op('images', ipt, max_outputs=1)
-      with tf.name_scope('2'):
-        image_summary.op('images', ipt, max_outputs=2)
-      with tf.name_scope('3'):
-        image_summary.op('images', ipt, max_outputs=3)
-      merged = tf.compat.v1.summary.merge_all()
-      writer.add_graph(sess.graph)
-      for i in xrange(10):
-        summ = sess.run(merged)
-        writer.add_summary(summ, global_step=i)
+    with tf.compat.v1.Graph().as_default():
+      with self.test_session() as sess:
+        ipt = tf.ones([10, 4, 4, 3], tf.uint8)
+        # This is an interesting example, because the old tf.image_summary op
+        # would throw an error here, because it would be tag reuse.
+        # Using the tf node name instead allows argument re-use to the image
+        # summary.
+        with tf.name_scope('1'):
+          image_summary.op('images', ipt, max_outputs=1)
+        with tf.name_scope('2'):
+          image_summary.op('images', ipt, max_outputs=2)
+        with tf.name_scope('3'):
+          image_summary.op('images', ipt, max_outputs=3)
+        merged = tf.compat.v1.summary.merge_all()
+        writer.add_graph(sess.graph)
+        for i in xrange(10):
+          summ = sess.run(merged)
+          writer.add_summary(summ, global_step=i)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -457,13 +461,15 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
-    with self.test_session() as sess:
-      tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0))
-      tf.compat.v1.summary.tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
-      tf.compat.v1.summary.tensor_summary('string', tf.constant(six.b('foobar')))
-      merged = tf.compat.v1.summary.merge_all()
-      summ = sess.run(merged)
-      writer.add_summary(summ, 0)
+    with tf.compat.v1.Graph().as_default():
+      with self.test_session() as sess:
+        tensor_summary = tf.compat.v1.summary.tensor_summary
+        tensor_summary('scalar', tf.constant(1.0))
+        tensor_summary('vector', tf.constant([1.0, 2.0, 3.0]))
+        tensor_summary('string', tf.constant(six.b('foobar')))
+        merged = tf.compat.v1.summary.merge_all()
+        summ = sess.run(merged)
+        writer.add_summary(summ, 0)
 
     accumulator = ea.EventAccumulator(event_sink)
     accumulator.Reload()
@@ -491,15 +497,16 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
     event_sink = _EventGenerator(self, zero_out_timestamps=True)
     writer = test_util.FileWriter(self.get_temp_dir())
     writer.event_writer = event_sink
-    with self.test_session() as sess:
-      summary_metadata = summary_pb2.SummaryMetadata(
-          plugin_data=summary_pb2.SummaryMetadata.PluginData(
-              plugin_name=plugin_name, content=b'{}'))
-      tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0),
-                                summary_metadata=summary_metadata)
-      merged = tf.compat.v1.summary.merge_all()
-      for step in xrange(steps):
-        writer.add_summary(sess.run(merged), global_step=step)
+    with tf.compat.v1.Graph().as_default():
+      with self.test_session() as sess:
+        summary_metadata = summary_pb2.SummaryMetadata(
+            plugin_data=summary_pb2.SummaryMetadata.PluginData(
+                plugin_name=plugin_name, content=b'{}'))
+        tf.compat.v1.summary.tensor_summary('scalar', tf.constant(1.0),
+                                  summary_metadata=summary_metadata)
+        merged = tf.compat.v1.summary.merge_all()
+        for step in xrange(steps):
+          writer.add_summary(sess.run(merged), global_step=step)
 
 
     accumulator = ea.EventAccumulator(
@@ -546,7 +553,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         expected_count=size_small)
 
 
-@test_util.run_v1_only('Uses contrib and v1 SummaryWriter')
 class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
   def testTensorsRealistically(self):
@@ -566,11 +572,11 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
-    # Add a graph to the summary writer.
-    writer.add_graph(graph)
-    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
-        add_shapes=True))
-    writer.add_meta_graph(meta_graph_def)
+      # Add a graph to the summary writer.
+      writer.add_graph(graph)
+      graph_def = graph.as_graph_def(add_shapes=True)
+      meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph_def)
+      writer.add_meta_graph(meta_graph_def)
 
     run_metadata = config_pb2.RunMetadata()
     device_stats = run_metadata.step_stats.dev_stats.add()
@@ -644,12 +650,11 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
 
     with tf.Graph().as_default() as graph:
       _ = tf.constant([2.0, 1.0])
-    # Add a graph to the summary writer.
-    meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph.as_graph_def(
-        add_shapes=True))
-    writer.add_meta_graph(meta_graph_def)
-
-    writer.flush()
+      # Add a graph to the summary writer.
+      graph_def = graph.as_graph_def(add_shapes=True)
+      meta_graph_def = tf.compat.v1.train.export_meta_graph(graph_def=graph_def)
+      writer.add_meta_graph(meta_graph_def)
+      writer.flush()
 
     # Verify that we can load those events properly
     acc = ea.EventAccumulator(directory)

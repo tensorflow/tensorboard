@@ -18,13 +18,13 @@ limitations under the License.
 <!-- A control-panel for selecting the scale for each column (Linear, Log or
 Quantile), and the column to use for coloring. This panel is used for several
 visualizations such as parallel coordinates and scatter plot matrix. -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-radio-group/paper-radio-group.html">
-<link rel="import" href="../paper-radio-button/paper-radio-button.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-radio-group/paper-radio-group.html" />
+<link rel="import" href="../paper-radio-button/paper-radio-button.html" />
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
 
 <dom-module id="tf-hparams-scale-and-color-controls">
   <template>
@@ -33,18 +33,23 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       <paper-dropdown-menu
         label="Color by"
         id="colorByDropDownMenu"
-        horizontal-align="left">
-        <paper-listbox class="dropdown-content"
-                       slot="dropdown-content"
-                       selected="{{options.colorByColumnIndex}}"
-                       id="colorByListBox">
-          <template is="dom-repeat"
-                    items="[[options.columns]]"
-                    as="column"
-                    id="colorByColumnTemplate">
-              <paper-item disabled="[[!_isNumericColumn(column.index)]]">
-                [[column.name]]
-              </paper-item>
+        horizontal-align="left"
+      >
+        <paper-listbox
+          class="dropdown-content"
+          slot="dropdown-content"
+          selected="{{options.colorByColumnIndex}}"
+          id="colorByListBox"
+        >
+          <template
+            is="dom-repeat"
+            items="[[options.columns]]"
+            as="column"
+            id="colorByColumnTemplate"
+          >
+            <paper-item disabled="[[!_isNumericColumn(column.index)]]">
+              [[column.name]]
+            </paper-item>
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
@@ -52,26 +57,27 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       <!-- Columns scales -->
       <div class="columns-container">
         <!-- Scale options for each numeric feature -->
-        <template is="dom-repeat"
-                  items="{{options.columns}}"
-                  as="column">
-          <template is="dom-if"
-                    if="[[_isNumericColumn(column.index)]]">
+        <template is="dom-repeat" items="{{options.columns}}" as="column">
+          <template is="dom-if" if="[[_isNumericColumn(column.index)]]">
             <div class="column">
               <div class="column-title">
                 [[column.name]]
               </div>
               <div>
-                <paper-radio-group class="scale-radio-group"
-                                   selected="{{column.scale}}">
+                <paper-radio-group
+                  class="scale-radio-group"
+                  selected="{{column.scale}}"
+                >
                   <paper-radio-button name="LINEAR">
                     Linear
                   </paper-radio-button>
                   <!-- The id here is used to access this button in unit
                        tests.-->
-                  <paper-radio-button id="logScaleButton_[[column.name]]"
+                  <paper-radio-button
+                    id="logScaleButton_[[column.name]]"
                     name="LOG"
-                    disabled="[[!_allowLogScale(column, sessionGroups.*)]]">
+                    disabled="[[!_allowLogScale(column, sessionGroups.*)]]"
+                  >
                     Logarithmic
                   </paper-radio-button>
                   <paper-radio-button name="QUANTILE">
@@ -93,8 +99,8 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         overflow: auto;
       }
       .column {
-        flex-grow:1;
-        flex-shrink:1;
+        flex-grow: 1;
+        flex-shrink: 1;
         margin-right: 5px;
         border: solid 1px darkgray;
         padding: 3px;
@@ -189,7 +195,7 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           type: Object,
           notify: true,
           value: null,
-        }
+        },
       },
 
       observers: [
@@ -208,29 +214,32 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
             name: tf.hparams.utils.hparamName(info),
             index: index,
             absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
-                schema,
-                visibleSchema,
-                index),
-            scale: this._isNumericColumn(index) ? "LINEAR" : "NON_NUMERIC",
+              schema,
+              visibleSchema,
+              index
+            ),
+            scale: this._isNumericColumn(index) ? 'LINEAR' : 'NON_NUMERIC',
           };
         };
         const newMetricColumn = (info, index) => {
           const colIndex = index + visibleSchema.hparamInfos.length;
           return {
-            scale: "LINEAR",
+            scale: 'LINEAR',
             name: tf.hparams.utils.metricName(info),
             index: colIndex,
             absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
-                schema,
-                visibleSchema,
-                colIndex),
+              schema,
+              visibleSchema,
+              colIndex
+            ),
           };
         };
         const options = {
-          columns: visibleSchema.hparamInfos.map(newHParamColumn).concat(
-              visibleSchema.metricInfos.map(newMetricColumn)),
-          minColor: "#0000FF",
-          maxColor: "#FF0000",
+          columns: visibleSchema.hparamInfos
+            .map(newHParamColumn)
+            .concat(visibleSchema.metricInfos.map(newMetricColumn)),
+          minColor: '#0000FF',
+          maxColor: '#FF0000',
           configuration: this.configuration,
         };
 
@@ -245,11 +254,13 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
         // the new items, and then reset the selected item index so that
         // Polymer will update the label based on the new list.
         // See also: https://github.com/PolymerElements/paper-dropdown-menu/issues/197#issuecomment-249927371, and http://jsbin.com/fuqoye/edit?html,output.
-        this.set("options", options); // set the bound selected item to
-                                      // undefined.
+        this.set('options', options); // set the bound selected item to
+        // undefined.
         Polymer.dom.flush();
-        this.set("options.colorByColumnIndex",
-                 this._defaultColorByColumnIndex());
+        this.set(
+          'options.colorByColumnIndex',
+          this._defaultColorByColumnIndex()
+        );
       },
 
       _unselectDisabledLogScales() {
@@ -259,21 +270,24 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           // about selected disabled log scales.
           return;
         }
-        this.options.columns.forEach(col => {
-          const colPath = "options.columns." + col.index;
-          if (!this._allowLogScale(col) && col.scale === "LOG") {
+        this.options.columns.forEach((col) => {
+          const colPath = 'options.columns.' + col.index;
+          if (!this._allowLogScale(col) && col.scale === 'LOG') {
             // We need to use Polymer paths to make the change observable.
-            this.set(colPath + ".scale", "LINEAR");
+            this.set(colPath + '.scale', 'LINEAR');
           }
         });
       },
 
       _allowLogScale(column) {
-        if (!this._isNumericColumn(column.index)) {
+        if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
           return false;
         }
         const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(
-            this.configuration.visibleSchema, this.sessionGroups, column.index);
+          this.configuration.visibleSchema,
+          this.sessionGroups,
+          column.index
+        );
         // Log scale is only defined when the domain does not include 0.
         return min > 0 || max < 0;
       },
@@ -282,9 +296,11 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
       // Used to prevent non-numeric columns from having a scale-selection
       // radio group.
       _isNumericColumn(colIndex) {
-        return colIndex >= this.configuration.visibleSchema.hparamInfos.length
-            || this.configuration.visibleSchema.hparamInfos[colIndex].type ===
-            "DATA_TYPE_FLOAT64";
+        return (
+          colIndex >= this.configuration.visibleSchema.hparamInfos.length ||
+          this.configuration.visibleSchema.hparamInfos[colIndex].type ===
+            'DATA_TYPE_FLOAT64'
+        );
       },
 
       // Use the first metric if there are metrics, or otherwise the first
@@ -295,13 +311,13 @@ visualizations such as parallel coordinates and scatter plot matrix. -->
           return this.configuration.visibleSchema.hparamInfos.length;
         }
         const i = this.configuration.visibleSchema.hparamInfos.findIndex(
-            info => info.type === "DATA_TYPE_FLOAT64"
+          (info) => info.type === 'DATA_TYPE_FLOAT64'
         );
         if (i !== -1) {
           return i;
         }
         return undefined;
-      }
+      },
     });
   </script>
 </dom-module>

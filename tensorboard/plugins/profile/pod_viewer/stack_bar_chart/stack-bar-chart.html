@@ -17,37 +17,37 @@ limitations under the License.
   Stacked bar chart customized for the pod viewer tool.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="pod-viewer-common.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="pod-viewer-common.html" />
 
-<dom-module id='stack-bar-chart'>
+<dom-module id="stack-bar-chart">
   <template>
     <style>
-:host {
-  display: block;
-  margin-right: 1.5em;
-}
+      :host {
+        display: block;
+        margin-right: 1.5em;
+      }
 
-.axis text {
-  font: 14px sans-serif;
-}
+      .axis text {
+        font: 14px sans-serif;
+      }
 
-.svg-container {
-  display: inline-block;
-  padding-bottom: 90%; /* aspect ratio */
-  position: relative;
-  vertical-align: top;
-  width: 90%;
-}
+      .svg-container {
+        display: inline-block;
+        padding-bottom: 90%; /* aspect ratio */
+        position: relative;
+        vertical-align: top;
+        width: 90%;
+      }
 
-.svg-content-responsive {
-  display: inline-block;
-  left: 0;
-  position: absolute;
-  top: 10px;
-}
-</style>
+      .svg-content-responsive {
+        display: inline-block;
+        left: 0;
+        position: absolute;
+        top: 10px;
+      }
+    </style>
     <div class="stack-bar-chart">
       <div id="chart"></div>
     </div>

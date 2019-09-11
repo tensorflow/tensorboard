@@ -63,6 +63,10 @@ class CorePlugin(base_plugin.TBPlugin):
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def is_active(self):
     return True
@@ -120,7 +124,6 @@ class CorePlugin(base_plugin.TBPlugin):
         request,
         {
             'data_location': self._logdir or self._db_uri,
-            'mode': 'db' if self._db_uri else 'logdir',
             'window_title': self._window_title,
         },
         'application/json')
@@ -149,7 +152,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Sort order is by started time (aka first event time) with empty times sorted
     last, and then ties are broken by sorting on the run name.
     """
-    if self._db_connection_provider:
+    if self._data_provider:
+      experiment = request.args.get('experiment', '')
+      runs = sorted(
+          self._data_provider.list_runs(experiment_id=experiment),
+          key=lambda run: (
+              run.start_time if run.start_time is not None else float('inf'),
+              run.run_name,
+          )
+      )
+      run_names = [run.run_name for run in runs]
+    elif self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT
@@ -322,17 +335,6 @@ disappearance. (default: %(default)s)\
 ''')
 
     parser.add_argument(
-        '--reload_interval',
-        metavar='SECONDS',
-        type=float,
-        default=5.0,
-        help='''\
-How often the backend should load more data, in seconds. Set to 0 to
-load just once at startup and a negative number to never reload at all.
-Not relevant for DB read-only mode. (default: %(default)s)\
-''')
-
-    parser.add_argument(
         '--db',
         metavar='URI',
         type=str,
@@ -349,15 +351,6 @@ read-only unless --db_import is also passed.\
 [experimental] enables DB read-and-import mode, which in combination with
 --logdir imports event files into a DB backend on the fly. The backing DB is
 temporary unless --db is also passed to specify a DB path to use.\
-''')
-
-    parser.add_argument(
-        '--db_import_use_op',
-        action='store_true',
-        help='''\
-[experimental] in combination with --db_import, if passed, use TensorFlow's
-import_event() op for importing event data, otherwise use TensorBoard's own
-sqlite ingestion logic.\
 ''')
 
     parser.add_argument(
@@ -436,6 +429,17 @@ relevant for db read-only mode. Each thread reloads one run at a time.
 ''')
 
     parser.add_argument(
+        '--reload_interval',
+        metavar='SECONDS',
+        type=float,
+        default=5.0,
+        help='''\
+How often the backend should load more data, in seconds. Set to 0 to
+load just once at startup and a negative number to never reload at all.
+Not relevant for DB read-only mode. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--reload_task',
         metavar='TYPE',
         type=str,
@@ -447,6 +451,51 @@ The default "auto" option will conditionally use threads for legacy reloading
 and a child process for DB import reloading. The "process" option is only
 useful with DB import mode. The "blocking" option will block startup until
 reload finishes, and requires --load_interval=0. (default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile',
+        metavar='BOOL',
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
+        default=False,
+        help='''\
+[experimental] If true, this enables experimental support for continuously
+polling multiple event files in each run directory for newly appended data
+(rather than only polling the last event file). Event files will only be
+polled as long as their most recently read data is newer than the threshold
+defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
+of running out of memory if the logdir contains many active event files.
+(default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile_inactive_secs',
+        metavar='SECONDS',
+        type=int,
+        default=4000,
+        help='''\
+[experimental] Configures the age threshold in seconds at which an event file
+that has no event wall time more recent than that will be considered an
+inactive file and no longer polled (to limit resource usage). If set to -1,
+no maximum age will be enforced, but beware of running out of memory and
+heavier filesystem read traffic. If set to 0, this reverts to the older
+last-file-only polling strategy (akin to --reload_multifile=false).
+(default: %(default)s - intended to ensure an event file remains active if
+it receives new data at least once per hour)\
+''')
+
+    parser.add_argument(
+        '--generic_data',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['false', 'auto', 'true'],
+        help='''\
+[experimental] Whether to use generic data provider infrastructure. The
+"auto" option enables this only for dashboards that are considered
+stable under the new codepaths. (default: %(default)s)\
 ''')
 
     parser.add_argument(

@@ -15,13 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/scrollbar-style.html">
-<link rel="import" href="../tf-dashboard-common/tf-multi-checkbox.html">
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/scrollbar-style.html" />
+<link rel="import" href="../tf-dashboard-common/tf-multi-checkbox.html" />
+<link rel="import" href="tf-wbr-string.html" />
 
 <!--
 tf-runs-selector creates a set of checkboxes to display which runs are
@@ -36,7 +37,7 @@ Properties out:
   <template>
     <paper-dialog with-backdrop id="data-location-dialog">
       <h2>Data Location</h2>
-      <div inner-h-t-m-l="{{_breakString(dataLocation)}}"></div>
+      <tf-wbr-string value="[[dataLocation]]" />
     </paper-dialog>
     <div id="top-text">
       <h3 id="tooltip-help" class="tooltip-container">Runs</h3>
@@ -49,22 +50,17 @@ Properties out:
       regex="{{regexInput}}"
       coloring="[[coloring]]"
     ></tf-multi-checkbox>
-    <paper-button
-      class="x-button"
-      id="toggle-all"
-      on-tap="_toggleAll"
-    >
-    Toggle All Runs
+    <paper-button class="x-button" id="toggle-all" on-tap="_toggleAll">
+      Toggle All Runs
     </paper-button>
-    <template
-      is="dom-if"
-      if="[[dataLocation]]">
+    <template is="dom-if" if="[[dataLocation]]">
       <div id="data-location">
-        <span id="clipped-dataLocation" inner-h-t-m-l="[[_clippedDataLocation]]"></span><!--
+        <tf-wbr-string value="[[_clippedDataLocation]]" /><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
-                     is="dom-if"
-                     if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"><!--
+          is="dom-if"
+          if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"
+          ><!--
           --><a href="" on-click="_openDataLocationDialog">…</a>
         </template>
       </div>
@@ -114,94 +110,103 @@ Properties out:
     </style>
   </template>
   <script>
-  Polymer({
-    is: "tf-runs-selector",
-    properties: {
-      runSelectionState: {
-        type: Object,
-        observer: '_storeRunSelectionState',
-        value: tf_storage.getObjectInitializer('runSelectionState', {defaultValue: {}}),
-      },
-      regexInput: {
-        type: String,
-        value:
-            tf_storage.getStringInitializer('regexInput', {defaultValue: ''}),
-        observer: '_regexObserver',
-      },
-      selectedRuns: {
-        type: Array,
-        notify: true,
-      },
-      // runs: an array of strings, representing the run names that may be chosen
-      runs: Array,
-      dataLocation: {
-        type: String,
-        notify: true,
-      },
-      // This is the potentially clipped portion of the dataLocation we show at the bottom of the sidebar.
-      _clippedDataLocation: {
-        type: String,
-        computed: '_getClippedDataLocation(dataLocation, _dataLocationClipLength)',
-      },
-      _dataLocationClipLength: {
-        type: Number,
-        value: 250,
-        readOnly: true,
-      },
-      coloring: {
-        type: Object,
-        value: {
-          getColor: tf_color_scale.runsColorScale,
+    Polymer({
+      is: 'tf-runs-selector',
+      properties: {
+        runSelectionState: {
+          type: Object,
+          observer: '_storeRunSelectionState',
+          value: tf_storage.getObjectInitializer('runSelectionState', {
+            defaultValue: {},
+          }),
+        },
+        regexInput: {
+          type: String,
+          value: tf_storage.getStringInitializer('regexInput', {
+            defaultValue: '',
+          }),
+          observer: '_regexObserver',
+        },
+        selectedRuns: {
+          type: Array,
+          notify: true,
+        },
+        // runs: an array of strings, representing the run names that may be chosen
+        runs: Array,
+        dataLocation: {
+          type: String,
+          notify: true,
+        },
+        // This is the potentially clipped portion of the dataLocation we show at the bottom of the sidebar.
+        _clippedDataLocation: {
+          type: String,
+          computed:
+            '_getClippedDataLocation(dataLocation, _dataLocationClipLength)',
+        },
+        _dataLocationClipLength: {
+          type: Number,
+          value: 250,
+          readOnly: true,
+        },
+        coloring: {
+          type: Object,
+          value: {
+            getColor: tf_color_scale.runsColorScale,
+          },
         },
       },
-    },
-    attached() {
-      this._runStoreListener = tf_backend.runsStore.addListener(() => {
+      attached() {
+        this._runStoreListener = tf_backend.runsStore.addListener(() => {
+          this.set('runs', tf_backend.runsStore.getRuns());
+        });
         this.set('runs', tf_backend.runsStore.getRuns());
-      });
-      this.set('runs', tf_backend.runsStore.getRuns());
 
-      this._envStoreListener = tf_backend.environmentStore.addListener(() => {
+        this._envStoreListener = tf_backend.environmentStore.addListener(() => {
+          this.set(
+            'dataLocation',
+            tf_backend.environmentStore.getDataLocation()
+          );
+        });
         this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
-      });
-      this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
-    },
-    detached() {
-      tf_backend.runsStore.removeListenerByKey(this._runStoreListener);
-      tf_backend.environmentStore.removeListenerByKey(this._envStoreListener);
-    },
-    _toggleAll: function() {
-      this.$.multiCheckbox.toggleAll();
-    },
-    // Break the string at natural points, including commas, equals, and slashes
-    _breakString: function(originalString) {
-      return originalString.replace(/([\/=\-_,])/g, "$1<wbr>");
-    },
-    _getClippedDataLocation: function(dataLocation, dataLocationClipLength) {
-      if (dataLocation === undefined) {
-        // The dataLocation has not been set yet.
-        return undefined;
-      }
+      },
+      detached() {
+        tf_backend.runsStore.removeListenerByKey(this._runStoreListener);
+        tf_backend.environmentStore.removeListenerByKey(this._envStoreListener);
+      },
+      _toggleAll: function() {
+        this.$.multiCheckbox.toggleAll();
+      },
+      _getClippedDataLocation: function(dataLocation, dataLocationClipLength) {
+        if (dataLocation === undefined) {
+          // The dataLocation has not been set yet.
+          return undefined;
+        }
 
-      if (dataLocation.length > dataLocationClipLength) {
-        // Clip the dataLocation to avoid blocking the runs selector. Let the
-        // user view a more full version of the dataLocation.
-        return this._breakString(dataLocation.substring(0, dataLocationClipLength));
-      } else {
-        return this._breakString(dataLocation);
-      }
-    },
-    _openDataLocationDialog: function(event) {
-      event.preventDefault();
-      this.$$('#data-location-dialog').open();
-    },
-    _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
-      return dataLocation && dataLocation.length > _dataLocationClipLength;
-    },
-    _storeRunSelectionState:
-        tf_storage.getObjectObserver('runSelectionState', {defaultValue: {}}),
-    _regexObserver:
-        tf_storage.getStringObserver('regexInput', {defaultValue: ''}),
-  });
+        if (dataLocation.length > dataLocationClipLength) {
+          // Clip the dataLocation to avoid blocking the runs selector. Let the
+          // user view a more full version of the dataLocation.
+          dataLocation.substring(0, dataLocationClipLength);
+        } else {
+          return dataLocation;
+        }
+      },
+      _openDataLocationDialog: function(event) {
+        event.preventDefault();
+        this.$$('#data-location-dialog').open();
+      },
+      _shouldShowExpandDataLocationButton(
+        dataLocation,
+        _dataLocationClipLength
+      ) {
+        return dataLocation && dataLocation.length > _dataLocationClipLength;
+      },
+      _storeRunSelectionState: tf_storage.getObjectObserver(
+        'runSelectionState',
+        {defaultValue: {}}
+      ),
+      _regexObserver: tf_storage.getStringObserver('regexInput', {
+        defaultValue: '',
+      }),
+    });
   </script>
 </dom-module>

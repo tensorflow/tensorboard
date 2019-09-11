@@ -12,52 +12,61 @@ You may obtain a copy of the License at
     limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="utils.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="utils.html" />
 
 <!--
   tf-mv-bar shows a small % utilization bar, colored using flameColor.
 -->
 <dom-module id="tf-mv-bar">
-  <style>
-:host {
-  display: inline-block;
-  height: 1.5em;
-  line-height: 1.5em;
-}
-  </style>
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        height: 1.5em;
+        line-height: 1.5em;
+      }
+    </style>
+  </template>
 </dom-module>
 
 <!--
   buffer-details is a card that describes a buffer allocation.
 -->
 <dom-module id="buffer-details">
-  <style>
-paper-card {
-  --paper-card-header-color: white;
-  width: 100%;
-}
-tf-mv-bar {
-  width: 100%;
-}
-#subheader {
-  padding: 0 16px 16px;
-  color: rgba(255, 255, 255, 0.7);
-  position: relative;
-  top: -10px;
-}
-.card-content > div {
-  margin-bottom: 1em;
-}
-.expression {
-  display: block;
-  word-wrap: break-word;
-}
-  </style>
   <template>
-    <paper-card id="card" heading="[[node.instructionName]]" hidden="[[!node]]"
-      elevation="2">
+    <style>
+      paper-card {
+        --paper-card-header-color: white;
+        width: 100%;
+      }
+      tf-mv-bar {
+        width: 100%;
+      }
+      #subheader {
+        padding: 0 16px 6px;
+        color: rgba(255, 255, 255, 0.7);
+        position: relative;
+        top: -10px;
+      }
+      .card-content {
+        background: #fff;
+      }
+      .card-content > div {
+        margin-bottom: 1em;
+      }
+      .expression {
+        display: block;
+        word-wrap: break-word;
+      }
+    </style>
+    <paper-card
+      id="card"
+      heading="[[node.instructionName]]"
+      hidden="[[!node]]"
+      elevation="2"
+    >
       <div id="subheader">[[_subheader(node)]]</div>
       <div class="card-content">
         <div hidden="[[!size]]">
@@ -67,7 +76,8 @@ tf-mv-bar {
           <b>Unpadded Size: </b><span>[[unpaddedSize]]</span><b> MiB</b>
         </div>
         <div hidden="[[!padding]]">
-          <b>Extra memory due to padding: </b><span>[[padding]]</span><b> MiB</b>
+          <b>Extra memory due to padding: </b><span>[[padding]]</span
+          ><b> MiB</b>
         </div>
         <div hidden="[[!expansion]]">
           <b>Expansion: </b><span>[[expansion]]</span><b>X</b>

@@ -16,7 +16,7 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
-versions.check(minimum_bazel_version = "0.22.0")
+versions.check(minimum_bazel_version = "0.26.1")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
@@ -53,12 +53,42 @@ closure_repositories(
 )
 
 http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "7c4a690268be97c96f04d505224ec4cb1ae53c2c2b68be495c9bd2634296a5cd",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz"],
+)
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
+node_repositories()
+
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
+    # Opt out of symlinking local node_modules folder into bazel internal
+    # directory.  Symlinking is incompatible with our toolchain which often
+    # removes source directory without `bazel clean` which creates broken
+    # symlink into node_modules folder.
+    symlink_node_modules = False,
+    data = [
+        # package.json contains postinstall that requires this file.
+        "//:angular-metadata.tsconfig.json",
+    ],
+)
+
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
+
+http_archive(
     name = "org_tensorflow",
-    sha256 = "8fd92a6b65330ec23e32ae052eca5cf68e278df677b7e15f36d59e6350f201f0",
-    strip_prefix = "tensorflow-6168f476b52d6d40eeff1823943ed2c0ea28adde",
+    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
+    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
+    sha256 = "48ddba718da76df56fd4c48b4bbf4f97f254ba269ec4be67f783684c75563ef8",
+    strip_prefix = "tensorflow-2.0.0-rc0",
     urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",  # 2019-04-08
-        "https://github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",  # 2019-08-23
+        "https://github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",
     ],
 )
 

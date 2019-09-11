@@ -18,40 +18,41 @@ You may obtain a copy of the License at
   the memory usage trends over the program's lifetime.
 -->
 
-<link rel="import" href="memory-usage.html">
-<link rel="import" href="mv-line-chart.html">
-<link rel="import" href="buffer-details.html">
+<link rel="import" href="memory-usage.html" />
+<link rel="import" href="mv-line-chart.html" />
+<link rel="import" href="buffer-details.html" />
 
 <dom-module id="memory-viewer-dashboard">
   <template>
     <style>
-:host {
-  overflow-x: auto;
-  width: 100%;
-}
-#description {
-  margin-bottom: 2em;
-  width: 600px;
-}
-mv-line-chart {
-  width: 100%;
-  height: 100%;
-}
+      :host {
+        overflow-x: auto;
+        width: 100%;
+      }
+      #description {
+        margin-bottom: 2em;
+        width: 600px;
+      }
+      mv-line-chart {
+        width: 100%;
+        height: 100%;
+      }
     </style>
     <div class="memory-viewer-dashboard" style="overflow:auto">
-      <h3> Module name: <span>[[moduleName_]]</span>
-      </h3>
-      <h3> Peak memory allocation is
-        <span>{{peakHeapSizeMiB_}}</span> MiB <span style="font-size:20px"
-          hidden={{!unpaddedPeakHeapSizeMiB_}}>(
-          {{unpaddedPeakHeapSizeMiB_}} MiB without padding)</span>
+      <h3>Module name: <span>[[moduleName_]]</span></h3>
+      <h3>
+        Peak memory allocation is <span>{{peakHeapSizeMiB_}}</span> MiB
+        <span style="font-size:20px" hidden="{{!unpaddedPeakHeapSizeMiB_}}"
+          >( {{unpaddedPeakHeapSizeMiB_}} MiB without padding)</span
+        >
       </h3>
       <div id="description">
-        <p>Modifying your model's architecture, batch size and data dimentions
-           may help reduce the memory footprint.
+        <p>
+          Modifying your model's architecture, batch size and data dimentions
+          may help reduce the memory footprint.
         </p>
       </div>
-      <mv-line-chart data="{{usage}}" active={{active}}></mv-line-chart>
+      <mv-line-chart data="{{usage}}" active="{{active}}"></mv-line-chart>
     </div>
   </template>
   <script src="memory-viewer-dashboard.js"></script>

@@ -27,6 +27,7 @@ import posixpath
 import shutil
 import socket
 import tempfile
+import time
 
 import six
 
@@ -56,9 +57,11 @@ class FakeFlags(object):
       reload_task='auto',
       db='',
       db_import=False,
-      db_import_use_op=False,
       window_title='',
-      path_prefix=''):
+      path_prefix='',
+      reload_multifile=False,
+      reload_multifile_inactive_secs=4000,
+      generic_data='auto'):
     self.logdir = logdir
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
@@ -67,19 +70,21 @@ class FakeFlags(object):
     self.reload_task = reload_task
     self.db = db
     self.db_import = db_import
-    self.db_import_use_op = db_import_use_op
     self.window_title = window_title
     self.path_prefix = path_prefix
+    self.reload_multifile = reload_multifile
+    self.reload_multifile_inactive_secs = reload_multifile_inactive_secs
+    self.generic_data = generic_data
 
 
 class FakePlugin(base_plugin.TBPlugin):
   """A plugin with no functionality."""
 
   def __init__(self,
-               context,
-               plugin_name,
-               is_active_value,
-               routes_mapping,
+               context=None,
+               plugin_name='foo',
+               is_active_value=True,
+               routes_mapping={},
                element_name_value=None,
                es_module_path_value=None,
                construction_callback=None):
@@ -123,29 +128,33 @@ class FakePlugin(base_plugin.TBPlugin):
     return self._is_active_value
 
   def frontend_metadata(self):
-    base = super(FakePlugin, self).frontend_metadata()
-    return base._replace(
+    return base_plugin.FrontendMetadata(
         element_name=self._element_name_value,
         es_module_path=self._es_module_path_value,
     )
 
 
+class FakePluginLoader(base_plugin.TBLoader):
+  """Pass-through loader for FakePlugin with arbitrary arguments."""
+
+  def __init__(self, **kwargs):
+    self._kwargs = kwargs
+
+  def load(self, context):
+    return FakePlugin(context, **self._kwargs)
+
+
 class ApplicationTest(tb_test.TestCase):
   def setUp(self):
     plugins = [
+        FakePlugin(plugin_name='foo'),
         FakePlugin(
-            None, plugin_name='foo', is_active_value=True, routes_mapping={}),
-        FakePlugin(
-            None,
             plugin_name='bar',
             is_active_value=False,
-            routes_mapping={},
             element_name_value='tf-bar-dashboard',
         ),
         FakePlugin(
-            None,
             plugin_name='baz',
-            is_active_value=True,
             routes_mapping={
                 '/esmodule': lambda req: None,
             },
@@ -211,19 +220,14 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
+        FakePlugin(plugin_name='foo'),
         FakePlugin(
-            None, plugin_name='foo', is_active_value=True, routes_mapping={}),
-        FakePlugin(
-            None,
             plugin_name='bar',
             is_active_value=False,
-            routes_mapping={},
             element_name_value='tf-bar-dashboard',
         ),
         FakePlugin(
-            None,
             plugin_name='baz',
-            is_active_value=True,
             routes_mapping={
                 '/esmodule': lambda req: None,
             },
@@ -293,77 +297,125 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
 
 class ApplicationPluginNameTest(tb_test.TestCase):
 
-  def _test(self, name, should_be_okay):
-    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
-    self.addCleanup(shutil.rmtree, temp_dir)
-    multiplexer = event_multiplexer.EventMultiplexer(
-        size_guidance=application.DEFAULT_SIZE_GUIDANCE,
-        purge_orphaned_data=True)
-    plugins = [
-        FakePlugin(
-            None, plugin_name='foo', is_active_value=True, routes_mapping={}),
-        FakePlugin(
-            None, plugin_name=name, is_active_value=True, routes_mapping={}),
-        FakePlugin(
-            None, plugin_name='bar', is_active_value=False, routes_mapping={}),
-    ]
-    if should_be_okay:
-      application.TensorBoardWSGIApp(
-          temp_dir, plugins, multiplexer, reload_interval=0,
-          path_prefix='')
-    else:
-      with six.assertRaisesRegex(self, ValueError, r'invalid name'):
-        application.TensorBoardWSGIApp(
-            temp_dir, plugins, multiplexer, reload_interval=0,
-            path_prefix='')
-
-  def testEmptyName(self):
-    self._test('', False)
-
-  def testNameWithSlashes(self):
-    self._test('scalars/data', False)
-
-  def testNameWithSpaces(self):
-    self._test('my favorite plugin', False)
-
   def testSimpleName(self):
-    self._test('scalars', True)
+    application.TensorBoardWSGI(
+        plugins=[FakePlugin(plugin_name='scalars')])
 
   def testComprehensiveName(self):
-    self._test('Scalar-Dashboard_3000.1', True)
+    application.TensorBoardWSGI(
+        plugins=[FakePlugin(plugin_name='Scalar-Dashboard_3000.1')])
+
+  def testNameIsNone(self):
+    with six.assertRaisesRegex(self, ValueError, r'no plugin_name'):
+      application.TensorBoardWSGI(
+          plugins=[FakePlugin(plugin_name=None)])
+
+  def testEmptyName(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid name'):
+      application.TensorBoardWSGI(
+          plugins=[FakePlugin(plugin_name='')])
+
+  def testNameWithSlashes(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid name'):
+      application.TensorBoardWSGI(
+          plugins=[FakePlugin(plugin_name='scalars/data')])
+
+  def testNameWithSpaces(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid name'):
+      application.TensorBoardWSGI(
+          plugins=[FakePlugin(plugin_name='my favorite plugin')])
+
+  def testDuplicateName(self):
+    with six.assertRaisesRegex(self, ValueError, r'Duplicate'):
+      application.TensorBoardWSGI(
+          plugins=[FakePlugin(plugin_name='scalars'),
+                   FakePlugin(plugin_name='scalars')])
 
 
 class ApplicationPluginRouteTest(tb_test.TestCase):
 
-  def _test(self, route, should_be_okay):
-    temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
-    self.addCleanup(shutil.rmtree, temp_dir)
-    multiplexer = event_multiplexer.EventMultiplexer(
-        size_guidance=application.DEFAULT_SIZE_GUIDANCE,
-        purge_orphaned_data=True)
-    plugins = [
-        FakePlugin(
-            None,
-            plugin_name='foo',
-            is_active_value=True,
-            routes_mapping={route: lambda environ, start_response: None}),
-    ]
-    if should_be_okay:
-      application.TensorBoardWSGIApp(
-          temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
-    else:
-      with six.assertRaisesRegex(self, ValueError, r'invalid route'):
-        application.TensorBoardWSGIApp(
-            temp_dir, plugins, multiplexer, reload_interval=0, path_prefix='')
+  def _make_plugin(self, route):
+    return FakePlugin(
+        plugin_name='foo',
+        routes_mapping={route: lambda environ, start_response: None})
 
   def testNormalRoute(self):
-    self._test('/runs', True)
+    application.TensorBoardWSGI([self._make_plugin('/runs')])
+
+  def testWildcardRoute(self):
+    application.TensorBoardWSGI([self._make_plugin('/foo/*')])
+
+  def testNonPathComponentWildcardRoute(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      application.TensorBoardWSGI([self._make_plugin('/foo*')])
+
+  def testMultiWildcardRoute(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      application.TensorBoardWSGI([self._make_plugin('/foo/*/bar/*')])
+
+  def testInternalWildcardRoute(self):
+    with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      application.TensorBoardWSGI([self._make_plugin('/foo/*/bar')])
 
   def testEmptyRoute(self):
-    self._test('', False)
+    with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      application.TensorBoardWSGI([self._make_plugin('')])
 
   def testSlashlessRoute(self):
-    self._test('runaway', False)
+    with six.assertRaisesRegex(self, ValueError, r'invalid route'):
+      application.TensorBoardWSGI([self._make_plugin('runaway')])
+
+
+class MakePluginLoaderTest(tb_test.TestCase):
+
+  def testMakePluginLoader_pluginClass(self):
+    loader = application.make_plugin_loader(FakePlugin)
+    self.assertIsInstance(loader, base_plugin.BasicLoader)
+    self.assertIs(loader.plugin_class, FakePlugin)
+
+  def testMakePluginLoader_pluginLoaderClass(self):
+    loader = application.make_plugin_loader(FakePluginLoader)
+    self.assertIsInstance(loader, FakePluginLoader)
+
+  def testMakePluginLoader_pluginLoader(self):
+    loader = FakePluginLoader()
+    self.assertIs(loader, application.make_plugin_loader(loader))
+
+  def testMakePluginLoader_invalidType(self):
+    with six.assertRaisesRegex(self, TypeError, 'FakePlugin'):
+      application.make_plugin_loader(FakePlugin())
+
+
+class GetEventFileActiveFilterTest(tb_test.TestCase):
+
+  def testDisabled(self):
+    flags = FakeFlags('logdir', reload_multifile=False)
+    self.assertIsNone(application._get_event_file_active_filter(flags))
+
+  def testInactiveSecsZero(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=0)
+    self.assertIsNone(application._get_event_file_active_filter(flags))
+
+  def testInactiveSecsNegative(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=-1)
+    filter_fn = application._get_event_file_active_filter(flags)
+    self.assertTrue(filter_fn(0))
+    self.assertTrue(filter_fn(time.time()))
+    self.assertTrue(filter_fn(float("inf")))
+
+  def testInactiveSecs(self):
+    flags = FakeFlags('logdir', reload_multifile=True,
+                      reload_multifile_inactive_secs=10)
+    filter_fn = application._get_event_file_active_filter(flags)
+    with mock.patch.object(time, 'time') as mock_time:
+      mock_time.return_value = 100
+      self.assertFalse(filter_fn(0))
+      self.assertFalse(filter_fn(time.time() - 11))
+      self.assertTrue(filter_fn(time.time() - 10))
+      self.assertTrue(filter_fn(time.time()))
+      self.assertTrue(filter_fn(float("inf")))
 
 
 class ParseEventFilesSpecTest(tb_test.TestCase):
@@ -377,9 +429,9 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
         pathObj: a custom replacement object for `os.path`, typically
           `posixpath` or `ntpath`
         logdir: the string to be parsed by
-          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
+          :func:`~application.parse_event_files_spec`
         expected: the expected dictionary as returned by
-          :func:`~application.TensorBoardWSGIApp.parse_event_files_spec`
+          :func:`~application.parse_event_files_spec`
 
     """
 
@@ -496,37 +548,61 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.app = application.standard_tensorboard_wsgi(
         FakeFlags(logdir=self.get_temp_dir()),
         [
-          base_plugin.BasicLoader(functools.partial(
-              FakePlugin,
-              plugin_name='foo',
-              is_active_value=True,
-              routes_mapping={'/foo_route': self._foo_handler},
-              construction_callback=self._construction_callback)),
-          base_plugin.BasicLoader(functools.partial(
-              FakePlugin,
-              plugin_name='bar',
-              is_active_value=True,
-              routes_mapping={'/bar_route': self._bar_handler},
-              construction_callback=self._construction_callback)),
+            FakePluginLoader(
+                plugin_name='foo',
+                is_active_value=True,
+                routes_mapping={'/foo_route': self._foo_handler},
+                construction_callback=self._construction_callback),
+            FakePluginLoader(
+                plugin_name='bar',
+                is_active_value=True,
+                routes_mapping={
+                    '/bar_route': self._bar_handler,
+                    '/wildcard/*': self._wildcard_handler,
+                    '/wildcard/special/*': self._wildcard_special_handler,
+                    '/wildcard/special/exact': self._foo_handler,
+                },
+                construction_callback=self._construction_callback),
         ],
         dummy_assets_zip_provider)
 
-  def _foo_handler(self):
-    pass
-
-  def _bar_handler(self):
-    pass
+    self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
 
   def _construction_callback(self, context):
     """Called when a plugin is constructed."""
     self.context = context
+
+  def _test_route(self, route, expected_status_code):
+    response = self.server.get(route)
+    self.assertEqual(response.status_code, expected_status_code)
+
+  @wrappers.Request.application
+  def _foo_handler(self, request):
+    return wrappers.Response(response='hello world', status=200)
+
+  def _bar_handler(self):
+    pass
+
+  @wrappers.Request.application
+  def _wildcard_handler(self, request):
+    if request.path == '/data/plugin/bar/wildcard/ok':
+      return wrappers.Response(response='hello world', status=200)
+    elif request.path == '/data/plugin/bar/wildcard/':
+      # this route cannot actually be hit; see testEmptyWildcardRouteWithSlash.
+      return wrappers.Response(response='hello world', status=200)
+    else:
+      return wrappers.Response(status=401)
+
+  @wrappers.Request.application
+  def _wildcard_special_handler(self, request):
+    return wrappers.Response(status=300)
 
   def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
     self.assertDictContainsSubset({
         '/data/plugin/foo/foo_route': self._foo_handler,
         '/data/plugin/bar/bar_route': self._bar_handler,
-    }, self.app.data_applications)
+    }, self.app.exact_routes)
 
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include both plugins.
@@ -535,45 +611,71 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
 
+  def testNormalRoute(self):
+    self._test_route('/data/plugin/foo/foo_route', 200)
 
-class ApplicationConstructionTest(tb_test.TestCase):
+  def testNormalRouteIsNotWildcard(self):
+    self._test_route('/data/plugin/foo/foo_route/bogus', 404)
 
-  def testExceptions(self):
-    logdir = '/fake/foo'
-    multiplexer = event_multiplexer.EventMultiplexer()
+  def testMissingRoute(self):
+    self._test_route('/data/plugin/foo/bogus', 404)
 
-    # Fails if there is an unnamed plugin
-    with self.assertRaises(ValueError):
-      # This plugin lacks a name.
-      plugins = [
-          FakePlugin(
-              None, plugin_name=None, is_active_value=True, routes_mapping={}),
-      ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
+  def testEmptyRoute(self):
+    self._test_route('', 404)
 
-    # Fails if there are two plugins with same name
-    with self.assertRaises(ValueError):
-      plugins = [
-          FakePlugin(
-              None, plugin_name='foo', is_active_value=True, routes_mapping={}),
-          FakePlugin(
-              None, plugin_name='foo', is_active_value=True, routes_mapping={}),
-      ]
-      application.TensorBoardWSGIApp(logdir, plugins, multiplexer, 0, '')
+  def testSlashlessRoute(self):
+    self._test_route('runaway', 404)
+
+  def testWildcardAcceptedRoute(self):
+    self._test_route('/data/plugin/bar/wildcard/ok', 200)
+
+  def testLongerWildcardRouteTakesPrecedence(self):
+    # This tests that the longer 'special' wildcard takes precedence over
+    # the shorter one.
+    self._test_route('/data/plugin/bar/wildcard/special/blah', 300)
+
+  def testExactRouteTakesPrecedence(self):
+    # This tests that an exact match takes precedence over a wildcard.
+    self._test_route('/data/plugin/bar/wildcard/special/exact', 200)
+
+  def testWildcardRejectedRoute(self):
+    # A plugin may reject a request passed to it via a wildcard route.
+    # Note our test plugin returns 401 in this case, to distinguish this
+    # response from a 404 passed if the route were not found.
+    self._test_route('/data/plugin/bar/wildcard/bogus', 401)
+
+  def testWildcardRouteWithoutSlash(self):
+    # A wildcard route requires a slash before the '*'.
+    # Lacking one, no route is matched.
+    self._test_route('/data/plugin/bar/wildcard', 404)
+
+  def testEmptyWildcardRouteWithSlash(self):
+    # A wildcard route requires a slash before the '*'.  Here we include the
+    # slash, so we might expect the route to match.
+    #
+    # However: Trailing slashes are automatically removed from incoming requests
+    # in _clean_path().  Consequently, this request does not match the wildcard
+    # route after all.
+    #
+    # Note the test plugin specifically accepts this route (returning 200), so
+    # the fact that 404 is returned demonstrates that the plugin was not
+    # consulted.
+    self._test_route('/data/plugin/bar/wildcard/', 404)
 
 
 class DbTest(tb_test.TestCase):
 
   def testSqliteDb(self):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
-    db_module, db_connection_provider = application.get_database_info(db_uri)
-    self.assertTrue(hasattr(db_module, 'Date'))
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:
           c.execute('create table peeps (name text)')
           c.execute('insert into peeps (name) values (?)', ('justine',))
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with contextlib.closing(conn.cursor()) as c:
         c.execute('select name from peeps')
@@ -581,7 +683,8 @@ class DbTest(tb_test.TestCase):
 
   def testTransactionRollback(self):
     db_uri = 'sqlite:' + os.path.join(self.get_temp_dir(), 'db')
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:
@@ -601,7 +704,8 @@ class DbTest(tb_test.TestCase):
     # NOTE: This is a terrible idea. Don't do this.
     db_uri = ('sqlite:' + os.path.join(self.get_temp_dir(), 'db') +
               '?isolation_level=null')
-    _, db_connection_provider = application.get_database_info(db_uri)
+    db_connection_provider = application.create_sqlite_connection_provider(
+        db_uri)
     with contextlib.closing(db_connection_provider()) as conn:
       with conn:
         with contextlib.closing(conn.cursor()) as c:

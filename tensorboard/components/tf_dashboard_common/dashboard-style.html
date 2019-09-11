@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="tensorboard-color.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
+<link rel="import" href="../paper-styles/paper-styles.html" />
+<link rel="import" href="tensorboard-color.html" />
 
 <dom-module id="dashboard-style">
   <template>
@@ -28,7 +28,7 @@ limitations under the License.
         --sidebar-left-padding: 30px;
       }
 
-      .sidebar {
+      [slot='sidebar'] {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -54,8 +54,9 @@ limitations under the License.
       }
 
       .sidebar-section {
-        border-top: solid 1px rgba(0, 0, 0, .12);
-        padding: var(--sidebar-vertical-padding) 0 var(--sidebar-vertical-padding) var(--sidebar-left-padding);
+        border-top: solid 1px rgba(0, 0, 0, 0.12);
+        padding: var(--sidebar-vertical-padding) 0
+          var(--sidebar-vertical-padding) var(--sidebar-left-padding);
         position: relative;
       }
 

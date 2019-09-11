@@ -118,16 +118,13 @@ class TensorBoard(object):
     """Creates new instance.
 
     Args:
-      plugins: A list of TensorBoard plugins to load, as TBLoader instances or
-        TBPlugin classes. If not specified, defaults to first-party plugins.
+      plugin: A list of TensorBoard plugins to load, as TBPlugin classes or
+        TBLoader instances or classes. If not specified, defaults to first-party
+        plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
       server_class: An optional factory for a `TensorBoardServer` to use
         for serving the TensorBoard WSGI app. If provided, its callable
         signature should match that of `TensorBoardServer.__init__`.
-
-    :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
-    :type assets_zip_provider: () -> file
-    :type server_class: class
     """
     if plugins is None:
       from tensorboard import default
@@ -136,13 +133,7 @@ class TensorBoard(object):
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
       server_class = create_port_scanning_werkzeug_server
-    def make_loader(plugin):
-      if isinstance(plugin, base_plugin.TBLoader):
-        return plugin
-      if issubclass(plugin, base_plugin.TBPlugin):
-        return base_plugin.BasicLoader(plugin)
-      raise ValueError("Not a TBLoader or TBPlugin subclass: %s" % plugin)
-    self.plugin_loaders = [make_loader(p) for p in plugins]
+    self.plugin_loaders = [application.make_plugin_loader(p) for p in plugins]
     self.assets_zip_provider = assets_zip_provider
     self.server_class = server_class
     self.flags = None

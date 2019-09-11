@@ -15,82 +15,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-hparams-main/tf-hparams-main.html">
-<link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html">
-<link rel="import" href="../tf-tensorboard/plugin-dialog.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-hparams-main/tf-hparams-main.html" />
+<link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html" />
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html" />
 
 <dom-module id="tf-hparams-dashboard">
   <template>
     <!-- Tensorboard does not specify an experimentName. Currently it only
          supports one experiment per invocation. -->
-    <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <tf-hparams-main
       id="hparams-main"
       backend="[[_backend]]"
-      experiment-name="">
+      experiment-name=""
+    >
     </tf-hparams-main>
   </template>
   <script>
     'use strict';
     (function() {
+      const PLUGIN_NAME = 'hparams';
 
-    const PLUGIN_NAME = 'hparams';
-
-    Polymer({
-      is: 'tf-hparams-dashboard',
-      properties: {
-        _backend: {
-          type: Object,
-          value: () => {
-            return new tf.hparams.Backend(
-                /* apiUrl= */ tf_backend.getRouter().pluginRoute(
-                    /* pluginName= */ PLUGIN_NAME,
-                    /* route= */ ''),
+      Polymer({
+        is: 'tf-hparams-dashboard',
+        properties: {
+          _backend: {
+            type: Object,
+            value: () => {
+              return new tf.hparams.Backend(
+                /* apiUrl= */ tf_backend
+                  .getRouter()
+                  .pluginRoute(/* pluginName= */ PLUGIN_NAME, /* route= */ ''),
                 new tf_backend.RequestManager(),
                 /* Use GETs if we're running in colab (due to b/126387106).
                    Otherwise use POSTs. */
-                /* useHttpGet= */ !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
-            )
-          }
+                /* useHttpGet= */ !!(window.TENSORBOARD_ENV || {}).IN_COLAB
+              );
+            },
+          },
         },
-        _isAvailable: Boolean
-      },
 
-      attached: function() {
-        // Check if the plugin was created
-        this._backend._requestManager
-            .request(tf_backend.getRouter().pluginsListing())
-            .then(plugins => {
-              if (!(PLUGIN_NAME in plugins)) {
-                // The plugin was not created
-                this.$.initialDialog.openNoTensorFlowDialog();
-                this.set('_isAvailable', false);
-              } else {
-                // The plugin was created
-                this.$.initialDialog.closeDialog();
-                this.set('_isAvailable', true);
-              }
-            });
-      },
-
-      // This is called by the tensorboard web framework to refresh the plugin.
-      reload() {
-        if (this._isAvailable) {
-            this.$["hparams-main"].reload();
-        }
-      }
-    });
-
-    // TODO(#2338): Remove this, and set up a "no TF" message properly.
-    // Keep this in sync with `frontend_metadata` in
-    // `hparams_plugin.py`.
-    tf_tensorboard.registerDashboard({
-      plugin: PLUGIN_NAME,
-      elementName: 'tf-hparams-dashboard'
-    });
-
+        // This is called by the tensorboard web framework to refresh the plugin.
+        reload() {
+          this.$['hparams-main'].reload();
+        },
+      });
     })();
   </script>
 </dom-module>
