@@ -248,3 +248,13 @@ export interface TensorWidget {
   // TODO(cais): Add API for programmatically changing slicingSpec status.
   // TODO(cais): Add event listeners for slicingSpec change.
 }
+
+/**
+ * Possible directions of movement.
+ */
+export enum MoveDirection {
+  UP = 1,
+  DOWN,
+  LEFT,
+  RIGHT,
+}

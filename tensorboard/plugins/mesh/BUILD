@@ -141,6 +141,12 @@ py_test(
     size = "small",
     srcs = ["summary_v2_test.py"],
     srcs_version = "PY2AND3",
+    tags = [
+        # TODO(#2624): re-enable the test when autograph works with gast.
+        # additional context: https://github.com/tensorflow/tensorflow/issues/32319
+        "notap",
+        "manual",
+    ],
     deps = [
         ":summary",
         ":test_utils",
