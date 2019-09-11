@@ -38,11 +38,11 @@ when testing WIT in TensorBoard).
                     ```
                 2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`.
                    If witwidget was previously installed, uninstall it first.<br>
-    - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir).  
+    - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir).<br>
       `bazel run tensorboard -- --logdir /tmp`
-        1. WIT needs a served model to query, so serve your trained model through the TF serving docker container.  
+        1. WIT needs a served model to query, so serve your trained model through the TF serving docker container.<br>
            `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel>,target=/models/my_model/ -e MODEL_NAME=my_model -t tensorflow/serving`
-            - When developing model comparison, serve multiple models at once using the proper config as seen in the appendix.  
+            - When developing model comparison, serve multiple models at once using the proper config as seen in the appendix.<br>
                 `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel1>,target=/models/my_model1 -e When you want to shutdown the served model, find the container ID and stop the container.MODEL_NAME=my_model_1 --mount type=bind,source=<pathToSavedModel2>,target=/models/my_model_2 -e MODEL_NAME=my_model_2 When you want to shutdown the served model, find the container ID and stop the container.--mount type=bind,source=<pathToConfigFile>,target=/models/models.config -t tensorflow/serving --model_config_file="/models/models.config"`
         2. Navigate to the WIT tab in TensorBoard and set-up WIT (`http://localhost:6006/#whatif&inferenceAddress=localhost%3A8500&modelName=my_model`).<br>
            The inferenceAddress and modelName settings point to the model you served in the previous step. Set all other appropriate options and click “accept”.
