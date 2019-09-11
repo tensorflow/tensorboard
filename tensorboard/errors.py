@@ -32,6 +32,8 @@ from __future__ import print_function
 class PublicError(RuntimeError):
   """An error whose text does not contain sensitive information."""
 
+  http_code = 500  # default; subclasses should override
+
   def __init__(self, details):
     super(PublicError, self).__init__(details)
 
