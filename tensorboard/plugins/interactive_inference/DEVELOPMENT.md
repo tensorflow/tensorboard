@@ -36,7 +36,8 @@ when testing WIT in TensorBoard).
                     from google.colab import file
                     uploaded = files.upload()
                     ```
-                2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`
+                2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`.
+                   If witwidget was previously installed, uninstall it first.  
     - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir).  
       `bazel run tensorboard -- --logdir /tmp`
         1. WIT needs a served model to query, so serve your trained model through the TF serving docker container.  
