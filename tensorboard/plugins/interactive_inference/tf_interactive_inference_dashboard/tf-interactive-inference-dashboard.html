@@ -1189,6 +1189,11 @@ limitations under the License.
         margin: 4px 4px 4px 6px;
         --paper-toggle-button-checked-bar-color: #81c995;
       }
+      .counterfactual-delta label {
+        font-size: 12px;
+        color: #3c4043;
+        margin-left: 10px;
+      }
       .datapoint-button {
         color: #202124;
         background: #fde293;
@@ -1407,70 +1412,85 @@ limitations under the License.
                           >Partial dependence plots</paper-radio-button
                         >
                       </paper-radio-group>
-                      <template is="dom-if" if="[[!isRegression_(modelType)]]">
-                        <div class="flex">
-                          <div title="Select a datapoint to use this feature">
-                            <paper-toggle-button
-                              class="counterfactual-toggle"
-                              checked="{{showNearestCounterfactual}}"
-                              disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                            >
-                              Show nearest counterfactual datapoint
-                            </paper-toggle-button>
-                          </div>
-                          <paper-radio-group
-                            selected="{{nearestCounterfactualDist}}"
+                      <div class="flex">
+                        <div title="Select a datapoint to use this feature">
+                          <paper-toggle-button
+                            class="counterfactual-toggle"
+                            checked="{{showNearestCounterfactual}}"
+                            disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                           >
-                            <paper-radio-button name="L1"
-                              >L1</paper-radio-button
-                            >
-                            <paper-radio-button name="L2"
-                              >L2</paper-radio-button
-                            >
-                          </paper-radio-group>
-                          <paper-dropdown-menu
-                            label="Model:"
-                            no-label-float
-                            class="counterfactual-dropdown"
-                            hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
-                          >
-                            <paper-listbox
-                              class="dropdown-content"
-                              selected="{{nearestCounterfactualModelIndex}}"
-                            >
-                              <template
-                                is="dom-repeat"
-                                items="[[parsedModelNames]]"
-                              >
-                                <paper-item
-                                  >[[getCounterfactualModelName_(item)]]</paper-item
-                                >
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <paper-icon-button
-                            icon="info-outline"
-                            class="info-icon cf-info-icon no-padding"
-                            on-tap="openDialog"
-                          >
-                          </paper-icon-button>
-                          <paper-dialog
-                            class="dialog-text"
-                            horizontal-align="auto"
-                            vertical-align="auto"
-                          >
-                            <div class="dialog-title">
-                              Nearest counterfactual (neighbor of different
-                              classification)
-                            </div>
-                            <div>
-                              Compares the selected datapoint with its nearest
-                              neighbor from a different classification using L1
-                              or L2 distance.
-                            </div>
-                          </paper-dialog>
+                            Show nearest counterfactual datapoint
+                          </paper-toggle-button>
                         </div>
-                      </template>
+                        <paper-radio-group
+                          selected="{{nearestCounterfactualDist}}"
+                        >
+                          <paper-radio-button name="L1"
+                            >L1</paper-radio-button
+                          >
+                          <paper-radio-button name="L2"
+                            >L2</paper-radio-button
+                          >
+                        </paper-radio-group>
+                        <template is="dom-if" if="[[isRegression_(modelType)]]">
+                          <div title="Minimum distance in inferred value to consider counterfactual"
+                            class="counterfactual-delta">
+                            <label>Delta</label>
+                            <paper-slider pin
+                              value="{{minCounterfactualValueDist}}"
+                              max="{{maxCounterfactualValueDist}}"
+                            ></paper-slider>
+                          </div>
+                        </template>
+                        <paper-dropdown-menu
+                          label="Model:"
+                          no-label-float
+                          class="counterfactual-dropdown"
+                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                        >
+                          <paper-listbox
+                            class="dropdown-content"
+                            selected="{{nearestCounterfactualModelIndex}}"
+                          >
+                            <template
+                              is="dom-repeat"
+                              items="[[parsedModelNames]]"
+                            >
+                              <paper-item
+                                >[[getCounterfactualModelName_(item)]]</paper-item
+                              >
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon cf-info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1
+                            or L2 distance.
+                          </div>
+                          <div>
+                            <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
+                                For regression, a neighbor point is considered as
+                                a different classification if the difference in infered
+                                value is equal or greater than selected threshold.
+                            </template>
+                          </div>
+                        </paper-dialog>
+                      </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
                           <paper-button
@@ -3534,6 +3554,7 @@ limitations under the License.
             type: String,
             value: 'L1',
           },
+          minCounterfactualValueDist: Number,
           visMode: {
             type: String,
             value: 'dive',
@@ -3647,7 +3668,7 @@ limitations under the License.
 
         observers: [
           'setFacetDistFeatureName(facetDistSwitch, selected)',
-          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)',
+          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist, minCounterfactualValueDist)',
         ],
 
         // Required function.
@@ -3786,7 +3807,7 @@ limitations under the License.
 
         isSameInferenceClass_: function(val1, val2) {
           return this.isRegression_(this.modelType)
-            ? Math.abs(val1 - val2) == 0  // TODO: use interactive threshold
+            ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
             : val1 == val2;           
         },
 
