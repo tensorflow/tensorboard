@@ -91,11 +91,13 @@ limitations under the License.
             this.data.push(
               JSON.parse(JSON.stringify(this.data[e.detail.index]))
             );
+            this.distanceEmbs.push(this.distanceEmbs[e.detail.index]);
             this.indicesToInfer[this.data.length - 1] = true;
             this.updateSprite();
           });
           this.$.dash.addEventListener('delete-example', (e) => {
             this.data.splice(e.detail.index, 1);
+            this.distanceEmbs.splice(e.detail.index, 1);
             const newIndicesToInfer = {};
             const oldIndicesToInfer = Object.keys(this.indicesToInfer);
             for (let i = 0; i < oldIndicesToInfer.length; i++) {
