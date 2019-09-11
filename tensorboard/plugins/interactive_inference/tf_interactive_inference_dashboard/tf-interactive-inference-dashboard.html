@@ -1604,9 +1604,7 @@ limitations under the License.
                           <vz-example-viewer
                             class="example-holder"
                             json="{{selectedExampleAndInference.example}}"
-                            compare-json="{{
-                              counterfactualExampleAndInference.example
-                           }}"
+                            compare-json="{{counterfactualExampleAndInference.example}}"
                             on-example-change="exampleChange_"
                             id="viewer"
                             display-mode="[[exampleDisplayMode]]"
@@ -1990,7 +1988,7 @@ limitations under the License.
                         <div class="flex">
                           <paper-input
                             value="{{incorrectPredCostRatio}}"
-                            label="Cost Ratio (FP/FN"
+                            label="Cost Ratio (FP/FN)"
                             type="number"
                             class="threshold-cost-input"
                           >
@@ -2079,7 +2077,7 @@ limitations under the License.
                             if="[[shouldShowSecondFeatureDropdown_(selectedBreakdownFeature)]]"
                           >
                             <paper-dropdown-menu
-                              label="Slice by (secondary"
+                              label="Slice by (secondary)"
                               class="threshold-dropdown"
                             >
                               <paper-listbox
@@ -2556,9 +2554,7 @@ limitations under the License.
                           </div>
                         </div>
                       </div>
-                      <iron-collapse
-                        opened="{{featureValueThreshold.opened}}"
-                      >
+                      <iron-collapse opened="{{featureValueThreshold.opened}}">
                         <div class="perf-table-entry-expanded flex-row-reverse">
                           <template
                             is="dom-if"
@@ -2991,9 +2987,7 @@ limitations under the License.
                           </div>
                         </div>
                       </div>
-                      <iron-collapse
-                        opened="{{featureValueThreshold.opened}}"
-                      >
+                      <iron-collapse opened="{{featureValueThreshold.opened}}">
                         <div
                           class="perf-table-entry-expanded flex-row-reverse scroll-x"
                         >
