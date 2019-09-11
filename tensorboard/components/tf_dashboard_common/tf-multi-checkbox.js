@@ -38,8 +38,9 @@ var tf_dashboard_common;
                 computed: 'computeNamesMatchingRegex(names.*, _regex)',
             },
             selectionState: {
-                // if a name is explicitly enabled, True, if explicitly disabled, False.
-                // if undefined, default value (enable for first k names, disable after).
+                // If a name is explicitly enabled by user gesture, True, if explicitly
+                // disabled, False. If undefined, default value (enable for first k
+                // names, disable after).
                 type: Object,
                 notify: true,
                 value: () => ({}),
@@ -164,20 +165,14 @@ var tf_dashboard_common;
             return this.outSelected.indexOf(item) != -1;
         },
         toggleAll: function () {
-            var anyToggledOn = this.namesMatchingRegex.some((n) => this.selectionState[n]);
-            var selectionStateIsDefault = Object.keys(this.selectionState).length == 0;
-            var defaultOff = this.namesMatchingRegex.length > this.maxRunsToEnableByDefault;
-            // We have names toggled either if some were explicitly toggled on, or if
-            // we are in the default state, and there are few enough that we default
-            // to toggling on.
-            anyToggledOn = anyToggledOn || (selectionStateIsDefault && !defaultOff);
             // If any are toggled on, we turn everything off. Or, if none are toggled
             // on, we turn everything on.
-            var newRunsDisabled = {};
-            this.names.forEach(function (n) {
-                newRunsDisabled[n] = !anyToggledOn;
+            const anyToggledOn = this.namesMatchingRegex.some((name) => this.outSelected.includes(name));
+            const newSelectionState = {};
+            this.names.forEach((n) => {
+                newSelectionState[n] = !anyToggledOn;
             });
-            this.selectionState = newRunsDisabled;
+            this.selectionState = newSelectionState;
         },
     });
 })(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_dashboard_common
