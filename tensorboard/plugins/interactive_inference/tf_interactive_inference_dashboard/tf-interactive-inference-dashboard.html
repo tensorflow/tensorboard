@@ -1338,7 +1338,7 @@ limitations under the License.
         <paper-button
           dialog-confirm
           autofocus
-          on-tap="addDistanceMetric"
+          on-tap="requestAddDistanceMetric"
           class="main-button"
           >Apply</paper-button
         >
@@ -3783,7 +3783,7 @@ limitations under the License.
         },
 
         finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
-          const facetDistFeatureName = callbackParams.facetDistFeatureName;
+          const facetDistFeatureName = callbackParams.featureName;
           this.facetDistFeatureNames.push(facetDistFeatureName);
           for (let i = 0; i < this.visdata.length; i++) {
             this.visdata[i][facetDistFeatureName] = distances[i];

@@ -178,7 +178,7 @@ limitations under the License.
             pred = pred.div(tf.norm(pred));
             const distancesTensor = tf.neg(tf.dot(this.distanceEmbs, tf.transpose(pred)).flatten());
             const distances = await distancesTensor.data();
-            this.$.dash[e.detail.callback](e.detail.index, distances)
+            this.$.dash[e.detail.callback](e.detail.index, distances, e.detail.params.callbackParams)
           });
           this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
