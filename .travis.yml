@@ -19,8 +19,8 @@ env:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tf-nightly==1.15.0.dev20190816
-    - TF_VERSION_ID=tf-nightly-2.0-preview
+    - TF_VERSION_ID=tensorflow==1.15.0rc0
+    - TF_VERSION_ID=tf-nightly-2.0-preview==2.0.0.dev20190911
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
@@ -58,6 +58,10 @@ install:
   - yarn install --ignore-engines
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
+  # Work around incompatible `gast` version in TensorFlow dependencies,
+  # fixed on the release branch but not in rc0:
+  # https://github.com/tensorflow/tensorflow/issues/32319
+  - pip install gast==0.2.2
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
