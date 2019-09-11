@@ -37,14 +37,14 @@ when testing WIT in TensorBoard).
                     uploaded = files.upload()
                     ```
                 2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`.
-                   If witwidget was previously installed, uninstall it first.  
+                   If witwidget was previously installed, uninstall it first.<br>
     - For TensorBoard use, run tensorboard with any logdir (as WIT does not rely on logdir).  
       `bazel run tensorboard -- --logdir /tmp`
         1. WIT needs a served model to query, so serve your trained model through the TF serving docker container.  
            `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel>,target=/models/my_model/ -e MODEL_NAME=my_model -t tensorflow/serving`
             - When developing model comparison, serve multiple models at once using the proper config as seen in the appendix.  
                 `sudo docker run -p 8500:8500 --mount type=bind,source=<pathToSavedModel1>,target=/models/my_model1 -e When you want to shutdown the served model, find the container ID and stop the container.MODEL_NAME=my_model_1 --mount type=bind,source=<pathToSavedModel2>,target=/models/my_model_2 -e MODEL_NAME=my_model_2 When you want to shutdown the served model, find the container ID and stop the container.--mount type=bind,source=<pathToConfigFile>,target=/models/models.config -t tensorflow/serving --model_config_file="/models/models.config"`
-        2. Navigate to the WIT tab in TensorBoard and set-up WIT (`http://localhost:6006/#whatif&inferenceAddress=localhost%3A8500&modelName=my_model`).  
+        2. Navigate to the WIT tab in TensorBoard and set-up WIT (`http://localhost:6006/#whatif&inferenceAddress=localhost%3A8500&modelName=my_model`).<br>
            The inferenceAddress and modelName settings point to the model you served in the previous step. Set all other appropriate options and click “accept”.
         3. When you want to shutdown the served model, find the container ID and stop the container.
             ```
@@ -62,38 +62,37 @@ when testing WIT in TensorBoard).
 
 ### Backend (Python)
 
-[interactive_inference_plugin.py](interactive_inference_plugin.py) - the python web backend code for the WIT plugin to TensorBoard. Handles requests from the browser (like load examples, infer examples, …). Loads data from disk. Sends inference requests to servo. Sends responses back to the browser.  
-[interactive_inference_plugin_test.py]() - UT  
+[interactive_inference_plugin.py](interactive_inference_plugin.py) - the python web backend code for the WIT plugin to TensorBoard. Handles requests from the browser (like load examples, infer examples, …). Loads data from disk. Sends inference requests to servo. Sends responses back to the browser.<br>
+[interactive_inference_plugin_test.py]() - UT<br>
 
+[utils/common_utils.py](./utils/common_utils.py) - utilities common to other python files<br>
+[utils/inference_utils.py](./utils/inference_utils.py) - utility functions for running inference requests through a model<br>
+[utils/inference_utils_test.py](./utils/inference_utils_test.py) - UT<br>
+[utils/platform_utils.py](./utils/platform_utils.py) - functions specific to the open-source implementation (loading examples from disk, calling to servo)<br>
+[utils/test_utils.py](./utils/test_utils.py) - helper functions for UTs<br>
 
-[utils/common_utils.py](./utils/common_utils.py) - utilities common to other python files  
-[utils/inference_utils.py](./utils/inference_utils.py) - utility functions for running inference requests through a model  
-[utils/inference_utils_test.py](./utils/inference_utils_test.py) - UT  
-[utils/platform_utils.py](./utils/platform_utils.py) - functions specific to the open-source implementation (loading examples from disk, calling to servo)  
-[utils/test_utils.py](./utils/test_utils.py) - helper functions for UTs  
+[witwidget/notebook/base.py](witwidget/notebook/base.py) - WitWidgetBase class definition for using WIT in notebooks. Shared base class for both jupyter and colab implementations<br>
+[witwidget/notebook/visualization.py](witwidget/notebook/visualization.py) - WitConfigBuilder class definition for using WIT in notebooks<br>
 
-[witwidget/notebook/base.py](witwidget/notebook/base.py) - WitWidgetBase class definition for using WIT in notebooks. Shared base class for both jupyter and colab implementations  
-[witwidget/notebook/visualization.py](witwidget/notebook/visualization.py) - WitConfigBuilder class definition for using WIT in notebooks  
+[witwidget/notebook/colab/wit.py](witwidget/notebook/colab/wit.py) - backend for running in colab, along with front-end glue code to display WIT in colab<br>
 
-[witwidget/notebook/colab/wit.py](witwidget/notebook/colab/wit.py) - backend for running in colab, along with front-end glue code to display WIT in colab  
-
-[witwidget/notebook/jupyter/wit.py](witwidget/notebook/jupyter/wit.py) - backend for running in jupyter  
-[witwidget/notebook/jupyter/js/lib/wit.js](witwidget/notebook/jupyter/js/lib/wit.js) - front-end glue code to display WIT in jupyter  
+[witwidget/notebook/jupyter/wit.py](witwidget/notebook/jupyter/wit.py) - backend for running in jupyter<br>
+[witwidget/notebook/jupyter/js/lib/wit.js](witwidget/notebook/jupyter/js/lib/wit.js) - front-end glue code to display WIT in jupyter<br>
 
 ### Front-end
 
-[tf_interactive_inference_dashboard/tf-interactive-inference-dashboard.html](tf_interactive_inference_dashboard/tf-interactive-inference-dashboard.html) - top-level polymer element and most of the code for the WIT front-end  
-[tf_interactive_inference_dashboard/tf-confusion-matrix.html](tf_interactive_inference_dashboard/tf-confusion-matrix.html) - polymer element for the confusion matrix  
-[tf_interactive_inference_dashboard/tf-inference-panel.html](tf_interactive_inference_dashboard/tf-inference-panel.html) - polymer element for the set-up controls  
-[tf_interactive_inference_dashboard/tf-inference-viewer.html](tf_interactive_inference_dashboard/tf-inference-viewer.html) - polymer element for the inference results table  
+[tf_interactive_inference_dashboard/tf-interactive-inference-dashboard.html](tf_interactive_inference_dashboard/tf-interactive-inference-dashboard.html) - top-level polymer element and most of the code for the WIT front-end<br>
+[tf_interactive_inference_dashboard/tf-confusion-matrix.html](tf_interactive_inference_dashboard/tf-confusion-matrix.html) - polymer element for the confusion matrix<br>
+[tf_interactive_inference_dashboard/tf-inference-panel.html](tf_interactive_inference_dashboard/tf-inference-panel.html) - polymer element for the set-up controls<br>
+[tf_interactive_inference_dashboard/tf-inference-viewer.html](tf_interactive_inference_dashboard/tf-inference-viewer.html) - polymer element for the inference results table<br>
 
 ### Demos
 
-[tf_interactive_inference_dashboard/demo/tf-interactive-inference-*-demo.html](tf_interactive_inference_dashboard/demo/) - the code for the standalone web demos of WIT that load a tensorflow.js model and some data from json and runs WIT  
+[tf_interactive_inference_dashboard/demo/tf-interactive-inference-*-demo.html](tf_interactive_inference_dashboard/demo/) - the code for the standalone web demos of WIT that load a tensorflow.js model and some data from json and runs WIT<br>
 
 ### Miscellaneous
 
-[tensorboard/components/vz_example_viewer/vz-example-viewer.*](https://https://github.com/tensorflow/tensorboard/tree/master/tensorboard/components/vz_example_viewer) - polymer element for the individual example viewer/editor  
+[tensorboard/components/vz_example_viewer/vz-example-viewer.*](https://https://github.com/tensorflow/tensorboard/tree/master/tensorboard/components/vz_example_viewer) - polymer element for the individual example viewer/editor<br>
 
 ## Appendix
 
