@@ -3829,9 +3829,8 @@ limitations under the License.
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
-            // Skip examples with the same inference class as the selected
-            // examples.
-            if (this.isSameInferenceClass_(
+            // Skip the selected example itself and examples with the same inference class.
+            if (i == selected || this.isSameInferenceClass_(
               this.visdata[selected][modelInferenceValueStr],
               this.visdata[i][modelInferenceValueStr]
             )) {
