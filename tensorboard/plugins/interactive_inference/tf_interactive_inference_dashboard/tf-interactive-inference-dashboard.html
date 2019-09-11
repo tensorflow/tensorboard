@@ -3784,6 +3784,12 @@ limitations under the License.
           }
         },
 
+        isSameInferenceClass_: function(val1, val2) {
+          return this.isRegression_(this.modelType)
+            ? Math.abs(val1 - val2) == 0  // TODO: use interactive threshold
+            : val1 == val2;           
+        },
+
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
           const modelInferenceValueStr = this.strWithModelName_(
@@ -3795,10 +3801,10 @@ limitations under the License.
           for (let i = 0; i < this.visdata.length; i++) {
             // Skip examples with the same inference class as the selected
             // examples.
-            if (
-              this.visdata[selected][modelInferenceValueStr] ==
+            if (this.isSameInferenceClass_(
+              this.visdata[selected][modelInferenceValueStr],
               this.visdata[i][modelInferenceValueStr]
-            ) {
+            )) {
               continue;
             }
             let dist = this.getDist(
