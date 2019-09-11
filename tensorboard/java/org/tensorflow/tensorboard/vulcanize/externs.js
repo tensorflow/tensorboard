@@ -31,6 +31,7 @@
 /** @type {!Object} */ var define;
 /** @type {!Object} */ var global;
 /** @type {!Object} */ var tf;
+/** @type {!Object} */ var mobilenet;
 /** @type {!Function|undefined} */ var ga;
 /** @type {!Function|undefined} */ var KeyframeEffect;
 

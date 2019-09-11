@@ -17,6 +17,8 @@ limitations under the License.
 <link rel="import" href="../tf-imports/polymer.html" />
 <link rel="import" href="tf-interactive-inference-dashboard.html" />
 <script src="tf.min.js"></script>
+<script src="mobilenet.js"></script>
+
 <dom-module id="tf-interactive-inference-image-demo">
   <template>
     <style>
@@ -53,16 +55,21 @@ limitations under the License.
         labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
+        distanceEmbs: Array,
+        distanceModel: Object,
       },
       ready: async function() {
         this.$.dash.modelName = 'demo';
         this.$.dash.inferenceAddress = 'demo';
         this.$.dash.updateNumberOfModels();
-        this.model = await tf.loadModel(
+        this.model = await tf.loadLayersModel(
           tf.io.browserHTTPRequest('data/images/model.json', {
             credentials: 'include',
           })
         );
+        // Load mobilenet for custom distance computation.
+        this.distanceModel = await mobilenet.load();;
+        const DISTANCE_EMBS_PATH = 'data/images/distance_embeddings.json';
         const DATA_PATH = 'data/images/smile_examples.json';
         const RESULTS_PATH = 'data/images/smile_examples_inference.json';
         const testData = d3.json(DATA_PATH).then((data) => {
@@ -119,6 +126,14 @@ limitations under the License.
                   this.$.dash.selectedLabelFeature = 'Smiling';
                 }, 1000);
               });
+              // Load precomputed embeddings from json for fast startup
+              const preds = d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
+                setTimeout(() => {
+                  const distanceEmbsTensor = tf.tensor2d(distanceEmbs);
+                  this.distanceEmbs = distanceEmbsTensor.reshape([indices.length, 1024]);
+                }, 1000);
+              });
+
             } else {
               const tensorArr = [];
               for (let i = 0; i < indices.length; i++) {
@@ -154,6 +169,16 @@ limitations under the License.
           this.$.dash.addEventListener('get-eligible-features', (e) => {
             this.$.dash.partialDepPlotEligibleFeatures = [];
           });
+          this.$.dash.addEventListener('compute-custom-distance', async (e) => {
+            const ex = this.data[e.detail.index];
+            const exTensor = await this.convertExToTensor(ex);
+            let pred = await this.distanceModel.infer(exTensor, true);
+            pred = pred.div(tf.norm(pred));
+            const distancesTensor = tf.neg(tf.dot(this.distanceEmbs, tf.transpose(pred)).flatten());
+            const distances = await distancesTensor.data();
+            this.$.dash[e.detail.callback](e.detail.index, distances)
+          });
+          this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
           });
@@ -174,7 +199,7 @@ limitations under the License.
               canvas
                 .getContext('2d')
                 .drawImage(img, 0, 0, img.width, img.height);
-              let tensor = tf.fromPixels(canvas).toFloat();
+              let tensor = tf.browser.fromPixels(canvas).toFloat();
               if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
                 tensor = tf.image.resizeBilinear(tensor, [78, 64]);
               }
