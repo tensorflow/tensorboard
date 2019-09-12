@@ -144,7 +144,6 @@ limitations under the License.
               // Load precomputed embeddings from json for fast startup
               d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
                 this.distanceEmbs = distanceEmbs;
-                console.log(this.distanceEmbs);
                 this.updateDistanceEmbsTensor();
               });
 
@@ -252,7 +251,6 @@ limitations under the License.
         const distanceEmbsTensor = tf.tensor2d(this.distanceEmbs);
         this.distanceEmbsTensor = distanceEmbsTensor.reshape([this.distanceEmbs.length, 1024]);
         distanceEmbsTensor.dispose();
-        console.log(tf.memory())
       },
 
       imageLoaded: function() {
@@ -263,7 +261,6 @@ limitations under the License.
           return;
         }
         const thumbnailsPerSide = Math.ceil(Math.sqrt(this.images.length));
-        console.log(thumbnailsPerSide);
         canvas.width = thumbnailsPerSide * THUMBNAIL_SIZE;
         canvas.height = thumbnailsPerSide * THUMBNAIL_SIZE;
 
