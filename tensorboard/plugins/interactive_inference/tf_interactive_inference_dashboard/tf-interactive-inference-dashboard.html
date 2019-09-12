@@ -1425,18 +1425,17 @@ limitations under the License.
                         <paper-radio-group
                           selected="{{nearestCounterfactualDist}}"
                         >
-                          <paper-radio-button name="L1"
-                            >L1</paper-radio-button
-                          >
-                          <paper-radio-button name="L2"
-                            >L2</paper-radio-button
-                          >
+                          <paper-radio-button name="L1">L1</paper-radio-button>
+                          <paper-radio-button name="L2">L2</paper-radio-button>
                         </paper-radio-group>
                         <template is="dom-if" if="[[isRegression_(modelType)]]">
-                          <div title="Minimum distance in inferred value to consider counterfactual"
-                            class="counterfactual-delta">
+                          <div
+                            title="Minimum distance in inferred value to consider counterfactual"
+                            class="counterfactual-delta"
+                          >
                             <label>Delta</label>
-                            <paper-slider pin
+                            <paper-slider
+                              pin
                               value="{{minCounterfactualValueDist}}"
                               max="{{maxCounterfactualValueDist}}"
                             ></paper-slider>
@@ -1479,14 +1478,19 @@ limitations under the License.
                           </div>
                           <div>
                             Compares the selected datapoint with its nearest
-                            neighbor from a different classification using L1
-                            or L2 distance.
+                            neighbor from a different classification using L1 or
+                            L2 distance.
                           </div>
                           <div>
-                            <template is="dom-if" if="[[isRegression_(modelType)]]" restamp>
-                                For regression, a neighbor point is considered as
-                                a different classification if the difference in infered
-                                value is equal or greater than selected threshold.
+                            <template
+                              is="dom-if"
+                              if="[[isRegression_(modelType)]]"
+                              restamp
+                            >
+                              For regression, a neighbor point is considered as
+                              a different classification if the difference in
+                              infered value is equal or greater than selected
+                              threshold.
                             </template>
                           </div>
                         </paper-dialog>
@@ -3809,12 +3813,13 @@ limitations under the License.
         isSameInferenceClass_: function(val1, val2) {
           return this.isRegression_(this.modelType)
             ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
-            : val1 == val2;           
+            : val1 == val2;
         },
 
         adjustCounterfactualValueDistRange_: function(selected, valueStr) {
           this.maxCounterfactualValueDist = Math.max(
-            this.distanceStats_[valueStr].max - this.visdata[selected][valueStr],
+            this.distanceStats_[valueStr].max -
+              this.visdata[selected][valueStr],
             this.visdata[selected][valueStr] - this.distanceStats_[valueStr].min
           );
         },
@@ -3825,15 +3830,21 @@ limitations under the License.
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
-          this.adjustCounterfactualValueDistRange_(selected, modelInferenceValueStr)
+          this.adjustCounterfactualValueDistRange_(
+            selected,
+            modelInferenceValueStr
+          );
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
             // Skip the selected example itself and examples with the same inference class.
-            if (i == selected || this.isSameInferenceClass_(
-              this.visdata[selected][modelInferenceValueStr],
-              this.visdata[i][modelInferenceValueStr]
-            )) {
+            if (
+              i == selected ||
+              this.isSameInferenceClass_(
+                this.visdata[selected][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
+            ) {
               continue;
             }
             let dist = this.getDist(
