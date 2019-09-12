@@ -1314,7 +1314,7 @@ limitations under the License.
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
         <paper-radio-button class="dist-radio" name="L1" disabled$=[[customDistanceFunctionSet]]>L1</paper-radio-button>
         <paper-radio-button class="dist-radio" name="L2" disabled$=[[customDistanceFunctionSet]]>L2</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="Custom" hidden$=[[!customDistanceFunctionSet]]>Custom</paper-radio-button>
+        <paper-radio-button class="dist-radio" name="Custom" hidden$=[[!customDistanceFunctionSet]]>User-specified</paper-radio-button>
       </paper-radio-group>
       <paper-dropdown-menu
         label="Apply to datapoints visualization"
@@ -1429,7 +1429,7 @@ limitations under the License.
                               >L2</paper-radio-button
                             >
                             <paper-radio-button name="Custom" hidden$=[[!customDistanceFunctionSet]]
-                            >Custom</paper-radio-button
+                            >User-specified</paper-radio-button
                             >
                           </paper-radio-group>
                           <paper-dropdown-menu

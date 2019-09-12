@@ -68,7 +68,7 @@ limitations under the License.
           })
         );
         // Load mobilenet for custom distance computation.
-        this.distanceModel = await mobilenet.load();;
+        this.distanceModel = await mobilenet.load();
         const DISTANCE_EMBS_PATH = 'data/images/distance_embeddings.json';
         const DATA_PATH = 'data/images/smile_examples.json';
         const RESULTS_PATH = 'data/images/smile_examples_inference.json';
@@ -119,7 +119,7 @@ limitations under the License.
               {classificationResult: {classifications: []}},
             ];
             if (indices.length == 250) {
-              const testData = d3.json(RESULTS_PATH).then((inferences) => {
+              d3.json(RESULTS_PATH).then((inferences) => {
                 setTimeout(() => {
                   // for compatibility with inferences.json
                   inferences.results = [inferences.results];
@@ -129,11 +129,9 @@ limitations under the License.
                 }, 1000);
               });
               // Load precomputed embeddings from json for fast startup
-              const preds = d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
-                setTimeout(() => {
+              d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
                   const distanceEmbsTensor = tf.tensor2d(distanceEmbs);
                   this.distanceEmbs = distanceEmbsTensor.reshape([indices.length, 1024]);
-                }, 1000);
               });
 
             } else {
@@ -172,11 +170,11 @@ limitations under the License.
             this.$.dash.partialDepPlotEligibleFeatures = [];
           });
           this.$.dash.addEventListener('compute-custom-distance', async (e) => {
-            const ex = this.data[e.detail.index];
-            const exTensor = await this.convertExToTensor(ex);
-            let pred = await this.distanceModel.infer(exTensor, true);
-            pred = pred.div(tf.norm(pred));
-            const distancesTensor = tf.neg(tf.dot(this.distanceEmbs, tf.transpose(pred)).flatten());
+            // Compute cosine similarity between selected example and all other
+            // examples. Return negative cosine similarity as the distance
+            const ind = tf.tensor1d([+e.detail.index], 'int32');
+            const exEmb = this.distanceEmbs.gather(ind);
+            const distancesTensor = tf.neg(tf.dot(this.distanceEmbs, tf.transpose(exEmb)).flatten());
             const distances = await distancesTensor.data();
             this.$.dash[e.detail.callback](e.detail.index, distances, e.detail.params.callbackParams)
           });
