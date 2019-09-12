@@ -172,12 +172,12 @@ limitations under the License.
           'Holand-Netherlands',
         ];
 
-        this.model = await tf.loadModel(
+        this.model = await tf.loadLayersModel(
           tf.io.browserHTTPRequest('data/uci/model.json', {
             credentials: 'include',
           })
         );
-        this.model2 = await tf.loadModel(
+        this.model2 = await tf.loadLayersModel(
           tf.io.browserHTTPRequest('data/uci/model_comparison/model.json', {
             credentials: 'include',
           })

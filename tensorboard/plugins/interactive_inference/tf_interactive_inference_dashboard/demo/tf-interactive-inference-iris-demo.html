@@ -53,7 +53,7 @@ limitations under the License.
         this.$.dash.inferenceAddress = 'demo';
         this.$.dash.multiClass = true;
         this.$.dash.updateNumberOfModels();
-        this.model = await tf.loadModel(
+        this.model = await tf.loadLayersModel(
           tf.io.browserHTTPRequest('data/iris/model.json', {
             credentials: 'include',
           })
