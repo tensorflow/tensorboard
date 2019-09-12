@@ -1,4 +1,4 @@
-// Programatically reconstitute the contents of the index.html that Angular
+// Programmatically reconstitute the contents of the index.html that Angular
 // generates, in order to meet the TensorBoard Plugin `render()` contract.
 export function render() {
   // See https://github.com/angular/angular-cli/issues/15157

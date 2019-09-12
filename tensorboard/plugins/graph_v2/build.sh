@@ -27,7 +27,5 @@ python setup.py bdist_wheel --python-tag py3
 
 echo
 echo "-------------------------------------------------------------------------"
-echo "Installing plugin..."
-echo
-# optional
-pip install dist/tensorboard_plugin_graph_v2-0.0.1-py3-none-any.whl -U
+echo "Plugin built.  You can now install it via:"
+echo "pip install dist/tensorboard_plugin_graph_v2-0.0.1-py3-none-any.whl -U"
