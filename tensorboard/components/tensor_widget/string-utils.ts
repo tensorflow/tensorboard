@@ -82,3 +82,39 @@ export function numericValueToString(
     }
   }
 }
+
+/**
+ * Format a boolean value as a display-friendly string.
+ * @param value
+ * @param shortForm Returns full-length string (i.e., 'true' or 'false') if and
+ *   only if this is `true`.
+ * @returns Formatted string.
+ */
+export function booleanValueToDisplayString(
+  value: boolean | number,
+  shortForm = true
+): string {
+  // TODO(cais): Color coding display for boolean values (e.g., black/white).
+  const trueStr = shortForm ? 'T' : 'True';
+  const falseStr = shortForm ? 'F' : 'False';
+  return value ? trueStr : falseStr;
+}
+
+/**
+ * Format a string value as a display-friendly string.
+ * @param value
+ * @param lengthLimit If and only if not `null`, the length of the returned
+ *   string will be limited to this value, with truncation and ellipses
+ *   appended.
+ * @return Formatted string.
+ */
+export function stringValueToDisplayString(
+  value: string,
+  lengthLimit: number | null = 4
+) {
+  if (lengthLimit === null || value.length <= lengthLimit) {
+    return value;
+  } else {
+    return value.slice(0, lengthLimit - 1) + '…';
+  }
+}
