@@ -1312,9 +1312,24 @@ limitations under the License.
       </paper-input>
       <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
-        <paper-radio-button class="dist-radio" name="L1" disabled$=[[customDistanceFunctionSet]]>L1</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="L2" disabled$=[[customDistanceFunctionSet]]>L2</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="Custom" hidden$=[[!customDistanceFunctionSet]]>User-specified</paper-radio-button>
+        <paper-radio-button
+          class="dist-radio"
+          name="L1"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L1</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="L2"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L2</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="Custom"
+          hidden$="[[!customDistanceFunctionSet]]"
+          >User-specified</paper-radio-button
+        >
       </paper-radio-group>
       <paper-dropdown-menu
         label="Apply to datapoints visualization"
@@ -1422,14 +1437,20 @@ limitations under the License.
                           <paper-radio-group
                             selected="{{nearestCounterfactualDist}}"
                           >
-                            <paper-radio-button name="L1" disabled$="[[customDistanceFunctionSet]]"
+                            <paper-radio-button
+                              name="L1"
+                              disabled$="[[customDistanceFunctionSet]]"
                               >L1</paper-radio-button
                             >
-                            <paper-radio-button name="L2" disabled$="[[customDistanceFunctionSet]]"
+                            <paper-radio-button
+                              name="L2"
+                              disabled$="[[customDistanceFunctionSet]]"
                               >L2</paper-radio-button
                             >
-                            <paper-radio-button name="Custom" hidden$=[[!customDistanceFunctionSet]]
-                            >User-specified</paper-radio-button
+                            <paper-radio-button
+                              name="Custom"
+                              hidden$="[[!customDistanceFunctionSet]]"
+                              >User-specified</paper-radio-button
                             >
                           </paper-radio-group>
                           <paper-dropdown-menu
@@ -1471,8 +1492,8 @@ limitations under the License.
                             <div>
                               Compares the selected datapoint with its nearest
                               neighbor from a different classification using L1
-                              or L2 distance. If a custom distance function is set,
-                              it uses that function instead.
+                              or L2 distance. If a custom distance function is
+                              set, it uses that function instead.
                             </div>
                           </paper-dialog>
                         </div>
@@ -3751,19 +3772,21 @@ limitations under the License.
           this.$.distancedialog.toggle();
         },
         customDistanceFunctionSetChanged_: function() {
-          if (this.customDistanceFunctionSet){
+          if (this.customDistanceFunctionSet) {
             this.nearestCounterfactualDist = 'Custom';
             this.facetDistSwitch = 'Custom';
           } else {
             this.nearestCounterfactualDist = 'L1';
-            this.facetDistSwitch = 'L1'
+            this.facetDistSwitch = 'L1';
           }
         },
 
         requestAddDistanceMetric: function() {
           const selected = this.selected[0];
-          const params = {callbackParams: {'featureName':this.facetDistFeatureName},
-               distanceParams: {}}
+          const params = {
+            callbackParams: {featureName: this.facetDistFeatureName},
+            distanceParams: {},
+          };
           // Custom distance function can only be used when local.
           // If using custom distance function, request distances and return.
           if (this.local && this.customDistanceFunctionSet) {
@@ -3777,13 +3800,19 @@ limitations under the License.
             const dists = [];
             const useL2Distance = this.facetDistSwitch == 'L2';
             for (let i = 0; i < this.visdata.length; i++) {
-              dists.push(this.getDist(
-                this.visdata[selected],
-                this.visdata[i],
-                useL2Distance
-              ));
+              dists.push(
+                this.getDist(
+                  this.visdata[selected],
+                  this.visdata[i],
+                  useL2Distance
+                )
+              );
             }
-            this.finalizeAddDistanceMetric(selected, dists, params.callbackParams)
+            this.finalizeAddDistanceMetric(
+              selected,
+              dists,
+              params.callbackParams
+            );
           }
         },
 

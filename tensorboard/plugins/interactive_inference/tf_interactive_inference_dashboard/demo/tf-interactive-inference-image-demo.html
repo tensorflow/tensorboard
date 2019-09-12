@@ -146,7 +146,6 @@ limitations under the License.
                 this.distanceEmbs = distanceEmbs;
                 this.updateDistanceEmbsTensor();
               });
-
             } else {
               const tensorArr = [];
               for (let i = 0; i < indices.length; i++) {
@@ -187,12 +186,18 @@ limitations under the License.
             // examples. Return negative cosine similarity as the distance.
             const ind = tf.tensor1d([+e.detail.index], 'int32');
             const exEmb = this.distanceEmbsTensor.gather(ind);
-            const distancesTensor = tf.neg(tf.dot(this.distanceEmbsTensor, tf.transpose(exEmb)).flatten());
+            const distancesTensor = tf.neg(
+              tf.dot(this.distanceEmbsTensor, tf.transpose(exEmb)).flatten()
+            );
             const distances = await distancesTensor.data();
             ind.dispose();
             exEmb.dispose();
             distancesTensor.dispose();
-            this.$.dash[e.detail.callback](e.detail.index, distances, e.detail.params.callbackParams)
+            this.$.dash[e.detail.callback](
+              e.detail.index,
+              distances,
+              e.detail.params.callbackParams
+            );
           });
           this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
@@ -245,11 +250,17 @@ limitations under the License.
       },
 
       updateDistanceEmbsTensor: function() {
-        if (this.distanceEmbsTensor && Object.keys(this.distanceEmbsTensor).length != 0){
+        if (
+          this.distanceEmbsTensor &&
+          Object.keys(this.distanceEmbsTensor).length != 0
+        ) {
           this.distanceEmbsTensor.dispose();
         }
         const distanceEmbsTensor = tf.tensor2d(this.distanceEmbs);
-        this.distanceEmbsTensor = distanceEmbsTensor.reshape([this.distanceEmbs.length, 1024]);
+        this.distanceEmbsTensor = distanceEmbsTensor.reshape([
+          this.distanceEmbs.length,
+          1024,
+        ]);
         distanceEmbsTensor.dispose();
       },
 
