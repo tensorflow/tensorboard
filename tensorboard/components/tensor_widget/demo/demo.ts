@@ -129,11 +129,33 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
         x.rank === 0
           ? x
           : tf.tidy(() => {
-              let output = x.slice(begins, sizes);
-              if (slicingDims != null) {
-                output = output.squeeze(slicingDims);
+              if (x.dtype === 'string') {
+                // Work around the TensorFlow.js limitation that `tf.slice()`
+                // doesn't support the string dtype yet. Remove this workaround
+                // once this feature request is fulfilled:
+                // https://github.com/tensorflow/tfjs/issues/2010
+                if (x.rank === 2) {
+                  const array = x.arraySync();
+                  let strMatrix: string[][] = array.slice(
+                    begins[0],
+                    begins[0] + sizes[0]
+                  );
+                  strMatrix = strMatrix.map((strArray) =>
+                    strArray.slice(begins[1], begins[1] + sizes[1])
+                  );
+                  return tf.tensor2d(strMatrix);
+                } else {
+                  throw new Error(
+                    `Slicing ${x.rank}D string tensor is not implemented`
+                  );
+                }
+              } else {
+                let output = x.slice(begins, sizes);
+                if (slicingDims != null) {
+                  output = output.squeeze(slicingDims);
+                }
+                return output;
               }
-              return output;
             });
 
       const retval = (await sliced.array()) as
@@ -184,7 +206,7 @@ function demo() {
   tensorWidget1.render();
 
   /////////////////////////////////////////////////////////////
-  // 2D float32 scalar.
+  // 2D float32 tensor.
   const tensor2Div = document.getElementById('tensor2') as HTMLDivElement;
   const tensorView2 = tensorToTensorView(tf.randomNormal([128, 64]));
   const tensorWidget2 = tensorWidget.tensorWidget(tensor2Div, tensorView2, {
@@ -193,7 +215,7 @@ function demo() {
   tensorWidget2.render();
 
   /////////////////////////////////////////////////////////////
-  // 2D float32 scalar with NaN and Infinities in it.
+  // 2D float32 tensor with NaN and Infinities in it.
   const tensorDiv3 = document.getElementById('tensor3') as HTMLDivElement;
   const tensorView3 = tensorToTensorView(
     tf.tensor2d([[NaN, -Infinity], [Infinity, 0]])
@@ -205,7 +227,7 @@ function demo() {
   tensorWidget3.render();
 
   /////////////////////////////////////////////////////////////
-  // 3D float32 scalar, without the optional name.
+  // 3D float32 tensor, without the optional name.
   const tensorDiv4 = document.getElementById('tensor4') as HTMLDivElement;
   const tensorView4 = tensorToTensorView(
     tf.linspace(0, (64 * 32 * 50 - 1) / 100, 64 * 32 * 50).reshape([64, 32, 50])
@@ -214,7 +236,7 @@ function demo() {
   tensorWidget4.render();
 
   /////////////////////////////////////////////////////////////
-  // 4D float32 scalar, without the optional name.
+  // 4D float32 tensor, without the optional name.
   const tensorDiv5 = document.getElementById('tensor5') as HTMLDivElement;
   const tensorView5 = tensorToTensorView(
     tf
@@ -225,6 +247,96 @@ function demo() {
     name: 'FourDimensionalTensor',
   });
   tensorWidget5.render();
+
+  /////////////////////////////////////////////////////////////
+  // 3D boolean tensor.
+  const tensorDiv6 = document.getElementById('tensor6') as HTMLDivElement;
+  const tensorView6 = tensorToTensorView(
+    tf.tensor3d([false, true, false, true, true, false, true, false], [2, 2, 2])
+  );
+  const tensorWidget6 = tensorWidget.tensorWidget(tensorDiv6, tensorView6, {
+    name: 'booleanTensor',
+  });
+  tensorWidget6.render();
+
+  /////////////////////////////////////////////////////////////
+  // 2D string tensor.
+  const tensorDiv7 = document.getElementById('tensor7') as HTMLDivElement;
+  const tensorView7 = tensorToTensorView(
+    tf.tensor2d(
+      [
+        'Lorem',
+        'Жят',
+        'العناد',
+        '永和九年',
+        'ipsum',
+        'ыт',
+        'الشمال',
+        '岁在癸丑',
+        'dolor',
+        'жольюта',
+        'بزمام',
+        '暮春之初',
+        'sit',
+        'льаорыыт',
+        'مهمّات,',
+        '会于会稽山阴之兰亭',
+        'amet',
+        '.',
+        'دارت',
+        '修稧事也',
+        ',',
+        'Ыльит',
+        'يكن',
+        '群贤毕至',
+        'consectetur',
+        'компрэхэнжам',
+        'أي',
+        '少长咸集',
+        'adipiscing',
+        'ад',
+        'حدى',
+        '此地有崇山峻领',
+        'elit',
+        'мыа',
+        'من',
+        '茂林修竹',
+        ',',
+        'Фачтидёе',
+        'الدّفاع',
+        '又有清流激湍',
+        'sed',
+        'атоморюм',
+        'ونتج',
+        '映带左右',
+        'do',
+        'конжтетуто',
+        'إذ',
+        '引以为流觞曲水',
+        'eiusmod',
+        'нэ',
+        'نفس',
+        '列坐其次',
+        'tempor',
+        'хаж',
+        'ويكيبيديا',
+        '',
+        'incididunt',
+        ',',
+        'والمعدات',
+        '',
+        'ut',
+        'ед',
+        'بـ',
+        '',
+      ],
+      [16, 4]
+    )
+  );
+  const tensorWidget7 = tensorWidget.tensorWidget(tensorDiv7, tensorView7, {
+    name: 'LoremIpsum 兰亭集序',
+  });
+  tensorWidget7.render();
 }
 
 demo();
