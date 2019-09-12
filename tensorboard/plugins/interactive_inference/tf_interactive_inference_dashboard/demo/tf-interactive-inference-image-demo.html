@@ -89,11 +89,13 @@ limitations under the License.
             const ex = this.data[e.detail.index];
             const exTensor = await this.convertExToTensor(ex);
             const predTensor = await this.distanceModel.infer(exTensor, true);
+            const predNorm = predTensor.div(tf.norm(predTensor));
             // Normalize embedding
-            const pred = await predTensor.div(tf.norm(predTensor)).array()[0];
-            this.distanceEmbs[e.detail.index] = pred;
+            const pred = await predNorm.array();
+            this.distanceEmbs[e.detail.index] = pred[0];
             this.updateDistanceEmbsTensor();
             exTensor.dispose();
+            predNorm.dispose();
             predTensor.dispose();
             this.indicesToInfer[e.detail.index] = true;
             this.updateSprite();
