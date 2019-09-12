@@ -56,6 +56,7 @@ limitations under the License.
         numLoadedImages: Number,
         images: Array,
         distanceEmbs: Array,
+        distanceEmbsTensor: Object,
         distanceModel: Object,
       },
       ready: async function() {
@@ -82,8 +83,18 @@ limitations under the License.
             this.data.map((item) => JSON.stringify(item)),
             true
           );
-          this.$.dash.addEventListener('update-example', (e) => {
+          this.$.dash.addEventListener('update-example', async (e) => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
+            // Update distance embedding of example
+            const ex = this.data[e.detail.index];
+            const exTensor = await this.convertExToTensor(ex);
+            const predTensor = await this.distanceModel.infer(exTensor, true);
+            // Normalize embedding
+            const pred = await predTensor.div(tf.norm(predTensor)).array()[0];
+            this.distanceEmbs[e.detail.index] = pred;
+            this.updateDistanceEmbsTensor();
+            exTensor.dispose();
+            predTensor.dispose();
             this.indicesToInfer[e.detail.index] = true;
             this.updateSprite();
           });
@@ -92,12 +103,14 @@ limitations under the License.
               JSON.parse(JSON.stringify(this.data[e.detail.index]))
             );
             this.distanceEmbs.push(this.distanceEmbs[e.detail.index]);
+            this.updateDistanceEmbsTensor();
             this.indicesToInfer[this.data.length - 1] = true;
             this.updateSprite();
           });
           this.$.dash.addEventListener('delete-example', (e) => {
             this.data.splice(e.detail.index, 1);
             this.distanceEmbs.splice(e.detail.index, 1);
+            this.updateDistanceEmbsTensor();
             const newIndicesToInfer = {};
             const oldIndicesToInfer = Object.keys(this.indicesToInfer);
             for (let i = 0; i < oldIndicesToInfer.length; i++) {
@@ -130,8 +143,9 @@ limitations under the License.
               });
               // Load precomputed embeddings from json for fast startup
               d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
-                  const distanceEmbsTensor = tf.tensor2d(distanceEmbs);
-                  this.distanceEmbs = distanceEmbsTensor.reshape([indices.length, 1024]);
+                this.distanceEmbs = distanceEmbs;
+                console.log(this.distanceEmbs);
+                this.updateDistanceEmbsTensor();
               });
 
             } else {
@@ -171,11 +185,14 @@ limitations under the License.
           });
           this.$.dash.addEventListener('compute-custom-distance', async (e) => {
             // Compute cosine similarity between selected example and all other
-            // examples. Return negative cosine similarity as the distance
+            // examples. Return negative cosine similarity as the distance.
             const ind = tf.tensor1d([+e.detail.index], 'int32');
-            const exEmb = this.distanceEmbs.gather(ind);
-            const distancesTensor = tf.neg(tf.dot(this.distanceEmbs, tf.transpose(exEmb)).flatten());
+            const exEmb = this.distanceEmbsTensor.gather(ind);
+            const distancesTensor = tf.neg(tf.dot(this.distanceEmbsTensor, tf.transpose(exEmb)).flatten());
             const distances = await distancesTensor.data();
+            ind.dispose();
+            exEmb.dispose();
+            distancesTensor.dispose();
             this.$.dash[e.detail.callback](e.detail.index, distances, e.detail.params.callbackParams)
           });
           this.$.dash.customDistanceFunctionSet = true;
@@ -226,6 +243,16 @@ limitations under the License.
             this.imageLoaded();
           };
         }
+      },
+
+      updateDistanceEmbsTensor: function() {
+        if (this.distanceEmbsTensor && Object.keys(this.distanceEmbsTensor).length != 0){
+          this.distanceEmbsTensor.dispose();
+        }
+        const distanceEmbsTensor = tf.tensor2d(this.distanceEmbs);
+        this.distanceEmbsTensor = distanceEmbsTensor.reshape([this.distanceEmbs.length, 1024]);
+        distanceEmbsTensor.dispose();
+        console.log(tf.memory())
       },
 
       imageLoaded: function() {
