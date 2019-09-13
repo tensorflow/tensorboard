@@ -13,29 +13,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
+import {MatTabChangeEvent} from '@angular/material/tabs';
+import {MatSelectChange} from '@angular/material/select';
 import {Store, select, createSelector} from '@ngrx/store';
 import {combineLatest, of} from 'rxjs';
 
 import {State, getActivePlugin, getPlugins} from '../../core/core.reducers';
 import {changePlugin} from '../../core/core.actions';
 
+import {PluginMetadata, PluginId} from '../../types/api';
+
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-const selectPlugins = createSelector(
+interface UiPluginMetadata extends PluginMetadata {
+  id: PluginId;
+}
+
+const getUiPlugins = createSelector(
   getPlugins,
-  (listing) =>
+  (listing): UiPluginMetadata[] =>
     Object.keys(listing).map((key) =>
       Object.assign({}, {id: key}, listing[key])
     )
 );
 
-const selectActivePluginIndex = createSelector(
-  getPlugins,
+const getDisabledPlugins = createSelector(
+  getUiPlugins,
+  (plugins): UiPluginMetadata[] => plugins.filter((plugin) => !plugin.enabled)
+);
+
+const getActivePluginIndex = createSelector(
+  getUiPlugins,
   getActivePlugin,
   (plugins, activePlugin) => {
-    return Object.keys(plugins).findIndex(
-      (pluginId) => pluginId === activePlugin
-    );
+    return plugins.findIndex((plugin) => plugin.id === activePlugin);
   }
 );
 
@@ -45,15 +56,21 @@ const selectActivePluginIndex = createSelector(
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
-  activePluginIndex$ = this.store.pipe(select(selectActivePluginIndex));
-  plugins$ = this.store.pipe(select(selectPlugins));
+  readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
+  readonly activePluginIndex$ = this.store.pipe(select(getActivePluginIndex));
+  readonly plugins$ = this.store.pipe(select(getUiPlugins));
+  readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
 
-  constructor(private store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {}
 
-  onPluginSelectionChanged(index: number) {
+  onPluginSelectionChanged({index}: MatTabChangeEvent) {
     const index$ = of(index);
     combineLatest(this.plugins$, index$).subscribe(([plugins, index]) => {
       this.store.dispatch(changePlugin({plugin: plugins[index].id}));
     });
+  }
+
+  onDisabledPluginSelectionChanged(selectChangeEvent: MatSelectChange) {
+    this.store.dispatch(changePlugin({plugin: selectChangeEvent.value}));
   }
 }
