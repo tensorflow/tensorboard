@@ -1187,12 +1187,15 @@ limitations under the License.
       }
       .counterfactual-toggle {
         margin: 4px 4px 4px 6px;
+        padding-top: 4px;
         --paper-toggle-button-checked-bar-color: #81c995;
       }
+      .counterfactual-delta {
+        display: flex;
+        margin-right: 6px;
+      }
       .counterfactual-delta label {
-        font-size: 12px;
-        color: #3c4043;
-        margin-left: 10px;
+        padding-top: 10px;
       }
       .datapoint-button {
         color: #202124;
@@ -1433,12 +1436,12 @@ limitations under the License.
                             title="Minimum distance in inferred value to consider counterfactual"
                             class="counterfactual-delta"
                           >
-                            <label>Delta</label>
                             <paper-slider
                               pin
                               value="{{minCounterfactualValueDist}}"
                               max="{{maxCounterfactualValueDist}}"
                             ></paper-slider>
+                            <label>Delta</label>
                           </div>
                         </template>
                         <paper-dropdown-menu
@@ -1463,7 +1466,7 @@ limitations under the License.
                         </paper-dropdown-menu>
                         <paper-icon-button
                           icon="info-outline"
-                          class="info-icon cf-info-icon no-padding"
+                          class="info-icon no-padding"
                           on-tap="openDialog"
                         >
                         </paper-icon-button>
