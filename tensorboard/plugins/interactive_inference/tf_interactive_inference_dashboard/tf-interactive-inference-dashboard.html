@@ -1489,8 +1489,10 @@ limitations under the License.
                             >
                               For regression, a neighbor point is considered as
                               a different classification if the difference in
-                              infered value is equal or greater than selected
-                              threshold.
+                              inferred value is equal or greater than the
+                              selected delta.<br />
+                              Delta is initialized to the standard deviation of
+                              the inferred values.
                             </template>
                           </div>
                         </paper-dialog>
@@ -3816,12 +3818,22 @@ limitations under the License.
             : val1 == val2;
         },
 
-        adjustCounterfactualValueDistRange_: function(selected, valueStr) {
+        adjustMaxCounterfactualValueDist_: function(selected, valueStr) {
           this.maxCounterfactualValueDist = Math.max(
             this.distanceStats_[valueStr].max -
               this.visdata[selected][valueStr],
             this.visdata[selected][valueStr] - this.distanceStats_[valueStr].min
           );
+        },
+
+        adjustMinCounterfactualValueDist_: function() {
+          const valueStr = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          this.minCounterfactualValueDist = this.distanceStats_[
+            valueStr
+          ].stdDev;
         },
 
         findClosestCounterfactual_: function() {
@@ -3830,10 +3842,12 @@ limitations under the License.
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
-          this.adjustCounterfactualValueDistRange_(
-            selected,
-            modelInferenceValueStr
-          );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              selected,
+              modelInferenceValueStr
+            );
+          }
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
@@ -6098,6 +6112,9 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMinCounterfactualValueDist_();
+          }
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
