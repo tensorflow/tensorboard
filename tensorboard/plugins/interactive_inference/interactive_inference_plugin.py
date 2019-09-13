@@ -79,7 +79,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     self._logdir = context.logdir
     self._has_auth_group = (context.flags and
                             'authorized_groups' in context.flags and
-                            context.flags.authorized_groups is not '')
+                            context.flags.authorized_groups != '')
 
   def get_plugin_apps(self):
     """Obtains a mapping between routes and handlers. Stores the logdir.
