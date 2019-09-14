@@ -128,11 +128,7 @@ class CorePlugin(base_plugin.TBPlugin):
     return http_util.Respond(
         request,
         {
-<<<<<<< HEAD
             'data_location': data_location,
-=======
-            'data_location': self._logdir or self._db_uri,
->>>>>>> 2ff9cf0ee69852b9465e23453699a8cf4dd04ee2
             'window_title': self._window_title,
         },
         'application/json')
