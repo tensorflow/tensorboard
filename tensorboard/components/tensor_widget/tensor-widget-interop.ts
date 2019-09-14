@@ -12,27 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-// Uses `async` pipe.
-import {CommonModule} from '@angular/common';
+import * as tensorWidget from './tensor-widget';
 
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSelectModule} from '@angular/material/select';
-
-import {HeaderComponent} from './containers/header.component';
-import {CoreModule} from '../core/core.module';
-
-@NgModule({
-  declarations: [HeaderComponent],
-  exports: [HeaderComponent],
-  providers: [],
-  imports: [
-    MatToolbarModule,
-    MatTabsModule,
-    MatSelectModule,
-    CommonModule,
-    CoreModule,
-  ],
-})
-export class HeaderModule {}
+// Prevent JSComp to mangle the exported name.
+(window as any)['tensor_widget'] = tensorWidget;

@@ -271,7 +271,7 @@ limitations under the License.
       getMarkerClass: function(index, inferences, modelIndex) {
         return (
           'marker' +
-          (index == inferences.length - 1
+          (inferences != null && index == inferences.length - 1
             ? modelIndex == 0
               ? ' mark-one'
               : ' mark-two'
@@ -281,7 +281,7 @@ limitations under the License.
 
       getRowClass: function(index, inferences, modelIndex) {
         let str = 'row ';
-        if (index == inferences.length - 1) {
+        if (inferences != null && index == inferences.length - 1) {
           str += modelIndex == 0 ? 'dark-row-one' : 'dark-row-two';
         } else {
           str += 'white-row';

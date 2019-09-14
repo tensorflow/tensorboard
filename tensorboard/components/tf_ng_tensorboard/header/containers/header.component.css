@@ -29,9 +29,33 @@ mat-tab-group {
   flex: 0 0 auto;
 }
 
-.mat-tab-group {
+.plugins {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  font-size: 14px;
+  height: 100%;
+  overflow: hidden;
+}
+
+mat-tab-group {
   flex: 1 1 auto;
   overflow: hidden;
+}
+
+mat-form-field {
+  flex: 0 0;
+  /* visually center align with _text_ of the select to the center. */
+  margin-top: 5px;
+  /* default width is 180px */
+  width: 130px;
+}
+
+mat-label,
+mat-select,
+mat-option {
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
 /deep/ .tb-toolbar .mat-tab-header,
@@ -41,5 +65,15 @@ mat-tab-group {
 }
 
 /deep/ .tb-toolbar .mat-tab-label {
+  min-width: 48px; /* default is 160px which is too big for us */
+  padding: 0 12px; /* default is 24px */
   text-transform: uppercase;
+}
+
+/deep/ .tb-toolbar mat-tab-group .mat-tab-header-pagination-disabled {
+  visibility: hidden;
+}
+
+/deep/ .tb-toolbar .mat-tab-disabled {
+  display: none;
 }

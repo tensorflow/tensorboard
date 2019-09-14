@@ -9,6 +9,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tensor_widget",
     srcs = [
+        "tensor-widget.css",
+        "tensor-widget.html",
         ":tensor_widget_binary.js",
     ],
     path = "/tensor-widget",
@@ -19,8 +21,22 @@ tf_web_library(
 
 tf_js_binary(
     name = "tensor_widget_binary",
+    srcs = [
+        "externs.js",
+    ],
     compile = 1,
-    entry_point = ":tensor-widget.ts",
+    entry_point = ":tensor-widget-interop.ts",
+    deps = [
+        ":tensor_widget_binary_lib",
+    ],
+)
+
+tf_ts_library(
+    name = "tensor_widget_binary_lib",
+    srcs = [
+        "tensor-widget-interop.ts",
+    ],
+    tsconfig = ":tsconfig",
     deps = [
         ":tensor_widget_lib",
     ],
