@@ -97,7 +97,7 @@ namespace tf_backend {
         });
 
         it('returns correct value for #environment', () => {
-          assert.equal(router.environment(), 'data/environment');
+          assert.equal(router.environment(), 'data/environment?experiment=');
         });
 
         it('returns correct value for #experiments', () => {
