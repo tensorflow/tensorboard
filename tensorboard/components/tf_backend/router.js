@@ -26,7 +26,11 @@ var tf_backend;
             dataDir = dataDir.slice(0, dataDir.length - 1);
         }
         return {
-            environment: () => createDataPath(dataDir, '/environment'),
+            environment: (experiment) => {
+                const searchParams = new URLSearchParams();
+                searchParams.set('experiment', experiment || '');
+                return createDataPath(dataDir, '/environment', searchParams);
+            },
             experiments: () => createDataPath(dataDir, '/experiments'),
             pluginRoute: (pluginName, route, params) => {
                 return createDataPath(dataDir + '/plugin', `/${pluginName}${route}`, params);

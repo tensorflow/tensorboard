@@ -120,10 +120,15 @@ class CorePlugin(base_plugin.TBPlugin):
       database (depending on which mode TensorBoard is running in).
     * window_title is the title of the TensorBoard web page.
     """
+    if self._data_provider:
+      experiment = request.args.get('experiment', '')
+      data_location = self._data_provider.data_location(experiment)
+    else:
+      data_location = self._logdir or self._db_uri
     return http_util.Respond(
         request,
         {
-            'data_location': self._logdir or self._db_uri,
+            'data_location': data_location,
             'window_title': self._window_title,
         },
         'application/json')

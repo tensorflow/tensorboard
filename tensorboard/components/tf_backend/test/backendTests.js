@@ -88,7 +88,7 @@ var tf_backend;
                     assert.equal(router.runs(), '///data/hello/runs?experiment=');
                 });
                 it('returns correct value for #environment', () => {
-                    assert.equal(router.environment(), 'data/environment');
+                    assert.equal(router.environment(), 'data/environment?experiment=');
                 });
                 it('returns correct value for #experiments', () => {
                     assert.equal(router.experiments(), 'data/experiments');
