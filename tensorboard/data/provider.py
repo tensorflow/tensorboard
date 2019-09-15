@@ -33,6 +33,22 @@ class DataProvider(object):
   downsampling strategies or domain restriction by step or wall time.
   """
 
+  def data_location(self, experiment_id):
+    """Render a human-readable description of the data source.
+
+    For instance, this might return a path to a directory on disk.
+
+    The default implementation always returns the empty string.
+
+    Args:
+      experiment_id: ID of enclosing experiment.
+
+    Returns:
+      A string, which may be empty.
+    """
+    return ""
+
+
   @abc.abstractmethod
   def list_runs(self, experiment_id):
     """List all runs within an experiment.
