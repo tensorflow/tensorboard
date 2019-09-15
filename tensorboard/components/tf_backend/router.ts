@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
   export interface Router {
-    environment: () => string;
+    environment: (experiment?: string) => string;
     experiments: () => string;
     pluginRoute: (
       pluginName: string,
@@ -39,7 +39,11 @@ namespace tf_backend {
       dataDir = dataDir.slice(0, dataDir.length - 1);
     }
     return {
-      environment: () => createDataPath(dataDir, '/environment'),
+      environment: (experiment?: string) => {
+        const searchParams = new URLSearchParams();
+        searchParams.set('experiment', experiment || '');
+        return createDataPath(dataDir, '/environment', searchParams);
+      },
       experiments: () => createDataPath(dataDir, '/experiments'),
       pluginRoute: (
         pluginName: string,

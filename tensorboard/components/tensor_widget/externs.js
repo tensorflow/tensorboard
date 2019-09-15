@@ -12,27 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-// Uses `async` pipe.
-import {CommonModule} from '@angular/common';
+/**
+ * @externs Externs for TensorWidget for interoperability.
+ */
 
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSelectModule} from '@angular/material/select';
+/** @type {!Object} */
+var tensor_widget = {};
 
-import {HeaderComponent} from './containers/header.component';
-import {CoreModule} from '../core/core.module';
+/** @type {!Function} */
+tensor_widget.tensorWidget;
 
-@NgModule({
-  declarations: [HeaderComponent],
-  exports: [HeaderComponent],
-  providers: [],
-  imports: [
-    MatToolbarModule,
-    MatTabsModule,
-    MatSelectModule,
-    CommonModule,
-    CoreModule,
-  ],
-})
-export class HeaderModule {}
+/** @type {!string} */
+tensor_widget.VERSION;
