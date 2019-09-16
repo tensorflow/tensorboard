@@ -205,7 +205,7 @@ limitations under the License.
         }
       }
 
-      .counterfactual-dropdown {
+      .short-dropdown {
         display: inline-block;
         width: 100px;
         min-width: 50px;
@@ -1431,7 +1431,7 @@ limitations under the License.
                           <paper-dropdown-menu
                             label="Model:"
                             no-label-float
-                            class="counterfactual-dropdown"
+                            class="short-dropdown"
                             hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
                           >
                             <paper-listbox
@@ -1580,6 +1580,24 @@ limitations under the License.
                               slot="prefix"
                             ></iron-icon>
                           </paper-input>
+                          <template is="dom-if" if="[[hasAttributions_(attributions)]]">
+                            <div class="control-divider"></div>
+                            <paper-dropdown-menu
+                              label="Feature sort order"
+                              class="short-dropdown"
+                              no-label-float
+                            >
+                              <paper-listbox
+                                slot="dropdown-content"
+                                selected="{{exampleFeatureSortOrder}}"
+                                attr-for-selected="name"
+                              >
+                                <paper-item name="alphabetical">Alphabetical</paper-item>
+                                <paper-item name="attribution">Attributions</paper-item>
+                                <paper-item name="reverse-attribution">Reverse attributions</paper-item>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
+                          </template>
                         </div>
                         <div class="datapoint-right-controls-holder"></div>
                       </div>
@@ -1600,6 +1618,7 @@ limitations under the License.
                             saliency="[[attribution]]"
                             show-saliency
                             readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
+                            sort-order="[[exampleFeatureSortOrder]]"
                           >
                           </vz-example-viewer>
                         </div>
@@ -3643,6 +3662,10 @@ limitations under the License.
             type: Boolean,
             value: true,
           },
+          exampleFeatureSortOrder: {
+            type: String,
+            value: 'attribution'
+          }
         },
 
         observers: [
@@ -5854,6 +5877,10 @@ limitations under the License.
             }
           }
           this.updatedExample = false;
+        },
+
+        hasAttributions_: function(attributions) {
+          return attributions != null && Object.keys(attributions).length != 0;
         },
 
         newAttributions_: function(attributions) {

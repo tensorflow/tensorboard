@@ -181,6 +181,10 @@ namespace vz_example_viewer {
         computed: 'getSeqFeatures(compareExample)',
         observer: 'updateCompareMode',
       },
+      sortOrder: {
+        type: String,
+        value: 'attribution'
+      },
       compareMode: Boolean,
       compareImageInfo: {type: Object, value: {}},
       compareTitle: String,
@@ -188,8 +192,8 @@ namespace vz_example_viewer {
     observers: [
       'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
       'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
-      'setFilteredFeaturesList(featuresList, featureSearchValue, saliency)',
-      'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency)',
+      'setFilteredFeaturesList(featuresList, featureSearchValue, saliency, sortOrder)',
+      'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency, sortOrder)',
     ],
 
     isExpanded: function(featName: string, expandAllFeatures: boolean) {
@@ -313,39 +317,45 @@ namespace vz_example_viewer {
     setFilteredFeaturesList: function(
       featureList: NameAndFeature[],
       searchValue: string,
-      saliency: SaliencyMap
+      saliency: SaliencyMap,
+      sortOrder: string,
     ) {
       this.filteredFeaturesList = [];
       this.filteredFeaturesList = this.getFilteredFeaturesList(
         featureList,
         searchValue,
-        saliency
+        saliency,
+        sortOrder
       );
     },
 
     setFilteredSeqFeaturesList: function(
       seqFeatureList: NameAndFeature[],
       searchValue: string,
-      saliency: SaliencyMap
+      saliency: SaliencyMap,
+      sortOrder: string,
     ) {
       this.filteredSeqFeaturesList = [];
       this.filteredSeqFeaturesList = this.getFilteredFeaturesList(
         seqFeatureList,
         searchValue,
-        saliency
+        saliency,
+        sortOrder
       );
     },
 
     getFilteredFeaturesList: function(
       featureList: NameAndFeature[],
       searchValue: string,
-      saliency: SaliencyMap
+      saliency: SaliencyMap,
+      sortOrder: string
     ) {
       if (featureList == null) {
         return;
       }
       let filtered = featureList;
-      const checkSal = saliency && Object.keys(saliency).length > 0;
+      const checkSal = saliency && Object.keys(saliency).length > 0 &&
+        sortOrder != 'alphabetical';
       // Create a dict of feature names to the total saliency of all
       // its feature values, to sort salient features at the top.
       const saliencyTotals = checkSal
@@ -381,7 +391,7 @@ namespace vz_example_viewer {
             } else {
               const diff = saliencyTotals[b.name] - saliencyTotals[a.name];
               if (diff != 0) {
-                return diff;
+                return (sortOrder == 'attribution' ? diff : -1 * diff);
               }
             }
           }
@@ -461,7 +471,14 @@ namespace vz_example_viewer {
         this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`).style(
           'background',
           this.showSaliency ? colorFn : () => neutralSaliencyColor
-        );
+        ).attr('title', (d: {}, i: number) =>
+            'Attribution: ' +
+            d3.format(".4f")(Array.isArray(val) ? val[i]: val)
+        ).style('color', (d: {}, i: number) => {
+          const num = Array.isArray(val) ? val[i]: val;
+          const percentile = (num - this.minSal) / (this.maxSal - this.minSal);
+          return percentile < .2 || percentile > .8 ? '#fff' : '#3c4043'
+        });
 
         // Color the "more feature values" button with the most extreme saliency
         // of any of the feature values hidden behind the button.
