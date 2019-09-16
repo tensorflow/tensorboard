@@ -653,7 +653,7 @@ def get_eligible_features(examples, num_mutants):
   return features_list
 
 def sort_eligible_features(features_list, chart_data):
-  """Returns a sorted list of JSON objects for each feature in the examples.
+  """Returns a sorted list of objects representing each feature.
 
   The list is sorted by interestingness in terms of the resulting change in
   inference values across feature values, for partial dependence plots.
@@ -669,7 +669,8 @@ def sort_eligible_features(features_list, chart_data):
     an 'interestingness' key with a calculated number for feature feature.
     The list is sorted with the feature with highest interestingness first.
   """
-  for feature in features_list:
+  sorted_features_list = copy.deepcopy(features_list)
+  for feature in sorted_features_list:
     name = feature['name']
     charts = chart_data[name]
     max_measure = 0
@@ -685,9 +686,9 @@ def sort_eligible_features(features_list, chart_data):
               measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
           else:
             # For categorical features, interestingness is the difference
-            # between the min and max Y values in the chart. This is
-            # identical to total Y distance, as the entries in this chart
-            # are sorted by Y value.
+            # between the min and max Y values in the chart, as interestingness
+            # for categorical charts shouldn't depend on the order of items
+            # being charted.
             min_y = float("inf")
             max_y = float("-inf")
             for i in range(len(series)):
@@ -702,7 +703,7 @@ def sort_eligible_features(features_list, chart_data):
     feature['interestingness'] = max_measure
 
   return sorted(
-      features_list, key=lambda x: x['interestingness'], reverse=True)
+      sorted_features_list, key=lambda x: x['interestingness'], reverse=True)
 
 def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
