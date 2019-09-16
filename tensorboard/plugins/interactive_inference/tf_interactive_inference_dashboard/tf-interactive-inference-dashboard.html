@@ -5883,7 +5883,11 @@ limitations under the License.
           for (let i = 0; i < extraOutputs.indices.length; i++) {
             const idx = extraOutputs.indices[i];
             const datapoint = Object.assign({}, this.visdata[idx]);
-            for (let modelNum = 0; modelNum < extraOutputs.extra.length; modelNum++) {
+            for (
+              let modelNum = 0;
+              modelNum < extraOutputs.extra.length;
+              modelNum++
+            ) {
               const keys = Object.keys(extraOutputs.extra[modelNum]);
               for (let j = 0; j < keys.length; j++) {
                 const key = keys[j];
