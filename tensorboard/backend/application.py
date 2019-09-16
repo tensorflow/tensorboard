@@ -302,14 +302,14 @@ class TensorBoardWSGI(object):
                              'trailing wildcards are supported '
                              '(i.e., `/.../*`)' %
                              (plugin.plugin_name, path))
-          unordered_prefix_routes[path] = _handling_errors(app)
+          unordered_prefix_routes[path] = app
         else:
           if '*' in path:
             raise ValueError('Plugin %r handles invalid route %r: Only '
                              'trailing wildcards are supported '
                              '(i.e., `/.../*`)' %
                              (plugin.plugin_name, path))
-          self.exact_routes[path] = _handling_errors(app)
+          self.exact_routes[path] = app
 
     # Wildcard routes will be checked in the given order, so we sort them
     # longest to shortest so that a more specific route will take precedence
@@ -652,18 +652,3 @@ def make_plugin_loader(plugin_spec):
     if issubclass(plugin_spec, base_plugin.TBPlugin):
       return base_plugin.BasicLoader(plugin_spec)
   raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
-
-
-def _handling_errors(wsgi_app):
-  def wrapper(environ, start_response):
-    try:
-      return wsgi_app(environ, start_response)
-    except errors.PublicError as e:
-      request = wrappers.Request(environ)
-      error_app = http_util.Respond(
-          request, str(e), "text/plain", code=e.http_code
-      )
-      return error_app(environ, start_response)
-    # Let other exceptions be handled by the server, as an opaque
-    # internal server error.
-  return wrapper
