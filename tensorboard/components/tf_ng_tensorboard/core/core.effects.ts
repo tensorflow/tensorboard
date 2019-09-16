@@ -34,7 +34,7 @@ export class CoreEffects {
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
-  loadPluginsListing$ = createEffect(() =>
+  readonly loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(coreLoaded),
       flatMap(() =>
@@ -50,5 +50,8 @@ export class CoreEffects {
     )
   );
 
-  constructor(private actions$: Actions, private coreService: CoreService) {}
+  constructor(
+    private readonly actions$: Actions,
+    private readonly coreService: CoreService
+  ) {}
 }
