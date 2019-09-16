@@ -3266,6 +3266,15 @@ limitations under the License.
             observer: 'newInferences_',
             value: () => ({}),
           },
+          // Extra outputs from inference. A dict with two fields: 'indices' and
+          // 'extra'. Indices contains a list of example indices that
+          // these new outputs apply to. Extra contains a list of extra output
+          // objects, one for each model being inferred. The object for each
+          // model is a dict of output data names to lists of the output values
+          // for that data, one entry for each example that was inferred upon.
+          // 'attributions' is one of these output data which is parsed into the
+          // 'attributions' object defined below as a special case. Any other extra
+          // data provided are displayed by WIT with each example.
           extraOutputs: {
             type: Object,
             observer: 'newExtraOutputs_',
@@ -5867,9 +5876,9 @@ limitations under the License.
         newExtraOutputs_: function(extraOutputs) {
           // Set attributions from the extra outputs, if available.
           const attributions = [];
-          for (let i = 0; i < extraOutputs.extra.length; i++) {
-            if ('attributions' in extraOutputs.extra[i]) {
-              attributions.push(extraOutputs.extra[i].attributions);
+          for (let modelNum = 0; modelNum < extraOutputs.extra.length; modelNum++) {
+            if ('attributions' in extraOutputs.extra[modelNum]) {
+              attributions.push(extraOutputs.extra[modelNum].attributions);
             }
           }
           if (attributions.length > 0) {
