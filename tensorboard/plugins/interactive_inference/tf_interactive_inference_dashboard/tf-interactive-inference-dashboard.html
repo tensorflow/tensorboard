@@ -1197,6 +1197,9 @@ limitations under the License.
       .counterfactual-delta label {
         padding-top: 10px;
       }
+      .counterfactual-delta paper-slider {
+        height: 40px;
+      }
       .datapoint-button {
         color: #202124;
         background: #fde293;
@@ -3818,24 +3821,25 @@ limitations under the License.
         isSameInferenceClass_: function(val1, val2) {
           return this.isRegression_(this.modelType)
             ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
-            : val1 == val2;
+            : val1 === val2;
         },
 
-        adjustMaxCounterfactualValueDist_: function(selected, valueStr) {
+        adjustMaxCounterfactualValueDist_: function(selected, valueName) {
           this.maxCounterfactualValueDist = Math.max(
-            this.distanceStats_[valueStr].max -
-              this.visdata[selected][valueStr],
-            this.visdata[selected][valueStr] - this.distanceStats_[valueStr].min
+            this.distanceStats_[valueName].max -
+              this.visdata[selected][valueName],
+            this.visdata[selected][valueName] -
+              this.distanceStats_[valueName].min
           );
         },
 
         adjustMinCounterfactualValueDist_: function() {
-          const valueStr = this.strWithModelName_(
+          const valueName = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
           this.minCounterfactualValueDist = this.distanceStats_[
-            valueStr
+            valueName
           ].stdDev;
         },
 
@@ -3856,7 +3860,7 @@ limitations under the License.
           for (let i = 0; i < this.visdata.length; i++) {
             // Skip the selected example itself and examples with the same inference class.
             if (
-              i == selected ||
+              i === selected ||
               this.isSameInferenceClass_(
                 this.visdata[selected][modelInferenceValueStr],
                 this.visdata[i][modelInferenceValueStr]
@@ -6149,14 +6153,14 @@ limitations under the License.
             const feature = featureStats.name;
             this.distanceStats_[feature] = {};
             if (featureStats.numStats) {
-              // For numeric features, store standard deviation, min and max.
+              // Numeric features:
               this.distanceStats_[feature] = {
                 stdDev: featureStats.numStats.stdDev,
                 min: featureStats.numStats.min,
                 max: featureStats.numStats.max,
               };
             } else {
-              // For categorical features, calculate and store  the probability
+              // Categorical features: calculate and store the probability
               // that any two feature values across all examples are the same.
               let probSameValue = 0;
               const buckets =
