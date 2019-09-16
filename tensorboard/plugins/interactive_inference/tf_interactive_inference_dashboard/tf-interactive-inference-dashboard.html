@@ -3798,7 +3798,7 @@ limitations under the License.
         refreshSelectedDatapoint_: function() {
           const temp = this.selectedExampleAndInference;
           this.selectedExampleAndInference = null;
-          this.selectedExampleAndInference = temp
+          this.selectedExampleAndInference = temp;
         },
 
         findClosestCounterfactual_: function() {
@@ -5876,15 +5876,19 @@ limitations under the License.
         newExtraOutputs_: function(extraOutputs) {
           // Set attributions from the extra outputs, if available.
           const attributions = [];
-          for (let modelNum = 0; modelNum < extraOutputs.extra.length; modelNum++) {
+          for (
+            let modelNum = 0;
+            modelNum < extraOutputs.extra.length;
+            modelNum++
+          ) {
             if ('attributions' in extraOutputs.extra[modelNum]) {
               attributions.push(extraOutputs.extra[modelNum].attributions);
             }
           }
           if (attributions.length > 0) {
             this.attributions = {
-              'indices': extraOutputs.indices,
-              'attributions': attributions,
+              indices: extraOutputs.indices,
+              attributions: attributions,
             };
           }
 
@@ -5916,15 +5920,17 @@ limitations under the License.
                 if (!Array.isArray(val)) {
                   val = [val];
                 }
-                const isString = val.length > 0 &&
-                    (typeof val[0] == 'string' || val[0] instanceof String);
+                const isString =
+                  val.length > 0 &&
+                  (typeof val[0] == 'string' || val[0] instanceof String);
                 const datapointKey = this.strWithModelName_(key, modelNum);
                 const exampleJsonString = JSON.stringify(
                   this.examplesAndInferences[idx].example
                 );
                 const copiedExample = JSON.parse(exampleJsonString);
-                copiedExample.features.feature[datapointKey] = isString ?
-                    {bytesList: {value: val}} : {floatList: {value: val}};
+                copiedExample.features.feature[datapointKey] = isString
+                  ? {bytesList: {value: val}}
+                  : {floatList: {value: val}};
                 this.examplesAndInferences[idx].example = copiedExample;
               }
             }
