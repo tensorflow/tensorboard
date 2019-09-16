@@ -13,7 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {isIntegerDType, isFloatDType} from './dtype-utils';
+import {
+  isBooleanDType,
+  isFloatDType,
+  isIntegerDType,
+  isStringDType,
+} from './dtype-utils';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -21,7 +26,12 @@ import {
   areSlicingSpecsCompatible,
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
-import {formatTensorName, numericValueToString} from './string-utils';
+import {
+  booleanValueToDisplayString,
+  formatTensorName,
+  numericValueToString,
+  stringValueToDisplayString,
+} from './string-utils';
 import {
   MoveDirection,
   TensorView,
@@ -31,6 +41,8 @@ import {
 } from './types';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
+
+type ValueClass = 'numeric' | 'boolean' | 'string';
 
 /**
  * Implementation of TensorWidget.
@@ -95,7 +107,9 @@ export class TensorWidgetImpl implements TensorWidget {
     this.renderHeader();
     if (
       !isIntegerDType(this.tensorView.spec.dtype) &&
-      !isFloatDType(this.tensorView.spec.dtype)
+      !isFloatDType(this.tensorView.spec.dtype) &&
+      !isBooleanDType(this.tensorView.spec.dtype) &&
+      !isStringDType(this.tensorView.spec.dtype)
     ) {
       throw new Error(
         `Rendering dtype ${this.tensorView.spec.dtype} is not supported yet.`
@@ -354,6 +368,9 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.topRuler == null) {
       this.topRuler = document.createElement('div');
       this.topRuler.classList.add('tenesor-widget-top-ruler');
+      // Force nowrap as this is important to ensure the correct number
+      // of columns.
+      this.topRuler.style.whiteSpace = 'nowrap';
       this.valueSection.appendChild(this.topRuler);
       this.topRulerTicks = [];
 
@@ -526,8 +543,12 @@ export class TensorWidgetImpl implements TensorWidget {
           this.renderSelection();
         });
         valueDiv.addEventListener('mouseenter', () => {
-          const detailedValue = valueDiv.getAttribute(DETAILED_VALUE_ATTR_KEY);
-          if (!detailedValue) {
+          // On mouse hover, show a tooltip that displays the element's
+          // value in a more detailed fashion.
+          const detailedValueTooltipString = valueDiv.getAttribute(
+            DETAILED_VALUE_ATTR_KEY
+          );
+          if (detailedValueTooltipString === null) {
             return;
           }
           const rootRect = this.rootElement.getBoundingClientRect();
@@ -537,7 +558,7 @@ export class TensorWidgetImpl implements TensorWidget {
           const indices = this.calculateIndices(i, j);
           this.drawValueTooltip(
             indices,
-            detailedValue,
+            detailedValueTooltipString,
             valueRect.top - rootRect.top + valueHeight * 0.8,
             valueRect.left - rootRect.left + valueWidth * 0.75
           );
@@ -606,53 +627,74 @@ export class TensorWidgetImpl implements TensorWidget {
   private async renderValueDivs() {
     const numRows = this.valueDivs.length;
     const numCols = this.valueDivs[0].length;
-    const values = await this.tensorView.view(this.slicingSpec);
-    // TODO(cais): Once health pills are available, use the min / max values to determine
-    // # of decimal places.
+    let values = await this.tensorView.view(this.slicingSpec);
     if (this.rank === 0) {
-      const valueDiv = this.valueDivs[0][0];
-      valueDiv.textContent = numericValueToString(
-        values as number,
-        isIntegerDType(this.tensorView.spec.dtype)
-      );
-      valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(values));
+      values = [[values as number]];
     } else if (this.rank === 1) {
-      for (let i = 0; i < numRows; ++i) {
-        const valueDiv = this.valueDivs[i][0];
-        if (i < (values as number[]).length) {
-          const value = (values as number[])[i];
-          valueDiv.textContent = numericValueToString(
-            value,
-            isIntegerDType(this.tensorView.spec.dtype)
+      values = (values as number[]).map((v) => [v]);
+    }
+
+    const valueClass = this.getValueClass();
+    for (let i = 0; i < numRows; ++i) {
+      for (let j = 0; j < numCols; ++j) {
+        const valueDiv = this.valueDivs[i][j];
+        if (
+          i < (values as number[][]).length &&
+          j < (values as number[][])[i].length
+        ) {
+          const value = (values as number[][] | boolean[][] | string[][])[i][j];
+          if (valueClass === 'numeric') {
+            // TODO(cais): Once health pills are available, use the min/max
+            // values to determine the number of decimal places.
+            valueDiv.textContent = numericValueToString(
+              value as number,
+              isIntegerDType(this.tensorView.spec.dtype)
+            );
+          } else if (valueClass === 'boolean') {
+            valueDiv.textContent = booleanValueToDisplayString(
+              value as boolean
+            );
+          } else if (valueClass === 'string') {
+            valueDiv.textContent = stringValueToDisplayString(value as string);
+          }
+          // The attribute set below will be rendered in a tooltip that appears
+          // on mouse hovering.
+          valueDiv.setAttribute(
+            DETAILED_VALUE_ATTR_KEY,
+            this.getDetailedValueTooltipString(value)
           );
-          valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
         } else {
           valueDiv.textContent = '';
           valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
         }
       }
-    } else if (this.rank >= 2) {
-      for (let i = 0; i < numRows; ++i) {
-        for (let j = 0; j < numCols; ++j) {
-          const valueDiv = this.valueDivs[i][j];
-          if (
-            i < (values as number[][]).length &&
-            j < (values as number[][])[i].length
-          ) {
-            const value = (values as number[][])[i][j];
-            valueDiv.textContent = numericValueToString(
-              value,
-              isIntegerDType(this.tensorView.spec.dtype)
-            );
-            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, String(value));
-          } else {
-            valueDiv.textContent = '';
-            valueDiv.setAttribute(DETAILED_VALUE_ATTR_KEY, '');
-          }
-        }
-      }
     }
+
     this.renderSelection();
+  }
+
+  /**
+   * Get a "detailed" string representation of the value of the corresponding
+   * tensor element. It is detailed in the sense that it has as many
+   * decimal points as supported by JavaScript's string representation
+   * of numbers, in the case of float dtypes. The only exceptions
+   * are very long string elements, which we still truncate in order
+   * to avoid overtaxing the DOM.
+   */
+  private getDetailedValueTooltipString(
+    value: boolean | number | string
+  ): string {
+    if (this.getValueClass() === 'boolean') {
+      const shortForm = false;
+      return booleanValueToDisplayString(value as boolean, shortForm);
+    } else if (this.getValueClass() === 'string') {
+      const lengthLimit = 500;
+      return `Length-${
+        (value as string).length
+      } string: "${stringValueToDisplayString(value as string, lengthLimit)}"`;
+    } else {
+      return String(value);
+    }
   }
 
   /**
@@ -747,13 +789,14 @@ export class TensorWidgetImpl implements TensorWidget {
   /**
    * Draw tooltip for detailed indices and value.
    * @param indices Indices of the element for which the tooltip is to be drawn.
-   * @param value Value of the element.
+   * @param detailedValueString A string describing the value in a detailed way,
+   *   e.g., with sufficient number of decimal points for a float number value.
    * @param top Top coordinate (in pixels) of the tooltip.
    * @param left Left coordinate (in pixels) of the tooltip.
    */
   private drawValueTooltip(
     indices: number[],
-    value: number | boolean | string,
+    detailedValueString: string,
     top: number,
     left: number
   ) {
@@ -773,9 +816,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
     const valueDiv = document.createElement('div');
     valueDiv.classList.add('tensor-widget-value-tooltip-value');
-    valueDiv.textContent = `${value}`;
-    this.valueTooltip.appendChild(valueDiv);
+    valueDiv.textContent = detailedValueString;
 
+    this.valueTooltip.appendChild(valueDiv);
     this.valueTooltip.style.top = `${top}px`;
     this.valueTooltip.style.left = `${left}px`;
     this.valueTooltip.style.display = 'block';
@@ -945,5 +988,16 @@ export class TensorWidgetImpl implements TensorWidget {
 
   async navigateToIndices(indices: number[]) {
     throw new Error('navigateToIndices() is not implemented yet.');
+  }
+
+  private getValueClass(): ValueClass {
+    const dtype = this.tensorView.spec.dtype;
+    if (isIntegerDType(dtype) || isFloatDType(dtype)) {
+      return 'numeric';
+    } else if (isBooleanDType(dtype)) {
+      return 'boolean';
+    } else {
+      return 'string';
+    }
   }
 }

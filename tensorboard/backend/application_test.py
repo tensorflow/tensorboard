@@ -185,6 +185,23 @@ class HandlingErrorsTest(tb_test.TestCase):
       response = server.get('/')
     self.assertEqual(str(cm.exception), 'something borked internally')
 
+<<<<<<< HEAD
+=======
+  def test_passes_through_non_wsgi_args(self):
+    class C(object):
+      @application._handling_errors
+      def __call__(self, environ, start_response):
+        start_response('200 OK', [('Content-Type', 'text/html')])
+        yield b'All is well'
+
+    app = C()
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    response = server.get('/')
+    self.assertEqual(response.get_data(), b'All is well')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.headers.get('Content-Type'), 'text/html')
+
+>>>>>>> 610ad0924b915592ecedad226e6eb98a6b4bc82a
 
 class ApplicationTest(tb_test.TestCase):
   def setUp(self):

@@ -51,37 +51,9 @@ namespace tf_debugger_dashboard {
         getStridedSlicing(shape[1], maxElements2D) +
         ']'
       );
-    } else if (shape.length === 3) {
-      return (
-        '[0, ' +
-        getStridedSlicing(shape[1], maxElements2D) +
-        ', ' +
-        getStridedSlicing(shape[2], maxElements2D) +
-        ']'
-      );
-    } else if (shape.length === 4) {
-      // Assume NHWC as the default.
-      return (
-        '[0, ' +
-        getStridedSlicing(shape[1], maxElements2D) +
-        ', ' +
-        getStridedSlicing(shape[2], maxElements2D) +
-        ', 0]'
-      );
     } else {
-      let slicing = '[';
-      for (let i = 0; i < shape.length; ++i) {
-        if (i < shape.length - 2) {
-          slicing += '0';
-        } else {
-          slicing += getStridedSlicing(shape[i], maxElements2D);
-        }
-        if (i < shape.length - 1) {
-          slicing += ', ';
-        }
-      }
-      slicing += ']';
-      return slicing;
+      // 3D+ tensor: Leave it to the slicing UI of tensor widget.
+      return null;
     }
   }
 

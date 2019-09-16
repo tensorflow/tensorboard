@@ -328,3 +328,7 @@ For TensorFlow GPU support, use the `witwidget-gpu` package instead of `witwidge
 Note that you may need to run `!sudo jupyter labextension ...` commands depending on your notebook setup.
 
 Use of WIT after installation is the same as with the other notebook installations.
+
+## How can I help develop it?
+
+Check out the [developement guide](./DEVELOPMENT.md).

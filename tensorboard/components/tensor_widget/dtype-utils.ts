@@ -35,3 +35,13 @@ export function isFloatDType(dtype: string): boolean {
     dtype.match(/^bfloat[0-9]+$/) !== null
   );
 }
+
+/** Determine if a data type is a boolean type. */
+export function isBooleanDType(dtype: string): boolean {
+  return dtype.toLowerCase() === 'bool' || dtype.toLowerCase() === 'boolean';
+}
+
+/** Determine if a data type is a string type. */
+export function isStringDType(dtype: string): boolean {
+  return dtype.toLowerCase() === 'str' || dtype.toLowerCase() === 'string';
+}
