@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import atexit
 import collections
+import contextlib
 import json
 import os
 import re
@@ -37,6 +38,7 @@ from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-o
 
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
@@ -150,6 +152,22 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
         multiplexer, path_to_run, reload_interval, flags.reload_task)
   return TensorBoardWSGIApp(
       flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
+
+
+def _handling_errors(wsgi_app):
+  def wrapper(*args):
+    (environ, start_response) = (args[-2], args[-1])
+    try:
+      return wsgi_app(*args)
+    except errors.PublicError as e:
+      request = wrappers.Request(environ)
+      error_app = http_util.Respond(
+          request, str(e), "text/plain", code=e.http_code
+      )
+      return error_app(environ, start_response)
+    # Let other exceptions be handled by the server, as an opaque
+    # internal server error.
+  return wrapper
 
 
 def TensorBoardWSGIApp(
@@ -371,6 +389,7 @@ class TensorBoardWSGI(object):
       response[plugin.plugin_name] = output_metadata
     return http_util.Respond(request, response, 'application/json')
 
+  @_handling_errors
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
 
