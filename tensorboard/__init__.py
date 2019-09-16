@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard import errors  # public export
 from tensorboard import lazy
 from tensorboard import version
 
@@ -65,6 +64,12 @@ from tensorboard import version
 #
 # See <https://github.com/tensorflow/tensorboard/issues/1989> for
 # additional discussion.
+
+
+@lazy.lazy_load('tensorboard.errors')
+def errors():
+  import importlib  # pylint: disable=g-import-not-at-top
+  return importlib.import_module('tensorboard.errors')
 
 
 @lazy.lazy_load('tensorboard.notebook')
