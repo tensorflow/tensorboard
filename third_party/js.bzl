@@ -175,12 +175,12 @@ def tensorboard_js_workspace():
   web_library_external(
       name = "com_lodash",
       licenses = ["notice"],  # MIT
-      sha256 = "6c5fa80d0fa9dc4eba634ab042404ff7c162dcb4cfe3473338801aeca0042285",
+      sha256 = "4e6dfe3a27e43891e4b83cea37979cc187a37e833a8566566738e15a359f9d4b",
       urls = [
-          "http://mirror.tensorflow.org/github.com/lodash/lodash/archive/4.17.5.tar.gz",
-          "https://github.com/lodash/lodash/archive/4.17.5.tar.gz",
+          "http://mirror.tensorflow.org/github.com/lodash/lodash/archive/4.17.15.tar.gz",
+          "https://github.com/lodash/lodash/archive/4.17.15.tar.gz",
       ],
-      strip_prefix = "lodash-4.17.5",
+      strip_prefix = "lodash-4.17.15",
       path = "/lodash",
       srcs = ["lodash.js"],
       extra_build_file_content = "exports_files([\"LICENSE\"])",
