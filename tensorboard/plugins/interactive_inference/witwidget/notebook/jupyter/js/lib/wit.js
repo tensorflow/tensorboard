@@ -155,9 +155,9 @@ var WITView = widgets.DOMWidgetView.extend({
     const inferences = this.model.get('inferences');
     this.view_.labelVocab = inferences['label_vocab'];
     this.view_.inferences = inferences['inferences'];
-    this.view_.attributions = {
+    this.view_.extraOutputs = {
       indices: this.view_.inferences.indices,
-      attributions: inferences['attributions'],
+      extra: inferences['extra_outputs'],
     };
   },
   eligibleFeaturesChanged: function() {

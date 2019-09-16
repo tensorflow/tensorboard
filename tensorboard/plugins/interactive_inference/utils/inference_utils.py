@@ -613,12 +613,12 @@ def get_example_features(example):
 
 def run_inference_for_inference_results(examples, serving_bundle):
   """Calls servo and wraps the inference results."""
-  (inference_result_proto, attributions) = run_inference(
+  (inference_result_proto, extra_results) = run_inference(
     examples, serving_bundle)
   inferences = wrap_inference_results(inference_result_proto)
   infer_json = json_format.MessageToJson(
     inferences, including_default_value_fields=True)
-  return json.loads(infer_json), attributions
+  return json.loads(infer_json), extra_results
 
 def get_eligible_features(examples, num_mutants):
   """Returns a list of JSON objects for each feature in the examples.
@@ -740,8 +740,8 @@ def run_inference(examples, serving_bundle):
 
   Returns:
     A tuple with the first entry being the ClassificationResponse or
-    RegressionResponse proto and the second entry being a list of the
-    attributions for each example, or None if no attributions exist.
+    RegressionResponse proto and the second entry being a dictionary of extra
+    data for each example, such as attributions, or None if no data exists.
   """
   batch_size = 64
   if serving_bundle.estimator and serving_bundle.feature_spec:
@@ -767,14 +767,16 @@ def run_inference(examples, serving_bundle):
     # If custom_predict_fn is provided, pass examples directly for local
     # inference.
     values = serving_bundle.custom_predict_fn(examples)
-    attributions = None
+    extra_results = None
     # If the custom prediction function returned a dict, then parse out the
-    # prediction scores and the attributions. If it is just a list, then the
-    # results are the prediction results without attributions.
+    # prediction scores. If it is just a list, then the results are the
+    # prediction results without attributions or other data.
     if isinstance(values, dict):
-      attributions = values['attributions']
-      values = values['predictions']
-    return (common_utils.convert_prediction_values(values, serving_bundle),
-            attributions)
+      preds = values.pop('predictions')
+      extra_results = values
+    else:
+      preds = values
+    return (common_utils.convert_prediction_values(preds, serving_bundle),
+            extra_results)
   else:
     return (platform_utils.call_servo(examples, serving_bundle), None)
