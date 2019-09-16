@@ -12,18 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+/**
+ * @externs Externs for TensorWidget for interoperability.
+ */
 
-import {PluginsListing} from '../types/api';
+/** @type {!Object} */
+var tensor_widget = {};
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+/** @type {!Function} */
+tensor_widget.tensorWidget;
 
-@Injectable()
-export class CoreService {
-  constructor(private readonly http: HttpClient) {}
-
-  fetchPluginsListing() {
-    return this.http.get<PluginsListing>('data/plugins_listing');
-  }
-}
+/** @type {!string} */
+tensor_widget.VERSION;

@@ -1,3 +1,55 @@
+# Release 1.15.0
+
+The 1.15 minor series tracks TensorFlow 1.15.
+
+## Features
+- Embeddings projector now shows sprite images in the nearest neighbors list
+  (#2543) - thanks @beasteers
+- When recording hyperparameters, the trial ID can now be customized, for easier
+  integration with existing tuner systems (#2442)
+- Improvements to Colab and Jupyter notebook integration:
+  - The `TENSORBOARD_BINARY` environment variable can now be set to invoke a
+    non-default `tensorboard` binary (#2386)
+  - Error messages are now clearer when the TensorBoard binary fails to launch
+    (#2395)
+  - The `%tensorboard` magic no longer spams log messages when a different
+    version of TensorBoard is already running on the same machine (#2470)
+  - The `%tensorboard` magic can now be used in Jupyter notebooks running on
+    hosts other than `localhost` (#2407)
+- What-If Tool improvements:
+  - Errors running inference are now surfaced in the What-If Tool UI (#2414)
+  - Median error stats are now displayed in addition to mean error stats (#2434)
+- Mesh plugin improvements:
+  - Now compatible with TensorFlow 2.0 via a new `summary_v2` module (#2443)
+  - The number of vertices in the mesh can now be dynamic (#2373)
+- Profile dashboard improvements:
+  - Wasted time now appears in the node table, and can be used as a sort key
+    (#2525)
+  - Memory bandwidth utilization now appears in the dashboard header (#2525)
+- Improvements for plugin developers:
+  - Plugins can now be rendered in an iframe whose source is served from the
+    plugin backend, eliminating the need to bundle a frontend with the
+    TensorBoard binary
+  - Plugins can now be discovered dynamically and loaded at runtime, by defining
+    a `tensorboard_plugins` entry point
+  - See our [example dynamically loaded plugin][example-plugin] for a plugin to
+    use as a starting point, plus documentation
+  - TensorBoard now uses Polymer 2.7 (#2392, et al.)
+
+[example-plugin]: https://github.com/tensorflow/tensorboard/tree/1.15/tensorboard/examples/plugins/example_basic#readme
+
+## Bug fixes
+- #2614 - “Toggle All Runs” button now behaves correctly on the first click when
+  many runs are loaded (PR #2633)
+- Scalar charts should no longer “become tiny” on certain kinds of rendering
+  failures (PR #2605)
+- #2028 - TensorBoard now logs less verbosely with Werkzeug 0.15.0 and up; it
+  now behaves the same across Werkzeug versions (PR #2383)
+- The What-If Tool can now properly compare two regression models in the initial
+  Facets Dive view (PR #2414)
+- Embedding projector metadata view now wraps long strings correctly (PR #2198)
+
+
 # Release 1.14.0
 
 ## Features

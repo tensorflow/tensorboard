@@ -827,12 +827,11 @@ namespace vz_example_viewer {
     },
 
     /**
-     * From an event, finds the feature, value list index and sequence number
-     * that the event corresponds to.
+     * From an element, finds the feature, value list index and sequence number
+     * that the element corresponds to.
      */
-    getDataFromEvent: function(event: Event): DataFromControl {
-      let elem = event.target as HTMLElementWithData;
-      // Get the control that contains the event target. The control will have its
+    getDataFromElem: function(elem: HTMLElementWithData): DataFromControl {
+      // Get the control that contains the target data. The control will have its
       // data-feature attribute set.
       while (elem.dataFeature == null) {
         if (!elem.parentElement) {
@@ -845,6 +844,14 @@ namespace vz_example_viewer {
         valueIndex: elem.dataIndex,
         seqNum: elem.dataSeqNum,
       };
+    },
+
+    /**
+     * From an event, finds the feature, value list index and sequence number
+     * that the event corresponds to.
+     */
+    getDataFromEvent: function(event: Event): DataFromControl {
+      return this.getDataFromElem(event.target);
     },
 
     /** Gets the Feature object corresponding to the provided DataFromControl. */
@@ -1617,7 +1624,7 @@ namespace vz_example_viewer {
         }
       }
       if (inputElem) {
-        inputElem.querySelector('input').click();
+        inputElem.shadowRoot.querySelector('input').click();
       }
     },
 
@@ -1625,11 +1632,12 @@ namespace vz_example_viewer {
     handleFileSelect: function(event: Event, self: any) {
       event.stopPropagation();
       event.preventDefault();
+      const target = event.target;
       const reader = new FileReader();
       const eventAny = event as any;
       const files = eventAny.dataTransfer
         ? eventAny.dataTransfer.files
-        : eventAny.target.files;
+        : eventAny.target.inputElement.inputElement.files;
       if (files.length === 0) {
         return;
       }
@@ -1644,7 +1652,7 @@ namespace vz_example_viewer {
           const encodedImageData = reader.result.substring(index);
           const cc = self.decodedStringToCharCodes(atob(encodedImageData));
 
-          const data = self.getDataFromEvent(event);
+          const data = self.getDataFromElem(target);
           const feat = self.getFeatureFromData(data);
           const values = self.getValueListFromData(data);
           if (feat) {

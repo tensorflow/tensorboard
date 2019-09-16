@@ -18,6 +18,7 @@ import {CommonModule} from '@angular/common';
 
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSelectModule} from '@angular/material/select';
 
 import {HeaderComponent} from './containers/header.component';
 import {CoreModule} from '../core/core.module';
@@ -26,6 +27,12 @@ import {CoreModule} from '../core/core.module';
   declarations: [HeaderComponent],
   exports: [HeaderComponent],
   providers: [],
-  imports: [MatToolbarModule, MatTabsModule, CommonModule, CoreModule],
+  imports: [
+    MatToolbarModule,
+    MatTabsModule,
+    MatSelectModule,
+    CommonModule,
+    CoreModule,
+  ],
 })
 export class HeaderModule {}
