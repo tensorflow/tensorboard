@@ -1249,6 +1249,12 @@ limitations under the License.
         --paper-toggle-button-checked-button-color: white;
         --paper-toggle-button-label-color: #3c4043;
       }
+      #attributionlegend {
+        width: 160px;
+        height: 32px;
+        margin-top: 8px;
+        margin-right: 8px;
+      }
     </style>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <paper-dialog
@@ -1580,7 +1586,10 @@ limitations under the License.
                               slot="prefix"
                             ></iron-icon>
                           </paper-input>
-                          <template is="dom-if" if="[[hasAttributions_(attributions)]]">
+                          <div
+                            class="flex"
+                            hidden="[[!hasAttributions_(attributions)]]"
+                          >
                             <div class="control-divider"></div>
                             <paper-dropdown-menu
                               label="Feature sort order"
@@ -1592,12 +1601,19 @@ limitations under the License.
                                 selected="{{exampleFeatureSortOrder}}"
                                 attr-for-selected="name"
                               >
-                                <paper-item name="alphabetical">Alphabetical</paper-item>
-                                <paper-item name="attribution">Attributions</paper-item>
-                                <paper-item name="reverse-attribution">Reverse attributions</paper-item>
+                                <paper-item name="alphabetical"
+                                  >Alphabetical</paper-item
+                                >
+                                <paper-item name="attribution"
+                                  >Attributions</paper-item
+                                >
+                                <paper-item name="reverse-attribution"
+                                  >Reverse attributions</paper-item
+                                >
                               </paper-listbox>
                             </paper-dropdown-menu>
-                          </template>
+                            <svg id="attributionlegend"></svg>
+                          </div>
                         </div>
                         <div class="datapoint-right-controls-holder"></div>
                       </div>
@@ -1619,6 +1635,9 @@ limitations under the License.
                             show-saliency
                             readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
                             sort-order="[[exampleFeatureSortOrder]]"
+                            min-sal="[[minSal]]"
+                            max-sal="[[maxSal]]"
+                            colors="[[saliencyColorScale]]"
                           >
                           </vz-example-viewer>
                         </div>
@@ -3226,6 +3245,14 @@ limitations under the License.
     const attributionSparseKeySuffix = '_keys';
     const attributionSparseValueSuffix = '_values';
 
+    // Colors for the saliency color scale.
+    const posSaliencyColor = '#007B83';
+    const negSaliencyColor = '#FF847C';
+    const neutralSaliencyColor = '#fff';
+    const COLOR_INTERPOLATOR = d3.interpolateRgb;
+    const LEGEND_WIDTH_PX = 160;
+    const LEGEND_HEIGHT_PX = 8;
+
     function deleteElement(elt) {
       if (elt && elt.parentElement) {
         elt.parentElement.removeChild(elt);
@@ -3305,6 +3332,9 @@ limitations under the License.
             type: Object,
             observer: 'newAttributions_',
           },
+          minSal: {type: Number, value: 0},
+          maxSal: {type: Number, value: 0},
+          saliencyColorScale: Object,
           // Examples and their inferences merged into a single list.
           // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
           examplesAndInferences: {
@@ -3664,8 +3694,8 @@ limitations under the License.
           },
           exampleFeatureSortOrder: {
             type: String,
-            value: 'attribution'
-          }
+            value: 'attribution',
+          },
         },
 
         observers: [
@@ -5880,11 +5910,21 @@ limitations under the License.
         },
 
         hasAttributions_: function(attributions) {
-          return attributions != null && Object.keys(attributions).length != 0;
+          console.log(attributions);
+          return (
+            attributions != null &&
+            Object.keys(attributions.attributions).length != 0 &&
+            attributions.attributions[0] != null
+          );
         },
 
         newAttributions_: function(attributions) {
-          if (Object.keys(attributions).length == 0) {
+          console.log('newattrs');
+          console.log(attributions);
+          if (
+            Object.keys(attributions.attributions).length == 0 &&
+            attributions.attributions[0] != null
+          ) {
             return;
           }
           for (let i = 0; i < attributions.indices.length; i++) {
@@ -5904,6 +5944,7 @@ limitations under the License.
               // the attributions for the sparse keys in the first array.
               // Otherwise the attribution is a single value or list and can be
               // used as such.
+              let attribKey = attributionPrefix + keys[j];
               if (
                 Array.isArray(attribs[keys[j]]) &&
                 attribs[keys[j]].length == 2 &&
@@ -5912,18 +5953,145 @@ limitations under the License.
                 const attribSparseKeyKey =
                   attributionPrefix + keys[j] + attributionSparseKeySuffix;
                 datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
-                const attribSparseValueKey =
+                attribKey =
                   attributionPrefix + keys[j] + attributionSparseValueSuffix;
-                datapoint[attribSparseValueKey] = attribs[keys[j]][1];
+                datapoint[attribKey] = attribs[keys[j]][1];
               } else {
-                const attribKey = attributionPrefix + keys[j];
                 datapoint[attribKey] = attribs[keys[j]];
+              }
+              let newAttributions = Array.isArray(datapoint[attribKey])
+                ? datapoint[attribKey]
+                : [datapoint[attribKey]];
+              for (
+                let attribIdx = 0;
+                attribIdx < newAttributions.length;
+                attribIdx++
+              ) {
+                if (newAttributions[attribIdx] > this.maxSal) {
+                  this.maxSal = newAttributions[attribIdx];
+                }
+                if (newAttributions[attribIdx] < this.minSal) {
+                  this.minSal = newAttributions[attribIdx];
+                }
               }
             }
             this.set(`visdata.${idx}`, datapoint);
           }
+          // Make min/max symmetric around 0 so that attribution visualization scales
+          // for negative and positive attributions are the same, for visual
+          // consistency.
+          if (this.minSal < 0 && this.maxSal > Math.abs(this.minSal)) {
+            this.minSal = -1 * this.maxSal;
+          } else if (this.maxSal > 0 && Math.abs(this.minSal) > this.maxSal) {
+            this.maxSal = -1 * this.minSal;
+          }
           this.setAttributions();
+          this.setAttributionLegend();
           this.refreshDive_();
+        },
+
+        setAttributionLegend: function() {
+          this.saliencyColorScale = d3
+            .scaleLinear()
+            .domain([this.minSal, 0, this.maxSal])
+            .interpolate(COLOR_INTERPOLATOR)
+            .clamp(true)
+            .range([negSaliencyColor, neutralSaliencyColor, posSaliencyColor]);
+
+          const attrLegend = Polymer.dom(this.root).querySelector(
+            '#attributionlegend'
+          );
+          d3.select(attrLegend)
+            .selectAll('*')
+            .remove();
+          const legendSvg = d3.select(attrLegend).append('g');
+          const gradient = legendSvg
+            .append('defs')
+            .append('linearGradient')
+            .attr('id', 'vzexampleviewergradient')
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '0%')
+            .attr('spreadMethod', 'pad');
+
+          const linspace = (start, end, n) => {
+            const out = [];
+            const delta = (end - start) / (n - 1);
+            let i = 0;
+            while (i < n - 1) {
+              out.push(start + i * delta);
+              i++;
+            }
+            out.push(end);
+            return out;
+          };
+
+          // Create the correct color scale for the legend depending on minimum
+          // and maximum saliency for this example.
+          const scale = [];
+          if (this.minSal < 0) {
+            scale.push(negSaliencyColor);
+          }
+          scale.push(neutralSaliencyColor);
+          if (this.maxSal > 0) {
+            scale.push(posSaliencyColor);
+          }
+          const ticks = [];
+          if (scale.length == 3) {
+            ticks.push(this.minSal / 2);
+            ticks.push(0);
+            ticks.push(this.maxSal / 2);
+          } else if (this.minSal < 0) {
+            ticks.push((this.minSal / 4) * 3);
+            ticks.push(this.minSal / 2);
+            ticks.push((this.minSal / 4) * 1);
+          } else {
+            ticks.push((this.maxSal / 4) * 1);
+            ticks.push(this.maxSal / 2);
+            ticks.push((this.maxSal / 4) * 3);
+          }
+          // Creates an array of [pct, colour] pairs as stop
+          // values for legend
+          const pct = linspace(0, 100, scale.length).map((d) => {
+            return Math.round(d) + '%';
+          });
+
+          const colourPct = d3.zip(pct, scale);
+
+          colourPct.forEach((d) => {
+            gradient
+              .append('stop')
+              .attr('offset', d[0])
+              .attr('stop-color', d[1])
+              .attr('stop-opacity', 1);
+          });
+
+          legendSvg
+            .append('rect')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('width', LEGEND_WIDTH_PX)
+            .attr('height', LEGEND_HEIGHT_PX)
+            .style('fill', 'url(#vzexampleviewergradient)');
+
+          const legendScale = d3
+            .scaleLinear()
+            .domain([this.minSal, this.maxSal])
+            .range([0, LEGEND_WIDTH_PX]);
+
+          const legendAxis = d3
+            .axisBottom(legendScale)
+            .tickValues(ticks)
+            .tickSize(4)
+            .tickFormat(d3.format('.1f'));
+
+          legendSvg
+            .append('g')
+            .attr('class', 'legend axis')
+            .attr('transform', `translate(0,${LEGEND_HEIGHT_PX})`)
+            .style('font', '9px')
+            .call(legendAxis);
         },
 
         /**
