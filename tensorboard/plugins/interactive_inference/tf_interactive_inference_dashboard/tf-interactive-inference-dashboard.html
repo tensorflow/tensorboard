@@ -3849,7 +3849,7 @@ limitations under the License.
             const maxLength = Math.max(aVals.length, bVals.length);
             let featureTotalDist = 0;
             for (let i = 0; i < maxLength; i++) {
-              if (this.distanceStats_[feat].stdDev != null) {
+              if (this.distanceStats_[feat].isNumeric) {
                 featureTotalDist += this.getNumericDist(
                   aVals[i],
                   bVals[i],
@@ -6081,8 +6081,10 @@ limitations under the License.
           ) {
             const featureStats = statsProto.datasetsList[0].featuresList[i];
             const feature = featureStats.name;
-            this.distanceStats_[feature] = {};
-            if (featureStats.numStats) {
+            this.distanceStats_[feature] = {
+              isNumeric: featureStats.numStats != null
+            };
+            if (this.distanceStats_[feature].isNumeric) {
               // For numeric features, store standard deviation.
               this.distanceStats_[feature].stdDev =
                 featureStats.numStats.stdDev;
