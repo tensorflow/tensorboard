@@ -50,8 +50,8 @@ install:
   # to versions other than the most recent(!).
   - pip install -U pip
   # Lint check deps.
-  - pip install flake8==3.5.0
-  - pip install yamllint==1.5.0
+  - pip install flake8==3.7.8
+  - pip install yamllint==1.17.0
   # TensorBoard deps.
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
@@ -78,8 +78,9 @@ install:
 before_script:
   - elapsed "before_script"
   # Do a fail-fast check for Python syntax errors or undefined names.
+  # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
   # Use the comment '# noqa: <error code>' to suppress.
-  - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
   # Lint frontend code
   - yarn lint
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
