@@ -119,6 +119,11 @@ var WITView = widgets.DOMWidgetView.extend({
       this.touch();
     });
 
+    this.view_.addEventListener('sort-eligible-features', (e) => {
+      this.model.set('sort_eligible_features', e.detail);
+      this.touch();
+    });
+
     this.inferMutantsCounter = 0;
     this.view_.addEventListener('infer-mutants', (e) => {
       e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
