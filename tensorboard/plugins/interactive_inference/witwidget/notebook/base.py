@@ -217,6 +217,21 @@ class WitWidgetBase(object):
     return inference_utils.get_eligible_features(
       examples, NUM_MUTANTS_TO_GENERATE)
 
+  def sort_eligible_features_impl(self, info):
+    """Returns sorted list of interesting features for mutant inference."""
+    features_list = info['features']
+    chart_data = {}
+    for feat in features_list:
+      chart_data[feat['name']] = self.infer_mutants_impl({
+        'x_min': feat['observedMin'] if 'observedMin' in feat else 0,
+        'x_max': feat['observedMax'] if 'observedMin' in feat else 0,
+        'feature_index_pattern': None,
+        'feature_name': feat['name'],
+        'example_index': info['example_index'],
+      })
+    return inference_utils.sort_eligible_features(
+      features_list, chart_data)
+
   def create_sprite(self):
     """Returns an encoded image of thumbnails for image examples."""
     # Generate a sprite image for the examples if the examples contain the

@@ -34,6 +34,7 @@
 /** @type {!Object} */ var mobilenet;
 /** @type {!Function|undefined} */ var ga;
 /** @type {!Function|undefined} */ var KeyframeEffect;
+/** @type {!Object} */ var tensor_widget;
 
 /**
  * Some weird webcomponents-lite.js thing.

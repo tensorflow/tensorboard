@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, ViewChild, OnInit} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 import {filter} from 'rxjs/operators';
 
@@ -44,14 +44,14 @@ const activePlugin = createSelector(
   templateUrl: './plugins.component.html',
   styleUrls: ['./plugins.component.css'],
 })
-export class PluginsComponent {
+export class PluginsComponent implements OnInit {
   @ViewChild('plugins', {static: true, read: ElementRef})
-  private pluginsContainer!: ElementRef<HTMLDivElement>;
+  private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
 
-  private activePlugin$ = this.store.pipe(select(activePlugin));
-  private pluginInstances = new Map<string, HTMLElement>();
+  private readonly activePlugin$ = this.store.pipe(select(activePlugin));
+  private readonly pluginInstances = new Map<string, HTMLElement>();
 
-  constructor(private store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
     // We manually create plugin DOM (with custom tagName and script inside

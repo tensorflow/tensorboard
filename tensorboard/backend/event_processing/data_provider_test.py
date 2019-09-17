@@ -75,7 +75,13 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
     return multiplexer
 
   def create_provider(self):
-    return data_provider.MultiplexerDataProvider(self.create_multiplexer())
+    multiplexer = self.create_multiplexer()
+    return data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
+
+  def test_data_location(self):
+    provider = self.create_provider()
+    result = provider.data_location(experiment_id="unused")
+    self.assertEqual(result, self.logdir)
 
   def test_list_runs(self):
     # We can't control the timestamps of events written to disk (without
@@ -102,7 +108,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
           return result
 
     multiplexer = FakeMultiplexer()
-    provider = data_provider.MultiplexerDataProvider(multiplexer)
+    provider = data_provider.MultiplexerDataProvider(multiplexer, "fake_logdir")
     result = provider.list_runs(experiment_id="unused")
     self.assertItemsEqual(result, [
         base_provider.Run(run_id=run, run_name=run, start_time=start_time)
@@ -164,7 +170,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
   def test_read_scalars(self):
     multiplexer = self.create_multiplexer()
-    provider = data_provider.MultiplexerDataProvider(multiplexer)
+    provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
 
     run_tag_filter = base_provider.RunTagFilter(
         runs=["waves", "polynomials", "unicorns"],

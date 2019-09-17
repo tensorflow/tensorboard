@@ -42,6 +42,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   duplicate_example = Dict(dict()).tag(sync=True)
   updated_example_indices = Set(set())
   get_eligible_features = Int(0).tag(sync=True)
+  sort_eligible_features = Dict(dict()).tag(sync=True)
   eligible_features = List([]).tag(sync=True)
   infer_mutants = Dict(dict()).tag(sync=True)
   mutant_charts = Dict([]).tag(sync=True)
@@ -87,6 +88,12 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
   @observe('get_eligible_features')
   def _get_eligible_features(self, change):
     features_list = base.WitWidgetBase.get_eligible_features_impl(self)
+    self.eligible_features = features_list
+
+  @observe('sort_eligible_features')
+  def _sort_eligible_features(self, change):
+    info = self.sort_eligible_features
+    features_list = base.WitWidgetBase.sort_eligible_features_impl(self, info)
     self.eligible_features = features_list
 
   @observe('infer_mutants')

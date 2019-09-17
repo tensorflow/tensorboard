@@ -45,6 +45,11 @@ def get_eligible_features(wit_id):
 output.register_callback('notebook.GetEligibleFeatures', get_eligible_features)
 
 
+def sort_eligible_features(wit_id, details):
+  WitWidget.widgets[wit_id].sort_eligible_features(details)
+output.register_callback('notebook.SortEligibleFeatures', sort_eligible_features)
+
+
 def infer_mutants(wit_id, details):
   WitWidget.widgets[wit_id].infer_mutants(details)
 output.register_callback('notebook.InferMutants', infer_mutants)
@@ -102,6 +107,10 @@ WIT_HTML = """
         google.colab.kernel.invokeFunction(
           'notebook.InferMutants', [id, e.detail], {{}});
       }});
+      wit.addEventListener('sort-eligible-features', e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.SortEligibleFeatures', [id, e.detail], {{}});
+      }});
 
       // Javascript callbacks called by python code to communicate with WIT
       // Polymer element.
@@ -131,6 +140,9 @@ WIT_HTML = """
         wit.updateSprite();
       }};
       window.eligibleFeaturesCallback = features => {{
+        wit.partialDepPlotEligibleFeatures = features;
+      }};
+      window.sortEligibleFeaturesCallback = features => {{
         wit.partialDepPlotEligibleFeatures = features;
       }};
       window.inferMutantsCallback = chartInfo => {{
@@ -309,6 +321,15 @@ class WitWidget(base.WitWidgetBase):
       json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
       output.eval_js("""inferMutantsCallback({json_mapping})""".format(
           json_mapping=json.dumps(json_mapping)))
+    except Exception as e:
+      output.eval_js("""backendError({error})""".format(
+          error=json.dumps({'msg': str(e)})))
+
+  def sort_eligible_features(self, info):
+    try:
+      features_list = base.WitWidgetBase.sort_eligible_features_impl(self, info)
+      output.eval_js("""sortEligibleFeaturesCallback({features_list})""".format(
+          features_list=json.dumps(features_list)))
     except Exception as e:
       output.eval_js("""backendError({error})""".format(
           error=json.dumps({'msg': str(e)})))

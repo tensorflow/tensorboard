@@ -29,6 +29,7 @@ from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import errors
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
@@ -124,7 +125,7 @@ class ScalarsPluginTest(tf.test.TestCase):
           fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
         with self.subTest('generic data provider'):
           flags = argparse.Namespace(generic_data='true')
-          provider = data_provider.MultiplexerDataProvider(multiplexer)
+          provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
           ctx = base_plugin.TBContext(
               flags=flags,
               logdir=logdir,
@@ -192,7 +193,7 @@ class ScalarsPluginTest(tf.test.TestCase):
       self.assertEqual('application/json', mime_type)
       self.assertEqual(len(data), self._STEPS)
     else:
-      with self.assertRaises((KeyError, ValueError)):
+      with self.assertRaises(errors.NotFoundError):
         plugin.scalars_impl(
             self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.JSON
         )
@@ -208,7 +209,7 @@ class ScalarsPluginTest(tf.test.TestCase):
       self.assertEqual(['Wall time', 'Step', 'Value'], next(reader))
       self.assertEqual(len(list(reader)), self._STEPS)
     else:
-      with self.assertRaises((KeyError, ValueError)):
+      with self.assertRaises(errors.NotFoundError):
         plugin.scalars_impl(
             self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.CSV
         )

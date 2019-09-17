@@ -16,9 +16,11 @@ ng_module(
         "containers/header.component.html",
     ],
     deps = [
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_select",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
         "//tensorboard/components/tf_ng_tensorboard/core",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -36,6 +38,7 @@ tf_ts_library(
     deps = [
         ":header",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_select",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",

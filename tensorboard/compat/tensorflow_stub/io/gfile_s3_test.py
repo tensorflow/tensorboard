@@ -354,7 +354,7 @@ class GFileTest(unittest.TestCase):
         for file_name in file_names:
             # Add an end slash
             path = top_directory + '/' + file_name
-            if file_name is 'model.ckpt':
+            if file_name == 'model.ckpt':
                 content = ckpt_content
             else:
                 content = ''
