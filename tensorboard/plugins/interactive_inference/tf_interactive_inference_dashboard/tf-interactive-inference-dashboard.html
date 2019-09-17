@@ -5909,6 +5909,7 @@ limitations under the License.
                   continue;
                 }
                 let val = extraOutputs.extra[modelNum][key][i];
+                const datapointKey = this.strWithModelName_(key, modelNum);
 
                 // Update the datapoint with the extra info for use in
                 // Facets Dive.
@@ -5923,7 +5924,6 @@ limitations under the License.
                 const isString =
                   val.length > 0 &&
                   (typeof val[0] == 'string' || val[0] instanceof String);
-                const datapointKey = this.strWithModelName_(key, modelNum);
                 const exampleJsonString = JSON.stringify(
                   this.examplesAndInferences[idx].example
                 );
