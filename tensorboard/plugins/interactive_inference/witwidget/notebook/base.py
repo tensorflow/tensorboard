@@ -54,27 +54,14 @@ class WitWidgetBase(object):
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
 
-    self.custom_predict_fn = (
-      config.get('custom_predict_fn')
-      if 'custom_predict_fn' in config else None)
-    self.compare_custom_predict_fn = (
-      config.get('compare_custom_predict_fn')
-      if 'compare_custom_predict_fn' in config else None)
-    self.custom_distance_fn = (
-      config.get('custom_distance_fn')
-      if 'custom_distance_fn' in config else None)
-    self.adjust_prediction_fn = (
-      config.get('adjust_prediction')
-      if 'adjust_prediction' in config else None)
-    self.compare_adjust_prediction_fn = (
-      config.get('compare_adjust_prediction')
-      if 'compare_adjust_prediction' in config else None)
-    self.adjust_example_fn = (
-      config.get('adjust_example')
-      if 'adjust_example' in config else None)
-    self.compare_adjust_example_fn = (
-      config.get('compare_adjust_example')
-      if 'compare_adjust_example' in config else None)
+    self.custom_predict_fn = config.get('custom_predict_fn')
+    self.compare_custom_predict_fn = config.get('compare_custom_predict_fn')
+    self.custom_distance_fn = config.get('custom_distance_fn')
+    self.adjust_prediction_fn = config.get('adjust_prediction')
+    self.compare_adjust_prediction_fn = config.get('compare_adjust_prediction')
+    self.adjust_example_fn = config.get('adjust_example')
+    self.compare_adjust_example_fn = config.get('compare_adjust_example')
+
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:

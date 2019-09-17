@@ -3853,7 +3853,7 @@ limitations under the License.
           }
         },
 
-        computeClosestCounterfactual: function(exInd, distances) {
+        finalizeClosestCounterfactual: function(exInd, distances) {
           // Distances are indexed by example ids
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
@@ -3893,7 +3893,7 @@ limitations under the License.
           if (this.local && this.customDistanceFunctionSet) {
             this.requestDistanceWithCallback(
               selected,
-              'computeClosestCounterfactual',
+              'finalizeClosestCounterfactual',
               {callbackParams: {}, distanceParams: {}}
             );
             return;
