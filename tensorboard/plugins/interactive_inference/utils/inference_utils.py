@@ -14,6 +14,8 @@
 # ==============================================================================
 """Shared utils among inference plugins."""
 
+from __future__ import division
+from __future__ import print_function
 import collections
 import copy
 import json
@@ -649,6 +651,59 @@ def get_eligible_features(examples, num_mutants):
     v['name'] = k
     features_list.append(v)
   return features_list
+
+def sort_eligible_features(features_list, chart_data):
+  """Returns a sorted list of objects representing each feature.
+
+  The list is sorted by interestingness in terms of the resulting change in
+  inference values across feature values, for partial dependence plots.
+
+  Args:
+    features_list: A list of eligible features in the format of the return
+        from the get_eligible_features function.
+    chart_data: A dict of feature names to chart data, formatted as the
+        output from the mutant_charts_for_feature function.
+
+  Returns:
+    A sorted list of the inputted features_list, with the addition of
+    an 'interestingness' key with a calculated number for feature feature.
+    The list is sorted with the feature with highest interestingness first.
+  """
+  sorted_features_list = copy.deepcopy(features_list)
+  for feature in sorted_features_list:
+    name = feature['name']
+    charts = chart_data[name]
+    max_measure = 0
+    is_numeric = charts['chartType'] == 'numeric'
+    for models in charts['data']:
+      for chart in models:
+        for series in chart.values():
+          if is_numeric:
+            # For numeric features, interestingness is the total Y distance
+            # traveled across the line chart.
+            measure = 0
+            for i in range(len(series) - 1):
+              measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
+          else:
+            # For categorical features, interestingness is the difference
+            # between the min and max Y values in the chart, as interestingness
+            # for categorical charts shouldn't depend on the order of items
+            # being charted.
+            min_y = float("inf")
+            max_y = float("-inf")
+            for i in range(len(series)):
+              val = series[i]['scalar']
+              if val < min_y:
+                min_y = val
+              if val > max_y:
+                max_y = val
+            measure = max_y - min_y
+          if measure > max_measure:
+            max_measure = measure
+    feature['interestingness'] = max_measure
+
+  return sorted(
+      sorted_features_list, key=lambda x: x['interestingness'], reverse=True)
 
 def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
