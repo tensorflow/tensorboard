@@ -1635,9 +1635,9 @@ limitations under the License.
                             show-saliency
                             readonly="[[!areExamplesEditable_(modelName, inferenceAddress)]]"
                             sort-order="[[exampleFeatureSortOrder]]"
-                            min-sal="[[minSal]]"
-                            max-sal="[[maxSal]]"
-                            colors="[[saliencyColorScale]]"
+                            min-sal="[[minAttribution]]"
+                            max-sal="[[maxAttribution]]"
+                            colors="[[attributionColorScale]]"
                           >
                           </vz-example-viewer>
                         </div>
@@ -3245,10 +3245,10 @@ limitations under the License.
     const attributionSparseKeySuffix = '_keys';
     const attributionSparseValueSuffix = '_values';
 
-    // Colors for the saliency color scale.
-    const posSaliencyColor = '#007B83';
-    const negSaliencyColor = '#FF847C';
-    const neutralSaliencyColor = '#fff';
+    // Colors for the attribution color scale.
+    const posAttributionColor = '#007B83';
+    const negAttributionColor = '#FF847C';
+    const neutralAttributionColor = '#fff';
     const COLOR_INTERPOLATOR = d3.interpolateRgb;
     const LEGEND_WIDTH_PX = 160;
     const LEGEND_HEIGHT_PX = 8;
@@ -3332,9 +3332,12 @@ limitations under the License.
             type: Object,
             observer: 'newAttributions_',
           },
-          minSal: {type: Number, value: 0},
-          maxSal: {type: Number, value: 0},
-          saliencyColorScale: Object,
+          // Minimum attribution value seen in the data.
+          minAttribution: {type: Number, value: 0},
+          // Maximum attribution value seen in the data.
+          maxAttribution: {type: Number, value: 0},
+          // Color scale for attribution coloring.
+          attributionColorScale: Object,
           // Examples and their inferences merged into a single list.
           // # Samples -> .inferences -> # Inferences -> # Models -> # Labels
           examplesAndInferences: {
@@ -5910,7 +5913,6 @@ limitations under the License.
         },
 
         hasAttributions_: function(attributions) {
-          console.log(attributions);
           return (
             attributions != null &&
             Object.keys(attributions.attributions).length != 0 &&
@@ -5919,8 +5921,6 @@ limitations under the License.
         },
 
         newAttributions_: function(attributions) {
-          console.log('newattrs');
-          console.log(attributions);
           if (
             Object.keys(attributions.attributions).length == 0 &&
             attributions.attributions[0] != null
@@ -5967,11 +5967,11 @@ limitations under the License.
                 attribIdx < newAttributions.length;
                 attribIdx++
               ) {
-                if (newAttributions[attribIdx] > this.maxSal) {
-                  this.maxSal = newAttributions[attribIdx];
+                if (newAttributions[attribIdx] > this.maxAttribution) {
+                  this.maxAttribution = newAttributions[attribIdx];
                 }
-                if (newAttributions[attribIdx] < this.minSal) {
-                  this.minSal = newAttributions[attribIdx];
+                if (newAttributions[attribIdx] < this.minAttribution) {
+                  this.minAttribution = newAttributions[attribIdx];
                 }
               }
             }
@@ -5980,23 +5980,34 @@ limitations under the License.
           // Make min/max symmetric around 0 so that attribution visualization scales
           // for negative and positive attributions are the same, for visual
           // consistency.
-          if (this.minSal < 0 && this.maxSal > Math.abs(this.minSal)) {
-            this.minSal = -1 * this.maxSal;
-          } else if (this.maxSal > 0 && Math.abs(this.minSal) > this.maxSal) {
-            this.maxSal = -1 * this.minSal;
+          if (
+            this.minAttribution < 0 &&
+            this.maxAttribution > Math.abs(this.minAttribution)
+          ) {
+            this.minAttribution = -1 * this.maxAttribution;
+          } else if (
+            this.maxAttribution > 0 &&
+            Math.abs(this.minAttribution) > this.maxAttribution
+          ) {
+            this.maxAttribution = -1 * this.minAttribution;
           }
           this.setAttributions();
-          this.setAttributionLegend();
+          this.createAttributionLegend();
           this.refreshDive_();
         },
 
-        setAttributionLegend: function() {
-          this.saliencyColorScale = d3
+        // Create and display the attribution legend.
+        createAttributionLegend: function() {
+          this.attributionColorScale = d3
             .scaleLinear()
-            .domain([this.minSal, 0, this.maxSal])
+            .domain([this.minAttribution, 0, this.maxAttribution])
             .interpolate(COLOR_INTERPOLATOR)
             .clamp(true)
-            .range([negSaliencyColor, neutralSaliencyColor, posSaliencyColor]);
+            .range([
+              negAttributionColor,
+              neutralAttributionColor,
+              posAttributionColor,
+            ]);
 
           const attrLegend = Polymer.dom(this.root).querySelector(
             '#attributionlegend'
@@ -6028,28 +6039,30 @@ limitations under the License.
           };
 
           // Create the correct color scale for the legend depending on minimum
-          // and maximum saliency for this example.
+          // and maximum attribution.
           const scale = [];
-          if (this.minSal < 0) {
-            scale.push(negSaliencyColor);
+          if (this.minAttribution < 0) {
+            scale.push(negAttributionColor);
           }
-          scale.push(neutralSaliencyColor);
-          if (this.maxSal > 0) {
-            scale.push(posSaliencyColor);
+          scale.push(neutralAttributionColor);
+          if (this.maxAttribution > 0) {
+            scale.push(posAttributionColor);
           }
+          // Set 3 ticks on the legend, handling all positive, all negative,
+          // or a mix of both.
           const ticks = [];
           if (scale.length == 3) {
-            ticks.push(this.minSal / 2);
+            ticks.push(this.minAttribution / 2);
             ticks.push(0);
-            ticks.push(this.maxSal / 2);
-          } else if (this.minSal < 0) {
-            ticks.push((this.minSal / 4) * 3);
-            ticks.push(this.minSal / 2);
-            ticks.push((this.minSal / 4) * 1);
+            ticks.push(this.maxAttribution / 2);
+          } else if (this.minAttribution < 0) {
+            ticks.push((this.minAttribution / 4) * 3);
+            ticks.push(this.minAttribution / 2);
+            ticks.push((this.minAttribution / 4) * 1);
           } else {
-            ticks.push((this.maxSal / 4) * 1);
-            ticks.push(this.maxSal / 2);
-            ticks.push((this.maxSal / 4) * 3);
+            ticks.push((this.maxAttribution / 4) * 1);
+            ticks.push(this.maxAttribution / 2);
+            ticks.push((this.maxAttribution / 4) * 3);
           }
           // Creates an array of [pct, colour] pairs as stop
           // values for legend
@@ -6077,7 +6090,7 @@ limitations under the License.
 
           const legendScale = d3
             .scaleLinear()
-            .domain([this.minSal, this.maxSal])
+            .domain([this.minAttribution, this.maxAttribution])
             .range([0, LEGEND_WIDTH_PX]);
 
           const legendAxis = d3

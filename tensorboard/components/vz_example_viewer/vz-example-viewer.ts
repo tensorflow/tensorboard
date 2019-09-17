@@ -173,6 +173,8 @@ namespace vz_example_viewer {
         computed: 'getSeqFeatures(compareExample)',
         observer: 'updateCompareMode',
       },
+      // The order to sort features. Can be 'attribution',
+      // 'revserse-attribution', or 'alphabetical'.
       sortOrder: {
         type: String,
         value: 'attribution',
@@ -427,6 +429,8 @@ namespace vz_example_viewer {
       requestAnimationFrame(() => this._haveSaliencyImpl());
     },
 
+    // Determines if text should be light or dark due to the saliency-generated
+    // background of the text box.
     _useLightColor(saliency) {
       const percentile = (saliency - this.minSal) / (this.maxSal - this.minSal);
       if (this.minSal < 0 && this.maxSal > 0) {
@@ -462,6 +466,8 @@ namespace vz_example_viewer {
         if (!val) {
           continue;
         }
+        // Set background color, tooltip, and text color, which are all based
+        // on saliency score.
         const colorFn = Array.isArray(val)
           ? (d: {}, i: number) => this.getColorForSaliency(val[i])
           : () => this.getColorForSaliency(val);
