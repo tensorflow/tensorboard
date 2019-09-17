@@ -49,12 +49,14 @@ class FakeFlags(object):
       inspect=False,
       version_tb=False,
       logdir='',
+      logdir_spec='',
       event_file='',
       db='',
       path_prefix=''):
     self.inspect = inspect
     self.version_tb = version_tb
     self.logdir = logdir
+    self.logdir_spec = logdir_spec
     self.event_file = event_file
     self.db = db
     self.path_prefix = path_prefix

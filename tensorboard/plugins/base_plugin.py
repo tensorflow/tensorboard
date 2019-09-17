@@ -221,6 +221,7 @@ class TBContext(object):
       db_uri=None,
       flags=None,
       logdir=None,
+      logdir_spec=None,
       multiplexer=None,
       plugin_name_to_instance=None,
       window_title=None):
@@ -245,12 +246,12 @@ class TBContext(object):
           function is cheap. The returned connection must only be used by a
           single thread. Things like connection pooling are considered
           implementation details of the provider.
-      db_uri: The string db URI TensorBoard was started with. If this is set,
-          the logdir should be None.
+      db_uri: The string db URI TensorBoard was started with.
       flags: An object of the runtime flags provided to TensorBoard to their
           values.
-      logdir: The string logging directory TensorBoard was started with. If this
-          is set, the db_uri should be None.
+      logdir: The string logging directory TensorBoard was started with.
+      logdir_spec: The value of `--logdir_spec` passed to TensorBoard (see
+          flag-level documentation).
       multiplexer: An EventMultiplexer with underlying TB data. Plugins should
           copy this data over to the database when the db fields are set.
       plugin_name_to_instance: A mapping between plugin name to instance.
@@ -267,6 +268,7 @@ class TBContext(object):
     self.db_uri = db_uri
     self.flags = flags
     self.logdir = logdir
+    self.logdir_spec = logdir_spec
     self.multiplexer = multiplexer
     self.plugin_name_to_instance = plugin_name_to_instance
     self.window_title = window_title
