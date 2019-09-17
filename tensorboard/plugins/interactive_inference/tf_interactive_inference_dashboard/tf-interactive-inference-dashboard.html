@@ -1087,6 +1087,10 @@ limitations under the License.
         border-bottom: solid 1px var(--wit-color-gray300);
       }
 
+      .perf-table-entry.perf-table-entry-trivial {
+        background: #f4f4f4;
+      }
+
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
@@ -1248,6 +1252,15 @@ limitations under the License.
         font-size: 14px;
         --paper-toggle-button-checked-button-color: white;
         --paper-toggle-button-label-color: #3c4043;
+      }
+      .button-and-spinner-holder {
+        margin-top: 4px;
+        position: relative;
+      }
+      .sort-spinner {
+        position: absolute;
+        top: 8px;
+        left: 8px;
       }
       #attributionlegend {
         width: 160px;
@@ -1813,6 +1826,22 @@ limitations under the License.
                         </div>
                       </paper-dialog>
                     </div>
+                    <div class="button-and-spinner-holder">
+                      <paper-button
+                        class="control-button datapoint-button"
+                        disabled$="[[shouldDisableSortFeaturesButton(partialDepPlotEligibleFeatures, isSortingEligibleFeatures)]]"
+                        on-tap="sortPdFeatures_"
+                        alt="Sort features by interestingness"
+                        title="Sort features by interestingness"
+                      >
+                        Sort features by interestingness
+                      </paper-button>
+                      <paper-spinner-lite
+                        class="sort-spinner"
+                        hidden="[[!isSortingEligibleFeatures]]"
+                        active
+                      ></paper-spinner-lite>
+                    </div>
                     <paper-toggle-button
                       class="pd-toggle"
                       checked="{{globalPdPlots}}"
@@ -1840,7 +1869,7 @@ limitations under the License.
                         class="feature-container"
                         data-feature-name$="[[item.name]]"
                       >
-                        <div class="perf-table-entry perf-table-row">
+                        <div class$="[[getPerfTableEntryClass(item)]]">
                           <div class="perf-table-arrow">
                             <paper-icon-button
                               class="pd-row-arrow rotated-icon"
@@ -1861,7 +1890,7 @@ limitations under the License.
                         >
                           <div
                             class="pd-input-container"
-                            hidden$="[[shouldHidePdInputContainer(item.samples, item.name, selected)]]"
+                            hidden$="[[shouldHidePdInputContainer(item, selected)]]"
                           >
                             <div
                               class="range-input-container"
@@ -3695,6 +3724,11 @@ limitations under the License.
             type: Boolean,
             value: true,
           },
+          isSortingEligibleFeatures: {
+            type: Boolean,
+            value: false,
+          },
+          // Sort order for features in the example viewer.
           exampleFeatureSortOrder: {
             type: String,
             value: 'attribution',
@@ -6359,6 +6393,7 @@ limitations under the License.
           this.showToast_(errorStr);
           this.exampleStatusStr = errorStr;
           this.spinnerHidden_ = true;
+          this.isSortingEligibleFeatures = false;
         },
 
         makeAsyncRequest_: function(
@@ -7282,10 +7317,10 @@ limitations under the License.
 
         /** Check if pd-input-container has any elements in it and hide it if it
         does not*/
-        shouldHidePdInputContainer: function(samples, featureName, selected) {
+        shouldHidePdInputContainer: function(item, selected) {
           if (
-            !this.shouldHideFeatureIndicesSelector(featureName, selected) ||
-            !samples
+            !this.shouldHideFeatureIndicesSelector(item.name, selected) ||
+            !item.samples
           ) {
             return false;
           } else {
@@ -7313,6 +7348,7 @@ limitations under the License.
         },
 
         partialDepPlotEligibleFeaturesSet: function(features) {
+          this.isSortingEligibleFeatures = false;
           if (!features || features.length == 0) {
             return;
           }
@@ -7451,6 +7487,58 @@ limitations under the License.
           } else {
             this.fire('get-eligible-features');
           }
+        },
+
+        sortPdFeatures_: function() {
+          // First hide all existing PD plots before refreshing.
+          this.hideAllPdElements_();
+          const urlParams = {
+            example_index: this.globalPdPlots ? -1 : this.selected[0],
+            inference_address: this.inferenceAddress,
+            model_name: this.modelName,
+            model_type: this.modelType,
+            model_version: this.modelVersion,
+            model_signature: this.modelSignature,
+            use_predict: this.usePredictApi,
+            predict_output_tensor: this.predictOutputTensor,
+            predict_input_tensor: this.predictInputTensor,
+          };
+          this.isSortingEligibleFeatures = true;
+          // Call into the backend to sort the possible features to show plots for.
+          if (!this.local) {
+            const url = tf_backend.addParams(
+              '/data/plugin/whatif/sort_eligible_features',
+              urlParams
+            );
+            const setEligibleFields = (result) => {
+              this.set('partialDepPlotEligibleFeatures', result.value);
+            };
+            const sortErrorCallback = () => {
+              this.isSortingEligibleFeatures = false;
+            };
+            this.makeAsyncRequest_(
+              url,
+              setEligibleFields,
+              null,
+              'plot ordering',
+              sortErrorCallback.bind(this)
+            );
+          } else {
+            urlParams['features'] = this.partialDepPlotEligibleFeatures;
+            this.fire('sort-eligible-features', urlParams);
+          }
+        },
+        shouldDisableSortFeaturesButton: function(
+          partialDepPlotEligibleFeatures,
+          isSortingEligibleFeatures
+        ) {
+          // Do not show "sort features by interestingness" button if sorting is
+          // currently occuring or there are no features to sort.
+          return (
+            isSortingEligibleFeatures ||
+            partialDepPlotEligibleFeatures == null ||
+            partialDepPlotEligibleFeatures.length == 0
+          );
         },
 
         toggleTrueLabelSetup: function() {
@@ -7667,6 +7755,19 @@ limitations under the License.
           for (let i = 0; i < this.featureValueThresholds.length; i++) {
             this.set('featureValueThresholds.' + i + '.opened', false);
           }
+        },
+
+        getPerfTableEntryClass: function(eligibleFeature) {
+          let str = 'perf-table-entry perf-table-row ';
+          // If interestingness is set to 0 then display this feature as
+          // trivial.
+          if (
+            'interestingness' in eligibleFeature &&
+            eligibleFeature['interestingness'] == 0
+          ) {
+            str += 'perf-table-entry-trivial';
+          }
+          return str;
         },
       });
 
