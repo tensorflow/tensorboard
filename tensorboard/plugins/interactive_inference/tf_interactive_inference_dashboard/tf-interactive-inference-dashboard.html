@@ -4143,78 +4143,36 @@ limitations under the License.
           // back to custom (default).
           this.resetOptimizationSelected_();
 
-          const feature1 = this.selectedBreakdownFeature;
-          if (feature1 == '') {
-            this.selectedSecondBreakdownFeature = '';
-          }
-          const feature2 = this.selectedSecondBreakdownFeature;
-          const thresholds = [];
           const thresholdsMap = {};
-          if (feature1.length !== 0) {
-            let feature1Values = this.stats[feature1].valueHash;
-            // Only breakdown performance by features that don't contain fully-
-            // unique values per example.
-            if (
-              this.stats[feature1].totalCount !=
-              this.examplesAndInferences.length
-            ) {
-              feature1Values = Object.assign({}, feature1Values, {
-                undefined: '',
-              });
-            }
-            let feature2Values = {undefined: ''};
-            if (feature2.length != 0) {
-              feature2Values = this.stats[feature2].valueHash;
-              if (
-                this.stats[feature2].totalCount !=
-                this.examplesAndInferences.length
-              ) {
-                feature2Values = Object.assign({}, feature2Values, {
-                  undefined: '',
-                });
-              }
-            }
-
-            // For the selected feature, set up a dict of each feature value in
-            // the dataset to the threshold. Add this to a list (for display
-            // purposes) and create a map of feature value to entry in that list.
-            for (var key1 in feature1Values) {
-              if (feature1Values.hasOwnProperty(key1)) {
-                for (var key2 in feature2Values) {
-                  if (feature2Values.hasOwnProperty(key2)) {
-                    const feature1Value =
-                      key1 == 'undefined'
-                        ? undefined
-                        : this.stats[feature1].valueHash[key1].value;
-                    const feature2Value =
-                      key2 == 'undefined'
-                        ? undefined
-                        : this.stats[feature2].valueHash[key2].value;
-                    // Deep copy thresholds for each facet
-                    const modelThresholds = [];
-                    for (let i = 0; i < this.overallThresholds.length; i++) {
-                      modelThresholds.push({
-                        threshold: this.overallThresholds[i].threshold,
-                      });
-                    }
-                    const thresh = {
-                      value: feature1Value,
-                      value2: feature2Value,
-                      threshold: modelThresholds,
-                      opened: false,
-                    };
-                    thresholds.push(thresh);
-                    // TODO: Make this coincide with the getSliceKey_
-                    const mapKey = this.createCombinedValueString_(
-                      feature1Value,
-                      feature2Value
-                    );
-                    thresholdsMap[mapKey] = thresh;
-                  }
+          this.visdata.forEach(
+            function(item) {
+              const key1 = this.getSliceKey_(
+                item,
+                this.selectedBreakdownFeature
+              );
+              const key2 = this.getSliceKey_(
+                item,
+                this.selectedSecondBreakdownFeature
+              );
+              const key = this.createCombinedValueString_(key1, key2);
+              if (!(key in thresholdsMap)) {
+                // Deep copy thresholds for each facet
+                const modelThresholds = [];
+                for (let i = 0; i < this.overallThresholds.length; i++) {
+                  modelThresholds.push({
+                    threshold: this.overallThresholds[i].threshold,
+                  });
                 }
+                thresholdsMap[key] = {
+                  value: key1,
+                  value2: key2,
+                  threshold: modelThresholds,
+                  opened: false,
+                };
               }
-            }
-          }
+            }.bind(this)
+          );
+          const thresholds = Object.values(thresholdsMap);
           this.set('featureValueThresholds', thresholds);
           this.set('featureValueThresholdsMap', thresholdsMap);
           this.refreshInferences_(false);
