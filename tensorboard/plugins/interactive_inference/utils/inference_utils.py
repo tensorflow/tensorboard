@@ -130,9 +130,6 @@ class OriginalFeatureList(object):
       for v in original_value]
     self.feature_type = feature_type
 
-    #if feature_type == 'bytes_list':
-    #  self.original_value = [v.decode('utf-8') for v in self.original_value]
-
     # Derived attributes.
     self.length = sum(1 for _ in original_value)
 
@@ -172,10 +169,6 @@ class MutantFeatureValue(object):
     self.mutant_value = (
       mutant_value.encode()
       if isinstance(mutant_value, string_types) else mutant_value)
-    #if self.original_feature.feature_type == 'bytes_list':
-    #  print('encoding mutant')
-    #  self.mutant_value = self.mutant_value.encode()
-    #  print(self.mutant_value)
 
 
 class ServingBundle(object):
@@ -449,13 +442,10 @@ def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
           new_values = list(feature_list)
           new_values[index_to_mutate] = mutant_feature.mutant_value
 
-        print('new values')
-        print(new_values)
         del feature_list[:]
         feature_list.extend(new_values)
         mutant_examples.append(copied_example)
-      except (ValueError, IndexError) as e:
-        print(e)
+      except (ValueError, IndexError):
         # If the mutant value can't be set, still add the example to the
         # mutant_example even though no change was made. This is necessary to
         # allow for computation of global PD plots when not all examples have
@@ -495,7 +485,6 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
     charts = []
     for serving_bundle in serving_bundles:
-      print(mutant_examples)
       (inference_result_proto, _) = run_inference(
         mutant_examples, serving_bundle)
       charts.append(make_json_formatted_for_single_chart(
@@ -595,7 +584,6 @@ def make_json_formatted_for_single_chart(mutant_features,
           y_label: sum(y_list) / float(len(y_list))
         })
       return_series[key].sort(key=lambda p: p[x_label])
-    print(return_series)
     return return_series
 
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
