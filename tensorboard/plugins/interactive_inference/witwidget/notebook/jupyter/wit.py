@@ -137,10 +137,10 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
     try:
       distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
                                                        params['distanceParams'])
-      self.custom_distance_dict = {'distances':distances,
-                                   'exInd':index,
-                                   'callback_fn':callback_fn,
-                                   'params':params['callbackParams']}
+      self.custom_distance_dict = {'distances': distances,
+                                   'exInd': index,
+                                   'funId': callback_fn,
+                                   'params': params['callbackParams']}
     except Exception as e:
       self._report_error(e)
 

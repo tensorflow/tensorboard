@@ -125,9 +125,7 @@ WIT_HTML = """
       }};
 
       window.distanceCallback = callbackDict => {{
-        wit[callbackDict.callback_fn](callbackDict.exInd,
-                                       callbackDict.distances,
-                                       callbackDict.params);
+        wit.invokeCustomDistanceCallback(callbackDict);
       }};
 
       window.spriteCallback = spriteUrl => {{
@@ -302,7 +300,7 @@ class WitWidget(base.WitWidgetBase):
       callback_dict = {
           'distances': distances,
           'exInd': index,
-          'callback_fn': callback_fn,
+          'funId': callback_fn,
           'params': params['callbackParams']
       }
       output.eval_js("""distanceCallback({callback_dict})""".format(

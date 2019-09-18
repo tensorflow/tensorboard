@@ -504,6 +504,7 @@ def tensorboard_js_workspace():
         licenses = ["notice"],  # Apache 2.0
         sha256_urls = {
             "aca32ec8a778d17acb623bf495c6e60ec38312b761b9a8c88af4c841c25eba70": [
+                "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
                 "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
             ],
         },

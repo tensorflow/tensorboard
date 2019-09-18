@@ -273,12 +273,8 @@ var WITView = widgets.DOMWidgetView.extend({
       requestAnimationFrame(() => this.customDistanceComputed());
       return;
     }
-    const custom_distance_dict = this.model.get('custom_distance_dict');
-    this.view_[custom_distance_dict.callback_fn](
-      custom_distance_dict.exInd,
-      custom_distance_dict.distances,
-      custom_distance_dict.params
-    );
+    const customDistanceDict = this.model.get('custom_distance_dict');
+    this.view_.invokeCustomDistanceCallback(customDistanceDict);
   },
 });
 

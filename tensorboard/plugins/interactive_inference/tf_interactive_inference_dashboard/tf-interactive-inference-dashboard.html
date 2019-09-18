@@ -3253,6 +3253,13 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
+    // requestDistanceWithCallback can be invoked with the callbacks in this
+    // enum. Please add a function to this list if you want it to be invoked
+    // at the end of custom distance computation.
+    const distanceCallbacks = {
+      finalizeClosestCounterfactual: 0,
+      finalizeAddDistanceMetric: 1,
+    };
 
     // Special feature names and feature name prefixes and suffixes for parsing
     // inference and attribution information from TFMA-generated input.
@@ -3262,6 +3269,7 @@ limitations under the License.
     const featureForAttributionPrefix = 'features__';
     const attributionSparseKeySuffix = '_keys';
     const attributionSparseValueSuffix = '_values';
+
 
     function deleteElement(elt) {
       if (elt && elt.parentElement) {
@@ -3825,7 +3833,7 @@ limitations under the License.
           if (this.local && this.customDistanceFunctionSet) {
             this.requestDistanceWithCallback(
               selected,
-              'finalizeAddDistanceMetric',
+              distanceCallbacks.finalizeAddDistanceMetric,
               params
             );
             return;
@@ -3847,6 +3855,17 @@ limitations under the License.
               params.callbackParams
             );
           }
+        },
+
+        invokeCustomDistanceCallback: function(callbackObj){
+          switch (callbackObj.funId) {
+            case distanceCallbacks.finalizeClosestCounterfactual:
+              this.finalizeClosestCounterfactual(callbackObj.exInd, callbackObj.distances, callbackObj.params);
+              break;
+            case distanceCallbacks.finalizeAddDistanceMetric:
+              this.finalizeAddDistanceMetric(callbackObj.exInd, callbackObj.distances, callbackObj.params);
+              break;
+          };
         },
 
         finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
@@ -3926,7 +3945,7 @@ limitations under the License.
           if (this.local && this.customDistanceFunctionSet) {
             this.requestDistanceWithCallback(
               selected,
-              'finalizeClosestCounterfactual',
+              distanceCallbacks.finalizeClosestCounterfactual,
               {callbackParams: {}, distanceParams: {}}
             );
             return;
@@ -3969,6 +3988,8 @@ limitations under the License.
 
         // Call backend for distance computation, backend calls callback function
         // with computed distances and parameters
+        // TODO (tolgab) If TensorBoard supports custom distance functions
+        // add ability to call into their backend as well (non-local mode).
         requestDistanceWithCallback: function(exInd, callbackFun, params) {
           const urlParams = {
             index: exInd,

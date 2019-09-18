@@ -195,11 +195,13 @@ limitations under the License.
             ind.dispose();
             exEmb.dispose();
             distancesTensor.dispose();
-            this.$.dash[e.detail.callback](
-              e.detail.index,
-              distances,
-              e.detail.params.callbackParams
-            );
+            const callbackObj = {
+              exInd: e.detail.index,
+              distances: distances,
+              params: e.detail.params.callbackParams,
+              funId: e.detail.callback,
+            }
+            this.$.dash.invokeCustomDistanceCallback(callbackObj);
           });
           this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
