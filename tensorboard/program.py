@@ -262,7 +262,7 @@ class TensorBoard(object):
         port=server_url.port,
         pid=os.getpid(),
         path_prefix=self.flags.path_prefix,
-        logdir=self.flags.logdir,
+        logdir=self.flags.logdir or self.flags.logdir_spec,
         db=self.flags.db,
         cache_key=self.cache_key,
     )
