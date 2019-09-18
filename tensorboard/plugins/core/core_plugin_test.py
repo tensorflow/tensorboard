@@ -46,6 +46,8 @@ FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 class FakeFlags(object):
   def __init__(
       self,
+      bind_all=False,
+      host=None,
       inspect=False,
       version_tb=False,
       logdir='',
@@ -53,6 +55,8 @@ class FakeFlags(object):
       event_file='',
       db='',
       path_prefix=''):
+    self.bind_all = bind_all
+    self.host = host
     self.inspect = inspect
     self.version_tb = version_tb
     self.logdir = logdir
