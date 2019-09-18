@@ -129,15 +129,24 @@ var WITView = widgets.DOMWidgetView.extend({
     });
     this.inferMutantsCounter = 0;
     this.view_.addEventListener('infer-mutants', (e) => {
-      e.detail['infer_mutants_counter'] = this.inferMutantsCounter++;
-      this.model.set('infer_mutants', e.detail);
+      this.model.set(
+        'infer_mutants',
+        Object.assign({}, e.detail, {
+          infer_mutants_counter_for_busting_cache: this.inferMutantsCounter++,
+        })
+      );
       this.mutantFeature = e.detail.feature_name;
       this.touch();
     });
     this.computeDistanceCounter = 0;
     this.view_.addEventListener('compute-custom-distance', (e) => {
-      e.detail['compute_distance_counter'] = this.computeDistanceCounter++;
-      this.model.set('compute_custom_distance', e.detail);
+      this.model.set(
+        'compute_custom_distance',
+        Object.assign({}, e.detail, {
+          compute_distance_counter_for_busting_cache: this
+            .computeDistanceCounter++,
+        })
+      );
       this.touch();
     });
     this.setupComplete = true;
