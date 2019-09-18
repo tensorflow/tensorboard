@@ -50,8 +50,8 @@ install:
   # to versions other than the most recent(!).
   - pip install -U pip
   # Lint check deps.
-  - pip install flake8==3.5.0
-  - pip install yamllint==1.5.0
+  - pip install flake8==3.7.8
+  - pip install yamllint==1.17.0
   # TensorBoard deps.
   - pip install futures==3.1.1
   - pip install grpcio==1.6.3
@@ -67,6 +67,13 @@ install:
       pip install "absl-py>=0.7.0" \
       && pip install "numpy<2.0,>=1.14.5"
     fi
+  - |
+    # On TF 1.x nightlies, downgrade estimator temporarily.
+    case "${TF_VERSION_ID}" in
+      tf-nightly|tf-nightly==*)
+        pip install tf-estimator-nightly==1.14.0.dev2019091701
+        ;;
+    esac
   # Deps for gfile S3 test.
   - pip install boto3==1.9.86
   - pip install moto==1.3.7
@@ -78,8 +85,9 @@ install:
 before_script:
   - elapsed "before_script"
   # Do a fail-fast check for Python syntax errors or undefined names.
+  # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
   # Use the comment '# noqa: <error code>' to suppress.
-  - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
   # Lint frontend code
   - yarn lint
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.

@@ -12,24 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
-import {Store, select} from '@ngrx/store';
-import {State, getActivePlugin} from './core/core.reducers';
-import {changePlugin} from './core/core.actions';
-import {PluginId} from './types/api';
+import {Component, OnInit} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {State} from './core/core.reducers';
+import {coreLoaded} from './core/core.actions';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'tf-ng-tensorboard',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
-  constructor(private store: Store<State>) {}
+export class AppComponent implements OnInit {
+  constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    // TODO(stephanwlee): Instead of hardcoding it, consider reading it off of the
-    // tf_dashboard.registry. It is current infeasible unless Angular source is also
-    // compiled with JSCompiler.
-    this.store.dispatch(changePlugin({plugin: 'Core'}));
+    this.store.dispatch(coreLoaded());
   }
 }

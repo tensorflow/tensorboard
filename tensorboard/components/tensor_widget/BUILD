@@ -1,8 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tf_js_binary")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_devserver", "ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_config", "tf_js_binary", "tf_ts_devserver", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -10,6 +9,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tensor_widget",
     srcs = [
+        "tensor-widget.css",
+        "tensor-widget.html",
         ":tensor_widget_binary.js",
     ],
     path = "/tensor-widget",
@@ -20,18 +21,33 @@ tf_web_library(
 
 tf_js_binary(
     name = "tensor_widget_binary",
+    srcs = [
+        "externs.js",
+    ],
     compile = 1,
-    entry_point = ":tensor-widget.ts",
+    entry_point = ":tensor-widget-interop.ts",
+    deps = [
+        ":tensor_widget_binary_lib",
+    ],
+)
+
+tf_ts_library(
+    name = "tensor_widget_binary_lib",
+    srcs = [
+        "tensor-widget-interop.ts",
+    ],
+    tsconfig = ":tsconfig",
     deps = [
         ":tensor_widget_lib",
     ],
 )
 
-ts_library(
+tf_ts_library(
     name = "tensor_widget_lib",
     srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "selection.ts",
         "shape-utils.ts",
         "slicing-control.ts",
         "string-utils.ts",
@@ -40,17 +56,18 @@ ts_library(
         "types.ts",
         "version.ts",
     ],
+    tsconfig = ":tsconfig",
 )
 
-ts_library(
+tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
         "dtype-utils-test.ts",
+        "selection-test.ts",
         "shape-utils-test.ts",
         "string-utils-test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":tensor_widget_lib",
         "@npm//@types/chai",
@@ -61,23 +78,25 @@ ts_library(
 
 jasmine_node_test(
     name = "test",
-    deps = [":test_lib"],
+    srcs = [":test_lib"],
+    deps = [
+        "@npm//chai",
+    ],
 )
 
-ts_library(
+tf_ts_library(
     name = "demo_lib",
     srcs = [
         "demo/demo.ts",
     ],
-    tsconfig = "//:tsconfig-test",
+    tsconfig = ":tsconfig",
     deps = [
         ":tensor_widget_lib",
     ],
 )
 
-ts_devserver(
+tf_ts_devserver(
     name = "dev_server",
-    entry_module = "tensor-widget",
     index_html = "demo/demo.html",
     serving_path = "/bundle.js",
     static_files = [
@@ -88,4 +107,10 @@ ts_devserver(
     deps = [
         ":demo_lib",
     ],
+)
+
+tf_ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+    deps = [],
 )

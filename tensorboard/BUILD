@@ -40,6 +40,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":errors",
         ":lazy",
         ":notebook",
         ":program",
@@ -58,6 +59,22 @@ py_test(
     deps = [
         ":lib",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
+    name = "errors",
+    srcs = ["errors.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "errors_test",
+    srcs = ["errors_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":errors",
+        ":test",
     ],
 )
 
@@ -149,6 +166,7 @@ py_test(
         ":program",
         ":test",
         "//tensorboard/backend:application",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],

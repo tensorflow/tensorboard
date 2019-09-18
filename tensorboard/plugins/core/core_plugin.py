@@ -57,7 +57,8 @@ class CorePlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._logdir = context.logdir
+    logdir_spec = context.flags.logdir_spec if context.flags else ''
+    self._logdir = context.logdir or logdir_spec
     self._db_uri = context.db_uri
     self._window_title = context.window_title
     self._multiplexer = context.multiplexer
@@ -120,11 +121,15 @@ class CorePlugin(base_plugin.TBPlugin):
       database (depending on which mode TensorBoard is running in).
     * window_title is the title of the TensorBoard web page.
     """
+    if self._data_provider:
+      experiment = request.args.get('experiment', '')
+      data_location = self._data_provider.data_location(experiment)
+    else:
+      data_location = self._logdir or self._db_uri
     return http_util.Respond(
         request,
         {
-            'data_location': self._logdir or self._db_uri,
-            'mode': 'db' if self._db_uri else 'logdir',
+            'data_location': data_location,
             'window_title': self._window_title,
         },
         'application/json')
@@ -154,9 +159,9 @@ class CorePlugin(base_plugin.TBPlugin):
     last, and then ties are broken by sorting on the run name.
     """
     if self._data_provider:
+      experiment = request.args.get('experiment', '')
       runs = sorted(
-          # (`experiment_id=None` as experiment support is not yet implemented)
-          self._data_provider.list_runs(experiment_id=None),
+          self._data_provider.list_runs(experiment_id=experiment),
           key=lambda run: (
               run.start_time if run.start_time is not None else float('inf'),
               run.run_name,
@@ -292,12 +297,25 @@ Directory where TensorBoard will look to find TensorFlow event files
 that it can display. TensorBoard will recursively walk the directory
 structure rooted at logdir, looking for .*tfevents.* files.
 
-You may also pass a comma separated list of log directories, and
-TensorBoard will watch each directory. You can also assign names to
-individual log directories by putting a colon between the name and the
-path, as in:
+A leading tilde will be expanded with the semantics of Python's
+os.expanduser function.
+''')
 
-`tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2`\
+    parser.add_argument(
+        '--logdir_spec',
+        metavar='PATH_SPEC',
+        type=str,
+        default='',
+        help='''\
+Like `--logdir`, but with special interpretation for commas and colons:
+commas separate multiple runs, where a colon specifies a new name for a
+run. For example:
+`tensorboard --logdir_spec=name1:/path/to/logs/1,name2:/path/to/logs/2`.
+
+This flag is discouraged and can usually be avoided. TensorBoard walks
+log directories recursively; for finer-grained control, prefer using a
+symlink tree. Some features may not work when using `--logdir_spec`
+instead of `--logdir`.
 ''')
 
     parser.add_argument(
@@ -522,12 +540,17 @@ flag.\
     if flags.version_tb:
       pass
     elif flags.inspect:
+      if flags.logdir_spec:
+        raise FlagsError('--logdir_spec is not supported with --inspect.')
       if flags.logdir and flags.event_file:
         raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')
       if not (flags.logdir or flags.event_file):
         raise FlagsError('Must specify either --logdir or --event_file.')
-    elif not flags.db and not flags.logdir:
+    elif flags.logdir and flags.logdir_spec:
+      raise FlagsError(
+          'May not specify both --logdir and --logdir_spec')
+    elif not flags.db and not flags.logdir and not flags.logdir_spec:
       raise FlagsError('A logdir or db must be specified. '
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '

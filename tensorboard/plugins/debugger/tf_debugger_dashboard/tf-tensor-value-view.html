@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../tensor-widget/tensor-widget.html" />
 <link rel="import" href="../tf-imports/polymer.html" />
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../tf-backend/tf-backend.html" />
@@ -51,64 +52,72 @@ limitations under the License.
           </div>
         </td>
       </tr>
-      <tr>
+      <tr class="tensor-value-value-tr">
         <td>
-          <div>
+          <template is="dom-if" if="[[_useTensorWidget]]">
+            <div id="tensor-widget"></div>
+          </template>
+
+          <template is="dom-if" if="[[!_useTensorWidget]]">
             <paper-item id="debug-op"></paper-item>
-            <paper-input
-              class="inline value-card-input"
-              label="Slicing"
-              id="slicing"
-              value="{{slicing}}"
-              on-change="refresh"
-            >
-            </paper-input>
-          </div>
-          <div>
-            <paper-input
-              class="inline value-card-input"
-              label="Time Indices"
-              id="time-indices"
-              value="{{timeIndices}}"
-              on-change="refresh"
-            >
-            </paper-input>
-            <paper-button
-              raised
-              id="time-indices-toggle-button"
-              class="tensor-value-buttons"
-              on-click="_timeIndicesToggleButtonCallback"
-              >Full History</paper-button
-            >
-          </div>
-        </td>
-        <td class="tensor-value-view-td">
-          <template is="dom-if" if="[[_isValueScalar]]">
-            <paper-input
-              class="inline"
-              label="Scalar Value"
-              id="value-scalar"
-              value="[[_dataScalar]]"
-            >
-            </paper-input>
-          </template>
-          <template is="dom-if" if="[[_isValueLineChart]]">
-            <tf-debugger-line-chart
-              data="[[_lineChartData]]"
-            ></tf-debugger-line-chart>
-          </template>
-          <template is="dom-if" if="[[_isValueImage]]">
-            <img
-              class="value-image"
-              height="250px"
-              width="250px"
-              src$="[[_dataImageSrc]]"
-            />
+            <div>
+              <paper-input
+                class="inline value-card-input"
+                label="Slicing"
+                id="slicing"
+                value="{{slicing}}"
+                on-change="refresh"
+              >
+              </paper-input>
+              <div>
+                <paper-input
+                  class="inline value-card-input"
+                  label="Time Indices"
+                  id="time-indices"
+                  value="{{timeIndices}}"
+                  on-change="refresh"
+                >
+                </paper-input>
+                <paper-button
+                  raised
+                  id="time-indices-toggle-button"
+                  class="tensor-value-buttons"
+                  on-click="_timeIndicesToggleButtonCallback"
+                  >Full History</paper-button
+                >
+              </div>
+
+              <td class="tensor-value-view-td">
+                <template is="dom-if" if="[[_isValueScalar]]">
+                  <paper-input
+                    class="inline"
+                    label="Scalar Value"
+                    id="value-scalar"
+                    value="[[_dataScalar]]"
+                  >
+                  </paper-input>
+                </template>
+                <template is="dom-if" if="[[_isValueLineChart]]">
+                  <tf-debugger-line-chart
+                    data="[[_lineChartData]]"
+                  ></tf-debugger-line-chart>
+                </template>
+                <template is="dom-if" if="[[_isValueImage]]">
+                  <img
+                    class="value-image"
+                    height="250px"
+                    width="250px"
+                    src$="[[_dataImageSrc]]"
+                  />
+                </template>
+              </td>
+            </div>
           </template>
         </td>
       </tr>
     </table>
 
+    <style include="tensor-widget-style"></style>
     <style>
       .tensor-value-buttons {
         height: 75%;
@@ -157,6 +166,14 @@ limitations under the License.
         font-size: 90%;
         color: blue;
       }
+      #tensor-widget {
+        border: 1px solid rgb(160, 160, 160);
+        /* box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        -webkit-box-sizing: content-box; */
+        height: 280px;
+        width: 484px;
+      }
       #slicing,
       #time-indices {
         --paper-input-container-input: {
@@ -178,9 +195,14 @@ limitations under the License.
         slicing: String,
         timeIndices: String,
 
+        dtype: String,
+        shape: Array,
+
         continueToButtonCallback: Object,
         closeButtonCallback: Object,
         tensorNameCallback: Object,
+
+        tensorWidget: Object,
 
         _isTensorValueScalar: {
           type: Boolean,
@@ -215,77 +237,151 @@ limitations under the License.
       },
       observers: ['_updateTimeIndicesToggle(timeIndices)'],
 
-      ready() {
-        this.renderTensorValue();
-      },
-
       renderTensorValue() {
         if (!this.tensorName) {
           return;
         }
 
-        this.$$('#debug-op').textContent = this._calculateDebugOpToDisplay();
+        if (this.slicing == null) {
+          this.set('_useTensorWidget', true);
 
-        const tensorRank = this._rankFromSlicing(this.slicing.trim());
-        const isSingleTimeStep = this._isTimeIndicesSingleStep(
-          this.timeIndices
-        );
-        let tensorRankWithTime = tensorRank;
-        if (!isSingleTimeStep) {
-          if (tensorRank > 1) {
-            this._showToast('History for tensors > 1D is not yet supported.');
-            return;
-          } else {
-            tensorRankWithTime += 1;
-          }
-        }
+          const tensorView = {
+            spec: {
+              dtype: this.dtype,
+              shape: this.shape,
+            },
+            get: () => {
+              throw new Error('tensorView.get() is not implemented yet.');
+            },
+            view: async (slicingSpec) => {
+              const rank = this.shape.length;
+              const slicingDims = slicingSpec.slicingDimsAndIndices.map(
+                (dimAndIndex) => dimAndIndex.dim
+              );
+              const slicingIndices = slicingSpec.slicingDimsAndIndices.map(
+                (dimAndIndex) => dimAndIndex.index
+              );
 
-        let mapping = tensorRankWithTime >= 2 ? 'image/png' : 'none';
-        const parameters = {
-          watch_key: this.tensorName + ':' + this.debugOp,
-          slicing: this.slicing,
-          time_indices: this.timeIndices,
-          mapping: mapping,
-        };
-        const baseUrl = tf_backend
-          .getRouter()
-          .pluginRoute('debugger', '/tensor_data');
-        const url = tf_backend.addParams(baseUrl, parameters);
-        this._requestManager.request(url).then((response) => {
-          if (response.error != null) {
-            this._showToast(
-              response.error.type + ': ' + response.error.message
-            );
-            return;
-          }
+              let pySlicingStr = '[';
+              for (let i = 0; i < rank; ++i) {
+                if (slicingDims.indexOf(i) !== -1) {
+                  pySlicingStr += `${slicingIndices[slicingDims.indexOf(i)]}`;
+                } else if (slicingSpec.viewingDims[0] === i) {
+                  pySlicingStr += `${slicingSpec.verticalRange[0]}:${
+                    slicingSpec.verticalRange[1]
+                  }`;
+                } else if (slicingSpec.viewingDims[1] === i) {
+                  pySlicingStr += `${slicingSpec.horizontalRange[0]}:${
+                    slicingSpec.horizontalRange[1]
+                  }`;
+                }
+                if (i < rank - 1) {
+                  pySlicingStr += ',';
+                }
+              }
+              pySlicingStr += ']';
 
-          const tensorData = isSingleTimeStep
-            ? response.tensor_data[0]
-            : response.tensor_data;
-          if (tensorRankWithTime === 0) {
-            // Scalar.
-            this._setVisualizationType('scalar');
-            this.set('_dataScalar', tensorData);
-          } else if (tensorRankWithTime === 1) {
-            this._setVisualizationType('lineChart');
-            let xyData = {x: [], y: tensorData};
-            // TODO(cais): For history mode, this should be time steps.
-            for (let i = 0; i < tensorData.length; ++i) {
-              xyData['x'].push(i + 1);
+              return new Promise((resolve, reject) => {
+                const parameters = {
+                  watch_key: this.tensorName + ':' + this.debugOp,
+                  slicing: pySlicingStr,
+                  time_indices: this.timeIndices,
+                  mapping: 'none',
+                };
+
+                const url = this._getTensorDataURL(parameters);
+                this._requestManager
+                  .request(url)
+                  .then((response) => {
+                    if (response.error == null) {
+                      // Get the last element of `tensor_data` because `tensor_data` is
+                      // index by time indices. Tensor Widget currently always displays
+                      // the last time index.
+                      resolve(
+                        response.tensor_data[response.tensor_data.length - 1]
+                      );
+                    } else {
+                      reject(response.error);
+                    }
+                  })
+                  .catch((err) => reject(err));
+              });
+            },
+          };
+
+          setTimeout(() => {
+            if (this.tensorWidget == null) {
+              this.tensorWidget = tensor_widget.tensorWidget(
+                this.$$('#tensor-widget'),
+                tensorView
+              );
             }
-            this.set('_lineChartData', xyData);
-          } else if (tensorRankWithTime >= 2) {
-            this._setVisualizationType('image');
-            this.set('_dataImageSrc', 'data:image/png;base64,' + tensorData);
-          } else {
-            this._showToast(
-              'Visualization of rank-' +
-                tensorRankWithTime +
-                ' tensors ' +
-                'is not yet supported.'
-            );
+            this.tensorWidget.render();
+          }, 10); // TODO(cais): Timeout is okay?
+        } else {
+          this.set('_useTensorWidget', false);
+
+          const tensorRank = this._rankFromSlicing(this.slicing.trim());
+          const isSingleTimeStep = this._isTimeIndicesSingleStep(
+            this.timeIndices
+          );
+          let tensorRankWithTime = tensorRank;
+          if (!isSingleTimeStep) {
+            if (tensorRank > 1) {
+              this._showToast('History for tensors > 1D is not yet supported.');
+              return;
+            } else {
+              tensorRankWithTime += 1;
+            }
           }
-        });
+
+          let mapping = tensorRankWithTime >= 2 ? 'image/png' : 'none';
+          const parameters = {
+            watch_key: this.tensorName + ':' + this.debugOp,
+            slicing: this.slicing,
+            time_indices: this.timeIndices,
+            mapping: mapping,
+          };
+          const url = this._getTensorDataURL(parameters);
+          this._requestManager.request(url).then((response) => {
+            this.$$(
+              '#debug-op'
+            ).textContent = this._calculateDebugOpToDisplay();
+            if (response.error != null) {
+              this._showToast(
+                response.error.type + ': ' + response.error.message
+              );
+              return;
+            }
+
+            const tensorData = isSingleTimeStep
+              ? response.tensor_data[0]
+              : response.tensor_data;
+            if (tensorRankWithTime === 0) {
+              // Scalar.
+              this._setVisualizationType('scalar');
+              this.set('_dataScalar', tensorData);
+            } else if (tensorRankWithTime === 1) {
+              this._setVisualizationType('lineChart');
+              let xyData = {x: [], y: tensorData};
+              // TODO(cais): For history mode, this should be time steps.
+              for (let i = 0; i < tensorData.length; ++i) {
+                xyData['x'].push(i + 1);
+              }
+              this.set('_lineChartData', xyData);
+            } else if (tensorRankWithTime >= 2) {
+              this._setVisualizationType('image');
+              this.set('_dataImageSrc', 'data:image/png;base64,' + tensorData);
+            } else {
+              this._showToast(
+                'Visualization of rank-' +
+                  tensorRankWithTime +
+                  ' tensors ' +
+                  'is not yet supported.'
+              );
+            }
+          });
+        }
       },
 
       refresh() {
@@ -293,6 +389,13 @@ limitations under the License.
           return;
         }
         this.renderTensorValue();
+      },
+
+      _getTensorDataURL(parameters) {
+        const baseURL = tf_backend
+          .getRouter()
+          .pluginRoute('debugger', '/tensor_data');
+        return tf_backend.addParams(baseURL, parameters);
       },
 
       // TODO(cais): Deduplicate with .ts
@@ -322,14 +425,22 @@ limitations under the License.
           this.set('_isValueScalar', true);
           this.set('_isValueLineChart', false);
           this.set('_isValueImage', false);
+          // this.set('_isValueTensorWidget', false);  // TODO(cais): Clean up.
         } else if (visualizationType === 'lineChart') {
           this.set('_isValueScalar', false);
           this.set('_isValueLineChart', true);
           this.set('_isValueImage', false);
+          // this.set('_isValueTensorWidget', false);
         } else if (visualizationType === 'image') {
           this.set('_isValueScalar', false);
           this.set('_isValueLineChart', false);
           this.set('_isValueImage', true);
+          // this.set('_isValueTensorWidget', false);
+          // } else if (visualizationType === 'widget') {  // TODO(cais): Clean up.
+          //   this.set('_isValueScalar', false);
+          //   this.set('_isValueLineChart', false);
+          //   this.set('_isValueImage', false);
+          //   this.set('_isValueTensorWidget', true);
         } else {
           console.error('Invalid visualizationType:', visualizationType);
         }

@@ -29,14 +29,17 @@ logger = tb_logging.get_logger()
 
 
 class MultiplexerDataProvider(provider.DataProvider):
-  def __init__(self, multiplexer):
+  def __init__(self, multiplexer, logdir):
     """Trivial initializer.
 
     Args:
       multiplexer: A `plugin_event_multiplexer.EventMultiplexer` (note:
         not a boring old `event_multiplexer.EventMultiplexer`).
+      logdir: The log directory from which data is being read. Only used
+        cosmetically. Should be a `str`.
     """
     self._multiplexer = multiplexer
+    self._logdir = logdir
 
   def _test_run_tag(self, run_tag_filter, run, tag):
     runs = run_tag_filter.runs
@@ -52,6 +55,10 @@ class MultiplexerDataProvider(provider.DataProvider):
       return self._multiplexer.FirstEventTimestamp(run_name)
     except ValueError as e:
       return None
+
+  def data_location(self, experiment_id):
+    del experiment_id   # ignored
+    return str(self._logdir)
 
   def list_runs(self, experiment_id):
     del experiment_id  # ignored for now

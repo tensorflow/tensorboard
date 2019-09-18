@@ -152,9 +152,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
             constants.DEBUGGER_PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(DebuggerPlugin, self).frontend_metadata()._replace(
-        element_name='tf-debugger-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-debugger-dashboard')
 
   @wrappers.Request.application
   def _serve_health_pills_handler(self, request):

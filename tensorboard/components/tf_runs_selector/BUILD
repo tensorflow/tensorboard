@@ -6,7 +6,10 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
     name = "tf_runs_selector",
-    srcs = ["tf-runs-selector.html"],
+    srcs = [
+        "tf-runs-selector.html",
+        "tf-wbr-string.html",
+    ],
     path = "/tf-runs-selector",
     visibility = ["//visibility:public"],
     deps = [

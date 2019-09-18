@@ -48,6 +48,15 @@ limitations under the License.
           value: 'item',
         },
 
+        /**
+         * Whether all stamped items are active or not.
+         * @protected
+         */
+        _contentActive: {
+          type: Boolean,
+          value: true,
+        },
+
         _domBootstrapped: {
           type: Boolean,
           value: false,
@@ -97,6 +106,7 @@ limitations under the License.
       observers: [
         '_bootstrapDom(_itemsRendered, isAttached)',
         '_updateDom(_renderedItems.*, _domBootstrapped)',
+        '_updateActive(_contentActive)',
         '_trimCache(_cacheSize)',
       ],
 
@@ -135,7 +145,7 @@ limitations under the License.
             parentModel: true,
             instanceProps: {
               [this.as]: true,
-              active: true,
+              active: this._contentActive,
             },
             forwardHostProp: function(prop, value) {
               this._renderedTemplateInst.forEach((inst) => {
@@ -166,6 +176,14 @@ limitations under the License.
         this._domBootstrapped = true;
       },
 
+      _updateActive() {
+        if (!this._domBootstrapped) return;
+
+        Array.from(this._renderedTemplateInst.values()).forEach((inst) => {
+          inst.notifyPath('active', this._contentActive);
+        });
+      },
+
       _updateDom(event) {
         if (!this._domBootstrapped) return;
         // These are uninteresting.
@@ -193,7 +211,7 @@ limitations under the License.
           if (this._renderedTemplateInst.has(key)) {
             this._renderedTemplateInst
               .get(key)
-              .notifyPath(this.as, event.value, true /* fromAbove */);
+              .notifyPath(this.as, event.value);
           } else {
             console.warn(
               `Expected '${key}' to exist in the DOM but ` +
@@ -213,8 +231,11 @@ limitations under the License.
         if (this._lruCachedItems.has(key)) {
           fragOrEl = this._lruCachedItems.get(key);
           this._lruCachedItems.delete(key);
+          this._renderedTemplateInst
+            .get(key)
+            .notifyPath('active', this._contentActive);
         } else {
-          const prop = {[this.as]: item, active: true};
+          const prop = {[this.as]: item, active: this._contentActive};
           const inst = new this._ctor(prop);
           fragOrEl = inst.root;
           this._renderedTemplateInst.set(key, inst);
@@ -234,7 +255,9 @@ limitations under the License.
 
       _removeItem(item, node) {
         Polymer.dom(node.parentNode).removeChild(node);
-        this._lruCachedItems.set(this._getItemKey(item), node);
+        const key = this._getItemKey(item);
+        this._lruCachedItems.set(key, node);
+        this._renderedTemplateInst.get(key).notifyPath('active', false);
       },
 
       _trimCache() {

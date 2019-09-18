@@ -19,32 +19,40 @@ import {
   on,
   createFeatureSelector,
 } from '@ngrx/store';
-import {PluginId} from '../types/api';
+import {PluginId, PluginsListing} from '../types/api';
 import * as actions from './core.actions';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-import * as _typeHackSelector from '@ngrx/store/src/selector';
-import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 export const CORE_FEATURE_KEY = 'core';
 
 export interface CoreState {
-  activePlugin: PluginId;
+  activePlugin: PluginId | null;
+  plugins: PluginsListing;
 }
 
 export interface State {
   [CORE_FEATURE_KEY]: CoreState;
 }
 
-const initialState = {};
+const initialState: CoreState = {
+  activePlugin: null,
+  plugins: {},
+};
 
 const reducer = createReducer(
   initialState,
   on(actions.changePlugin, (state: CoreState, {plugin}) => {
-    return {
-      activePlugin: plugin,
-    };
+    return {...state, activePlugin: plugin};
+  }),
+  on(actions.pluginsListingLoaded, (state: CoreState, {plugins}) => {
+    const [firstPlugin] = Object.keys(plugins);
+    let activePlugin =
+      state.activePlugin !== null ? state.activePlugin : firstPlugin;
+    return {activePlugin, plugins};
   })
 );
 
@@ -58,7 +66,14 @@ const selectCoreState = createFeatureSelector<State, CoreState>(
 
 export const getActivePlugin = createSelector(
   selectCoreState,
-  (state: CoreState): PluginId => {
+  (state: CoreState): PluginId | null => {
     return state.activePlugin;
+  }
+);
+
+export const getPlugins = createSelector(
+  selectCoreState,
+  (state: CoreState): PluginsListing => {
+    return state.plugins;
   }
 );

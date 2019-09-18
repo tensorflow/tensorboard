@@ -173,6 +173,7 @@ smoke() (
   python -c "
 import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
+assert issubclass(tb.errors.NotFoundError, tb.errors.PublicError)
 from tensorboard.plugins.projector import visualize_embeddings
 tb.notebook.start  # don't invoke; just check existence
 from tensorboard.plugins.hparams import summary_v2 as hp
