@@ -170,7 +170,8 @@ class MutantFeatureValue(object):
               type(index)))
     self.index = index
     self.mutant_value = (
-      mutant_value.encode() if isinstance(obj, string_types) else mutant_value)
+      mutant_value.encode()
+      if isinstance(mutant_value, string_types) else mutant_value)
     #if self.original_feature.feature_type == 'bytes_list':
     #  print('encoding mutant')
     #  self.mutant_value = self.mutant_value.encode()
