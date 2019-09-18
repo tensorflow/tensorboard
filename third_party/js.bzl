@@ -155,16 +155,16 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "90f3af9ebfaf34f642b05f3baeeca2c5547d1b8ba6872803990c26804f4067b1": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/LICENSE",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/LICENSE",
           ],
-          "40873d04d4ace1529c503b10053fe6c09c04e8ba4a1eaacb07a1ea17fa073368": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
+          "545db828b1d52f926026d5f04f32dbc6f9ff7c62a2d8e2da9dfda09b155a490a": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/build/three.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/build/three.js",
           ],
-          "f495c87a34ac1bf238e245c60e9fed2ec831cefbb9dc29e17b91e24b5ef6559b": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
+          "cec663b016fb04c118ac7d6d1365eb9ad81567843e6c584ade4217d4adaf0ca0": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/examples/js/controls/OrbitControls.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/examples/js/controls/OrbitControls.js",
           ],
       },
   )
