@@ -17,6 +17,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
+
 def tensorboard_js_workspace():
   """TensorBoard JavaScript dependencies."""
 
