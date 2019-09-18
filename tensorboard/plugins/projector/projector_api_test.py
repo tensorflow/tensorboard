@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import shutil
 
 import six
 import tensorflow as tf
@@ -31,11 +30,11 @@ from tensorboard.util import test_util
 
 def create_dummy_config():
   return projector.ProjectorConfig(
-      model_checkpoint_path = 'test',
+      model_checkpoint_path='test',
       embeddings = [
           projector.EmbeddingInfo(
-              tensor_name = 'tensor1',
-              metadata_path = 'metadata1',
+              tensor_name='tensor1',
+              metadata_path='metadata1',
           ),
       ],
   )
@@ -44,15 +43,12 @@ class ProjectorApiTest(tf.test.TestCase):
 
   def test_visualize_embeddings_with_logdir(self):
     logdir = self.get_temp_dir()
-    self.addCleanup(shutil.rmtree, logdir)
-
     config = create_dummy_config()
     projector.visualize_embeddings(logdir, config)
 
     # Read the configurations from disk and make sure it matches the original.
     with tf.io.gfile.GFile(os.path.join(logdir, 'projector_config.pbtxt')) as f:
       config2 = projector.ProjectorConfig()
-      # config2.ParseFromString(f.read())
       text_format.Parse(f.read(), config2)
 
     self.assertEqual(config, config2)
@@ -61,9 +57,8 @@ class ProjectorApiTest(tf.test.TestCase):
     if tf.__version__ == "stub":
       self.skipTest("Requires TensorFlow for FileWriter")
     logdir = self.get_temp_dir()
-    self.addCleanup(shutil.rmtree, logdir)
-
     config = create_dummy_config()
+
     with tf.compat.v1.Graph().as_default():
       with test_util.FileWriterCache.get(logdir) as writer:
         projector.visualize_embeddings(writer, config)
