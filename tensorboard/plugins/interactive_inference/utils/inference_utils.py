@@ -25,8 +25,8 @@ from absl import logging
 import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
+from six import binary_type, string_types, integer_types
 from six import iteritems
-from six import string_types, integer_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -125,8 +125,13 @@ class OriginalFeatureList(object):
   def __init__(self, feature_name, original_value, feature_type):
     """Inits OriginalFeatureList."""
     self.feature_name = feature_name
-    self.original_value = original_value
+    self.original_value = [
+      v.decode('utf-8') if isinstance(v, binary_type) else v
+      for v in original_value]
     self.feature_type = feature_type
+
+    #if feature_type == 'bytes_list':
+    #  self.original_value = [v.decode('utf-8') for v in self.original_value]
 
     # Derived attributes.
     self.length = sum(1 for _ in original_value)
@@ -164,7 +169,12 @@ class MutantFeatureValue(object):
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
     self.index = index
-    self.mutant_value = mutant_value
+    self.mutant_value = (
+      mutant_value.encode() if isinstance(obj, string_types) else mutant_value)
+    #if self.original_feature.feature_type == 'bytes_list':
+    #  print('encoding mutant')
+    #  self.mutant_value = self.mutant_value.encode()
+    #  print(self.mutant_value)
 
 
 class ServingBundle(object):
@@ -438,10 +448,13 @@ def make_mutant_tuples(example_protos, original_feature, index_to_mutate,
           new_values = list(feature_list)
           new_values[index_to_mutate] = mutant_feature.mutant_value
 
+        print('new values')
+        print(new_values)
         del feature_list[:]
         feature_list.extend(new_values)
         mutant_examples.append(copied_example)
-      except (ValueError, IndexError):
+      except (ValueError, IndexError) as e:
+        print(e)
         # If the mutant value can't be set, still add the example to the
         # mutant_example even though no change was made. This is necessary to
         # allow for computation of global PD plots when not all examples have
@@ -481,6 +494,7 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
     charts = []
     for serving_bundle in serving_bundles:
+      print(mutant_examples)
       (inference_result_proto, _) = run_inference(
         mutant_examples, serving_bundle)
       charts.append(make_json_formatted_for_single_chart(
@@ -563,9 +577,12 @@ def make_json_formatted_for_single_chart(mutant_features,
           key += ' (index %d)' % index_to_mutate
         if not key in series:
           series[key] = {}
-        if not mutant_feature.mutant_value in series[key]:
-          series[key][mutant_feature.mutant_value] = []
-        series[key][mutant_feature.mutant_value].append(
+        mutant_val = mutant_feature.mutant_value
+        if isinstance(mutant_val, binary_type):
+          mutant_val = mutant_val.decode('utf-8')
+        if not mutant_val in series[key]:
+          series[key][mutant_val] = []
+        series[key][mutant_val].append(
           classification_class.score)
 
     # Post-process points to have separate list for each class
@@ -577,6 +594,7 @@ def make_json_formatted_for_single_chart(mutant_features,
           y_label: sum(y_list) / float(len(y_list))
         })
       return_series[key].sort(key=lambda p: p[x_label])
+    print(return_series)
     return return_series
 
   elif isinstance(inference_result_proto, regression_pb2.RegressionResponse):
@@ -589,9 +607,12 @@ def make_json_formatted_for_single_chart(mutant_features,
       # results. So, modding by len(mutant_features) allows us to correctly
       # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
-      if not mutant_feature.mutant_value in points:
-        points[mutant_feature.mutant_value] = []
-      points[mutant_feature.mutant_value].append(regression.value)
+      mutant_val = mutant_feature.mutant_value
+      if isinstance(mutant_val, binary_type):
+        mutant_val = mutant_val.decode('utf-8')
+      if not mutant_val in points:
+        points[mutant_val] = []
+      points[mutant_val].append(regression.value)
     key = 'value'
     if (index_to_mutate != 0):
       key += ' (index %d)' % index_to_mutate
