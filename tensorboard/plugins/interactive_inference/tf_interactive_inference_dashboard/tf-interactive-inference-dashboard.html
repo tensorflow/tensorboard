@@ -3213,6 +3213,10 @@ limitations under the License.
       }
     }
 
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
     (function() {
       const PLUGIN_NAME = 'whatif';
 
@@ -4156,17 +4160,10 @@ limitations under the License.
               );
               const key = this.createCombinedValueString_(key1, key2);
               if (!(key in thresholdsMap)) {
-                // Deep copy thresholds for each facet
-                const modelThresholds = [];
-                for (let i = 0; i < this.overallThresholds.length; i++) {
-                  modelThresholds.push({
-                    threshold: this.overallThresholds[i].threshold,
-                  });
-                }
                 thresholdsMap[key] = {
                   value: key1,
                   value2: key2,
-                  threshold: modelThresholds,
+                  threshold: deepClone(this.overallThresholds),
                   opened: false,
                 };
               }
