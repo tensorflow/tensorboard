@@ -528,7 +528,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     if self._auto_wildcard:
       display_host = socket.gethostname()
     else:
-      host = self.host
+      host = self._host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
     return 'http://%s:%d%s/' % (display_host, self.server_port,
