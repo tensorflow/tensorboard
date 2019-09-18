@@ -322,11 +322,22 @@ instead of `--logdir`.
         '--host',
         metavar='ADDR',
         type=str,
-        default='',
+        default=None,  # like localhost, but prints a note about `--bind_all`
         help='''\
-What host to listen to. Defaults to serving on all interfaces. Other
-commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
+What host to listen to (default: localhost). To serve to the entire local
+network on both IPv4 and IPv6, see `--bind_all`, with which this option is
+mutually exclusive.
 ''')
+
+    parser.add_argument(
+        '--bind_all',
+        action='store_true',
+        help='''\
+Serve on all public interfaces. This will expose your TensorBoard instance to
+the network on both IPv4 and IPv6 (where available). Mutually exclusive with
+`--host`.
+''')
+
 
     parser.add_argument(
         '--port',
@@ -553,6 +564,8 @@ flag.\
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
+    elif flags.host is not None and flags.bind_all:
+      raise FlagsError('Must not specify both --host and --bind_all.')
 
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]

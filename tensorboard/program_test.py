@@ -73,6 +73,7 @@ class WerkzeugServerTest(tb_test.TestCase):
 
   def make_flags(self, **kwargs):
     flags = argparse.Namespace()
+    kwargs.setdefault('bind_all', False)
     for k, v in six.iteritems(kwargs):
       setattr(flags, k, v)
     return flags
