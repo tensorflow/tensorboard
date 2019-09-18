@@ -219,7 +219,6 @@ class TensorBoard(object):
     try:
       server = self._make_server()
       server.print_serving_message()
-      sys.stderr.flush()
       self._register_info(server)
       server.serve_forever()
       return 0
@@ -334,6 +333,7 @@ class TensorBoardServer(object):
         'TensorBoard %s at %s (Press CTRL+C to quit)\n'
         % (version.VERSION, self.get_url())
     )
+    sys.stderr.flush()
 
 
 class TensorBoardServerException(Exception):
@@ -540,6 +540,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
           'Serving TensorBoard on localhost; to expose to the network, '
           'use a proxy or pass --bind_all\n'
       )
+      sys.stderr.flush()
     super(WerkzeugServer, self).print_serving_message()
 
   def _fix_werkzeug_logging(self):
