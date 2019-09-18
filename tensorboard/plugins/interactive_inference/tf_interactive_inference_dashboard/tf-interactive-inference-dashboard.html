@@ -4123,6 +4123,17 @@ limitations under the License.
         },
 
         /**
+         * Get the key to which this example belongs when the dataset is sliced by the given feature(s).
+         */
+        getSliceKey_: function(example, feature1, feature2) {
+          // TODO: Aggregate numeric keys into buckets.
+          return this.createCombinedValueString_(
+            example[feature1],
+            example[feature2]
+          );
+        },
+
+        /**
          * Creates a list of all feature values of the selected breakdown feature
          * or feature crosses if two breakdown features are selected, and gets
          * inference stats per breakdown.
@@ -4193,6 +4204,7 @@ limitations under the License.
                       opened: false,
                     };
                     thresholds.push(thresh);
+                    // TODO: Make this coincide with the getSliceKey_
                     const mapKey = this.createCombinedValueString_(
                       feature1Value,
                       feature2Value
@@ -4277,9 +4289,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -4356,9 +4369,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -4412,9 +4426,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -5922,9 +5937,10 @@ limitations under the License.
           // case), then get the appropriate threshold for this item's value for
           // that feature. Otherwise the overall threshold will be used.
           if (feature1.length !== 0) {
-            let key = this.createCombinedValueString_(
-              item[feature1],
-              item[feature2]
+            let key = this.getSliceKey_(
+              item,
+              this.selectedBreakdownFeature,
+              this.selectedSecondBreakdownFeature
             );
             thresholds = this.featureValueThresholdsMap[key].threshold;
           }
