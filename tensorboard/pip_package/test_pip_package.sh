@@ -184,6 +184,7 @@ hp.hparams_pb({'optimizer': 'adam', 'learning_rate': 0.02})
     python -c "
 import tensorboard as tb
 tb.summary.v1.scalar_pb('test', 42)
+tb.summary.scalar('test v2', 1337)
 from tensorboard.plugins.beholder import Beholder, BeholderHook
 from tensorboard.plugins.mesh import summary
 "
