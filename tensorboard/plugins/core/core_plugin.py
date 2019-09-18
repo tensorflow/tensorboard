@@ -57,7 +57,8 @@ class CorePlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._logdir = context.logdir or context.logdir_spec
+    logdir_spec = context.flags.logdir_spec if context.flags else ''
+    self._logdir = context.logdir or logdir_spec
     self._db_uri = context.db_uri
     self._window_title = context.window_title
     self._multiplexer = context.multiplexer

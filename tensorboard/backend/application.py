@@ -210,7 +210,6 @@ def TensorBoardWSGIApp(
       db_uri=db_uri,
       flags=flags,
       logdir=flags.logdir,
-      logdir_spec=flags.logdir_spec,
       multiplexer=deprecated_multiplexer,
       assets_zip_provider=assets_zip_provider,
       plugin_name_to_instance=plugin_name_to_instance,
