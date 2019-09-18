@@ -51,6 +51,7 @@ class FakeFlags(object):
   def __init__(
       self,
       logdir,
+      logdir_spec='',
       purge_orphaned_data=True,
       reload_interval=60,
       samples_per_plugin='',
@@ -64,6 +65,7 @@ class FakeFlags(object):
       reload_multifile_inactive_secs=4000,
       generic_data='auto'):
     self.logdir = logdir
+    self.logdir_spec = logdir_spec
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
     self.samples_per_plugin = samples_per_plugin
