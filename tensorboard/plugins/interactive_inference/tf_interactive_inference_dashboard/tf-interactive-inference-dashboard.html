@@ -3270,7 +3270,6 @@ limitations under the License.
     const attributionSparseKeySuffix = '_keys';
     const attributionSparseValueSuffix = '_values';
 
-
     function deleteElement(elt) {
       if (elt && elt.parentElement) {
         elt.parentElement.removeChild(elt);
@@ -3857,15 +3856,23 @@ limitations under the License.
           }
         },
 
-        invokeCustomDistanceCallback: function(callbackObj){
+        invokeCustomDistanceCallback: function(callbackObj) {
           switch (callbackObj.funId) {
             case distanceCallbacks.finalizeClosestCounterfactual:
-              this.finalizeClosestCounterfactual(callbackObj.exInd, callbackObj.distances, callbackObj.params);
+              this.finalizeClosestCounterfactual(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
               break;
             case distanceCallbacks.finalizeAddDistanceMetric:
-              this.finalizeAddDistanceMetric(callbackObj.exInd, callbackObj.distances, callbackObj.params);
+              this.finalizeAddDistanceMetric(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
               break;
-          };
+          }
         },
 
         finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
