@@ -107,7 +107,7 @@ class DirectoryWatcher(object):
     # If the loader exists, check it for a value.
     if not self._loader:
       self._InitializeLoader()
-    
+
     # If it still doesn't exist, there is no data
     if not self._loader:
       return
