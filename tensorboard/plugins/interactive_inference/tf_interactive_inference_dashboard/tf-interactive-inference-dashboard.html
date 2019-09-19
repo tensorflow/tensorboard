@@ -5157,7 +5157,8 @@ limitations under the License.
             // above search.
             for (let vIdx = 0; vIdx < values.length; vIdx++) {
               const thresholdsIdx = this.featureValueThresholdsIndexMap[
-                values[vIdx]];
+                values[vIdx]
+              ];
               this.set(
                 'featureValueThresholds.' +
                   thresholdsIdx +
@@ -6099,7 +6100,8 @@ limitations under the License.
               item[feature2]
             );
             thresholds = this.featureValueThresholds[
-              this.featureValueThresholdsIndexMap[key]].threshold;
+              this.featureValueThresholdsIndexMap[key]
+            ].threshold;
           }
           for (let modelNum = 0; modelNum < this.numModels; modelNum++) {
             const nonZeroClassification = this.getClassificationBestNonZero(
