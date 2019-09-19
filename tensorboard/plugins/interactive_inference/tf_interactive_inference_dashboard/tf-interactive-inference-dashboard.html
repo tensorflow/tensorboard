@@ -497,6 +497,11 @@ limitations under the License.
         max-width: 150px;
       }
 
+      .num-buckets-input {
+        width: 45px;
+        margin-right: 8px;
+      }
+
       .control-button {
         background-color: white;
         border: 1px solid var(--wit-color-gray300);
@@ -2059,6 +2064,18 @@ limitations under the License.
                               </template>
                             </paper-listbox>
                           </paper-dropdown-menu>
+                          <template
+                            is="dom-if"
+                            if="[[isNumericFeature_(selectedBreakdownFeature)]]"
+                          >
+                            <paper-input
+                              min="2"
+                              value="{{numPrimaryBuckets}}"
+                              label="Buckets"
+                              type="number"
+                              class="num-buckets-input"
+                            ></paper-input>
+                          </template>
                           <div>
                             <div class="help-title help-title-margin">
                               What does slicing do?
@@ -2095,6 +2112,18 @@ limitations under the License.
                                 </template>
                               </paper-listbox>
                             </paper-dropdown-menu>
+                            <template
+                              is="dom-if"
+                              if="[[isNumericFeature_(selectedSecondBreakdownFeature)]]"
+                            >
+                              <paper-input
+                                min="2"
+                                value="{{numSecondaryBuckets}}"
+                                label="Buckets"
+                                type="number"
+                                class="num-buckets-input"
+                              ></paper-input>
+                            </template>
                           </template>
                         </div>
                       </template>
@@ -3293,9 +3322,15 @@ limitations under the License.
           },
           maxInferenceEntriesPerRun: Number,
           // Number of buckets when aggregating numeric features.
-          numBuckets: {
+          numPrimaryBuckets: {
             type: Number,
-            value: 10,
+            value: 2,
+            observer: 'breakdownFeatureSelected_',
+          },
+          numSecondaryBuckets: {
+            type: Number,
+            value: 2,
+            observer: 'breakdownFeatureSelected_',
           },
 
           // Inferences from servo.
@@ -3689,7 +3724,10 @@ limitations under the License.
           // used for aggregating numeric features.
           // For instance: `{'age': [10, 30, 60, 90]}` would mean values should
           // be bucketed into either `[10, 30)`, `[30, 60)` or `[60, 90]`.
-          featureBucketEdges_: Object,
+          featureBucketEdges_: {
+            type: Object,
+            value: () => ({}),
+          },
         },
 
         observers: [
@@ -4210,28 +4248,32 @@ limitations under the License.
           if (this.selectedBreakdownFeature == '') {
             this.selectedSecondBreakdownFeature = '';
           }
-          const thresholdsMap = {};
-          this.visdata.forEach(
-            item => {
-              const key1 = this.getSliceKey_(
-                item,
-                this.selectedBreakdownFeature
-              );
-              const key2 = this.getSliceKey_(
-                item,
-                this.selectedSecondBreakdownFeature
-              );
-              const key = this.createCombinedValueString_(key1, key2);
-              if (!(key in thresholdsMap)) {
-                thresholdsMap[key] = {
-                  value: key1,
-                  value2: key2,
-                  threshold: deepClone(this.overallThresholds),
-                  opened: false,
-                };
-              }
-            }
+          this.calculateBucketEdges_(
+            this.selectedBreakdownFeature,
+            this.numPrimaryBuckets
           );
+          this.calculateBucketEdges_(
+            this.selectedSecondBreakdownFeature,
+            this.numSecondaryBuckets
+          );
+
+          const thresholdsMap = {};
+          this.visdata.forEach((item) => {
+            const key1 = this.getSliceKey_(item, this.selectedBreakdownFeature);
+            const key2 = this.getSliceKey_(
+              item,
+              this.selectedSecondBreakdownFeature
+            );
+            const key = this.createCombinedValueString_(key1, key2);
+            if (!(key in thresholdsMap)) {
+              thresholdsMap[key] = {
+                value: key1,
+                value2: key2,
+                threshold: deepClone(this.overallThresholds),
+                opened: false,
+              };
+            }
+          });
           const thresholds = Object.values(thresholdsMap);
           this.set('featureValueThresholds', thresholds);
           this.set('featureValueThresholdsMap', thresholdsMap);
@@ -6100,7 +6142,6 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
-          this.calculateFeatureBucketEdges_();
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
@@ -6155,14 +6196,14 @@ limitations under the License.
         },
 
         /**
-         * Whether values of this feature should be aggregated in bucket slices.
+         * Whether the feature is numeric (as opposed to categorical).
          */
-        shouldBeAggregated_: function(feature) {
+        isNumericFeature_: function(feature) {
           return (
+            feature &&
+            this.distanceStats_ &&
             this.distanceStats_[feature] &&
-            this.distanceStats_[feature].isNumeric &&
-            // No point in aggregating if less unique values than buckets.
-            this.stats[feature].uniqueCount > this.numBuckets
+            this.distanceStats_[feature].isNumeric
           );
         },
 
@@ -6170,28 +6211,33 @@ limitations under the License.
          * Calculate edges between buckets for aggregating numeric features.
          * We do this beforehand to round numbers and avoid ugly interval labels.
          */
-        calculateFeatureBucketEdges_: function() {
-          this.featureBucketEdges_ = {};
-          for (const feature of Object.keys(this.distanceStats_)) {
-            if (this.shouldBeAggregated_(feature)) {
-              const min = this.stats[feature].numberMin;
-              const max = this.stats[feature].numberMax;
-              const len = (max - min) / this.numBuckets;
-              const stdDev = this.distanceStats_[feature].stdDev;
-              function round(val) {
-                // Round to a precision near the magnitude of standard deviation.
-                const precision = -Math.floor(Math.log10(stdDev));
-                return Math.round(val * 10 ** precision) / 10 ** precision;
-              }
-              const bucketEdges = [];
-              bucketEdges.push(min);
-              for (let i = 1; i < this.numBuckets; i++) {
-                bucketEdges.push(round(min + i * len));
-              }
-              bucketEdges.push(max);
-              this.featureBucketEdges_[feature] = bucketEdges;
-            }
+        calculateBucketEdges_: function(feature, numBuckets) {
+          if (
+            !this.isNumericFeature_(feature) ||
+            // No point in aggregating if less unique values than buckets.
+            this.stats[feature].uniqueCount < numBuckets ||
+            // Already done.
+            (this.featureBucketEdges_[feature] &&
+              this.featureBucketEdges_[feature].length == numBuckets + 1)
+          ) {
+            return;
           }
+          const min = this.stats[feature].numberMin;
+          const max = this.stats[feature].numberMax;
+          const len = (max - min) / numBuckets;
+          const stdDev = this.distanceStats_[feature].stdDev;
+          function round(val) {
+            // Round to a precision near the magnitude of standard deviation.
+            const precision = -Math.floor(Math.log10(stdDev));
+            return Math.round(val * 10 ** precision) / 10 ** precision;
+          }
+          const bucketEdges = [];
+          bucketEdges.push(min);
+          for (let i = 1; i < numBuckets; i++) {
+            bucketEdges.push(round(min + i * len));
+          }
+          bucketEdges.push(max);
+          this.featureBucketEdges_[feature] = bucketEdges;
         },
 
         /**
