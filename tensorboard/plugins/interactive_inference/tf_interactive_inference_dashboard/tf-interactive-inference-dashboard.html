@@ -3685,6 +3685,10 @@ limitations under the License.
             type: Boolean,
             value: false,
           },
+          // This object maps each feature to a list of buckets delimiters,
+          // used for aggregating numeric features.
+          // For instance: `{'age': [10, 30, 60, 90]}` would mean values should
+          // be bucketed into either `[10, 30)`, `[30, 60)` or `[60, 90]`.
           featureBucketEdges_: Object,
         },
 
@@ -4200,10 +4204,12 @@ limitations under the License.
           // When features to slice by change, set optimization strategy
           // back to custom (default).
           this.resetOptimizationSelected_();
-
+          if (this.selectedBreakdownFeature == '') {
+            this.selectedSecondBreakdownFeature = '';
+          }
           const thresholdsMap = {};
           this.visdata.forEach(
-            function(item) {
+            item => {
               const key1 = this.getSliceKey_(
                 item,
                 this.selectedBreakdownFeature
@@ -4221,10 +4227,9 @@ limitations under the License.
                   opened: false,
                 };
               }
-            }.bind(this)
+            }
           );
           const thresholds = Object.values(thresholdsMap);
-          this.set('selectedFeatureSort', 'Alphabetical');
           this.set('featureValueThresholds', thresholds);
           this.set('featureValueThresholdsMap', thresholdsMap);
           this.refreshInferences_(false);
