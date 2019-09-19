@@ -31,7 +31,26 @@ class DataProvider(object):
   These APIs are under development and subject to change. For instance,
   providers may be asked to implement more filtering mechanisms, such as
   downsampling strategies or domain restriction by step or wall time.
+
+  Unless otherwise noted, any methods on this class may raise errors
+  defined in `tensorboard.errors`, like `tensorboard.errors.NotFound`.
   """
+
+  def data_location(self, experiment_id):
+    """Render a human-readable description of the data source.
+
+    For instance, this might return a path to a directory on disk.
+
+    The default implementation always returns the empty string.
+
+    Args:
+      experiment_id: ID of enclosing experiment.
+
+    Returns:
+      A string, which may be empty.
+    """
+    return ""
+
 
   @abc.abstractmethod
   def list_runs(self, experiment_id):
@@ -42,6 +61,9 @@ class DataProvider(object):
 
     Returns:
       A collection of `Run` values.
+
+    Raises:
+      tensorboard.errors.PublicError: See `DataProvider` class docstring.
     """
     pass
 
@@ -63,6 +85,9 @@ class DataProvider(object):
     Returns:
       A nested map `d` such that `d[run][tag]` is a `ScalarTimeSeries`
       value.
+
+    Raises:
+      tensorboard.errors.PublicError: See `DataProvider` class docstring.
     """
     pass
 
@@ -90,6 +115,9 @@ class DataProvider(object):
     Returns:
       A nested map `d` such that `d[run][tag]` is a list of
       `ScalarDatum` values sorted by step.
+
+    Raises:
+      tensorboard.errors.PublicError: See `DataProvider` class docstring.
     """
     pass
 

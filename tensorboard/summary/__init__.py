@@ -23,13 +23,13 @@ from __future__ import print_function
 # If the V1 summary API is accessible, load and re-export it here.
 try:
   from tensorboard.summary import v1
-  from tensorboard.summary.v1 import *
 except ImportError:
   pass
 
 # Load the V2 summary API if accessible.
 try:
   from tensorboard.summary import v2
+  from tensorboard.summary.v2 import *
 except ImportError:
   pass
 

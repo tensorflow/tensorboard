@@ -63,6 +63,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":http_util",
+        "//tensorboard:errors",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:db_import_multiplexer",
@@ -87,6 +88,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":application",
+        "//tensorboard:errors",
         "//tensorboard:test",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",

@@ -22,7 +22,9 @@ namespace tf_backend {
     private environment: Environment;
 
     load() {
-      const url = tf_backend.getRouter().environment();
+      const url = tf_backend
+        .getRouter()
+        .environment(tf_backend.getExperimentId());
       return this.requestManager.request(url).then((result) => {
         const environment = {
           dataLocation: result.data_location,
