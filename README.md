@@ -367,9 +367,13 @@ for some more information.
 
 ### I get a network security popup every time I run TensorBoard on a mac!
 
-This is because by default, TensorBoard serves on host `0.0.0.0` which is
-publicly accessible. You can stop the popups by specifying `--host localhost` at
-startup.
+Versions of TensorBoard prior to TensorBoard 2.0 would by default serve on host
+`0.0.0.0`, which is publicly accessible. For those versions of TensorBoard, you
+can stop the popups by specifying `--host localhost` at startup.
+
+In TensorBoard 2.0 and up, `--host localhost` is the default. Use `--bind_all`
+to restore the old behavior of serving to the public network on both IPv4 and
+IPv6.
 
 ### Can I run `tensorboard` without a TensorFlow installation?
 

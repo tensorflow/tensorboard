@@ -19,8 +19,7 @@ env:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tf-nightly==1.15.0.dev20190816
-    - TF_VERSION_ID=tf-nightly-2.0-preview
+    - TF_VERSION_ID=tensorflow==2.0.0-rc1
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
@@ -67,6 +66,13 @@ install:
       pip install "absl-py>=0.7.0" \
       && pip install "numpy<2.0,>=1.14.5"
     fi
+  - |
+    # On TF 1.x nightlies, downgrade estimator temporarily.
+    case "${TF_VERSION_ID}" in
+      tf-nightly|tf-nightly==*)
+        pip install tf-estimator-nightly==1.14.0.dev2019091701
+        ;;
+    esac
   # Deps for gfile S3 test.
   - pip install boto3==1.9.86
   - pip install moto==1.3.7
