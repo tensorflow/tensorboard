@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -68,4 +69,13 @@ tf_ts_library(
     name = "expect_angular_platform_browser_dynamic_testing",
     srcs = [],
     deps = ["@npm//@angular/platform-browser-dynamic"],
+)
+
+tf_web_library(
+    name = "material_theme",
+    srcs = [
+        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+    ],
+    path = "/@angular",
+    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
 )

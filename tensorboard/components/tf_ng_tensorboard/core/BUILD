@@ -14,7 +14,7 @@ ng_module(
         "core.service.ts",
     ],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http",
+        "//tensorboard/common/angular:expect_angular_common_http",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@ngrx/effects",
@@ -42,8 +42,8 @@ tf_ts_library(
     deps = [
         ":core",
         ":test_util",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_common_http_testing",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
+        "//tensorboard/common/angular:expect_angular_common_http_testing",
+        "//tensorboard/common/angular:expect_angular_core_testing",
         "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",

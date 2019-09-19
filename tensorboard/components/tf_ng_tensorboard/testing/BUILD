@@ -20,7 +20,7 @@ tf_ts_library(
         "initialize_testbed.ts",
     ],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/common/angular:expect_angular_core_testing",
+        "//tensorboard/common/angular:expect_angular_platform_browser_dynamic_testing",
     ],
 )

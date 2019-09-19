@@ -17,24 +17,14 @@ tf_web_library(
     ],
 )
 
-# TODO(stephanwlee): move this to root level
-tf_web_library(
-    name = "material_theme",
-    srcs = [
-        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-    ],
-    path = "/@angular",
-    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
-)
-
 tf_js_binary(
     name = "tf_ng_tensorboard_binary",
     compile = 1,
     entry_point = ":main.ts",
     deps = [
         ":ng_main",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
+        "//tensorboard/common/angular:expect_angular_material_tabs",
+        "//tensorboard/common/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/material",
@@ -71,7 +61,7 @@ ng_module(
         "app.component.html",
     ],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/common/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
         "//tensorboard/components/tf_ng_tensorboard/plugins",
