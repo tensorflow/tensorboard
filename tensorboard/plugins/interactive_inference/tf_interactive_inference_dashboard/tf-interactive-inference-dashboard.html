@@ -4175,6 +4175,9 @@ limitations under the License.
         getSliceKey_: function(example, feature1, feature2) {
           const bucketEdges = this.featureBucketEdges_;
           function maybeAggregate(feature) {
+            if (feature && example[feature] === undefined) {
+              return '?';
+            }
             const edges = bucketEdges[feature];
             if (edges) {
               for (let i = 1; i < edges.length; i++) {
