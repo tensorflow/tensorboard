@@ -3263,6 +3263,11 @@ limitations under the License.
             type: String,
           },
           maxInferenceEntriesPerRun: Number,
+          // Number of buckets When aggregating numeric features.
+          numBuckets: {
+            type: Number,
+            value: 10,
+          },
 
           // Inferences from servo.
           inferences: {
@@ -6097,22 +6102,25 @@ limitations under the License.
          * Whether values of this feature should be aggregated in bucket slices.
          */
         shouldBeAggregated_: function(feature) {
-          const maxUniqueValueSlices = 10; // TODO: Move this to a variable.
           return (
             this.distanceStats_[feature] &&
             this.distanceStats_[feature].isNumeric &&
-            this.stats[feature].uniqueCount > maxUniqueValueSlices
+            // No point in aggregating if less unique values than buckets.
+            this.stats[feature].uniqueCount > this.numBuckets
           );
         },
 
+        /**
+         * Calculate edges between buckets for aggregating numeric features.
+         * We do this beforehand to round numbers and avoid ugly interval labels.
+         */
         calculateFeatureBucketEdges_: function() {
-          const numBuckets = 10; // TODO: Move this to a variable.
           this.featureBucketEdges_ = {};
           for (const feature of Object.keys(this.distanceStats_)) {
             if (this.shouldBeAggregated_(feature)) {
               const min = this.stats[feature].numberMin;
               const max = this.stats[feature].numberMax;
-              const len = (max - min) / numBuckets;
+              const len = (max - min) / this.numBuckets;
               const stdDev = this.distanceStats_[feature].stdDev;
               function round(val) {
                 // Round to a precision near the magnitude of standard deviation.
@@ -6121,7 +6129,7 @@ limitations under the License.
               }
               const bucketEdges = [];
               bucketEdges.push(min);
-              for (let i = 1; i < numBuckets; i++) {
+              for (let i = 1; i < this.numBuckets; i++) {
                 bucketEdges.push(round(min + i * len));
               }
               bucketEdges.push(max);
