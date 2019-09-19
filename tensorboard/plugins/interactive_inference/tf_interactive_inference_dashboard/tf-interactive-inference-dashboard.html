@@ -6227,8 +6227,8 @@ limitations under the License.
           const len = (max - min) / numBuckets;
           const stdDev = this.distanceStats_[feature].stdDev;
           function round(val) {
-            // Round to a precision near the magnitude of standard deviation.
-            const precision = -Math.floor(Math.log10(stdDev));
+            // Round to slightly more precise than the magnitude of standard deviation.
+            const precision = -Math.floor(Math.log10(stdDev)) + 1;
             return Math.round(val * 10 ** precision) / 10 ** precision;
           }
           const bucketEdges = [];
