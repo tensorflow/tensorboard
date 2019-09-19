@@ -7,7 +7,7 @@ option java_outer_classname = "ConfigProtos";
 option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
 
-// add go_package externally with copybara
+option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/protobuf";
 import "tensorboard/compat/proto/cost_graph.proto";
 import "tensorboard/compat/proto/graph.proto";
 import "tensorboard/compat/proto/step_stats.proto";
