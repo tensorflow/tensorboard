@@ -3263,7 +3263,7 @@ limitations under the License.
             type: String,
           },
           maxInferenceEntriesPerRun: Number,
-          // Number of buckets When aggregating numeric features.
+          // Number of buckets when aggregating numeric features.
           numBuckets: {
             type: Number,
             value: 10,
@@ -4191,6 +4191,7 @@ limitations under the License.
             }.bind(this)
           );
           const thresholds = Object.values(thresholdsMap);
+          this.set('selectedFeatureSort', 'Alphabetical');
           this.set('featureValueThresholds', thresholds);
           this.set('featureValueThresholdsMap', thresholdsMap);
           this.refreshInferences_(false);
@@ -4552,9 +4553,13 @@ limitations under the License.
                 );
               }
             } else if (this.selectedFeatureSort == 'Alphabetical') {
-              return this.getPrintableValue_(a).localeCompare(
-                this.getPrintableValue_(b)
-              );
+              const aValue = this.getPrintableValue_(a);
+              const bValue = this.getPrintableValue_(b);
+              // Handle numeric intervals
+              if (aValue[0] === '[' && bValue[0] === '[') {
+                return Number.parseFloat(aValue.substring(1)) - Number.parseFloat(bValue.substring(1));
+              }
+              return aValue.localeCompare(bValue);
             } else if (this.selectedFeatureSort == 'Accuracy') {
               if (
                 this.isBinaryClassification_(this.modelType, this.multiClass)
@@ -4606,6 +4611,10 @@ limitations under the License.
             if (this.selectedFeatureSort == 'Count') {
               return b.count - a.count;
             } else if (this.selectedFeatureSort == 'Alphabetical') {
+              // Handle numeric intervals
+              if (a.name[0] === '[' && b.name[0] === '[') {
+                return Number.parseFloat(a.name.substring(1)) - Number.parseFloat(b.name.substring(1));
+              }
               return a.name.localeCompare(b.name);
             } else if (this.selectedFeatureSort == 'Mean error') {
               return b.meanError - a.meanError;
