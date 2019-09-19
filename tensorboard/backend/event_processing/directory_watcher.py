@@ -170,8 +170,6 @@ class DirectoryWatcher(object):
     path = self._GetNextPath()
     if path:
       self._SetPath(path)
-    else:
-      return
 
   def _SetPath(self, path):
     """Sets the current path to watch for new events.
