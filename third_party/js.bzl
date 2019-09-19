@@ -307,7 +307,7 @@ def tensorboard_js_workspace():
           ],
           "b1f0195f305ca66fdb7dae264771f162ae03f04aa642848f15cd871c043e04d1": [
               "http://mirror.tensorflow.org/raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",
-              "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html"  # 2017-06-19
+              "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",  # 2017-06-19
           ],
       },
   )
@@ -494,8 +494,20 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_tfjs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "fccd26db2da462ec48e2d90fbdff1ee9a9d740f2c7efbd9789ba46eb98ecd1ae": [
-              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.5/dist/tf.min.js",
+          "3870fc1d4eaefce7370b5bce3992e4dadcad8e3a5999b034302e38b2094873ea": [
+              "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
+              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
+          ],
+      },
+  )
+
+  filegroup_external(
+      name = "org_tensorflow_tfjs_mobilenet",
+      licenses = ["notice"],  # Apache 2.0
+      sha256_urls = {
+          "aca32ec8a778d17acb623bf495c6e60ec38312b761b9a8c88af4c841c25eba70": [
+              "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
+              "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
           ],
       },
   )

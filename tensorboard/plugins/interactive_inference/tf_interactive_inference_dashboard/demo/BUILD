@@ -60,6 +60,7 @@ tf_web_library(
         "image_index.html",
         "tf-interactive-inference-image-demo.html",
         "@org_tensorflow_tfjs//:tf.min.js",
+        "@org_tensorflow_tfjs_mobilenet//:mobilenet.js",
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
