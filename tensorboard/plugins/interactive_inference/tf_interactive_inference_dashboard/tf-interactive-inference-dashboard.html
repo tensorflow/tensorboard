@@ -3647,6 +3647,7 @@ limitations under the License.
             type: Boolean,
             value: true,
           },
+          featureBucketEdges_: Object,
         },
 
         observers: [
@@ -4130,10 +4131,25 @@ limitations under the License.
          * Get the key to which this example belongs when the dataset is sliced by the given feature(s).
          */
         getSliceKey_: function(example, feature1, feature2) {
-          // TODO: Aggregate numeric keys into buckets.
+          const bucketEdges = this.featureBucketEdges_;
+          function maybeAggregate(feature) {
+            const edges = bucketEdges[feature];
+            if (edges) {
+              for (let i = 1; i < edges.length; i++) {
+                if (
+                  example[feature] < edges[i] ||
+                  (example[feature] === edges[i] && i === edges.length - 1)
+                ) {
+                  const right = i < edges.length - 1 ? ')' : ']';
+                  return '[' + edges[i - 1] + ', ' + edges[i] + right;
+                }
+              }
+            }
+            return example[feature];
+          }
           return this.createCombinedValueString_(
-            example[feature1],
-            example[feature2]
+            maybeAggregate(feature1),
+            maybeAggregate(feature2)
           );
         },
 
@@ -6023,6 +6039,7 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
+          this.calculateFeatureBucketEdges_();
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
@@ -6053,7 +6070,7 @@ limitations under the License.
             const featureStats = statsProto.datasetsList[0].featuresList[i];
             const feature = featureStats.name;
             this.distanceStats_[feature] = {
-              isNumeric: featureStats.numStats != null
+              isNumeric: featureStats.numStats != null,
             };
             if (this.distanceStats_[feature].isNumeric) {
               // For numeric features, store standard deviation.
@@ -6072,6 +6089,43 @@ limitations under the License.
                 probSameValue += probEntry * probEntry;
               }
               this.distanceStats_[feature].probSameValue = probSameValue;
+            }
+          }
+        },
+
+        /**
+         * Whether values of this feature should be aggregated in bucket slices.
+         */
+        shouldBeAggregated_: function(feature) {
+          const maxUniqueValueSlices = 10; // TODO: Move this to a variable.
+          return (
+            this.distanceStats_[feature] &&
+            this.distanceStats_[feature].isNumeric &&
+            this.stats[feature].uniqueCount > maxUniqueValueSlices
+          );
+        },
+
+        calculateFeatureBucketEdges_: function() {
+          const numBuckets = 10; // TODO: Move this to a variable.
+          this.featureBucketEdges_ = {};
+          for (const feature of Object.keys(this.distanceStats_)) {
+            if (this.shouldBeAggregated_(feature)) {
+              const min = this.stats[feature].numberMin;
+              const max = this.stats[feature].numberMax;
+              const len = (max - min) / numBuckets;
+              const stdDev = this.distanceStats_[feature].stdDev;
+              function round(val) {
+                // Round to a precision near the magnitude of standard deviation.
+                const precision = -Math.floor(Math.log10(stdDev));
+                return Math.round(val * 10 ** precision) / 10 ** precision;
+              }
+              const bucketEdges = [];
+              bucketEdges.push(min);
+              for (let i = 1; i < numBuckets; i++) {
+                bucketEdges.push(round(min + i * len));
+              }
+              bucketEdges.push(max);
+              this.featureBucketEdges_[feature] = bucketEdges;
             }
           }
         },
