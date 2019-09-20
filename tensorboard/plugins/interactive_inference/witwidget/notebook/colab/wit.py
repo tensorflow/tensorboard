@@ -120,8 +120,8 @@ WIT_HTML = """
       window.inferenceCallback = inferences => {{
         wit.labelVocab = inferences.label_vocab;
         wit.inferences = inferences.inferences;
-        wit.attributions = {{indices: wit.inferences.indices,
-                            attributions: inferences.attributions}};
+        wit.extraOutputs = {{indices: wit.inferences.indices,
+                             extra: inferences.extra_outputs}};
       }};
 
       window.distanceCallback = callbackDict => {{

@@ -3365,6 +3365,21 @@ limitations under the License.
             observer: 'newInferences_',
             value: () => ({}),
           },
+          // Extra outputs from inference. A dict with two fields: 'indices' and
+          // 'extra'. Indices contains a list of example indices that
+          // these new outputs apply to. Extra contains a list of extra output
+          // objects, one for each model being inferred. The object for each
+          // model is a dict of output data names to lists of the output values
+          // for that data, one entry for each example that was inferred upon.
+          // 'attributions' is one of these output data which is parsed into the
+          // 'attributions' object defined below as a special case. Any other extra
+          // data provided are displayed by WIT with each example.
+          // @type {indices: Array<number>,
+          //        extra: Array<{!Object<string, Array<number|string>>}>}
+          extraOutputs: {
+            type: Object,
+            observer: 'newExtraOutputs_',
+          },
           // Attributions from inference. A dict with two fields: 'indices' and
           // 'attributions'. Indices contains a list of example indices that
           // these new attributions apply to. Attributions contains a list of
@@ -3944,10 +3959,14 @@ limitations under the License.
           } else {
             this.comparedIndices = [];
             this.counterfactualExampleAndInference = null;
-            const temp = this.selectedExampleAndInference;
-            this.selectedExampleAndInference = null;
-            this.selectedExampleAndInference = temp;
+            this.refreshSelectedDatapoint_();
           }
+        },
+
+        refreshSelectedDatapoint_: function() {
+          const temp = this.selectedExampleAndInference;
+          this.selectedExampleAndInference = null;
+          this.selectedExampleAndInference = temp;
         },
 
         isSameInferenceClass_: function(val1, val2) {
@@ -6106,6 +6125,77 @@ limitations under the License.
             }
           }
           this.updatedExample = false;
+        },
+
+        newExtraOutputs_: function(extraOutputs) {
+          // Set attributions from the extra outputs, if available.
+          const attributions = [];
+          for (
+            let modelNum = 0;
+            modelNum < extraOutputs.extra.length;
+            modelNum++
+          ) {
+            if ('attributions' in extraOutputs.extra[modelNum]) {
+              attributions.push(extraOutputs.extra[modelNum].attributions);
+            }
+          }
+          if (attributions.length > 0) {
+            this.attributions = {
+              indices: extraOutputs.indices,
+              attributions: attributions,
+            };
+          }
+
+          // Add extra output information to datapoints
+          for (let i = 0; i < extraOutputs.indices.length; i++) {
+            const idx = extraOutputs.indices[i];
+            const datapoint = Object.assign({}, this.visdata[idx]);
+            for (
+              let modelNum = 0;
+              modelNum < extraOutputs.extra.length;
+              modelNum++
+            ) {
+              const keys = Object.keys(extraOutputs.extra[modelNum]);
+              for (let j = 0; j < keys.length; j++) {
+                const key = keys[j];
+                // Skip attributions as they are handled separately above.
+                if (key == 'attributions') {
+                  continue;
+                }
+                let val = extraOutputs.extra[modelNum][key][i];
+                const datapointKey = this.strWithModelName_(key, modelNum);
+
+                // Update the datapoint with the extra info for use in
+                // Facets Dive.
+                datapoint[datapointKey] = val;
+
+                // Convert the extra output into an array if necessary, for
+                // insertion into tf.Example as a value list, for update of
+                // examplesAndInferences for the example viewer.
+                if (!Array.isArray(val)) {
+                  val = [val];
+                }
+                const isString =
+                  val.length > 0 &&
+                  (typeof val[0] == 'string' || val[0] instanceof String);
+                const exampleJsonString = JSON.stringify(
+                  this.examplesAndInferences[idx].example
+                );
+                const copiedExample = JSON.parse(exampleJsonString);
+                copiedExample.features.feature[datapointKey] = isString
+                  ? {bytesList: {value: val}}
+                  : {floatList: {value: val}};
+                this.examplesAndInferences[idx].example = copiedExample;
+              }
+            }
+            this.set(`visdata.${idx}`, datapoint);
+          }
+          this.refreshDive_();
+
+          // Update selected datapoint so that if a datapoint is being viewed,
+          // the display is updated with the appropriate extra output.
+          this.computeSelectedExampleAndInference();
+          this.refreshSelectedDatapoint_();
         },
 
         newAttributions_: function(attributions) {
