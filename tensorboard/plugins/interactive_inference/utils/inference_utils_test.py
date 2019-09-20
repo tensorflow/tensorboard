@@ -177,7 +177,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [b'cat']
+            'samples': ['cat']
         }
     }, data)
 
@@ -186,7 +186,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 20], top_k=2)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [b'pony', b'cow']
+            'samples': ['pony', 'cow']
         }
     }, data)
 
