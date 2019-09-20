@@ -26,7 +26,6 @@ import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
 from six import binary_type, string_types, integer_types
-from six import ensure_binary, ensure_str
 from six import iteritems
 from six.moves import zip  # pylint: disable=redefined-builtin
 
@@ -165,7 +164,7 @@ class MutantFeatureValue(object):
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
     self.index = index
-    self.mutant_value = (ensure_binary(mutant_value)
+    self.mutant_value = (mutant_value.encode()
         if isinstance(mutant_value, string_types) else mutant_value)
 
 
@@ -230,7 +229,7 @@ class ServingBundle(object):
 
 def ensure_not_binary(value):
   """Return non-binary version of value."""
-  return ensure_str(value) if isinstance(value, binary_type) else value
+  return value.decode() if isinstance(value, binary_type) else value
 
 
 def proto_value_for_feature(example, feature_name):
