@@ -1191,7 +1191,18 @@ limitations under the License.
       }
       .counterfactual-toggle {
         margin: 4px 4px 4px 6px;
+        padding-top: 4px;
         --paper-toggle-button-checked-bar-color: #81c995;
+      }
+      .counterfactual-delta {
+        display: flex;
+        margin-right: 6px;
+      }
+      .counterfactual-delta label {
+        padding-top: 10px;
+      }
+      .counterfactual-delta paper-slider {
+        height: 40px;
       }
       .datapoint-button {
         color: #202124;
@@ -1436,81 +1447,106 @@ limitations under the License.
                           >Partial dependence plots</paper-radio-button
                         >
                       </paper-radio-group>
-                      <template is="dom-if" if="[[!isRegression_(modelType)]]">
-                        <div class="flex">
-                          <div title="Select a datapoint to use this feature">
-                            <paper-toggle-button
-                              class="counterfactual-toggle"
-                              checked="{{showNearestCounterfactual}}"
-                              disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                            >
-                              Show nearest counterfactual datapoint
-                            </paper-toggle-button>
-                          </div>
-                          <paper-radio-group
-                            selected="{{nearestCounterfactualDist}}"
+                      <div class="flex">
+                        <div title="Select a datapoint to use this feature">
+                          <paper-toggle-button
+                            class="counterfactual-toggle"
+                            checked="{{showNearestCounterfactual}}"
+                            disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                           >
-                            <paper-radio-button
-                              name="L1"
-                              disabled$="[[customDistanceFunctionSet]]"
-                              >L1</paper-radio-button
-                            >
-                            <paper-radio-button
-                              name="L2"
-                              disabled$="[[customDistanceFunctionSet]]"
-                              >L2</paper-radio-button
-                            >
-                            <paper-radio-button
-                              name="Custom"
-                              hidden$="[[!customDistanceFunctionSet]]"
-                              >User-specified</paper-radio-button
-                            >
-                          </paper-radio-group>
-                          <paper-dropdown-menu
-                            label="Model:"
-                            no-label-float
-                            class="counterfactual-dropdown"
-                            hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
-                          >
-                            <paper-listbox
-                              class="dropdown-content"
-                              slot="dropdown-content"
-                              selected="{{nearestCounterfactualModelIndex}}"
-                            >
-                              <template
-                                is="dom-repeat"
-                                items="[[parsedModelNames]]"
-                              >
-                                <paper-item
-                                  >[[getCounterfactualModelName_(item)]]</paper-item
-                                >
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <paper-icon-button
-                            icon="info-outline"
-                            class="info-icon cf-info-icon no-padding"
-                            on-tap="openDialog"
-                          >
-                          </paper-icon-button>
-                          <paper-dialog
-                            class="dialog-text"
-                            horizontal-align="auto"
-                            vertical-align="auto"
-                          >
-                            <div class="dialog-title">
-                              Nearest counterfactual (neighbor of different
-                              classification)
-                            </div>
-                            <div>
-                              Compares the selected datapoint with its nearest
-                              neighbor from a different classification using L1
-                              or L2 distance. If a custom distance function is
-                              set, it uses that function instead.
-                            </div>
-                          </paper-dialog>
+                            Show nearest counterfactual datapoint
+                          </paper-toggle-button>
                         </div>
-                      </template>
+                        <paper-radio-group
+                          selected="{{nearestCounterfactualDist}}"
+                        >
+                          <paper-radio-button
+                            name="L1"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L1</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="L2"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L2</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="Custom"
+                            hidden$="[[!customDistanceFunctionSet]]"
+                            >User-specified</paper-radio-button
+                          >
+                        </paper-radio-group>
+                        <template is="dom-if" if="[[isRegression_(modelType)]]">
+                          <div
+                            title="Minimum distance in inferred value to consider counterfactual"
+                            class="counterfactual-delta"
+                          >
+                            <paper-slider
+                              pin
+                              value="{{minCounterfactualValueDist}}"
+                              max="[[maxCounterfactualValueDist]]"
+                            ></paper-slider>
+                            <label>Delta</label>
+                          </div>
+                        </template>
+                        <paper-dropdown-menu
+                          label="Model:"
+                          no-label-float
+                          class="counterfactual-dropdown"
+                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                        >
+                          <paper-listbox
+                            class="dropdown-content"
+                            slot="dropdown-content"
+                            selected="{{nearestCounterfactualModelIndex}}"
+                          >
+                            <template
+                              is="dom-repeat"
+                              items="[[parsedModelNames]]"
+                            >
+                              <paper-item
+                                >[[getCounterfactualModelName_(item)]]</paper-item
+                              >
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1 or
+                            L2 distance. If a custom distance function is set,
+                            it uses that function instead.
+                          </div>
+                          <div>
+                            <template
+                              is="dom-if"
+                              if="[[isRegression_(modelType)]]"
+                              restamp
+                            >
+                              For regression, a neighbor point is considered as
+                              a different classification if the difference in
+                              inferred value is equal or greater than the
+                              selected delta.<br />
+                              Delta is initialized to the standard deviation of
+                              the inferred values.
+                            </template>
+                          </div>
+                        </paper-dialog>
+                      </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
                           <paper-button
@@ -3603,6 +3639,8 @@ limitations under the License.
             type: String,
             value: 'L1',
           },
+          minCounterfactualValueDist: Number,
+          maxCounterfactualValueDist: Number,
           visMode: {
             type: String,
             value: 'dive',
@@ -3720,7 +3758,7 @@ limitations under the License.
 
         observers: [
           'setFacetDistFeatureName(facetDistSwitch, selected)',
-          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)',
+          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist, minCounterfactualValueDist)',
         ],
 
         // Required function.
@@ -3912,20 +3950,53 @@ limitations under the License.
           }
         },
 
+        isSameInferenceClass_: function(val1, val2) {
+          return this.isRegression_(this.modelType)
+            ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
+            : val1 === val2;
+        },
+
+        adjustMaxCounterfactualValueDist_: function(selected, valueName) {
+          this.maxCounterfactualValueDist = Math.max(
+            this.distanceStats_[valueName].max -
+              this.visdata[selected][valueName],
+            this.visdata[selected][valueName] -
+              this.distanceStats_[valueName].min
+          );
+        },
+
+        adjustMinCounterfactualValueDist_: function() {
+          const valueName = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          this.minCounterfactualValueDist = this.distanceStats_[
+            valueName
+          ].stdDev;
+        },
+
         finalizeClosestCounterfactual: function(exInd, distances) {
           // Distances are indexed by example ids
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              exInd,
+              modelInferenceValueStr
+            );
+          }
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
-            // Skip examples with the same inference class as the selected
-            // examples.
+            // Skip the selected example itself and examples with the same inference class.
             if (
-              this.visdata[exInd][modelInferenceValueStr] ==
-              this.visdata[i][modelInferenceValueStr]
+              i === exInd ||
+              this.isSameInferenceClass_(
+                this.visdata[exInd][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
             ) {
               continue;
             }
@@ -3962,14 +4033,22 @@ limitations under the License.
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              selected,
+              modelInferenceValueStr
+            );
+          }
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
-            // Skip examples with the same inference class as the selected
-            // examples.
+            // Skip the selected example itself and examples with the same inference class.
             if (
-              this.visdata[selected][modelInferenceValueStr] ==
-              this.visdata[i][modelInferenceValueStr]
+              i === selected ||
+              this.isSameInferenceClass_(
+                this.visdata[selected][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
             ) {
               continue;
             }
@@ -6237,6 +6316,9 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMinCounterfactualValueDist_();
+          }
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
@@ -6268,11 +6350,14 @@ limitations under the License.
             const feature = featureStats.name;
             this.distanceStats_[feature] = {};
             if (featureStats.numStats) {
-              // For numeric features, store standard deviation.
-              this.distanceStats_[feature].stdDev =
-                featureStats.numStats.stdDev;
+              // Numeric features:
+              this.distanceStats_[feature] = {
+                stdDev: featureStats.numStats.stdDev,
+                min: featureStats.numStats.min,
+                max: featureStats.numStats.max,
+              };
             } else {
-              // For categorical features, calculate and store  the probability
+              // Categorical features: calculate and store the probability
               // that any two feature values across all examples are the same.
               let probSameValue = 0;
               const buckets =
