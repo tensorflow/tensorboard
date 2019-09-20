@@ -1087,6 +1087,10 @@ limitations under the License.
         border-bottom: solid 1px var(--wit-color-gray300);
       }
 
+      .perf-table-entry.perf-table-entry-trivial {
+        background: #f4f4f4;
+      }
+
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
@@ -1249,6 +1253,15 @@ limitations under the License.
         --paper-toggle-button-checked-button-color: white;
         --paper-toggle-button-label-color: #3c4043;
       }
+      .button-and-spinner-holder {
+        margin-top: 4px;
+        position: relative;
+      }
+      .sort-spinner {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+      }
     </style>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
     <paper-dialog
@@ -1312,8 +1325,24 @@ limitations under the License.
       </paper-input>
       <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
-        <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
+        <paper-radio-button
+          class="dist-radio"
+          name="L1"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L1</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="L2"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L2</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="Custom"
+          hidden$="[[!customDistanceFunctionSet]]"
+          >User-specified</paper-radio-button
+        >
       </paper-radio-group>
       <paper-dropdown-menu
         label="Apply to datapoints visualization"
@@ -1338,7 +1367,7 @@ limitations under the License.
         <paper-button
           dialog-confirm
           autofocus
-          on-tap="addDistanceMetric"
+          on-tap="requestAddDistanceMetric"
           class="main-button"
           >Apply</paper-button
         >
@@ -1421,11 +1450,20 @@ limitations under the License.
                           <paper-radio-group
                             selected="{{nearestCounterfactualDist}}"
                           >
-                            <paper-radio-button name="L1"
+                            <paper-radio-button
+                              name="L1"
+                              disabled$="[[customDistanceFunctionSet]]"
                               >L1</paper-radio-button
                             >
-                            <paper-radio-button name="L2"
+                            <paper-radio-button
+                              name="L2"
+                              disabled$="[[customDistanceFunctionSet]]"
                               >L2</paper-radio-button
+                            >
+                            <paper-radio-button
+                              name="Custom"
+                              hidden$="[[!customDistanceFunctionSet]]"
+                              >User-specified</paper-radio-button
                             >
                           </paper-radio-group>
                           <paper-dropdown-menu
@@ -1436,6 +1474,7 @@ limitations under the License.
                           >
                             <paper-listbox
                               class="dropdown-content"
+                              slot="dropdown-content"
                               selected="{{nearestCounterfactualModelIndex}}"
                             >
                               <template
@@ -1466,7 +1505,8 @@ limitations under the License.
                             <div>
                               Compares the selected datapoint with its nearest
                               neighbor from a different classification using L1
-                              or L2 distance.
+                              or L2 distance. If a custom distance function is
+                              set, it uses that function instead.
                             </div>
                           </paper-dialog>
                         </div>
@@ -1775,6 +1815,22 @@ limitations under the License.
                         </div>
                       </paper-dialog>
                     </div>
+                    <div class="button-and-spinner-holder">
+                      <paper-button
+                        class="control-button datapoint-button"
+                        disabled$="[[shouldDisableSortFeaturesButton(partialDepPlotEligibleFeatures, isSortingEligibleFeatures)]]"
+                        on-tap="sortPdFeatures_"
+                        alt="Sort features by interestingness"
+                        title="Sort features by interestingness"
+                      >
+                        Sort features by interestingness
+                      </paper-button>
+                      <paper-spinner-lite
+                        class="sort-spinner"
+                        hidden="[[!isSortingEligibleFeatures]]"
+                        active
+                      ></paper-spinner-lite>
+                    </div>
                     <paper-toggle-button
                       class="pd-toggle"
                       checked="{{globalPdPlots}}"
@@ -1802,7 +1858,7 @@ limitations under the License.
                         class="feature-container"
                         data-feature-name$="[[item.name]]"
                       >
-                        <div class="perf-table-entry perf-table-row">
+                        <div class$="[[getPerfTableEntryClass(item)]]">
                           <div class="perf-table-arrow">
                             <paper-icon-button
                               class="pd-row-arrow rotated-icon"
@@ -1823,7 +1879,7 @@ limitations under the License.
                         >
                           <div
                             class="pd-input-container"
-                            hidden$="[[shouldHidePdInputContainer(item.samples, item.name, selected)]]"
+                            hidden$="[[shouldHidePdInputContainer(item, selected)]]"
                           >
                             <div
                               class="range-input-container"
@@ -3197,6 +3253,13 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
+    // requestDistanceWithCallback can be invoked with the callbacks in this
+    // enum. Please add a function to this list if you want it to be invoked
+    // at the end of custom distance computation.
+    const distanceCallbacks = {
+      finalizeClosestCounterfactual: 0,
+      finalizeAddDistanceMetric: 1,
+    };
 
     // Special feature names and feature name prefixes and suffixes for parsing
     // inference and attribution information from TFMA-generated input.
@@ -3372,6 +3435,12 @@ limitations under the License.
             type: String,
             value: '',
             observer: 'breakdownFeatureSelected_',
+          },
+          // True if a custom distance function is set and is in use.
+          customDistanceFunctionSet: {
+            type: Boolean,
+            value: false,
+            observer: 'customDistanceFunctionSetChanged_',
           },
           // Feature for true label.
           selectedLabelFeature: {
@@ -3656,6 +3725,10 @@ limitations under the License.
             type: Boolean,
             value: true,
           },
+          isSortingEligibleFeatures: {
+            type: Boolean,
+            value: false,
+          },
         },
 
         observers: [
@@ -3751,32 +3824,87 @@ limitations under the License.
         showDistanceClicked_: function() {
           this.$.distancedialog.toggle();
         },
+        customDistanceFunctionSetChanged_: function() {
+          if (this.customDistanceFunctionSet) {
+            this.nearestCounterfactualDist = 'Custom';
+            this.facetDistSwitch = 'Custom';
+          } else {
+            this.nearestCounterfactualDist = 'L1';
+            this.facetDistSwitch = 'L1';
+          }
+        },
 
-        addDistanceMetric: function() {
-          this.facetDistFeatureNames.push(this.facetDistFeatureName);
+        requestAddDistanceMetric: function() {
           const selected = this.selected[0];
-          let closestDist = Number.POSITIVE_INFINITY;
-          let closest = -1;
-          const useL2Distance = this.facetDistSwitch == 'L2';
-          for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDist(
-              this.visdata[selected],
-              this.visdata[i],
-              useL2Distance
+          const params = {
+            callbackParams: {featureName: this.facetDistFeatureName},
+            distanceParams: {},
+          };
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeAddDistanceMetric,
+              params
             );
-            this.visdata[i][this.facetDistFeatureName] = dist;
+            return;
+          } else {
+            const dists = [];
+            const useL2Distance = this.facetDistSwitch == 'L2';
+            for (let i = 0; i < this.visdata.length; i++) {
+              dists.push(
+                this.getDist(
+                  this.visdata[selected],
+                  this.visdata[i],
+                  useL2Distance
+                )
+              );
+            }
+            this.finalizeAddDistanceMetric(
+              selected,
+              dists,
+              params.callbackParams
+            );
+          }
+        },
+
+        invokeCustomDistanceCallback: function(callbackObj) {
+          switch (callbackObj.funId) {
+            case distanceCallbacks.finalizeClosestCounterfactual:
+              this.finalizeClosestCounterfactual(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+            case distanceCallbacks.finalizeAddDistanceMetric:
+              this.finalizeAddDistanceMetric(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+          }
+        },
+
+        finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
+          const facetDistFeatureName = callbackParams.featureName;
+          this.facetDistFeatureNames.push(facetDistFeatureName);
+          for (let i = 0; i < this.visdata.length; i++) {
+            this.visdata[i][facetDistFeatureName] = distances[i];
           }
           this.refreshDive_();
           if (this.facetDistSetting == 'colorBy') {
-            this.$.dive.colorBy = this.facetDistFeatureName;
+            this.$.dive.colorBy = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalFacet') {
-            this.$.dive.verticalFacet = this.facetDistFeatureName;
+            this.$.dive.verticalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalFacet') {
-            this.$.dive.horizontalFacet = this.facetDistFeatureName;
+            this.$.dive.horizontalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalPosition') {
-            this.$.dive.verticalPosition = this.facetDistFeatureName;
+            this.$.dive.verticalPosition = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalPosition') {
-            this.$.dive.horizontalPosition = this.facetDistFeatureName;
+            this.$.dive.horizontalPosition = facetDistFeatureName;
           }
         },
 
@@ -3801,8 +3929,52 @@ limitations under the License.
           this.selectedExampleAndInference = temp;
         },
 
+        finalizeClosestCounterfactual: function(exInd, distances) {
+          // Distances are indexed by example ids
+          const modelInferenceValueStr = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          let closestDist = Number.POSITIVE_INFINITY;
+          let closest = -1;
+          for (let i = 0; i < this.visdata.length; i++) {
+            // Skip examples with the same inference class as the selected
+            // examples.
+            if (
+              this.visdata[exInd][modelInferenceValueStr] ==
+              this.visdata[i][modelInferenceValueStr]
+            ) {
+              continue;
+            }
+            let dist = distances[i];
+            if (dist < closestDist) {
+              closestDist = dist;
+              closest = i;
+            }
+          }
+          if (closest != -1) {
+            // Display the counterfactual in dive and example viewer.
+            this.comparedIndices = [closest];
+            this.counterfactualExampleAndInference = this.examplesAndInferences[
+              closest
+            ];
+            this.compareTitle = 'Counterfactual value(s)';
+          }
+        },
+
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeClosestCounterfactual,
+              {callbackParams: {}, distanceParams: {}}
+            );
+            return;
+          }
+
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
@@ -3836,6 +4008,19 @@ limitations under the License.
             ];
             this.compareTitle = 'Counterfactual value(s)';
           }
+        },
+
+        // Call backend for distance computation, backend calls callback function
+        // with computed distances and parameters
+        // TODO (tolgab) If TensorBoard supports custom distance functions
+        // add ability to call into their backend as well (non-local mode).
+        requestDistanceWithCallback: function(exInd, callbackFun, params) {
+          const urlParams = {
+            index: exInd,
+            callback: callbackFun,
+            params: params,
+          };
+          this.fire('compute-custom-distance', urlParams);
         },
 
         /**
@@ -6239,6 +6424,7 @@ limitations under the License.
           this.showToast_(errorStr);
           this.exampleStatusStr = errorStr;
           this.spinnerHidden_ = true;
+          this.isSortingEligibleFeatures = false;
         },
 
         makeAsyncRequest_: function(
@@ -7162,10 +7348,10 @@ limitations under the License.
 
         /** Check if pd-input-container has any elements in it and hide it if it
         does not*/
-        shouldHidePdInputContainer: function(samples, featureName, selected) {
+        shouldHidePdInputContainer: function(item, selected) {
           if (
-            !this.shouldHideFeatureIndicesSelector(featureName, selected) ||
-            !samples
+            !this.shouldHideFeatureIndicesSelector(item.name, selected) ||
+            !item.samples
           ) {
             return false;
           } else {
@@ -7193,6 +7379,7 @@ limitations under the License.
         },
 
         partialDepPlotEligibleFeaturesSet: function(features) {
+          this.isSortingEligibleFeatures = false;
           if (!features || features.length == 0) {
             return;
           }
@@ -7331,6 +7518,58 @@ limitations under the License.
           } else {
             this.fire('get-eligible-features');
           }
+        },
+
+        sortPdFeatures_: function() {
+          // First hide all existing PD plots before refreshing.
+          this.hideAllPdElements_();
+          const urlParams = {
+            example_index: this.globalPdPlots ? -1 : this.selected[0],
+            inference_address: this.inferenceAddress,
+            model_name: this.modelName,
+            model_type: this.modelType,
+            model_version: this.modelVersion,
+            model_signature: this.modelSignature,
+            use_predict: this.usePredictApi,
+            predict_output_tensor: this.predictOutputTensor,
+            predict_input_tensor: this.predictInputTensor,
+          };
+          this.isSortingEligibleFeatures = true;
+          // Call into the backend to sort the possible features to show plots for.
+          if (!this.local) {
+            const url = tf_backend.addParams(
+              '/data/plugin/whatif/sort_eligible_features',
+              urlParams
+            );
+            const setEligibleFields = (result) => {
+              this.set('partialDepPlotEligibleFeatures', result.value);
+            };
+            const sortErrorCallback = () => {
+              this.isSortingEligibleFeatures = false;
+            };
+            this.makeAsyncRequest_(
+              url,
+              setEligibleFields,
+              null,
+              'plot ordering',
+              sortErrorCallback.bind(this)
+            );
+          } else {
+            urlParams['features'] = this.partialDepPlotEligibleFeatures;
+            this.fire('sort-eligible-features', urlParams);
+          }
+        },
+        shouldDisableSortFeaturesButton: function(
+          partialDepPlotEligibleFeatures,
+          isSortingEligibleFeatures
+        ) {
+          // Do not show "sort features by interestingness" button if sorting is
+          // currently occuring or there are no features to sort.
+          return (
+            isSortingEligibleFeatures ||
+            partialDepPlotEligibleFeatures == null ||
+            partialDepPlotEligibleFeatures.length == 0
+          );
         },
 
         toggleTrueLabelSetup: function() {
@@ -7547,6 +7786,19 @@ limitations under the License.
           for (let i = 0; i < this.featureValueThresholds.length; i++) {
             this.set('featureValueThresholds.' + i + '.opened', false);
           }
+        },
+
+        getPerfTableEntryClass: function(eligibleFeature) {
+          let str = 'perf-table-entry perf-table-row ';
+          // If interestingness is set to 0 then display this feature as
+          // trivial.
+          if (
+            'interestingness' in eligibleFeature &&
+            eligibleFeature['interestingness'] == 0
+          ) {
+            str += 'perf-table-entry-trivial';
+          }
+          return str;
         },
       });
 

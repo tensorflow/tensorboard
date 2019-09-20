@@ -54,28 +54,21 @@ class WitWidgetBase(object):
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
 
-    self.custom_predict_fn = (
-      config.get('custom_predict_fn')
-      if 'custom_predict_fn' in config else None)
-    self.compare_custom_predict_fn = (
-      config.get('compare_custom_predict_fn')
-      if 'compare_custom_predict_fn' in config else None)
-    self.adjust_prediction_fn = (
-      config.get('adjust_prediction')
-      if 'adjust_prediction' in config else None)
-    self.compare_adjust_prediction_fn = (
-      config.get('compare_adjust_prediction')
-      if 'compare_adjust_prediction' in config else None)
-    self.adjust_example_fn = (
-      config.get('adjust_example')
-      if 'adjust_example' in config else None)
-    self.compare_adjust_example_fn = (
-      config.get('compare_adjust_example')
-      if 'compare_adjust_example' in config else None)
+    self.custom_predict_fn = config.get('custom_predict_fn')
+    self.compare_custom_predict_fn = config.get('compare_custom_predict_fn')
+    self.custom_distance_fn = config.get('custom_distance_fn')
+    self.adjust_prediction_fn = config.get('adjust_prediction')
+    self.compare_adjust_prediction_fn = config.get('compare_adjust_prediction')
+    self.adjust_example_fn = config.get('adjust_example')
+    self.compare_adjust_example_fn = config.get('compare_adjust_example')
+
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'custom_distance_fn' in copied_config:
+      del copied_config['custom_distance_fn']
+      copied_config['uses_custom_distance_fn'] = True
     if 'adjust_prediction' in copied_config:
       del copied_config['adjust_prediction']
     if 'compare_adjust_prediction' in copied_config:
@@ -110,6 +103,12 @@ class WitWidgetBase(object):
     """
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
+
+  def compute_custom_distance_impl(self, index, params=None):
+    exs_for_distance = [
+        self.json_to_proto(example) for example in self.examples]
+    selected_ex = exs_for_distance[index]
+    return self.custom_distance_fn(selected_ex, exs_for_distance, params)
 
   def json_to_proto(self, json):
     ex = (tf.train.SequenceExample()
@@ -217,6 +216,21 @@ class WitWidgetBase(object):
       0:NUM_EXAMPLES_FOR_MUTANT_ANALYSIS]]
     return inference_utils.get_eligible_features(
       examples, NUM_MUTANTS_TO_GENERATE)
+
+  def sort_eligible_features_impl(self, info):
+    """Returns sorted list of interesting features for mutant inference."""
+    features_list = info['features']
+    chart_data = {}
+    for feat in features_list:
+      chart_data[feat['name']] = self.infer_mutants_impl({
+        'x_min': feat['observedMin'] if 'observedMin' in feat else 0,
+        'x_max': feat['observedMax'] if 'observedMin' in feat else 0,
+        'feature_index_pattern': None,
+        'feature_name': feat['name'],
+        'example_index': info['example_index'],
+      })
+    return inference_utils.sort_eligible_features(
+      features_list, chart_data)
 
   def create_sprite(self):
     """Returns an encoded image of thumbnails for image examples."""

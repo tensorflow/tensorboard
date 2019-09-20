@@ -92,7 +92,10 @@ public final class Vulcanize {
   private static final ImmutableSet<String> EXTRA_JSDOC_TAGS =
       ImmutableSet.of("attribute", "hero", "group", "required");
 
-  private static final Pattern WEBPATH_PATTERN = Pattern.compile("//~~WEBPATH~~([^\n]+)");
+  private static final Pattern SCRIPT_DELIMITER_PATTERN =
+      Pattern.compile("//# sourceURL=build:/([^\n]+)");
+
+  private static final String SCRIPT_DELIMITER = "//# sourceURL=build:/%name%";
 
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
@@ -440,7 +443,7 @@ public final class Vulcanize {
 
     // So we can chop JS binary back up into the original script tags.
     options.setPrintInputDelimiter(true);
-    options.setInputDelimiter("//~~WEBPATH~~%name%");
+    options.setInputDelimiter(SCRIPT_DELIMITER);
 
     // Optimizations that are too advanced for us right now.
     options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
@@ -556,7 +559,7 @@ public final class Vulcanize {
     // Split apart the JS blob and put it back in the original <script> locations.
     Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
     tags.addAll(sourceTags.entrySet());
-    Matcher matcher = WEBPATH_PATTERN.matcher(jsBlob);
+    Matcher matcher = SCRIPT_DELIMITER_PATTERN.matcher(jsBlob);
     verify(matcher.find(), "Nothing found in compiled JS blob!");
     Webpath path = Webpath.get(matcher.group(1));
     int start = 0;

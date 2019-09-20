@@ -232,6 +232,39 @@ class InferencePluginTest(tf.test.TestCase):
     self.assertAlmostEqual(-10, result['viz_params']['x_min'])
     self.assertAlmostEqual(10, result['viz_params']['x_max'])
 
+  @mock.patch.object(inference_utils, 'sort_eligible_features')
+  @mock.patch.object(inference_utils, 'mutant_charts_for_feature')
+  def test_infer(
+      self, mock_mutant_charts_for_feature, mock_sort_eligible_features):
+    self.plugin.examples = [
+        self.get_fake_example(0),
+        self.get_fake_example(1),
+        self.get_fake_example(2)
+    ]
+
+    mock_mutant_charts_for_feature.return_value = []
+    sorted_features_list = [
+      {'name': 'feat1', 'interestingness': .2},
+      {'name': 'feat2', 'interestingness': .1}
+    ]
+    mock_sort_eligible_features.return_value = sorted_features_list
+
+    url_options = urllib_parse.urlencode({
+        'inference_address': 'addr',
+        'model_name': 'name',
+        'model_type': 'regression',
+        'model_version': '',
+        'model_signature': '',
+    })
+    response = self.server.get(
+        '/data/plugin/whatif/sort_eligible_features?' + url_options)
+
+    self.assertEqual(200, response.status_code)
+    self.assertEqual(0, len(self.plugin.updated_example_indices))
+    output_list = json.loads(response.get_data().decode('utf-8'))
+    self.assertEquals('feat1', output_list[0]['name'])
+    self.assertEquals('feat2', output_list[1]['name'])
+
 
 if __name__ == '__main__':
   tf.test.main()

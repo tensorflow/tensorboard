@@ -30,6 +30,7 @@ from six import StringIO
 from werkzeug import wrappers
 import numpy as np
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
@@ -165,7 +166,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       )
       scalars = all_scalars.get(run, {}).get(tag, None)
       if scalars is None:
-        raise ValueError('No scalar data for run=%r, tag=%r' % (run, tag))
+        raise errors.NotFoundError(
+            'No scalar data for run=%r, tag=%r' % (run, tag)
+        )
       values = [(x.wall_time, x.step, x.value) for x in scalars]
     elif self._db_connection_provider:
       db = self._db_connection_provider()
@@ -196,7 +199,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       values = [(wall_time, step, self._get_value(data, dtype_enum))
                 for (step, wall_time, data, dtype_enum) in cursor]
     else:
-      tensor_events = self._multiplexer.Tensors(run, tag)
+      try:
+        tensor_events = self._multiplexer.Tensors(run, tag)
+      except KeyError:
+        raise errors.NotFoundError(
+            'No scalar data for run=%r, tag=%r' % (run, tag)
+        )
       values = [(tensor_event.wall_time,
                  tensor_event.step,
                  tensor_util.make_ndarray(tensor_event.tensor_proto).item())
@@ -238,10 +246,5 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     run = request.args.get('run')
     experiment = request.args.get('experiment', '')
     output_format = request.args.get('format')
-    try:
-      (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
-    except KeyError:
-      return http_util.Respond(
-          request, 'Invalid run or tag', 'text/plain', code=400
-      )
+    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
     return http_util.Respond(request, body, mime_type)

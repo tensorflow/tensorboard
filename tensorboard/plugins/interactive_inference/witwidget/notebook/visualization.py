@@ -511,6 +511,27 @@ class WitConfigBuilder(object):
       self.set_compare_model_name('2')
     return self
 
+  def set_custom_distance_fn(self, distance_fn):
+    """Sets a custom function for distance computation.
+
+    WIT can directly use a custom function for all distance computations within
+    the tool. In this case, the provided function should accept a query example
+    proto and a list of example protos to compute the distance against and
+    return a 1D list of numbers containing the distances.
+
+    Args:
+      distance_fn: The python function which will be used for distance
+      computation.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    if distance_fn is None:
+      self.delete('custom_distance_fn')
+    else:
+      self.store('custom_distance_fn', distance_fn)
+    return self
+
   def _convert_json_to_tf_examples(self, examples):
     self._set_uses_json_input(True)
     tf_examples = []
