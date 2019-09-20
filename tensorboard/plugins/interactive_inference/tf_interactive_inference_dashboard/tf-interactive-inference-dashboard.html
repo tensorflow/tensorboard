@@ -3487,9 +3487,9 @@ limitations under the License.
             type: Array,
             value: () => [],
           },
-          // A map of feature name to the featureValueThresholds items, for quick
+          // A map of feature name to the featureValueThresholds indices, for quick
           // lookup.
-          featureValueThresholdsMap: Object,
+          featureValueThresholdsIndexMap: Object,
           // The default inference label when the classification threshold isn't
           // met.
           defaultInferenceLabel: {
@@ -4461,14 +4461,14 @@ limitations under the License.
                       feature1Value,
                       feature2Value
                     );
-                    thresholdsMap[mapKey] = thresh;
+                    thresholdsMap[mapKey] = thresholds.length - 1;
                   }
                 }
               }
             }
           }
           this.set('featureValueThresholds', thresholds);
-          this.set('featureValueThresholdsMap', thresholdsMap);
+          this.set('featureValueThresholdsIndexMap', thresholdsMap);
           this.refreshInferences_(false);
         },
 
@@ -5235,28 +5235,16 @@ limitations under the License.
             // Set all thresholds to the setting with the lowest cost from the
             // above search.
             for (let vIdx = 0; vIdx < values.length; vIdx++) {
+              const thresholdsIdx = this.featureValueThresholdsIndexMap[
+                values[vIdx]
+              ];
               this.set(
-                'featureValueThresholdsMap.' +
-                  values[vIdx] +
+                'featureValueThresholds.' +
+                  thresholdsIdx +
                   '.threshold.' +
                   modelInd +
                   '.threshold',
                 bestThresholds[vIdx] / 100
-              );
-            }
-            // Polymer does not reflect changes if we only update through
-            // featureValueThresholdsMap, this is a quick workaround
-            // until we find the correct way to link
-            for (let i = 0; i < this.featureValueThresholds.length; i++) {
-              const value = this.featureValueThresholds[i].threshold[modelInd]
-                .threshold;
-              this.set(
-                'featureValueThresholds.' +
-                  i +
-                  '.threshold.' +
-                  modelInd +
-                  '.threshold',
-                value
               );
             }
           }
@@ -6190,7 +6178,9 @@ limitations under the License.
               item[feature1],
               item[feature2]
             );
-            thresholds = this.featureValueThresholdsMap[key].threshold;
+            thresholds = this.featureValueThresholds[
+              this.featureValueThresholdsIndexMap[key]
+            ].threshold;
           }
           for (let modelNum = 0; modelNum < this.numModels; modelNum++) {
             const nonZeroClassification = this.getClassificationBestNonZero(
