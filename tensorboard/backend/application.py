@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import atexit
 import collections
+import contextlib
 import json
 import os
 import re
@@ -37,6 +38,7 @@ from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-o
 
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
@@ -138,16 +140,37 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
         max_reload_threads=flags.max_reload_threads,
         event_file_active_filter=_get_event_file_active_filter(flags))
     if flags.generic_data != 'false':
-      data_provider = event_data_provider.MultiplexerDataProvider(multiplexer)
+      data_provider = event_data_provider.MultiplexerDataProvider(
+          multiplexer, flags.logdir or flags.logdir_spec
+      )
 
   if reload_interval >= 0:
     # We either reload the multiplexer once when TensorBoard starts up, or we
     # continuously reload the multiplexer.
-    path_to_run = parse_event_files_spec(flags.logdir)
+    if flags.logdir:
+      path_to_run = {os.path.expanduser(flags.logdir): None}
+    else:
+      path_to_run = parse_event_files_spec(flags.logdir_spec)
     start_reloading_multiplexer(
         multiplexer, path_to_run, reload_interval, flags.reload_task)
   return TensorBoardWSGIApp(
       flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
+
+
+def _handling_errors(wsgi_app):
+  def wrapper(*args):
+    (environ, start_response) = (args[-2], args[-1])
+    try:
+      return wsgi_app(*args)
+    except errors.PublicError as e:
+      request = wrappers.Request(environ)
+      error_app = http_util.Respond(
+          request, str(e), "text/plain", code=e.http_code
+      )
+      return error_app(environ, start_response)
+    # Let other exceptions be handled by the server, as an opaque
+    # internal server error.
+  return wrapper
 
 
 def TensorBoardWSGIApp(
@@ -369,6 +392,7 @@ class TensorBoardWSGI(object):
       response[plugin.plugin_name] = output_metadata
     return http_util.Respond(request, response, 'application/json')
 
+  @_handling_errors
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
 
@@ -404,14 +428,14 @@ class TensorBoardWSGI(object):
     # pylint: enable=too-many-function-args
 
 
-def parse_event_files_spec(logdir):
-  """Parses `logdir` into a map from paths to run group names.
+def parse_event_files_spec(logdir_spec):
+  """Parses `logdir_spec` into a map from paths to run group names.
 
-  The events files flag format is a comma-separated list of path specifications.
-  A path specification either looks like 'group_name:/path/to/directory' or
+  The `--logdir_spec` flag format is a comma-separated list of path
+  specifications. A path spec looks like 'group_name:/path/to/directory' or
   '/path/to/directory'; in the latter case, the group is unnamed. Group names
-  cannot start with a forward slash: /foo:bar/baz will be interpreted as a
-  spec with no name and path '/foo:bar/baz'.
+  cannot start with a forward slash: /foo:bar/baz will be interpreted as a spec
+  with no name and path '/foo:bar/baz'.
 
   Globs are not supported.
 
@@ -424,11 +448,11 @@ def parse_event_files_spec(logdir):
     require any valid runs.
   """
   files = {}
-  if logdir is None:
+  if logdir_spec is None:
     return files
   # Make sure keeping consistent with ParseURI in core/lib/io/path.cc
   uri_pattern = re.compile('[a-zA-Z][0-9a-zA-Z.]*://.*')
-  for specification in logdir.split(','):
+  for specification in logdir_spec.split(','):
     # Check if the spec contains group. A spec start with xyz:// is regarded as
     # URI path spec instead of group spec. If the spec looks like /foo:bar/baz,
     # then we assume it's a path with a colon. If the spec looks like

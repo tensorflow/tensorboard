@@ -17,6 +17,8 @@ limitations under the License.
 <link rel="import" href="../tf-imports/polymer.html" />
 <link rel="import" href="tf-interactive-inference-dashboard.html" />
 <script src="tf.min.js"></script>
+<script src="mobilenet.js"></script>
+
 <dom-module id="tf-interactive-inference-image-demo">
   <template>
     <style>
@@ -53,16 +55,22 @@ limitations under the License.
         labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
+        distanceEmbs: Array,
+        distanceEmbsTensor: Object,
+        distanceModel: Object,
       },
       ready: async function() {
         this.$.dash.modelName = 'demo';
         this.$.dash.inferenceAddress = 'demo';
         this.$.dash.updateNumberOfModels();
-        this.model = await tf.loadModel(
+        this.model = await tf.loadLayersModel(
           tf.io.browserHTTPRequest('data/images/model.json', {
             credentials: 'include',
           })
         );
+        // Load mobilenet for custom distance computation.
+        this.distanceModel = await mobilenet.load();
+        const DISTANCE_EMBS_PATH = 'data/images/distance_embeddings.json';
         const DATA_PATH = 'data/images/smile_examples.json';
         const RESULTS_PATH = 'data/images/smile_examples_inference.json';
         const testData = d3.json(DATA_PATH).then((data) => {
@@ -75,8 +83,20 @@ limitations under the License.
             this.data.map((item) => JSON.stringify(item)),
             true
           );
-          this.$.dash.addEventListener('update-example', (e) => {
+          this.$.dash.addEventListener('update-example', async (e) => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
+            // Update distance embedding of example
+            const ex = this.data[e.detail.index];
+            const exTensor = await this.convertExToTensor(ex);
+            const predTensor = await this.distanceModel.infer(exTensor, true);
+            const predNorm = predTensor.div(tf.norm(predTensor));
+            // Normalize embedding
+            const pred = await predNorm.array();
+            this.distanceEmbs[e.detail.index] = pred[0];
+            this.updateDistanceEmbsTensor();
+            exTensor.dispose();
+            predNorm.dispose();
+            predTensor.dispose();
             this.indicesToInfer[e.detail.index] = true;
             this.updateSprite();
           });
@@ -84,11 +104,15 @@ limitations under the License.
             this.data.push(
               JSON.parse(JSON.stringify(this.data[e.detail.index]))
             );
+            this.distanceEmbs.push(this.distanceEmbs[e.detail.index]);
+            this.updateDistanceEmbsTensor();
             this.indicesToInfer[this.data.length - 1] = true;
             this.updateSprite();
           });
           this.$.dash.addEventListener('delete-example', (e) => {
             this.data.splice(e.detail.index, 1);
+            this.distanceEmbs.splice(e.detail.index, 1);
+            this.updateDistanceEmbsTensor();
             const newIndicesToInfer = {};
             const oldIndicesToInfer = Object.keys(this.indicesToInfer);
             for (let i = 0; i < oldIndicesToInfer.length; i++) {
@@ -110,7 +134,7 @@ limitations under the License.
               {classificationResult: {classifications: []}},
             ];
             if (indices.length == 250) {
-              const testData = d3.json(RESULTS_PATH).then((inferences) => {
+              d3.json(RESULTS_PATH).then((inferences) => {
                 setTimeout(() => {
                   // for compatibility with inferences.json
                   inferences.results = [inferences.results];
@@ -118,6 +142,11 @@ limitations under the License.
                   this.indicesToInfer = {};
                   this.$.dash.selectedLabelFeature = 'Smiling';
                 }, 1000);
+              });
+              // Load precomputed embeddings from json for fast startup
+              d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
+                this.distanceEmbs = distanceEmbs;
+                this.updateDistanceEmbsTensor();
               });
             } else {
               const tensorArr = [];
@@ -154,6 +183,27 @@ limitations under the License.
           this.$.dash.addEventListener('get-eligible-features', (e) => {
             this.$.dash.partialDepPlotEligibleFeatures = [];
           });
+          this.$.dash.addEventListener('compute-custom-distance', async (e) => {
+            // Compute cosine similarity between selected example and all other
+            // examples. Return negative cosine similarity as the distance.
+            const ind = tf.tensor1d([+e.detail.index], 'int32');
+            const exEmb = this.distanceEmbsTensor.gather(ind);
+            const distancesTensor = tf.neg(
+              tf.dot(this.distanceEmbsTensor, tf.transpose(exEmb)).flatten()
+            );
+            const distances = await distancesTensor.data();
+            ind.dispose();
+            exEmb.dispose();
+            distancesTensor.dispose();
+            const callbackObj = {
+              exInd: e.detail.index,
+              distances: distances,
+              params: e.detail.params.callbackParams,
+              funId: e.detail.callback,
+            };
+            this.$.dash.invokeCustomDistanceCallback(callbackObj);
+          });
+          this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
           });
@@ -174,7 +224,7 @@ limitations under the License.
               canvas
                 .getContext('2d')
                 .drawImage(img, 0, 0, img.width, img.height);
-              let tensor = tf.fromPixels(canvas).toFloat();
+              let tensor = tf.browser.fromPixels(canvas).toFloat();
               if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
                 tensor = tf.image.resizeBilinear(tensor, [78, 64]);
               }
@@ -203,6 +253,21 @@ limitations under the License.
         }
       },
 
+      updateDistanceEmbsTensor: function() {
+        if (
+          this.distanceEmbsTensor &&
+          Object.keys(this.distanceEmbsTensor).length != 0
+        ) {
+          this.distanceEmbsTensor.dispose();
+        }
+        const distanceEmbsTensor = tf.tensor2d(this.distanceEmbs);
+        this.distanceEmbsTensor = distanceEmbsTensor.reshape([
+          this.distanceEmbs.length,
+          1024,
+        ]);
+        distanceEmbsTensor.dispose();
+      },
+
       imageLoaded: function() {
         const canvas = this.$.spritecanvas;
         const THUMBNAIL_SIZE = 32;
@@ -211,7 +276,6 @@ limitations under the License.
           return;
         }
         const thumbnailsPerSide = Math.ceil(Math.sqrt(this.images.length));
-        console.log(thumbnailsPerSide);
         canvas.width = thumbnailsPerSide * THUMBNAIL_SIZE;
         canvas.height = thumbnailsPerSide * THUMBNAIL_SIZE;
 

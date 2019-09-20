@@ -1,3 +1,96 @@
+# Release 2.0.0
+
+The 2.0 minor series tracks TensorFlow 2.0.
+
+## Breaking changes
+
+- TensorBoard now serves on localhost only by default to avoid unintentional
+  overexposure. To expose TensorBoard to the network, either use a proxy, bind
+  to a specific hostname or IP address by using the `--host` flag, or explicitly
+  enable the previous behavior of binding on all network interfaces by passing
+  the flag `--bind_all`. See PR #2589.
+
+- The `--logdir` flag no longer supports passing multiple comma-delimited paths,
+  which means that it now *supports* paths containing literal comma and colon
+  characters, like `./logs/m=10,n=20,lr=0.001` or `./logs/run_12:30:15`. To
+  mimic the old behavior, prefer using a tree of symlinks as it works with more
+  plugins, but as a fallback the flag `--logdir_spec` exposes the old behavior.
+  See PR #2664.
+
+- Projector plugin `visualize_embeddings()` API now takes `logdir` as its first
+  parameter rather than `writer` (which only supported TF 1.x summary writers).
+  For backwards compatibility TF 1.x writers will still be accepted, but passing
+  the logdir explicitly is preferred since it works without any dependency on
+  TF 1.x or 2.x summary writing. See PR #2665.
+
+- The namespace `tensorboard.summary.*` now aliases the summary API symbols in
+  `tensorboard.summary.v2.*` rather than those in `tensorboard.summary.v1.*`.
+  The old symbols can still be accessed under the `.v1` names. Note that the
+  new v2 API symbols are exposed in TF 2.0 as the new `tf.summary.*` API and
+  this is normally how they should be used. See PR #2670.
+
+## Features
+
+- Smarter log directory polling can be used by passing `--reload_multifile=true`
+  to poll all "active" event files in a directory rather than only the last one.
+  This avoids problems where data written to the non-last file never appears.
+  See PR #1867 for details, including how to adjust the "active" threshold.
+
+- What-If Tool now can sort PD plots by interestingness (#2461)
+
+
+# Release 1.15.0
+
+The 1.15 minor series tracks TensorFlow 1.15.
+
+## Features
+- Embeddings projector now shows sprite images in the nearest neighbors list
+  (#2543) - thanks @beasteers
+- When recording hyperparameters, the trial ID can now be customized, for easier
+  integration with existing tuner systems (#2442)
+- Improvements to Colab and Jupyter notebook integration:
+  - The `TENSORBOARD_BINARY` environment variable can now be set to invoke a
+    non-default `tensorboard` binary (#2386)
+  - Error messages are now clearer when the TensorBoard binary fails to launch
+    (#2395)
+  - The `%tensorboard` magic no longer spams log messages when a different
+    version of TensorBoard is already running on the same machine (#2470)
+  - The `%tensorboard` magic can now be used in Jupyter notebooks running on
+    hosts other than `localhost` (#2407)
+- What-If Tool improvements:
+  - Errors running inference are now surfaced in the What-If Tool UI (#2414)
+  - Median error stats are now displayed in addition to mean error stats (#2434)
+- Mesh plugin improvements:
+  - Now compatible with TensorFlow 2.0 via a new `summary_v2` module (#2443)
+  - The number of vertices in the mesh can now be dynamic (#2373)
+- Profile dashboard improvements:
+  - Wasted time now appears in the node table, and can be used as a sort key
+    (#2525)
+  - Memory bandwidth utilization now appears in the dashboard header (#2525)
+- Improvements for plugin developers:
+  - Plugins can now be rendered in an iframe whose source is served from the
+    plugin backend, eliminating the need to bundle a frontend with the
+    TensorBoard binary
+  - Plugins can now be discovered dynamically and loaded at runtime, by defining
+    a `tensorboard_plugins` entry point
+  - See our [example dynamically loaded plugin][example-plugin] for a plugin to
+    use as a starting point, plus documentation
+  - TensorBoard now uses Polymer 2.7 (#2392, et al.)
+
+[example-plugin]: https://github.com/tensorflow/tensorboard/tree/1.15/tensorboard/examples/plugins/example_basic#readme
+
+## Bug fixes
+- #2614 - “Toggle All Runs” button now behaves correctly on the first click when
+  many runs are loaded (PR #2633)
+- Scalar charts should no longer “become tiny” on certain kinds of rendering
+  failures (PR #2605)
+- #2028 - TensorBoard now logs less verbosely with Werkzeug 0.15.0 and up; it
+  now behaves the same across Werkzeug versions (PR #2383)
+- The What-If Tool can now properly compare two regression models in the initial
+  Facets Dive view (PR #2414)
+- Embedding projector metadata view now wraps long strings correctly (PR #2198)
+
+
 # Release 1.14.0
 
 ## Features

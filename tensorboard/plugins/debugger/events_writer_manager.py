@@ -27,7 +27,12 @@ import threading
 import time
 
 import tensorflow as tf
-from tensorflow.python import pywrap_tensorflow
+
+# To keep compatibility with both 1.x and 2.x
+try:
+  from tensorflow.python import _pywrap_events_writer as tf_events_writer
+except ImportError:
+  from tensorflow.python import pywrap_tensorflow as tf_events_writer
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -209,7 +214,7 @@ class EventsWriterManager(object):
         os.path.join(directory, DEBUGGER_EVENTS_FILE_STARTING_TEXT),
         time.time(), self._events_file_count)
     logger.info("Creating events file %s", file_path)
-    return pywrap_tensorflow.EventsWriter(tf.compat.as_bytes(file_path))
+    return tf_events_writer.EventsWriter(tf.compat.as_bytes(file_path))
 
   def _fetch_events_files_on_disk(self):
     """Obtains the names of debugger-related events files within the directory.

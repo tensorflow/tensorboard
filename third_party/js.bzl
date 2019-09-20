@@ -155,16 +155,16 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # MIT
       sha256_urls = {
           "90f3af9ebfaf34f642b05f3baeeca2c5547d1b8ba6872803990c26804f4067b1": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/LICENSE",
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/LICENSE",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/LICENSE",
           ],
-          "40873d04d4ace1529c503b10053fe6c09c04e8ba4a1eaacb07a1ea17fa073368": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/build/three.js",
+          "545db828b1d52f926026d5f04f32dbc6f9ff7c62a2d8e2da9dfda09b155a490a": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/build/three.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/build/three.js",
           ],
-          "f495c87a34ac1bf238e245c60e9fed2ec831cefbb9dc29e17b91e24b5ef6559b": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
-              "https://raw.githubusercontent.com/mrdoob/three.js/r104/examples/js/controls/OrbitControls.js",
+          "cec663b016fb04c118ac7d6d1365eb9ad81567843e6c584ade4217d4adaf0ca0": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/mrdoob/three.js/r108/examples/js/controls/OrbitControls.js",
+              "https://raw.githubusercontent.com/mrdoob/three.js/r108/examples/js/controls/OrbitControls.js",
           ],
       },
   )
@@ -307,7 +307,7 @@ def tensorboard_js_workspace():
           ],
           "b1f0195f305ca66fdb7dae264771f162ae03f04aa642848f15cd871c043e04d1": [
               "http://mirror.tensorflow.org/raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",
-              "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html"  # 2017-06-19
+              "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",  # 2017-06-19
           ],
       },
   )
@@ -494,8 +494,20 @@ def tensorboard_js_workspace():
       name = "org_tensorflow_tfjs",
       licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
-          "fccd26db2da462ec48e2d90fbdff1ee9a9d740f2c7efbd9789ba46eb98ecd1ae": [
-              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.5/dist/tf.min.js",
+          "3870fc1d4eaefce7370b5bce3992e4dadcad8e3a5999b034302e38b2094873ea": [
+              "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
+              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
+          ],
+      },
+  )
+
+  filegroup_external(
+      name = "org_tensorflow_tfjs_mobilenet",
+      licenses = ["notice"],  # Apache 2.0
+      sha256_urls = {
+          "aca32ec8a778d17acb623bf495c6e60ec38312b761b9a8c88af4c841c25eba70": [
+              "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
+              "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
           ],
       },
   )

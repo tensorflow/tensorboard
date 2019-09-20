@@ -40,6 +40,7 @@ except ImportError:
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import test as tb_test
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
@@ -50,6 +51,7 @@ class FakeFlags(object):
   def __init__(
       self,
       logdir,
+      logdir_spec='',
       purge_orphaned_data=True,
       reload_interval=60,
       samples_per_plugin='',
@@ -63,6 +65,7 @@ class FakeFlags(object):
       reload_multifile_inactive_secs=4000,
       generic_data='auto'):
     self.logdir = logdir
+    self.logdir_spec = logdir_spec
     self.purge_orphaned_data = purge_orphaned_data
     self.reload_interval = reload_interval
     self.samples_per_plugin = samples_per_plugin
@@ -142,6 +145,61 @@ class FakePluginLoader(base_plugin.TBLoader):
 
   def load(self, context):
     return FakePlugin(context, **self._kwargs)
+
+
+class HandlingErrorsTest(tb_test.TestCase):
+
+  def test_successful_response_passes_through(self):
+    @application._handling_errors
+    @wrappers.Request.application
+    def app(request):
+      return wrappers.Response('All is well', 200, content_type='text/html')
+
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    response = server.get('/')
+    self.assertEqual(response.get_data(), b'All is well')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.headers.get('Content-Type'), 'text/html')
+
+  def test_public_errors_serve_response(self):
+    @application._handling_errors
+    @wrappers.Request.application
+    def app(request):
+      raise errors.NotFoundError('no scalar data for run=foo, tag=bar')
+
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    response = server.get('/')
+    self.assertEqual(
+        response.get_data(),
+        b'Not found: no scalar data for run=foo, tag=bar',
+    )
+    self.assertEqual(response.status_code, 404)
+    self.assertStartsWith(response.headers.get('Content-Type'), 'text/plain')
+
+  def test_internal_errors_propagate(self):
+    @application._handling_errors
+    @wrappers.Request.application
+    def app(request):
+      raise ValueError('something borked internally')
+
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    with self.assertRaises(ValueError) as cm:
+      response = server.get('/')
+    self.assertEqual(str(cm.exception), 'something borked internally')
+
+  def test_passes_through_non_wsgi_args(self):
+    class C(object):
+      @application._handling_errors
+      def __call__(self, environ, start_response):
+        start_response('200 OK', [('Content-Type', 'text/html')])
+        yield b'All is well'
+
+    app = C()
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    response = server.get('/')
+    self.assertEqual(response.get_data(), b'All is well')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.headers.get('Content-Type'), 'text/html')
 
 
 class ApplicationTest(tb_test.TestCase):
@@ -599,10 +657,11 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
-    self.assertDictContainsSubset({
-        '/data/plugin/foo/foo_route': self._foo_handler,
-        '/data/plugin/bar/bar_route': self._bar_handler,
-    }, self.app.exact_routes)
+    expected_routes = frozenset((
+        '/data/plugin/foo/foo_route',
+        '/data/plugin/bar/bar_route',
+    ))
+    self.assertLessEqual(expected_routes, frozenset(self.app.exact_routes))
 
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include both plugins.
