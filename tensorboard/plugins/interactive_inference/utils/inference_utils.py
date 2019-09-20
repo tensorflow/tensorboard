@@ -125,7 +125,8 @@ class OriginalFeatureList(object):
   def __init__(self, feature_name, original_value, feature_type):
     """Inits OriginalFeatureList."""
     self.feature_name = feature_name
-    self.original_value = [ensure_not_binary(v) for v in original_value]
+    self.original_value = [
+      ensure_not_binary(value) for value in original_value]
     self.feature_type = feature_type
 
     # Derived attributes.
