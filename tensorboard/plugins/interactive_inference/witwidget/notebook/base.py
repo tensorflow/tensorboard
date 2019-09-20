@@ -123,7 +123,7 @@ class WitWidgetBase(object):
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
     infer_objs = []
-    attribution_objs = []
+    extra_output_objs = []
     serving_bundle = inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
@@ -136,11 +136,11 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    (predictions, attributions) = (
+    (predictions, extra_output) = (
       inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
     infer_objs.append(predictions)
-    attribution_objs.append(attributions)
+    extra_output_objs.append(extra_output)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
         self.compare_custom_predict_fn):
@@ -156,16 +156,16 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      (predictions, attributions) = (
+      (predictions, extra_output) = (
         inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
       infer_objs.append(predictions)
-      attribution_objs.append(attributions)
+      extra_output_objs.append(extra_output)
     self.updated_example_indices = set()
     return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
       'label_vocab': self.config.get('label_vocab'),
-      'attributions': attribution_objs}
+      'extra_outputs': extra_output_objs}
 
   def infer_mutants_impl(self, info):
     """Performs mutant inference on specified examples."""
