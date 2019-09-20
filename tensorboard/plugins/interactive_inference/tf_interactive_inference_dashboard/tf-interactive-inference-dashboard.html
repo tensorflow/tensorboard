@@ -1191,7 +1191,18 @@ limitations under the License.
       }
       .counterfactual-toggle {
         margin: 4px 4px 4px 6px;
+        padding-top: 4px;
         --paper-toggle-button-checked-bar-color: #81c995;
+      }
+      .counterfactual-delta {
+        display: flex;
+        margin-right: 6px;
+      }
+      .counterfactual-delta label {
+        padding-top: 10px;
+      }
+      .counterfactual-delta paper-slider {
+        height: 40px;
       }
       .datapoint-button {
         color: #202124;
@@ -1331,8 +1342,24 @@ limitations under the License.
       </paper-input>
       <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
-        <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
+        <paper-radio-button
+          class="dist-radio"
+          name="L1"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L1</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="L2"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L2</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="Custom"
+          hidden$="[[!customDistanceFunctionSet]]"
+          >User-specified</paper-radio-button
+        >
       </paper-radio-group>
       <paper-dropdown-menu
         label="Apply to datapoints visualization"
@@ -1357,7 +1384,7 @@ limitations under the License.
         <paper-button
           dialog-confirm
           autofocus
-          on-tap="addDistanceMetric"
+          on-tap="requestAddDistanceMetric"
           class="main-button"
           >Apply</paper-button
         >
@@ -1426,70 +1453,106 @@ limitations under the License.
                           >Partial dependence plots</paper-radio-button
                         >
                       </paper-radio-group>
-                      <template is="dom-if" if="[[!isRegression_(modelType)]]">
-                        <div class="flex">
-                          <div title="Select a datapoint to use this feature">
-                            <paper-toggle-button
-                              class="counterfactual-toggle"
-                              checked="{{showNearestCounterfactual}}"
-                              disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                            >
-                              Show nearest counterfactual datapoint
-                            </paper-toggle-button>
-                          </div>
-                          <paper-radio-group
-                            selected="{{nearestCounterfactualDist}}"
+                      <div class="flex">
+                        <div title="Select a datapoint to use this feature">
+                          <paper-toggle-button
+                            class="counterfactual-toggle"
+                            checked="{{showNearestCounterfactual}}"
+                            disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                           >
-                            <paper-radio-button name="L1"
-                              >L1</paper-radio-button
-                            >
-                            <paper-radio-button name="L2"
-                              >L2</paper-radio-button
-                            >
-                          </paper-radio-group>
-                          <paper-dropdown-menu
-                            label="Model:"
-                            no-label-float
-                            class="short-dropdown"
-                            hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
-                          >
-                            <paper-listbox
-                              class="dropdown-content"
-                              selected="{{nearestCounterfactualModelIndex}}"
-                            >
-                              <template
-                                is="dom-repeat"
-                                items="[[parsedModelNames]]"
-                              >
-                                <paper-item
-                                  >[[getCounterfactualModelName_(item)]]</paper-item
-                                >
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <paper-icon-button
-                            icon="info-outline"
-                            class="info-icon cf-info-icon no-padding"
-                            on-tap="openDialog"
-                          >
-                          </paper-icon-button>
-                          <paper-dialog
-                            class="dialog-text"
-                            horizontal-align="auto"
-                            vertical-align="auto"
-                          >
-                            <div class="dialog-title">
-                              Nearest counterfactual (neighbor of different
-                              classification)
-                            </div>
-                            <div>
-                              Compares the selected datapoint with its nearest
-                              neighbor from a different classification using L1
-                              or L2 distance.
-                            </div>
-                          </paper-dialog>
+                            Show nearest counterfactual datapoint
+                          </paper-toggle-button>
                         </div>
-                      </template>
+                        <paper-radio-group
+                          selected="{{nearestCounterfactualDist}}"
+                        >
+                          <paper-radio-button
+                            name="L1"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L1</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="L2"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L2</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="Custom"
+                            hidden$="[[!customDistanceFunctionSet]]"
+                            >User-specified</paper-radio-button
+                          >
+                        </paper-radio-group>
+                        <template is="dom-if" if="[[isRegression_(modelType)]]">
+                          <div
+                            title="Minimum distance in inferred value to consider counterfactual"
+                            class="counterfactual-delta"
+                          >
+                            <paper-slider
+                              pin
+                              value="{{minCounterfactualValueDist}}"
+                              max="[[maxCounterfactualValueDist]]"
+                            ></paper-slider>
+                            <label>Delta</label>
+                          </div>
+                        </template>
+                        <paper-dropdown-menu
+                          label="Model:"
+                          no-label-float
+                          class="counterfactual-dropdown"
+                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                        >
+                          <paper-listbox
+                            class="dropdown-content"
+                            slot="dropdown-content"
+                            selected="{{nearestCounterfactualModelIndex}}"
+                          >
+                            <template
+                              is="dom-repeat"
+                              items="[[parsedModelNames]]"
+                            >
+                              <paper-item
+                                >[[getCounterfactualModelName_(item)]]</paper-item
+                              >
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1 or
+                            L2 distance. If a custom distance function is set,
+                            it uses that function instead.
+                          </div>
+                          <div>
+                            <template
+                              is="dom-if"
+                              if="[[isRegression_(modelType)]]"
+                              restamp
+                            >
+                              For regression, a neighbor point is considered as
+                              a different classification if the difference in
+                              inferred value is equal or greater than the
+                              selected delta.<br />
+                              Delta is initialized to the standard deviation of
+                              the inferred values.
+                            </template>
+                          </div>
+                        </paper-dialog>
+                      </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
                           <paper-button
@@ -3264,6 +3327,13 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
+    // requestDistanceWithCallback can be invoked with the callbacks in this
+    // enum. Please add a function to this list if you want it to be invoked
+    // at the end of custom distance computation.
+    const distanceCallbacks = {
+      finalizeClosestCounterfactual: 0,
+      finalizeAddDistanceMetric: 1,
+    };
 
     // Special feature names and feature name prefixes and suffixes for parsing
     // inference and attribution information from TFMA-generated input.
@@ -3340,6 +3410,21 @@ limitations under the License.
             type: Object,
             observer: 'newInferences_',
             value: () => ({}),
+          },
+          // Extra outputs from inference. A dict with two fields: 'indices' and
+          // 'extra'. Indices contains a list of example indices that
+          // these new outputs apply to. Extra contains a list of extra output
+          // objects, one for each model being inferred. The object for each
+          // model is a dict of output data names to lists of the output values
+          // for that data, one entry for each example that was inferred upon.
+          // 'attributions' is one of these output data which is parsed into the
+          // 'attributions' object defined below as a special case. Any other extra
+          // data provided are displayed by WIT with each example.
+          // @type {indices: Array<number>,
+          //        extra: Array<{!Object<string, Array<number|string>>}>}
+          extraOutputs: {
+            type: Object,
+            observer: 'newExtraOutputs_',
           },
           // Attributions from inference. A dict with two fields: 'indices' and
           // 'attributions'. Indices contains a list of example indices that
@@ -3441,6 +3526,12 @@ limitations under the License.
             value: '',
             observer: 'breakdownFeatureSelected_',
           },
+          // True if a custom distance function is set and is in use.
+          customDistanceFunctionSet: {
+            type: Boolean,
+            value: false,
+            observer: 'customDistanceFunctionSetChanged_',
+          },
           // Feature for true label.
           selectedLabelFeature: {
             type: String,
@@ -3463,9 +3554,9 @@ limitations under the License.
             type: Array,
             value: () => [],
           },
-          // A map of feature name to the featureValueThresholds items, for quick
+          // A map of feature name to the featureValueThresholds indices, for quick
           // lookup.
-          featureValueThresholdsMap: Object,
+          featureValueThresholdsIndexMap: Object,
           // The default inference label when the classification threshold isn't
           // met.
           defaultInferenceLabel: {
@@ -3615,6 +3706,8 @@ limitations under the License.
             type: String,
             value: 'L1',
           },
+          minCounterfactualValueDist: Number,
+          maxCounterfactualValueDist: Number,
           visMode: {
             type: String,
             value: 'dive',
@@ -3737,7 +3830,7 @@ limitations under the License.
 
         observers: [
           'setFacetDistFeatureName(facetDistSwitch, selected)',
-          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)',
+          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist, minCounterfactualValueDist)',
         ],
 
         // Required function.
@@ -3828,32 +3921,87 @@ limitations under the License.
         showDistanceClicked_: function() {
           this.$.distancedialog.toggle();
         },
+        customDistanceFunctionSetChanged_: function() {
+          if (this.customDistanceFunctionSet) {
+            this.nearestCounterfactualDist = 'Custom';
+            this.facetDistSwitch = 'Custom';
+          } else {
+            this.nearestCounterfactualDist = 'L1';
+            this.facetDistSwitch = 'L1';
+          }
+        },
 
-        addDistanceMetric: function() {
-          this.facetDistFeatureNames.push(this.facetDistFeatureName);
+        requestAddDistanceMetric: function() {
           const selected = this.selected[0];
-          let closestDist = Number.POSITIVE_INFINITY;
-          let closest = -1;
-          const useL2Distance = this.facetDistSwitch == 'L2';
-          for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDist(
-              this.visdata[selected],
-              this.visdata[i],
-              useL2Distance
+          const params = {
+            callbackParams: {featureName: this.facetDistFeatureName},
+            distanceParams: {},
+          };
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeAddDistanceMetric,
+              params
             );
-            this.visdata[i][this.facetDistFeatureName] = dist;
+            return;
+          } else {
+            const dists = [];
+            const useL2Distance = this.facetDistSwitch == 'L2';
+            for (let i = 0; i < this.visdata.length; i++) {
+              dists.push(
+                this.getDist(
+                  this.visdata[selected],
+                  this.visdata[i],
+                  useL2Distance
+                )
+              );
+            }
+            this.finalizeAddDistanceMetric(
+              selected,
+              dists,
+              params.callbackParams
+            );
+          }
+        },
+
+        invokeCustomDistanceCallback: function(callbackObj) {
+          switch (callbackObj.funId) {
+            case distanceCallbacks.finalizeClosestCounterfactual:
+              this.finalizeClosestCounterfactual(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+            case distanceCallbacks.finalizeAddDistanceMetric:
+              this.finalizeAddDistanceMetric(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+          }
+        },
+
+        finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
+          const facetDistFeatureName = callbackParams.featureName;
+          this.facetDistFeatureNames.push(facetDistFeatureName);
+          for (let i = 0; i < this.visdata.length; i++) {
+            this.visdata[i][facetDistFeatureName] = distances[i];
           }
           this.refreshDive_();
           if (this.facetDistSetting == 'colorBy') {
-            this.$.dive.colorBy = this.facetDistFeatureName;
+            this.$.dive.colorBy = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalFacet') {
-            this.$.dive.verticalFacet = this.facetDistFeatureName;
+            this.$.dive.verticalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalFacet') {
-            this.$.dive.horizontalFacet = this.facetDistFeatureName;
+            this.$.dive.horizontalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalPosition') {
-            this.$.dive.verticalPosition = this.facetDistFeatureName;
+            this.$.dive.verticalPosition = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalPosition') {
-            this.$.dive.horizontalPosition = this.facetDistFeatureName;
+            this.$.dive.horizontalPosition = facetDistFeatureName;
           }
         },
 
@@ -3868,26 +4016,115 @@ limitations under the License.
           } else {
             this.comparedIndices = [];
             this.counterfactualExampleAndInference = null;
-            const temp = this.selectedExampleAndInference;
-            this.selectedExampleAndInference = null;
-            this.selectedExampleAndInference = temp;
+            this.refreshSelectedDatapoint_();
+          }
+        },
+
+        refreshSelectedDatapoint_: function() {
+          const temp = this.selectedExampleAndInference;
+          this.selectedExampleAndInference = null;
+          this.selectedExampleAndInference = temp;
+        },
+
+        isSameInferenceClass_: function(val1, val2) {
+          return this.isRegression_(this.modelType)
+            ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
+            : val1 === val2;
+        },
+
+        adjustMaxCounterfactualValueDist_: function(selected, valueName) {
+          this.maxCounterfactualValueDist = Math.max(
+            this.distanceStats_[valueName].max -
+              this.visdata[selected][valueName],
+            this.visdata[selected][valueName] -
+              this.distanceStats_[valueName].min
+          );
+        },
+
+        adjustMinCounterfactualValueDist_: function() {
+          const valueName = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          this.minCounterfactualValueDist = this.distanceStats_[
+            valueName
+          ].stdDev;
+        },
+
+        finalizeClosestCounterfactual: function(exInd, distances) {
+          // Distances are indexed by example ids
+          const modelInferenceValueStr = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              exInd,
+              modelInferenceValueStr
+            );
+          }
+          let closestDist = Number.POSITIVE_INFINITY;
+          let closest = -1;
+          for (let i = 0; i < this.visdata.length; i++) {
+            // Skip the selected example itself and examples with the same inference class.
+            if (
+              i === exInd ||
+              this.isSameInferenceClass_(
+                this.visdata[exInd][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
+            ) {
+              continue;
+            }
+            let dist = distances[i];
+            if (dist < closestDist) {
+              closestDist = dist;
+              closest = i;
+            }
+          }
+          if (closest != -1) {
+            // Display the counterfactual in dive and example viewer.
+            this.comparedIndices = [closest];
+            this.counterfactualExampleAndInference = this.examplesAndInferences[
+              closest
+            ];
+            this.compareTitle = 'Counterfactual value(s)';
           }
         },
 
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeClosestCounterfactual,
+              {callbackParams: {}, distanceParams: {}}
+            );
+            return;
+          }
+
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              selected,
+              modelInferenceValueStr
+            );
+          }
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
-            // Skip examples with the same inference class as the selected
-            // examples.
+            // Skip the selected example itself and examples with the same inference class.
             if (
-              this.visdata[selected][modelInferenceValueStr] ==
-              this.visdata[i][modelInferenceValueStr]
+              i === selected ||
+              this.isSameInferenceClass_(
+                this.visdata[selected][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
             ) {
               continue;
             }
@@ -3909,6 +4146,19 @@ limitations under the License.
             ];
             this.compareTitle = 'Counterfactual value(s)';
           }
+        },
+
+        // Call backend for distance computation, backend calls callback function
+        // with computed distances and parameters
+        // TODO (tolgab) If TensorBoard supports custom distance functions
+        // add ability to call into their backend as well (non-local mode).
+        requestDistanceWithCallback: function(exInd, callbackFun, params) {
+          const urlParams = {
+            index: exInd,
+            callback: callbackFun,
+            params: params,
+          };
+          this.fire('compute-custom-distance', urlParams);
         },
 
         /**
@@ -4287,14 +4537,14 @@ limitations under the License.
                       feature1Value,
                       feature2Value
                     );
-                    thresholdsMap[mapKey] = thresh;
+                    thresholdsMap[mapKey] = thresholds.length - 1;
                   }
                 }
               }
             }
           }
           this.set('featureValueThresholds', thresholds);
-          this.set('featureValueThresholdsMap', thresholdsMap);
+          this.set('featureValueThresholdsIndexMap', thresholdsMap);
           this.refreshInferences_(false);
         },
 
@@ -5061,28 +5311,16 @@ limitations under the License.
             // Set all thresholds to the setting with the lowest cost from the
             // above search.
             for (let vIdx = 0; vIdx < values.length; vIdx++) {
+              const thresholdsIdx = this.featureValueThresholdsIndexMap[
+                values[vIdx]
+              ];
               this.set(
-                'featureValueThresholdsMap.' +
-                  values[vIdx] +
+                'featureValueThresholds.' +
+                  thresholdsIdx +
                   '.threshold.' +
                   modelInd +
                   '.threshold',
                 bestThresholds[vIdx] / 100
-              );
-            }
-            // Polymer does not reflect changes if we only update through
-            // featureValueThresholdsMap, this is a quick workaround
-            // until we find the correct way to link
-            for (let i = 0; i < this.featureValueThresholds.length; i++) {
-              const value = this.featureValueThresholds[i].threshold[modelInd]
-                .threshold;
-              this.set(
-                'featureValueThresholds.' +
-                  i +
-                  '.threshold.' +
-                  modelInd +
-                  '.threshold',
-                value
               );
             }
           }
@@ -5954,6 +6192,77 @@ limitations under the License.
           );
         },
 
+        newExtraOutputs_: function(extraOutputs) {
+          // Set attributions from the extra outputs, if available.
+          const attributions = [];
+          for (
+            let modelNum = 0;
+            modelNum < extraOutputs.extra.length;
+            modelNum++
+          ) {
+            if ('attributions' in extraOutputs.extra[modelNum]) {
+              attributions.push(extraOutputs.extra[modelNum].attributions);
+            }
+          }
+          if (attributions.length > 0) {
+            this.attributions = {
+              indices: extraOutputs.indices,
+              attributions: attributions,
+            };
+          }
+
+          // Add extra output information to datapoints
+          for (let i = 0; i < extraOutputs.indices.length; i++) {
+            const idx = extraOutputs.indices[i];
+            const datapoint = Object.assign({}, this.visdata[idx]);
+            for (
+              let modelNum = 0;
+              modelNum < extraOutputs.extra.length;
+              modelNum++
+            ) {
+              const keys = Object.keys(extraOutputs.extra[modelNum]);
+              for (let j = 0; j < keys.length; j++) {
+                const key = keys[j];
+                // Skip attributions as they are handled separately above.
+                if (key == 'attributions') {
+                  continue;
+                }
+                let val = extraOutputs.extra[modelNum][key][i];
+                const datapointKey = this.strWithModelName_(key, modelNum);
+
+                // Update the datapoint with the extra info for use in
+                // Facets Dive.
+                datapoint[datapointKey] = val;
+
+                // Convert the extra output into an array if necessary, for
+                // insertion into tf.Example as a value list, for update of
+                // examplesAndInferences for the example viewer.
+                if (!Array.isArray(val)) {
+                  val = [val];
+                }
+                const isString =
+                  val.length > 0 &&
+                  (typeof val[0] == 'string' || val[0] instanceof String);
+                const exampleJsonString = JSON.stringify(
+                  this.examplesAndInferences[idx].example
+                );
+                const copiedExample = JSON.parse(exampleJsonString);
+                copiedExample.features.feature[datapointKey] = isString
+                  ? {bytesList: {value: val}}
+                  : {floatList: {value: val}};
+                this.examplesAndInferences[idx].example = copiedExample;
+              }
+            }
+            this.set(`visdata.${idx}`, datapoint);
+          }
+          this.refreshDive_();
+
+          // Update selected datapoint so that if a datapoint is being viewed,
+          // the display is updated with the appropriate extra output.
+          this.computeSelectedExampleAndInference();
+          this.refreshSelectedDatapoint_();
+        },
+
         newAttributions_: function(attributions) {
           if (
             Object.keys(attributions.attributions).length == 0 &&
@@ -6168,7 +6477,9 @@ limitations under the License.
               item[feature1],
               item[feature2]
             );
-            thresholds = this.featureValueThresholdsMap[key].threshold;
+            thresholds = this.featureValueThresholds[
+              this.featureValueThresholdsIndexMap[key]
+            ].threshold;
           }
           for (let modelNum = 0; modelNum < this.numModels; modelNum++) {
             const nonZeroClassification = this.getClassificationBestNonZero(
@@ -6294,6 +6605,9 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMinCounterfactualValueDist_();
+          }
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
@@ -6325,11 +6639,14 @@ limitations under the License.
             const feature = featureStats.name;
             this.distanceStats_[feature] = {};
             if (featureStats.numStats) {
-              // For numeric features, store standard deviation.
-              this.distanceStats_[feature].stdDev =
-                featureStats.numStats.stdDev;
+              // Numeric features:
+              this.distanceStats_[feature] = {
+                stdDev: featureStats.numStats.stdDev,
+                min: featureStats.numStats.min,
+                max: featureStats.numStats.max,
+              };
             } else {
-              // For categorical features, calculate and store  the probability
+              // Categorical features: calculate and store the probability
               // that any two feature values across all examples are the same.
               let probSameValue = 0;
               const buckets =

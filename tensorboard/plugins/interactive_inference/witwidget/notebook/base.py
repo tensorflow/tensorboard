@@ -54,28 +54,21 @@ class WitWidgetBase(object):
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
 
-    self.custom_predict_fn = (
-      config.get('custom_predict_fn')
-      if 'custom_predict_fn' in config else None)
-    self.compare_custom_predict_fn = (
-      config.get('compare_custom_predict_fn')
-      if 'compare_custom_predict_fn' in config else None)
-    self.adjust_prediction_fn = (
-      config.get('adjust_prediction')
-      if 'adjust_prediction' in config else None)
-    self.compare_adjust_prediction_fn = (
-      config.get('compare_adjust_prediction')
-      if 'compare_adjust_prediction' in config else None)
-    self.adjust_example_fn = (
-      config.get('adjust_example')
-      if 'adjust_example' in config else None)
-    self.compare_adjust_example_fn = (
-      config.get('compare_adjust_example')
-      if 'compare_adjust_example' in config else None)
+    self.custom_predict_fn = config.get('custom_predict_fn')
+    self.compare_custom_predict_fn = config.get('compare_custom_predict_fn')
+    self.custom_distance_fn = config.get('custom_distance_fn')
+    self.adjust_prediction_fn = config.get('adjust_prediction')
+    self.compare_adjust_prediction_fn = config.get('compare_adjust_prediction')
+    self.adjust_example_fn = config.get('adjust_example')
+    self.compare_adjust_example_fn = config.get('compare_adjust_example')
+
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'custom_distance_fn' in copied_config:
+      del copied_config['custom_distance_fn']
+      copied_config['uses_custom_distance_fn'] = True
     if 'adjust_prediction' in copied_config:
       del copied_config['adjust_prediction']
     if 'compare_adjust_prediction' in copied_config:
@@ -111,6 +104,12 @@ class WitWidgetBase(object):
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 
+  def compute_custom_distance_impl(self, index, params=None):
+    exs_for_distance = [
+        self.json_to_proto(example) for example in self.examples]
+    selected_ex = exs_for_distance[index]
+    return self.custom_distance_fn(selected_ex, exs_for_distance, params)
+
   def json_to_proto(self, json):
     ex = (tf.train.SequenceExample()
           if self.config.get('are_sequence_examples')
@@ -124,7 +123,7 @@ class WitWidgetBase(object):
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
     infer_objs = []
-    attribution_objs = []
+    extra_output_objs = []
     serving_bundle = inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
@@ -137,11 +136,11 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    (predictions, attributions) = (
+    (predictions, extra_output) = (
       inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
     infer_objs.append(predictions)
-    attribution_objs.append(attributions)
+    extra_output_objs.append(extra_output)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
         self.compare_custom_predict_fn):
@@ -157,16 +156,16 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      (predictions, attributions) = (
+      (predictions, extra_output) = (
         inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
       infer_objs.append(predictions)
-      attribution_objs.append(attributions)
+      extra_output_objs.append(extra_output)
     self.updated_example_indices = set()
     return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
       'label_vocab': self.config.get('label_vocab'),
-      'attributions': attribution_objs}
+      'extra_outputs': extra_output_objs}
 
   def infer_mutants_impl(self, info):
     """Performs mutant inference on specified examples."""
