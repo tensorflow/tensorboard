@@ -26,6 +26,7 @@ import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
 from six import binary_type, string_types, integer_types
+from six import ensure_binary, ensure_str
 from six import iteritems
 from six.moves import zip  # pylint: disable=redefined-builtin
 
@@ -125,9 +126,7 @@ class OriginalFeatureList(object):
   def __init__(self, feature_name, original_value, feature_type):
     """Inits OriginalFeatureList."""
     self.feature_name = feature_name
-    self.original_value = [
-      v.decode('utf-8') if isinstance(v, binary_type) else v
-      for v in original_value]
+    self.original_value = [ensure_not_binary(v) for v in original_value]
     self.feature_type = feature_type
 
     # Derived attributes.
@@ -166,9 +165,8 @@ class MutantFeatureValue(object):
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
     self.index = index
-    self.mutant_value = (
-      mutant_value.encode()
-      if isinstance(mutant_value, string_types) else mutant_value)
+    self.mutant_value = (ensure_binary(mutant_value)
+        if isinstance(mutant_value, string_types) else mutant_value)
 
 
 class ServingBundle(object):
@@ -228,6 +226,11 @@ class ServingBundle(object):
     self.estimator = estimator
     self.feature_spec = feature_spec
     self.custom_predict_fn = custom_predict_fn
+
+
+def ensure_not_binary(value):
+  """Return non-binary version of value."""
+  return ensure_str(value) if isinstance(value, binary_type) else value
 
 
 def proto_value_for_feature(example, feature_name):
@@ -567,9 +570,7 @@ def make_json_formatted_for_single_chart(mutant_features,
           key += ' (index %d)' % index_to_mutate
         if not key in series:
           series[key] = {}
-        mutant_val = mutant_feature.mutant_value
-        if isinstance(mutant_val, binary_type):
-          mutant_val = mutant_val.decode('utf-8')
+        mutant_val = ensure_not_binary(mutant_feature.mutant_value)
         if not mutant_val in series[key]:
           series[key][mutant_val] = []
         series[key][mutant_val].append(
@@ -596,9 +597,7 @@ def make_json_formatted_for_single_chart(mutant_features,
       # results. So, modding by len(mutant_features) allows us to correctly
       # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
-      mutant_val = mutant_feature.mutant_value
-      if isinstance(mutant_val, binary_type):
-        mutant_val = mutant_val.decode('utf-8')
+      mutant_val = ensure_not_binary(mutant_feature.mutant_value)
       if not mutant_val in points:
         points[mutant_val] = []
       points[mutant_val].append(regression.value)
