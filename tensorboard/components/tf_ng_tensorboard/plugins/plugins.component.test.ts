@@ -19,44 +19,47 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {PluginsComponent} from './plugins.component';
 
-import {PluginId, LoadingMechanismType} from '../types/api';
-import {State, CORE_FEATURE_KEY} from '../core/core.reducers';
+import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
+import {State, CoreState, CORE_FEATURE_KEY} from '../core/core.reducers';
+import {createState, createCoreState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('plugins.component', () => {
   let store: MockStore<State>;
-  const initialState: State = {
-    [CORE_FEATURE_KEY]: {
-      activePlugin: null,
-      plugins: {
-        bar: {
-          disable_reload: false,
-          enabled: true,
-          loading_mechanism: {
-            type: LoadingMechanismType.CUSTOM_ELEMENT,
-            element_name: 'tb-bar',
-          },
-          tab_name: 'Bar',
-          remove_dom: false,
+  const INITIAL_CORE_STATE: Partial<CoreState> = {
+    plugins: {
+      bar: {
+        disable_reload: false,
+        enabled: true,
+        loading_mechanism: {
+          type: LoadingMechanismType.CUSTOM_ELEMENT,
+          element_name: 'tb-bar',
         },
-        foo: {
-          disable_reload: false,
-          enabled: true,
-          loading_mechanism: {
-            type: LoadingMechanismType.IFRAME,
-            // This will cause 404 as test bundles do not serve
-            // data file in the karma server.
-            module_path: 'random_esmodule.js',
-          },
-          tab_name: 'Bar',
-          remove_dom: false,
+        tab_name: 'Bar',
+        remove_dom: false,
+      },
+      foo: {
+        disable_reload: false,
+        enabled: true,
+        loading_mechanism: {
+          type: LoadingMechanismType.IFRAME,
+          // This will cause 404 as test bundles do not serve
+          // data file in the karma server.
+          module_path: 'random_esmodule.js',
         },
+        tab_name: 'Bar',
+        remove_dom: false,
       },
     },
   };
 
   beforeEach(async () => {
+    const initialState = createState(
+      createCoreState({
+        ...INITIAL_CORE_STATE,
+      })
+    );
     await TestBed.configureTestingModule({
       providers: [provideMockStore({initialState}), PluginsComponent],
       declarations: [PluginsComponent],
@@ -65,13 +68,14 @@ describe('plugins.component', () => {
   });
 
   function setActivePlugin(plugin: PluginId) {
-    store.setState({
-      ...initialState,
-      [CORE_FEATURE_KEY]: {
-        ...initialState[CORE_FEATURE_KEY],
-        activePlugin: plugin,
-      },
-    });
+    store.setState(
+      createState(
+        createCoreState({
+          ...INITIAL_CORE_STATE,
+          activePlugin: plugin,
+        })
+      )
+    );
   }
 
   it('creates no plugin when there is no activePlugin', () => {

@@ -13,16 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
+import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {of} from 'rxjs';
-import {map, flatMap, catchError} from 'rxjs/operators';
-
+import {Observable, of, zip} from 'rxjs';
+import {
+  map,
+  mergeMap,
+  catchError,
+  withLatestFrom,
+  filter,
+  tap,
+} from 'rxjs/operators';
 import {CoreService} from './core.service';
 import {
   coreLoaded,
+  reload,
+  pluginsListingRequested,
   pluginsListingLoaded,
   pluginsListingFailed,
 } from './core.actions';
+import {State, getPluginsListLoaded} from './core.reducers';
+import {LoadState} from '../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -36,22 +47,27 @@ export class CoreEffects {
   /** @export */
   readonly loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(coreLoaded),
-      flatMap(() =>
-        this.coreService
-          .fetchPluginsListing()
-          .pipe(
-            map(
-              (plugins) => pluginsListingLoaded({plugins}),
-              catchError(() => of(pluginsListingFailed()))
-            )
-          )
-      )
+      ofType(coreLoaded, reload),
+      withLatestFrom(this.store.select(getPluginsListLoaded)),
+      filter(([, {state}]) => state !== LoadState.LOADING),
+      tap(() => this.store.dispatch(pluginsListingRequested())),
+      mergeMap(() => {
+        return zip(
+          this.coreService.fetchPluginsListing(),
+          this.coreService.fetchRuns(),
+          this.coreService.fetchEnvironments()
+        ).pipe(
+          map(([plugins]) => {
+            return pluginsListingLoaded({plugins});
+          }, catchError(() => of(pluginsListingFailed())))
+        ) as Observable<Action>;
+      })
     )
   );
 
   constructor(
-    private readonly actions$: Actions,
-    private readonly coreService: CoreService
+    private actions$: Actions,
+    private store: Store<State>,
+    private coreService: CoreService
   ) {}
 }

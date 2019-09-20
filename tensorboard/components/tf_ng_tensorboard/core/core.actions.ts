@@ -26,10 +26,28 @@ export const changePlugin = createAction(
 
 export const coreLoaded = createAction('[Core] Loaded');
 
+export const reload = createAction('[CORE] Reload');
+
+export const pluginsListingRequested = createAction(
+  '[CORE] FETCH_PLUGINS_LISTING_REQUESTED'
+);
 export const pluginsListingLoaded = createAction(
   '[Core] PluginListing Fetch Successful',
   props<{plugins: PluginsListing}>()
 );
 export const pluginsListingFailed = createAction(
   '[Core] PluginListing Fetch Failed'
+);
+
+/**
+ * Action for when user wants to enable/disable reload.
+ */
+export const toggleReload = createAction('[Core] Reload Toggled ');
+
+/**
+ * Action for when user wants to change the reload period.
+ */
+export const changeReloadPeriod = createAction(
+  '[Core] Reload Period Change',
+  props<{periodInMs: number}>()
 );

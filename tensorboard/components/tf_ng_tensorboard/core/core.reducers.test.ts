@@ -13,10 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {expect} from 'chai';
+import * as sinon from 'sinon';
 
 import * as actions from './core.actions';
 import {reducers} from './core.reducers';
-import {createPluginMetadata} from './test_util';
+import {createPluginMetadata, createCoreState} from './testing';
+import {LoadState} from '../types/api';
 
 function createPluginsListing() {
   return {
@@ -28,7 +30,7 @@ function createPluginsListing() {
 describe('core reducer', () => {
   describe('#changePlugin', () => {
     it('sets activePlugin to the one in action payload', () => {
-      const state = {activePlugin: 'foo', plugins: {}};
+      const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
@@ -36,7 +38,10 @@ describe('core reducer', () => {
     });
 
     it('does not change plugins when activePlugin changes', () => {
-      const state = {activePlugin: 'foo', plugins: createPluginsListing()};
+      const state = createCoreState({
+        activePlugin: 'foo',
+        plugins: createPluginsListing(),
+      });
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
@@ -47,9 +52,62 @@ describe('core reducer', () => {
     });
   });
 
-  describe('pluginsListingLoaded', () => {
+  [
+    {
+      specSetName: '#pluginsListingRequested',
+      action: actions.pluginsListingRequested(),
+      expectedState: LoadState.LOADING,
+    },
+    {
+      specSetName: '#pluginsListingFailed',
+      action: actions.pluginsListingFailed(),
+      expectedState: LoadState.FAILED,
+    },
+  ].forEach(({specSetName, action, expectedState}) => {
+    describe(specSetName, () => {
+      it('changes the pluginsListLoaded state to Loading', () => {
+        const state = createCoreState({
+          pluginsListLoaded: {
+            lastLoadedTimeInMs: null,
+            state: LoadState.NOT_LOADED,
+          },
+        });
+        const nextState = reducers(state, action);
+
+        expect(nextState)
+          .to.have.property('pluginsListLoaded')
+          .to.have.property('state', expectedState);
+      });
+
+      it('keeps the lastLoadedTimeInMs the same', () => {
+        const state = createCoreState({
+          pluginsListLoaded: {
+            lastLoadedTimeInMs: 1337,
+            state: LoadState.NOT_LOADED,
+          },
+        });
+        const nextState = reducers(state, action);
+
+        expect(nextState)
+          .to.have.property('pluginsListLoaded')
+          .to.have.property('lastLoadedTimeInMs', 1337);
+      });
+    });
+  });
+
+  describe('#pluginsListingLoaded', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(1000);
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
     it('sets plugins with the payload', () => {
-      const state = {activePlugin: 'foo', plugins: {}};
+      const state = createCoreState({activePlugin: 'foo', plugins: {}});
       const nextState = reducers(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
@@ -61,8 +119,28 @@ describe('core reducer', () => {
       );
     });
 
+    it('sets the pluginsListLoaded', () => {
+      const state = createCoreState({
+        activePlugin: 'foo',
+        plugins: {},
+        pluginsListLoaded: {
+          state: LoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(nextState).to.have.deep.property('pluginsListLoaded', {
+        state: LoadState.LOADED,
+        lastLoadedTimeInMs: 1000,
+      });
+    });
+
     it('sets activePlugin to the first plugin (by key order) when not defined', () => {
-      const state = {activePlugin: null, plugins: {}};
+      const state = createCoreState({activePlugin: null, plugins: {}});
 
       const nextState = reducers(
         state,
@@ -73,7 +151,7 @@ describe('core reducer', () => {
     });
 
     it('does not change activePlugin when already defined', () => {
-      const state = {activePlugin: 'foo', plugins: {}};
+      const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
       const nextState = reducers(
         state,
@@ -81,6 +159,49 @@ describe('core reducer', () => {
       );
 
       expect(nextState).to.have.property('activePlugin', 'foo');
+    });
+  });
+
+  describe('#toggleReload', () => {
+    it('toggles reloadEnabled', () => {
+      const state1 = createCoreState({reloadEnabled: false});
+
+      const state2 = reducers(state1, actions.toggleReload());
+
+      expect(state2).to.have.property('reloadEnabled', true);
+
+      const state3 = reducers(state2, actions.toggleReload());
+
+      expect(state3).to.have.property('reloadEnabled', false);
+    });
+  });
+
+  describe('#changeReloadPeriod', () => {
+    it('sets the reloadPeriodInMs', () => {
+      const state = createCoreState({reloadPeriodInMs: 1});
+
+      const nextState = reducers(
+        state,
+        actions.changeReloadPeriod({periodInMs: 1000})
+      );
+
+      expect(nextState).to.have.property('reloadPeriodInMs', 1000);
+    });
+
+    it('ignores the action when periodInMs is non-positive', () => {
+      const baseState = createCoreState({reloadPeriodInMs: 1});
+
+      const state1 = reducers(
+        baseState,
+        actions.changeReloadPeriod({periodInMs: 0})
+      );
+      expect(state1).to.have.property('reloadPeriodInMs', 1);
+
+      const state2 = reducers(
+        baseState,
+        actions.changeReloadPeriod({periodInMs: -1000})
+      );
+      expect(state2).to.have.property('reloadPeriodInMs', 1);
     });
   });
 });
