@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../iron-icon/iron-icon.html" />
 <link rel="import" href="../iron-collapse/iron-collapse.html" />
 <link rel="import" href="../paper-button/paper-button.html" />
 <link rel="import" href="../paper-input/paper-input.html" />
@@ -53,7 +54,7 @@ limitations under the License.
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
               <span class="light">Tags matching /</span>
-              <span class="category-name">[[category.name]]</span>
+              <span class="category-name" title=[[category.name]]>[[category.name]]</span>
               <span class="light">/</span>
               <template is="dom-if" if="[[_isUniversalSearchQuery]]">
                 <span> (all tags)</span>
@@ -64,10 +65,13 @@ limitations under the License.
             </template>
           </template>
           <template is="dom-if" if="[[!_isSearchResults]]">
-            <span class="category-name">[[category.name]]</span>
+            <span class="category-name" title=[[category.name]]>[[category.name]]</span>
           </template>
         </span>
-        <span class="count"><span>[[_count]]</span></span>
+        <span class="count">
+          <span>[[_count]]</span>
+          <iron-icon icon="[[_arrowIconType]]"></iron-icon>
+        </span>
       </button>
       <!-- TODO(stephanwlee): investigate further. For some reason,
         transitionend that the iron-collapse relies on sometimes does not
@@ -154,6 +158,9 @@ limitations under the License.
         line-height: 1;
         box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
         padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       .heading::-moz-focus-inner {
@@ -167,7 +174,10 @@ limitations under the License.
 
       .name {
         display: inline-flex;
-        float: left;
+        padding: 2px 0;
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .light {
@@ -176,13 +186,16 @@ limitations under the License.
 
       .category-name {
         white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .count {
-        float: right;
-        margin-right: 5px;
+        margin: 0 5px;
         font-size: 12px;
         color: var(--paper-grey-500);
+        display: flex;
+        align-items: center;
       }
 
       .heading::-moz-focus-inner {
@@ -198,11 +211,6 @@ limitations under the License.
         border-top: none;
         border: 1px solid #dedede;
         padding: 15px;
-      }
-
-      .name {
-        display: inline-flex;
-        float: left;
       }
 
       .light {
@@ -281,6 +289,10 @@ limitations under the License.
         _count: {
           type: Number,
           computed: '_computeCount(category.items.*)',
+        },
+        _arrowIconType: {
+          type: String,
+          computed: '_computeArrowIconType(opened)',
         },
         _paneRendered: {
           type: Boolean,
@@ -392,6 +404,10 @@ limitations under the License.
 
       _computeCount() {
         return this.category.items.length;
+      },
+
+      _computeArrowIconType() {
+        return this.opened ? 'expand-more' : 'chevron-right';
       },
 
       _togglePane() {
