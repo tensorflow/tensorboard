@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DebugElement} from '@angular/core';
+import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
@@ -62,6 +62,7 @@ describe('header test', () => {
         HeaderContainer,
       ],
       declarations: [HeaderComponent, HeaderContainer],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.get(Store);
   });

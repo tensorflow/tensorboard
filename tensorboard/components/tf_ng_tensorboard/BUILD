@@ -106,5 +106,6 @@ tf_ng_web_test_suite(
         "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
         "//tensorboard/components/tf_ng_tensorboard/reloader:test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/settings:test_lib",
     ],
 )

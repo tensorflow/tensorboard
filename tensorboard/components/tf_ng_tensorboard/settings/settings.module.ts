@@ -13,29 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-// Uses `async` pipe.
 import {CommonModule} from '@angular/common';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
 
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSelectModule} from '@angular/material/select';
+import {SettingsButtonComponent} from './settings.component';
 
-import {HeaderComponent} from './components/header.component';
-import {HeaderContainer} from './containers/header.component';
-import {CoreModule} from '../core/core.module';
-import {SettingsModule} from '../settings/settings.module';
+import {SettingsDialogComponent} from './dialog.component';
 
 @NgModule({
-  declarations: [HeaderComponent, HeaderContainer],
-  exports: [HeaderComponent, HeaderContainer],
-  providers: [],
+  declarations: [SettingsButtonComponent, SettingsDialogComponent],
+  exports: [SettingsButtonComponent],
+  entryComponents: [SettingsDialogComponent],
   imports: [
-    MatToolbarModule,
-    MatTabsModule,
-    MatSelectModule,
     CommonModule,
-    CoreModule,
-    SettingsModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatIconModule,
+    MatInputModule,
   ],
 })
-export class HeaderModule {}
+export class SettingsModule {}
