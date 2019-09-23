@@ -69,7 +69,9 @@ limitations under the License.
           </template>
         </span>
         <span class="count">
-          <span>[[_count]]</span>
+          <template is="dom-if" if="[[_hasMultiple]]">
+            <span>[[_count]]</span>
+          </template>
           <iron-icon icon="expand-more" class="expand-arrow"></iron-icon>
         </span>
       </button>
@@ -294,9 +296,9 @@ limitations under the License.
           type: Number,
           computed: '_computeCount(category.items.*)',
         },
-        _arrowIconType: {
-          type: String,
-          computed: '_computeArrowIconType(opened)',
+        _hasMultiple: {
+          type: Number,
+          computed: '_computeHasMultiple(_count)',
         },
         _paneRendered: {
           type: Boolean,
@@ -410,8 +412,8 @@ limitations under the License.
         return this.category.items.length;
       },
 
-      _computeArrowIconType() {
-        return this.opened ? 'expand-more' : 'chevron-right';
+      _computeHasMultiple() {
+        return this._count > 1;
       },
 
       _togglePane() {
