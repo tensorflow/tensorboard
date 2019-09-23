@@ -44,6 +44,7 @@ tf_ts_library(
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/core/testing",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

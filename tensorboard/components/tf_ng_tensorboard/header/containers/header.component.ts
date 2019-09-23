@@ -17,6 +17,7 @@ import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatSelectChange} from '@angular/material/select';
 import {Store, select, createSelector} from '@ngrx/store';
 import {combineLatest, of} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 import {State, getActivePlugin, getPlugins} from '../../core/core.reducers';
 import {changePlugin} from '../../core/core.actions';
@@ -65,9 +66,11 @@ export class HeaderComponent {
 
   onPluginSelectionChanged({index}: MatTabChangeEvent) {
     const index$ = of(index);
-    combineLatest(this.plugins$, index$).subscribe(([plugins, index]) => {
-      this.store.dispatch(changePlugin({plugin: plugins[index].id}));
-    });
+    combineLatest(this.plugins$, index$)
+      .pipe(take(1))
+      .subscribe(([plugins, index]) => {
+        this.store.dispatch(changePlugin({plugin: plugins[index].id}));
+      });
   }
 
   onDisabledPluginSelectionChanged(selectChangeEvent: MatSelectChange) {

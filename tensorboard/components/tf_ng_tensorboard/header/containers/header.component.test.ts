@@ -25,12 +25,13 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {HeaderComponent} from './header.component';
 
 import {changePlugin} from '../../core/core.actions';
-import {State, CoreState} from '../../core/core.reducers';
+import {State} from '../../core/core.reducers';
 import {
   createPluginMetadata,
   createState,
   createCoreState,
 } from '../../core/testing';
+import {PluginId} from '../../types/api';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -65,6 +66,20 @@ describe('header.component', () => {
 
   function assertDebugElementText(el: DebugElement, text: string) {
     expect(el.nativeElement.innerText.trim().toUpperCase()).toBe(text);
+  }
+
+  function setActivePlugin(activePlugin: PluginId) {
+    store.setState(
+      createState(
+        createCoreState({
+          plugins: {
+            foo: createPluginMetadata('Foo Fighter'),
+            bar: createPluginMetadata('Barber'),
+          },
+          activePlugin,
+        })
+      )
+    );
   }
 
   it('renders pluginsList', () => {
@@ -114,17 +129,7 @@ describe('header.component', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    store.setState(
-      createState(
-        createCoreState({
-          plugins: {
-            foo: createPluginMetadata('Foo Fighter'),
-            bar: createPluginMetadata('Barber'),
-          },
-          activePlugin: 'bar',
-        })
-      )
-    );
+    setActivePlugin('bar');
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -144,5 +149,25 @@ describe('header.component', () => {
 
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith(changePlugin({plugin: 'bar'}));
+  });
+
+  it('does not keep observer after getting the most recent value', async () => {
+    const dispatch = spyOn(store, 'dispatch');
+    const fixture = TestBed.createComponent(HeaderComponent);
+    fixture.detectChanges();
+
+    const [, debugEl] = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+    debugEl.nativeElement.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+
+    // If an observer is still listening, this should cause the store to dispatch.
+    setActivePlugin('bar');
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(dispatch).toHaveBeenCalledTimes(1);
   });
 });
