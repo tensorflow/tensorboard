@@ -294,6 +294,10 @@ limitations under the License.
           type: Number,
           computed: '_computeCount(category.items.*)',
         },
+        _arrowIconType: {
+          type: String,
+          computed: '_computeArrowIconType(opened)',
+        },
         _paneRendered: {
           type: Boolean,
           computed: '_computePaneRendered(category)',
@@ -404,6 +408,10 @@ limitations under the License.
 
       _computeCount() {
         return this.category.items.length;
+      },
+
+      _computeArrowIconType() {
+        return this.opened ? 'expand-more' : 'chevron-right';
       },
 
       _togglePane() {
