@@ -1273,7 +1273,7 @@ limitations under the License.
         top: 8px;
         left: 8px;
       }
-      #attributionlegend {
+      #attributionLegend {
         width: 160px;
         height: 32px;
         margin-top: 8px;
@@ -1688,7 +1688,7 @@ limitations under the License.
                                 >
                               </paper-listbox>
                             </paper-dropdown-menu>
-                            <svg id="attributionlegend"></svg>
+                            <svg id="attributionLegend"></svg>
                           </div>
                         </div>
                         <div class="datapoint-right-controls-holder"></div>
@@ -6264,10 +6264,7 @@ limitations under the License.
         },
 
         newAttributions_: function(attributions) {
-          if (
-            Object.keys(attributions.attributions).length == 0 &&
-            attributions.attributions[0] != null
-          ) {
+          if (!this.hasAttributions_(attributions)) {
             return;
           }
           for (let i = 0; i < attributions.indices.length; i++) {
@@ -6341,19 +6338,28 @@ limitations under the License.
 
         // Create and display the attribution legend.
         createAttributionLegend: function() {
+          let attributionDomain = [];
+          let attributionColorRange = [];
+          if (this.minAttribution < 0) {
+            attributionDomain.push(this.minAttribution);
+            attributionColorRange.push(negAttributionColor);
+          }
+          attributionDomain.push(0);
+          attributionColorRange.push(neutralAttributionColor);
+          if (this.maxAttribution > 0) {
+            attributionDomain.push(this.maxAttribution);
+            attributionColorRange.push(posAttributionColor);
+          }
+
           this.attributionColorScale = d3
             .scaleLinear()
-            .domain([this.minAttribution, 0, this.maxAttribution])
+            .domain(attributionDomain)
             .interpolate(COLOR_INTERPOLATOR)
             .clamp(true)
-            .range([
-              negAttributionColor,
-              neutralAttributionColor,
-              posAttributionColor,
-            ]);
+            .range(attributionColorRange);
 
           const attrLegend = Polymer.dom(this.root).querySelector(
-            '#attributionlegend'
+            '#attributionLegend'
           );
           d3.select(attrLegend)
             .selectAll('*')
@@ -6381,20 +6387,10 @@ limitations under the License.
             return out;
           };
 
-          // Create the correct color scale for the legend depending on minimum
-          // and maximum attribution.
-          const scale = [];
-          if (this.minAttribution < 0) {
-            scale.push(negAttributionColor);
-          }
-          scale.push(neutralAttributionColor);
-          if (this.maxAttribution > 0) {
-            scale.push(posAttributionColor);
-          }
           // Set 3 ticks on the legend, handling all positive, all negative,
           // or a mix of both.
           const ticks = [];
-          if (scale.length == 3) {
+          if (attributionColorRange.length == 3) {
             ticks.push(this.minAttribution / 2);
             ticks.push(0);
             ticks.push(this.maxAttribution / 2);
@@ -6409,11 +6405,13 @@ limitations under the License.
           }
           // Creates an array of [pct, colour] pairs as stop
           // values for legend
-          const pct = linspace(0, 100, scale.length).map((d) => {
-            return Math.round(d) + '%';
-          });
+          const pct = linspace(0, 100, attributionColorRange.length).map(
+            (d) => {
+              return Math.round(d) + '%';
+            }
+          );
 
-          const colourPct = d3.zip(pct, scale);
+          const colourPct = d3.zip(pct, attributionColorRange);
 
           colourPct.forEach((d) => {
             gradient
