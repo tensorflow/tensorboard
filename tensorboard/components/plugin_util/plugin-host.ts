@@ -15,7 +15,11 @@ limitations under the License.
 import {IPC, Message, MessageType} from './message.js';
 
 class HostIPC extends IPC {
-  sendMessage(iframe: HTMLIFrameElement, type: MessageType, payload: any): Promise<any> {
+  sendMessage(
+    iframe: HTMLIFrameElement,
+    type: MessageType,
+    payload: any
+  ): Promise<any> {
     return this._sendMessage(iframe.contentWindow, type, payload);
   }
 }
@@ -23,20 +27,7 @@ class HostIPC extends IPC {
 const hostIPC = new HostIPC();
 const _listen = hostIPC.listen.bind(hostIPC);
 const _unlisten = hostIPC.unlisten.bind(hostIPC);
-
-/**
- * payload must be JSON serializable.
- */
-function _sendMessage(
-  iframes: HTMLIFrameElement[],
-  type: MessageType,
-  payload: any,
-): Promise<void> {
-  const sendMessageP = iframes.map((iframe) => {
-    return hostIPC.sendMessage(iframe, type, payload);
-  });
-  return Promise.all(sendMessageP).then(() => {});
-}
+const _sendMessage = hostIPC.sendMessage.bind(hostIPC);
 
 export const sendMessage = _sendMessage;
 export const listen = _listen;
@@ -48,5 +39,4 @@ namespace tf_plugin {
   export const sendMessage = _sendMessage;
   export const listen = _listen;
   export const unlisten = _unlisten;
-}  // namespace tf_plugin
-
+} // namespace tf_plugin

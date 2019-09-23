@@ -17,4 +17,3 @@ import {sendMessage, listen, unlisten, _guestIPC} from '../plugin-guest.js';
 
 const win = window as any;
 win.test = {sendMessage, listen, unlisten, _guestIPC};
-
