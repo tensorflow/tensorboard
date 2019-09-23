@@ -25,8 +25,10 @@ upper_tabs:
     #   skip_translation: true
     #   contents:
     #   - include: /tensorboard/api_docs/python/_toc.yaml
-    - name: TF 2.0 Alpha
+    - name: TF 2.0
       contents:
+      - title: "Migrate to TF 2.0"
+        path: /tensorboard/r2/migrate_tf2
       - title: "Get started"
         path: /tensorboard/r2/get_started
       - title: "Scalars and metrics"
