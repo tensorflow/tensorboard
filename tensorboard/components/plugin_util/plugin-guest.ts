@@ -26,6 +26,22 @@ class GuestIPC extends IPC {
 // Only export for testability.
 export const _guestIPC = new GuestIPC();
 
+/**
+ * Sends a message to the parent frame.
+ * @return Promise that resolves with a payload from parent in response to this message.
+ *
+ * @example
+ * const someList = await sendMessage('v1.some.type.parent.understands');
+ * // do fun things with someList.
+ */
 export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
+
+/**
+ * Subscribes a callback to a message with particular type.
+ */
 export const listen = _guestIPC.listen.bind(_guestIPC);
+
+/**
+ * Unsubscribes a callback to a message.
+ */
 export const unlisten = _guestIPC.unlisten.bind(_guestIPC);

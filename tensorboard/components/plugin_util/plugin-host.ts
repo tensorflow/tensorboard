@@ -32,11 +32,26 @@ const _sendMessage = hostIPC.sendMessage.bind(hostIPC);
 export const sendMessage = _sendMessage;
 export const listen = _listen;
 export const unlisten = _unlisten;
+
 // Export for testability.
 export const _hostIPC = hostIPC;
 
 namespace tf_plugin {
+  /**
+   * Sends a message to the frame specified.
+   * @return Promise that resolves with a payload from frame in response to the message.
+   *
+   * @example
+   * const someList = await sendMessage('v1.some.type.guest.understands');
+   * // do fun things with someList.
+   */
   export const sendMessage = _sendMessage;
+  /**
+   * Subscribes to messages from specified frame of a type specified.
+   */
   export const listen = _listen;
+  /**
+   * Unsubscribes to messages from specified frame of a type specified.
+   */
   export const unlisten = _unlisten;
 } // namespace tf_plugin
