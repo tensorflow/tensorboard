@@ -2021,25 +2021,24 @@ limitations under the License.
                               The feature that your model is trying to predict.
                               <span class="dialog-link" on-tap="openDialog"
                                 >More.
-                                <paper-dialog
-                                  class="dialog-text"
-                                  horizontal-align="auto"
-                                  vertical-align="auto"
-                                >
-                                  <div class="dialog-title">
-                                    Ground Truth Feature
-                                  </div>
-                                  <div>
-                                    If the datapoints contain a feature that
-                                    represents the ground truth for what the
-                                    model is attempting to predict, then
-                                    selecting that feature here allows the tool
-                                    to investigate the performance of the model
-                                    by comparing the model's results to the
-                                    ground truth feature.
-                                  </div>
-                                </paper-dialog>
                               </span>
+                              <paper-dialog
+                                class="dialog-text"
+                                horizontal-align="auto"
+                                vertical-align="auto"
+                              >
+                                <div class="dialog-title">
+                                  Ground Truth Feature
+                                </div>
+                                <div>
+                                  If the datapoints contain a feature that
+                                  represents the ground truth for what the model
+                                  is attempting to predict, then selecting that
+                                  feature here allows the tool to investigate
+                                  the performance of the model by comparing the
+                                  model's results to the ground truth feature.
+                                </div>
+                              </paper-dialog>
                             </div>
                           </div>
                         </div>
@@ -2066,33 +2065,33 @@ limitations under the License.
                                 negatives. Required for optimization.
                                 <span class="dialog-link" on-tap="openDialog"
                                   >More.
-                                  <paper-dialog
-                                    class="dialog-text"
-                                    horizontal-align="auto"
-                                    vertical-align="auto"
-                                  >
-                                    <div class="dialog-title">
-                                      What is cost ratio?
-                                    </div>
-                                    <div>
-                                      This tells the tool how to optimize the
-                                      classification thresholds when you use the
-                                      optimization strategy controls.
-                                    </div>
-                                    <div>
-                                      1.00 = false positives are equally as
-                                      costly as false negatives.
-                                    </div>
-                                    <div>
-                                      4.00 = false positives are 4 times more
-                                      costly than false negatives
-                                    </div>
-                                    <div>
-                                      0.25 = false negatives are 4 times more
-                                      costly than false positives.
-                                    </div>
-                                  </paper-dialog>
                                 </span>
+                                <paper-dialog
+                                  class="dialog-text"
+                                  horizontal-align="auto"
+                                  vertical-align="auto"
+                                >
+                                  <div class="dialog-title">
+                                    What is cost ratio?
+                                  </div>
+                                  <div>
+                                    This tells the tool how to optimize the
+                                    classification thresholds when you use the
+                                    optimization strategy controls.
+                                  </div>
+                                  <div>
+                                    1.00 = false positives are equally as costly
+                                    as false negatives.
+                                  </div>
+                                  <div>
+                                    4.00 = false positives are 4 times more
+                                    costly than false negatives
+                                  </div>
+                                  <div>
+                                    0.25 = false negatives are 4 times more
+                                    costly than false positives.
+                                  </div>
+                                </paper-dialog>
                               </div>
                             </div>
                           </div>
@@ -3780,7 +3779,7 @@ limitations under the License.
 
         openDialog: function(event) {
           event.stopPropagation();
-          const dialog = event.target.parentElement.parentElement.querySelector(
+          const dialog = event.target.parentElement.querySelector(
             'paper-dialog'
           );
           dialog.open();
