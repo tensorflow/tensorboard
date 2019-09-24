@@ -12,14 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC, Message, MessageType} from './message.js';
+import {IPC, Message, MessageType, PayloadType} from './message.js';
 
 class GuestIPC extends IPC {
   /**
    * payload must be JSON serializable.
    */
-  sendMessage(type: MessageType, payload: any): Promise<any> {
-    return this._sendMessage(window.parent, type, payload);
+  sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
+    return this.sendMessageToWindow(window.parent, type, payload);
   }
 }
 

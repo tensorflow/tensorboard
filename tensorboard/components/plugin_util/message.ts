@@ -13,9 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export type JsonSerializeable =
+export type PayloadType =
+  | null
+  | undefined
   | string
   | string[]
+  | boolean
+  | boolean[]
   | number
   | number[]
   | object
@@ -24,7 +28,7 @@ export type JsonSerializeable =
 export interface Message {
   type: string;
   id: string;
-  payload: JsonSerializeable;
+  payload: PayloadType;
   error: string | null;
 }
 
@@ -43,7 +47,9 @@ export abstract class IPC {
   private readonly listeners = new Map<MessageType, MessageCallback>();
 
   constructor() {
-    window.addEventListener('message', this._onMessage.bind(this));
+    window.addEventListener('message', this.onMessage.bind(this));
+
+    // TODO(tensorboard-team): remove this by using MessageChannel.
     const randomArray = new Uint8Array(16);
     window.crypto.getRandomValues(randomArray);
     this.idPrefix = Array.from(randomArray)
@@ -59,7 +65,7 @@ export abstract class IPC {
     this.listeners.delete(type);
   }
 
-  private async _onMessage(event: MessageEvent) {
+  private async onMessage(event: MessageEvent) {
     // There are instances where random browser extensions send messages.
     if (typeof event.data !== 'string') return;
 
@@ -102,11 +108,11 @@ export abstract class IPC {
     targetWindow.postMessage(message, '*');
   }
 
-  protected _sendMessage(
+  protected sendMessageToWindow(
     targetWindow: Window,
     type: MessageType,
-    payload: any
-  ): Promise<any> {
+    payload: PayloadType
+  ): Promise<PayloadType> {
     const id = `${this.idPrefix}_${this.id++}`;
     const message: Message = {type, id, payload, error: null};
     this.postMessage(targetWindow, JSON.stringify(message));
