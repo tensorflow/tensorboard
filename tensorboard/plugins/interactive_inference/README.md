@@ -198,6 +198,10 @@ Here is a basic rundown of what it can do:
       * For categorical features, the distance is 0 if the values are the same,
         otherwise the distance is the probability that any two examples have
         the same value for that feature across all examples.
+  * In notebook mode, the tool also allows you to set a custom distance function
+    using set_custom_distance_fn in WitConfigBuilder, where that function is
+    used to compute closest counterfactuals instead. As in the case with
+    custom_predict_fn, the custom distance function can be any python function.
 
 * Edit a selected example in the browser and re-run inference and visualize the
   difference in the inference results.

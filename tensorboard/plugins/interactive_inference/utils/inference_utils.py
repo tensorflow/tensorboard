@@ -25,8 +25,8 @@ from absl import logging
 import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
+from six import binary_type, string_types, integer_types
 from six import iteritems
-from six import string_types, integer_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -125,7 +125,8 @@ class OriginalFeatureList(object):
   def __init__(self, feature_name, original_value, feature_type):
     """Inits OriginalFeatureList."""
     self.feature_name = feature_name
-    self.original_value = original_value
+    self.original_value = [
+      ensure_not_binary(value) for value in original_value]
     self.feature_type = feature_type
 
     # Derived attributes.
@@ -164,7 +165,8 @@ class MutantFeatureValue(object):
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
     self.index = index
-    self.mutant_value = mutant_value
+    self.mutant_value = (mutant_value.encode()
+        if isinstance(mutant_value, string_types) else mutant_value)
 
 
 class ServingBundle(object):
@@ -224,6 +226,11 @@ class ServingBundle(object):
     self.estimator = estimator
     self.feature_spec = feature_spec
     self.custom_predict_fn = custom_predict_fn
+
+
+def ensure_not_binary(value):
+  """Return non-binary version of value."""
+  return value.decode() if isinstance(value, binary_type) else value
 
 
 def proto_value_for_feature(example, feature_name):
@@ -563,9 +570,10 @@ def make_json_formatted_for_single_chart(mutant_features,
           key += ' (index %d)' % index_to_mutate
         if not key in series:
           series[key] = {}
-        if not mutant_feature.mutant_value in series[key]:
-          series[key][mutant_feature.mutant_value] = []
-        series[key][mutant_feature.mutant_value].append(
+        mutant_val = ensure_not_binary(mutant_feature.mutant_value)
+        if not mutant_val in series[key]:
+          series[key][mutant_val] = []
+        series[key][mutant_val].append(
           classification_class.score)
 
     # Post-process points to have separate list for each class
@@ -589,9 +597,10 @@ def make_json_formatted_for_single_chart(mutant_features,
       # results. So, modding by len(mutant_features) allows us to correctly
       # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
-      if not mutant_feature.mutant_value in points:
-        points[mutant_feature.mutant_value] = []
-      points[mutant_feature.mutant_value].append(regression.value)
+      mutant_val = ensure_not_binary(mutant_feature.mutant_value)
+      if not mutant_val in points:
+        points[mutant_val] = []
+      points[mutant_val].append(regression.value)
     key = 'value'
     if (index_to_mutate != 0):
       key += ' (index %d)' % index_to_mutate
@@ -615,12 +624,12 @@ def get_example_features(example):
 
 def run_inference_for_inference_results(examples, serving_bundle):
   """Calls servo and wraps the inference results."""
-  (inference_result_proto, attributions) = run_inference(
+  (inference_result_proto, extra_results) = run_inference(
     examples, serving_bundle)
   inferences = wrap_inference_results(inference_result_proto)
   infer_json = json_format.MessageToJson(
     inferences, including_default_value_fields=True)
-  return json.loads(infer_json), attributions
+  return json.loads(infer_json), extra_results
 
 def get_eligible_features(examples, num_mutants):
   """Returns a list of JSON objects for each feature in the examples.
@@ -795,8 +804,8 @@ def run_inference(examples, serving_bundle):
 
   Returns:
     A tuple with the first entry being the ClassificationResponse or
-    RegressionResponse proto and the second entry being a list of the
-    attributions for each example, or None if no attributions exist.
+    RegressionResponse proto and the second entry being a dictionary of extra
+    data for each example, such as attributions, or None if no data exists.
   """
   batch_size = 64
   if serving_bundle.estimator and serving_bundle.feature_spec:
@@ -822,14 +831,16 @@ def run_inference(examples, serving_bundle):
     # If custom_predict_fn is provided, pass examples directly for local
     # inference.
     values = serving_bundle.custom_predict_fn(examples)
-    attributions = None
+    extra_results = None
     # If the custom prediction function returned a dict, then parse out the
-    # prediction scores and the attributions. If it is just a list, then the
-    # results are the prediction results without attributions.
+    # prediction scores. If it is just a list, then the results are the
+    # prediction results without attributions or other data.
     if isinstance(values, dict):
-      attributions = values['attributions']
-      values = values['predictions']
-    return (common_utils.convert_prediction_values(values, serving_bundle),
-            attributions)
+      preds = values.pop('predictions')
+      extra_results = values
+    else:
+      preds = values
+    return (common_utils.convert_prediction_values(preds, serving_bundle),
+            extra_results)
   else:
     return (platform_utils.call_servo(examples, serving_bundle), None)
