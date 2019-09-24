@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export type JsonSerializeable = string | number | object;
+export type JsonSerializeable =
+  | string
+  | string[]
+  | number
+  | number[]
+  | object
+  | object[];
 
 export interface Message {
   type: string;
