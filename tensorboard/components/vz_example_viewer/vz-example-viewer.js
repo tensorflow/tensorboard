@@ -26,15 +26,13 @@ var vz_example_viewer;
     const INT_FEATURE_NAME = 'int';
     const FLOAT_FEATURE_NAME = 'float';
     const BASE_64_IMAGE_ENCODING_PREFIX = 'base64,';
-    const LEGEND_WIDTH_PX = 260;
-    const LEGEND_HEIGHT_PX = 20;
     const CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
-    const clipSaliencyRatio = 0.95;
     // Colors for the saliency color scale.
     const posSaliencyColor = '#007B83';
     const negSaliencyColor = '#FF847C';
     const neutralSaliencyColor = '#fff';
-    const COLOR_INTERPOLATOR = d3.interpolateRgb;
+    const defaultTextColor = '#3c4043';
+    const lightTextColor = '#fff';
     // Regex to find bytes features that are encoded images. Follows the guide at
     // go/tf-example.
     const IMG_FEATURE_REGEX = /^image\/([^\/]+\/)*encoded$/;
@@ -64,8 +62,8 @@ var vz_example_viewer;
             isSequence: Boolean,
             changeCallbackTimer: Number,
             ignoreChange: Boolean,
-            minSal: { type: Number, value: 0 },
-            maxSal: { type: Number, value: 0 },
+            minSal: Number,
+            maxSal: Number,
             showSaliency: { type: Boolean, value: true },
             imageInfo: { type: Object, value: {} },
             windowWidth: { type: Number, value: DEFAULT_WINDOW_WIDTH },
@@ -88,11 +86,7 @@ var vz_example_viewer;
                 type: Number,
                 computed: 'getMaxSeqNumber(seqFeaturesList)',
             },
-            colors: {
-                type: Object,
-                computed: 'getColors(saliency)',
-                observer: 'createLegend',
-            },
+            colors: Object,
             displayMode: { type: String, value: 'grid' },
             featureSearchValue: { type: String, value: '', notify: true },
             filteredFeaturesList: { type: Object },
@@ -116,6 +110,12 @@ var vz_example_viewer;
                 computed: 'getSeqFeatures(compareExample)',
                 observer: 'updateCompareMode',
             },
+            // The order to sort features. Can be 'attribution',
+            // 'reverse-attribution', or 'alphabetical'.
+            sortOrder: {
+                type: String,
+                value: 'attribution',
+            },
             compareMode: Boolean,
             compareImageInfo: { type: Object, value: {} },
             compareTitle: String,
@@ -123,8 +123,8 @@ var vz_example_viewer;
         observers: [
             'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
             'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
-            'setFilteredFeaturesList(featuresList, featureSearchValue, saliency)',
-            'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency)',
+            'setFilteredFeaturesList(featuresList, featureSearchValue, saliency, sortOrder)',
+            'setFilteredSeqFeaturesList(seqFeaturesList, featureSearchValue, saliency, sortOrder)',
         ],
         isExpanded: function (featName, expandAllFeatures) {
             return (this.expandAllFeatures ||
@@ -225,20 +225,22 @@ var vz_example_viewer;
                 .getFeatureLists()
                 .getFeatureListMap();
         },
-        setFilteredFeaturesList: function (featureList, searchValue, saliency) {
+        setFilteredFeaturesList: function (featureList, searchValue, saliency, sortOrder) {
             this.filteredFeaturesList = [];
-            this.filteredFeaturesList = this.getFilteredFeaturesList(featureList, searchValue, saliency);
+            this.filteredFeaturesList = this.getFilteredFeaturesList(featureList, searchValue, saliency, sortOrder);
         },
-        setFilteredSeqFeaturesList: function (seqFeatureList, searchValue, saliency) {
+        setFilteredSeqFeaturesList: function (seqFeatureList, searchValue, saliency, sortOrder) {
             this.filteredSeqFeaturesList = [];
-            this.filteredSeqFeaturesList = this.getFilteredFeaturesList(seqFeatureList, searchValue, saliency);
+            this.filteredSeqFeaturesList = this.getFilteredFeaturesList(seqFeatureList, searchValue, saliency, sortOrder);
         },
-        getFilteredFeaturesList: function (featureList, searchValue, saliency) {
+        getFilteredFeaturesList: function (featureList, searchValue, saliency, sortOrder) {
             if (featureList == null) {
                 return;
             }
             let filtered = featureList;
-            const checkSal = saliency && Object.keys(saliency).length > 0;
+            const checkSal = saliency &&
+                Object.keys(saliency).length > 0 &&
+                sortOrder != 'alphabetical';
             // Create a dict of feature names to the total saliency of all
             // its feature values, to sort salient features at the top.
             const saliencyTotals = checkSal
@@ -270,7 +272,7 @@ var vz_example_viewer;
                         else {
                             const diff = saliencyTotals[b.name] - saliencyTotals[a.name];
                             if (diff != 0) {
-                                return diff;
+                                return sortOrder == 'attribution' ? diff : -1 * diff;
                             }
                         }
                     }
@@ -296,15 +298,6 @@ var vz_example_viewer;
         haveSaliencyJson: function () {
             this.saliency = JSON.parse(this.saliencyJsonString);
         },
-        getColors: function () {
-            [this.minSal, this.maxSal] = this.getMinMaxSaliency(this.saliency);
-            return d3
-                .scaleLinear()
-                .domain([this.minSal, 0, this.maxSal])
-                .interpolate(COLOR_INTERPOLATOR)
-                .clamp(true)
-                .range([negSaliencyColor, neutralSaliencyColor, posSaliencyColor]);
-        },
         selectAll: function (query) {
             return d3.selectAll(Polymer.dom(this.root).querySelectorAll(query));
         },
@@ -314,9 +307,26 @@ var vz_example_viewer;
             // the dom-repeat of feature divs.
             requestAnimationFrame(() => this._haveSaliencyImpl());
         },
+        // Determines if text should be light or dark due to the saliency-generated
+        // background of the text box.
+        _useLightColor(saliency) {
+            const percentile = (saliency - this.minSal) / (this.maxSal - this.minSal);
+            if (this.minSal < 0 && this.maxSal > 0) {
+                return percentile < 0.1 || percentile > 0.8;
+            }
+            else if (this.minSal < 0) {
+                return percentile < 0.1;
+            }
+            else {
+                return percentile > 0.8;
+            }
+        },
         _haveSaliencyImpl: function () {
-            // Reset all backgrounds to the neutral color.
-            this.selectAll('.value-pill').style('background', neutralSaliencyColor);
+            // Reset all value pills to default settings.
+            this.selectAll('.value-pill')
+                .style('background', neutralSaliencyColor)
+                .attr('title', '')
+                .style('color', defaultTextColor);
             if (!this.filteredFeaturesList ||
                 !this.saliency ||
                 Object.keys(this.saliency).length === 0 ||
@@ -331,10 +341,19 @@ var vz_example_viewer;
                 if (!val) {
                     continue;
                 }
+                // Set background color, tooltip, and text color, which are all based
+                // on saliency score.
                 const colorFn = Array.isArray(val)
                     ? (d, i) => this.getColorForSaliency(val[i])
                     : () => this.getColorForSaliency(val);
-                this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`).style('background', this.showSaliency ? colorFn : () => neutralSaliencyColor);
+                this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`)
+                    .style('background', this.showSaliency ? colorFn : () => neutralSaliencyColor)
+                    .attr('title', (d, i) => 'Attribution: ' +
+                    d3.format('.4f')(Array.isArray(val) ? val[i] : val))
+                    .style('color', (d, i) => {
+                    const num = Array.isArray(val) ? val[i] : val;
+                    return this._useLightColor(num) ? lightTextColor : defaultTextColor;
+                });
                 // Color the "more feature values" button with the most extreme saliency
                 // of any of the feature values hidden behind the button.
                 if (Array.isArray(val)) {
@@ -387,46 +406,6 @@ var vz_example_viewer;
                     : () => this.getColorForSaliency(val);
                 this.selectAll(`.${this.sanitizeFeature(feat.name)} input`).style('color', this.showSaliency ? colorFn : () => 'black');
             }
-        },
-        /**
-         * Returns a list of the min and max saliency values, clipped by the
-         * saliency ratio.
-         */
-        getMinMaxSaliency: function (saliency) {
-            let min = Infinity;
-            let max = -Infinity;
-            const checkSaliencies = (saliencies) => {
-                if (Array.isArray(saliencies)) {
-                    for (const s of saliencies) {
-                        checkSaliencies(s);
-                    }
-                }
-                else {
-                    if (saliencies < min) {
-                        min = saliencies;
-                    }
-                    if (saliencies > max) {
-                        max = saliencies;
-                    }
-                }
-            };
-            for (const feat in saliency) {
-                if (saliency.hasOwnProperty(feat)) {
-                    checkSaliencies(saliency[feat]);
-                }
-            }
-            min = Math.min(0, min) * clipSaliencyRatio;
-            max = Math.max(0, max) * clipSaliencyRatio;
-            // Make min/max symmetric around 0 so that attribution visualization scales
-            // for negative and positive attributions are the same, for visual
-            // consistency.
-            if (min < 0 && max > Math.abs(min)) {
-                min = -1 * max;
-            }
-            else if (max > 0 && Math.abs(min) > max) {
-                max = -1 * min;
-            }
-            return [min, max];
         },
         /**
          * Returns a list of the feature values for a feature. If keepBytes is true
@@ -985,82 +964,6 @@ var vz_example_viewer;
         },
         isSeqExample: function (maxSeqNumber) {
             return maxSeqNumber >= 0;
-        },
-        shouldShowSaliencyLegend: function (saliency) {
-            return saliency && Object.keys(saliency).length > 0;
-        },
-        // tslint:disable-next-line:no-unused-variable called as computed property
-        getSaliencyControlsHolderClass(saliency) {
-            return this.shouldShowSaliencyLegend(saliency)
-                ? 'saliency-controls-holder'
-                : 'hide-saliency-controls';
-        },
-        /** Creates an svg legend for the saliency color mapping. */
-        createLegend: function () {
-            d3.select(this.$.saliencyLegend)
-                .selectAll('*')
-                .remove();
-            const legendSvg = d3.select(this.$.saliencyLegend).append('g');
-            const gradient = legendSvg
-                .append('defs')
-                .append('linearGradient')
-                .attr('id', 'vzexampleviewergradient')
-                .attr('x1', '0%')
-                .attr('y1', '0%')
-                .attr('x2', '100%')
-                .attr('y2', '0%')
-                .attr('spreadMethod', 'pad');
-            const linspace = (start, end, n) => {
-                const out = [];
-                const delta = (end - start) / (n - 1);
-                let i = 0;
-                while (i < n - 1) {
-                    out.push(start + i * delta);
-                    i++;
-                }
-                out.push(end);
-                return out;
-            };
-            // Create the correct color scale for the legend depending on minimum
-            // and maximum saliency for this example.
-            const scale = [];
-            if (this.minSal < 0) {
-                scale.push(negSaliencyColor);
-            }
-            scale.push(neutralSaliencyColor);
-            if (this.maxSal > 0) {
-                scale.push(posSaliencyColor);
-            }
-            // Creates an array of [pct, colour] pairs as stop
-            // values for legend
-            const pct = linspace(0, 100, scale.length).map((d) => {
-                return Math.round(d) + '%';
-            });
-            const colourPct = d3.zip(pct, scale);
-            colourPct.forEach((d) => {
-                gradient
-                    .append('stop')
-                    .attr('offset', d[0])
-                    .attr('stop-color', d[1])
-                    .attr('stop-opacity', 1);
-            });
-            legendSvg
-                .append('rect')
-                .attr('x1', 0)
-                .attr('y1', 0)
-                .attr('width', LEGEND_WIDTH_PX)
-                .attr('height', LEGEND_HEIGHT_PX)
-                .style('fill', 'url(#vzexampleviewergradient)');
-            const legendScale = d3
-                .scaleLinear()
-                .domain([this.minSal, this.maxSal])
-                .range([0, LEGEND_WIDTH_PX]);
-            const legendAxis = d3.axisBottom(legendScale).ticks(5);
-            legendSvg
-                .append('g')
-                .attr('class', 'legend axis')
-                .attr('transform', `translate(0,${LEGEND_HEIGHT_PX})`)
-                .call(legendAxis);
         },
         isImage: function (feat) {
             return IMG_FEATURE_REGEX.test(feat);
