@@ -414,11 +414,11 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
-    Optionally, if attributions can be returned by the model with each
-    prediction, then this method can return a dict with the key 'predictions'
-    containing the predictions result list described above, and with the key
-    'attributions' containing a list of attributions for each example that was
-    predicted.
+    Optionally, if attributions or other prediction-time information
+    can be returned by the model with each prediction, then this method
+    can return a dict with the key 'predictions' containing the predictions
+    result list described above, and with the key 'attributions' containing
+    a list of attributions for each example that was predicted.
 
     For each example, the attributions list should contain a dict mapping
     input feature names to attribution values for that feature on that example.
@@ -431,6 +431,12 @@ class WitConfigBuilder(object):
         feature values that there are attribution scores for. Index 1 contains
         a list of attribution values for the corresponding feature values in
         the first list.
+
+    This dict can contain any other keys, with their values being a list of
+    prediction-time strings or numbers for each example being predicted. These
+    values will be displayed in WIT as extra information for each example,
+    usable in the same ways by WIT as normal input features (such as for
+    creating plots and slicing performance data).
 
     Args:
       predict_fn: The custom python function which will be used for model
@@ -464,11 +470,11 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
-    Optionally, if attributions can be returned by the model with each
-    prediction, then this method can return a dict with the key 'predictions'
-    containing the predictions result list described above, and with the key
-    'attributions' containing a list of attributions for each example that was
-    predicted.
+    Optionally, if attributions or other prediction-time information
+    can be returned by the model with each prediction, then this method
+    can return a dict with the key 'predictions' containing the predictions
+    result list described above, and with the key 'attributions' containing
+    a list of attributions for each example that was predicted.
 
     For each example, the attributions list should contain a dict mapping
     input feature names to attribution values for that feature on that example.
@@ -481,6 +487,12 @@ class WitConfigBuilder(object):
         feature values that there are attribution scores for. Index 1 contains
         a list of attribution values for the corresponding feature values in
         the first list.
+
+    This dict can contain any other keys, with their values being a list of
+    prediction-time strings or numbers for each example being predicted. These
+    values will be displayed in WIT as extra information for each example,
+    usable in the same ways by WIT as normal input features (such as for
+    creating plots and slicing performance data).
 
     Args:
       predict_fn: The custom python function which will be used for model
@@ -497,6 +509,27 @@ class WitConfigBuilder(object):
     # If no model name has been set, give a default
     if not self.has_compare_model_name():
       self.set_compare_model_name('2')
+    return self
+
+  def set_custom_distance_fn(self, distance_fn):
+    """Sets a custom function for distance computation.
+
+    WIT can directly use a custom function for all distance computations within
+    the tool. In this case, the provided function should accept a query example
+    proto and a list of example protos to compute the distance against and
+    return a 1D list of numbers containing the distances.
+
+    Args:
+      distance_fn: The python function which will be used for distance
+      computation.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    if distance_fn is None:
+      self.delete('custom_distance_fn')
+    else:
+      self.store('custom_distance_fn', distance_fn)
     return self
 
   def _convert_json_to_tf_examples(self, examples):

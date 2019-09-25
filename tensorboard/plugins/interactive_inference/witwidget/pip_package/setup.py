@@ -47,6 +47,7 @@ REQUIRED_PACKAGES = [
     'google-api-python-client>=1.7.8',
     'ipywidgets>=7.0.0',
     'jupyter>=1.0,<2',
+    'six>=1.12.0',
 ] + _TF_REQ
 
 def get_readme():

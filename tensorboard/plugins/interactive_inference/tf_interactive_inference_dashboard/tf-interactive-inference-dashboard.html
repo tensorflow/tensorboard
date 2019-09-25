@@ -497,6 +497,11 @@ limitations under the License.
         max-width: 150px;
       }
 
+      .num-buckets-input {
+        width: 45px;
+        margin-right: 8px;
+      }
+
       .control-button {
         background-color: white;
         border: 1px solid var(--wit-color-gray300);
@@ -1191,7 +1196,18 @@ limitations under the License.
       }
       .counterfactual-toggle {
         margin: 4px 4px 4px 6px;
+        padding-top: 4px;
         --paper-toggle-button-checked-bar-color: #81c995;
+      }
+      .counterfactual-delta {
+        display: flex;
+        margin-right: 6px;
+      }
+      .counterfactual-delta label {
+        padding-top: 10px;
+      }
+      .counterfactual-delta paper-slider {
+        height: 40px;
       }
       .datapoint-button {
         color: #202124;
@@ -1331,8 +1347,24 @@ limitations under the License.
       </paper-input>
       <div class="radiolabel">Distance type</div>
       <paper-radio-group class="dist-switch" selected="{{facetDistSwitch}}">
-        <paper-radio-button class="dist-radio" name="L1">L1</paper-radio-button>
-        <paper-radio-button class="dist-radio" name="L2">L2</paper-radio-button>
+        <paper-radio-button
+          class="dist-radio"
+          name="L1"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L1</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="L2"
+          disabled$="[[customDistanceFunctionSet]]"
+          >L2</paper-radio-button
+        >
+        <paper-radio-button
+          class="dist-radio"
+          name="Custom"
+          hidden$="[[!customDistanceFunctionSet]]"
+          >User-specified</paper-radio-button
+        >
       </paper-radio-group>
       <paper-dropdown-menu
         label="Apply to datapoints visualization"
@@ -1357,7 +1389,7 @@ limitations under the License.
         <paper-button
           dialog-confirm
           autofocus
-          on-tap="addDistanceMetric"
+          on-tap="requestAddDistanceMetric"
           class="main-button"
           >Apply</paper-button
         >
@@ -1426,70 +1458,106 @@ limitations under the License.
                           >Partial dependence plots</paper-radio-button
                         >
                       </paper-radio-group>
-                      <template is="dom-if" if="[[!isRegression_(modelType)]]">
-                        <div class="flex">
-                          <div title="Select a datapoint to use this feature">
-                            <paper-toggle-button
-                              class="counterfactual-toggle"
-                              checked="{{showNearestCounterfactual}}"
-                              disabled$="[[!hasSelected(selectedExampleAndInference)]]"
-                            >
-                              Show nearest counterfactual datapoint
-                            </paper-toggle-button>
-                          </div>
-                          <paper-radio-group
-                            selected="{{nearestCounterfactualDist}}"
+                      <div class="flex">
+                        <div title="Select a datapoint to use this feature">
+                          <paper-toggle-button
+                            class="counterfactual-toggle"
+                            checked="{{showNearestCounterfactual}}"
+                            disabled$="[[!hasSelected(selectedExampleAndInference)]]"
                           >
-                            <paper-radio-button name="L1"
-                              >L1</paper-radio-button
-                            >
-                            <paper-radio-button name="L2"
-                              >L2</paper-radio-button
-                            >
-                          </paper-radio-group>
-                          <paper-dropdown-menu
-                            label="Model:"
-                            no-label-float
-                            class="short-dropdown"
-                            hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
-                          >
-                            <paper-listbox
-                              class="dropdown-content"
-                              selected="{{nearestCounterfactualModelIndex}}"
-                            >
-                              <template
-                                is="dom-repeat"
-                                items="[[parsedModelNames]]"
-                              >
-                                <paper-item
-                                  >[[getCounterfactualModelName_(item)]]</paper-item
-                                >
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                          <paper-icon-button
-                            icon="info-outline"
-                            class="info-icon cf-info-icon no-padding"
-                            on-tap="openDialog"
-                          >
-                          </paper-icon-button>
-                          <paper-dialog
-                            class="dialog-text"
-                            horizontal-align="auto"
-                            vertical-align="auto"
-                          >
-                            <div class="dialog-title">
-                              Nearest counterfactual (neighbor of different
-                              classification)
-                            </div>
-                            <div>
-                              Compares the selected datapoint with its nearest
-                              neighbor from a different classification using L1
-                              or L2 distance.
-                            </div>
-                          </paper-dialog>
+                            Show nearest counterfactual datapoint
+                          </paper-toggle-button>
                         </div>
-                      </template>
+                        <paper-radio-group
+                          selected="{{nearestCounterfactualDist}}"
+                        >
+                          <paper-radio-button
+                            name="L1"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L1</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="L2"
+                            disabled$="[[customDistanceFunctionSet]]"
+                            >L2</paper-radio-button
+                          >
+                          <paper-radio-button
+                            name="Custom"
+                            hidden$="[[!customDistanceFunctionSet]]"
+                            >User-specified</paper-radio-button
+                          >
+                        </paper-radio-group>
+                        <template is="dom-if" if="[[isRegression_(modelType)]]">
+                          <div
+                            title="Minimum distance in inferred value to consider counterfactual"
+                            class="counterfactual-delta"
+                          >
+                            <paper-slider
+                              pin
+                              value="{{minCounterfactualValueDist}}"
+                              max="[[maxCounterfactualValueDist]]"
+                            ></paper-slider>
+                            <label>Delta</label>
+                          </div>
+                        </template>
+                        <paper-dropdown-menu
+                          label="Model:"
+                          no-label-float
+                          class="counterfactual-dropdown"
+                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                        >
+                          <paper-listbox
+                            class="dropdown-content"
+                            slot="dropdown-content"
+                            selected="{{nearestCounterfactualModelIndex}}"
+                          >
+                            <template
+                              is="dom-repeat"
+                              items="[[parsedModelNames]]"
+                            >
+                              <paper-item
+                                >[[getCounterfactualModelName_(item)]]</paper-item
+                              >
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1 or
+                            L2 distance. If a custom distance function is set,
+                            it uses that function instead.
+                          </div>
+                          <div>
+                            <template
+                              is="dom-if"
+                              if="[[isRegression_(modelType)]]"
+                              restamp
+                            >
+                              For regression, a neighbor point is considered as
+                              a different classification if the difference in
+                              inferred value is equal or greater than the
+                              selected delta.<br />
+                              Delta is initialized to the standard deviation of
+                              the inferred values.
+                            </template>
+                          </div>
+                        </paper-dialog>
+                      </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
                           <paper-button
@@ -1996,25 +2064,24 @@ limitations under the License.
                               The feature that your model is trying to predict.
                               <span class="dialog-link" on-tap="openDialog"
                                 >More.
-                                <paper-dialog
-                                  class="dialog-text"
-                                  horizontal-align="auto"
-                                  vertical-align="auto"
-                                >
-                                  <div class="dialog-title">
-                                    Ground Truth Feature
-                                  </div>
-                                  <div>
-                                    If the datapoints contain a feature that
-                                    represents the ground truth for what the
-                                    model is attempting to predict, then
-                                    selecting that feature here allows the tool
-                                    to investigate the performance of the model
-                                    by comparing the model's results to the
-                                    ground truth feature.
-                                  </div>
-                                </paper-dialog>
                               </span>
+                              <paper-dialog
+                                class="dialog-text"
+                                horizontal-align="auto"
+                                vertical-align="auto"
+                              >
+                                <div class="dialog-title">
+                                  Ground Truth Feature
+                                </div>
+                                <div>
+                                  If the datapoints contain a feature that
+                                  represents the ground truth for what the model
+                                  is attempting to predict, then selecting that
+                                  feature here allows the tool to investigate
+                                  the performance of the model by comparing the
+                                  model's results to the ground truth feature.
+                                </div>
+                              </paper-dialog>
                             </div>
                           </div>
                         </div>
@@ -2041,33 +2108,33 @@ limitations under the License.
                                 negatives. Required for optimization.
                                 <span class="dialog-link" on-tap="openDialog"
                                   >More.
-                                  <paper-dialog
-                                    class="dialog-text"
-                                    horizontal-align="auto"
-                                    vertical-align="auto"
-                                  >
-                                    <div class="dialog-title">
-                                      What is cost ratio?
-                                    </div>
-                                    <div>
-                                      This tells the tool how to optimize the
-                                      classification thresholds when you use the
-                                      optimization strategy controls.
-                                    </div>
-                                    <div>
-                                      1.00 = false positives are equally as
-                                      costly as false negatives.
-                                    </div>
-                                    <div>
-                                      4.00 = false positives are 4 times more
-                                      costly than false negatives
-                                    </div>
-                                    <div>
-                                      0.25 = false negatives are 4 times more
-                                      costly than false positives.
-                                    </div>
-                                  </paper-dialog>
                                 </span>
+                                <paper-dialog
+                                  class="dialog-text"
+                                  horizontal-align="auto"
+                                  vertical-align="auto"
+                                >
+                                  <div class="dialog-title">
+                                    What is cost ratio?
+                                  </div>
+                                  <div>
+                                    This tells the tool how to optimize the
+                                    classification thresholds when you use the
+                                    optimization strategy controls.
+                                  </div>
+                                  <div>
+                                    1.00 = false positives are equally as costly
+                                    as false negatives.
+                                  </div>
+                                  <div>
+                                    4.00 = false positives are 4 times more
+                                    costly than false negatives
+                                  </div>
+                                  <div>
+                                    0.25 = false negatives are 4 times more
+                                    costly than false positives.
+                                  </div>
+                                </paper-dialog>
                               </div>
                             </div>
                           </div>
@@ -2097,6 +2164,18 @@ limitations under the License.
                               </template>
                             </paper-listbox>
                           </paper-dropdown-menu>
+                          <template
+                            is="dom-if"
+                            if="[[isNumericFeature_(selectedBreakdownFeature)]]"
+                          >
+                            <paper-input
+                              min="2"
+                              value="{{numPrimaryBuckets}}"
+                              label="Buckets"
+                              type="number"
+                              class="num-buckets-input"
+                            ></paper-input>
+                          </template>
                           <div>
                             <div class="help-title help-title-margin">
                               What does slicing do?
@@ -2133,6 +2212,18 @@ limitations under the License.
                                 </template>
                               </paper-listbox>
                             </paper-dropdown-menu>
+                            <template
+                              is="dom-if"
+                              if="[[isNumericFeature_(selectedSecondBreakdownFeature)]]"
+                            >
+                              <paper-input
+                                min="2"
+                                value="{{numSecondaryBuckets}}"
+                                label="Buckets"
+                                type="number"
+                                class="num-buckets-input"
+                              ></paper-input>
+                            </template>
                           </template>
                         </div>
                       </template>
@@ -2278,9 +2369,9 @@ limitations under the License.
                               </div>
                               <div>
                                 Equal opportunity means that among those
-                                predicted as positive classifications, there is
-                                a similar percentage of correct predictions in
-                                each slice.
+                                datapoints with the positive ground truth label,
+                                there is a similar percentage of positive
+                                predictions in each slice.
                               </div>
                             </paper-dialog>
                           </paper-radio-button>
@@ -3264,6 +3355,13 @@ limitations under the License.
     const inferenceSquaredErrorStr = ' Inference squared error';
     const inferenceScoreStr = ' Inference score';
     const exampleIdKey = ' Datapoint ID';
+    // requestDistanceWithCallback can be invoked with the callbacks in this
+    // enum. Please add a function to this list if you want it to be invoked
+    // at the end of custom distance computation.
+    const distanceCallbacks = {
+      finalizeClosestCounterfactual: 0,
+      finalizeAddDistanceMetric: 1,
+    };
 
     // Special feature names and feature name prefixes and suffixes for parsing
     // inference and attribution information from TFMA-generated input.
@@ -3286,6 +3384,10 @@ limitations under the License.
       if (elt && elt.parentElement) {
         elt.parentElement.removeChild(elt);
       }
+    }
+
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
     }
 
     (function() {
@@ -3334,12 +3436,38 @@ limitations under the License.
             type: String,
           },
           maxInferenceEntriesPerRun: Number,
+          // Number of buckets when aggregating numeric features.
+          numPrimaryBuckets: {
+            type: Number,
+            value: 2,
+            observer: 'breakdownFeatureSelected_',
+          },
+          numSecondaryBuckets: {
+            type: Number,
+            value: 2,
+            observer: 'breakdownFeatureSelected_',
+          },
 
           // Inferences from servo.
           inferences: {
             type: Object,
             observer: 'newInferences_',
             value: () => ({}),
+          },
+          // Extra outputs from inference. A dict with two fields: 'indices' and
+          // 'extra'. Indices contains a list of example indices that
+          // these new outputs apply to. Extra contains a list of extra output
+          // objects, one for each model being inferred. The object for each
+          // model is a dict of output data names to lists of the output values
+          // for that data, one entry for each example that was inferred upon.
+          // 'attributions' is one of these output data which is parsed into the
+          // 'attributions' object defined below as a special case. Any other extra
+          // data provided are displayed by WIT with each example.
+          // @type {indices: Array<number>,
+          //        extra: Array<{!Object<string, Array<number|string>>}>}
+          extraOutputs: {
+            type: Object,
+            observer: 'newExtraOutputs_',
           },
           // Attributions from inference. A dict with two fields: 'indices' and
           // 'attributions'. Indices contains a list of example indices that
@@ -3359,6 +3487,7 @@ limitations under the License.
           //   of those feature values.
           attributions: {
             type: Object,
+            value: {indices: [], attributions: []},
             observer: 'newAttributions_',
           },
           // Minimum attribution value seen in the data.
@@ -3441,6 +3570,12 @@ limitations under the License.
             value: '',
             observer: 'breakdownFeatureSelected_',
           },
+          // True if a custom distance function is set and is in use.
+          customDistanceFunctionSet: {
+            type: Boolean,
+            value: false,
+            observer: 'customDistanceFunctionSetChanged_',
+          },
           // Feature for true label.
           selectedLabelFeature: {
             type: String,
@@ -3463,9 +3598,9 @@ limitations under the License.
             type: Array,
             value: () => [],
           },
-          // A map of feature name to the featureValueThresholds items, for quick
+          // A map of feature name to the featureValueThresholds indices, for quick
           // lookup.
-          featureValueThresholdsMap: Object,
+          featureValueThresholdsIndexMap: Object,
           // The default inference label when the classification threshold isn't
           // met.
           defaultInferenceLabel: {
@@ -3615,6 +3750,8 @@ limitations under the License.
             type: String,
             value: 'L1',
           },
+          minCounterfactualValueDist: Number,
+          maxCounterfactualValueDist: Number,
           visMode: {
             type: String,
             value: 'dive',
@@ -3733,11 +3870,19 @@ limitations under the License.
             type: String,
             value: 'attribution',
           },
+          // This object maps each feature to a list of buckets delimiters,
+          // used for aggregating numeric features.
+          // For instance: `{'age': [10, 30, 60, 90]}` would mean values should
+          // be bucketed into either `[10, 30)`, `[30, 60)` or `[60, 90]`.
+          featureBucketEdges_: {
+            type: Object,
+            value: () => ({}),
+          },
         },
 
         observers: [
           'setFacetDistFeatureName(facetDistSwitch, selected)',
-          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist)',
+          'nearestCounterfactualStatusChanged_(showNearestCounterfactual, nearestCounterfactualModelIndex, nearestCounterfactualDist, minCounterfactualValueDist)',
         ],
 
         // Required function.
@@ -3745,7 +3890,7 @@ limitations under the License.
 
         openDialog: function(event) {
           event.stopPropagation();
-          const dialog = event.target.parentElement.parentElement.querySelector(
+          const dialog = event.target.parentElement.querySelector(
             'paper-dialog'
           );
           dialog.open();
@@ -3828,32 +3973,87 @@ limitations under the License.
         showDistanceClicked_: function() {
           this.$.distancedialog.toggle();
         },
+        customDistanceFunctionSetChanged_: function() {
+          if (this.customDistanceFunctionSet) {
+            this.nearestCounterfactualDist = 'Custom';
+            this.facetDistSwitch = 'Custom';
+          } else {
+            this.nearestCounterfactualDist = 'L1';
+            this.facetDistSwitch = 'L1';
+          }
+        },
 
-        addDistanceMetric: function() {
-          this.facetDistFeatureNames.push(this.facetDistFeatureName);
+        requestAddDistanceMetric: function() {
           const selected = this.selected[0];
-          let closestDist = Number.POSITIVE_INFINITY;
-          let closest = -1;
-          const useL2Distance = this.facetDistSwitch == 'L2';
-          for (let i = 0; i < this.visdata.length; i++) {
-            let dist = this.getDist(
-              this.visdata[selected],
-              this.visdata[i],
-              useL2Distance
+          const params = {
+            callbackParams: {featureName: this.facetDistFeatureName},
+            distanceParams: {},
+          };
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeAddDistanceMetric,
+              params
             );
-            this.visdata[i][this.facetDistFeatureName] = dist;
+            return;
+          } else {
+            const dists = [];
+            const useL2Distance = this.facetDistSwitch == 'L2';
+            for (let i = 0; i < this.visdata.length; i++) {
+              dists.push(
+                this.getDist(
+                  this.visdata[selected],
+                  this.visdata[i],
+                  useL2Distance
+                )
+              );
+            }
+            this.finalizeAddDistanceMetric(
+              selected,
+              dists,
+              params.callbackParams
+            );
+          }
+        },
+
+        invokeCustomDistanceCallback: function(callbackObj) {
+          switch (callbackObj.funId) {
+            case distanceCallbacks.finalizeClosestCounterfactual:
+              this.finalizeClosestCounterfactual(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+            case distanceCallbacks.finalizeAddDistanceMetric:
+              this.finalizeAddDistanceMetric(
+                callbackObj.exInd,
+                callbackObj.distances,
+                callbackObj.params
+              );
+              break;
+          }
+        },
+
+        finalizeAddDistanceMetric: function(exInd, distances, callbackParams) {
+          const facetDistFeatureName = callbackParams.featureName;
+          this.facetDistFeatureNames.push(facetDistFeatureName);
+          for (let i = 0; i < this.visdata.length; i++) {
+            this.visdata[i][facetDistFeatureName] = distances[i];
           }
           this.refreshDive_();
           if (this.facetDistSetting == 'colorBy') {
-            this.$.dive.colorBy = this.facetDistFeatureName;
+            this.$.dive.colorBy = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalFacet') {
-            this.$.dive.verticalFacet = this.facetDistFeatureName;
+            this.$.dive.verticalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalFacet') {
-            this.$.dive.horizontalFacet = this.facetDistFeatureName;
+            this.$.dive.horizontalFacet = facetDistFeatureName;
           } else if (this.facetDistSetting == 'verticalPosition') {
-            this.$.dive.verticalPosition = this.facetDistFeatureName;
+            this.$.dive.verticalPosition = facetDistFeatureName;
           } else if (this.facetDistSetting == 'horizontalPosition') {
-            this.$.dive.horizontalPosition = this.facetDistFeatureName;
+            this.$.dive.horizontalPosition = facetDistFeatureName;
           }
         },
 
@@ -3868,26 +4068,113 @@ limitations under the License.
           } else {
             this.comparedIndices = [];
             this.counterfactualExampleAndInference = null;
-            const temp = this.selectedExampleAndInference;
-            this.selectedExampleAndInference = null;
-            this.selectedExampleAndInference = temp;
+            this.refreshSelectedDatapoint_();
+          }
+        },
+
+        refreshSelectedDatapoint_: function() {
+          const temp = this.selectedExampleAndInference;
+          this.selectedExampleAndInference = null;
+          this.selectedExampleAndInference = temp;
+        },
+
+        isSameInferenceClass_: function(val1, val2) {
+          return this.isRegression_(this.modelType)
+            ? Math.abs(val1 - val2) < this.minCounterfactualValueDist
+            : val1 === val2;
+        },
+
+        adjustMaxCounterfactualValueDist_: function(selected, valueName) {
+          this.maxCounterfactualValueDist = Math.max(
+            this.stats[valueName].numberMax - this.visdata[selected][valueName],
+            this.visdata[selected][valueName] - this.stats[valueName].numberMin
+          );
+        },
+
+        adjustMinCounterfactualValueDist_: function() {
+          const valueName = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          this.minCounterfactualValueDist = this.distanceStats_[
+            valueName
+          ].stdDev;
+        },
+
+        finalizeClosestCounterfactual: function(exInd, distances) {
+          // Distances are indexed by example ids
+          const modelInferenceValueStr = this.strWithModelName_(
+            inferenceValueStr,
+            this.nearestCounterfactualModelIndex
+          );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              exInd,
+              modelInferenceValueStr
+            );
+          }
+          let closestDist = Number.POSITIVE_INFINITY;
+          let closest = -1;
+          for (let i = 0; i < this.visdata.length; i++) {
+            // Skip the selected example itself and examples with the same inference class.
+            if (
+              i === exInd ||
+              this.isSameInferenceClass_(
+                this.visdata[exInd][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
+            ) {
+              continue;
+            }
+            let dist = distances[i];
+            if (dist < closestDist) {
+              closestDist = dist;
+              closest = i;
+            }
+          }
+          if (closest != -1) {
+            // Display the counterfactual in dive and example viewer.
+            this.comparedIndices = [closest];
+            this.counterfactualExampleAndInference = this.examplesAndInferences[
+              closest
+            ];
+            this.compareTitle = 'Counterfactual value(s)';
           }
         },
 
         findClosestCounterfactual_: function() {
           const selected = this.selected[0];
+          // Custom distance function can only be used when local.
+          // If using custom distance function, request distances and return.
+          if (this.local && this.customDistanceFunctionSet) {
+            this.requestDistanceWithCallback(
+              selected,
+              distanceCallbacks.finalizeClosestCounterfactual,
+              {callbackParams: {}, distanceParams: {}}
+            );
+            return;
+          }
+
           const modelInferenceValueStr = this.strWithModelName_(
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMaxCounterfactualValueDist_(
+              selected,
+              modelInferenceValueStr
+            );
+          }
           let closestDist = Number.POSITIVE_INFINITY;
           let closest = -1;
           for (let i = 0; i < this.visdata.length; i++) {
-            // Skip examples with the same inference class as the selected
-            // examples.
+            // Skip the selected example itself and examples with the same inference class.
             if (
-              this.visdata[selected][modelInferenceValueStr] ==
-              this.visdata[i][modelInferenceValueStr]
+              i === selected ||
+              this.isSameInferenceClass_(
+                this.visdata[selected][modelInferenceValueStr],
+                this.visdata[i][modelInferenceValueStr]
+              )
             ) {
               continue;
             }
@@ -3909,6 +4196,19 @@ limitations under the License.
             ];
             this.compareTitle = 'Counterfactual value(s)';
           }
+        },
+
+        // Call backend for distance computation, backend calls callback function
+        // with computed distances and parameters
+        // TODO (tolgab) If TensorBoard supports custom distance functions
+        // add ability to call into their backend as well (non-local mode).
+        requestDistanceWithCallback: function(exInd, callbackFun, params) {
+          const urlParams = {
+            index: exInd,
+            callback: callbackFun,
+            params: params,
+          };
+          this.fire('compute-custom-distance', urlParams);
         },
 
         /**
@@ -3939,7 +4239,7 @@ limitations under the License.
             const maxLength = Math.max(aVals.length, bVals.length);
             let featureTotalDist = 0;
             for (let i = 0; i < maxLength; i++) {
-              if (this.distanceStats_[feat].stdDev != null) {
+              if (this.distanceStats_[feat].isNumeric) {
                 featureTotalDist += this.getNumericDist(
                   aVals[i],
                   bVals[i],
@@ -4213,6 +4513,35 @@ limitations under the License.
         },
 
         /**
+         * Get the key to which this example belongs when the dataset is sliced by the given feature(s).
+         */
+        getSliceKey_: function(example, feature1, feature2) {
+          const bucketEdges = this.featureBucketEdges_;
+          function maybeAggregate(feature) {
+            if (feature && example[feature] === undefined) {
+              return '?';
+            }
+            const edges = bucketEdges[feature];
+            if (edges) {
+              for (let i = 1; i < edges.length; i++) {
+                if (
+                  example[feature] < edges[i] ||
+                  (example[feature] === edges[i] && i === edges.length - 1)
+                ) {
+                  const right = i < edges.length - 1 ? ')' : ']';
+                  return '[' + edges[i - 1] + ', ' + edges[i] + right;
+                }
+              }
+            }
+            return example[feature];
+          }
+          return this.createCombinedValueString_(
+            maybeAggregate(feature1),
+            maybeAggregate(feature2)
+          );
+        },
+
+        /**
          * Creates a list of all feature values of the selected breakdown feature
          * or feature crosses if two breakdown features are selected, and gets
          * inference stats per breakdown.
@@ -4221,80 +4550,39 @@ limitations under the License.
           // When features to slice by change, set optimization strategy
           // back to custom (default).
           this.resetOptimizationSelected_();
-
-          const feature1 = this.selectedBreakdownFeature;
-          if (feature1 == '') {
+          if (this.selectedBreakdownFeature == '') {
             this.selectedSecondBreakdownFeature = '';
           }
-          const feature2 = this.selectedSecondBreakdownFeature;
-          const thresholds = [];
-          const thresholdsMap = {};
-          if (feature1.length !== 0) {
-            let feature1Values = this.stats[feature1].valueHash;
-            // Only breakdown performance by features that don't contain fully-
-            // unique values per example.
-            if (
-              this.stats[feature1].totalCount !=
-              this.examplesAndInferences.length
-            ) {
-              feature1Values = Object.assign({}, feature1Values, {
-                undefined: '',
-              });
-            }
-            let feature2Values = {undefined: ''};
-            if (feature2.length != 0) {
-              feature2Values = this.stats[feature2].valueHash;
-              if (
-                this.stats[feature2].totalCount !=
-                this.examplesAndInferences.length
-              ) {
-                feature2Values = Object.assign({}, feature2Values, {
-                  undefined: '',
-                });
-              }
-            }
+          this.calculateBucketEdges_(
+            this.selectedBreakdownFeature,
+            this.numPrimaryBuckets
+          );
+          this.calculateBucketEdges_(
+            this.selectedSecondBreakdownFeature,
+            this.numSecondaryBuckets
+          );
 
-            // For the selected feature, set up a dict of each feature value in
-            // the dataset to the threshold. Add this to a list (for display
-            // purposes) and create a map of feature value to entry in that list.
-            for (var key1 in feature1Values) {
-              if (feature1Values.hasOwnProperty(key1)) {
-                for (var key2 in feature2Values) {
-                  if (feature2Values.hasOwnProperty(key2)) {
-                    const feature1Value =
-                      key1 == 'undefined'
-                        ? undefined
-                        : this.stats[feature1].valueHash[key1].value;
-                    const feature2Value =
-                      key2 == 'undefined'
-                        ? undefined
-                        : this.stats[feature2].valueHash[key2].value;
-                    // Deep copy thresholds for each facet
-                    const modelThresholds = [];
-                    for (let i = 0; i < this.overallThresholds.length; i++) {
-                      modelThresholds.push({
-                        threshold: this.overallThresholds[i].threshold,
-                      });
-                    }
-                    const thresh = {
-                      value: feature1Value,
-                      value2: feature2Value,
-                      threshold: modelThresholds,
-                      opened: false,
-                    };
-                    thresholds.push(thresh);
-                    const mapKey = this.createCombinedValueString_(
-                      feature1Value,
-                      feature2Value
-                    );
-                    thresholdsMap[mapKey] = thresh;
-                  }
-                }
-              }
+          const thresholds = [];
+          const thresholdsIndexMap = {};
+          this.visdata.forEach((item) => {
+            const key1 = this.getSliceKey_(item, this.selectedBreakdownFeature);
+            const key2 = this.getSliceKey_(
+              item,
+              this.selectedSecondBreakdownFeature
+            );
+            const key = this.createCombinedValueString_(key1, key2);
+            if (!(key in thresholdsIndexMap)) {
+              thresholds.push({
+                value: key1,
+                value2: key2,
+                threshold: deepClone(this.overallThresholds),
+                opened: false,
+              });
+              thresholdsIndexMap[key] = thresholds.length - 1;
             }
-          }
+          });
           this.set('featureValueThresholds', thresholds);
-          this.set('featureValueThresholdsMap', thresholdsMap);
+          this.set('featureValueThresholdsIndexMap', thresholdsIndexMap);
           this.refreshInferences_(false);
         },
 
@@ -4367,9 +4655,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -4446,9 +4735,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -4502,9 +4792,10 @@ limitations under the License.
                   const item = this.visdata[i];
                   let facetedStats = null;
                   if (this.selectedBreakdownFeature != '') {
-                    const facetKey = this.createCombinedValueString_(
-                      item[this.selectedBreakdownFeature],
-                      item[this.selectedSecondBreakdownFeature]
+                    const facetKey = this.getSliceKey_(
+                      item,
+                      this.selectedBreakdownFeature,
+                      this.selectedSecondBreakdownFeature
                     );
                     facetedStats = inferenceStats.faceted[facetKey];
                     if (!facetedStats) {
@@ -4651,9 +4942,16 @@ limitations under the License.
                 );
               }
             } else if (this.selectedFeatureSort == 'Alphabetical') {
-              return this.getPrintableValue_(a).localeCompare(
-                this.getPrintableValue_(b)
-              );
+              const aValue = this.getPrintableValue_(a);
+              const bValue = this.getPrintableValue_(b);
+              // Handle numeric intervals
+              if (aValue[0] === '[' && bValue[0] === '[') {
+                return (
+                  Number.parseFloat(aValue.substring(1)) -
+                  Number.parseFloat(bValue.substring(1))
+                );
+              }
+              return aValue.localeCompare(bValue);
             } else if (this.selectedFeatureSort == 'Accuracy') {
               if (
                 this.isBinaryClassification_(this.modelType, this.multiClass)
@@ -4705,6 +5003,13 @@ limitations under the License.
             if (this.selectedFeatureSort == 'Count') {
               return b.count - a.count;
             } else if (this.selectedFeatureSort == 'Alphabetical') {
+              // Handle numeric intervals
+              if (a.name[0] === '[' && b.name[0] === '[') {
+                return (
+                  Number.parseFloat(a.name.substring(1)) -
+                  Number.parseFloat(b.name.substring(1))
+                );
+              }
               return a.name.localeCompare(b.name);
             } else if (this.selectedFeatureSort == 'Mean error') {
               return b.meanError - a.meanError;
@@ -5061,28 +5366,16 @@ limitations under the License.
             // Set all thresholds to the setting with the lowest cost from the
             // above search.
             for (let vIdx = 0; vIdx < values.length; vIdx++) {
+              const thresholdsIdx = this.featureValueThresholdsIndexMap[
+                values[vIdx]
+              ];
               this.set(
-                'featureValueThresholdsMap.' +
-                  values[vIdx] +
+                'featureValueThresholds.' +
+                  thresholdsIdx +
                   '.threshold.' +
                   modelInd +
                   '.threshold',
                 bestThresholds[vIdx] / 100
-              );
-            }
-            // Polymer does not reflect changes if we only update through
-            // featureValueThresholdsMap, this is a quick workaround
-            // until we find the correct way to link
-            for (let i = 0; i < this.featureValueThresholds.length; i++) {
-              const value = this.featureValueThresholds[i].threshold[modelInd]
-                .threshold;
-              this.set(
-                'featureValueThresholds.' +
-                  i +
-                  '.threshold.' +
-                  modelInd +
-                  '.threshold',
-                value
               );
             }
           }
@@ -5947,6 +6240,7 @@ limitations under the License.
         },
 
         hasAttributions_: function(attributions) {
+          console.log(attributions);
           return (
             attributions != null &&
             Object.keys(attributions.attributions).length != 0 &&
@@ -5954,11 +6248,79 @@ limitations under the License.
           );
         },
 
-        newAttributions_: function(attributions) {
-          if (
-            Object.keys(attributions.attributions).length == 0 &&
-            attributions.attributions[0] != null
+        newExtraOutputs_: function(extraOutputs) {
+          // Set attributions from the extra outputs, if available.
+          const attributions = [];
+          for (
+            let modelNum = 0;
+            modelNum < extraOutputs.extra.length;
+            modelNum++
           ) {
+            if ('attributions' in extraOutputs.extra[modelNum]) {
+              attributions.push(extraOutputs.extra[modelNum].attributions);
+            }
+          }
+          if (attributions.length > 0) {
+            this.attributions = {
+              indices: extraOutputs.indices,
+              attributions: attributions,
+            };
+          }
+
+          // Add extra output information to datapoints
+          for (let i = 0; i < extraOutputs.indices.length; i++) {
+            const idx = extraOutputs.indices[i];
+            const datapoint = Object.assign({}, this.visdata[idx]);
+            for (
+              let modelNum = 0;
+              modelNum < extraOutputs.extra.length;
+              modelNum++
+            ) {
+              const keys = Object.keys(extraOutputs.extra[modelNum]);
+              for (let j = 0; j < keys.length; j++) {
+                const key = keys[j];
+                // Skip attributions as they are handled separately above.
+                if (key == 'attributions') {
+                  continue;
+                }
+                let val = extraOutputs.extra[modelNum][key][i];
+                const datapointKey = this.strWithModelName_(key, modelNum);
+
+                // Update the datapoint with the extra info for use in
+                // Facets Dive.
+                datapoint[datapointKey] = val;
+
+                // Convert the extra output into an array if necessary, for
+                // insertion into tf.Example as a value list, for update of
+                // examplesAndInferences for the example viewer.
+                if (!Array.isArray(val)) {
+                  val = [val];
+                }
+                const isString =
+                  val.length > 0 &&
+                  (typeof val[0] == 'string' || val[0] instanceof String);
+                const exampleJsonString = JSON.stringify(
+                  this.examplesAndInferences[idx].example
+                );
+                const copiedExample = JSON.parse(exampleJsonString);
+                copiedExample.features.feature[datapointKey] = isString
+                  ? {bytesList: {value: val}}
+                  : {floatList: {value: val}};
+                this.examplesAndInferences[idx].example = copiedExample;
+              }
+            }
+            this.set(`visdata.${idx}`, datapoint);
+          }
+          this.refreshDive_();
+
+          // Update selected datapoint so that if a datapoint is being viewed,
+          // the display is updated with the appropriate extra output.
+          this.computeSelectedExampleAndInference();
+          this.refreshSelectedDatapoint_();
+        },
+
+        newAttributions_: function(attributions) {
+          if (!this.hasAttributions_(attributions)) {
             return;
           }
           for (let i = 0; i < attributions.indices.length; i++) {
@@ -6164,11 +6526,14 @@ limitations under the License.
           // case), then get the appropriate threshold for this item's value for
           // that feature. Otherwise the overall threshold will be used.
           if (feature1.length !== 0) {
-            let key = this.createCombinedValueString_(
-              item[feature1],
-              item[feature2]
+            let key = this.getSliceKey_(
+              item,
+              this.selectedBreakdownFeature,
+              this.selectedSecondBreakdownFeature
             );
-            thresholds = this.featureValueThresholdsMap[key].threshold;
+            thresholds = this.featureValueThresholds[
+              this.featureValueThresholdsIndexMap[key]
+            ].threshold;
           }
           for (let modelNum = 0; modelNum < this.numModels; modelNum++) {
             const nonZeroClassification = this.getClassificationBestNonZero(
@@ -6294,6 +6659,9 @@ limitations under the License.
             {name: '', data: temp},
           ]);
           this.calculateDistanceStats_(this.$.overview.protoInput.toObject());
+          if (this.isRegression_(this.modelType)) {
+            this.adjustMinCounterfactualValueDist_();
+          }
           const tempSelected = this.$.dive.selectedData;
           this.$.dive.selectedData = [];
           this.$.dive.selectedData = tempSelected;
@@ -6323,13 +6691,15 @@ limitations under the License.
           ) {
             const featureStats = statsProto.datasetsList[0].featuresList[i];
             const feature = featureStats.name;
-            this.distanceStats_[feature] = {};
-            if (featureStats.numStats) {
-              // For numeric features, store standard deviation.
+            this.distanceStats_[feature] = {
+              isNumeric: featureStats.numStats != null,
+            };
+            if (this.distanceStats_[feature].isNumeric) {
+              // Numeric features:
               this.distanceStats_[feature].stdDev =
                 featureStats.numStats.stdDev;
             } else {
-              // For categorical features, calculate and store  the probability
+              // Categorical features: calculate and store the probability
               // that any two feature values across all examples are the same.
               let probSameValue = 0;
               const buckets =
@@ -6343,6 +6713,51 @@ limitations under the License.
               this.distanceStats_[feature].probSameValue = probSameValue;
             }
           }
+        },
+
+        /**
+         * Whether the feature is numeric (as opposed to categorical).
+         */
+        isNumericFeature_: function(feature) {
+          return (
+            feature &&
+            this.distanceStats_ &&
+            this.distanceStats_[feature] &&
+            this.distanceStats_[feature].isNumeric
+          );
+        },
+
+        /**
+         * Calculate edges between buckets for aggregating numeric features.
+         * We do this beforehand to round numbers and avoid ugly interval labels.
+         */
+        calculateBucketEdges_: function(feature, numBuckets) {
+          if (
+            !this.isNumericFeature_(feature) ||
+            // No point in aggregating if less unique values than buckets.
+            this.stats[feature].uniqueCount < numBuckets ||
+            // Already done.
+            (this.featureBucketEdges_[feature] &&
+              this.featureBucketEdges_[feature].length == numBuckets + 1)
+          ) {
+            return;
+          }
+          const min = this.stats[feature].numberMin;
+          const max = this.stats[feature].numberMax;
+          const len = (max - min) / numBuckets;
+          const stdDev = this.distanceStats_[feature].stdDev;
+          function round(val) {
+            // Round to slightly more precise than the magnitude of standard deviation.
+            const precision = -Math.floor(Math.log10(stdDev)) + 1;
+            return Math.round(val * 10 ** precision) / 10 ** precision;
+          }
+          const bucketEdges = [];
+          bucketEdges.push(min);
+          for (let i = 1; i < numBuckets; i++) {
+            bucketEdges.push(round(min + i * len));
+          }
+          bucketEdges.push(max);
+          this.featureBucketEdges_[feature] = bucketEdges;
         },
 
         /**

@@ -73,6 +73,8 @@ class WerkzeugServerTest(tb_test.TestCase):
 
   def make_flags(self, **kwargs):
     flags = argparse.Namespace()
+    kwargs.setdefault('host', None)
+    kwargs.setdefault('bind_all', kwargs['host'] is None)
     for k, v in six.iteritems(kwargs):
       setattr(flags, k, v)
     return flags
@@ -81,19 +83,19 @@ class WerkzeugServerTest(tb_test.TestCase):
     # Test that we can bind to all interfaces without throwing an error
     server = program.WerkzeugServer(
         self._StubApplication(),
-        self.make_flags(host='', port=0, path_prefix=''))
+        self.make_flags(port=0, path_prefix=''))
     self.assertStartsWith(server.get_url(), 'http://')
 
   def testPathPrefixSlash(self):
     #Test that checks the path prefix ends with one trailing slash
     server = program.WerkzeugServer(
         self._StubApplication(),
-        self.make_flags(host='', port=0, path_prefix='/test'))
+        self.make_flags(port=0, path_prefix='/test'))
     self.assertEndsWith(server.get_url(), '/test/')
 
     server = program.WerkzeugServer(
         self._StubApplication(),
-        self.make_flags(host='', port=0, path_prefix='/test/'))
+        self.make_flags(port=0, path_prefix='/test/'))
     self.assertEndsWith(server.get_url(), '/test/')
 
   def testSpecifiedHost(self):

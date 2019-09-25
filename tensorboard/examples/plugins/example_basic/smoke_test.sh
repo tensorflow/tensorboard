@@ -67,7 +67,7 @@ diff -u example-plugin/tensorboard_plugin_example/static/index.js index.js
 curl -fs "http://localhost:${port}/data/plugins_listing" >plugins_listing
 cat plugins_listing; printf '\n'
 
-grep -qP '"example_basic":(?:(?!"enabled").)*+"enabled": *true' plugins_listing
+perl -nle 'print if m{"example_basic":(?:(?!"enabled").)*+"enabled": *true}' plugins_listing
 grep -qF '"/data/plugin/example_basic/index.js"' plugins_listing
 curl -fs "http://localhost:${port}/data/plugin/example_basic/tags" >tags
 <<EOF tr -d '\n' | diff -u - tags
