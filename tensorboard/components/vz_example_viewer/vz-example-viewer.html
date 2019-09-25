@@ -69,28 +69,6 @@ limitations under the License.
         margin-top: 16px;
       }
 
-      #saliencyLegend {
-        width: 300px;
-        height: 50px;
-        margin-left: 8px;
-        margin-right: 8px;
-      }
-
-      .saliency-controls-holder {
-        display: block;
-        padding: 8px;
-        width: fit-content;
-      }
-
-      .hide-saliency-controls {
-        display: none;
-      }
-
-      .saliency-legend-label {
-        font-size: 12px;
-        color: #3c4043;
-      }
-
       .outer {
         width: 100%;
         overflow: auto;
@@ -118,20 +96,16 @@ limitations under the License.
         font-size: 14px;
         -moz-appearance: none;
         -webkit-appearance: none;
-        --iron-autogrow-textarea: {
-          color: #3c4043;
-        }
+        color: #3c4043;
       }
 
       iron-autogrow-textarea.value-same {
-        --iron-autogrow-textarea: {
-          color: #5f6368;
-        }
+        color: #5f6368;
       }
 
       iron-autogrow-textarea.value-different {
+        color: #34a853;
         --iron-autogrow-textarea: {
-          color: #34a853;
           font-weight: 500;
         }
       }
@@ -922,12 +896,6 @@ limitations under the License.
         class$="[[getAddValueButtonClass(readonly)]]"
       >
       </paper-icon-button>
-      <div class$="[[getSaliencyControlsHolderClass(saliency)]]">
-        <div class="saliency-legend-label">Attribution legend</div>
-        <div class="flex-controls">
-          <svg id="saliencyLegend"></svg>
-        </div>
-      </div>
     </div>
     <paper-icon-button
       id="deletevalue"
