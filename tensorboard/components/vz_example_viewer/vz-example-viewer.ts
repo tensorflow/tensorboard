@@ -174,7 +174,7 @@ namespace vz_example_viewer {
         observer: 'updateCompareMode',
       },
       // The order to sort features. Can be 'attribution',
-      // 'revserse-attribution', or 'alphabetical'.
+      // 'reverse-attribution', or 'alphabetical'.
       sortOrder: {
         type: String,
         value: 'attribution',
