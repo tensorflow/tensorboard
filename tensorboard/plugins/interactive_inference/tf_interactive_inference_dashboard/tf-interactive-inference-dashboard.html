@@ -1458,7 +1458,7 @@ limitations under the License.
                           >Partial dependence plots</paper-radio-button
                         >
                       </paper-radio-group>
-                      <div class="flex">
+                      <div class="flex-wrap">
                         <div title="Select a datapoint to use this feature">
                           <paper-toggle-button
                             class="counterfactual-toggle"
@@ -3899,13 +3899,13 @@ limitations under the License.
         ready: function() {
           const side = d3.select(this.$.side);
           const center = d3.select(this.$.center);
-          const resizer = d3.select(this.$.resizer);
+          const resizer = this.$.resizer;
           const self = this;
 
           const dragResize = d3.drag().on('drag', () => {
             // Determine resizer position relative to width of the tool.
-            const x = d3.mouse(this.parentNode.parentNode)[0];
-            const width = this.parentNode.parentNode.offsetWidth;
+            const x = d3.mouse(resizer.parentNode.parentNode)[0];
+            const width = resizer.parentNode.parentNode.offsetWidth;
             let perc = (x / width) * 100;
 
             // Side panel will be a minimum of 20% width.
@@ -3920,7 +3920,7 @@ limitations under the License.
             self.$.dive.$.vis._onIronResize();
           });
 
-          resizer.call(dragResize);
+          d3.select(resizer).call(dragResize);
         },
 
         attached: function() {
