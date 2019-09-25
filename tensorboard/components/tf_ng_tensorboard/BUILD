@@ -32,7 +32,6 @@ tf_js_binary(
     compile = 1,
     entry_point = select({
         "//tensorboard:dev_build": ":main.ts",
-        "//tensorboard:dev_flag": "main.ts",
         "//conditions:default": "main.prod.ts",
     }),
     deps = [
@@ -61,7 +60,6 @@ ng_module(
     name = "ng_main",
     srcs = ["bootstrap.ts"] + select({
         "//tensorboard:dev_build": ["main.ts"],
-        "//tensorboard:dev_flag": ["main.ts"],
         "//conditions:default": ["main.prod.ts"],
     }),
     deps = [

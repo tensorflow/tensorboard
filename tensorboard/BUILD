@@ -247,11 +247,6 @@ config_setting(
     values = {"compilation_mode": "dbg"},
 )
 
-config_setting(
-    name = "dev_flag",
-    values = {"define": "dev=true"},
-)
-
 tensorboard_zip_file(
     name = "webfiles",
     deps = [":assets"],
@@ -269,7 +264,6 @@ tf_web_library(
         "@com_google_fonts_roboto",
     ] + select({
         "//tensorboard:dev_build": ["//tensorboard/components:ng_tensorboard"],
-        "//tensorboard:dev_flag": ["//tensorboard/components:ng_tensorboard"],
         "//conditions:default": [],
     }),
 )
