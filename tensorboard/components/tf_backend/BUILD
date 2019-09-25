@@ -25,9 +25,9 @@ tf_web_library(
     deps = [
         ":type",
         "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
+        "//tensorboard/componentsn/tf_imports:plottable",
     ],
 )
 
@@ -47,7 +47,6 @@ tensorboard_webcomponent_library(
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/vz_sorting:legacy",
     ],
 )
