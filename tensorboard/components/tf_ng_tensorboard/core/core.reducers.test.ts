@@ -162,15 +162,15 @@ describe('core reducer', () => {
     });
   });
 
-  describe('#toggleReload', () => {
+  describe('#toggleReloadEnabled', () => {
     it('toggles reloadEnabled', () => {
       const state1 = createCoreState({reloadEnabled: false});
 
-      const state2 = reducers(state1, actions.toggleReload());
+      const state2 = reducers(state1, actions.toggleReloadEnabled());
 
       expect(state2).to.have.property('reloadEnabled', true);
 
-      const state3 = reducers(state2, actions.toggleReload());
+      const state3 = reducers(state2, actions.toggleReloadEnabled());
 
       expect(state3).to.have.property('reloadEnabled', false);
     });

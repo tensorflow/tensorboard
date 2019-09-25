@@ -99,7 +99,7 @@ const reducer = createReducer(
       },
     };
   }),
-  on(actions.toggleReload, (state: CoreState) => {
+  on(actions.toggleReloadEnabled, (state: CoreState) => {
     return {
       ...state,
       reloadEnabled: !state.reloadEnabled,

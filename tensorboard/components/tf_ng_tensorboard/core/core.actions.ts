@@ -42,7 +42,7 @@ export const pluginsListingFailed = createAction(
 /**
  * Action for when user wants to enable/disable reload.
  */
-export const toggleReload = createAction('[Core] Reload Toggled');
+export const toggleReloadEnabled = createAction('[Core] Reload Enable Toggled');
 
 /**
  * Action for when user wants to change the reload period.
