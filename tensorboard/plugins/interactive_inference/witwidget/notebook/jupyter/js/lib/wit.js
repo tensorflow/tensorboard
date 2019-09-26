@@ -252,9 +252,9 @@ var WITView = widgets.DOMWidgetView.extend({
       this.view_.selectedLabelFeature = config['target_feature'];
     }
     if ('uses_custom_distance_fn' in config) {
-      this.view_.customDistanceFunctionSet = 1;
+      this.view_.customDistanceFunctionSet = true;
     } else {
-      this.view_.customDistanceFunctionSet = 0;
+      this.view_.customDistanceFunctionSet = false;
     }
   },
   spriteChanged: function() {
