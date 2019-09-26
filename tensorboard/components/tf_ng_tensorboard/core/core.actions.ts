@@ -26,10 +26,10 @@ export const changePlugin = createAction(
 
 export const coreLoaded = createAction('[Core] Loaded');
 
-export const reload = createAction('[CORE] Reload');
+export const reload = createAction('[Core] Reload');
 
 export const pluginsListingRequested = createAction(
-  '[CORE] PluginListing Fetch Requested'
+  '[Core] PluginListing Fetch Requested'
 );
 export const pluginsListingLoaded = createAction(
   '[Core] PluginListing Fetch Successful',
