@@ -15,15 +15,28 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 
+import {from} from 'rxjs';
+
 import {PluginsListing} from '../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
 export class CoreService {
-  constructor(private readonly http: HttpClient) {}
+  private tfStorage = document.createElement('tf-storage') as any;
+  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
+
+  constructor(private http: HttpClient) {}
 
   fetchPluginsListing() {
     return this.http.get<PluginsListing>('data/plugins_listing');
+  }
+
+  fetchRuns() {
+    return from(this.tfBackend.runsStore.refresh());
+  }
+
+  fetchEnvironments() {
+    return from(this.tfBackend.environmentStore.refresh());
   }
 }

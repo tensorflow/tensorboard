@@ -43,7 +43,7 @@ tf_ts_library(
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
-        "//tensorboard/components/tf_ng_tensorboard/core:test_util",
+        "//tensorboard/components/tf_ng_tensorboard/core/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

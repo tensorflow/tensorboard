@@ -25,29 +25,17 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {HeaderComponent} from './header.component';
 
 import {changePlugin} from '../../core/core.actions';
-import {State, CoreState, CORE_FEATURE_KEY} from '../../core/core.reducers';
-import {createPluginMetadata} from '../../core/test_util';
+import {State, CoreState} from '../../core/core.reducers';
+import {
+  createPluginMetadata,
+  createState,
+  createCoreState,
+} from '../../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('header.component', () => {
   let store: MockStore<State>;
-
-  function createCoreState(): CoreState {
-    return {
-      activePlugin: null,
-      plugins: {
-        foo: createPluginMetadata('Foo Fighter'),
-        bar: createPluginMetadata('Barber'),
-      },
-    };
-  }
-
-  function createInitialState(coreState: CoreState = createCoreState()): State {
-    return {
-      [CORE_FEATURE_KEY]: coreState,
-    };
-  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -58,7 +46,16 @@ describe('header.component', () => {
         MatSelectModule,
       ],
       providers: [
-        provideMockStore({initialState: createInitialState()}),
+        provideMockStore({
+          initialState: createState(
+            createCoreState({
+              plugins: {
+                foo: createPluginMetadata('Foo Fighter'),
+                bar: createPluginMetadata('Barber'),
+              },
+            })
+          ),
+        }),
         HeaderComponent,
       ],
       declarations: [HeaderComponent],
@@ -85,15 +82,15 @@ describe('header.component', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    const coreState = {
-      ...createCoreState(),
-      plugins: {
-        cat: createPluginMetadata('Meow'),
-        dog: createPluginMetadata('Woof'),
-        elephant: createPluginMetadata('Trumpet'),
-      },
-    };
-    const nextState = createInitialState(coreState);
+    const nextState = createState(
+      createCoreState({
+        plugins: {
+          cat: createPluginMetadata('Meow'),
+          dog: createPluginMetadata('Woof'),
+          elephant: createPluginMetadata('Trumpet'),
+        },
+      })
+    );
     store.setState(nextState);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -117,12 +114,17 @@ describe('header.component', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    const coreState = {
-      ...createCoreState(),
-      activePlugin: 'bar',
-    };
-    const nextState = createInitialState(coreState);
-    store.setState(nextState);
+    store.setState(
+      createState(
+        createCoreState({
+          plugins: {
+            foo: createPluginMetadata('Foo Fighter'),
+            bar: createPluginMetadata('Barber'),
+          },
+          activePlugin: 'bar',
+        })
+      )
+    );
     fixture.detectChanges();
     await fixture.whenStable();
 

@@ -19,7 +19,11 @@ import {
   on,
   createFeatureSelector,
 } from '@ngrx/store';
-import {PluginId, PluginsListing} from '../types/api';
+import {
+  PluginId,
+  PluginsListing,
+  LoadState as DataLoadState,
+} from '../types/api';
 import * as actions from './core.actions';
 
 // HACK: These imports are for type inference.
@@ -29,18 +33,33 @@ import * as actions from './core.actions';
 
 export const CORE_FEATURE_KEY = 'core';
 
+export interface LoadState {
+  state: DataLoadState;
+  // Time since epoch.
+  lastLoadedTimeInMs: number | null;
+}
+
 export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
+  pluginsListLoaded: LoadState;
+  reloadPeriodInMs: number;
+  reloadEnabled: boolean;
 }
 
 export interface State {
-  [CORE_FEATURE_KEY]: CoreState;
+  [CORE_FEATURE_KEY]?: CoreState;
 }
 
 const initialState: CoreState = {
   activePlugin: null,
   plugins: {},
+  pluginsListLoaded: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+  },
+  reloadPeriodInMs: 30000,
+  reloadEnabled: true,
 };
 
 const reducer = createReducer(
@@ -48,11 +67,51 @@ const reducer = createReducer(
   on(actions.changePlugin, (state: CoreState, {plugin}) => {
     return {...state, activePlugin: plugin};
   }),
+  on(actions.pluginsListingRequested, (state: CoreState) => {
+    return {
+      ...state,
+      pluginsListLoaded: {
+        ...state.pluginsListLoaded,
+        state: DataLoadState.LOADING,
+      },
+    };
+  }),
+  on(actions.pluginsListingFailed, (state: CoreState) => {
+    return {
+      ...state,
+      pluginsListLoaded: {
+        ...state.pluginsListLoaded,
+        state: DataLoadState.FAILED,
+      },
+    };
+  }),
   on(actions.pluginsListingLoaded, (state: CoreState, {plugins}) => {
     const [firstPlugin] = Object.keys(plugins);
     let activePlugin =
       state.activePlugin !== null ? state.activePlugin : firstPlugin;
-    return {activePlugin, plugins};
+    return {
+      ...state,
+      activePlugin,
+      plugins,
+      pluginsListLoaded: {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: Date.now(),
+      },
+    };
+  }),
+  on(actions.toggleReloadEnabled, (state: CoreState) => {
+    return {
+      ...state,
+      reloadEnabled: !state.reloadEnabled,
+    };
+  }),
+  on(actions.changeReloadPeriod, (state: CoreState, {periodInMs}) => {
+    const nextReloadPeriod =
+      periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
+    return {
+      ...state,
+      reloadPeriodInMs: nextReloadPeriod,
+    };
   })
 );
 
@@ -62,6 +121,11 @@ export function reducers(state: CoreState, action: Action) {
 
 const selectCoreState = createFeatureSelector<State, CoreState>(
   CORE_FEATURE_KEY
+);
+
+export const getPluginsListLoaded = createSelector(
+  selectCoreState,
+  (state: CoreState): LoadState => state.pluginsListLoaded
 );
 
 export const getActivePlugin = createSelector(
@@ -75,5 +139,19 @@ export const getPlugins = createSelector(
   selectCoreState,
   (state: CoreState): PluginsListing => {
     return state.plugins;
+  }
+);
+
+export const getReloadEnabled = createSelector(
+  selectCoreState,
+  (state: CoreState): boolean => {
+    return state.reloadEnabled;
+  }
+);
+
+export const getReloadPeriodInMs = createSelector(
+  selectCoreState,
+  (state: CoreState): number => {
+    return state.reloadPeriodInMs;
   }
 );
