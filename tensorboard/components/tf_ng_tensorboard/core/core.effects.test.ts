@@ -18,53 +18,159 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
-import {Action} from '@ngrx/store';
-import {ReplaySubject} from 'rxjs';
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
 import * as coreActions from './core.actions';
 import {CoreService} from './core.service';
+import {State, getPluginsListLoaded, LoadState} from './core.reducers';
 
-import {createPluginMetadata} from './test_util';
+import {createPluginMetadata, createState, createCoreState} from './testing';
 
-import {PluginsListing} from '../types/api';
+import {PluginsListing, LoadState as DataLoadState} from '../types/api';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
+  let store: MockStore<State>;
+  let fetchRuns: jasmine.Spy;
+  let fetchEnvironments: jasmine.Spy;
+  let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
+
+    const initialState = createState(
+      createCoreState({
+        pluginsListLoaded: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+      })
+    );
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [provideMockActions(action), CoreEffects, CoreService],
+      providers: [
+        provideMockActions(action),
+        CoreEffects,
+        CoreService,
+        provideMockStore({initialState}),
+      ],
     }).compileComponents();
     coreEffects = TestBed.get(CoreEffects);
     httpMock = TestBed.get(HttpTestingController);
+    store = TestBed.get(Store);
+    dispatchSpy = spyOn(store, 'dispatch');
+
+    const coreService = TestBed.get(CoreService);
+    fetchRuns = spyOn(coreService, 'fetchRuns')
+      .withArgs()
+      .and.returnValue(of(null));
+    fetchEnvironments = spyOn(coreService, 'fetchEnvironments')
+      .withArgs()
+      .and.returnValue(of(null));
   });
 
   afterEach(() => {
     httpMock.verify();
   });
 
-  it('fetches plugins listing and fires success action', () => {
-    const pluginsListing: PluginsListing = {
-      core: createPluginMetadata('Core'),
-    };
-    // Assertion/exception in the subscribe does not fail the test.
-    // Store the result
-    let res = null;
-    coreEffects.loadPluginsListing$.subscribe((action) => {
-      res = action as Action;
-    });
-    action.next(coreActions.coreLoaded());
-    // Flushing the request response invokes above subscription sychronously.
-    httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+  [
+    {specSetName: '#coreLoaded', onAction: coreActions.coreLoaded()},
+    {specSetName: '#reload', onAction: coreActions.reload()},
+  ].forEach(({specSetName, onAction}) => {
+    describe(specSetName, () => {
+      let recordedActions: Action[] = [];
 
-    const expected = coreActions.pluginsListingLoaded({
-      plugins: pluginsListing,
+      beforeEach(() => {
+        recordedActions = [];
+        coreEffects.loadPluginsListing$.subscribe((action: Action) => {
+          recordedActions.push(action);
+        });
+      });
+
+      it('fetches plugins listing and fires success action', () => {
+        const pluginsListing: PluginsListing = {
+          core: createPluginMetadata('Core'),
+        };
+
+        action.next(onAction);
+        // Flushing the request response invokes above subscription sychronously.
+        httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+
+        expect(fetchRuns).toHaveBeenCalled();
+        expect(fetchEnvironments).toHaveBeenCalled();
+
+        expect(dispatchSpy).toHaveBeenCalledTimes(1);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          coreActions.pluginsListingRequested()
+        );
+
+        const expected = coreActions.pluginsListingLoaded({
+          plugins: pluginsListing,
+        });
+        expect(recordedActions).toEqual([expected]);
+      });
+
+      it('ignores the action when loadState is loading', () => {
+        store.setState(
+          createState(
+            createCoreState({
+              pluginsListLoaded: {
+                state: DataLoadState.LOADING,
+                lastLoadedTimeInMs: null,
+              },
+            })
+          )
+        );
+        const pluginsListing: PluginsListing = {
+          core: createPluginMetadata('Core'),
+        };
+
+        action.next(onAction);
+        httpMock.expectNone('data/plugins_listing');
+
+        action.next(onAction);
+        httpMock.expectNone('data/plugins_listing');
+
+        expect(dispatchSpy).not.toHaveBeenCalled();
+
+        store.setState(
+          createState(
+            createCoreState({
+              pluginsListLoaded: {
+                state: DataLoadState.FAILED,
+                lastLoadedTimeInMs: null,
+              },
+            })
+          )
+        );
+
+        action.next(onAction);
+        httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+
+        const expected = coreActions.pluginsListingLoaded({
+          plugins: pluginsListing,
+        });
+        expect(recordedActions).toEqual([expected]);
+
+        store.setState(
+          createState(
+            createCoreState({
+              pluginsListLoaded: {
+                state: DataLoadState.LOADING,
+                lastLoadedTimeInMs: null,
+              },
+            })
+          )
+        );
+
+        action.next(onAction);
+        httpMock.expectNone('data/plugins_listing');
+      });
     });
-    expect(res).toEqual(expected as any);
   });
 });
