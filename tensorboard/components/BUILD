@@ -10,7 +10,10 @@ tf_web_library(
     srcs = ["tensorboard.html"],
     path = "/",
     deps = [
-        ":lib",
+        ":analytics",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_tensorboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
     ],
 )
 
@@ -23,25 +26,36 @@ tensorboard_html_binary(
 )
 
 tf_web_library(
-    name = "lib",
+    name = "analytics",
     srcs = [
         "analytics.html",
-        "lib.html",
+    ],
+    path = "/",
+)
+
+tf_web_library(
+    name = "ng_polymer_lib",
+    srcs = [
+        "ng_polymer_lib.html",
     ],
     path = "/",
     deps = [
+        ":analytics",
+        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
+        "//tensorboard/components/tf_tensorboard:registry",
     ],
 )
 
 tensorboard_html_binary(
-    name = "lib_binary",
+    name = "ng_polymer_lib_binary",
     compile = True,
-    input_path = "/lib.html",
-    output_path = "/lib_binary.html",
-    deps = [":lib"],
+    input_path = "/ng_polymer_lib.html",
+    output_path = "/ng_polymer_lib_binary.html",
+    deps = [":ng_polymer_lib"],
 )
 
 tf_web_library(
@@ -51,7 +65,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        ":lib_binary",
+        ":ng_polymer_lib_binary",
         "//tensorboard/components/tf_ng_tensorboard",
         "//tensorboard/components/tf_ng_tensorboard:material_theme",
     ],
