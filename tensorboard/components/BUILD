@@ -50,6 +50,9 @@ tf_web_library(
     ],
 )
 
+# This Polymer only binary (as opposed to ng_index) allows ng_index to be built without
+# JSCompiler step. In other words, Angular-only changes can be built faster
+# incrementally.
 tensorboard_html_binary(
     name = "ng_polymer_lib_binary",
     compile = True,
