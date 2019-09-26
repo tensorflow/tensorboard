@@ -590,7 +590,8 @@ class WitConfigBuilder(object):
       adjust_attribution: Optional. If not None and the model returns attribution
       information, then this function takes the attribution information for an
       example and converts it to the format expected by the tool, which is a
-      dictionary of input feature names to attribution scores.
+      dictionary of input feature names to attribution scores. Usually necessary
+      if making use of adjust_example and the model returns attribution results.
 
     Returns:
       self, in order to enabled method chaining.
@@ -635,7 +636,8 @@ class WitConfigBuilder(object):
       adjust_attribution: Optional. If not None and the model returns attribution
       information, then this function takes the attribution information for an
       example and converts it to the format expected by the tool, which is a
-      dictionary of input feature names to attribution scores.
+      dictionary of input feature names to attribution scores. Usually necessary
+      if making use of adjust_example and the model returns attribution results.
 
     Returns:
       self, in order to enabled method chaining.
