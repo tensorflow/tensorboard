@@ -12,16 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PluginMetadata, LoadingMechanismType} from '../types/api';
+import {NgModule} from '@angular/core';
 
-export function createPluginMetadata(displayName: string): PluginMetadata {
-  return {
-    disable_reload: false,
-    enabled: true,
-    loading_mechanism: {
-      type: LoadingMechanismType.NONE,
-    },
-    tab_name: displayName,
-    remove_dom: false,
-  };
-}
+import {ReloaderComponent} from './reloader.component';
+
+@NgModule({
+  declarations: [ReloaderComponent],
+  exports: [ReloaderComponent],
+})
+export class ReloaderModule {}
