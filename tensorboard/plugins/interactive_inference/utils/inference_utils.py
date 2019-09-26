@@ -233,6 +233,8 @@ def ensure_not_binary(value):
   try:
     return value.decode() if isinstance(value, binary_type) else value
   except UnicodeDecodeError:
+    # If the value cannot be decoded as a string (such as an encoded image),
+    # then just return the value.
     return value
 
 
