@@ -183,9 +183,9 @@ WIT_HTML = """
           wit.selectedLabelFeature = config['target_feature'];
         }}
         if ('uses_custom_distance_fn' in config) {{
-          wit.customDistanceFunctionSet = 1;
+          wit.customDistanceFunctionSet = true;
         }} else {{
-          wit.customDistanceFunctionSet = 0;
+          wit.customDistanceFunctionSet = false;
         }}
       }};
       window.updateExamplesCallback = examples => {{

@@ -81,6 +81,14 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual('int64_list', original_feature.feature_type)
     self.assertEqual(1, original_feature.length)
 
+  def test_parse_original_feature_from_example_binary(self):
+    example = tf.train.Example()
+    example.features.feature['img'].bytes_list.value.extend([b'\xef'])
+    original_feature = inference_utils.parse_original_feature_from_example(
+        example, 'img')
+    self.assertEqual('img', original_feature.feature_name)
+    self.assertEqual([b'\xef'], original_feature.original_value)
+
   def test_example_protos_from_path_get_all_in_file(self):
     cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'dummy_example')
