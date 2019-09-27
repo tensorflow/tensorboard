@@ -57,22 +57,13 @@ namespace tf_plugin.test {
           this.destListen = this.guestWindow.test.listen;
           this.destUnlisten = this.guestWindow.test.unlisten;
           this.srcSendMessage = (type, payload) => {
-            return pluginHost.sendMessage(this.guestFrame, type, payload);
+            return new Promise(async resolve => {
+              const results = await pluginHost.broadcast(type, payload);
+              resolve(results[0]);
+            });
           };
           this.destPostMessageSpy = () =>
             this.sandbox.spy(this.guestWindow.test._guestIPC, 'postMessage');
-        },
-      },
-      {
-        spec: 'guest (src) to host (dest)',
-        beforeEachFunc: function() {
-          this.destListen = pluginHost.listen;
-          this.destUnlisten = pluginHost.unlisten;
-          this.srcSendMessage = (type, payload) => {
-            return this.guestWindow.test.sendMessage(type, payload);
-          };
-          this.destPostMessageSpy = () =>
-            this.sandbox.spy(pluginHost._hostIPC, 'postMessage');
         },
       },
     ].forEach(({spec, beforeEachFunc}) => {

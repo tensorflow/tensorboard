@@ -12,19 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC, Message, MessageType, PayloadType} from './message.js';
+import {IPC, Message} from './message.js';
 
-class GuestIPC extends IPC {
-  /**
-   * payload must be JSON serializable.
-   */
-  sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
-    return this.sendMessageToWindow(window.parent, type, payload);
-  }
+/**
+ * This code is part of a public bundle provided to plugin authors,
+ * and runs within an IFrame to setup communication with TensorBoard's frame.
+ */
+if (!window.parent) {
+  throw Error('This library must be run from within a loaded TensorBoard dynamic plugin.');
 }
 
+const channel = new MessageChannel();
+const ipc = new IPC(channel.port1);
+channel.port1.start();
+
+const VERSION = 'experimental';
+window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
+
 // Only export for testability.
-export const _guestIPC = new GuestIPC();
+export const _guestIPC = ipc;
 
 /**
  * Sends a message to the parent frame.
@@ -45,3 +51,7 @@ export const listen = _guestIPC.listen.bind(_guestIPC);
  * Unsubscribes a callback to a message.
  */
 export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
+
+
+// TODO: Register API for authors.
+// Methods should use 'ipc.sendMessage', Events should use 'ipc.listen'.
