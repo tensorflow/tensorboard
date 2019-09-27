@@ -6740,12 +6740,13 @@ limitations under the License.
         calculateBucketEdges_: function(feature, numBuckets) {
           if (
             !this.isNumericFeature_(feature) ||
-            // No point in aggregating if less unique values than buckets.
-            this.stats[feature].uniqueCount < numBuckets ||
+            // No point in aggregating if not more unique values than buckets.
+            this.stats[feature].uniqueCount <= numBuckets ||
             // Already done.
             (this.featureBucketEdges_[feature] &&
               this.featureBucketEdges_[feature].length == numBuckets + 1)
           ) {
+            delete this.featureBucketEdges_[feature];
             return;
           }
           const min = this.stats[feature].numberMin;
