@@ -61,6 +61,8 @@ class WitWidgetBase(object):
     self.compare_adjust_prediction_fn = config.get('compare_adjust_prediction')
     self.adjust_example_fn = config.get('adjust_example')
     self.compare_adjust_example_fn = config.get('compare_adjust_example')
+    self.adjust_attribution_fn = config.get('adjust_attribution')
+    self.compare_adjust_attribution_fn = config.get('compare_adjust_attribution')
 
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
@@ -77,6 +79,10 @@ class WitWidgetBase(object):
       del copied_config['adjust_example']
     if 'compare_adjust_example' in copied_config:
       del copied_config['compare_adjust_example']
+    if 'adjust_attribution' in copied_config:
+      del copied_config['adjust_attribution']
+    if 'compare_adjust_attribution' in copied_config:
+      del copied_config['compare_adjust_attribution']
 
     self.set_examples(config['examples'])
     del copied_config['examples']
@@ -302,7 +308,7 @@ class WitWidgetBase(object):
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
       self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn)
+      self.adjust_prediction_fn, self.adjust_attribution_fn)
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
@@ -310,10 +316,11 @@ class WitWidgetBase(object):
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
-      self.compare_adjust_prediction_fn)
+      self.compare_adjust_prediction_fn,
+      self.compare_adjust_attribution_fn)
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_example, adjust_prediction):
+                        adjust_example, adjust_prediction, adjust_attribution):
     """Custom prediction function for running inference through AI Platform."""
 
     # Set up environment for GCP call for specified project.
@@ -362,6 +369,12 @@ class WitWidgetBase(object):
     results = []
     attributions = (response['attributions']
       if 'attributions' in response else None)
+
+    # If an attribution adjustment function was provided, use it to adjust
+    # the attributions.
+    if attributions is not None and adjust_attribution is not None:
+      attributions = [adjust_attribution(attr) for attr in attributions]
+
     for pred in response['predictions']:
       # If the prediction contains a key to fetch the prediction, use it.
       if isinstance(pred, dict):
