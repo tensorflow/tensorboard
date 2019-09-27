@@ -90,6 +90,21 @@ class WitWidgetBase(object):
     if self.config.get('compare_use_aip'):
       self.compare_custom_predict_fn = self._predict_aip_compare_model
 
+    # If using JSON input (not Example protos) and a custom predict
+    # function, then convert examples to JSON before sending to the
+    # custom predict function.
+    if self.config.get('uses_json_input'):
+      if self.custom_predict_fn is not None:
+        user_predict = self.custom_predict_fn
+        def wrapped_custom_predict_fn(examples):
+          return user_predict(self._json_from_tf_examples(examples))
+        self.custom_predict_fn = wrapped_custom_predict_fn
+      if self.compare_custom_predict_fn is not None:
+        compare_user_predict = self.compare_custom_predict_fn
+        def wrapped_compare_custom_predict_fn(examples):
+          return compare_user_predict(self._json_from_tf_examples(examples))
+        self.compare_custom_predict_fn = wrapped_compare_custom_predict_fn
+
   def _get_element_html(self):
     return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
