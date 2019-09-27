@@ -33,14 +33,16 @@ limitations under the License.
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
-    <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]"
-      >CSV</a
-    ><!--
-    --><a
-      download="[[_jsonName(tag, _run)]]"
-      href="[[_jsonUrl(tag, _run, urlFn)]]"
-      >JSON</a
-    >
+    <template is="dom-if" if="[[_run]]">
+      <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]"
+        >CSV</a
+      ><!--
+      --><a
+        download="[[_jsonName(tag, _run)]]"
+        href="[[_jsonUrl(tag, _run, urlFn)]]"
+        >JSON</a
+      >
+    </template>
     <style>
       :host {
         display: flex;
@@ -69,7 +71,10 @@ limitations under the License.
     Polymer({
       is: 'tf-downloader',
       properties: {
-        _run: String,
+        _run: {
+          type: String,
+          value: '',
+        },
         runs: Array, // Array<string>
         tag: String,
         // Clients pass `urlFn: (tag: string, run: string) => string`,
@@ -80,15 +85,19 @@ limitations under the License.
         urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
+        if (!run) return '';
         return tf_backend.addParams(urlFn(tag, run), {format: 'csv'});
       },
       _jsonUrl(tag, run, urlFn) {
+        if (!run) return '';
         return urlFn(tag, run);
       },
       _csvName(tag, run) {
+        if (!run) return '';
         return `run-${run}-tag-${tag}.csv`;
       },
       _jsonName(tag, run) {
+        if (!run) return '';
         return `run-${run}-tag-${tag}.json`;
       },
     });
