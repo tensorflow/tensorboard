@@ -40,8 +40,10 @@
     "@types/chai": "^4.1.7",
     "@types/jasmine": "^3.3.16",
     "@types/node": "^12.6.8",
+    "@types/sinon": "^7.0.13",
     "chai": "^4.2.0",
     "prettier": "1.18.2",
+    "sinon": "^7.4.2",
     "typescript": "~3.4.5"
   },
   "dependencies": {

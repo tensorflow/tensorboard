@@ -230,7 +230,12 @@ class ServingBundle(object):
 
 def ensure_not_binary(value):
   """Return non-binary version of value."""
-  return value.decode() if isinstance(value, binary_type) else value
+  try:
+    return value.decode() if isinstance(value, binary_type) else value
+  except UnicodeDecodeError:
+    # If the value cannot be decoded as a string (such as an encoded image),
+    # then just return the value.
+    return value
 
 
 def proto_value_for_feature(example, feature_name):

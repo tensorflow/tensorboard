@@ -25,6 +25,7 @@ import {PluginsModule} from './plugins/plugins.module';
 import {ROOT_REDUCERS, metaReducers} from './reducers';
 
 import {HeaderModule} from './header/header.module';
+import {ReloaderModule} from './reloader/reloader.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,6 +35,7 @@ import {HeaderModule} from './header/header.module';
     CoreModule,
     HeaderModule,
     PluginsModule,
+    ReloaderModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       metaReducers,
       runtimeChecks: {

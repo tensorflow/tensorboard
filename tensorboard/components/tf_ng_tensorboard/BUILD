@@ -75,6 +75,7 @@ ng_module(
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
         "//tensorboard/components/tf_ng_tensorboard/plugins",
+        "//tensorboard/components/tf_ng_tensorboard/reloader",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
@@ -90,5 +91,6 @@ tf_ng_web_test_suite(
         "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
         "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/reloader:test_lib",
     ],
 )
