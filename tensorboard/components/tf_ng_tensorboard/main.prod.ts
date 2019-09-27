@@ -13,5 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 // HACK: must load config before application module.
-import './config.dev';
+import './config.prod';
 import './bootstrap';
