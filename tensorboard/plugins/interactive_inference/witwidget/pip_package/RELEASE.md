@@ -2,7 +2,7 @@
 
 ## Release 1.4.0
 
-### Features
+### Notable Features
 - #2607 - Add ability to set custom distance function for counterfactuals and distance
   visualizations.
 - #2461 - Add ability to sort PD plots by interestingness.
@@ -11,6 +11,7 @@
 - #2647 - Add counterfactual analysis for regression models.
 - #2663 - Visual updates for displaying attributions.
 - #2630 - Added developers guide documentation.
+- #2698 - Add ability to adjust attributions.
 
 ### Notable Bug Fixes
 - #2682 - Fix issue with threshold sliders not updating on fairness button presses.
