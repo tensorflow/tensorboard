@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,11 +11,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../plugin-host.html" />
-<script vulcanize-noinline src="../../web-component-tester/browser.js"></script>
+==============================================================================*/
+namespace tb_plugin.lib.runs {
+  export async function getRuns() {
+    return tb_plugin.lib.DO_NOT_USE_INTERNAL.sendMessage(
+      'experimental.GetRuns'
+    );
+  }
 
-<template id="iframe-template">
-  <iframe src="./iframe.html"></iframe>
-</template>
-<script src="plugin-test.js"></script>
+  export function setOnRunsChanged(callback: (runs: string[]) => void | void) {
+    return tb_plugin.lib.DO_NOT_USE_INTERNAL.listen(
+      'experimental.RunsChanged',
+      callback
+    );
+  }
+}

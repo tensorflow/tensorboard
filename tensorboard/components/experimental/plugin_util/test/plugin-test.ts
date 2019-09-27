@@ -12,10 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as pluginHost from '../plugin-host.js';
-import {Message} from '../message.js';
 
-namespace tf_plugin.test {
+namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
   const {expect} = chai;
   const template = document.getElementById(
     'iframe-template'
@@ -60,7 +58,7 @@ namespace tf_plugin.test {
           this.destUnlisten = this.guestWindow.test.unlisten;
           this.destSendMessage = this.guestWindow.test.sendMessage;
           this.srcSendMessage = (type, payload) => {
-            return pluginHost
+            return tb_plugin.host
               .broadcast(type, payload)
               .then(([result]) => result);
           };
@@ -70,10 +68,10 @@ namespace tf_plugin.test {
         spec: 'guest (src) to host (dest)',
         beforeEachFunc: function() {
           this.destWindow = window;
-          this.destListen = pluginHost.listen;
-          this.destUnlisten = pluginHost.unlisten;
+          this.destListen = tb_plugin.host.listen;
+          this.destUnlisten = tb_plugin.host.unlisten;
           this.destSendMessage = (type, payload) => {
-            return pluginHost
+            return tb_plugin.host
               .broadcast(type, payload)
               .then(([result]) => result);
           };
@@ -220,4 +218,4 @@ namespace tf_plugin.test {
       });
     });
   });
-} // namespace tf_plugin.test
+} // namespace tf_plugin.lib.DO_NOT_USE_INTERNAL
