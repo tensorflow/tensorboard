@@ -12,46 +12,87 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC, Message, MessageType, PayloadType} from './message.js';
+import {IPC, MessageType, PayloadType, MessageCallback} from './message.js';
 
-class HostIPC extends IPC {
-  sendMessage(
-    iframe: HTMLIFrameElement,
-    type: MessageType,
-    payload: PayloadType
-  ): Promise<PayloadType> {
-    return this.sendMessageToWindow(iframe.contentWindow, type, payload);
+const portIPCs = new Set<IPC>();
+const VERSION = 'experimental';
+const listeners = new Map<MessageType, MessageCallback>();
+
+// TODO(@psybuzz): replace this and the port cleanup logic in broadcast() with
+// a MutationObserver to notify us when iframes disconnect.
+const ipcToFrame = new Map<IPC, HTMLIFrameElement>();
+
+// The initial Window-level listener is needed to bootstrap only.
+// All further communication is done over MessagePorts.
+window.addEventListener('message', (event) => {
+  if (event.data !== `${VERSION}.bootstrap`) return;
+  const port = event.ports[0];
+  if (!port) return;
+  const frame = event.source ? event.source.frameElement : null;
+  if (!frame) return;
+
+  const portIPC = new IPC(port);
+  portIPCs.add(portIPC);
+  ipcToFrame.set(portIPC, frame as HTMLIFrameElement);
+  port.start();
+
+  for (const [type, callback] of listeners) {
+    portIPC.listen(type, callback);
+  }
+});
+
+function _broadcast(
+  type: MessageType,
+  payload: PayloadType
+): Promise<PayloadType[]> {
+  for (const ipc of portIPCs) {
+    if (!ipcToFrame.get(ipc).isConnected) {
+      portIPCs.delete(ipc);
+      ipcToFrame.delete(ipc);
+    }
+  }
+
+  const ipcs = [...portIPCs];
+  const promises = ipcs.map((ipc) => ipc.sendMessage(type, payload));
+  return Promise.all(promises);
+}
+
+function _listen(type: MessageType, callback: MessageCallback) {
+  listeners.set(type, callback);
+  for (const ipc of portIPCs) {
+    ipc.listen(type, callback);
   }
 }
 
-const hostIPC = new HostIPC();
-const _listen = hostIPC.listen.bind(hostIPC);
-const _unlisten = hostIPC.unlisten.bind(hostIPC);
-const _sendMessage = hostIPC.sendMessage.bind(hostIPC);
+function _unlisten(type: MessageType) {
+  listeners.delete(type);
+  for (const ipc of portIPCs) {
+    ipc.unlisten(type);
+  }
+}
 
-export const sendMessage = _sendMessage;
+export const broadcast = _broadcast;
 export const listen = _listen;
 export const unlisten = _unlisten;
 
-// Export for testability.
-export const _hostIPC = hostIPC;
-
 namespace tf_plugin {
   /**
-   * Sends a message to the frame specified.
-   * @return Promise that resolves with a payload from frame in response to the message.
+   * Sends a message to all frames. Individual frames decide whether or not to
+   * listen.
+   * @return Promise that resolves with a list of payloads from each plugin's
+   *         response (or null) to the message.
    *
    * @example
-   * const someList = await sendMessage('v1.some.type.guest.understands');
+   * const someList = await broadcast('v1.some.type.guest.understands');
    * // do fun things with someList.
    */
-  export const sendMessage = _sendMessage;
+  export const broadcast = _broadcast;
   /**
-   * Subscribes to messages from specified frame of a type specified.
+   * Subscribes to messages of a type specified for all frames.
    */
   export const listen = _listen;
   /**
-   * Unsubscribes to messages from specified frame of a type specified.
+   * Unsubscribes to messages of a type specified for all frames.
    */
   export const unlisten = _unlisten;
 } // namespace tf_plugin

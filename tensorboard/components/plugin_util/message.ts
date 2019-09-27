@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/**
+ * This file defines utilities shared by TensorBoard (plugin host) and the
+ * dynamic plugin library, used by plugin authors.
+ */
+
 export type PayloadType =
   | null
   | undefined
@@ -27,9 +32,10 @@ export type PayloadType =
 
 export interface Message {
   type: string;
-  id: string;
+  id: number;
   payload: PayloadType;
   error: string | null;
+  isReply: boolean;
 }
 
 export type MessageType = string;
@@ -40,21 +46,14 @@ interface PromiseResolver {
   reject: (error: Error) => void;
 }
 
-export abstract class IPC {
-  private idPrefix: string;
+export class IPC {
   private id = 0;
-  private readonly responseWaits = new Map<string, PromiseResolver>();
+  private readonly responseWaits = new Map<number, PromiseResolver>();
   private readonly listeners = new Map<MessageType, MessageCallback>();
 
-  constructor() {
-    window.addEventListener('message', this.onMessage.bind(this));
-
-    // TODO(tensorboard-team): remove this by using MessageChannel.
-    const randomArray = new Uint8Array(16);
-    window.crypto.getRandomValues(randomArray);
-    this.idPrefix = Array.from(randomArray)
-      .map((int: number) => int.toString(16))
-      .join('');
+  constructor(private port: MessagePort) {
+    this.port = port;
+    port.addEventListener('message', this.onMessage.bind(this));
   }
 
   listen(type: MessageType, callback: MessageCallback) {
@@ -66,13 +65,11 @@ export abstract class IPC {
   }
 
   private async onMessage(event: MessageEvent) {
-    // There are instances where random browser extensions send messages.
-    if (typeof event.data !== 'string') return;
-
     const message = JSON.parse(event.data) as Message;
     const callback = this.listeners.get(message.type);
 
-    if (this.responseWaits.has(message.id)) {
+    if (message.isReply) {
+      if (!this.responseWaits.has(message.id)) return;
       const {id, payload, error} = message;
       const {resolve, reject} = this.responseWaits.get(id);
       this.responseWaits.delete(id);
@@ -100,22 +97,19 @@ export abstract class IPC {
       id: message.id,
       payload,
       error,
+      isReply: true,
     };
-    this.postMessage(event.source, JSON.stringify(replyMessage));
+    this.postMessage(replyMessage);
   }
 
-  private postMessage(targetWindow: Window, message: string) {
-    targetWindow.postMessage(message, '*');
+  private postMessage(message: Message) {
+    this.port.postMessage(JSON.stringify(message));
   }
 
-  protected sendMessageToWindow(
-    targetWindow: Window,
-    type: MessageType,
-    payload: PayloadType
-  ): Promise<PayloadType> {
-    const id = `${this.idPrefix}_${this.id++}`;
-    const message: Message = {type, id, payload, error: null};
-    this.postMessage(targetWindow, JSON.stringify(message));
+  sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
+    const id = this.id++;
+    const message: Message = {type, id, payload, error: null, isReply: false};
+    this.postMessage(message);
     return new Promise((resolve, reject) => {
       this.responseWaits.set(id, {resolve, reject});
     });
