@@ -83,10 +83,7 @@ namespace vz_example_viewer {
   const FLOAT_FEATURE_NAME = 'float';
   const BASE_64_IMAGE_ENCODING_PREFIX = 'base64,';
   const CHANGE_CALLBACK_TIMER_DELAY_MS = 1000;
-  // Colors for the saliency color scale.
-  const posSaliencyColor = '#007B83';
-  const negSaliencyColor = '#FF847C';
-  const neutralSaliencyColor = '#fff';
+  const noAttributionColor = '#fff';
   const defaultTextColor = '#3c4043';
   const lightTextColor = '#fff';
 
@@ -434,18 +431,18 @@ namespace vz_example_viewer {
     _useLightColor(saliency) {
       const percentile = (saliency - this.minSal) / (this.maxSal - this.minSal);
       if (this.minSal < 0 && this.maxSal > 0) {
-        return percentile < 0.1 || percentile > 0.8;
+        return percentile < 0.3 || percentile > 0.7;
       } else if (this.minSal < 0) {
-        return percentile < 0.1;
+        return percentile < 0.6;
       } else {
-        return percentile > 0.8;
+        return percentile > 0.4;
       }
     },
 
     _haveSaliencyImpl: function() {
       // Reset all value pills to default settings.
       this.selectAll('.value-pill')
-        .style('background', neutralSaliencyColor)
+        .style('background', noAttributionColor)
         .attr('title', '')
         .style('color', defaultTextColor);
 
@@ -474,7 +471,7 @@ namespace vz_example_viewer {
         this.selectAll(`.${this.sanitizeFeature(feat.name)}.value-pill`)
           .style(
             'background',
-            this.showSaliency ? colorFn : () => neutralSaliencyColor
+            this.showSaliency ? colorFn : () => noAttributionColor
           )
           .attr(
             'title',
@@ -504,7 +501,7 @@ namespace vz_example_viewer {
             'background',
             this.showSaliency
               ? () => this.getColorForSaliency(mostExtremeSal)
-              : () => neutralSaliencyColor
+              : () => noAttributionColor
           );
         }
       }
@@ -1897,7 +1894,7 @@ namespace vz_example_viewer {
     /** Returns the color to display for a given saliency value. */
     getColorForSaliency: function(salVal: number) {
       if (!this.showSaliencyForValue(salVal)) {
-        return neutralSaliencyColor;
+        return noAttributionColor;
       } else {
         return this.colors(salVal);
       }
@@ -1953,7 +1950,7 @@ namespace vz_example_viewer {
           IMG_SALIENCY_MAX_COLOR_RATIO * ratioToSaliencyExtreme;
 
         const {r, g, b} = d3.rgb(
-          salVal > 0 ? posSaliencyColor : negSaliencyColor
+          salVal > 0 ? this.colors(this.maxSal) : this.colors(this.minSal)
         );
         d[i] = d[i] * (1 - blendRatio) + r * blendRatio;
         d[i + 1] = d[i + 1] * (1 - blendRatio) + g * blendRatio;
