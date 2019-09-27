@@ -12,63 +12,60 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC, MessageType, PayloadType} from './message.js';
+namespace tb.plugin.lib.host {
+  const portIPCs = new Set<lib.internal.IPC>();
+  const VERSION = 'experimental';
+  const ipcToFrame = new WeakMap<lib.internal.IPC, HTMLIFrameElement>();
+  const callbacks = new Map<
+    lib.internal.MessageType,
+    lib.internal.MessageCallback
+  >();
 
-const portIPCs = new Set<IPC>();
-const VERSION = 'experimental';
-const ipcToFrame = new WeakMap<IPC, HTMLIFrameElement>();
+  // The initial Window-level listener is needed to bootstrap only.
+  // All further communication is done over MessagePorts.
+  window.addEventListener('message', (event) => {
+    if (event.data !== `${VERSION}.bootstrap`) return;
+    const port = event.ports[0];
+    if (!port) return;
+    const frame = event.source ? event.source.frameElement : null;
+    if (!frame) return;
 
-// The initial Window-level listener is needed to bootstrap only.
-// All further communication is done over MessagePorts.
-window.addEventListener('message', (event) => {
-  if (event.data !== `${VERSION}.bootstrap`)
-    return;
-  const port = event.ports[0];
-  if (!port)
-    return;
-  const frame = event.source ? event.source.frameElement : null;
-  if (!frame)
-    return;
+    const portIPC = new lib.internal.IPC(port);
+    portIPCs.add(portIPC);
+    ipcToFrame.set(portIPC, frame as HTMLIFrameElement);
+    port.start();
 
-  const portIPC = new IPC(port);
-  portIPCs.add(portIPC);
-  ipcToFrame.set(portIPC, frame as HTMLIFrameElement);
-  port.start();
+    [...callbacks].forEach(([type, callback]) => {
+      portIPC.listen(type, callback);
+    });
+    // TODO: install API.
+  });
 
-  // TODO: install API.
-});
-
-function _broadcast(
-  type: MessageType,
-  payload: PayloadType
-): Promise<PayloadType[]> {
-  // Clean up disconnected iframes, since they won't respond.
-  for (const ipc of portIPCs) {
-    if (!ipcToFrame.get(ipc).isConnected) {
-      portIPCs.delete(ipc);
-      ipcToFrame.delete(ipc);
+  function _broadcast(
+    type: lib.internal.MessageType,
+    payload: lib.internal.PayloadType
+  ): Promise<lib.internal.PayloadType[]> {
+    // Clean up disconnected iframes, since they won't respond.
+    for (const ipc of portIPCs) {
+      if (!ipcToFrame.get(ipc).isConnected) {
+        portIPCs.delete(ipc);
+        ipcToFrame.delete(ipc);
+      }
     }
+
+    const ipcs = [...portIPCs];
+    const promises = ipcs.map((ipc) => ipc.sendMessage(type, payload));
+    return Promise.all(promises);
   }
 
-  const ipcs = [...portIPCs];
-  const promises = ipcs.map(ipc => ipc.sendMessage(type, payload));
-  return Promise.all(promises);
-}
-
-export const broadcast = _broadcast;
-
-namespace tf_plugin {
-
-  /**
-   * Sends a message to all dynamic plugins. Individual plugins decide whether
-   * or not to listen.
-   * @return Promise that resolves with a list of payloads from each plugin's
-   *         response (or null) to the message.
-   *
-   * @example
-   * const someList = await broadcast('some.type.guest.understands');
-   * // do fun things with someList.
-   */
   export const broadcast = _broadcast;
-
-} // namespace tf_plugin
+  export function listen(
+    type: lib.internal.MessageType,
+    callback: lib.internal.MessageCallback
+  ) {
+    callbacks.set(type, callback);
+    [...portIPCs].forEach((ipc) => {
+      ipc.listen(type, callback);
+    });
+  }
+} // namespace tb.plugin.lib.host

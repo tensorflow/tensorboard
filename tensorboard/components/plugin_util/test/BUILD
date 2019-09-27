@@ -10,51 +10,50 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_test(
     name = "test",
+    src = "/tf-plugin/test/test_binary.html",
     web_library = ":test_web_library",
-    src = "/tf-plugin/test/test_binary.html"
 )
 
-# HACK: specifying tensorboard_html_binary on tf_web_test causes certain
-# environment to throw exception but wrapping tensorbard_html_binary with
-# tf_web_library seems to be okay.
+# # HACK: specifying tensorboard_html_binary on tf_web_test causes certain
+# # environment to throw exception but wrapping tensorbard_html_binary with
+# # tf_web_library seems to be okay.
+# tf_web_library(
+#     name = "test_web_library",
+#     srcs = [
+#         ":test_binary.html",
+#     ],
+#     path = "/tf-plugin/test",
+#     deps = [
+#         ":test_lib",
+#         "//tensorboard/components/tf_imports:web_component_tester",
+#     ],
+# )
+
+# tensorboard_html_binary(
+#     name = "test_binary",
+#     # Disable advanced optimization to prevent check for WebComponentTester
+#     # gobals.
+#     compilation_level = "SIMPLE",
+#     # Requires for compiling `import`s away.
+#     compile = True,
+#     input_path = "/tf-plugin/test/tests.html",
+#     output_path = "/tf-plugin/test/test_binary.html",
+#     deps = [
+#         ":test_lib",
+#     ],
+# )
+
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        ":test_binary.html",
-    ],
-    path = "/tf-plugin/test",
-    deps = [
-        ":test_lib",
-        "//tensorboard/components/tf_imports:web_component_tester",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "test_binary",
-    # Disable advanced optimization to prevent check for WebComponentTester
-    # gobals.
-    compilation_level = "SIMPLE",
-    # Requires for compiling `import`s away.
-    compile = True,
-    input_path = "/tf-plugin/test/tests.html",
-    output_path = "/tf-plugin/test/test_binary.html",
-    deps = [
-        ":test_lib",
-    ],
-)
-
-tf_web_library(
-    name = "test_lib",
-    srcs = [
         "iframe.html",
-        "iframe.ts",
         "plugin-test.ts",
         "tests.html",
     ],
-    path = "/tf-plugin/test",
+    path = "/tf-plugin-lib/test",
     deps = [
-        "//tensorboard/components/plugin_util:plugin_host",
         "//tensorboard/components/plugin_util:plugin_guest",
+        "//tensorboard/components/plugin_util:plugin_host",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],
 )

@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as pluginHost from '../plugin-host.js';
 
-namespace tf_plugin.test {
+namespace tb.plugin.lib.host.test {
   const {expect} = chai;
   const template = document.getElementById(
     'iframe-template'
@@ -57,8 +56,8 @@ namespace tf_plugin.test {
           this.destListen = this.guestWindow.test.listen;
           this.destUnlisten = this.guestWindow.test.unlisten;
           this.srcSendMessage = (type, payload) => {
-            return new Promise(async resolve => {
-              const results = await pluginHost.broadcast(type, payload);
+            return new Promise(async (resolve) => {
+              const results = await broadcast(type, payload);
               resolve(results[0]);
             });
           };

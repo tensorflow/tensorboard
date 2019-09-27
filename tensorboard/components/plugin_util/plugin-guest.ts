@@ -12,46 +12,44 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC, Message} from './message.js';
+namespace tb.plugin.lib.internal {
+  /**
+   * This code is part of a public bundle provided to plugin authors,
+   * and runs within an IFrame to setup communication with TensorBoard's frame.
+   */
+  if (!window.parent) {
+    throw Error(
+      'This library must be run from within a loaded TensorBoard dynamic plugin.'
+    );
+  }
 
-/**
- * This code is part of a public bundle provided to plugin authors,
- * and runs within an IFrame to setup communication with TensorBoard's frame.
- */
-if (!window.parent) {
-  throw Error('This library must be run from within a loaded TensorBoard dynamic plugin.');
-}
+  const channel = new MessageChannel();
+  const ipc = new IPC(channel.port1);
+  channel.port1.start();
 
-const channel = new MessageChannel();
-const ipc = new IPC(channel.port1);
-channel.port1.start();
+  const VERSION = 'experimental';
+  window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
 
-const VERSION = 'experimental';
-window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
+  // Only export for testability.
+  export const _guestIPC = ipc;
 
-// Only export for testability.
-export const _guestIPC = ipc;
+  /**
+   * Sends a message to the parent frame.
+   * @return Promise that resolves with a payload from parent in response to this message.
+   *
+   * @example
+   * const someList = await sendMessage('v1.some.type.parent.understands');
+   * // do fun things with someList.
+   */
+  export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
 
-/**
- * Sends a message to the parent frame.
- * @return Promise that resolves with a payload from parent in response to this message.
- *
- * @example
- * const someList = await sendMessage('v1.some.type.parent.understands');
- * // do fun things with someList.
- */
-export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
+  /**
+   * Subscribes a callback to a message with particular type.
+   */
+  export const listen = _guestIPC.listen.bind(_guestIPC);
 
-/**
- * Subscribes a callback to a message with particular type.
- */
-export const listen = _guestIPC.listen.bind(_guestIPC);
-
-/**
- * Unsubscribes a callback to a message.
- */
-export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
-
-
-// TODO: Register API for authors.
-// Methods should use 'ipc.sendMessage', Events should use 'ipc.listen'.
+  /**
+   * Unsubscribes a callback to a message.
+   */
+  export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
+} // namespace tb.plugin.lib.internal

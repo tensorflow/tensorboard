@@ -12,8 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+namespace tb.plugin.lib.run {
+  export async function getRuns() {
+    return tb.plugin.lib.internal.sendMessage('experimental.GetRuns');
+  }
 
-import {sendMessage, listen, unlisten, _guestIPC} from '../plugin-guest.js';
-
-const win = window as any;
-win.test = {sendMessage, listen, unlisten, _guestIPC};
+  export function addRunsChangeListener(callback: (runs: string[]) => void) {
+    return tb.plugin.lib.internal.listen('experimental.RunsChange', callback);
+  }
+}

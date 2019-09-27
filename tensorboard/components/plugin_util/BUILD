@@ -5,24 +5,12 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "plugin_host",
+    name = "message",
     srcs = [
-        "plugin-host.html",
-        "plugin-host.ts",
-    ],
-    path = "/tf-plugin",
-    deps = [
-        ":plugin_lib",
-        "//tensorboard/components/tf_backend",
-    ],
-)
-
-tf_web_library(
-    name = "plugin_lib",
-    srcs = [
+        "message.html",
         "message.ts",
     ],
-    path = "/tf-plugin",
+    path = "/tf-plugin-lib",
 )
 
 tf_web_library(
@@ -31,9 +19,20 @@ tf_web_library(
         "plugin-guest.html",
         "plugin-guest.ts",
     ],
-    path = "/tf-plugin",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":plugin_lib",
+    path = "/tf-plugin-lib",
+    visibility = [
+        "//tensorboard/components/plugin_lib:__subpackages__",
+        "//tensorboard/components/plugin_util/test:__subpackages__",
     ],
+    deps = [":message"],
+)
+
+tf_web_library(
+    name = "plugin_host",
+    srcs = [
+        "plugin-host.html",
+        "plugin-host.ts",
+    ],
+    path = "/tf-plugin-lib",
+    deps = [":message"],
 )
