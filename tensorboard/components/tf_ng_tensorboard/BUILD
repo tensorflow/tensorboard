@@ -1,7 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -30,7 +30,10 @@ tf_web_library(
 tf_js_binary(
     name = "tf_ng_tensorboard_binary",
     compile = 1,
-    entry_point = ":main.ts",
+    entry_point = select({
+        "//tensorboard:dev_build": ":main.ts",
+        "//conditions:default": "main.prod.ts",
+    }),
     deps = [
         ":ng_main",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
@@ -45,13 +48,23 @@ tf_js_binary(
     ],
 )
 
+tf_ts_library(
+    name = "config",
+    srcs = [
+        "config.dev.ts",
+        "config.prod.ts",
+    ],
+)
+
 ng_module(
     name = "ng_main",
-    srcs = [
-        "main.ts",
-    ],
+    srcs = ["bootstrap.ts"] + select({
+        "//tensorboard:dev_build": ["main.ts"],
+        "//conditions:default": ["main.prod.ts"],
+    }),
     deps = [
         ":app",
+        ":config",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
@@ -71,6 +84,7 @@ ng_module(
         "app.component.html",
     ],
     deps = [
+        ":config",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",

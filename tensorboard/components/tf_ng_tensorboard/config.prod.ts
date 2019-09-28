@@ -12,6 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config.dev';
-import './bootstrap';
+export {};
+
+(window as any).config = {
+  env: 'prod',
+};
+
+declare global {
+  interface config {
+    env: 'dev' | 'prod';
+  }
+}
