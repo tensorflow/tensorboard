@@ -81,7 +81,6 @@ ng_module(
     ],
     assets = [
         "app.component.css",
-        "app.component.html",
     ],
     deps = [
         ":config",
@@ -89,7 +88,8 @@ ng_module(
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
         "//tensorboard/components/tf_ng_tensorboard/plugins",
-        "//tensorboard/components/tf_ng_tensorboard/reloader",
+        "//tensorboard/components/tf_ng_tensorboard/polymer_interop/reloader",
+        "//tensorboard/components/tf_ng_tensorboard/polymer_interop/storage",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
@@ -105,7 +105,8 @@ tf_ng_web_test_suite(
         "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
         "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
-        "//tensorboard/components/tf_ng_tensorboard/reloader:test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/polymer_interop/reloader:test_lib",
+        "//tensorboard/components/tf_ng_tensorboard/polymer_interop/storage:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/settings:test_lib",
     ],
 )

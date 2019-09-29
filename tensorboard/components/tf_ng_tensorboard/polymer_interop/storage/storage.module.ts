@@ -13,21 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
-import {StoreModule} from '@ngrx/store';
-import {EffectsModule} from '@ngrx/effects';
 
-import {PolymerInteropModule} from '../polymer_interop/polymer_interop.module';
-
-import {CORE_FEATURE_KEY, reducers} from './core.reducers';
-import {CoreEffects} from './core.effects';
+import {StorageComponent} from './storage.component';
 
 @NgModule({
-  imports: [
-    HttpClientModule,
-    StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
-    EffectsModule.forFeature([CoreEffects]),
-    PolymerInteropModule,
-  ],
+  declarations: [StorageComponent],
+  exports: [StorageComponent],
 })
-export class CoreModule {}
+export class StorageModule {}

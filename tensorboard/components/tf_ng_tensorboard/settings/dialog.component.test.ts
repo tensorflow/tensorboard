@@ -30,7 +30,11 @@ import {
   getReloadEnabled,
   getReloadPeriodInMs,
 } from '../core/core.reducers';
-import {toggleReloadEnabled, changeReloadPeriod} from '../core/core.actions';
+import {
+  toggleReloadEnabled,
+  changeReloadPeriod,
+  changePageSize,
+} from '../core/core.actions';
 import {createCoreState, createState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -159,6 +163,37 @@ describe('settings dialog test', () => {
 
       const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
       reloadPeriod.nativeElement.value = 30;
+      reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
+
+      tick(1e10);
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('changePageSize', () => {
+    it('dispatches changing the value', fakeAsync(async () => {
+      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      fixture.detectChanges();
+
+      const reloadPeriod = fixture.debugElement.query(By.css('.page-size'));
+      reloadPeriod.nativeElement.value = 20;
+      reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+
+      // We debounce it so it does not spam other components on very keystroke.
+      tick(500);
+
+      expect(dispatchSpy).toHaveBeenCalledWith(changePageSize({size: 20}));
+    }));
+
+    it('does not dispatch when input is invalid', fakeAsync(async () => {
+      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      fixture.detectChanges();
+
+      const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
+      reloadPeriod.nativeElement.value = 0;
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 
       tick(1e10);

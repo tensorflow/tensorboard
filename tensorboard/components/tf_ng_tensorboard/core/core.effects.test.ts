@@ -22,9 +22,10 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
+import {PolymerInteropService} from '../polymer_interop/polymer_interop.service';
+
 import {CoreEffects} from './core.effects';
 import * as coreActions from './core.actions';
-import {CoreService} from './core.service';
 import {State, getPluginsListLoaded, LoadState} from './core.reducers';
 
 import {createPluginMetadata, createState, createCoreState} from './testing';
@@ -56,7 +57,7 @@ describe('core.effects', () => {
       providers: [
         provideMockActions(action),
         CoreEffects,
-        CoreService,
+        PolymerInteropService,
         provideMockStore({initialState}),
       ],
     }).compileComponents();
@@ -65,11 +66,11 @@ describe('core.effects', () => {
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const coreService = TestBed.get(CoreService);
-    fetchRuns = spyOn(coreService, 'fetchRuns')
+    const interopService = TestBed.get(PolymerInteropService);
+    fetchRuns = spyOn(interopService, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));
-    fetchEnvironments = spyOn(coreService, 'fetchEnvironments')
+    fetchEnvironments = spyOn(interopService, 'fetchEnvironments')
       .withArgs()
       .and.returnValue(of(null));
   });

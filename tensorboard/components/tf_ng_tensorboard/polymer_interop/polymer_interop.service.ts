@@ -19,8 +19,11 @@ import {from} from 'rxjs';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
-export class CoreService {
+export class PolymerInteropService {
   private tfStorage = document.createElement('tf-storage') as any;
+  private tfPaginatedViewStorage = (document.createElement(
+    'tf-paginated-view-store'
+  ) as any).tf_paginated_view;
   private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
 
   fetchRuns() {
@@ -29,5 +32,13 @@ export class CoreService {
 
   fetchEnvironments() {
     return from(this.tfBackend.environmentStore.refresh());
+  }
+
+  getPaginationLimit(): number {
+    return this.tfPaginatedViewStorage.getLimit();
+  }
+
+  setPaginationLimit(limit: number) {
+    return this.tfPaginatedViewStorage.setLimit(limit);
   }
 }

@@ -37,6 +37,7 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     },
     reloadPeriodInMs: 30000,
     reloadEnabled: true,
+    pageSize: 10,
     ...override,
   };
 }

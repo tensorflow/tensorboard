@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
 import {Observable, of, zip} from 'rxjs';
@@ -24,7 +25,7 @@ import {
   filter,
   tap,
 } from 'rxjs/operators';
-import {CoreService} from './core.service';
+import {PolymerInteropService} from '../polymer_interop/polymer_interop.service';
 import {
   coreLoaded,
   reload,
@@ -33,7 +34,7 @@ import {
   pluginsListingFailed,
 } from './core.actions';
 import {State, getPluginsListLoaded} from './core.reducers';
-import {LoadState} from '../types/api';
+import {LoadState, PluginsListing} from '../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -53,9 +54,9 @@ export class CoreEffects {
       tap(() => this.store.dispatch(pluginsListingRequested())),
       mergeMap(() => {
         return zip(
-          this.coreService.fetchPluginsListing(),
-          this.coreService.fetchRuns(),
-          this.coreService.fetchEnvironments()
+          this.fetchPluginsListing(),
+          this.interop.fetchRuns(),
+          this.interop.fetchEnvironments()
         ).pipe(
           map(([plugins]) => {
             return pluginsListingLoaded({plugins});
@@ -68,6 +69,11 @@ export class CoreEffects {
   constructor(
     private actions$: Actions,
     private store: Store<State>,
-    private coreService: CoreService
+    private interop: PolymerInteropService,
+    private http: HttpClient
   ) {}
+
+  fetchPluginsListing() {
+    return this.http.get<PluginsListing>('data/plugins_listing');
+  }
 }

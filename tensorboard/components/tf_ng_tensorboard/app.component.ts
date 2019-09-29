@@ -21,7 +21,12 @@ import {coreLoaded} from './core/core.actions';
 
 @Component({
   selector: 'tf-ng-tensorboard',
-  templateUrl: './app.component.html',
+  template: `
+    <app-header></app-header>
+    <plugins class="plugins"></plugins>
+    <reloader-interop></reloader-interop>
+    <storage-interop></storage-interop>
+  `,
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {

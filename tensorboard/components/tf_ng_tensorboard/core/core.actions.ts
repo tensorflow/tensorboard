@@ -51,3 +51,11 @@ export const changeReloadPeriod = createAction(
   '[Core] Reload Period Change',
   props<{periodInMs: number}>()
 );
+
+/**
+ * Action for when user wants to change the size of the pagination.
+ */
+export const changePageSize = createAction(
+  '[Core] Page Size Changed',
+  props<{size: number}>()
+);
