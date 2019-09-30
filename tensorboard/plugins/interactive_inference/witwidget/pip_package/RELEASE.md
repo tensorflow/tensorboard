@@ -1,4 +1,24 @@
-# To release a new version of witwidget on PyPI and NPM:
+# What-If Tool witwidget package releases
+
+## Release 1.4.0
+
+### Notable Features
+- #2607 - Add ability to set custom distance function for counterfactuals and distance
+  visualizations.
+- #2461 - Add ability to sort PD plots by interestingness.
+- #2660 - Add ability to consume arbitrary prediction-time information.
+- #2678 - Can now slice by numeric features in Performance & Fairness tab.
+- #2647 - Add counterfactual analysis for regression models.
+- #2663 - Visual updates for displaying attributions.
+- #2630 - Added developers guide documentation.
+- #2698 - Add ability to adjust attributions.
+
+### Notable Bug Fixes
+- #2682 - Fix issue with threshold sliders not updating on fairness button presses.
+- #2669 - Fix PD plots in python3.
+- #2648 - Fix image handling broken from Polymer 2 update.
+
+## To release a new version of witwidget on PyPI and NPM:
 
 1. Ensure updated version numbers have been merged to the master branch in
 tensorboard/plugins/interactive_inference/witwidget/version.py
