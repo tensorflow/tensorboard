@@ -60,10 +60,9 @@ namespace tf_plugin.test {
           this.destUnlisten = this.guestWindow.test.unlisten;
           this.destSendMessage = this.guestWindow.test.sendMessage;
           this.srcSendMessage = (type, payload) => {
-            return new Promise(async (resolve) => {
-              const results = await pluginHost.broadcast(type, payload);
-              resolve(results[0]);
-            });
+            return pluginHost
+              .broadcast(type, payload)
+              .then(([result]) => result);
           };
         },
       },
@@ -74,10 +73,9 @@ namespace tf_plugin.test {
           this.destListen = pluginHost.listen;
           this.destUnlisten = pluginHost.unlisten;
           this.destSendMessage = (type, payload) => {
-            return new Promise(async (resolve) => {
-              const results = await pluginHost.broadcast(type, payload);
-              resolve(results[0]);
-            });
+            return pluginHost
+              .broadcast(type, payload)
+              .then(([result]) => result);
           };
           this.srcSendMessage = this.guestWindow.test.sendMessage;
         },
@@ -194,7 +192,7 @@ namespace tf_plugin.test {
 
           // Await another message to ensure fake message was handled in dest.
           await this.srcSendMessage('not-bar');
-          expect(barCb.callCount).to.equal(0);
+          expect(barCb).to.not.have.been.called;
         });
 
         it('processes messages while waiting for a reponse', async function() {
@@ -205,18 +203,19 @@ namespace tf_plugin.test {
             });
           });
 
-          const longTaskCb = this.sandbox.stub();
+          const longTaskStub = this.sandbox.stub();
           const longTaskPromise = this.srcSendMessage('longTask', 'hello').then(
-            longTaskCb
+            longTaskStub
           );
 
           await this.srcSendMessage('foo');
           await this.destSendMessage('bar');
-          expect(longTaskCb.callCount).to.equal(0);
+          expect(longTaskStub).to.not.have.been.called;
 
-          resolveLongTask();
-          await longTaskPromise;
-          expect(longTaskCb.callCount).to.equal(1);
+          resolveLongTask('payload');
+          const longTaskResult = await longTaskPromise;
+          expect(longTaskStub).to.have.been.calledOnce;
+          expect(longTaskStub).to.have.been.calledWith('payload');
         });
       });
     });

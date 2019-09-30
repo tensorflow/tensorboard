@@ -52,8 +52,7 @@ export class IPC {
   private readonly listeners = new Map<MessageType, MessageCallback>();
 
   constructor(private port: MessagePort) {
-    this.port = port;
-    port.addEventListener('message', this.onMessage.bind(this));
+    this.port.addEventListener('message', (event) => this.onMessage(event));
   }
 
   listen(type: MessageType, callback: MessageCallback) {

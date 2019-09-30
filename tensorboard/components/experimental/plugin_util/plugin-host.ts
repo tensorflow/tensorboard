@@ -30,16 +30,19 @@ window.addEventListener('message', (event) => {
   if (!port) return;
   const frame = event.source ? event.source.frameElement : null;
   if (!frame) return;
+  onBootstrap(port, frame as HTMLIFrameElement);
+});
 
+function onBootstrap(port: MessagePort, frame: HTMLIFrameElement) {
   const portIPC = new IPC(port);
   portIPCs.add(portIPC);
-  ipcToFrame.set(portIPC, frame as HTMLIFrameElement);
+  ipcToFrame.set(portIPC, frame);
   port.start();
 
   for (const [type, callback] of listeners) {
     portIPC.listen(type, callback);
   }
-});
+}
 
 function _broadcast(
   type: MessageType,
@@ -52,8 +55,7 @@ function _broadcast(
     }
   }
 
-  const ipcs = [...portIPCs];
-  const promises = ipcs.map((ipc) => ipc.sendMessage(type, payload));
+  const promises = [...portIPCs].map((ipc) => ipc.sendMessage(type, payload));
   return Promise.all(promises);
 }
 

@@ -19,9 +19,7 @@ import {IPC, Message} from './message.js';
  * and runs within an IFrame to setup communication with TensorBoard's frame.
  */
 if (!window.parent) {
-  throw Error(
-    'This library must be run from within a loaded TensorBoard dynamic plugin.'
-  );
+  throw Error('The library must run within a TensorBoard iframe-based plugin.');
 }
 
 const channel = new MessageChannel();
