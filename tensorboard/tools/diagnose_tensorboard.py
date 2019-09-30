@@ -172,6 +172,7 @@ def installed_packages():
       frozenset([
           u"tensorboard",
           u"tb-nightly",
+          u"tensorflow-tensorboard",
       ]),
       frozenset([
           u"tensorflow",
