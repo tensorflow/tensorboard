@@ -18,30 +18,24 @@ limitations under the License.
   <span class="brand">TensorBoard</span>
   <span class="plugins">
     <mat-tab-group
-      [selectedIndex]="activePluginIndex$ | async"
-      (selectedTabChange)="onPluginSelectionChanged($event)"
+      [selectedIndex]="getActivePluginIndex()"
+      (selectedTabChange)="onActivePluginSelectionChanged($event)"
       animationDuration="100ms"
     >
       <mat-tab
-        *ngFor="let plugin of plugins$ | async"
+        *ngFor="let plugin of activePlugins"
         [label]="plugin.tab_name"
         [disabled]="!plugin.enabled"
       >
       </mat-tab>
     </mat-tab-group>
-    <mat-form-field
-      floatLabel="never"
-      *ngIf="(disabledPlugins$ | async)?.length > 0"
-    >
+    <mat-form-field floatLabel="never" *ngIf="disabledPlugins.length > 0">
       <mat-label>Inactive</mat-label>
       <mat-select
-        [value]="activePlugin$ | async"
+        [value]="selectedPlugin"
         (selectionChange)="onDisabledPluginSelectionChanged($event)"
       >
-        <mat-option
-          *ngFor="let plugin of disabledPlugins$ | async"
-          [value]="plugin.id"
-        >
+        <mat-option *ngFor="let plugin of disabledPlugins" [value]="plugin.id">
           {{ plugin.tab_name }}
         </mat-option>
       </mat-select>
