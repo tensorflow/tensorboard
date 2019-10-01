@@ -21,17 +21,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 export class IPC {
-    constructor() {
+    constructor(port) {
+        this.port = port;
         this.id = 0;
         this.responseWaits = new Map();
         this.listeners = new Map();
-        window.addEventListener('message', this.onMessage.bind(this));
-        // TODO(tensorboard-team): remove this by using MessageChannel.
-        const randomArray = new Uint8Array(16);
-        window.crypto.getRandomValues(randomArray);
-        this.idPrefix = Array.from(randomArray)
-            .map((int) => int.toString(16))
-            .join('');
+        this.port.addEventListener('message', (event) => this.onMessage(event));
     }
     listen(type, callback) {
         this.listeners.set(type, callback);
@@ -41,12 +36,11 @@ export class IPC {
     }
     onMessage(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            // There are instances where random browser extensions send messages.
-            if (typeof event.data !== 'string')
-                return;
             const message = JSON.parse(event.data);
             const callback = this.listeners.get(message.type);
-            if (this.responseWaits.has(message.id)) {
+            if (message.isReply) {
+                if (!this.responseWaits.has(message.id))
+                    return;
                 const { id, payload, error } = message;
                 const { resolve, reject } = this.responseWaits.get(id);
                 this.responseWaits.delete(id);
@@ -75,17 +69,18 @@ export class IPC {
                 id: message.id,
                 payload,
                 error,
+                isReply: true,
             };
-            this.postMessage(event.source, JSON.stringify(replyMessage));
+            this.postMessage(replyMessage);
         });
     }
-    postMessage(targetWindow, message) {
-        targetWindow.postMessage(message, '*');
+    postMessage(message) {
+        this.port.postMessage(JSON.stringify(message));
     }
-    sendMessageToWindow(targetWindow, type, payload) {
-        const id = `${this.idPrefix}_${this.id++}`;
-        const message = { type, id, payload, error: null };
-        this.postMessage(targetWindow, JSON.stringify(message));
+    sendMessage(type, payload) {
+        const id = this.id++;
+        const message = { type, id, payload, error: null, isReply: false };
+        this.postMessage(message);
         return new Promise((resolve, reject) => {
             this.responseWaits.set(id, { resolve, reject });
         });

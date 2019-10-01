@@ -57,23 +57,29 @@ var tf_plugin;
                 {
                     spec: 'host (src) to guest (dest)',
                     beforeEachFunc: function () {
+                        this.destWindow = this.guestWindow;
                         this.destListen = this.guestWindow.test.listen;
                         this.destUnlisten = this.guestWindow.test.unlisten;
+                        this.destSendMessage = this.guestWindow.test.sendMessage;
                         this.srcSendMessage = (type, payload) => {
-                            return pluginHost.sendMessage(this.guestFrame, type, payload);
+                            return pluginHost
+                                .broadcast(type, payload)
+                                .then(([result]) => result);
                         };
-                        this.destPostMessageSpy = () => this.sandbox.spy(this.guestWindow.test._guestIPC, 'postMessage');
                     },
                 },
                 {
                     spec: 'guest (src) to host (dest)',
                     beforeEachFunc: function () {
+                        this.destWindow = window;
                         this.destListen = pluginHost.listen;
                         this.destUnlisten = pluginHost.unlisten;
-                        this.srcSendMessage = (type, payload) => {
-                            return this.guestWindow.test.sendMessage(type, payload);
+                        this.destSendMessage = (type, payload) => {
+                            return pluginHost
+                                .broadcast(type, payload)
+                                .then(([result]) => result);
                         };
-                        this.destPostMessageSpy = () => this.sandbox.spy(pluginHost._hostIPC, 'postMessage');
+                        this.srcSendMessage = this.guestWindow.test.sendMessage;
                     },
                 },
             ].forEach(({ spec, beforeEachFunc }) => {
@@ -106,13 +112,10 @@ var tf_plugin;
                     });
                     it('resolves when dest replies with ack', function () {
                         return __awaiter(this, void 0, void 0, function* () {
-                            const destPostMessage = this.destPostMessageSpy();
                             const sendMessageP = this.srcSendMessage('messageType', 'hello');
                             expect(this.onMessage.callCount).to.equal(0);
-                            expect(destPostMessage.callCount).to.equal(0);
                             yield sendMessageP;
                             expect(this.onMessage.callCount).to.equal(1);
-                            expect(destPostMessage.callCount).to.equal(1);
                             expect(this.onMessage.firstCall.args).to.deep.equal(['hello']);
                         });
                     });
@@ -170,6 +173,42 @@ var tf_plugin;
                             this.destUnlisten('bar');
                             yield this.srcSendMessage('bar', 'soap');
                             expect(barCb.callCount).to.equal(1);
+                        });
+                    });
+                    it('ignores foreign postMessages', function () {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            const barCb = this.sandbox.stub();
+                            this.destListen('bar', barCb);
+                            const fakeMessage = {
+                                type: 'bar',
+                                id: 0,
+                                payload: '',
+                                error: null,
+                                isReply: false,
+                            };
+                            this.destWindow.postMessage(JSON.stringify(fakeMessage), '*');
+                            // Await another message to ensure fake message was handled in dest.
+                            yield this.srcSendMessage('not-bar');
+                            expect(barCb).to.not.have.been.called;
+                        });
+                    });
+                    it('processes messages while waiting for a reponse', function () {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            let resolveLongTask = null;
+                            this.destListen('longTask', () => {
+                                return new Promise((resolve) => {
+                                    resolveLongTask = resolve;
+                                });
+                            });
+                            const longTaskStub = this.sandbox.stub();
+                            const longTaskPromise = this.srcSendMessage('longTask', 'hello').then(longTaskStub);
+                            yield this.srcSendMessage('foo');
+                            yield this.destSendMessage('bar');
+                            expect(longTaskStub).to.not.have.been.called;
+                            resolveLongTask('payload');
+                            const longTaskResult = yield longTaskPromise;
+                            expect(longTaskStub).to.have.been.calledOnce;
+                            expect(longTaskStub).to.have.been.calledWith('payload');
                         });
                     });
                 });
