@@ -71,5 +71,6 @@ jasmine_node_test(
     ],
     deps = [
         "@npm//chai",
+        "@npm//sinon",
     ],
 )
