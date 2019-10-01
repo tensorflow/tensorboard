@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,6 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { sendMessage, listen, unlisten, _guestIPC } from '../plugin-guest.js';
-const win = window;
-win.test = { sendMessage, listen, unlisten, _guestIPC };
+/**
+ * Implements run related plugin APIs.
+ */
+tb_plugin.host.listen('experimental.GetRuns', () => {
+    return tf_backend.runsStore.getRuns();
+});
+tf_backend.runsStore.addListener(() => {
+    return tb_plugin.host.broadcast('experimental.RunsChanged', tf_backend.runsStore.getRuns());
+});
