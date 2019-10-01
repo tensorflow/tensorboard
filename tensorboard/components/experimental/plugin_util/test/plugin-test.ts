@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as pluginHost from '../plugin-host.js';
+import {Message} from '../message.js';
 
 namespace tf_plugin.test {
   const {expect} = chai;
@@ -54,25 +55,29 @@ namespace tf_plugin.test {
       {
         spec: 'host (src) to guest (dest)',
         beforeEachFunc: function() {
+          this.destWindow = this.guestWindow;
           this.destListen = this.guestWindow.test.listen;
           this.destUnlisten = this.guestWindow.test.unlisten;
+          this.destSendMessage = this.guestWindow.test.sendMessage;
           this.srcSendMessage = (type, payload) => {
-            return pluginHost.sendMessage(this.guestFrame, type, payload);
+            return pluginHost
+              .broadcast(type, payload)
+              .then(([result]) => result);
           };
-          this.destPostMessageSpy = () =>
-            this.sandbox.spy(this.guestWindow.test._guestIPC, 'postMessage');
         },
       },
       {
         spec: 'guest (src) to host (dest)',
         beforeEachFunc: function() {
+          this.destWindow = window;
           this.destListen = pluginHost.listen;
           this.destUnlisten = pluginHost.unlisten;
-          this.srcSendMessage = (type, payload) => {
-            return this.guestWindow.test.sendMessage(type, payload);
+          this.destSendMessage = (type, payload) => {
+            return pluginHost
+              .broadcast(type, payload)
+              .then(([result]) => result);
           };
-          this.destPostMessageSpy = () =>
-            this.sandbox.spy(pluginHost._hostIPC, 'postMessage');
+          this.srcSendMessage = this.guestWindow.test.sendMessage;
         },
       },
     ].forEach(({spec, beforeEachFunc}) => {
@@ -105,15 +110,12 @@ namespace tf_plugin.test {
         });
 
         it('resolves when dest replies with ack', async function() {
-          const destPostMessage = this.destPostMessageSpy();
           const sendMessageP = this.srcSendMessage('messageType', 'hello');
 
           expect(this.onMessage.callCount).to.equal(0);
-          expect(destPostMessage.callCount).to.equal(0);
 
           await sendMessageP;
           expect(this.onMessage.callCount).to.equal(1);
-          expect(destPostMessage.callCount).to.equal(1);
           expect(this.onMessage.firstCall.args).to.deep.equal(['hello']);
         });
 
@@ -174,6 +176,46 @@ namespace tf_plugin.test {
           await this.srcSendMessage('bar', 'soap');
 
           expect(barCb.callCount).to.equal(1);
+        });
+
+        it('ignores foreign postMessages', async function() {
+          const barCb = this.sandbox.stub();
+          this.destListen('bar', barCb);
+          const fakeMessage: Message = {
+            type: 'bar',
+            id: 0,
+            payload: '',
+            error: null,
+            isReply: false,
+          };
+          this.destWindow.postMessage(JSON.stringify(fakeMessage), '*');
+
+          // Await another message to ensure fake message was handled in dest.
+          await this.srcSendMessage('not-bar');
+          expect(barCb).to.not.have.been.called;
+        });
+
+        it('processes messages while waiting for a reponse', async function() {
+          let resolveLongTask = null;
+          this.destListen('longTask', () => {
+            return new Promise((resolve) => {
+              resolveLongTask = resolve;
+            });
+          });
+
+          const longTaskStub = this.sandbox.stub();
+          const longTaskPromise = this.srcSendMessage('longTask', 'hello').then(
+            longTaskStub
+          );
+
+          await this.srcSendMessage('foo');
+          await this.destSendMessage('bar');
+          expect(longTaskStub).to.not.have.been.called;
+
+          resolveLongTask('payload');
+          const longTaskResult = await longTaskPromise;
+          expect(longTaskStub).to.have.been.calledOnce;
+          expect(longTaskStub).to.have.been.calledWith('payload');
         });
       });
     });
