@@ -54,7 +54,7 @@ limitations under the License.
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
               <span class="light">Tags matching /</span>
-              <span class="category-name" title="[[category.name]]"
+              <span class="category-name" title$="[[category.name]]"
                 >[[category.name]]</span
               >
               <span class="light">/</span>
@@ -67,7 +67,7 @@ limitations under the License.
             </template>
           </template>
           <template is="dom-if" if="[[!_isSearchResults]]">
-            <span class="category-name" title="[[category.name]]"
+            <span class="category-name" title$="[[category.name]]"
               >[[category.name]]</span
             >
           </template>
@@ -184,10 +184,7 @@ limitations under the License.
 
       .name {
         display: inline-flex;
-        padding: 2px 0;
-        white-space: pre;
         overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .light {
@@ -198,6 +195,7 @@ limitations under the License.
         white-space: pre;
         overflow: hidden;
         text-overflow: ellipsis;
+        padding: 2px 0;
       }
 
       .count {
@@ -206,6 +204,7 @@ limitations under the License.
         color: var(--paper-grey-500);
         display: flex;
         align-items: center;
+        flex: none;
       }
 
       .heading::-moz-focus-inner {
@@ -301,7 +300,7 @@ limitations under the License.
           computed: '_computeCount(category.items.*)',
         },
         _hasMultiple: {
-          type: Number,
+          type: Boolean,
           computed: '_computeHasMultiple(_count)',
         },
         _paneRendered: {
