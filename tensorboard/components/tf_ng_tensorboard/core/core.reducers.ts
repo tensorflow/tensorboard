@@ -64,55 +64,73 @@ const initialState: CoreState = {
 
 const reducer = createReducer(
   initialState,
-  on(actions.changePlugin, (state: CoreState, {plugin}) => {
-    return {...state, activePlugin: plugin};
-  }),
-  on(actions.pluginsListingRequested, (state: CoreState) => {
-    return {
-      ...state,
-      pluginsListLoaded: {
-        ...state.pluginsListLoaded,
-        state: DataLoadState.LOADING,
-      },
-    };
-  }),
-  on(actions.pluginsListingFailed, (state: CoreState) => {
-    return {
-      ...state,
-      pluginsListLoaded: {
-        ...state.pluginsListLoaded,
-        state: DataLoadState.FAILED,
-      },
-    };
-  }),
-  on(actions.pluginsListingLoaded, (state: CoreState, {plugins}) => {
-    const [firstPlugin] = Object.keys(plugins);
-    let activePlugin =
-      state.activePlugin !== null ? state.activePlugin : firstPlugin;
-    return {
-      ...state,
-      activePlugin,
-      plugins,
-      pluginsListLoaded: {
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: Date.now(),
-      },
-    };
-  }),
-  on(actions.toggleReloadEnabled, (state: CoreState) => {
-    return {
-      ...state,
-      reloadEnabled: !state.reloadEnabled,
-    };
-  }),
-  on(actions.changeReloadPeriod, (state: CoreState, {periodInMs}) => {
-    const nextReloadPeriod =
-      periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
-    return {
-      ...state,
-      reloadPeriodInMs: nextReloadPeriod,
-    };
-  })
+  on(
+    actions.changePlugin,
+    (state: CoreState, {plugin}): CoreState => {
+      return {...state, activePlugin: plugin};
+    }
+  ),
+  on(
+    actions.pluginsListingRequested,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        pluginsListLoaded: {
+          ...state.pluginsListLoaded,
+          state: DataLoadState.LOADING,
+        },
+      };
+    }
+  ),
+  on(
+    actions.pluginsListingFailed,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        pluginsListLoaded: {
+          ...state.pluginsListLoaded,
+          state: DataLoadState.FAILED,
+        },
+      };
+    }
+  ),
+  on(
+    actions.pluginsListingLoaded,
+    (state: CoreState, {plugins}): CoreState => {
+      const [firstPlugin] = Object.keys(plugins);
+      let activePlugin =
+        state.activePlugin !== null ? state.activePlugin : firstPlugin;
+      return {
+        ...state,
+        activePlugin,
+        plugins,
+        pluginsListLoaded: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: Date.now(),
+        },
+      };
+    }
+  ),
+  on(
+    actions.toggleReloadEnabled,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        reloadEnabled: !state.reloadEnabled,
+      };
+    }
+  ),
+  on(
+    actions.changeReloadPeriod,
+    (state: CoreState, {periodInMs}): CoreState => {
+      const nextReloadPeriod =
+        periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
+      return {
+        ...state,
+        reloadPeriodInMs: nextReloadPeriod,
+      };
+    }
+  )
 );
 
 export function reducers(state: CoreState, action: Action) {

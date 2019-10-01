@@ -55,6 +55,7 @@ ng_module(
     deps = [
         ":core",
         "//tensorboard/components/tf_ng_tensorboard/core/testing",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@types/chai",
         "@npm//@types/jasmine",
         "@npm//@types/sinon",

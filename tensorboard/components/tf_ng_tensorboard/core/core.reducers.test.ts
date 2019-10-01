@@ -96,7 +96,10 @@ describe('core reducer', () => {
   });
 
   describe('#pluginsListingLoaded', () => {
-    let clock: sinon.SinonFakeTimers;
+    // type definition of sinon differs in google3 and it cannot be strongly
+    // typed.
+    // TODO(stephanwlee): prefer to use jasmine from now on.
+    let clock: any;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers(1000);
