@@ -54,7 +54,9 @@ limitations under the License.
             </template>
             <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
               <span class="light">Tags matching /</span>
-              <span class="category-name" title=[[category.name]]>[[category.name]]</span>
+              <span class="category-name" title="[[category.name]]"
+                >[[category.name]]</span
+              >
               <span class="light">/</span>
               <template is="dom-if" if="[[_isUniversalSearchQuery]]">
                 <span> (all tags)</span>
@@ -65,7 +67,9 @@ limitations under the License.
             </template>
           </template>
           <template is="dom-if" if="[[!_isSearchResults]]">
-            <span class="category-name" title=[[category.name]]>[[category.name]]</span>
+            <span class="category-name" title="[[category.name]]"
+              >[[category.name]]</span
+            >
           </template>
         </span>
         <span class="count">
