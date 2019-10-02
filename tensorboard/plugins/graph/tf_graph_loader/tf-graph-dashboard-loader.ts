@@ -20,7 +20,7 @@ namespace tf.graph.loader {
 
   Polymer({
     is: 'tf-graph-dashboard-loader',
-
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
     properties: {
       datasets: Array,
       /**
