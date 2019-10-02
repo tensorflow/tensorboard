@@ -21,7 +21,7 @@ tf_web_library(
     name = "plugin_lib",
     srcs = [
         "runs.ts",
-        "tf-plugin-lib.html",
+        "tf-plugin-lib.ts",
     ],
     path = "/tf-plugin-lib",
     visibility = ["//visibility:public"],
