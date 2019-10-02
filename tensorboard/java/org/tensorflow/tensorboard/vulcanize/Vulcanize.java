@@ -110,7 +110,6 @@ public final class Vulcanize {
   private static final Multimap<Webpath, String> suppressions = HashMultimap.create();
   private static CompilationLevel compilationLevel;
   private static Webpath outputPath;
-  private static Node firstCompiledScript;
   private static Node firstScript;
   private static Node licenseComment;
   private static int insideDemoSnippet;
@@ -343,16 +342,8 @@ public final class Vulcanize {
               .removeAttr("src")
               .removeAttr("jscomp-minify")
               .removeAttr("jscomp-nocompile");
-      if (firstCompiledScript != null) {
-        firstCompiledScript.before(newScript);
-        return removeNode(node);
-      } else {
-        return replaceNode(node, newScript);
-      }
+      return replaceNode(node, newScript);
     } else {
-      if (firstCompiledScript == null) {
-        firstCompiledScript = node;
-      }
       sourcesFromScriptTags.put(path, script);
       sourceTags.put(path, node);
       Optional<String> suppress = getAttrTransitive(node, "jscomp-suppress");
