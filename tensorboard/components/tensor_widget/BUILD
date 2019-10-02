@@ -47,6 +47,7 @@ tf_ts_library(
     srcs = [
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "menu.ts",
         "selection.ts",
         "shape-utils.ts",
         "slicing-control.ts",
