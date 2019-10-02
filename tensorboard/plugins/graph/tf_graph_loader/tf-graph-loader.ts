@@ -15,7 +15,7 @@ limitations under the License.
 namespace tf.graph.loader {
   Polymer({
     is: 'tf-graph-loader',
-
+    _template: null,
     properties: {
       /**
        * @type {Array<{name: string, path: string}>}

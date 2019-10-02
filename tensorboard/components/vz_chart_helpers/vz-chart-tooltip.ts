@@ -45,6 +45,8 @@ namespace vz_chart_helper {
 
   Polymer({
     is: 'vz-chart-tooltip',
+    // strictTemplatePolicy requires a template (even a null one).
+    _template: null,
     properties: {
       /**
        * Required prop for specifying name of the WebComponent for tooltip
