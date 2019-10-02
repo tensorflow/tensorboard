@@ -104,37 +104,3 @@ Here is a snippet of how to build and run the demo application:
 ```
 bazel run tensorboard/plugins/mesh:mesh_demo -- --mesh_path=path/to/ply/file
 ```
-
-## How to install
-
-The mesh plugin isn’t yet part of stable TensorBoard, so you’ll need to
-install the latest TensorBoard nightly build to use it.
-
-### Colab
-
-```
-!pip install -q -U tb-nightly
-```
-
-Then load TensorBoard extension and run it, similar to how you would do it in the Terminal:
-
-```
-%load_ext tensorboard
-%tensorboard --logdir=/path/to/logs
-```
-
-Please consult the [example Colab notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/mesh/Mesh_Plugin_Tensorboard.ipynb) for more details.
-
-### Terminal
-
-If you want to run TensorBoard nightly build locally, first you need to install it:
-
-```shell
-pip install tf-nightly
-```
-
-Then just run it:
-
-```shell
-tensorboard --logdir path/to/logs
-```
