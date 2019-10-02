@@ -28,6 +28,7 @@ var tf;
         (function (loader) {
             Polymer({
                 is: 'tf-graph-dashboard-loader',
+                _template: null,
                 properties: {
                     datasets: Array,
                     /**

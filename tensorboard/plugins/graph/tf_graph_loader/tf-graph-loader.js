@@ -20,6 +20,7 @@ var tf;
         (function (loader) {
             Polymer({
                 is: 'tf-graph-loader',
+                _template: null,
                 properties: {
                     /**
                      * @type {Array<{name: string, path: string}>}

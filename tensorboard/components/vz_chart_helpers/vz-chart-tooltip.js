@@ -39,6 +39,7 @@ var vz_chart_helper;
     };
     Polymer({
         is: 'vz-chart-tooltip',
+        _template: null,
         properties: {
             /**
              * Required prop for specifying name of the WebComponent for tooltip
