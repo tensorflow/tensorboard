@@ -23,6 +23,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "@com_google_fonts_roboto",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",

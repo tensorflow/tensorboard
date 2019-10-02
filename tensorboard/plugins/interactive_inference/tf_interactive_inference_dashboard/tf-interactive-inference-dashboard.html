@@ -3373,9 +3373,11 @@ limitations under the License.
     const attributionSparseValueSuffix = '_values';
 
     // Colors for the attribution color scale.
-    const posAttributionColor = '#007B83';
-    const negAttributionColor = '#FF847C';
-    const neutralAttributionColor = '#fff';
+    const posAttributionHighColor = '#3D7078';
+    const posAttributionLowColor = '#6A9EA7';
+    const neutralAttributionColor = '#FFD8C3';
+    const negAttributionLowColor = '#C7696E';
+    const negAttributionHighColor = '#943A43';
     const COLOR_INTERPOLATOR = d3.interpolateRgb;
     const LEGEND_WIDTH_PX = 160;
     const LEGEND_HEIGHT_PX = 8;
@@ -6403,13 +6405,17 @@ limitations under the License.
           let attributionColorRange = [];
           if (this.minAttribution < 0) {
             attributionDomain.push(this.minAttribution);
-            attributionColorRange.push(negAttributionColor);
+            attributionColorRange.push(negAttributionHighColor);
+            attributionDomain.push(this.minAttribution / 2);
+            attributionColorRange.push(negAttributionLowColor);
           }
           attributionDomain.push(0);
           attributionColorRange.push(neutralAttributionColor);
           if (this.maxAttribution > 0) {
+            attributionDomain.push(this.maxAttribution / 2);
+            attributionColorRange.push(posAttributionLowColor);
             attributionDomain.push(this.maxAttribution);
-            attributionColorRange.push(posAttributionColor);
+            attributionColorRange.push(posAttributionHighColor);
           }
 
           this.attributionColorScale = d3
@@ -6451,7 +6457,7 @@ limitations under the License.
           // Set 3 ticks on the legend, handling all positive, all negative,
           // or a mix of both.
           const ticks = [];
-          if (attributionColorRange.length == 3) {
+          if (attributionColorRange.length == 5) {
             ticks.push(this.minAttribution / 2);
             ticks.push(0);
             ticks.push(this.maxAttribution / 2);
@@ -6740,12 +6746,13 @@ limitations under the License.
         calculateBucketEdges_: function(feature, numBuckets) {
           if (
             !this.isNumericFeature_(feature) ||
-            // No point in aggregating if less unique values than buckets.
-            this.stats[feature].uniqueCount < numBuckets ||
+            // No point in aggregating if not more unique values than buckets.
+            this.stats[feature].uniqueCount <= numBuckets ||
             // Already done.
             (this.featureBucketEdges_[feature] &&
               this.featureBucketEdges_[feature].length == numBuckets + 1)
           ) {
+            delete this.featureBucketEdges_[feature];
             return;
           }
           const min = this.stats[feature].numberMin;
