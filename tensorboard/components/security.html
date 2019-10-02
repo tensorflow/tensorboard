@@ -17,7 +17,11 @@ limitations under the License.
 <script>
   window.Polymer = {strictTemplatePolicy: true};
 </script>
-<!-- These polymer iron/paper components violate the strictTemplatePolicy. -->
+<!-- Below components violate the strictTemplatePolicy. They do not provide a dom-module
+  or a template inside the dom-module as they are functional components. We define their
+  empty template here to satisfy the strictTemplatePolicy. Note: if there are template
+  defined in their respective component, it will throw strictTemplatePolicy violation at
+  the runtime for having duplicate dom-module. -->
 <dom-module id="iron-meta"><template></template></dom-module>
 <dom-module id="iron-iconset-svg"><template></template></dom-module>
 <dom-module id="fade-in-animation"><template></template></dom-module>

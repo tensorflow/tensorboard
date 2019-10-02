@@ -15,7 +15,7 @@ limitations under the License.
 namespace tf.graph.loader {
   Polymer({
     is: 'tf-graph-loader',
-    _template: null,
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
     properties: {
       /**
        * @type {Array<{name: string, path: string}>}
