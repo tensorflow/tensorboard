@@ -27,9 +27,9 @@ Options:
   --all-pythons: Test on both Python 2 and Python 3. This is the default.
   --default-python-only: Test only using the stock "python" binary.
   --tf-version VERSION: Test against the provided version of TensorFlow,
-      given as a Pip package specifier like "tf-nightly-2.0-preview" or
-      "tensorflow==2.0.0a0". If empty, will test without installing
-      TensorFlow. Defaults to "tf-nightly".
+      given as a Pip package specifier like "tensorflow==2.0.0a0" or
+      "tf-nightly". If empty, will test without installing TensorFlow.
+      Defaults to "tf-nightly".
 EOF
 }
 
