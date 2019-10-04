@@ -31,6 +31,7 @@ limitations under the License.
     <div id="chart-and-spinner-container">
       <vz-line-chart2
         id="chart"
+        data-loading$="[[dataLoading]]"
         color-scale="[[colorScale]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
@@ -39,7 +40,6 @@ limitations under the License.
         on-chart-attached="_onChartAttached"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
-        style="[[_computeLineChartStyle(dataLoading)]]"
         symbol-function="[[symbolFunction]]"
         tooltip-columns="[[tooltipColumns]]"
         tooltip-position="[[tooltipPosition]]"
@@ -85,9 +85,13 @@ limitations under the License.
         top: 0;
       }
 
-      vz-line-chart {
+      vz-line-chart2 {
         -webkit-user-select: none;
         -moz-user-select: none;
+      }
+
+      vz-line-chart2[data-loading] {
+        opacity: 0.3;
       }
     </style>
   </template>
@@ -242,10 +246,6 @@ limitations under the License.
           const chart = this.$.chart;
           chart.yScaleType = logScaleActive ? 'log' : 'linear';
           this.redraw();
-        },
-
-        _computeLineChartStyle(loading) {
-          return loading ? 'opacity: 0.3;' : '';
         },
 
         _fixBadStateWhenActive() {

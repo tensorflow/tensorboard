@@ -16,6 +16,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/data:provider",
+        "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -34,8 +36,10 @@ py_test(
     main = "scalars_plugin_test.py",
     srcs_version = "PY2AND3",
     deps = [
+        ":metadata",
         ":scalars_plugin",
         ":summary",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",

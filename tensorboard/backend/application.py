@@ -14,8 +14,7 @@
 # ==============================================================================
 """TensorBoard WSGI Application Logic.
 
-TensorBoardApplication constructs TensorBoard as a WSGI application.
-It handles serving static assets, and implements TensorBoard data APIs.
+Provides TensorBoardWSGIApp for building a TensorBoard WSGI app.
 """
 
 from __future__ import absolute_import
@@ -24,6 +23,7 @@ from __future__ import print_function
 
 import atexit
 import collections
+import contextlib
 import json
 import os
 import re
@@ -38,8 +38,10 @@ from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-o
 
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import db_import_multiplexer
+from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -106,94 +108,121 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
   :type plugin_loaders: list[base_plugin.TBLoader]
   :rtype: TensorBoardWSGI
   """
-  event_file_active_filter = _get_event_file_active_filter(flags)
-  multiplexer = event_multiplexer.EventMultiplexer(
-      size_guidance=DEFAULT_SIZE_GUIDANCE,
-      tensor_size_guidance=tensor_size_guidance_from_flags(flags),
-      purge_orphaned_data=flags.purge_orphaned_data,
-      max_reload_threads=flags.max_reload_threads,
-      event_file_active_filter=event_file_active_filter)
-  loading_multiplexer = multiplexer
+  data_provider = None
+  multiplexer = None
   reload_interval = flags.reload_interval
-  # For db import op mode, prefer reloading in a child process. See
-  # https://github.com/tensorflow/tensorboard/issues/1467
-  reload_task = flags.reload_task
-  if reload_task == 'auto' and flags.db_import and flags.db_import_use_op:
-    reload_task == 'process'
-  db_uri = flags.db
-  # For DB import mode, create a DB file if we weren't given one.
-  if flags.db_import and not flags.db:
-    tmpdir = tempfile.mkdtemp(prefix='tbimport')
-    atexit.register(shutil.rmtree, tmpdir)
-    db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
-  db_module, db_connection_provider = get_database_info(db_uri)
   if flags.db_import:
     # DB import mode.
-    if db_module != sqlite3:
-      raise base_plugin.FlagsError('--db_import is only compatible with sqlite DBs')
+    db_uri = flags.db
+    # Create a temporary DB file if we weren't given one.
+    if not db_uri:
+      tmpdir = tempfile.mkdtemp(prefix='tbimport')
+      atexit.register(shutil.rmtree, tmpdir)
+      db_uri = 'sqlite:%s/tmp.sqlite' % tmpdir
+    db_connection_provider = create_sqlite_connection_provider(db_uri)
     logger.info('Importing logdir into DB at %s', db_uri)
-    loading_multiplexer = db_import_multiplexer.DbImportMultiplexer(
+    multiplexer = db_import_multiplexer.DbImportMultiplexer(
+        db_uri=db_uri,
         db_connection_provider=db_connection_provider,
         purge_orphaned_data=flags.purge_orphaned_data,
-        max_reload_threads=flags.max_reload_threads,
-        use_import_op=flags.db_import_use_op)
+        max_reload_threads=flags.max_reload_threads)
   elif flags.db:
     # DB read-only mode, never load event logs.
     reload_interval = -1
+    db_connection_provider = create_sqlite_connection_provider(flags.db)
+    multiplexer = _DbModeMultiplexer(flags.db, db_connection_provider)
+  else:
+    # Regular logdir loading mode.
+    multiplexer = event_multiplexer.EventMultiplexer(
+        size_guidance=DEFAULT_SIZE_GUIDANCE,
+        tensor_size_guidance=tensor_size_guidance_from_flags(flags),
+        purge_orphaned_data=flags.purge_orphaned_data,
+        max_reload_threads=flags.max_reload_threads,
+        event_file_active_filter=_get_event_file_active_filter(flags))
+    if flags.generic_data != 'false':
+      data_provider = event_data_provider.MultiplexerDataProvider(
+          multiplexer, flags.logdir or flags.logdir_spec
+      )
+
+  if reload_interval >= 0:
+    # We either reload the multiplexer once when TensorBoard starts up, or we
+    # continuously reload the multiplexer.
+    if flags.logdir:
+      path_to_run = {os.path.expanduser(flags.logdir): None}
+    else:
+      path_to_run = parse_event_files_spec(flags.logdir_spec)
+    start_reloading_multiplexer(
+        multiplexer, path_to_run, reload_interval, flags.reload_task)
+  return TensorBoardWSGIApp(
+      flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
+
+
+def _handling_errors(wsgi_app):
+  def wrapper(*args):
+    (environ, start_response) = (args[-2], args[-1])
+    try:
+      return wsgi_app(*args)
+    except errors.PublicError as e:
+      request = wrappers.Request(environ)
+      error_app = http_util.Respond(
+          request, str(e), "text/plain", code=e.http_code
+      )
+      return error_app(environ, start_response)
+    # Let other exceptions be handled by the server, as an opaque
+    # internal server error.
+  return wrapper
+
+
+def TensorBoardWSGIApp(
+    flags,
+    plugins,
+    data_provider=None,
+    assets_zip_provider=None,
+    deprecated_multiplexer=None):
+  """Constructs a TensorBoard WSGI app from plugins and data providers.
+
+  Args:
+    flags: An argparse.Namespace containing TensorBoard CLI flags.
+    plugins: A list of plugins, which can be provided as TBPlugin subclasses
+        or TBLoader instances or subclasses.
+    assets_zip_provider: See TBContext documentation for more information.
+    data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
+        be `None` if `flags.generic_data` is set to `"false"` in which case
+        `deprecated_multiplexer` must be passed instead.
+    deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
+        to use for any plugins not yet enabled for the DataProvider API.
+        Required if the data_provider argument is not passed.
+
+  Returns:
+    A WSGI application that implements the TensorBoard backend.
+  """
+  db_uri = None
+  db_connection_provider = None
+  if isinstance(
+      deprecated_multiplexer,
+      (db_import_multiplexer.DbImportMultiplexer, _DbModeMultiplexer)):
+    db_uri = deprecated_multiplexer.db_uri
+    db_connection_provider = deprecated_multiplexer.db_connection_provider
   plugin_name_to_instance = {}
   context = base_plugin.TBContext(
-      db_module=db_module,
+      data_provider=data_provider,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,
       flags=flags,
       logdir=flags.logdir,
-      multiplexer=multiplexer,
+      multiplexer=deprecated_multiplexer,
       assets_zip_provider=assets_zip_provider,
       plugin_name_to_instance=plugin_name_to_instance,
       window_title=flags.window_title)
-  plugins = []
-  for loader in plugin_loaders:
+  tbplugins = []
+  for plugin_spec in plugins:
+    loader = make_plugin_loader(plugin_spec)
     plugin = loader.load(context)
     if plugin is None:
       continue
-    plugins.append(plugin)
+    tbplugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGIApp(flags.logdir, plugins, loading_multiplexer,
-                            reload_interval, flags.path_prefix,
-                            reload_task)
-
-
-def TensorBoardWSGIApp(logdir, plugins, multiplexer, reload_interval,
-                       path_prefix='', reload_task='auto'):
-  """Constructs the TensorBoard application.
-
-  Args:
-    logdir: the logdir spec that describes where data will be loaded.
-      may be a directory, or comma,separated list of directories, or colons
-      can be used to provide named directories
-    plugins: A list of base_plugin.TBPlugin subclass instances.
-    multiplexer: The EventMultiplexer with TensorBoard data to serve
-    reload_interval: How often (in seconds) to reload the Multiplexer.
-      Zero means reload just once at startup; negative means never load.
-    path_prefix: A prefix of the path when app isn't served from root.
-    reload_task: Indicates the type of background task to reload with.
-
-  Returns:
-    A WSGI application that implements the TensorBoard backend.
-
-  Raises:
-    ValueError: If something is wrong with the plugin configuration.
-
-  :type plugins: list[base_plugin.TBPlugin]
-  :rtype: TensorBoardWSGI
-  """
-  path_to_run = parse_event_files_spec(logdir)
-  if reload_interval >= 0:
-    # We either reload the multiplexer once when TensorBoard starts up, or we
-    # continuously reload the multiplexer.
-    start_reloading_multiplexer(multiplexer, path_to_run, reload_interval,
-                                reload_task)
-  return TensorBoardWSGI(plugins, path_prefix)
+  return TensorBoardWSGI(tbplugins, flags.path_prefix)
 
 
 class TensorBoardWSGI(object):
@@ -317,13 +346,22 @@ class TensorBoardWSGI(object):
           'Plugin listing: is_active() for %s took %0.3f seconds',
           plugin.plugin_name, elapsed)
 
-      plugin_metadata = plugin.frontend_metadata()._asdict()
-      if plugin_metadata['tab_name'] is None:
-        plugin_metadata['tab_name'] = plugin.plugin_name
-      plugin_metadata['enabled'] = is_active
+      plugin_metadata = plugin.frontend_metadata()
+      output_metadata = {
+          'disable_reload': plugin_metadata.disable_reload,
+          'enabled': is_active,
+          # loading_mechanism set below
+          'remove_dom': plugin_metadata.remove_dom,
+          # tab_name set below
+      }
 
-      es_module_handler = plugin_metadata.pop('es_module_path')
-      element_name = plugin_metadata.pop('element_name')
+      if plugin_metadata.tab_name is not None:
+        output_metadata['tab_name'] = plugin_metadata.tab_name
+      else:
+        output_metadata['tab_name'] = plugin.plugin_name
+
+      es_module_handler = plugin_metadata.es_module_path
+      element_name = plugin_metadata.element_name
       if element_name is not None and es_module_handler is not None:
         logger.error(
             'Plugin %r declared as both legacy and iframed; skipping',
@@ -349,11 +387,12 @@ class TensorBoardWSGI(object):
         loading_mechanism = {
             'type': 'NONE',
         }
-      plugin_metadata['loading_mechanism'] = loading_mechanism
+      output_metadata['loading_mechanism'] = loading_mechanism
 
-      response[plugin.plugin_name] = plugin_metadata
+      response[plugin.plugin_name] = output_metadata
     return http_util.Respond(request, response, 'application/json')
 
+  @_handling_errors
   def __call__(self, environ, start_response):  # pylint: disable=invalid-name
     """Central entry point for the TensorBoard application.
 
@@ -389,14 +428,14 @@ class TensorBoardWSGI(object):
     # pylint: enable=too-many-function-args
 
 
-def parse_event_files_spec(logdir):
-  """Parses `logdir` into a map from paths to run group names.
+def parse_event_files_spec(logdir_spec):
+  """Parses `logdir_spec` into a map from paths to run group names.
 
-  The events files flag format is a comma-separated list of path specifications.
-  A path specification either looks like 'group_name:/path/to/directory' or
+  The `--logdir_spec` flag format is a comma-separated list of path
+  specifications. A path spec looks like 'group_name:/path/to/directory' or
   '/path/to/directory'; in the latter case, the group is unnamed. Group names
-  cannot start with a forward slash: /foo:bar/baz will be interpreted as a
-  spec with no name and path '/foo:bar/baz'.
+  cannot start with a forward slash: /foo:bar/baz will be interpreted as a spec
+  with no name and path '/foo:bar/baz'.
 
   Globs are not supported.
 
@@ -409,11 +448,11 @@ def parse_event_files_spec(logdir):
     require any valid runs.
   """
   files = {}
-  if logdir is None:
+  if logdir_spec is None:
     return files
   # Make sure keeping consistent with ParseURI in core/lib/io/path.cc
   uri_pattern = re.compile('[a-zA-Z][0-9a-zA-Z.]*://.*')
-  for specification in logdir.split(','):
+  for specification in logdir_spec.split(','):
     # Check if the spec contains group. A spec start with xyz:// is regarded as
     # URI path spec instead of group spec. If the spec looks like /foo:bar/baz,
     # then we assume it's a path with a colon. If the spec looks like
@@ -492,28 +531,6 @@ def start_reloading_multiplexer(multiplexer, path_to_run, load_interval,
     raise ValueError('unrecognized reload_task: %s' % reload_task)
 
 
-def get_database_info(db_uri):
-  """Returns TBContext fields relating to SQL database.
-
-  Args:
-    db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
-
-  Returns:
-    A tuple with the db_module and db_connection_provider TBContext fields. If
-    db_uri was empty, then (None, None) is returned.
-
-  Raises:
-    ValueError: If db_uri scheme is not supported.
-  """
-  if not db_uri:
-    return None, None
-  scheme = urlparse.urlparse(db_uri).scheme
-  if scheme == 'sqlite':
-    return sqlite3, create_sqlite_connection_provider(db_uri)
-  else:
-    raise ValueError('Only sqlite DB URIs are supported now: ' + db_uri)
-
-
 def create_sqlite_connection_provider(db_uri):
   """Returns function that returns SQLite Connection objects.
 
@@ -529,7 +546,7 @@ def create_sqlite_connection_provider(db_uri):
   """
   uri = urlparse.urlparse(db_uri)
   if uri.scheme != 'sqlite':
-    raise ValueError('Scheme is not sqlite: ' + db_uri)
+    raise ValueError('Only sqlite DB URIs are supported: ' + db_uri)
   if uri.netloc:
     raise ValueError('Can not connect to SQLite over network: ' + db_uri)
   if uri.path == ':memory:':
@@ -582,3 +599,59 @@ def _get_event_file_active_filter(flags):
   if inactive_secs < 0:
     return lambda timestamp: True
   return lambda timestamp: timestamp + inactive_secs >= time.time()
+
+
+class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
+  """Shim EventMultiplexer to use when in read-only DB mode.
+
+  In read-only DB mode, the EventMultiplexer is nonfunctional - there is no
+  logdir to reload, and the data is all exposed via SQL. This class represents
+  the do-nothing EventMultiplexer for that purpose, which serves only as a
+  conduit for DB-related parameters.
+
+  The load APIs raise exceptions if called, and the read APIs always
+  return empty results.
+  """
+  def __init__(self, db_uri, db_connection_provider):
+    """Constructor for `_DbModeMultiplexer`.
+
+    Args:
+      db_uri: A URI to the database file in use.
+      db_connection_provider: Provider function for creating a DB connection.
+    """
+    logger.info('_DbModeMultiplexer initializing for %s', db_uri)
+    super(_DbModeMultiplexer, self).__init__()
+    self.db_uri = db_uri
+    self.db_connection_provider = db_connection_provider
+    logger.info('_DbModeMultiplexer done initializing')
+
+  def AddRun(self, path, name=None):
+    """Unsupported."""
+    raise NotImplementedError()
+
+  def AddRunsFromDirectory(self, path, name=None):
+    """Unsupported."""
+    raise NotImplementedError()
+
+  def Reload(self):
+    """Unsupported."""
+    raise NotImplementedError()
+
+
+def make_plugin_loader(plugin_spec):
+  """Returns a plugin loader for the given plugin.
+
+  Args:
+    plugin_spec: A TBPlugin subclass, or a TBLoader instance or subclass.
+
+  Returns:
+    A TBLoader for the given plugin.
+  """
+  if isinstance(plugin_spec, base_plugin.TBLoader):
+    return plugin_spec
+  if isinstance(plugin_spec, type):
+    if issubclass(plugin_spec, base_plugin.TBLoader):
+      return plugin_spec()
+    if issubclass(plugin_spec, base_plugin.TBPlugin):
+      return base_plugin.BasicLoader(plugin_spec)
+  raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))

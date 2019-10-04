@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Experimental public APIs for the HParams plugin.
+"""Public APIs for the HParams plugin.
 
 This module supports a spectrum of use cases, depending on how much
 structure you want. In the simplest case, you can simply collect your
@@ -49,8 +49,8 @@ directly:
 ...   sess.run(w.flush())
 
 To control how hyperparameters and metrics appear in the TensorBoard UI,
-you can define `HParam` and `Metric` objects and collect them in an
-`Experiment`:
+you can define `HParam` and `Metric` objects, and write an experiment
+summary to the top-level log directory:
 
 >>> HP_OPTIMIZER = hp.HParam("optimizer")
 >>> HP_FC_DROPOUT = hp.HParam(
@@ -60,20 +60,19 @@ you can define `HParam` and `Metric` objects and collect them in an
 ... )
 >>> HP_NEURONS = hp.HParam("neurons", description="Neurons per dense layer")
 >>>
->>> experiment = hp.Experiment(
-...     hparams=[
-...         HP_OPTIMIZER,
-...         HP_FC_DROPOUT,
-...         HP_NEURONS,
-...     ],
-...     metrics=[
-...         hp.Metric("xent", group="validation", display_name="cross-entropy"),
-...         hp.Metric("f1", group="validation", display_name="F&#x2081; score"),
-...         hp.Metric("loss", group="train", display_name="training loss"),
-...     ],
-... )
 >>> with tf.summary.create_file_writer(base_logdir).as_default():
-...   hp.hparams_config(experiment)  # write experiment summary
+...   hp.hparams_config(
+...       hparams=[
+...           HP_OPTIMIZER,
+...           HP_FC_DROPOUT,
+...           HP_NEURONS,
+...       ],
+...       metrics=[
+...           hp.Metric("xent", group="validation", display_name="cross-entropy"),
+...           hp.Metric("f1", group="validation", display_name="F&#x2081; score"),
+...           hp.Metric("loss", group="train", display_name="training loss"),
+...       ],
+...   )
 
 You can continue to pass a string-keyed dict to the Keras callback or
 the `hparams` function, or you can use `HParam` objects as the keys. The

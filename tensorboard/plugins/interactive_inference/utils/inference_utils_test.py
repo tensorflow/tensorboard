@@ -81,6 +81,14 @@ class InferenceUtilsTest(tf.test.TestCase):
     self.assertEqual('int64_list', original_feature.feature_type)
     self.assertEqual(1, original_feature.length)
 
+  def test_parse_original_feature_from_example_binary(self):
+    example = tf.train.Example()
+    example.features.feature['img'].bytes_list.value.extend([b'\xef'])
+    original_feature = inference_utils.parse_original_feature_from_example(
+        example, 'img')
+    self.assertEqual('img', original_feature.feature_name)
+    self.assertEqual([b'\xef'], original_feature.original_value)
+
   def test_example_protos_from_path_get_all_in_file(self):
     cns_path = os.path.join(tf.compat.v1.test.get_temp_dir(),
                             'dummy_example')
@@ -177,7 +185,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 3], top_k=1)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [b'cat']
+            'samples': ['cat']
         }
     }, data)
 
@@ -186,7 +194,7 @@ class InferenceUtilsTest(tf.test.TestCase):
         examples[0: 20], top_k=2)
     self.assertDictEqual({
         'non_numeric': {
-            'samples': [b'pony', b'cow']
+            'samples': ['pony', 'cow']
         }
     }, data)
 
@@ -520,6 +528,31 @@ class InferenceUtilsTest(tf.test.TestCase):
         feature_index_pattern='0-3-5')
     self.assertEqual([], viz_params.feature_indices)
 
+  def test_sort_eligible_features(self):
+    features_list = [{'name': 'feat1'}, {'name': 'feat2'}]
+    chart_data = {
+        'feat1': {
+            'chartType': 'numeric',
+            'data': [[
+               {'series1': [{'scalar': .2}, {'scalar': .1}, {'scalar': .3}]},
+               {'series2': [{'scalar': .2}, {'scalar': .1}, {'scalar': .4}]},
+            ]]
+        },
+        'feat2': {
+            'chartType': 'categorical',
+            'data': [[
+               {'series1': [{'scalar': .2}, {'scalar': .1}, {'scalar': .3}]},
+               {'series2': [{'scalar': .2}, {'scalar': .1}, {'scalar': .9}]},
+            ]]
+        }
+    }
+    sorted_list = inference_utils.sort_eligible_features(
+        features_list, chart_data)
+    print(sorted_list)
+    self.assertEqual('feat2', sorted_list[0]['name'])
+    self.assertEqual(.8, sorted_list[0]['interestingness'])
+    self.assertEqual('feat1', sorted_list[1]['name'])
+    self.assertEqual(.4, sorted_list[1]['interestingness'])
 
 if __name__ == '__main__':
   tf.test.main()

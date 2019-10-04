@@ -13,14 +13,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {BrowserModule} from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
 
-import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
+import {CoreModule} from './core/core.module';
+import {PluginsModule} from './plugins/plugins.module';
+
+import {ROOT_REDUCERS, metaReducers} from './reducers';
+
+import {HeaderModule} from './header/header.module';
+import {ReloaderModule} from './reloader/reloader.module';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    CoreModule,
+    HeaderModule,
+    PluginsModule,
+    ReloaderModule,
+    StoreModule.forRoot(ROOT_REDUCERS, {
+      metaReducers,
+      runtimeChecks: {
+        strictStateSerializability: true,
+        strictActionSerializability: true,
+      },
+    }),
+    EffectsModule.forRoot([]),
+  ],
   providers: [],
   bootstrap: [AppComponent],
 })

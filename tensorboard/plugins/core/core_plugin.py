@@ -57,12 +57,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._logdir = context.logdir
+    logdir_spec = context.flags.logdir_spec if context.flags else ''
+    self._logdir = context.logdir or logdir_spec
     self._db_uri = context.db_uri
     self._window_title = context.window_title
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def is_active(self):
     return True
@@ -116,11 +121,15 @@ class CorePlugin(base_plugin.TBPlugin):
       database (depending on which mode TensorBoard is running in).
     * window_title is the title of the TensorBoard web page.
     """
+    if self._data_provider:
+      experiment = request.args.get('experiment', '')
+      data_location = self._data_provider.data_location(experiment)
+    else:
+      data_location = self._logdir or self._db_uri
     return http_util.Respond(
         request,
         {
-            'data_location': self._logdir or self._db_uri,
-            'mode': 'db' if self._db_uri else 'logdir',
+            'data_location': data_location,
             'window_title': self._window_title,
         },
         'application/json')
@@ -149,7 +158,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Sort order is by started time (aka first event time) with empty times sorted
     last, and then ties are broken by sorting on the run name.
     """
-    if self._db_connection_provider:
+    if self._data_provider:
+      experiment = request.args.get('experiment', '')
+      runs = sorted(
+          self._data_provider.list_runs(experiment_id=experiment),
+          key=lambda run: (
+              run.start_time if run.start_time is not None else float('inf'),
+              run.run_name,
+          )
+      )
+      run_names = [run.run_name for run in runs]
+    elif self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT
@@ -278,23 +297,47 @@ Directory where TensorBoard will look to find TensorFlow event files
 that it can display. TensorBoard will recursively walk the directory
 structure rooted at logdir, looking for .*tfevents.* files.
 
-You may also pass a comma separated list of log directories, and
-TensorBoard will watch each directory. You can also assign names to
-individual log directories by putting a colon between the name and the
-path, as in:
+A leading tilde will be expanded with the semantics of Python's
+os.expanduser function.
+''')
 
-`tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2`\
+    parser.add_argument(
+        '--logdir_spec',
+        metavar='PATH_SPEC',
+        type=str,
+        default='',
+        help='''\
+Like `--logdir`, but with special interpretation for commas and colons:
+commas separate multiple runs, where a colon specifies a new name for a
+run. For example:
+`tensorboard --logdir_spec=name1:/path/to/logs/1,name2:/path/to/logs/2`.
+
+This flag is discouraged and can usually be avoided. TensorBoard walks
+log directories recursively; for finer-grained control, prefer using a
+symlink tree. Some features may not work when using `--logdir_spec`
+instead of `--logdir`.
 ''')
 
     parser.add_argument(
         '--host',
         metavar='ADDR',
         type=str,
-        default='',
+        default=None,  # like localhost, but prints a note about `--bind_all`
         help='''\
-What host to listen to. Defaults to serving on all interfaces. Other
-commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
+What host to listen to (default: localhost). To serve to the entire local
+network on both IPv4 and IPv6, see `--bind_all`, with which this option is
+mutually exclusive.
 ''')
+
+    parser.add_argument(
+        '--bind_all',
+        action='store_true',
+        help='''\
+Serve on all public interfaces. This will expose your TensorBoard instance to
+the network on both IPv4 and IPv6 (where available). Mutually exclusive with
+`--host`.
+''')
+
 
     parser.add_argument(
         '--port',
@@ -338,15 +381,6 @@ read-only unless --db_import is also passed.\
 [experimental] enables DB read-and-import mode, which in combination with
 --logdir imports event files into a DB backend on the fly. The backing DB is
 temporary unless --db is also passed to specify a DB path to use.\
-''')
-
-    parser.add_argument(
-        '--db_import_use_op',
-        action='store_true',
-        help='''\
-[experimental] in combination with --db_import, if passed, use TensorFlow's
-import_event() op for importing event data, otherwise use TensorBoard's own
-sqlite ingestion logic.\
 ''')
 
     parser.add_argument(
@@ -483,6 +517,18 @@ it receives new data at least once per hour)\
 ''')
 
     parser.add_argument(
+        '--generic_data',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['false', 'auto', 'true'],
+        help='''\
+[experimental] Whether to use generic data provider infrastructure. The
+"auto" option enables this only for dashboards that are considered
+stable under the new codepaths. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--samples_per_plugin',
         type=str,
         default='',
@@ -503,16 +549,23 @@ flag.\
     if flags.version_tb:
       pass
     elif flags.inspect:
+      if flags.logdir_spec:
+        raise FlagsError('--logdir_spec is not supported with --inspect.')
       if flags.logdir and flags.event_file:
         raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')
       if not (flags.logdir or flags.event_file):
         raise FlagsError('Must specify either --logdir or --event_file.')
-    elif not flags.db and not flags.logdir:
+    elif flags.logdir and flags.logdir_spec:
+      raise FlagsError(
+          'May not specify both --logdir and --logdir_spec')
+    elif not flags.db and not flags.logdir and not flags.logdir_spec:
       raise FlagsError('A logdir or db must be specified. '
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
+    elif flags.host is not None and flags.bind_all:
+      raise FlagsError('Must not specify both --host and --bind_all.')
 
     if flags.path_prefix.endswith('/'):
       flags.path_prefix = flags.path_prefix[:-1]

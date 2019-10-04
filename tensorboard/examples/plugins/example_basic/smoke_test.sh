@@ -45,7 +45,7 @@ pip install -qU wheel 'setuptools>=36.2.0'
 [ -f ./example-plugin/dist/*.whl ]  # just one wheel
 
 py_major_version="$(python -c 'import sys; print(sys.version_info[0])')"
-pip install tf-nightly-2.0-preview  # TODO(@wchargin): Other versions, too?
+pip install tf-nightly  # TODO(@wchargin): Other versions, too?
 pip uninstall -y tensorboard tb-nightly  # drop conflicting packages
 pip install ./tensorboard-wheels/*py"${py_major_version}"*.whl
 pip install ./example-plugin/dist/*.whl
@@ -67,7 +67,7 @@ diff -u example-plugin/tensorboard_plugin_example/static/index.js index.js
 curl -fs "http://localhost:${port}/data/plugins_listing" >plugins_listing
 cat plugins_listing; printf '\n'
 
-grep -qP '"example_basic":(?:(?!"enabled").)*+"enabled": *true' plugins_listing
+perl -nle 'print if m{"example_basic":(?:(?!"enabled").)*+"enabled": *true}' plugins_listing
 grep -qF '"/data/plugin/example_basic/index.js"' plugins_listing
 curl -fs "http://localhost:${port}/data/plugin/example_basic/tags" >tags
 <<EOF tr -d '\n' | diff -u - tags

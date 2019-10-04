@@ -87,6 +87,7 @@ build() (
   >tensorboard/_vendor/__init__.py
   cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
   cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
+  cp -LR "${RUNFILES}/org_pythonhosted_webencodings/webencodings" tensorboard/_vendor
   # Vendor tensorflow-serving-api because it depends directly on TensorFlow.
   # TODO(nickfelt): de-vendor if they're able to relax that dependency.
   cp -LR "${RUNFILES}/org_tensorflow_serving_api/tensorflow_serving" tensorboard/_vendor
@@ -98,6 +99,8 @@ build() (
       s/^from html5lib/from tensorboard._vendor.html5lib/
       s/^import bleach$/from tensorboard._vendor import bleach/
       s/^from bleach/from tensorboard._vendor.bleach/
+      s/^import webencodings$/from tensorboard._vendor import webencodings/
+      s/^from webencodings/from tensorboard._vendor.webencodings/
       s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
     ' {} +
 

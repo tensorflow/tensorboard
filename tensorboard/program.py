@@ -118,16 +118,13 @@ class TensorBoard(object):
     """Creates new instance.
 
     Args:
-      plugins: A list of TensorBoard plugins to load, as TBLoader instances or
-        TBPlugin classes. If not specified, defaults to first-party plugins.
+      plugin: A list of TensorBoard plugins to load, as TBPlugin classes or
+        TBLoader instances or classes. If not specified, defaults to first-party
+        plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
       server_class: An optional factory for a `TensorBoardServer` to use
         for serving the TensorBoard WSGI app. If provided, its callable
         signature should match that of `TensorBoardServer.__init__`.
-
-    :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
-    :type assets_zip_provider: () -> file
-    :type server_class: class
     """
     if plugins is None:
       from tensorboard import default
@@ -136,13 +133,7 @@ class TensorBoard(object):
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
       server_class = create_port_scanning_werkzeug_server
-    def make_loader(plugin):
-      if isinstance(plugin, base_plugin.TBLoader):
-        return plugin
-      if issubclass(plugin, base_plugin.TBPlugin):
-        return base_plugin.BasicLoader(plugin)
-      raise ValueError("Not a TBLoader or TBPlugin subclass: %s" % plugin)
-    self.plugin_loaders = [make_loader(p) for p in plugins]
+    self.plugin_loaders = [application.make_plugin_loader(p) for p in plugins]
     self.assets_zip_provider = assets_zip_provider
     self.server_class = server_class
     self.flags = None
@@ -227,9 +218,7 @@ class TensorBoard(object):
       return 0
     try:
       server = self._make_server()
-      sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
-                       (version.VERSION, server.get_url()))
-      sys.stderr.flush()
+      server.print_serving_message()
       self._register_info(server)
       server.serve_forever()
       return 0
@@ -271,7 +260,7 @@ class TensorBoard(object):
         port=server_url.port,
         pid=os.getpid(),
         path_prefix=self.flags.path_prefix,
-        logdir=self.flags.logdir,
+        logdir=self.flags.logdir or self.flags.logdir_spec,
         db=self.flags.db,
         cache_key=self.cache_key,
     )
@@ -334,6 +323,17 @@ class TensorBoardServer(object):
   def get_url(self):
     """Returns a URL at which this server should be reachable."""
     raise NotImplementedError()
+
+  def print_serving_message(self):
+    """Prints a user-friendly message prior to server start.
+
+    This will be called just before `serve_forever`.
+    """
+    sys.stderr.write(
+        'TensorBoard %s at %s (Press CTRL+C to quit)\n'
+        % (version.VERSION, self.get_url())
+    )
+    sys.stderr.flush()
 
 
 class TensorBoardServerException(Exception):
@@ -422,12 +422,15 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     host = flags.host
     port = flags.port
 
-    # Without an explicit host, we default to serving on all interfaces,
-    # and will attempt to serve both IPv4 and IPv6 traffic through one
-    # socket.
-    self._auto_wildcard = not host
+    self._auto_wildcard = flags.bind_all
     if self._auto_wildcard:
+      # Serve on all interfaces, and attempt to serve both IPv4 and IPv6
+      # traffic through one socket.
       host = self._get_wildcard_address(port)
+    elif host is None:
+      host = 'localhost'
+
+    self._host = host
 
     self._fix_werkzeug_logging()
     try:
@@ -525,11 +528,20 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     if self._auto_wildcard:
       display_host = socket.gethostname()
     else:
-      host = self._flags.host
+      host = self._host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
     return 'http://%s:%d%s/' % (display_host, self.server_port,
                                self._flags.path_prefix.rstrip('/'))
+
+  def print_serving_message(self):
+    if self._flags.host is None and not self._flags.bind_all:
+      sys.stderr.write(
+          'Serving TensorBoard on localhost; to expose to the network, '
+          'use a proxy or pass --bind_all\n'
+      )
+      sys.stderr.flush()
+    super(WerkzeugServer, self).print_serving_message()
 
   def _fix_werkzeug_logging(self):
     """Fix werkzeug logging setup so it inherits TensorBoard's log level.

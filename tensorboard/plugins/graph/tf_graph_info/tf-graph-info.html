@@ -152,7 +152,11 @@ limitations under the License.
           // So long as there is a mapping (even if empty) from node name to health pills, show the
           // legend and slider. We do that because, even if no health pills exist at the current step,
           // the user may desire to change steps, and the slider must show for the user to do that.
-          return debuggerDataEnabled && nodeNamesToHealthPills;
+          return (
+            debuggerDataEnabled &&
+            nodeNamesToHealthPills &&
+            Object.keys(nodeNamesToHealthPills).length > 0
+          );
         },
         _equals: function(a, b) {
           return a === b;

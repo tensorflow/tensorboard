@@ -25,7 +25,12 @@ import threading
 
 import portpicker  # pylint: disable=import-error
 import tensorflow as tf
-from tensorflow.python import pywrap_tensorflow
+
+# To keep compatibility with both 1.x and 2.x
+try:
+  from tensorflow.python import _pywrap_events_writer as tf_events_writer
+except ImportError:
+  from tensorflow.python import pywrap_tensorflow as tf_events_writer
 from werkzeug import wrappers
 from werkzeug import test as werkzeug_test
 
@@ -61,7 +66,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     self.log_dir = self.get_temp_dir()
     file_prefix = tf.compat.as_bytes(
         os.path.join(self.log_dir, 'events.debugger'))
-    writer = pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = tf_events_writer.EventsWriter(file_prefix)
     device_name = '/job:localhost/replica:0/task:0/cpu:0'
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
@@ -107,7 +112,7 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     os.mkdir(run_foo_directory)
     file_prefix = tf.compat.as_bytes(
         os.path.join(run_foo_directory, 'events.debugger'))
-    writer = pywrap_tensorflow.EventsWriter(file_prefix)
+    writer = tf_events_writer.EventsWriter(file_prefix)
     writer.WriteEvent(
         self._CreateEventWithDebugNumericSummary(
             device_name=device_name,
@@ -120,10 +125,11 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     writer.Close()
 
     # Start a server that will receive requests and respond with health pills.
-    self.multiplexer = event_multiplexer.EventMultiplexer({
+    multiplexer = event_multiplexer.EventMultiplexer({
         '.': self.log_dir,
         'run_foo': run_foo_directory,
     })
+    multiplexer.Reload()
     self.debugger_data_server_grpc_port = portpicker.pick_unused_port()
 
     # Fake threading behavior so that threads are synchronous.
@@ -141,12 +147,10 @@ class DebuggerPluginTestBase(tf.test.TestCase):
         self.mock_debugger_data_server_class).start()
 
     self.context = base_plugin.TBContext(
-        logdir=self.log_dir, multiplexer=self.multiplexer)
+        logdir=self.log_dir, multiplexer=multiplexer)
     self.plugin = debugger_plugin.DebuggerPlugin(self.context)
     self.plugin.listen(self.debugger_data_server_grpc_port)
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [self.plugin], self.multiplexer, reload_interval=0,
-        path_prefix='')
+    wsgi_app = application.TensorBoardWSGI([self.plugin])
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
     # The debugger data server should be started at the correct port.

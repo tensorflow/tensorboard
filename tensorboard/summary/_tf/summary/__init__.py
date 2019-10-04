@@ -128,6 +128,10 @@ def reexport_tf_summary():
   packages = [
       'tensorflow',
       'tensorflow.compat.v2',
+      'tensorflow_core._api.v2',
+      'tensorflow_core._api.v2.compat.v2',
+      'tensorflow_core._api.v1.compat.v2',
+      # Old names for `tensorflow_core._api.*`.
       'tensorflow._api.v2',
       'tensorflow._api.v2.compat.v2',
       'tensorflow._api.v1.compat.v2',

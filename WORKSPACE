@@ -36,18 +36,16 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "b6936ecc0b5a1ef616b9d7e76694d414aa5605265c11322257a610fb256b1bf7",
-    # The changes that we need for Bazel 0.26 compatibility are not in
-    # any release, so we pin to HEAD as of 2019-06-04.
-    strip_prefix = "rules_closure-7434c41542ca9e1b05166d897b90073d1b8b2cf8",
+    sha256 = "9b99615f73aa574a2947226c6034a6f7c319e1e42905abc4dc30ddbbb16f4a31",
+    strip_prefix = "rules_closure-4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/7434c41542ca9e1b05166d897b90073d1b8b2cf8.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/7434c41542ca9e1b05166d897b90073d1b8b2cf8.tar.gz",  # 2019-06-04
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5.tar.gz",  # 2019-09-16
     ],
 )
 
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
-closure_repositories(
+load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
+rules_closure_dependencies(
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
 )
@@ -65,6 +63,15 @@ yarn_install(
     name = "npm",
     package_json = "//:package.json",
     yarn_lock = "//:yarn.lock",
+    # Opt out of symlinking local node_modules folder into bazel internal
+    # directory.  Symlinking is incompatible with our toolchain which often
+    # removes source directory without `bazel clean` which creates broken
+    # symlink into node_modules folder.
+    symlink_node_modules = False,
+    data = [
+        # package.json contains postinstall that requires this file.
+        "//:angular-metadata.tsconfig.json",
+    ],
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
@@ -73,11 +80,13 @@ install_bazel_dependencies()
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "8fd92a6b65330ec23e32ae052eca5cf68e278df677b7e15f36d59e6350f201f0",
-    strip_prefix = "tensorflow-6168f476b52d6d40eeff1823943ed2c0ea28adde",
+    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
+    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
+    sha256 = "48ddba718da76df56fd4c48b4bbf4f97f254ba269ec4be67f783684c75563ef8",
+    strip_prefix = "tensorflow-2.0.0-rc0",
     urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",  # 2019-04-08
-        "https://github.com/tensorflow/tensorflow/archive/6168f476b52d6d40eeff1823943ed2c0ea28adde.tar.gz",
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",  # 2019-08-23
+        "https://github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",
     ],
 )
 

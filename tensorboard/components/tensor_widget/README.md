@@ -17,5 +17,26 @@ Features
 - The API allows for programmatic interaction with the UI, as well as listening
   to events in the UI.
 
-*This component is in early stage of active development.*
-*Many of its features are still incomplete.*
+_This component is in early stage of active development._
+_Many of its features are still incomplete._
+
+## Developer workflow
+
+### Running the development server
+
+1. Make sure you have installed bazel and optionally also
+   [ibazel](https://github.com/bazelbuild/bazel-watcher#installation)
+2. Run in the root folder of tensorboard:
+
+   ```sh
+   bazel run //tensorboard/components/tensor_widget:dev_server
+   ```
+
+   or using ibazel:
+
+   ```sh
+   ibazel run //tensorboard/components/tensor_widget:dev_server
+   ```
+
+   With ibazel, the dev server will track changes to the source files
+   automatically.

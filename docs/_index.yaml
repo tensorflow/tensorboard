@@ -22,11 +22,8 @@ landing_page:
         </ul>
       image_path: /tensorboard/images/tensorboard.gif
       buttons:
-      - label: Learn More
-        path: /tensorboard/r1/overview
-        classname: button
-      - label: Explore the TF 2.0 Alpha
-        path: /tensorboard/r2/get_started
+      - label: Get started
+        path: /tensorboard/get_started
         classname: button
   - classname: devsite-landing-row-cards
     items:

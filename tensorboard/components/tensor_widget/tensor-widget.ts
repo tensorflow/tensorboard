@@ -13,10 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {TensorWidgetImpl} from './tensor-widget-impl';
 import {TensorWidget, TensorWidgetOptions, TensorView} from './types';
 
+export {Shape, TensorView} from './types';
+export {VERSION} from './version';
+
 /**
- * Create an instance of tensor widiget.
+ * Create an instance of tensor widget.
  * @param rootElement The element in which the tensor widget will be endered.
  * @param tensor The tensor view of which the content is to be rendered
  *   in the tensor widget.
@@ -28,7 +32,5 @@ export function tensorWidget(
   tensor: TensorView,
   options?: TensorWidgetOptions
 ): TensorWidget {
-  throw new Error(
-    'tensorWidget() factory method has not been implemented yet.'
-  );
+  return new TensorWidgetImpl(rootElement, tensor, options);
 }

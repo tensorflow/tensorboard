@@ -30,9 +30,11 @@ from six import StringIO
 from werkzeug import wrappers
 import numpy as np
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
@@ -57,6 +59,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     """
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def get_plugin_apps(self):
     return {
@@ -66,6 +72,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The scalars plugin is active iff any run has at least one scalar tag."""
+    if self._data_provider:
+      # We don't have an experiment ID, and modifying the backend core
+      # to provide one would break backward compatibility. Hack for now.
+      return True
+
     if self._db_connection_provider:
       # The plugin is active if one relevant tag can be found in the database.
       db = self._db_connection_provider()
@@ -84,12 +95,25 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(ScalarsPlugin, self).frontend_metadata()._replace(
-        element_name='tf-scalar-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-scalar-dashboard')
 
-  def index_impl(self):
+  def index_impl(self, experiment=None):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
+    if self._data_provider:
+      mapping = self._data_provider.list_scalars(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+      )
+      result = {run: {} for run in mapping}
+      for (run, tag_to_content) in six.iteritems(mapping):
+        for (tag, metadatum) in six.iteritems(tag_to_content):
+          description = plugin_util.markdown_to_safe_html(metadatum.description)
+          result[run][tag] = {
+              'displayName': metadatum.display_name,
+              'description': description,
+          }
+      return result
+
     if self._db_connection_provider:
       # Read tags from the database.
       db = self._db_connection_provider()
@@ -115,9 +139,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         }
       return result
 
-    runs = self._multiplexer.Runs()
-    result = {run: {} for run in runs}
-
+    result = collections.defaultdict(lambda: {})
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
@@ -131,7 +153,24 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   def scalars_impl(self, tag, run, experiment, output_format):
     """Result of the form `(body, mime_type)`."""
-    if self._db_connection_provider:
+    if self._data_provider:
+      # Downsample reads to 1000 scalars per time series, which is the
+      # default size guidance for scalars under the multiplexer loading
+      # logic.
+      SAMPLE_COUNT = 1000
+      all_scalars = self._data_provider.read_scalars(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+          downsample=SAMPLE_COUNT,
+          run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+      )
+      scalars = all_scalars.get(run, {}).get(tag, None)
+      if scalars is None:
+        raise errors.NotFoundError(
+            'No scalar data for run=%r, tag=%r' % (run, tag)
+        )
+      values = [(x.wall_time, x.step, x.value) for x in scalars]
+    elif self._db_connection_provider:
       db = self._db_connection_provider()
       # We select for steps greater than -1 because the writer inserts
       # placeholder rows en masse. The check for step filters out those rows.
@@ -160,7 +199,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
       values = [(wall_time, step, self._get_value(data, dtype_enum))
                 for (step, wall_time, data, dtype_enum) in cursor]
     else:
-      tensor_events = self._multiplexer.Tensors(run, tag)
+      try:
+        tensor_events = self._multiplexer.Tensors(run, tag)
+      except KeyError:
+        raise errors.NotFoundError(
+            'No scalar data for run=%r, tag=%r' % (run, tag)
+        )
       values = [(tensor_event.wall_time,
                  tensor_event.step,
                  tensor_util.make_ndarray(tensor_event.tensor_proto).item())
@@ -191,16 +235,16 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def tags_route(self, request):
-    index = self.index_impl()
+    experiment = request.args.get('experiment', '')
+    index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
   def scalars_route(self, request):
     """Given a tag and single run, return array of ScalarEvents."""
-    # TODO: return HTTP status code for malformed requests
     tag = request.args.get('tag')
     run = request.args.get('run')
-    experiment = request.args.get('experiment')
+    experiment = request.args.get('experiment', '')
     output_format = request.args.get('format')
     (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
     return http_util.Respond(request, body, mime_type)

@@ -15,13 +15,15 @@ limitations under the License.
 
 import {BaseTensorHealthPill} from './health-pill-types';
 
+export type Shape = ReadonlyArray<number>;
+
 /** The basic specifications of a tensor. */
 export interface TensorSpec {
   /** Data type of the underlying tensor. */
   dtype: string;
 
   /** Shape of the underlying tensor. */
-  shape: ReadonlyArray<number>;
+  shape: Shape;
 }
 
 /**
@@ -53,7 +55,7 @@ export interface TensorView {
    * slicing and viewing dimensions, as well as the ranges
    * within the viewing dimensions.
    */
-  view: (navigation: TensorViewSlicingSpec) => Promise<SlicedValues>;
+  view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
   /** Get the health pill of the underlying tensor. */
   getHealthPill: () => Promise<BaseTensorHealthPill>;
@@ -108,8 +110,9 @@ export interface TensorViewSlicingSpec {
    *
    * - The `dim` field is the 0-based dimension index.
    * - The `index` is the 0-based index for the selected slice.
+   *   The `null` option in `index` is for the case of 0 dimension size.
    */
-  slicingDimsAndIndices: Array<{dim: number; index: number}>;
+  slicingDimsAndIndices: Array<{dim: number; index: number | null}>;
 
   /**
    * Which dimensions are used for viewing (i.e., rendered in the
@@ -127,16 +130,26 @@ export interface TensorViewSlicingSpec {
    *
    * The two numbers are beginning index (inclusive) and ending index
    * (exclusive).
+   *
+   * The `null` option at the value level is for rank < 1 (i.e., scalar),
+   * where no row range selection is necessary.
+   * The `null` in the 2nd element is for case in which the upper limit is not
+   * determined.
    */
-  verticalRange: [number, number];
+  verticalRange: [number, number | null] | null;
 
   /**
    * The indices from the second viewing dimension, which are shown as columns.
    *
    * The two numbers are beginning index (inclusive) and ending index
    * (exclusive).
+   *
+   * The `null` option at the value level is for rank < 2 (i.e., scalar or 1D
+   * tensor), where no row range selection is necessary.
+   * The `null` in the 2nd element is for case in which the upper limit is not
+   * determined.
    */
-  horizontalRange?: [number, number];
+  horizontalRange: [number, number | null] | null;
 
   /**
    * Optional dimension for depth.
@@ -232,6 +245,16 @@ export interface TensorWidget {
    */
   navigateToIndices: (indices: number[]) => Promise<void>;
 
-  // TODO(cais): Add API for programmatically changing navigation status.
-  // TODO(cais): Add event listeners for navigation status changes.
+  // TODO(cais): Add API for programmatically changing slicingSpec status.
+  // TODO(cais): Add event listeners for slicingSpec change.
+}
+
+/**
+ * Possible directions of movement.
+ */
+export enum MoveDirection {
+  UP = 1,
+  DOWN,
+  LEFT,
+  RIGHT,
 }

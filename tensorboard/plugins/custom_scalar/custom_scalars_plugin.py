@@ -108,7 +108,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(CustomScalarsPlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-custom-scalar-dashboard',
         tab_name='Custom Scalars',
     )
@@ -125,7 +125,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           request=request,
           content=str(e),
           content_type='text/plain',
-          code=500)
+          code=400)
     return http_util.Respond(request, body, mime_type)
 
   def download_data_impl(self, run, tag, response_format):
@@ -170,7 +170,6 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
       payload: Object<string, ScalarEvent[]>,
     }
     """
-    # TODO: return HTTP status code for malformed requests
     tag_regex_string = request.args.get('tag')
     run = request.args.get('run')
     mime_type = 'application/json'
@@ -182,7 +181,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           request=request,
           content=str(e),
           content_type='text/plain',
-          code=500)
+          code=400)
 
     # Produce the response.
     return http_util.Respond(request, body, mime_type)

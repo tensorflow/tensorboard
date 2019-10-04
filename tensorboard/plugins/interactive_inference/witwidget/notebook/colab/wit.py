@@ -45,9 +45,21 @@ def get_eligible_features(wit_id):
 output.register_callback('notebook.GetEligibleFeatures', get_eligible_features)
 
 
+def sort_eligible_features(wit_id, details):
+  WitWidget.widgets[wit_id].sort_eligible_features(details)
+output.register_callback('notebook.SortEligibleFeatures', sort_eligible_features)
+
+
 def infer_mutants(wit_id, details):
   WitWidget.widgets[wit_id].infer_mutants(details)
 output.register_callback('notebook.InferMutants', infer_mutants)
+
+
+def compute_custom_distance(wit_id, index, callback_name, params):
+  WitWidget.widgets[wit_id].compute_custom_distance(index, callback_name,
+                                                    params)
+output.register_callback('notebook.ComputeCustomDistance',
+                         compute_custom_distance)
 
 
 # HTML/javascript for the WIT frontend.
@@ -66,6 +78,12 @@ WIT_HTML = """
         google.colab.kernel.invokeFunction(
           'notebook.InferExamples', [id], {{}});
       }});
+      wit.addEventListener("compute-custom-distance", e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.ComputeCustomDistance',
+          [id, e.detail.index, e.detail.callback, e.detail.params],
+          {{}});
+      }});
       wit.addEventListener("delete-example", e => {{
         google.colab.kernel.invokeFunction(
           'notebook.DeleteExample', [id, e.detail.index], {{}});
@@ -76,7 +94,9 @@ WIT_HTML = """
       }});
       wit.addEventListener("update-example", e => {{
         google.colab.kernel.invokeFunction(
-          'notebook.UpdateExample', [id, e.detail.index, e.detail.example], {{}});
+          'notebook.UpdateExample',
+          [id, e.detail.index, e.detail.example],
+          {{}});
       }});
       wit.addEventListener('get-eligible-features', e => {{
         google.colab.kernel.invokeFunction(
@@ -87,6 +107,10 @@ WIT_HTML = """
         google.colab.kernel.invokeFunction(
           'notebook.InferMutants', [id, e.detail], {{}});
       }});
+      wit.addEventListener('sort-eligible-features', e => {{
+        google.colab.kernel.invokeFunction(
+          'notebook.SortEligibleFeatures', [id, e.detail], {{}});
+      }});
 
       // Javascript callbacks called by python code to communicate with WIT
       // Polymer element.
@@ -96,9 +120,14 @@ WIT_HTML = """
       window.inferenceCallback = inferences => {{
         wit.labelVocab = inferences.label_vocab;
         wit.inferences = inferences.inferences;
-        wit.attributions = {{indices: wit.inferences.indices,
-                            attributions: inferences.attributions}}
+        wit.extraOutputs = {{indices: wit.inferences.indices,
+                             extra: inferences.extra_outputs}};
       }};
+
+      window.distanceCallback = callbackDict => {{
+        wit.invokeCustomDistanceCallback(callbackDict);
+      }};
+
       window.spriteCallback = spriteUrl => {{
         if (!wit.updateSprite) {{
           requestAnimationFrame(() => window.spriteCallback(spriteUrl));
@@ -109,6 +138,9 @@ WIT_HTML = """
         wit.updateSprite();
       }};
       window.eligibleFeaturesCallback = features => {{
+        wit.partialDepPlotEligibleFeatures = features;
+      }};
+      window.sortEligibleFeaturesCallback = features => {{
         wit.partialDepPlotEligibleFeatures = features;
       }};
       window.inferMutantsCallback = chartInfo => {{
@@ -149,6 +181,11 @@ WIT_HTML = """
         wit.updateNumberOfModels();
         if ('target_feature' in config) {{
           wit.selectedLabelFeature = config['target_feature'];
+        }}
+        if ('uses_custom_distance_fn' in config) {{
+          wit.customDistanceFunctionSet = true;
+        }} else {{
+          wit.customDistanceFunctionSet = false;
         }}
       }};
       window.updateExamplesCallback = examples => {{
@@ -256,6 +293,22 @@ class WitWidget(base.WitWidgetBase):
     self.updated_example_indices.add(len(self.examples) - 1)
     self._generate_sprite()
 
+  def compute_custom_distance(self, index, callback_fn, params):
+    try:
+      distances = base.WitWidgetBase.compute_custom_distance_impl(
+          self, index, params['distanceParams'])
+      callback_dict = {
+          'distances': distances,
+          'exInd': index,
+          'funId': callback_fn,
+          'params': params['callbackParams']
+      }
+      output.eval_js("""distanceCallback({callback_dict})""".format(
+          callback_dict=json.dumps(callback_dict)))
+    except Exception as e:
+      output.eval_js(
+          """backendError({error})""".format(error=json.dumps({'msg': str(e)})))
+
   def get_eligible_features(self):
     features_list = base.WitWidgetBase.get_eligible_features_impl(self)
     output.eval_js("""eligibleFeaturesCallback({features_list})""".format(
@@ -266,6 +319,15 @@ class WitWidget(base.WitWidgetBase):
       json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
       output.eval_js("""inferMutantsCallback({json_mapping})""".format(
           json_mapping=json.dumps(json_mapping)))
+    except Exception as e:
+      output.eval_js("""backendError({error})""".format(
+          error=json.dumps({'msg': str(e)})))
+
+  def sort_eligible_features(self, info):
+    try:
+      features_list = base.WitWidgetBase.sort_eligible_features_impl(self, info)
+      output.eval_js("""sortEligibleFeaturesCallback({features_list})""".format(
+          features_list=json.dumps(features_list)))
     except Exception as e:
       output.eval_js("""backendError({error})""".format(
           error=json.dumps({'msg': str(e)})))

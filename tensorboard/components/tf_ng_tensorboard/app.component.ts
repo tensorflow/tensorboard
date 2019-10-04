@@ -12,11 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {State} from './core/core.reducers';
+import {coreLoaded} from './core/core.actions';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'tf-ng-tensorboard',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {
+    this.store.dispatch(coreLoaded());
+  }
+}

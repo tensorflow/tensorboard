@@ -79,7 +79,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     self._logdir = context.logdir
     self._has_auth_group = (context.flags and
                             'authorized_groups' in context.flags and
-                            context.flags.authorized_groups is not '')
+                            context.flags.authorized_groups != '')
 
   def get_plugin_apps(self):
     """Obtains a mapping between routes and handlers. Stores the logdir.
@@ -97,6 +97,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
         '/delete_example': self._delete_example,
         '/infer_mutants': self._infer_mutants_handler,
         '/eligible_features': self._eligible_features_from_example_handler,
+        '/sort_eligible_features': self._sort_eligible_features_handler,
     }
 
   def is_active(self):
@@ -111,7 +112,7 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     # TODO(#2338): Keep this in sync with the `registerDashboard` call
     # on the frontend until that call is removed.
-    return super(InteractiveInferencePlugin, self).frontend_metadata()._replace(
+    return base_plugin.FrontendMetadata(
         element_name='tf-interactive-inference-dashboard',
         tab_name='What-If Tool',
     )
@@ -323,8 +324,50 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
     return http_util.Respond(request, features_list, 'application/json')
 
   @wrappers.Request.application
+  def _sort_eligible_features_handler(self, request):
+    """Returns a sorted list of JSON objects for each feature in the example.
+
+    The list is sorted by interestingness in terms of the resulting change in
+    inference values across feature values, for partial dependence plots.
+
+    Args:
+      request: A request for sorted features.
+
+    Returns:
+      A sorted list with a JSON object for each feature.
+      Numeric features are represented as
+      {name: observedMin: observedMax: interestingness:}.
+      Categorical features are repesented as
+      {name: samples:[] interestingness:}.
+    """
+    try:
+      features_list = inference_utils.get_eligible_features(
+          self.examples[0: NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS)
+      example_index = int(request.args.get('example_index', '0'))
+      (inference_addresses, model_names, model_versions,
+          model_signatures) = self._parse_request_arguments(request)
+      chart_data = {}
+      for feat in features_list:
+        chart_data[feat['name']] = self._infer_mutants_impl(
+          feat['name'], example_index,
+          inference_addresses, model_names, request.args.get('model_type'),
+          model_versions, model_signatures,
+          request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
+          request.args.get('predict_output_tensor'),
+          feat['observedMin'] if 'observedMin' in feat else 0,
+          feat['observedMax'] if 'observedMin' in feat else 0,
+          None)
+      features_list = inference_utils.sort_eligible_features(
+        features_list, chart_data)
+      return http_util.Respond(request, features_list, 'application/json')
+    except common_utils.InvalidUserInputError as e:
+      return http_util.Respond(request, {'error': e.message},
+                               'application/json', code=400)
+
+  @wrappers.Request.application
   def _infer_mutants_handler(self, request):
-    """Returns JSON for the `vz-line-chart`s for a feature.
+    """Returns JSON for the partial dependence plots for a feature.
 
     Args:
       request: A request that should contain 'feature_name', 'example_index',
@@ -342,31 +385,43 @@ class InteractiveInferencePlugin(base_plugin.TBPlugin):
 
       example_index = int(request.args.get('example_index', '0'))
       feature_name = request.args.get('feature_name')
-      examples = (self.examples if example_index == -1
-          else [self.examples[example_index]])
-
       (inference_addresses, model_names, model_versions,
           model_signatures) = self._parse_request_arguments(request)
-
-      serving_bundles = []
-      for model_num in xrange(len(inference_addresses)):
-        serving_bundles.append(inference_utils.ServingBundle(
-            inference_addresses[model_num],
-            model_names[model_num],
-            request.args.get('model_type'),
-            model_versions[model_num],
-            model_signatures[model_num],
-            request.args.get('use_predict') == 'true',
-            request.args.get('predict_input_tensor'),
-            request.args.get('predict_output_tensor')))
-
-      viz_params = inference_utils.VizParams(
+      json_mapping = self._infer_mutants_impl(feature_name, example_index,
+          inference_addresses, model_names, request.args.get('model_type'),
+          model_versions, model_signatures,
+          request.args.get('use_predict') == 'true',
+          request.args.get('predict_input_tensor'),
+          request.args.get('predict_output_tensor'),
           request.args.get('x_min'), request.args.get('x_max'),
-          self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
           request.args.get('feature_index_pattern'))
-      json_mapping = inference_utils.mutant_charts_for_feature(
-          examples, feature_name, serving_bundles, viz_params)
       return http_util.Respond(request, json_mapping, 'application/json')
     except common_utils.InvalidUserInputError as e:
       return http_util.Respond(request, {'error': e.message},
                                'application/json', code=400)
+
+  def _infer_mutants_impl(self, feature_name, example_index, inference_addresses,
+      model_names, model_type, model_versions, model_signatures, use_predict,
+      predict_input_tensor, predict_output_tensor, x_min, x_max,
+      feature_index_pattern):
+    """Helper for generating PD plots for a feature."""
+    examples = (self.examples if example_index == -1
+                else [self.examples[example_index]])
+    serving_bundles = []
+    for model_num in xrange(len(inference_addresses)):
+      serving_bundles.append(inference_utils.ServingBundle(
+          inference_addresses[model_num],
+          model_names[model_num],
+          model_type,
+          model_versions[model_num],
+          model_signatures[model_num],
+          use_predict,
+          predict_input_tensor,
+          predict_output_tensor))
+
+    viz_params = inference_utils.VizParams(
+        x_min, x_max,
+        self.examples[0:NUM_EXAMPLES_TO_SCAN], NUM_MUTANTS,
+        feature_index_pattern)
+    return inference_utils.mutant_charts_for_feature(
+        examples, feature_name, serving_bundles, viz_params)

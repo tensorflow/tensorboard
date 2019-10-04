@@ -173,7 +173,7 @@ limitations under the License.
         _getType: function(inputNode, isSummary, isConst, inputType) {
           const {GraphIconType} = tf.graph.icon;
           if (inputNode) {
-            switch (tf.graph.NodeType[inputNode.type]) {
+            switch (inputNode.type) {
               case tf.graph.NodeType.OP: {
                 const opName = inputNode.op;
                 // TODO(tensorboarad-team): `op` should have a predictable type.
@@ -214,7 +214,7 @@ limitations under the License.
           const {node, renderInfo, colorBy, templateIndex} = this;
           const ns = tf.graph.scene.node;
           if (newFill !== oldFill) {
-            ns.removeGradientDefinitions(this.$.icon.getSvgDefineableElement());
+            ns.removeGradientDefinitions(this.$.icon.getSvgDefinableElement());
           }
           if (node && renderInfo && colorBy && templateIndex) {
             const nsColorBy = ns.ColorBy[colorBy.toUpperCase()];
@@ -223,7 +223,7 @@ limitations under the License.
               nsColorBy,
               renderInfo,
               false,
-              this.$.icon.getSvgDefineableElement()
+              this.$.icon.getSvgDefinableElement()
             );
           }
         },

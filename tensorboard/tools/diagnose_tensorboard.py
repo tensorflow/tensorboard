@@ -172,6 +172,7 @@ def installed_packages():
       frozenset([
           u"tensorboard",
           u"tb-nightly",
+          u"tensorflow-tensorboard",
       ]),
       frozenset([
           u"tensorflow",
@@ -194,9 +195,9 @@ def installed_packages():
     for package in actual:
       logging.info("installed: %s", packages[package])
     if len(actual) == 0:
-      logging.warn("no installation among: %s", sorted(family))
+      logging.warning("no installation among: %s", sorted(family))
     elif len(actual) > 1:
-      logging.warn("conflicting installations: %s", sorted(actual))
+      logging.warning("conflicting installations: %s", sorted(actual))
       found_conflict = True
 
   if found_conflict:

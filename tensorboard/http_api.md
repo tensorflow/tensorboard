@@ -38,6 +38,8 @@ The `logdir` argument is the path of the directory that contains events files.
 Returns a dict mapping from plugin name to an object that describes a
 plugin, with the following keys:
 
+  - `disable_reload`: Boolean. Whether to disable the reload button and
+    auto-reload timer.
   - `enabled`: Boolean. Indicates whether the plugin is active. A plugin
     might be inactive, for instance, if it lacks relevant data.
   - `loading_mechanism`: One of:
@@ -148,14 +150,15 @@ Example response:
 
 ## `data/environment`
 
-Returns environment in which the TensorBoard app is running. Possible values of
-the `mode` are: `db` and `logdir`.
+Returns environment in which the TensorBoard app is running.
+
+The `data_location` is a user-readable string describing the source from which
+TensorBoard is reading data, such as a directory on disk or a SQLite database.
 
 Example response:
 
     {
       "window_title": "Custom Name",
-      "mode": "db",
       "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
     }
 

@@ -31,6 +31,7 @@ limitations under the License.
 <link rel="import" href="../tf-imports/lodash.html" />
 <link rel="import" href="../tf-paginated-view/tf-paginated-view-store.html" />
 <link rel="import" href="../tf-storage/tf-storage.html" />
+<link rel="import" href="../tf-plugin-util/plugin-host.html" />
 <link rel="import" href="registry.html" />
 
 <!--
@@ -96,7 +97,7 @@ limitations under the License.
               if="[[_inactiveDashboardsExist(_dashboardData, disabledDashboards, _activeDashboards)]]"
             >
               <paper-dropdown-menu
-                label="Inactive"
+                label="INACTIVE"
                 no-label-float
                 noink
                 style="margin-left: 12px"
@@ -321,13 +322,11 @@ limitations under the License.
           -webkit-font-smoothing: antialiased;
           font-size: 14px;
           font-weight: 500;
-          text-transform: uppercase;
         }
         --paper-input-container-label: {
           -webkit-font-smoothing: antialiased;
           font-size: 14px;
           font-weight: 500;
-          text-transform: uppercase;
         }
       }
 
@@ -339,14 +338,11 @@ limitations under the License.
       }
 
       #inactive-dashboards-menu {
-        --paper-menu-background-color: var(
+        --paper-listbox-background-color: var(
           --tb-toolbar-background-color,
           var(--tb-orange-strong)
         );
-        --paper-menu-color: white;
-        --paper-menu: {
-          text-transform: uppercase;
-        }
+        --paper-listbox-color: white;
       }
 
       .global-actions {
@@ -747,7 +743,7 @@ limitations under the License.
           workingSet.delete(d.plugin);
         });
         activeDashboards.forEach((d) => {
-          workingSet.delete(d.plugin);
+          workingSet.delete(d);
         });
         return workingSet.size > 0;
       },
@@ -897,18 +893,23 @@ limitations under the License.
         const pluginBasePath = tf_backend
           .getRouter()
           .pluginRoute(selectedDashboard, '/');
-        const base = subdocument.createElement('base');
-        // TODO(stephanwlee): Use sanitized URL when setting the href.
-        // setAttribute is a bypass for the security conformance which we
-        // have no way to address.
-        base.setAttribute(
-          'href',
-          String(new URL(pluginBasePath, window.location.href))
-        );
-        subdocument.head.appendChild(base);
         const script = subdocument.createElement('script');
+        const baseHrefString = JSON.stringify(
+          new URL(pluginBasePath, window.location.href)
+        );
         const moduleString = JSON.stringify(loadingMechanism.modulePath);
-        script.textContent = `import(${moduleString}).then((m) => void m.render());`;
+        script.textContent = [
+          // `setTimeout(..., 0)` and the late `<base>` configuration
+          // (in the inline script rather than the host) are needed to
+          // work around a Firefox bug:
+          // https://github.com/tensorflow/tensorboard/issues/2536
+          `setTimeout(() => {\n`,
+          `  const base = document.createElement("base");\n`,
+          `  base.setAttribute("href", ${baseHrefString});\n`,
+          `  document.head.appendChild(base);\n`,
+          `  import(${moduleString}).then((m) => void m.render());\n`,
+          `}, 0);\n`,
+        ].join('');
         subdocument.body.appendChild(script);
       },
 
@@ -1004,7 +1005,7 @@ limitations under the License.
               type: 'CUSTOM_ELEMENT',
               elementName: legacyMetadata.elementName,
             },
-            tabName: legacyMetadata.tabName,
+            tabName: legacyMetadata.tabName.toUpperCase(),
             disableReload: legacyMetadata.isReloadDisabled || false,
             removeDom: legacyMetadata.removeDom || false,
           };
@@ -1058,7 +1059,7 @@ limitations under the License.
             registry[name] = {
               plugin: name,
               loadingMechanism: loadingMechanism,
-              tabName: backendMetadata.tab_name,
+              tabName: backendMetadata.tab_name.toUpperCase(),
               disableReload: backendMetadata.disable_reload,
               removeDom: backendMetadata.remove_dom,
             };

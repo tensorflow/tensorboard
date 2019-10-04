@@ -94,7 +94,33 @@ namespace memory_viewer_usage {
       }
       this.initBuffers_(bufferAssignment);
       this.initAllocations_(bufferAssignment);
-      this.findPeakMemoryUsage_(bufferAssignment);
+      const trace = this.getHbmHeapTrace_(bufferAssignment);
+      if (!trace) {
+        console.error('Missing hbm heap simulator trace.');
+        return;
+      }
+      this.findPeakMemoryUsage_(trace);
+    }
+
+    /**
+     * From a list of heap simulator traces, identify the one uses the HBM
+     * memory space.
+     */
+    private getHbmHeapTrace_(bufferAssignment) {
+      // The color here indicates the XLA memory space color assigned to each
+      // logical buffer by graph coloring pass.
+      const kHbmColor = 0;
+      for (const trace of bufferAssignment.heapSimulatorTraces) {
+        for (const event of trace.events) {
+          if (!event.bufferId) continue;
+          const buffer = this.idToBuffer_[event.bufferId];
+          if (!buffer) continue;
+          if (buffer.color != kHbmColor) break;
+          // This heap simulator trace is for hbm.
+          return trace;
+        }
+      }
+      return null;
     }
 
     /**
@@ -219,9 +245,9 @@ namespace memory_viewer_usage {
     }
 
     /**
-     * Finds the peak memory usage from the `bufferAssignment`.
+     * Finds the peak memory usage from the `heapSimulatorTrace`.
      */
-    private findPeakMemoryUsage_(bufferAssignment) {
+    private findPeakMemoryUsage_(heapSimulatorTrace) {
       let heapSizes: number[] = [];
       let unpaddedHeapSizes: number[] = [];
       let logicalBuffers: number[] = [];
@@ -233,7 +259,7 @@ namespace memory_viewer_usage {
       // Unpadded size at peak.
       let unpaddedPeakHeapSizeBytes = 0;
       let peakHeapSizePosition = 0;
-      for (const event of bufferAssignment.heapSimulatorTraces[0].events) {
+      for (const event of heapSimulatorTrace.events) {
         heapSizes.push(memory_viewer_utils.bytesToMiB(heapSizeBytes));
         unpaddedHeapSizes.push(
           memory_viewer_utils.bytesToMiB(unpaddedHeapSizeBytes)
@@ -253,6 +279,7 @@ namespace memory_viewer_usage {
         }
         switch (event.kind.toString()) {
           case 'ALLOC':
+          case 'SHARE_WITH':
             logicalBuffers.push(eventId);
             heapSizeBytes += buffer.size;
 
@@ -281,12 +308,6 @@ namespace memory_viewer_usage {
             if (heapSizeBytes < 0) {
               console.error('heap_size_bytes < 0');
             }
-            break;
-          case 'SHARE_WITH':
-            // Nothing to do, but note we've seen the shared thing.
-            this.unSeenLogicalBuffers_.delete(
-              parseInt(event.shareWithCanonicalId, 10)
-            );
             break;
           default:
             console.log('ERROR: unknown heap event kind:', event);

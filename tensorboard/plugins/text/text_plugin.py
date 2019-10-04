@@ -215,9 +215,7 @@ class TextPlugin(base_plugin.TBPlugin):
     return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
 
   def frontend_metadata(self):
-    return super(TextPlugin, self).frontend_metadata()._replace(
-        element_name='tf-text-dashboard',
-    )
+    return base_plugin.FrontendMetadata(element_name='tf-text-dashboard')
 
   def index_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)

@@ -54,28 +54,23 @@ class WitWidgetBase(object):
     if 'compare_estimator_and_spec' in copied_config:
       del copied_config['compare_estimator_and_spec']
 
-    self.custom_predict_fn = (
-      config.get('custom_predict_fn')
-      if 'custom_predict_fn' in config else None)
-    self.compare_custom_predict_fn = (
-      config.get('compare_custom_predict_fn')
-      if 'compare_custom_predict_fn' in config else None)
-    self.adjust_prediction_fn = (
-      config.get('adjust_prediction')
-      if 'adjust_prediction' in config else None)
-    self.compare_adjust_prediction_fn = (
-      config.get('compare_adjust_prediction')
-      if 'compare_adjust_prediction' in config else None)
-    self.adjust_example_fn = (
-      config.get('adjust_example')
-      if 'adjust_example' in config else None)
-    self.compare_adjust_example_fn = (
-      config.get('compare_adjust_example')
-      if 'compare_adjust_example' in config else None)
+    self.custom_predict_fn = config.get('custom_predict_fn')
+    self.compare_custom_predict_fn = config.get('compare_custom_predict_fn')
+    self.custom_distance_fn = config.get('custom_distance_fn')
+    self.adjust_prediction_fn = config.get('adjust_prediction')
+    self.compare_adjust_prediction_fn = config.get('compare_adjust_prediction')
+    self.adjust_example_fn = config.get('adjust_example')
+    self.compare_adjust_example_fn = config.get('compare_adjust_example')
+    self.adjust_attribution_fn = config.get('adjust_attribution')
+    self.compare_adjust_attribution_fn = config.get('compare_adjust_attribution')
+
     if 'custom_predict_fn' in copied_config:
       del copied_config['custom_predict_fn']
     if 'compare_custom_predict_fn' in copied_config:
       del copied_config['compare_custom_predict_fn']
+    if 'custom_distance_fn' in copied_config:
+      del copied_config['custom_distance_fn']
+      copied_config['uses_custom_distance_fn'] = True
     if 'adjust_prediction' in copied_config:
       del copied_config['adjust_prediction']
     if 'compare_adjust_prediction' in copied_config:
@@ -84,6 +79,10 @@ class WitWidgetBase(object):
       del copied_config['adjust_example']
     if 'compare_adjust_example' in copied_config:
       del copied_config['compare_adjust_example']
+    if 'adjust_attribution' in copied_config:
+      del copied_config['adjust_attribution']
+    if 'compare_adjust_attribution' in copied_config:
+      del copied_config['compare_adjust_attribution']
 
     self.set_examples(config['examples'])
     del copied_config['examples']
@@ -111,6 +110,12 @@ class WitWidgetBase(object):
     self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 
+  def compute_custom_distance_impl(self, index, params=None):
+    exs_for_distance = [
+        self.json_to_proto(example) for example in self.examples]
+    selected_ex = exs_for_distance[index]
+    return self.custom_distance_fn(selected_ex, exs_for_distance, params)
+
   def json_to_proto(self, json):
     ex = (tf.train.SequenceExample()
           if self.config.get('are_sequence_examples')
@@ -124,7 +129,7 @@ class WitWidgetBase(object):
     examples_to_infer = [
         self.json_to_proto(self.examples[index]) for index in indices_to_infer]
     infer_objs = []
-    attribution_objs = []
+    extra_output_objs = []
     serving_bundle = inference_utils.ServingBundle(
       self.config.get('inference_address'),
       self.config.get('model_name'),
@@ -137,11 +142,11 @@ class WitWidgetBase(object):
       self.estimator_and_spec.get('estimator'),
       self.estimator_and_spec.get('feature_spec'),
       self.custom_predict_fn)
-    (predictions, attributions) = (
+    (predictions, extra_output) = (
       inference_utils.run_inference_for_inference_results(
         examples_to_infer, serving_bundle))
     infer_objs.append(predictions)
-    attribution_objs.append(attributions)
+    extra_output_objs.append(extra_output)
     if ('inference_address_2' in self.config or
         self.compare_estimator_and_spec.get('estimator') or
         self.compare_custom_predict_fn):
@@ -157,16 +162,16 @@ class WitWidgetBase(object):
         self.compare_estimator_and_spec.get('estimator'),
         self.compare_estimator_and_spec.get('feature_spec'),
         self.compare_custom_predict_fn)
-      (predictions, attributions) = (
+      (predictions, extra_output) = (
         inference_utils.run_inference_for_inference_results(
           examples_to_infer, serving_bundle))
       infer_objs.append(predictions)
-      attribution_objs.append(attributions)
+      extra_output_objs.append(extra_output)
     self.updated_example_indices = set()
     return {
       'inferences': {'indices': indices_to_infer, 'results': infer_objs},
       'label_vocab': self.config.get('label_vocab'),
-      'attributions': attribution_objs}
+      'extra_outputs': extra_output_objs}
 
   def infer_mutants_impl(self, info):
     """Performs mutant inference on specified examples."""
@@ -217,6 +222,21 @@ class WitWidgetBase(object):
       0:NUM_EXAMPLES_FOR_MUTANT_ANALYSIS]]
     return inference_utils.get_eligible_features(
       examples, NUM_MUTANTS_TO_GENERATE)
+
+  def sort_eligible_features_impl(self, info):
+    """Returns sorted list of interesting features for mutant inference."""
+    features_list = info['features']
+    chart_data = {}
+    for feat in features_list:
+      chart_data[feat['name']] = self.infer_mutants_impl({
+        'x_min': feat['observedMin'] if 'observedMin' in feat else 0,
+        'x_max': feat['observedMax'] if 'observedMin' in feat else 0,
+        'feature_index_pattern': None,
+        'feature_name': feat['name'],
+        'example_index': info['example_index'],
+      })
+    return inference_utils.sort_eligible_features(
+      features_list, chart_data)
 
   def create_sprite(self):
     """Returns an encoded image of thumbnails for image examples."""
@@ -288,7 +308,7 @@ class WitWidgetBase(object):
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
       self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn)
+      self.adjust_prediction_fn, self.adjust_attribution_fn)
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
@@ -296,10 +316,11 @@ class WitWidgetBase(object):
       self.config.get('model_name_2'), self.config.get('model_signature_2'),
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
-      self.compare_adjust_prediction_fn)
+      self.compare_adjust_prediction_fn,
+      self.compare_adjust_attribution_fn)
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_example, adjust_prediction):
+                        adjust_example, adjust_prediction, adjust_attribution):
     """Custom prediction function for running inference through AI Platform."""
 
     # Set up environment for GCP call for specified project.
@@ -348,6 +369,12 @@ class WitWidgetBase(object):
     results = []
     attributions = (response['attributions']
       if 'attributions' in response else None)
+
+    # If an attribution adjustment function was provided, use it to adjust
+    # the attributions.
+    if attributions is not None and adjust_attribution is not None:
+      attributions = [adjust_attribution(attr) for attr in attributions]
+
     for pred in response['predictions']:
       # If the prediction contains a key to fetch the prediction, use it.
       if isinstance(pred, dict):

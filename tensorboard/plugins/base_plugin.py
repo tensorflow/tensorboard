@@ -29,38 +29,6 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 
-FrontendMetadata = collections.namedtuple(
-    "FrontendMetadata",
-    (
-        # Name to show in the menu item for this dashboard within the
-        # navigation bar. May differ from the plugin name. For instance,
-        # the tab name should not use underscores to separate words.
-        # Should be a `str` or `None` (defaulting to the `plugin_name`).
-        "tab_name",
-        # ES module to use as an entry point to this plugin. Should be a
-        # `str` that is a key in the result of `get_plugin_apps()`, or
-        # `None` for legacy plugins bundled with TensorBoard as part of
-        # `webfiles.zip`. Mutually exclusive with legacy `element_name`
-        # below.
-        #
-        # TODO(tensorboard-team): Describe the contract/API for the ES
-        # module when it is better defined.
-        "es_module_path",
-        # Whether to disable the reload button and auto-reload timer.
-        # Boolean.
-        "disable_reload",
-        # Whether to remove the plugin DOM when switching to a different
-        # plugin, to trigger the Polymer 'detached' event. Boolean.
-        "remove_dom",
-        # For legacy plugins, name of the custom element defining the
-        # plugin frontend: e.g., `"tf-scalar-dashboard"`. Should be a
-        # `str` or `None` (for iframed plugins). Mutually exclusive with
-        # `es_module_path`.
-        "element_name",
-    ),
-)
-
-
 @six.add_metaclass(ABCMeta)
 class TBPlugin(object):
   """TensorBoard plugin interface.
@@ -124,16 +92,113 @@ class TBPlugin(object):
 
     The base implementation returns a default value. Subclasses should
     override this and specify either an `es_module_path` or (for legacy
-    plugins) an `element_name`, and are encouraged to replace any other
+    plugins) an `element_name`, and are encouraged to set any other
     relevant attributes.
     """
-    return FrontendMetadata(
-        tab_name=None,
-        es_module_path=None,
-        disable_reload=False,
-        remove_dom=False,
-        element_name=None,
-    )
+    return FrontendMetadata()
+
+
+class FrontendMetadata(object):
+  """Metadata required to render a plugin on the frontend.
+
+  Each argument to the constructor is publicly accessible under a field
+  of the same name. See constructor docs for further details.
+  """
+
+  def __init__(
+      self,
+      disable_reload=None,
+      element_name=None,
+      es_module_path=None,
+      remove_dom=None,
+      tab_name=None,
+  ):
+    """Creates a `FrontendMetadata` value.
+
+    The argument list is sorted and may be extended in the future;
+    therefore, callers must pass only named arguments to this
+    constructor.
+
+    Args:
+      disable_reload: Whether to disable the reload button and
+          auto-reload timer. A `bool`; defaults to `False`.
+      element_name: For legacy plugins, name of the custom element
+          defining the plugin frontend: e.g., `"tf-scalar-dashboard"`.
+          A `str` or `None` (for iframed plugins). Mutually exclusive
+          with `es_module_path`.
+      es_module_path: ES module to use as an entry point to this plugin.
+          A `str` that is a key in the result of `get_plugin_apps()`, or
+          `None` for legacy plugins bundled with TensorBoard as part of
+          `webfiles.zip`. Mutually exclusive with legacy `element_name`
+      remove_dom: Whether to remove the plugin DOM when switching to a
+          different plugin, to trigger the Polymer 'detached' event.
+          A `bool`; defaults to `False`.
+      tab_name: Name to show in the menu item for this dashboard within
+          the navigation bar. May differ from the plugin name: for
+          instance, the tab name should not use underscores to separate
+          words. Should be a `str` or `None` (the default; indicates to
+          use the plugin name as the tab name).
+    """
+    self._disable_reload = False if disable_reload is None else disable_reload
+    self._element_name = element_name
+    self._es_module_path = es_module_path
+    self._remove_dom = False if remove_dom is None else remove_dom
+    self._tab_name = tab_name
+
+  @property
+  def disable_reload(self):
+    return self._disable_reload
+
+  @property
+  def element_name(self):
+    return self._element_name
+
+  @property
+  def es_module_path(self):
+    return self._es_module_path
+
+  @property
+  def remove_dom(self):
+    return self._remove_dom
+
+  @property
+  def tab_name(self):
+    return self._tab_name
+
+  def __eq__(self, other):
+    if not isinstance(other, FrontendMetadata):
+      return False
+    if self._disable_reload != other._disable_reload:
+      return False
+    if self._disable_reload != other._disable_reload:
+      return False
+    if self._element_name != other._element_name:
+      return False
+    if self._es_module_path != other._es_module_path:
+      return False
+    if self._remove_dom != other._remove_dom:
+      return False
+    if self._tab_name != other._tab_name:
+      return False
+    return True
+
+  def __hash__(self):
+    return hash((
+        self._disable_reload,
+        self._element_name,
+        self._es_module_path,
+        self._remove_dom,
+        self._tab_name,
+    ))
+
+  def __repr__(self):
+    return "FrontendMetadata(%s)" % ", ".join((
+        "disable_reload=%r" % self._disable_reload,
+        "element_name=%r" % self._element_name,
+        "es_module_path=%r" % self._es_module_path,
+        "remove_dom=%r" % self._remove_dom,
+        "tab_name=%r" % self._tab_name,
+    ))
 
 
 class TBContext(object):
@@ -151,8 +216,8 @@ class TBContext(object):
   def __init__(
       self,
       assets_zip_provider=None,
+      data_provider=None,
       db_connection_provider=None,
-      db_module=None,
       db_uri=None,
       flags=None,
       logdir=None,
@@ -171,6 +236,8 @@ class TBContext(object):
           handle this function returns must be closed. It is assumed that you
           will pass this file handle to zipfile.ZipFile. This zip file should
           also have been created by the tensorboard_zip_file build rule.
+      data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
+        be `None` if `flags.generic_data` is set to `"false"`.
       db_connection_provider: Function taking no arguments that returns a
           PEP-249 database Connection object, or None if multiplexer should be
           used instead. The returned value must be closed, and is safe to use in
@@ -178,9 +245,6 @@ class TBContext(object):
           function is cheap. The returned connection must only be used by a
           single thread. Things like connection pooling are considered
           implementation details of the provider.
-      db_module: A PEP-249 DB Module, e.g. sqlite3. This is useful for accessing
-          things like date time constructors. This value will be None if we are
-          not in SQL mode and multiplexer should be used instead.
       db_uri: The string db URI TensorBoard was started with. If this is set,
           the logdir should be None.
       flags: An object of the runtime flags provided to TensorBoard to their
@@ -198,8 +262,8 @@ class TBContext(object):
       window_title: A string specifying the window title.
     """
     self.assets_zip_provider = assets_zip_provider
+    self.data_provider = data_provider
     self.db_connection_provider = db_connection_provider
-    self.db_module = db_module
     self.db_uri = db_uri
     self.flags = flags
     self.logdir = logdir
@@ -258,10 +322,10 @@ class BasicLoader(TBLoader):
 
     :param plugin_class: :class:`TBPlugin`
     """
-    self._plugin_class = plugin_class
+    self.plugin_class = plugin_class
 
   def load(self, context):
-    return self._plugin_class(context)
+    return self.plugin_class(context)
 
 
 class FlagsError(ValueError):

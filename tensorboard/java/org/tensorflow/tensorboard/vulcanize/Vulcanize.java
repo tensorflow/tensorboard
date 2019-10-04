@@ -92,7 +92,10 @@ public final class Vulcanize {
   private static final ImmutableSet<String> EXTRA_JSDOC_TAGS =
       ImmutableSet.of("attribute", "hero", "group", "required");
 
-  private static final Pattern WEBPATH_PATTERN = Pattern.compile("//~~WEBPATH~~([^\n]+)");
+  private static final Pattern SCRIPT_DELIMITER_PATTERN =
+      Pattern.compile("//# sourceURL=build:/([^\n]+)");
+
+  private static final String SCRIPT_DELIMITER = "//# sourceURL=build:/%name%";
 
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
@@ -107,7 +110,6 @@ public final class Vulcanize {
   private static final Multimap<Webpath, String> suppressions = HashMultimap.create();
   private static CompilationLevel compilationLevel;
   private static Webpath outputPath;
-  private static Node firstCompiledScript;
   private static Node firstScript;
   private static Node licenseComment;
   private static int insideDemoSnippet;
@@ -340,16 +342,8 @@ public final class Vulcanize {
               .removeAttr("src")
               .removeAttr("jscomp-minify")
               .removeAttr("jscomp-nocompile");
-      if (firstCompiledScript != null) {
-        firstCompiledScript.before(newScript);
-        return removeNode(node);
-      } else {
-        return replaceNode(node, newScript);
-      }
+      return replaceNode(node, newScript);
     } else {
-      if (firstCompiledScript == null) {
-        firstCompiledScript = node;
-      }
       sourcesFromScriptTags.put(path, script);
       sourceTags.put(path, node);
       Optional<String> suppress = getAttrTransitive(node, "jscomp-suppress");
@@ -440,7 +434,7 @@ public final class Vulcanize {
 
     // So we can chop JS binary back up into the original script tags.
     options.setPrintInputDelimiter(true);
-    options.setInputDelimiter("//~~WEBPATH~~%name%");
+    options.setInputDelimiter(SCRIPT_DELIMITER);
 
     // Optimizations that are too advanced for us right now.
     options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
@@ -482,7 +476,7 @@ public final class Vulcanize {
         new WarningsGuard() {
           @Override
           public CheckLevel level(JSError error) {
-            if (error.sourceName == null) {
+            if (error.getSourceName() == null) {
               return null;
             }
             if (error.getDefaultLevel() == CheckLevel.WARNING
@@ -492,30 +486,30 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getDefaultLevel() == CheckLevel.WARNING
-                && (error.sourceName.startsWith("/iron-")
-                    || error.sourceName.startsWith("/neon-")
-                    || error.sourceName.startsWith("/paper-"))) {
+                && (error.getSourceName().startsWith("/iron-")
+                    || error.getSourceName().startsWith("/neon-")
+                    || error.getSourceName().startsWith("/paper-"))) {
               // Suppress warnings in the Polymer standard libraries.
               return CheckLevel.OFF;
             }
-            if (error.sourceName.startsWith("javascript/externs")
-                || error.sourceName.contains("com_google_javascript_closure_compiler_externs")) {
+            if (error.getSourceName().startsWith("javascript/externs")
+                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
               return CheckLevel.OFF;
             }
-            if (error.sourceName.endsWith("externs/webcomponents-externs.js")) {
+            if (error.getSourceName().endsWith("externs/webcomponents-externs.js")) {
               // TODO(stephanwlee): Figure out why above externs cause variable
               // declare issue. Seems to do with usage of `let` in Polymer 2.x
               // branch.
               // Ref: #2425.
               return CheckLevel.WARNING;
             }
-            if (IGNORE_PATHS_PATTERN.matcher(error.sourceName).matches()) {
+            if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.sourceName.startsWith("/tf-") || error.sourceName.startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
               return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
             }
@@ -523,7 +517,7 @@ public final class Vulcanize {
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
               return CheckLevel.OFF; // TODO(@jart): What is wrong with this thing?
             }
-            Collection<String> codes = suppressions.get(Webpath.get(error.sourceName));
+            Collection<String> codes = suppressions.get(Webpath.get(error.getSourceName()));
             if (codes.contains("*") || codes.contains(error.getType().key)) {
               return CheckLevel.OFF;
             }
@@ -556,7 +550,7 @@ public final class Vulcanize {
     // Split apart the JS blob and put it back in the original <script> locations.
     Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
     tags.addAll(sourceTags.entrySet());
-    Matcher matcher = WEBPATH_PATTERN.matcher(jsBlob);
+    Matcher matcher = SCRIPT_DELIMITER_PATTERN.matcher(jsBlob);
     verify(matcher.find(), "Nothing found in compiled JS blob!");
     Webpath path = Webpath.get(matcher.group(1));
     int start = 0;
@@ -575,7 +569,7 @@ public final class Vulcanize {
     // We perform this check by looking for a concomitant .d.ts webfile which is generated by the
     // TypeScript compiler. Ideally we would use SourceExcerptProvider to determine the original
     // source name, but WarningsGuard objects do not appear to have access to that.
-    String path = error.sourceName;
+    String path = error.getSourceName();
     if (!path.endsWith(".js")) {
       return false;
     }
