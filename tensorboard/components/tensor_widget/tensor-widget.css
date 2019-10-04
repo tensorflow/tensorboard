@@ -110,6 +110,21 @@ limitations under the License.
   vertical-align: middle;
 }
 
+.tensor-widget-menu-thumb {
+  color: rgb(32, 33, 36);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  float: right;
+  left: -10px;
+  position: relative;
+  user-select: none;
+}
+
+.tensor-widget-menu-thumb:hover {
+  color: rgb(227, 116, 0);
+}
+
 .tensor-widget-shape {
   color: rgb(60, 60, 60);
   display: inline-block;

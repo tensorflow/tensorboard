@@ -19,6 +19,7 @@ import {
   isIntegerDType,
   isStringDType,
 } from './dtype-utils';
+import {ChoiceMenuItemConfig, Menu, MenuConfig} from './menu';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -56,6 +57,8 @@ export class TensorWidgetImpl implements TensorWidget {
   // Constituent UI elements.
   protected headerSection: HTMLDivElement | null = null;
   protected infoSubsection: HTMLDivElement | null = null;
+  protected menuThumb: HTMLDivElement | null = null;
+
   protected slicingSpecRoot: HTMLDivElement | null = null;
   protected valueSection: HTMLDivElement | null = null;
   protected topRuler: HTMLDivElement | null = null;
@@ -82,6 +85,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
   // Element selection.
   protected selection: TensorElementSelection | null = null;
+
+  // Menu configuration.
+  protected menuConfig: MenuConfig | null = null;
 
   constructor(
     private readonly rootElement: HTMLDivElement,
@@ -140,7 +146,7 @@ export class TensorWidgetImpl implements TensorWidget {
     }
     this.renderInfo();
     // TODO(cais): Implement and call renderHealthPill().
-    // TODO(cais): Implement and call createMenu();
+    this.createMenu();
   }
 
   /**
@@ -228,6 +234,62 @@ export class TensorWidgetImpl implements TensorWidget {
     );
     shapeTagDiv.appendChild(shapeTagValue);
     this.infoSubsection.appendChild(shapeTagDiv);
+  }
+
+  private createMenu() {
+    this.menuConfig = {items: []};
+    if (
+      isFloatDType(this.tensorView.spec.dtype) ||
+      isIntegerDType(this.tensorView.spec.dtype) ||
+      isBooleanDType(this.tensorView.spec.dtype)
+    ) {
+      this.menuConfig.items.push({
+        caption: 'Select display mode...',
+        options: ['Text', 'Image'],
+        defaultSelection: 0,
+        callback: (currentMode: number) => {
+          console.log(`Display mode changed: ${currentMode}`);
+        },
+      } as ChoiceMenuItemConfig);
+    }
+    if (this.menuConfig !== null) {
+      this.menu = new Menu(this.menuConfig, this
+        .headerSection as HTMLDivElement);
+    }
+    this.renderMenuThumb();
+  }
+
+  private menu: Menu | null = null;
+
+  private dropdown: HTMLDivElement | null = null; // TODO(cais): Move to top;
+
+  /** Render the thumb that when clicked, toggles the menu display state. */
+  private renderMenuThumb() {
+    if (this.headerSection == null) {
+      throw new Error(
+        'Rendering menu thumb failed due to missing header section.'
+      );
+    }
+    this.menuThumb = document.createElement('div');
+    this.menuThumb.textContent = '⋮';
+    this.menuThumb.classList.add('tensor-widget-menu-thumb');
+    this.headerSection.appendChild(this.menuThumb);
+
+    // let menuShown = false;  // TODO(cais): Make a class member?
+    this.menuThumb.addEventListener('click', () => {
+      if (this.menu === null) {
+        return;
+      }
+      if (this.menu.shown()) {
+        this.menu.hide();
+      } else {
+        const rect = (this.menuThumb as HTMLDivElement).getBoundingClientRect();
+        const top = rect.bottom;
+        const left = rect.left;
+        console.log(`top = ${top}, left = ${left}`);
+        this.menu.show(top, left);
+      }
+    });
   }
 
   /**
