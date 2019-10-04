@@ -265,7 +265,6 @@ export class TensorWidgetImpl implements TensorWidget {
         options: ['Text', 'Image'],
         defaultSelection: 0,
         callback: (currentMode: number) => {
-          console.log(`Display mode changed: ${currentMode}`);
           if (currentMode === 0) {
             this.valueRenderMode = 'text';
             this.renderValues();
@@ -561,6 +560,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
+      if (this.valueRenderMode === 'image') {
+        tick.style.height = `${this.imageCellSize}px`;
+        tick.style.lineHeight = `${this.imageCellSize}px`;
+      }
       row.appendChild(tick);
       this.leftRulerTicks.push(tick);
       if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
