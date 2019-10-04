@@ -16,9 +16,6 @@ tf_web_library(
     ],
     path = "/tf-plugin-lib",
     visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/components/experimental/plugin_util:message",
-    ],
 )
 
 tf_ts_library(
