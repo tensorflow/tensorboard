@@ -773,7 +773,7 @@ export class TensorWidgetImpl implements TensorWidget {
             );
             valueDiv.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
           } else {
-            // valueRenderMode: 'text'
+            // Here, valueRenderMode is 'text'.
             if (valueClass === 'numeric') {
               // TODO(cais): Once health pills are available, use the min/max
               // values to determine the number of decimal places.

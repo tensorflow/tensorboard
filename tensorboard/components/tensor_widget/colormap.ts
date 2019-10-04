@@ -17,7 +17,17 @@ limitations under the License.
 
 const MAX_RGB = 255;
 
+/**
+ * Abstract base class for colormap.
+ *
+ * A colormap maps a numeric value onto an RGB color.
+ */
 export abstract class ColorMap {
+  /**
+   * Constructor of ColorMap.
+   * @param min Minimum. Must be a finite value.
+   * @param max Maximum. Must be finite and >= `min`.
+   */
   constructor(protected readonly min: number, protected readonly max: number) {
     if (!isFinite(min)) {
       throw new Error(`min value (${min}) is not finite`);
@@ -30,9 +40,18 @@ export abstract class ColorMap {
     }
   }
 
+  /**
+   * Get the RGB value based on element value.
+   * @param value The element value to be mapped onto RGB color values.
+   * @returns RGB color values represented as a length-3 number array.
+   *   The range of RGB values is 0 - 255.
+   */
   abstract getRGB(value: number): [number, number, number];
 }
 
+/**
+ * A grayscale color map implementation.
+ */
 export class GrayscaleColorMap extends ColorMap {
   getRGB(value: number): [number, number, number] {
     if (isNaN(value)) {

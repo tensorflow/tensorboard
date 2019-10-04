@@ -57,7 +57,7 @@ export interface TensorView {
    */
   view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
-  /** Get the health pill of the underlying tensor. */
+  /** Get the numeric summary of the underlying tensor. */
   getNumericSummary: () => Promise<BaseTensorNumericSummary>;
 }
 

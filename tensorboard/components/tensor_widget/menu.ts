@@ -52,19 +52,35 @@ export interface MenuConfig {
   items: MenuItemConfig[];
 }
 
+/**
+ * The configuration of an item of a FlatMenu.
+ */
 interface FlatMenuItemConfig {
+  /** Caption of the FlatMenu item. */
   caption: string;
+
+  /** The click callback for the item. */
   onClick: EventCallback | null;
+
+  /** The hover callback for the item. */
   onHover: EventCallback | null;
 }
 
 /**
  * Helper class: A menu item without hierarchy.
+ *
+ * A FlatMenu doesn't support hierarchy. The `Menu` class below, which supports
+ * menus with hierarchy, is built by composing this helper class.
  */
 class FlatMenu {
   private isShown: boolean = false;
   private dropdown: HTMLDivElement;
-  // TODO(cais): Tie in the arg lengths.
+
+  /**
+   * Constructor of FlatMenu.
+   * @param parentElement The parent element that the root UI element of this
+   *   FlatMenu will be appended to as a child.
+   */
   constructor(parentElement: HTMLDivElement) {
     this.dropdown = document.createElement('div');
     this.dropdown.classList.add('tensor-widget-dim-dropdown');
@@ -76,6 +92,12 @@ class FlatMenu {
     parentElement.appendChild(this.dropdown);
   }
 
+  /**
+   * Show the FlatMenu item.
+   * @param top The top coordinate for the FlatMenu.
+   * @param left The left coordinate for the FlatMenu.
+   * @param itemConfigs Configuration of the menu items.
+   */
   show(top: number, left: number, itemConfigs: FlatMenuItemConfig[]) {
     itemConfigs.forEach((itemConfig, i) => {
       const menuItem = document.createElement('div');
@@ -122,6 +144,7 @@ class FlatMenu {
     this.isShown = true;
   }
 
+  /** Hide this FlatMenu: Remove it from screen display. */
   hide() {
     this.dropdown.style.display = 'none';
     while (this.dropdown.firstChild) {
@@ -130,6 +153,7 @@ class FlatMenu {
     this.isShown = false;
   }
 
+  /** Whether this FlatMenu is being shown currently. */
   shown() {
     return this.isShown;
   }
@@ -137,6 +161,8 @@ class FlatMenu {
 
 /**
  * A class for menu that supports configurable items and callbacks.
+ *
+ * Hierarchy is supported.
  */
 export class Menu {
   private baseFlatMenu: FlatMenu;
@@ -214,11 +240,12 @@ export class Menu {
     this.baseFlatMenu.show(top, left, outerItemConfigs);
   }
 
-  /** Hide the menu. */
+  /** Hide the menu: Remove it from display. */
   hide() {
     this.baseFlatMenu.hide();
   }
 
+  /** Whether this Menu is being shown currently. */
   shown(): boolean {
     return this.baseFlatMenu.shown();
   }
