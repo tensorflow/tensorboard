@@ -144,9 +144,9 @@ export class TensorWidgetImpl implements TensorWidget {
       this.headerSection.classList.add('tensor-widget-header');
       this.rootElement.appendChild(this.headerSection);
     }
+    this.createMenu();
     this.renderInfo();
     // TODO(cais): Implement and call renderHealthPill().
-    this.createMenu();
   }
 
   /**

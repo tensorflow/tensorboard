@@ -48,22 +48,6 @@ export interface ChoiceMenuItemConfig extends MenuItemConfig {
   callback: (currentSelection: number) => void | Promise<void>;
 }
 
-/**
- * A menu item that supports a binary toggle state.
- */
-export interface ToggleMenuItemConfig extends MenuItemConfig {
-  /** The default state of the menu item. */
-  defaultState: boolean;
-
-  /**
-   * The callback that gets called when the toggle state has changed.
-   *
-   * The `currentState` argument is a boolean indicating whether the
-   * toggle menu item is activated (`true`) or not (`false`).
-   */
-  callback: (currentState: boolean) => void | Promise<void>;
-}
-
 export interface MenuConfig {
   /** An ordered list of items that comprise the menu. */
   items: MenuItemConfig[];
@@ -97,26 +81,22 @@ class FlatMenu {
   show(
     top: number,
     left: number,
-    captions: string[],
-    onClickCallbacks: Array<EventCallback | null>,
-    onHoverCallbacks: Array<EventCallback | null>
+    itemConfigs: FlatMenuItemConfig[]
   ) {
-    captions.forEach((caption, i) => {
+    itemConfigs.forEach((itemConfig, i) => {
       const menuItem = document.createElement('div');
       menuItem.classList.add('tensor-widget-dim-dropdown-menu-item');
-      menuItem.textContent = caption;
+      menuItem.textContent = itemConfig.caption;
       this.dropdown.appendChild(menuItem);
-      const onClick = onClickCallbacks[i];
-      const onHover = onHoverCallbacks[i];
       menuItem.addEventListener('click', (event) => {
-        if (onClick !== null) {
-          onClick(event);
+        if (itemConfig.onClick !== null) {
+          itemConfig.onClick(event);
         }
         this.hide();
       });
       menuItem.addEventListener('mouseenter', (event) => {
-        if (onHover !== null) {
-          onHover(event);
+        if (itemConfig.onHover !== null) {
+          itemConfig.onHover(event);
         }
         menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-active');
       });
@@ -124,7 +104,7 @@ class FlatMenu {
         menuItem.classList.remove(
           'tensor-widget-dim-dropdown-menu-item-active'
         );
-        if (onHover === null) {
+        if (itemConfig.onHover === null) {
           return;
         }
         const childrenToRemove: Element[] = [];
@@ -198,56 +178,46 @@ export class Menu {
    * @param left The left coordinate for the top-left corner of the menu.
    */
   show(top: number, left: number) {
-    const captions: string[] = this.config.items.map((item) => item.caption);
-    const clickCallbacks: Array<EventCallback | null> = this.config.items.map(
-      (item, i) => {
-        if ((item as ChoiceMenuItemConfig).options != null) {
-          // This is a multiple-choice item.
-          return null;
-        } else if ((item as ToggleMenuItemConfig).defaultState != null) {
-          // This is a binary toggle item.
-          // TODO(cais): Modify state.
-          return null;
-        } else {
-          // This is a single-command item.
-          return (item as SingleActionMenuItemConfig).callback;
-        }
-      }
-    );
-    const hoverCallbacks: Array<EventCallback | null> = this.config.items.map(
-      (item, i) => {
-        if ((item as ChoiceMenuItemConfig).options != null) {
-          // TODO(cais): Check to make sure it's not empty?
-          const currentSelectionIndex = this.currentChoiceSelections[i];
-          return (event) => {
-            const parent = event.target as HTMLDivElement;
-            const choiceConfig = item as ChoiceMenuItemConfig;
-            const captions = choiceConfig.options.map((option, k) => {
-              return k === currentSelectionIndex ? option + ' (✓)' : option;
+    const outerItemConfigs: FlatMenuItemConfig[] = [];
+
+    this.config.items.forEach((item, i) => {
+      const outerItemConfig: FlatMenuItemConfig = {
+        caption: item.caption,
+        onClick: null,
+        onHover: null,
+      };
+      if ((item as ChoiceMenuItemConfig).options != null) {
+        // This is a multiple choice item.
+        const currentSelectionIndex = this.currentChoiceSelections[i];
+        outerItemConfig.onHover = (event) => {
+          const parent = event.target as HTMLDivElement;
+          const choiceConfig = item as ChoiceMenuItemConfig;
+          const itemConfigs: FlatMenuItemConfig[] = [];
+          choiceConfig.options.forEach((option, k) => {
+            itemConfigs.push({
+              caption: k === currentSelectionIndex ? option + ' (✓)' : option,
+              onClick: () => {
+                if (currentSelectionIndex !== k) {
+                  this.currentChoiceSelections[i] = k;
+                  choiceConfig.callback(k);
+                }
+              },
+              onHover: null
             });
-            const optionsFlatMenu = new FlatMenu(parent);
-            const onClicks: Array<EventCallback | null> = choiceConfig.options.map(
-              (option, k) => {
-                return () => {
-                  if (currentSelectionIndex !== k) {
-                    this.currentChoiceSelections[i] = k;
-                    choiceConfig.callback(k);
-                  }
-                };
-              }
-            );
-            const onHovers = captions.map(() => null);
-            const box = parent.getBoundingClientRect();
-            const top = box.top;
-            const left = box.right;
-            optionsFlatMenu.show(top, left, captions, onClicks, onHovers);
-          };
-        } else {
-          return null;
-        }
+          });
+          const optionsFlatMenu = new FlatMenu(parent);
+          const box = parent.getBoundingClientRect();
+          const top = box.top;
+          const left = box.right;
+          optionsFlatMenu.show(top, left, itemConfigs);
+        };
+      } else {
+        // This is a single-command item.
+        outerItemConfig.onClick = (item as SingleActionMenuItemConfig).callback;
       }
-    );
-    this.baseFlatMenu.show(top, left, captions, clickCallbacks, hoverCallbacks);
+      outerItemConfigs.push(outerItemConfig);
+    });
+    this.baseFlatMenu.show(top, left, outerItemConfigs);
   }
 
   /** Hide the menu. */

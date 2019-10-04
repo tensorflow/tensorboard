@@ -113,10 +113,10 @@ limitations under the License.
 .tensor-widget-menu-thumb {
   color: rgb(32, 33, 36);
   cursor: pointer;
+  display: inline-block;
   font-weight: bold;
   font-size: 16px;
-  float: right;
-  left: -10px;
+  margin-left: 10px;
   position: relative;
   user-select: none;
 }
