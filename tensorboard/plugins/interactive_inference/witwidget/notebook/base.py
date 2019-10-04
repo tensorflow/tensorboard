@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl import logging
 import base64
 import json
 import googleapiclient.discovery
 import os
+import logging
 import tensorflow as tf
 from IPython import display
 from google.protobuf import json_format
@@ -40,7 +40,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    logging.set_verbosity(logging.WARN)
+    tf.get_logger().setLevel(logging.WARNING)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
