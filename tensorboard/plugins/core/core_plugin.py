@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import codecs
 import collections
 import functools
 import gzip
@@ -42,6 +43,8 @@ logger = tb_logging.get_logger()
 # for more details.
 DEFAULT_PORT = 6006
 
+SHASUM_DIR = '_shasums'
+SHASUM_FILE_SUFFIX = '.scripts_sha256'
 
 class CorePlugin(base_plugin.TBPlugin):
   """Core plugin for TensorBoard.
@@ -89,14 +92,47 @@ class CorePlugin(base_plugin.TBPlugin):
         '/histograms': self._redirect_to_index,
         '/images': self._redirect_to_index,
     }
-    if self._assets_zip_provider:
-      with self._assets_zip_provider() as fp:
-        with zipfile.ZipFile(fp) as zip_:
-          for path in zip_.namelist():
-            gzipped_asset_bytes = _gzip(zip_.read(path))
-            apps['/' + path] = functools.partial(
+    apps.update(self.get_resource_apps())
+    return apps
+
+  def get_resource_apps(self):
+    apps = {}
+    if not self._assets_zip_provider:
+      return apps
+
+    with self._assets_zip_provider() as fp:
+      with zipfile.ZipFile(fp) as zip_:
+        # First collect the shasums that will later be used. Since hashes are
+        # in the hex, we convert it to base64 for CSP usage.
+        # TODO(stephanwlee): since index.html creates dynamic plugin and imports
+        # their entry point (es_module_path), the CSP should include shasum
+        # of those, too.
+        shasums = {}
+        for path in zip_.namelist():
+          if not path.startswith(SHASUM_DIR):
+            continue
+          html_file_name = os.path.splitext(os.path.basename(path))[0]
+          shasums[html_file_name] = [
+              codecs.encode(codecs.decode(hex_hash, 'hex'), 'base64').decode().rstrip()
+              for hex_hash in zip_.read(path).splitlines(False)
+          ]
+
+        for path in zip_.namelist():
+          # Do not serve the shasum data as static files.
+          if path.startswith(SHASUM_DIR):
+            continue
+
+          gzipped_asset_bytes = _gzip(zip_.read(path))
+
+          filename = os.path.basename(path)
+          if os.path.splitext(filename)[1] == '.html':
+            wsgi_app = functools.partial(
+                self._serve_html, shasums.get(filename), gzipped_asset_bytes)
+          else:
+            wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
-      apps['/'] = apps['/index.html']
+          apps['/' + path] = wsgi_app
+    apps['/'] = apps['/index.html']
     return apps
 
   @wrappers.Request.application
@@ -113,6 +149,17 @@ class CorePlugin(base_plugin.TBPlugin):
     mimetype = mimetypes.guess_type(path)[0] or 'application/octet-stream'
     return http_util.Respond(
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
+
+  @wrappers.Request.application
+  def _serve_html(self, shasums, gzipped_asset_bytes, request):
+    """Serves a pre-gzipped static HTML with script shasums."""
+    return http_util.Respond(
+        request,
+        gzipped_asset_bytes,
+        'text/html',
+        content_encoding='gzip',
+        csp_scripts_sha256s=shasums
+    )
 
   @wrappers.Request.application
   def _serve_environment(self, request):
