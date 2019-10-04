@@ -16,6 +16,16 @@ limitations under the License.
 -->
 <!DOCTYPE html>
 <script type="module">
-  import * as plugin_guest from '../../tf-plugin-lib/plugin-guest.js';
-  window.test = plugin_guest;
+  import {
+    _guestIPC,
+    sendMessage,
+    listen,
+    unlisten,
+  } from '../../tf-plugin-lib/plugin-guest.js';
+  window.test = {
+    IPC: _guestIPC,
+    sendMessage,
+    listen,
+    unlisten,
+  };
 </script>

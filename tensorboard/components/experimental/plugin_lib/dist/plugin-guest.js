@@ -1,0 +1,47 @@
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+import { IPC } from './message.js';
+/**
+ * This code is part of a public bundle provided to plugin authors,
+ * and runs within an IFrame to setup communication with TensorBoard's frame.
+ */
+if (!window.parent) {
+    console.error('The library must run within a TensorBoard iframe-based plugin.');
+}
+const channel = new MessageChannel();
+const ipc = new IPC(channel.port1);
+channel.port1.start();
+const VERSION = 'experimental';
+window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
+// Only export for testability.
+export const _guestIPC = ipc;
+/**
+ * Sends a message to the parent frame.
+ * @return Promise that resolves with a payload from parent in response to this message.
+ *
+ * @example
+ * const someList = await sendMessage('v1.some.type.parent.understands');
+ * // do fun things with someList.
+ */
+export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
+/**
+ * Subscribes a callback to a message with particular type.
+ */
+export const listen = _guestIPC.listen.bind(_guestIPC);
+/**
+ * Unsubscribes a callback to a message.
+ */
+export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicGx1Z2luLWd1ZXN0LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vdGVuc29yYm9hcmQvY29tcG9uZW50cy9leHBlcmltZW50YWwvcGx1Z2luX2xpYi9wbHVnaW4tZ3Vlc3QudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7Ozs7Ozs7Ozs7Z0ZBYWdGO0FBQ2hGLE9BQU8sRUFBQyxHQUFHLEVBQUMsTUFBTSxjQUFjLENBQUM7QUFFakM7OztHQUdHO0FBQ0gsSUFBSSxDQUFDLE1BQU0sQ0FBQyxNQUFNLEVBQUU7SUFDbEIsT0FBTyxDQUFDLEtBQUssQ0FBQyxnRUFBZ0UsQ0FBQyxDQUFDO0NBQ2pGO0FBRUQsTUFBTSxPQUFPLEdBQUcsSUFBSSxjQUFjLEVBQUUsQ0FBQztBQUNyQyxNQUFNLEdBQUcsR0FBRyxJQUFJLEdBQUcsQ0FBQyxPQUFPLENBQUMsS0FBSyxDQUFDLENBQUM7QUFDbkMsT0FBTyxDQUFDLEtBQUssQ0FBQyxLQUFLLEVBQUUsQ0FBQztBQUV0QixNQUFNLE9BQU8sR0FBRyxjQUFjLENBQUM7QUFDL0IsTUFBTSxDQUFDLE1BQU0sQ0FBQyxXQUFXLENBQUMsR0FBRyxPQUFPLFlBQVksRUFBRSxHQUFHLEVBQUUsQ0FBQyxPQUFPLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQztBQUV4RSwrQkFBK0I7QUFDL0IsTUFBTSxDQUFDLE1BQU0sU0FBUyxHQUFHLEdBQUcsQ0FBQztBQUU3Qjs7Ozs7OztHQU9HO0FBQ0gsTUFBTSxDQUFDLE1BQU0sV0FBVyxHQUFHLFNBQVMsQ0FBQyxXQUFXLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxDQUFDO0FBRWpFOztHQUVHO0FBQ0gsTUFBTSxDQUFDLE1BQU0sTUFBTSxHQUFHLFNBQVMsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxDQUFDO0FBRXZEOztHQUVHO0FBQ0gsTUFBTSxDQUFDLE1BQU0sUUFBUSxHQUFHLFNBQVMsQ0FBQyxRQUFRLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLyogQ29weXJpZ2h0IDIwMTkgVGhlIFRlbnNvckZsb3cgQXV0aG9ycy4gQWxsIFJpZ2h0cyBSZXNlcnZlZC5cblxuTGljZW5zZWQgdW5kZXIgdGhlIEFwYWNoZSBMaWNlbnNlLCBWZXJzaW9uIDIuMCAodGhlIFwiTGljZW5zZVwiKTtcbnlvdSBtYXkgbm90IHVzZSB0aGlzIGZpbGUgZXhjZXB0IGluIGNvbXBsaWFuY2Ugd2l0aCB0aGUgTGljZW5zZS5cbllvdSBtYXkgb2J0YWluIGEgY29weSBvZiB0aGUgTGljZW5zZSBhdFxuXG4gICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wXG5cblVubGVzcyByZXF1aXJlZCBieSBhcHBsaWNhYmxlIGxhdyBvciBhZ3JlZWQgdG8gaW4gd3JpdGluZywgc29mdHdhcmVcbmRpc3RyaWJ1dGVkIHVuZGVyIHRoZSBMaWNlbnNlIGlzIGRpc3RyaWJ1dGVkIG9uIGFuIFwiQVMgSVNcIiBCQVNJUyxcbldJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLlxuU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZFxubGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuXG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0qL1xuaW1wb3J0IHtJUEN9IGZyb20gJy4vbWVzc2FnZS5qcyc7XG5cbi8qKlxuICogVGhpcyBjb2RlIGlzIHBhcnQgb2YgYSBwdWJsaWMgYnVuZGxlIHByb3ZpZGVkIHRvIHBsdWdpbiBhdXRob3JzLFxuICogYW5kIHJ1bnMgd2l0aGluIGFuIElGcmFtZSB0byBzZXR1cCBjb21tdW5pY2F0aW9uIHdpdGggVGVuc29yQm9hcmQncyBmcmFtZS5cbiAqL1xuaWYgKCF3aW5kb3cucGFyZW50KSB7XG4gIGNvbnNvbGUuZXJyb3IoJ1RoZSBsaWJyYXJ5IG11c3QgcnVuIHdpdGhpbiBhIFRlbnNvckJvYXJkIGlmcmFtZS1iYXNlZCBwbHVnaW4uJyk7XG59XG5cbmNvbnN0IGNoYW5uZWwgPSBuZXcgTWVzc2FnZUNoYW5uZWwoKTtcbmNvbnN0IGlwYyA9IG5ldyBJUEMoY2hhbm5lbC5wb3J0MSk7XG5jaGFubmVsLnBvcnQxLnN0YXJ0KCk7XG5cbmNvbnN0IFZFUlNJT04gPSAnZXhwZXJpbWVudGFsJztcbndpbmRvdy5wYXJlbnQucG9zdE1lc3NhZ2UoYCR7VkVSU0lPTn0uYm9vdHN0cmFwYCwgJyonLCBbY2hhbm5lbC5wb3J0Ml0pO1xuXG4vLyBPbmx5IGV4cG9ydCBmb3IgdGVzdGFiaWxpdHkuXG5leHBvcnQgY29uc3QgX2d1ZXN0SVBDID0gaXBjO1xuXG4vKipcbiAqIFNlbmRzIGEgbWVzc2FnZSB0byB0aGUgcGFyZW50IGZyYW1lLlxuICogQHJldHVybiBQcm9taXNlIHRoYXQgcmVzb2x2ZXMgd2l0aCBhIHBheWxvYWQgZnJvbSBwYXJlbnQgaW4gcmVzcG9uc2UgdG8gdGhpcyBtZXNzYWdlLlxuICpcbiAqIEBleGFtcGxlXG4gKiBjb25zdCBzb21lTGlzdCA9IGF3YWl0IHNlbmRNZXNzYWdlKCd2MS5zb21lLnR5cGUucGFyZW50LnVuZGVyc3RhbmRzJyk7XG4gKiAvLyBkbyBmdW4gdGhpbmdzIHdpdGggc29tZUxpc3QuXG4gKi9cbmV4cG9ydCBjb25zdCBzZW5kTWVzc2FnZSA9IF9ndWVzdElQQy5zZW5kTWVzc2FnZS5iaW5kKF9ndWVzdElQQyk7XG5cbi8qKlxuICogU3Vic2NyaWJlcyBhIGNhbGxiYWNrIHRvIGEgbWVzc2FnZSB3aXRoIHBhcnRpY3VsYXIgdHlwZS5cbiAqL1xuZXhwb3J0IGNvbnN0IGxpc3RlbiA9IF9ndWVzdElQQy5saXN0ZW4uYmluZChfZ3Vlc3RJUEMpO1xuXG4vKipcbiAqIFVuc3Vic2NyaWJlcyBhIGNhbGxiYWNrIHRvIGEgbWVzc2FnZS5cbiAqL1xuZXhwb3J0IGNvbnN0IHVubGlzdGVuID0gX2d1ZXN0SVBDLnVubGlzdGVuLmJpbmQoX2d1ZXN0SVBDKTtcbiJdfQ==

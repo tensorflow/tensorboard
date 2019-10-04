@@ -14,105 +14,113 @@ limitations under the License.
 ==============================================================================*/
 
 /**
- * As a plugin library, this file is provided as-is (ES module).
- *
- * As a utility for TensorBoard's main frame, it is wrapped with namespace:
- * "tb_plugin.lib.DO_NOT_USE_INTERNAL". See the BUILD for details.
+ * TODO(psybuzz): find a better way to sync/share this between plugin_lib
+ * and plugin_util. The only difference is the namespace.
  */
+namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
+  export type PayloadType =
+    | null
+    | undefined
+    | string
+    | string[]
+    | boolean
+    | boolean[]
+    | number
+    | number[]
+    | object
+    | object[];
 
-export type PayloadType =
-  | null
-  | undefined
-  | string
-  | string[]
-  | boolean
-  | boolean[]
-  | number
-  | number[]
-  | object
-  | object[];
-
-export interface Message {
-  type: string;
-  id: number;
-  payload: PayloadType;
-  error: string | null;
-  isReply: boolean;
-}
-
-export type MessageType = string;
-export type MessageCallback = (payload: any) => any;
-
-interface PromiseResolver {
-  resolve: (data: any) => void;
-  reject: (error: Error) => void;
-}
-
-export class IPC {
-  private id = 0;
-  private readonly responseWaits = new Map<number, PromiseResolver>();
-  private readonly listeners = new Map<MessageType, MessageCallback>();
-
-  constructor(private port: MessagePort) {
-    this.port.addEventListener('message', (event) => this.onMessage(event));
+  export interface Message {
+    type: string;
+    id: number;
+    payload: PayloadType;
+    error: string | null;
+    isReply: boolean;
   }
 
-  listen(type: MessageType, callback: MessageCallback) {
-    this.listeners.set(type, callback);
+  export type MessageType = string;
+  export type MessageCallback = (payload: any) => any;
+
+  interface PromiseResolver {
+    resolve: (data: any) => void;
+    reject: (error: Error) => void;
   }
 
-  unlisten(type: MessageType) {
-    this.listeners.delete(type);
-  }
+  export class IPC {
+    private id = 0;
+    private readonly responseWaits = new Map<number, PromiseResolver>();
+    private readonly listeners = new Map<MessageType, MessageCallback>();
 
-  private async onMessage(event: MessageEvent) {
-    const message = JSON.parse(event.data) as Message;
-    const callback = this.listeners.get(message.type);
-
-    if (message.isReply) {
-      if (!this.responseWaits.has(message.id)) return;
-      const {id, payload, error} = message;
-      const {resolve, reject} = this.responseWaits.get(id);
-      this.responseWaits.delete(id);
-      if (error) {
-        reject(new Error(error));
-      } else {
-        resolve(payload);
-      }
-      return;
+    constructor(private port: MessagePort) {
+      this.port.addEventListener('message', (event) => this.onMessage(event));
     }
 
-    let payload = null;
-    let error = null;
-    if (this.listeners.has(message.type)) {
-      const callback = this.listeners.get(message.type);
-      try {
-        const result = await callback(message.payload);
-        payload = result;
-      } catch (e) {
-        error = e;
-      }
+    listen(type: MessageType, callback: MessageCallback) {
+      this.listeners.set(type, callback);
     }
-    const replyMessage: Message = {
-      type: message.type,
-      id: message.id,
-      payload,
-      error,
-      isReply: true,
-    };
-    this.postMessage(replyMessage);
-  }
 
-  private postMessage(message: Message) {
-    this.port.postMessage(JSON.stringify(message));
-  }
+    unlisten(type: MessageType) {
+      this.listeners.delete(type);
+    }
 
-  sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
-    const id = this.id++;
-    const message: Message = {type, id, payload, error: null, isReply: false};
-    this.postMessage(message);
-    return new Promise((resolve, reject) => {
-      this.responseWaits.set(id, {resolve, reject});
-    });
+    private async onMessage(event: MessageEvent) {
+      const message = JSON.parse(event.data) as Message;
+      // Access fields via strings to prevent compilers from mangling messages.
+      const type = message['type'];
+      const id = message['id'];
+      const payload = message['payload'];
+      const error = message['error'];
+      const isReply = message['isReply'];
+      if (isReply) {
+        if (!this.responseWaits.has(id)) return;
+        const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
+        this.responseWaits.delete(id);
+        if (error) {
+          reject(new Error(error));
+        } else {
+          resolve(payload);
+        }
+        return;
+      }
+
+      let replyPayload = null;
+      let replyError = null;
+      if (this.listeners.has(type)) {
+        const callback = this.listeners.get(type) as MessageCallback;
+        try {
+          const result = await callback(payload);
+          replyPayload = result;
+        } catch (e) {
+          replyError = e;
+        }
+      }
+      const replyMessage: Message = {
+        type: type,
+        id: id,
+        payload: replyPayload,
+        error: replyError,
+        isReply: true,
+      };
+      this.postMessage(replyMessage);
+    }
+
+    private postMessage(message: Message) {
+      this.port.postMessage(JSON.stringify(message));
+    }
+
+    sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
+      const id = this.id++;
+      const message: Message = {
+        type: type,
+        id: id,
+        payload: payload,
+        error: null,
+        isReply: false,
+      };
+      this.postMessage(message);
+      return new Promise((resolve, reject) => {
+        this.responseWaits.set(id, {resolve, reject});
+      });
+    }
   }
 }

@@ -23,7 +23,7 @@ tf_web_library(
     ],
     path = "/tf-plugin-lib/test",
     deps = [
-        "//tensorboard/components/experimental/plugin_lib",
+        "//tensorboard/components/experimental/plugin_lib:test_lib",
         "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:web_component_tester",

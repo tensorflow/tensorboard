@@ -12,14 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {IPC} from '../tf-plugin-util/message.js';
+import {IPC} from './message.js';
 
 /**
  * This code is part of a public bundle provided to plugin authors,
  * and runs within an IFrame to setup communication with TensorBoard's frame.
  */
 if (!window.parent) {
-  throw Error('The library must run within a TensorBoard iframe-based plugin.');
+  console.error('The library must run within a TensorBoard iframe-based plugin.');
 }
 
 const channel = new MessageChannel();

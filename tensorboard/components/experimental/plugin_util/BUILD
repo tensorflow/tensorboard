@@ -9,7 +9,6 @@ tf_web_library(
     srcs = [
         "message.html",
         "message.ts",
-        "message_namespaced.ts",
     ],
     path = "/tf-plugin-util",
 )
@@ -37,15 +36,4 @@ tf_web_library(
         ":host_internals",
         "//tensorboard/components/tf_backend",
     ],
-)
-
-genrule(
-    name = "message_namespaced",
-    srcs = ["message.ts"],
-    outs = ["message_namespaced.ts"],
-    cmd = "\n".join([
-        "(",
-        '  echo "namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {\n$$(<$<)\n}"',
-        ") >$@",
-    ]),
 )
