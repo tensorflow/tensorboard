@@ -40,6 +40,11 @@ import {
   TensorWidgetOptions,
   TensorViewSlicingSpec,
 } from './types';
+import {
+  BaseTensorNumericSummary,
+  BooleanOrNumericTensorNumericSummary,
+} from './health-pill-types';
+import {ColorMap, GrayscaleColorMap} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
@@ -88,12 +93,16 @@ export class TensorWidgetImpl implements TensorWidget {
 
   // Menu configuration.
   protected menuConfig: MenuConfig | null = null;
+  // Menu object.
+  private menu: Menu | null = null;
 
   // Value render mode.
   protected valueRenderMode: 'text' | 'image';
 
   // Size of each cell used to display the tensor value under the 'image' mode.
   protected imageCellSize = 12;
+
+  protected numericSummary: BaseTensorNumericSummary | null = null;
 
   constructor(
     private readonly rootElement: HTMLDivElement,
@@ -259,10 +268,14 @@ export class TensorWidgetImpl implements TensorWidget {
           console.log(`Display mode changed: ${currentMode}`);
           if (currentMode === 0) {
             this.valueRenderMode = 'text';
+            this.renderValues();
           } else {
             this.valueRenderMode = 'image';
+            this.tensorView.getNumericSummary().then((numericSummary) => {
+              this.numericSummary = numericSummary;
+              this.renderValues();
+            });
           }
-          this.renderValues();
         },
       } as ChoiceMenuItemConfig);
     }
@@ -272,10 +285,6 @@ export class TensorWidgetImpl implements TensorWidget {
     }
     this.renderMenuThumb();
   }
-
-  private menu: Menu | null = null;
-
-  private dropdown: HTMLDivElement | null = null; // TODO(cais): Move to top;
 
   /** Render the thumb that when clicked, toggles the menu display state. */
   private renderMenuThumb() {
@@ -727,6 +736,26 @@ export class TensorWidgetImpl implements TensorWidget {
 
     const valueClass = this.getValueClass();
 
+    let colorMap: ColorMap | null = null;
+    const valueRenderMode = this.valueRenderMode;
+    if (valueRenderMode === 'image') {
+      if (this.numericSummary == null) {
+        throw new Error(
+          'Failed to render image representation of tensor due to ' +
+            'missing numeric summary'
+        );
+      }
+      const {minimum, maximum} = this
+        .numericSummary as BooleanOrNumericTensorNumericSummary;
+      if (minimum == null || maximum == null) {
+        throw new Error(
+          'Failed to render image representation of tensor due to ' +
+            'missing minimum or maximum values in numeric summary'
+        );
+      }
+      colorMap = new GrayscaleColorMap(minimum as number, maximum as number);
+    }
+
     for (let i = 0; i < numRows; ++i) {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = this.valueDivs[i][j];
@@ -735,9 +764,13 @@ export class TensorWidgetImpl implements TensorWidget {
           j < (values as number[][])[i].length
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
-          if (this.valueRenderMode === 'image') {
-            // TODO(cais): Color code.
+          if (valueRenderMode === 'image') {
+            const [red, green, blue] = (colorMap as ColorMap).getRGB(
+              value as number
+            );
+            valueDiv.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
           } else {
+            // valueRenderMode: 'text'
             if (valueClass === 'numeric') {
               // TODO(cais): Once health pills are available, use the min/max
               // values to determine the number of decimal places.

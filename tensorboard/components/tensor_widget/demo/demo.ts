@@ -177,15 +177,15 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
     },
     getNumericSummary: async () => {
       const numericSummary: BaseTensorNumericSummary = {
-        elementCount: x.size(),
+        elementCount: x.size,
       };
       if (x.dtype === 'float32' || x.dtype === 'int32') {
         (numericSummary as BooleanOrNumericTensorNumericSummary).minimum = x
           .min()
-          .dataSync();
+          .arraySync();
         (numericSummary as BooleanOrNumericTensorNumericSummary).maximum = x
           .max()
-          .dataSync();
+          .arraySync();
       }
       // TODO(cais): Take care of boolean dtype.
       return numericSummary;
