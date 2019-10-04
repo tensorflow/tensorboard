@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl import logging
 import base64
 import json
 import googleapiclient.discovery
 import os
+import logging
 import tensorflow as tf
 from IPython import display
 from google.protobuf import json_format
@@ -40,7 +40,7 @@ class WitWidgetBase(object):
     Args:
       config_builder: WitConfigBuilder object containing settings for WIT.
     """
-    logging.set_verbosity(logging.WARN)
+    tf.get_logger().setLevel(logging.WARNING)
     config = config_builder.build()
     copied_config = dict(config)
     self.estimator_and_spec = (
@@ -95,6 +95,21 @@ class WitWidgetBase(object):
       self.custom_predict_fn = self._predict_aip_model
     if self.config.get('compare_use_aip'):
       self.compare_custom_predict_fn = self._predict_aip_compare_model
+
+    # If using JSON input (not Example protos) and a custom predict
+    # function, then convert examples to JSON before sending to the
+    # custom predict function.
+    if self.config.get('uses_json_input'):
+      if self.custom_predict_fn is not None:
+        user_predict = self.custom_predict_fn
+        def wrapped_custom_predict_fn(examples):
+          return user_predict(self._json_from_tf_examples(examples))
+        self.custom_predict_fn = wrapped_custom_predict_fn
+      if self.compare_custom_predict_fn is not None:
+        compare_user_predict = self.compare_custom_predict_fn
+        def wrapped_compare_custom_predict_fn(examples):
+          return compare_user_predict(self._json_from_tf_examples(examples))
+        self.compare_custom_predict_fn = wrapped_compare_custom_predict_fn
 
   def _get_element_html(self):
     return """
