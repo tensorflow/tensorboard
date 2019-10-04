@@ -11,7 +11,6 @@ tf_web_library(
     path = "/",
     deps = [
         ":analytics",
-        ":security",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
