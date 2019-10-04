@@ -3599,6 +3599,7 @@ limitations under the License.
           featureValueThresholds: {
             type: Array,
             value: () => [],
+            observer: 'featureValueThresholdsChanged_'
           },
           // A map of feature name to the featureValueThresholds indices, for quick
           // lookup.
@@ -4584,8 +4585,15 @@ limitations under the License.
             }
           });
           this.set('featureValueThresholds', thresholds);
-          this.set('featureValueThresholdsIndexMap', thresholdsIndexMap);
           this.refreshInferences_(false);
+        },
+
+        featureValueThresholdsChanged_: function(featureValueThresholds) {
+          const map = {};
+          for (let i = 0; i < featureValueThresholds.length; i++) {
+            map[featureValueThresholds[i].value] = i;
+          }
+          this.featureValueThresholdsIndexMap = map;
         },
 
         labelFeatureSelected_: function(feature) {
