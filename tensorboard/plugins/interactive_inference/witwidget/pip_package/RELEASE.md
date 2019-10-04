@@ -1,5 +1,20 @@
 # What-If Tool witwidget package releases
 
+## Release 1.4.1
+
+Note that as of 1.4.1, if you provide a custom prediction function, and provide
+your examples to WitConfigBuilder as JSON (not Example protos), then the
+examples will be passed to your custom predict function in that JSON format.
+This is technically a breaking API change but the existing behavior was
+incorrect and this specific configuration is so rarely used that we wanted
+to correct it immediately without any need for special code/flags.
+
+### Notable Features
+- #2716 - Better custom predict fn when provided JSON input.
+
+### Notable Bug Fixes
+- #2716 - Fix fairness threshold setting bug introduced in 1.4.0.
+
 ## Release 1.4.0
 
 ### Notable Features
