@@ -14,12 +14,12 @@ tf_web_library(
         "plugin-guest.ts",
         "tf-plugin-lib.ts",
     ],
+    testonly = 1,
     path = "/tf-plugin-lib",
-    visibility = ["//visibility:public"],
 )
 
 tf_ts_library(
-    name = "ts_plugin_lib",
+    name = "plugin_lib_srcs",
     srcs = [
         "message.ts",
         "plugin-guest.ts",
@@ -28,16 +28,18 @@ tf_ts_library(
     ],
 )
 
-# To update the plugin lib for clients relying on a source set of ES6 Modules:
+# To update the plugin lib for clients relying on a source set of *ES6 Modules*:
 # > bazel build tensorboard/components/experimental/plugin_lib:tb_plugin_lib
 # Then copy this folder
-# cp -r ./bazel-bin/tensorboard/components/experimental/plugin_lib/tb_plugin_lib.es6/tensorboard/components/experimental/plugin_lib/ tensorboard/components/experimental/plugin_lib/dist
+# cp -r ./bazel-bin/tensorboard/components/experimental/plugin_lib/tb_plugin_lib.es6/tensorboard/components/experimental/plugin_lib/* tensorboard/components/experimental/plugin_lib/dist
 # into dist/
+# and manually remove inlined sourcemaps.
+# plugin_lib_srcs generates es5 version only.
 tf_js_binary(
     name = "tb_plugin_lib",
     compile = 1,
     entry_point = "tf-plugin-lib.ts",
     deps = [
-        ":ts_plugin_lib"
+        ":plugin_lib_srcs"
     ]
 )
