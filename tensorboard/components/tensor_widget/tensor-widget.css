@@ -117,6 +117,7 @@ limitations under the License.
   font-weight: bold;
   font-size: 16px;
   margin-left: 10px;
+  margin-right: 5px;
   position: relative;
   user-select: none;
 }

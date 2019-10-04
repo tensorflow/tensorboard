@@ -15,6 +15,10 @@ limitations under the License.
 
 import * as tensorWidget from '../tensor-widget';
 import {TensorViewSlicingSpec, TensorView} from '../types';
+import {
+  BaseTensorNumericSummary,
+  BooleanOrNumericTensorNumericSummary,
+} from '../health-pill-types';
 
 // TODO(cais): Find a way to import tfjs-core here, instead of depending on
 // a global variable.
@@ -171,9 +175,20 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
       // TODO(cais): Check memory leak.
       return retval;
     },
-    getHealthPill: async () => {
-      // return calculateHealthPill(x);
-      throw new Error('Not implemented yet.');
+    getNumericSummary: async () => {
+      const numericSummary: BaseTensorNumericSummary = {
+        elementCount: x.size(),
+      };
+      if (x.dtype === 'float32' || x.dtype === 'int32') {
+        (numericSummary as BooleanOrNumericTensorNumericSummary).minimum = x
+          .min()
+          .dataSync();
+        (numericSummary as BooleanOrNumericTensorNumericSummary).maximum = x
+          .max()
+          .dataSync();
+      }
+      // TODO(cais): Take care of boolean dtype.
+      return numericSummary;
     },
   };
 }

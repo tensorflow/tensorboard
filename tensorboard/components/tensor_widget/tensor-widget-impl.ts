@@ -89,6 +89,12 @@ export class TensorWidgetImpl implements TensorWidget {
   // Menu configuration.
   protected menuConfig: MenuConfig | null = null;
 
+  // Value render mode.
+  protected valueRenderMode: 'text' | 'image';
+
+  // Size of each cell used to display the tensor value under the 'image' mode.
+  protected imageCellSize = 12;
+
   constructor(
     private readonly rootElement: HTMLDivElement,
     private readonly tensorView: TensorView,
@@ -97,6 +103,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.options = options || {};
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
     this.rank = this.tensorView.spec.shape.length;
+    this.valueRenderMode = 'text';
   }
 
   /**
@@ -110,6 +117,7 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   async render() {
     this.rootElement.classList.add('tensor-widget');
+
     this.renderHeader();
     if (
       !isIntegerDType(this.tensorView.spec.dtype) &&
@@ -143,8 +151,8 @@ export class TensorWidgetImpl implements TensorWidget {
       this.headerSection = document.createElement('div');
       this.headerSection.classList.add('tensor-widget-header');
       this.rootElement.appendChild(this.headerSection);
+      this.createMenu();
     }
-    this.createMenu();
     this.renderInfo();
     // TODO(cais): Implement and call renderHealthPill().
   }
@@ -249,6 +257,12 @@ export class TensorWidgetImpl implements TensorWidget {
         defaultSelection: 0,
         callback: (currentMode: number) => {
           console.log(`Display mode changed: ${currentMode}`);
+          if (currentMode === 0) {
+            this.valueRenderMode = 'text';
+          } else {
+            this.valueRenderMode = 'image';
+          }
+          this.renderValues();
         },
       } as ChoiceMenuItemConfig);
     }
@@ -475,6 +489,9 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumCols; ++i) {
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
+      if (this.valueRenderMode === 'image') {
+        tick.style.width = `${this.imageCellSize}px`;
+      }
       this.topRuler.appendChild(tick);
       this.topRulerTicks.push(tick);
       if (tick.getBoundingClientRect().right >= rootElementRight) {
@@ -526,6 +543,10 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumRows; ++i) {
       const row = document.createElement('div');
       row.classList.add('tensor-widget-value-row');
+      if (this.valueRenderMode === 'image') {
+        row.style.height = `${this.imageCellSize}px`;
+        row.style.lineHeight = `${this.imageCellSize}px`;
+      }
       this.valueSection.appendChild(row);
       this.valueRows.push(row);
 
@@ -577,6 +598,11 @@ export class TensorWidgetImpl implements TensorWidget {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = document.createElement('div');
         valueDiv.classList.add('tensor-widget-value-div');
+        if (this.valueRenderMode === 'image') {
+          valueDiv.style.width = `${this.imageCellSize}px`;
+          valueDiv.style.height = `${this.imageCellSize}px`;
+          valueDiv.style.lineHeight = `${this.imageCellSize}px`;
+        }
         this.valueRows[i].appendChild(valueDiv);
         this.valueDivs[i].push(valueDiv);
         valueDiv.addEventListener('click', () => {
@@ -646,11 +672,13 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
         }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
-        if (colIndex < numCols) {
-          this.topRulerTicks[i].textContent = `${colIndex}`;
-        } else {
-          this.topRulerTicks[i].textContent = ``;
-        }
+        if (this.valueRenderMode === 'text') {
+          if (colIndex < numCols) {
+            this.topRulerTicks[i].textContent = `${colIndex}`;
+          } else {
+            this.topRulerTicks[i].textContent = ``;
+          }
+        } // No text label under the image mode.
       }
     }
   }
@@ -670,10 +698,12 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
         }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
-        if (rowIndex < numRows) {
-          this.leftRulerTicks[i].textContent = `${rowIndex}`;
-        } else {
-          this.leftRulerTicks[i].textContent = '';
+        if (this.valueRenderMode === 'text') {
+          if (rowIndex < numRows) {
+            this.leftRulerTicks[i].textContent = `${rowIndex}`;
+          } else {
+            this.leftRulerTicks[i].textContent = '';
+          }
         }
       }
     }
@@ -696,6 +726,7 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     const valueClass = this.getValueClass();
+
     for (let i = 0; i < numRows; ++i) {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = this.valueDivs[i][j];
@@ -704,19 +735,25 @@ export class TensorWidgetImpl implements TensorWidget {
           j < (values as number[][])[i].length
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
-          if (valueClass === 'numeric') {
-            // TODO(cais): Once health pills are available, use the min/max
-            // values to determine the number of decimal places.
-            valueDiv.textContent = numericValueToString(
-              value as number,
-              isIntegerDType(this.tensorView.spec.dtype)
-            );
-          } else if (valueClass === 'boolean') {
-            valueDiv.textContent = booleanValueToDisplayString(
-              value as boolean
-            );
-          } else if (valueClass === 'string') {
-            valueDiv.textContent = stringValueToDisplayString(value as string);
+          if (this.valueRenderMode === 'image') {
+            // TODO(cais): Color code.
+          } else {
+            if (valueClass === 'numeric') {
+              // TODO(cais): Once health pills are available, use the min/max
+              // values to determine the number of decimal places.
+              valueDiv.textContent = numericValueToString(
+                value as number,
+                isIntegerDType(this.tensorView.spec.dtype)
+              );
+            } else if (valueClass === 'boolean') {
+              valueDiv.textContent = booleanValueToDisplayString(
+                value as boolean
+              );
+            } else if (valueClass === 'string') {
+              valueDiv.textContent = stringValueToDisplayString(
+                value as string
+              );
+            }
           }
           // The attribute set below will be rendered in a tooltip that appears
           // on mouse hovering.

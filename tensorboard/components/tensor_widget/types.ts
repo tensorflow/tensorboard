@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BaseTensorHealthPill} from './health-pill-types';
+import {BaseTensorNumericSummary} from './health-pill-types';
 
 export type Shape = ReadonlyArray<number>;
 
@@ -58,7 +58,7 @@ export interface TensorView {
   view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
   /** Get the health pill of the underlying tensor. */
-  getHealthPill: () => Promise<BaseTensorHealthPill>;
+  getNumericSummary: () => Promise<BaseTensorNumericSummary>;
 }
 
 /**

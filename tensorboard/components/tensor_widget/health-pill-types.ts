@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 /**
- * Health pill: A summary of a tensor's element values.
+ * A summary of a tensor's element values.
  *
  * It contains information such as
  * - the distribution of the tensor's values among different value categories
@@ -25,9 +25,18 @@ limitations under the License.
  * This base health-pill interface is general enough for all tensor
  * data types, including boolean, integer, float and string.
  */
-export interface BaseTensorHealthPill {
+export interface BaseTensorNumericSummary {
   /** Number of elements in the tensor. */
   elementCount: number;
+}
+
+export interface BooleanOrNumericTensorNumericSummary
+  extends BaseTensorNumericSummary {
+  /** Minimum of all finite values. */
+  minimum: number | boolean;
+
+  /** Maximum of all finite values. */
+  maximum: number | boolean;
 }
 
 // TODO(cais): Add sub-interfaces of `BaseTensorHealthPill` for other tensor

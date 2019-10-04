@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-type Callback = () => void | Promise<void>;
 type EventCallback = (event: Event) => void | Promise<void>;
 
 /**
@@ -29,7 +28,7 @@ export interface MenuItemConfig {
  */
 export interface SingleActionMenuItemConfig extends MenuItemConfig {
   /** The callback that gets called when the menu item is clicked. */
-  callback: Callback;
+  callback: EventCallback;
 }
 
 export interface ChoiceMenuItemConfig extends MenuItemConfig {
@@ -53,9 +52,8 @@ export interface MenuConfig {
   items: MenuItemConfig[];
 }
 
-
 interface FlatMenuItemConfig {
-  caption: string,
+  caption: string;
   onClick: EventCallback | null;
   onHover: EventCallback | null;
 }
@@ -78,11 +76,7 @@ class FlatMenu {
     parentElement.appendChild(this.dropdown);
   }
 
-  show(
-    top: number,
-    left: number,
-    itemConfigs: FlatMenuItemConfig[]
-  ) {
+  show(top: number, left: number, itemConfigs: FlatMenuItemConfig[]) {
     itemConfigs.forEach((itemConfig, i) => {
       const menuItem = document.createElement('div');
       menuItem.classList.add('tensor-widget-dim-dropdown-menu-item');
@@ -202,7 +196,7 @@ export class Menu {
                   choiceConfig.callback(k);
                 }
               },
-              onHover: null
+              onHover: null,
             });
           });
           const optionsFlatMenu = new FlatMenu(parent);
