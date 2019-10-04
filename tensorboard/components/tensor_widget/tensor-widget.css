@@ -61,11 +61,11 @@ limitations under the License.
   border-bottom: 1px solid rgb(180, 180, 180);
   font-size: 12px;
   padding: 3px;
+  user-select: none;
 }
 
 .tensor-widget-dim-dropdown-menu-item-active {
   background-color: rgb(100, 180, 255);
-  color: rgb(255, 255, 255);
 }
 
 .tensor-widget-dtype {

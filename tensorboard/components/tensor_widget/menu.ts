@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 type Callback = () => void | Promise<void>;
-type HoverCallback = (event: Event) => void | Promise<void>;
+type EventCallback = (event: Event) => void | Promise<void>;
 
 /**
  * The base interface for a menu item.
@@ -69,6 +69,13 @@ export interface MenuConfig {
   items: MenuItemConfig[];
 }
 
+
+interface FlatMenuItemConfig {
+  caption: string,
+  onClick: EventCallback | null;
+  onHover: EventCallback | null;
+}
+
 /**
  * Helper class: A menu item without hierarchy.
  */
@@ -81,6 +88,9 @@ class FlatMenu {
     this.dropdown.classList.add('tensor-widget-dim-dropdown');
     this.dropdown.style.position = 'fixed';
     this.dropdown.style.display = 'none';
+    this.dropdown.addEventListener('mouseleave', () => {
+      this.hide();
+    });
     parentElement.appendChild(this.dropdown);
   }
 
@@ -88,18 +98,44 @@ class FlatMenu {
     top: number,
     left: number,
     captions: string[],
-    onHoverCallbacks: Array<HoverCallback | null>
+    onClickCallbacks: Array<EventCallback | null>,
+    onHoverCallbacks: Array<EventCallback | null>
   ) {
     captions.forEach((caption, i) => {
       const menuItem = document.createElement('div');
       menuItem.classList.add('tensor-widget-dim-dropdown-menu-item');
       menuItem.textContent = caption;
       this.dropdown.appendChild(menuItem);
+      const onClick = onClickCallbacks[i];
       const onHover = onHoverCallbacks[i];
-      if (onHover !== null) {
-        menuItem.addEventListener('mouseover', onHover);
-        // TODO(cais): Add mouseexit callback.
-      }
+      menuItem.addEventListener('click', (event) => {
+        if (onClick !== null) {
+          onClick(event);
+        }
+        this.hide();
+      });
+      menuItem.addEventListener('mouseenter', (event) => {
+        if (onHover !== null) {
+          onHover(event);
+        }
+        menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-active');
+      });
+      menuItem.addEventListener('mouseleave', () => {
+        menuItem.classList.remove(
+          'tensor-widget-dim-dropdown-menu-item-active'
+        );
+        if (onHover === null) {
+          return;
+        }
+        const childrenToRemove: Element[] = [];
+        for (let i = 0; i < menuItem.children.length; ++i) {
+          const child = menuItem.children[i];
+          if (child.classList.contains('tensor-widget-dim-dropdown')) {
+            childrenToRemove.push(child);
+          }
+        }
+        childrenToRemove.forEach((child) => menuItem.removeChild(child));
+      });
     });
     this.dropdown.style.display = 'block';
     this.dropdown.style.top = top + 'px';
@@ -131,6 +167,9 @@ class FlatMenu {
 export class Menu {
   private baseFlatMenu: FlatMenu;
 
+  // The currently selected indices for all multiple-choice menu items.
+  private currentChoiceSelections: {[itemIndex: number]: number};
+
   /**
    * Constructor for the Menu class.
    *
@@ -140,7 +179,16 @@ export class Menu {
     private readonly config: MenuConfig,
     private readonly parentElement: HTMLDivElement
   ) {
-    this.baseFlatMenu = new FlatMenu(parentElement);
+    this.baseFlatMenu = new FlatMenu(this.parentElement);
+
+    this.currentChoiceSelections = {};
+    this.config.items.forEach((item, i) => {
+      if ((item as ChoiceMenuItemConfig).options != null) {
+        this.currentChoiceSelections[
+          i
+        ] = (item as ChoiceMenuItemConfig).defaultSelection;
+      }
+    });
   }
 
   /**
@@ -151,27 +199,55 @@ export class Menu {
    */
   show(top: number, left: number) {
     const captions: string[] = this.config.items.map((item) => item.caption);
-    const onHovers: Array<HoverCallback | null> = this.config.items.map(
-      (item) => {
+    const clickCallbacks: Array<EventCallback | null> = this.config.items.map(
+      (item, i) => {
+        if ((item as ChoiceMenuItemConfig).options != null) {
+          // This is a multiple-choice item.
+          return null;
+        } else if ((item as ToggleMenuItemConfig).defaultState != null) {
+          // This is a binary toggle item.
+          // TODO(cais): Modify state.
+          return null;
+        } else {
+          // This is a single-command item.
+          return (item as SingleActionMenuItemConfig).callback;
+        }
+      }
+    );
+    const hoverCallbacks: Array<EventCallback | null> = this.config.items.map(
+      (item, i) => {
         if ((item as ChoiceMenuItemConfig).options != null) {
           // TODO(cais): Check to make sure it's not empty?
+          const currentSelectionIndex = this.currentChoiceSelections[i];
           return (event) => {
-            const captions = (item as ChoiceMenuItemConfig).options;
-            const optionsFlatMenu = new FlatMenu(this.parentElement);
-            console.log(captions);
-            console.log(event.srcElement);
-            const box = (event.srcElement as HTMLDivElement).getBoundingClientRect();
+            const parent = event.target as HTMLDivElement;
+            const choiceConfig = item as ChoiceMenuItemConfig;
+            const captions = choiceConfig.options.map((option, k) => {
+              return k === currentSelectionIndex ? option + ' (✓)' : option;
+            });
+            const optionsFlatMenu = new FlatMenu(parent);
+            const onClicks: Array<EventCallback | null> = choiceConfig.options.map(
+              (option, k) => {
+                return () => {
+                  if (currentSelectionIndex !== k) {
+                    this.currentChoiceSelections[i] = k;
+                    choiceConfig.callback(k);
+                  }
+                };
+              }
+            );
+            const onHovers = captions.map(() => null);
+            const box = parent.getBoundingClientRect();
             const top = box.top;
             const left = box.right;
-            const onHovers = captions.map((caption) => null);
-            optionsFlatMenu.show(top, left, captions, onHovers);
+            optionsFlatMenu.show(top, left, captions, onClicks, onHovers);
           };
         } else {
           return null;
         }
       }
     );
-    this.baseFlatMenu.show(top, left, captions, onHovers);
+    this.baseFlatMenu.show(top, left, captions, clickCallbacks, hoverCallbacks);
   }
 
   /** Hide the menu. */

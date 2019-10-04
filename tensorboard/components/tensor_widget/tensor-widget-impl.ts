@@ -286,7 +286,6 @@ export class TensorWidgetImpl implements TensorWidget {
         const rect = (this.menuThumb as HTMLDivElement).getBoundingClientRect();
         const top = rect.bottom;
         const left = rect.left;
-        console.log(`top = ${top}, left = ${left}`);
         this.menu.show(top, left);
       }
     });
