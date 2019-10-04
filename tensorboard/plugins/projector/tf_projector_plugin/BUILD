@@ -32,6 +32,7 @@ tf_web_library(
     ],
     path = "/tf-projector",
     deps = [
+        "//tensorboard/components:security",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/projector/vz_projector",
         "@com_google_fonts_roboto",
