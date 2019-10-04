@@ -96,13 +96,11 @@ export class IPC {
         replyError = e;
       }
     }
-    const replyMessage: Message = {
-      'type': type,
-      'id': id,
-      'payload': replyPayload,
-      'error': replyError,
-      'isReply': true,
-    };
+    const replyMessage = {} as Message;
+    replyMessage['id'] = id;
+    replyMessage['payload'] = replyPayload;
+    replyMessage['error'] = replyError;
+    replyMessage['isReply'] = true;
     this.postMessage(replyMessage);
   }
 
@@ -112,7 +110,12 @@ export class IPC {
 
   sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
     const id = this.id++;
-    const message: Message = {'type': type, 'id': id, 'payload': payload, 'error': null, 'isReply': false};
+    const message = {} as Message;
+    message['type'] = type;
+    message['id'] = id;
+    message['payload'] = payload;
+    message['error'] = null;
+    message['isReply'] = false;
     this.postMessage(message);
     return new Promise((resolve, reject) => {
       this.responseWaits.set(id, {resolve, reject});
