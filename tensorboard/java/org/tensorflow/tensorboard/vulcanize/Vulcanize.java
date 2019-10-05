@@ -747,8 +747,9 @@ public final class Vulcanize {
       if (src.isEmpty()) {
         sourceContent = script.html();
       } else {
-        // script element that remains are the one that are annotated with `jscomp-ignore`.
-        // They must resolve from the root because those srcs are rootified.
+        // script element that remains are the one that are annotated with `jscomp-ignore` or one
+        // that appear inside descendant of a node annotated with `vulcanize-noinline`.  They must
+        // resolve from the root because those srcs are rootified.
         Webpath path = Webpath.get("/").resolve(Webpath.get(src)).normalize();
         sourceContent = new String(Files.readAllBytes(webfiles.get(path)));
       }
