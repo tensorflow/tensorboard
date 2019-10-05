@@ -22,9 +22,10 @@ def _tensorboard_html_binary(ctx):
 
   The rule outputs a HTML that resolves all HTML import statements into one
   document. When compile option is on, it compiles all script sources with
-  JSCompiler and combines them into one script tag. The rule also outputs
+  JSCompiler and combines them into one script element. The rule also outputs
   name.html.scripts_sha256 file that contains sha256 hash, in hex, of all
-  script tags. The hashes are delimited by newline.
+  script elements (sources inside element and content of JavaScript src they
+  point at). The hashes are delimited by newline.
   """
   deps = unfurl(ctx.attr.deps, provider="webfiles")
   manifests = depset(order="postorder")

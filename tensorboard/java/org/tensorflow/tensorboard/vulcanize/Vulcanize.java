@@ -162,7 +162,7 @@ public final class Vulcanize {
     transform(document);
     if (wantsCompile) {
       compile();
-      combineScriptTags(document);
+      combineScriptElements(document);
     } else if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
@@ -718,9 +718,9 @@ public final class Vulcanize {
     return ImmutableMultimap.copyOf(builder);
   }
 
-  // Combines all script tags into one and append it at the bottom of the
+  // Combines all script elements into one and append it at the bottom of the
   // document.
-  private static void combineScriptTags(Document document) {
+  private static void combineScriptElements(Document document) {
     Elements scripts = document.getElementsByTag("script");
     final StringBuilder sources = new StringBuilder();
     for (Element script : scripts) {
