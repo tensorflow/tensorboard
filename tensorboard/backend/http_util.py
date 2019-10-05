@@ -147,6 +147,7 @@ def Respond(request,
 
   headers = []
   headers.append(('Content-Length', str(content_length)))
+  headers.append(('X-Content-Type-Options', 'nosniff'))
   if content_encoding:
     headers.append(('Content-Encoding', content_encoding))
   if expires > 0:
