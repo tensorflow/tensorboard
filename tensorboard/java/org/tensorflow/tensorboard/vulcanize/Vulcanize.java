@@ -728,8 +728,9 @@ public final class Vulcanize {
       sources.append(script.html()).append("\n");
       script.remove();
     }
-    // TensorBoard HTMLs tend to be extremely malformed and it can have multiple
-    // body tags.
+    // jsoup parser creates body elements for each HTML files. Since document.body() returns the
+    // first instance and we want to insert the script element at the end of the document, we
+    // manually grab the last one.
     Elements bodies = document.getElementsByTag("body");
     Element lastBody = bodies.get(bodies.size() - 1);
 
