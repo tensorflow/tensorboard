@@ -68,6 +68,10 @@ limitations under the License.
   background-color: rgb(100, 180, 255);
 }
 
+.tensor-widget-dim-dropdown-menu-item-disabled {
+  color: rgb(128, 128, 128);
+}
+
 .tensor-widget-dtype {
   align-content: center;
   color: rgb(60, 60, 60);

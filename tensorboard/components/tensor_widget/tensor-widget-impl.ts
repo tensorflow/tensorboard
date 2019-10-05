@@ -19,7 +19,12 @@ import {
   isIntegerDType,
   isStringDType,
 } from './dtype-utils';
-import {ChoiceMenuItemConfig, Menu, MenuConfig} from './menu';
+import {
+  ChoiceMenuItemConfig,
+  Menu,
+  MenuConfig,
+  SingleActionMenuItemConfig,
+} from './menu';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -277,12 +282,29 @@ export class TensorWidgetImpl implements TensorWidget {
           }
         },
       } as ChoiceMenuItemConfig);
+      const zoomStepRatio = 1.2;
+      this.menuConfig.items.push({
+        caption: 'Zoom in (Image mode only)',
+        callback: (event) => {
+          this.imageCellSize *= zoomStepRatio;
+          this.renderValues();
+        },
+        isEnabled: () => this.valueRenderMode === 'image',
+      } as SingleActionMenuItemConfig);
+      this.menuConfig.items.push({
+        caption: 'Zoom out (Image mode only)',
+        callback: (event) => {
+          this.imageCellSize /= zoomStepRatio;
+          this.renderValues();
+        },
+        isEnabled: () => this.valueRenderMode === 'image',
+      } as SingleActionMenuItemConfig);
     }
-    if (this.menuConfig !== null) {
+    if (this.menuConfig !== null && this.menuConfig.items.length > 0) {
       this.menu = new Menu(this.menuConfig, this
         .headerSection as HTMLDivElement);
+      this.renderMenuThumb();
     }
-    this.renderMenuThumb();
   }
 
   /** Render the thumb that when clicked, toggles the menu display state. */

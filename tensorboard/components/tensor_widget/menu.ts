@@ -29,6 +29,13 @@ export interface MenuItemConfig {
 export interface SingleActionMenuItemConfig extends MenuItemConfig {
   /** The callback that gets called when the menu item is clicked. */
   callback: EventCallback;
+
+  /**
+   * A function that determines whether menu item is currently enabled.
+   *
+   * If not provided, the menu item will always be enabled.
+   */
+  isEnabled?: () => boolean;
 }
 
 export interface ChoiceMenuItemConfig extends MenuItemConfig {
@@ -64,6 +71,13 @@ interface FlatMenuItemConfig {
 
   /** The hover callback for the item. */
   onHover: EventCallback | null;
+
+  /**
+   * Whether the item is disabled.
+   *
+   * If not specified, treated as `false` (not disabled).
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -104,6 +118,11 @@ class FlatMenu {
       menuItem.classList.add('tensor-widget-dim-dropdown-menu-item');
       menuItem.textContent = itemConfig.caption;
       this.dropdown.appendChild(menuItem);
+      if (itemConfig.disabled) {
+        menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-disabled');
+        return;
+      }
+
       menuItem.addEventListener('click', (event) => {
         if (itemConfig.onClick !== null) {
           itemConfig.onClick(event);
@@ -233,7 +252,14 @@ export class Menu {
         };
       } else {
         // This is a single-command item.
-        outerItemConfig.onClick = (item as SingleActionMenuItemConfig).callback;
+        const singleActionConfig = item as SingleActionMenuItemConfig;
+        outerItemConfig.onClick = singleActionConfig.callback;
+        if (
+          singleActionConfig.isEnabled != null &&
+          !singleActionConfig.isEnabled()
+        ) {
+          outerItemConfig.disabled = true;
+        }
       }
       outerItemConfigs.push(outerItemConfig);
     });
