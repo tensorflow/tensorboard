@@ -257,7 +257,7 @@ public final class Vulcanize {
           break;
         }
       }
-      if (!ignoreFile) {
+      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent() && !ignoreFile) {
         if (isExternalCssNode(node)
             && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
