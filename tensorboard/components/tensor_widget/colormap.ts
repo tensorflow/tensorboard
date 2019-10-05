@@ -20,7 +20,7 @@ const MAX_RGB = 255;
 /**
  * Abstract base class for colormap.
  *
- * A colormap maps a numeric value onto an RGB color.
+ * A colormap maps a numeric value to an RGB color.
  */
 export abstract class ColorMap {
   /**
@@ -42,9 +42,9 @@ export abstract class ColorMap {
 
   /**
    * Get the RGB value based on element value.
-   * @param value The element value to be mapped onto RGB color values.
-   * @returns RGB color values represented as a length-3 number array.
-   *   The range of RGB values is 0 - 255.
+   * @param value The element value to be mapped to RGB color value.
+   * @returns RGB color value represented as a length-3 number array.
+   *   The range of RGB values is [0, 255].
    */
   abstract getRGB(value: number): [number, number, number];
 }
@@ -54,6 +54,8 @@ export abstract class ColorMap {
  */
 export class GrayscaleColorMap extends ColorMap {
   getRGB(value: number): [number, number, number] {
+    // This color scheme for pathological values matches tfdbg v1's Health Pills
+    // feature.
     if (isNaN(value)) {
       // NaN.
       return [MAX_RGB, 0, 0];
