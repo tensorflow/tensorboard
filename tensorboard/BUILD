@@ -409,6 +409,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/backend:experiment_id",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
         "@org_pythonhosted_six",
@@ -424,6 +425,7 @@ py_test(
     deps = [
         ":plugin_util",
         ":test",
+        "//tensorboard/backend:experiment_id",
         "@org_pythonhosted_six",
     ],
 )

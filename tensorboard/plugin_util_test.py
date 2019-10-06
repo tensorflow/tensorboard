@@ -22,6 +22,7 @@ import six
 
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
+from tensorboard.backend import experiment_id
 
 
 class MarkdownToSafeHTMLTest(tb_test.TestCase):
@@ -121,6 +122,20 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
                u'<!-- WARNING: discarded 36 null bytes in markdown string '
                'after UTF-8 decoding -->\n'
                '<p>un_der_score</p>')
+
+
+class ExperimentIdTest(tb_test.TestCase):
+  """Tests for `plugin_util.experiment_id`."""
+
+  def test_default(self):
+    # This shouldn't happen; the `ExperimentIdMiddleware` always set an
+    # experiment ID. In case something goes wrong, degrade gracefully.
+    environ = {}
+    self.assertEqual(plugin_util.experiment_id(environ), "")
+
+  def test_present(self):
+    environ = {experiment_id.WSGI_ENVIRON_KEY: "123"}
+    self.assertEqual(plugin_util.experiment_id(environ), "123")
 
 
 if __name__ == '__main__':
