@@ -111,9 +111,25 @@ class CorePluginTest(tf.test.TestCase):
     with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
       loader.fix_flags(FakeFlags(inspect=False, event_file='/tmp/event.out'))
 
-    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='/hello/')
-    loader.fix_flags(flag)
-    self.assertEqual(flag.path_prefix, '/hello')
+  def testPathPrefix_stripsTrailingSlashes(self):
+    loader = core_plugin.CorePluginLoader()
+    for path_prefix in ('/hello', '/hello/', '/hello//', '/hello///'):
+      flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix=path_prefix)
+      loader.fix_flags(flag)
+      self.assertEqual(
+          flag.path_prefix,
+          '/hello',
+          'got %r (input %r)' % (flag.path_prefix, path_prefix),
+      )
+
+  def testPathPrefix_mustStartWithSlash(self):
+    loader = core_plugin.CorePluginLoader()
+    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='noslash')
+    with self.assertRaises(base_plugin.FlagsError) as cm:
+      loader.fix_flags(flag)
+    msg = str(cm.exception)
+    self.assertIn('must start with slash', msg)
+    self.assertIn(repr('noslash'), msg)
 
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
