@@ -63,6 +63,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":http_util",
+        ":path_prefix",
         "//tensorboard:errors",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard/backend/event_processing:data_provider",
@@ -94,6 +95,29 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "path_prefix",
+    srcs = ["path_prefix.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:errors",
+    ],
+)
+
+py_test(
+    name = "path_prefix_test",
+    size = "small",
+    srcs = ["path_prefix_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":path_prefix",
+        "//tensorboard:errors",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
     ],
 )
 
