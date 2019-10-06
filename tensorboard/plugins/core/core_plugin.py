@@ -236,7 +236,7 @@ class CorePlugin(base_plugin.TBPlugin):
     """
     results = []
     if self._db_connection_provider:
-      experiment = plugin_util.experiment_id(request.environ)
+      exp_id = plugin_util.experiment_id(request.environ)
       runs_dict = collections.OrderedDict()
 
       db = self._db_connection_provider()
@@ -435,9 +435,9 @@ present and --logdir is not specified.\
 An optional, relative prefix to the path, e.g. "/path/to/tensorboard".
 resulting in the new base url being located at
 localhost:6006/path/to/tensorboard under default settings. A leading
-slash is required when specifying the path_prefix, however trailing
-slashes can be omitted. The path_prefix can be leveraged for path based
-routing of an elb when the website base_url is not available e.g.
+slash is required when specifying the path_prefix. A trailing slash is
+optional and has no effect. The path_prefix can be leveraged for path
+based routing of an ELB when the website base_url is not available e.g.
 "example.site.com/path/to/tensorboard/".\
 ''')
 
@@ -568,8 +568,10 @@ flag.\
     elif flags.host is not None and flags.bind_all:
       raise FlagsError('Must not specify both --host and --bind_all.')
 
-    if flags.path_prefix.endswith('/'):
-      flags.path_prefix = flags.path_prefix[:-1]
+    flags.path_prefix = flags.path_prefix.rstrip('/')
+    if flags.path_prefix and not flags.path_prefix.startswith('/'):
+      raise FlagsError(
+          'Path prefix must start with slash, but got: %r.' % flags.path_prefix)
 
   def load(self, context):
     """Creates CorePlugin instance."""

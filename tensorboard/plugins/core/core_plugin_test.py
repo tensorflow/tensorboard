@@ -111,9 +111,9 @@ class CorePluginTest(tf.test.TestCase):
     with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
       loader.fix_flags(FakeFlags(inspect=False, event_file='/tmp/event.out'))
 
-    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='hello/')
+    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='/hello/')
     loader.fix_flags(flag)
-    self.assertEqual(flag.path_prefix, 'hello')
+    self.assertEqual(flag.path_prefix, '/hello')
 
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
