@@ -236,7 +236,7 @@ class CorePlugin(base_plugin.TBPlugin):
     """
     results = []
     if self._db_connection_provider:
-      experiment = plugin_util.experiment_id(request.environ)
+      exp_id = plugin_util.experiment_id(request.environ)
       runs_dict = collections.OrderedDict()
 
       db = self._db_connection_provider()
