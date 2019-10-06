@@ -30,6 +30,7 @@ import six
 from werkzeug import utils
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tb_logging
@@ -122,7 +123,7 @@ class CorePlugin(base_plugin.TBPlugin):
     * window_title is the title of the TensorBoard web page.
     """
     if self._data_provider:
-      experiment = request.args.get('experiment', '')
+      experiment = plugin_util.experiment_id(request.environ)
       data_location = self._data_provider.data_location(experiment)
     else:
       data_location = self._logdir or self._db_uri
@@ -159,7 +160,7 @@ class CorePlugin(base_plugin.TBPlugin):
     last, and then ties are broken by sorting on the run name.
     """
     if self._data_provider:
-      experiment = request.args.get('experiment', '')
+      experiment = plugin_util.experiment_id(request.environ)
       runs = sorted(
           self._data_provider.list_runs(experiment_id=experiment),
           key=lambda run: (
@@ -235,7 +236,7 @@ class CorePlugin(base_plugin.TBPlugin):
     """
     results = []
     if self._db_connection_provider:
-      exp_id = request.args.get('experiment')
+      experiment = plugin_util.experiment_id(request.environ)
       runs_dict = collections.OrderedDict()
 
       db = self._db_connection_provider()
