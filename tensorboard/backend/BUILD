@@ -100,6 +100,7 @@ py_test(
 )
 
 py_library(
+<<<<<<< HEAD
     name = "empty_path_redirect",
     srcs = ["empty_path_redirect.py"],
     srcs_version = "PY2AND3",
@@ -119,6 +120,8 @@ py_test(
 )
 
 py_library(
+=======
+>>>>>>> 0981d8a7b0137d0dd67b935d77ee139e687d212f
     name = "path_prefix",
     srcs = ["path_prefix.py"],
     srcs_version = "PY2AND3",
