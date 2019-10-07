@@ -740,7 +740,7 @@ public final class Vulcanize {
   }
 
   private static ArrayList<String> computeScriptShasum(Document document) throws IOException {
-    ArrayList hashes = new ArrayList<String>();
+    ArrayList<String> hashes = new ArrayList<>();
     for (Element script : document.getElementsByTag("script")) {
       String src = script.attr("src");
       String sourceContent;
