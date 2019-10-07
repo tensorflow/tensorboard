@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Redirect from an empty path to "/".
+"""Redirect from an empty path to the virtual application root.
 
 Sometimes, middleware transformations will make the path empty: for
 example, navigating to "/foo" (no trailing slash) when the path prefix
 is exactly "/foo". In such cases, relative links on the frontend would
 break. Instead of handling this special case in each relevant
 middleware, we install a top-level redirect handler from "" to "/".
+
+This middleware respects `SCRIPT_NAME` as described by the WSGI spec. If
+`SCRIPT_NAME` is set to "/foo", then an empty `PATH_INFO` corresponds to
+the actual path "/foo", and so will be redirected to "/foo/".
 """
 
 from __future__ import absolute_import

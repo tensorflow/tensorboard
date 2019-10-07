@@ -34,8 +34,9 @@ class ExperimentIdMiddleware(object):
 
   Any request whose path matches `/experiment/SOME_EID[/...]` will have
   its first two path components stripped, and its experiment ID stored
-  onto the WSGI environment with key `WSGI_ENVIRON_KEY`. All other requests
-  will have paths unchanged and the experiment ID set to the empty string.
+  onto the WSGI environment with key taken from the `WSGI_ENVIRON_KEY`
+  constant. All other requests will have paths unchanged and the
+  experiment ID set to the empty string.
 
   Instances of this class are WSGI applications (see PEP 3333).
   """
