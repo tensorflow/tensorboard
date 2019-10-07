@@ -302,9 +302,9 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
     return json.loads(response.get_data().decode('utf-8'))
 
   def testBaseUrlRequest(self):
-    """Request a page that doesn't exist; it should 404."""
+    """Base URL should redirect to "/" for proper relative URLs."""
     response = self.server.get(self.path_prefix)
-    self.assertEqual(404, response.status_code)
+    self.assertEqual(301, response.status_code)
 
   def testBaseUrlRequestNonexistentPage(self):
     """Request a page that doesn't exist; it should 404."""
@@ -680,7 +680,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self._test_route('/data/plugin/foo/bogus', 404)
 
   def testEmptyRoute(self):
-    self._test_route('', 404)
+    self._test_route('', 301)
 
   def testSlashlessRoute(self):
     self._test_route('runaway', 404)

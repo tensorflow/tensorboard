@@ -39,6 +39,7 @@ from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-o
 from werkzeug import wrappers
 
 from tensorboard import errors
+from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend.event_processing import db_import_multiplexer
@@ -329,6 +330,7 @@ class TensorBoardWSGI(object):
   def _create_wsgi_app(self):
     """Apply middleware to create the final WSGI app."""
     app = self._route_request
+    app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
     app = _handling_errors(app)
     return app
