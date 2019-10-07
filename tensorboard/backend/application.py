@@ -329,10 +329,7 @@ class TensorBoardWSGI(object):
   def _create_wsgi_app(self):
     """Apply middleware to create the final WSGI app."""
     app = self._route_request
-<<<<<<< HEAD
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
-=======
->>>>>>> b17f8b9516426f00e968cc37f107f4225a807d7c
     app = _handling_errors(app)
     return app
 
