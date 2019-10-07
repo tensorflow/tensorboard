@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.hash.Hashing;
 import com.google.javascript.jscomp.BasicErrorManager;
 import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
@@ -79,6 +80,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -130,12 +132,13 @@ public final class Vulcanize {
     Webpath inputPath = Webpath.get(args[3]);
     outputPath = Webpath.get(args[4]);
     Path output = Paths.get(args[5]);
-    if (!args[6].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[6])), UTF_8);
+    Path shasumOutput = Paths.get(args[6]);
+    if (!args[7].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[7])), UTF_8);
       Arrays.asList(ignoreFile.split("\n")).forEach(
           (str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 7; i < args.length; i++) {
+    for (int i = 8; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
@@ -159,6 +162,7 @@ public final class Vulcanize {
     transform(document);
     if (wantsCompile) {
       compile();
+      combineScriptElements(document);
     } else if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
@@ -173,12 +177,15 @@ public final class Vulcanize {
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
     }
+
     Files.write(
         output,
         Html5Printer.stringify(document).getBytes(UTF_8),
         StandardOpenOption.WRITE,
         StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING);
+
+    writeShasum(document, shasumOutput);
   }
 
   private static void transform(Node root) throws IOException {
@@ -432,6 +439,11 @@ public final class Vulcanize {
     options.setStrictModeInput(false);
     options.setExtraAnnotationNames(EXTRA_JSDOC_TAGS);
 
+    // Strict mode gets in the way of concatenating all script tags as script
+    // tags assume different modes. Disable global strict imposed by JSComp.
+    // A function can still have a "use strict" inside.
+    options.setEmitUseStrict(false);
+
     // So we can chop JS binary back up into the original script tags.
     options.setPrintInputDelimiter(true);
     options.setInputDelimiter(SCRIPT_DELIMITER);
@@ -546,7 +558,6 @@ public final class Vulcanize {
       System.exit(1);
     }
     String jsBlob = compiler.toSource();
-
     // Split apart the JS blob and put it back in the original <script> locations.
     Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
     tags.addAll(sourceTags.entrySet());
@@ -705,6 +716,58 @@ public final class Vulcanize {
       }
     }
     return ImmutableMultimap.copyOf(builder);
+  }
+
+  // Combines all script elements into one and append it at the bottom of the
+  // document.
+  private static void combineScriptElements(Document document) {
+    Elements scripts = document.getElementsByTag("script");
+    final StringBuilder sources = new StringBuilder();
+    for (Element script : scripts) {
+      if (!script.attr("src").isEmpty()) continue;
+      sources.append(script.html()).append("\n");
+      script.remove();
+    }
+    // jsoup parser creates body elements for each HTML files. Since document.body() returns the
+    // first instance and we want to insert the script element at the end of the document, we
+    // manually grab the last one.
+    Elements bodies = document.getElementsByTag("body");
+    Element lastBody = bodies.get(bodies.size() - 1);
+
+    Element scriptTag = new Element(Tag.valueOf("script"), "")
+        .appendChild(new DataNode(sources.toString(), ""));
+    lastBody.appendChild(scriptTag);
+  }
+
+  private static ArrayList<String> computeScriptShasum(Document document) throws IOException {
+    ArrayList hashes = new ArrayList<String>();
+    for (Element script : document.getElementsByTag("script")) {
+      String src = script.attr("src");
+      String sourceContent;
+      if (src.isEmpty()) {
+        sourceContent = script.html();
+      } else {
+        // script element that remains are the one that are annotated with `jscomp-ignore` or one
+        // that appear inside descendant of a node annotated with `vulcanize-noinline`.  They must
+        // resolve from the root because those srcs are rootified.
+        Webpath path = Webpath.get("/").resolve(Webpath.get(src)).normalize();
+        sourceContent = new String(Files.readAllBytes(webfiles.get(path)));
+      }
+      String hash = Hashing.sha256().hashString(sourceContent, UTF_8).toString();
+      hashes.add(hash);
+    }
+    return hashes;
+  }
+
+  // Writes sha256 of script tags in hex in the document.
+  private static void writeShasum(Document document, Path output) throws IOException {
+    String hashes = Joiner.on("\n").join(computeScriptShasum(document));
+    Files.write(
+        output,
+        hashes.getBytes(UTF_8),
+        StandardOpenOption.WRITE,
+        StandardOpenOption.CREATE,
+        StandardOpenOption.TRUNCATE_EXISTING);
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {

@@ -18,6 +18,15 @@ load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "unfurl", "long_path")
 
 def _tensorboard_html_binary(ctx):
+  """Compiles HTMLs into one HTML.
+
+  The rule outputs a HTML that resolves all HTML import statements into one
+  document. When compile option is on, it compiles all script sources with
+  JSCompiler and combines them into one script element. The rule also outputs
+  name.html.scripts_sha256 file that contains sha256 hash, in hex, of all
+  script elements (sources inside element and content of JavaScript src they
+  point at). The hashes are delimited by newline.
+  """
   deps = unfurl(ctx.attr.deps, provider="webfiles")
   manifests = depset(order="postorder")
   files = depset()
@@ -45,7 +54,7 @@ def _tensorboard_html_binary(ctx):
           ignore_regexs_file_set,
       ]).to_list(),
       tools=jslibs,
-      outputs=[ctx.outputs.html],
+      outputs=[ctx.outputs.html, ctx.outputs.shasum],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
                   "true" if ctx.attr.compile else "false",
@@ -53,6 +62,7 @@ def _tensorboard_html_binary(ctx):
                   ctx.attr.input_path,
                   ctx.attr.output_path,
                   ctx.outputs.html.path,
+                  ctx.outputs.shasum.path,
                   ignore_regexs_file_path] +
                  [f.path for f in jslibs.to_list()] +
                  [f.path for f in manifests.to_list()]),
@@ -139,4 +149,5 @@ tensorboard_html_binary = rule(
     },
     outputs={
         "html": "%{name}.html",
+        "shasum": "%{name}.html.scripts_sha256",
     })
