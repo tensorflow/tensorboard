@@ -186,9 +186,10 @@ class BeholderPlugin(base_plugin.TBPlugin):
     # Thanks to Miguel Grinberg for this technique:
     # https://blog.miguelgrinberg.com/post/video-streaming-with-flask
     mimetype = 'multipart/x-mixed-replace; boundary=frame'
-    return wrappers.Response(response=self._frame_generator(),
-                             status=200,
-                             mimetype=mimetype)
+    return http_util.Respond(request,
+                             self._frame_generator(),
+                             mimetype,
+                             code=200)
 
   @wrappers.Request.application
   def _serve_ping(self, request): # pylint: disable=unused-argument

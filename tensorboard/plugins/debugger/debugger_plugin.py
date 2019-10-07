@@ -199,14 +199,17 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       A werkzeug BaseResponse object.
     """
     if request.method != 'POST':
-      return wrappers.Response(response=(
-          '%s requests are forbidden by the debugger plugin.' %
-          request.method), status=405)
+      return http_util.Respond(
+          request,
+          '%s requests are forbidden by the debugger plugin.' % request.method,
+          'text/plain',
+          code=405
+      )
 
     if _NODE_NAMES_POST_KEY not in request.form:
-      return wrappers.Response(response=(
+      return http_util.Respond(request, (
           'The %r POST key was not found in the request for health pills.' %
-          _NODE_NAMES_POST_KEY), status=400)
+          _NODE_NAMES_POST_KEY), 'text/plain', code=400)
 
     jsonified_node_names = request.form[_NODE_NAMES_POST_KEY]
     try:
@@ -217,14 +220,16 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       # run in many different environments, as it is open-source.
       # TODO(@caisq, @chihuahua): Create platform-dependent adapter to catch
       # specific types of exceptions, instead of the broad catching here.
-      logger.error('Could not decode node name JSON string %r: %s',
-                       jsonified_node_names, e)
-      return wrappers.Response(status=400)
+      response = (
+          'Could not decode node name JSON string %r: %s'
+      ) % (jsonified_node_names, e)
+      return http_util.Respond(request, response, 'text/plain', code=400)
 
     if not isinstance(node_names, list):
-      logger.error('%r is not a JSON list of node names:',
-                       jsonified_node_names)
-      return wrappers.Response(status=400)
+      response = (
+          '%r is not a JSON list of node names:'
+      ) % (jsonified_node_names)
+      return http_util.Respond(request, response, 'text/plain', code=400)
 
     run = request.form.get(_RUN_POST_KEY, _DEFAULT_RUN)
     step_string = request.form.get(_STEP_POST_KEY, None)
@@ -245,9 +250,8 @@ class DebuggerPlugin(base_plugin.TBPlugin):
         mapping = self._obtain_health_pills_at_step(
             events_directory, node_names, step)
       except IOError as error:
-        logger.error(
-            'Error retrieving health pills for step %d: %s', step, error)
-        return wrappers.Response(status=404)
+        response = 'Error retrieving health pills for step %d: %s' % (step, error)
+        return http_util.Respond(request, response, 'text/plain', code=404)
 
     # Convert event_accumulator.HealthPillEvents to JSON-able dicts.
     jsonable_mapping = {}
@@ -517,9 +521,9 @@ class DebuggerPlugin(base_plugin.TBPlugin):
       A werkzeug BaseResponse object.
     """
     if request.method != 'GET':
-      logger.error(
-          '%s requests are forbidden by the debugger plugin.', request.method)
-      return wrappers.Response(status=405)
+      response = (
+          '%s requests are forbidden by the debugger plugin.' % request.method)
+      return http_util.Respond(request, response, 'text/plain', code=405)
 
     report = self._debugger_data_server.numerics_alert_report()
 
