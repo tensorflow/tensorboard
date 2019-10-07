@@ -751,7 +751,7 @@ public final class Vulcanize {
         // that appear inside descendant of a node annotated with `vulcanize-noinline`.  They must
         // resolve from the root because those srcs are rootified.
         Webpath path = Webpath.get("/").resolve(Webpath.get(src)).normalize();
-        sourceContent = new String(Files.readAllBytes(webfiles.get(path)));
+        sourceContent = new String(Files.readAllBytes(webfiles.get(path)), UTF_8);
       }
       String hash = Hashing.sha256().hashString(sourceContent, UTF_8).toString();
       hashes.add(hash);
