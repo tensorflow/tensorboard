@@ -40,6 +40,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import http_util
+from tensorboard.backend import path_prefix
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
@@ -258,8 +259,7 @@ class TensorBoardWSGI(object):
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
         # active.
-        self._path_prefix + DATA_PREFIX + PLUGINS_LISTING_ROUTE:
-            self._serve_plugins_listing,
+        DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
     }
     unordered_prefix_routes = {}
 
@@ -291,10 +291,11 @@ class TensorBoardWSGI(object):
                            'route does not start with a slash' %
                            (plugin.plugin_name, route))
         if type(plugin) is core_plugin.CorePlugin:  # pylint: disable=unidiomatic-typecheck
-          path = self._path_prefix + route
+          path = route
         else:
-          path = (self._path_prefix + DATA_PREFIX + PLUGIN_PREFIX + '/' +
-                  plugin.plugin_name + route)
+          path = (
+              DATA_PREFIX + PLUGIN_PREFIX + '/' + plugin.plugin_name + route
+          )
 
         if path.endswith('/*'):
           # Note we remove the '*' but leave the slash in place.
@@ -328,6 +329,7 @@ class TensorBoardWSGI(object):
   def _create_wsgi_app(self):
     """Apply middleware to create the final WSGI app."""
     app = self._route_request
+    app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
     app = _handling_errors(app)
     return app
 
@@ -384,7 +386,7 @@ class TensorBoardWSGI(object):
         loading_mechanism = {
             'type': 'IFRAME',
             'module_path': ''.join([
-                self._path_prefix, DATA_PREFIX, PLUGIN_PREFIX, '/',
+                request.script_root, DATA_PREFIX, PLUGIN_PREFIX, '/',
                 plugin.plugin_name, es_module_handler,
             ]),
         }
@@ -427,7 +429,7 @@ class TensorBoardWSGI(object):
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
-    clean_path = _clean_path(parsed_url.path, self._path_prefix)
+    clean_path = _clean_path(parsed_url.path)
 
     # pylint: disable=too-many-function-args
     if clean_path in self.exact_routes:
@@ -579,22 +581,16 @@ def _get_connect_params(query):
   return {k: json.loads(v[0]) for k, v in params.items()}
 
 
-def _clean_path(path, path_prefix=""):
-  """Cleans the path of the request.
-
-  Removes the ending '/' if the request begins with the path prefix and pings a
-  non-empty route.
+def _clean_path(path):
+  """Removes a trailing slash from a non-root path.
 
   Arguments:
     path: The path of a request.
-    path_prefix: The prefix string that every route of this TensorBoard instance
-    starts with.
 
   Returns:
-    The route to use to serve the request (with the path prefix stripped if
-    applicable).
+    The route to use to serve the request.
   """
-  if path != path_prefix + '/' and path.endswith('/'):
+  if path != '/' and path.endswith('/'):
     return path[:-1]
   return path
 
