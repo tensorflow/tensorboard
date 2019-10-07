@@ -63,7 +63,10 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":empty_path_redirect",
+<<<<<<< HEAD
         ":experiment_id",
+=======
+>>>>>>> 45b62065642b56da62fb5a4a0c930ca04b8b55f6
         ":http_util",
         ":path_prefix",
         "//tensorboard:errors",
@@ -121,6 +124,7 @@ py_test(
 )
 
 py_library(
+<<<<<<< HEAD
     name = "experiment_id",
     srcs = ["experiment_id.py"],
     srcs_version = "PY2AND3",
@@ -138,6 +142,8 @@ py_test(
 )
 
 py_library(
+=======
+>>>>>>> 45b62065642b56da62fb5a4a0c930ca04b8b55f6
     name = "path_prefix",
     srcs = ["path_prefix.py"],
     srcs_version = "PY2AND3",
