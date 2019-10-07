@@ -62,6 +62,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":empty_path_redirect",
         ":http_util",
         ":path_prefix",
         "//tensorboard:errors",
@@ -95,6 +96,25 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "empty_path_redirect",
+    srcs = ["empty_path_redirect.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "empty_path_redirect_test",
+    size = "small",
+    srcs = ["empty_path_redirect_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":empty_path_redirect",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
     ],
 )
 
