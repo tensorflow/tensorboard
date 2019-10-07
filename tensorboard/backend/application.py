@@ -323,6 +323,13 @@ class TensorBoardWSGI(object):
             key=lambda x: len(x[0]),
             reverse=True))
 
+    self._app = self._create_wsgi_app()
+
+  def _create_wsgi_app(self):
+    """Apply middleware to create the final WSGI app."""
+    app = self._route_request
+    app = _handling_errors(app)
+    return app
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
@@ -392,23 +399,31 @@ class TensorBoardWSGI(object):
       response[plugin.plugin_name] = output_metadata
     return http_util.Respond(request, response, 'application/json')
 
-  @_handling_errors
-  def __call__(self, environ, start_response):  # pylint: disable=invalid-name
+  def __call__(self, environ, start_response):
     """Central entry point for the TensorBoard application.
-
-    This method handles routing to sub-applications. It does simple routing
-    using strict string matching.  Regular expressions are not supported.
-    Wildcard routes such as `/foo/*` are supported as a special case.
 
     This __call__ method conforms to the WSGI spec, so that instances of this
     class are WSGI applications.
 
     Args:
-      environ: See WSGI spec.
-      start_response: See WSGI spec.
+      environ: See WSGI spec (PEP 3333).
+      start_response: See WSGI spec (PEP 3333).
+    """
+    return self._app(environ, start_response)
 
-    Returns:
-      A werkzeug Response.
+  def _route_request(self, environ, start_response):
+    """Delegate an incoming request to sub-applications.
+
+    This method supports strict string matching and wildcard routes of a
+    single path component, such as `/foo/*`. Other routing patterns,
+    like regular expressions, are not supported.
+
+    This is the main TensorBoard entry point before middleware is
+    applied. (See `_create_wsgi_app`.)
+
+    Args:
+      environ: See WSGI spec (PEP 3333).
+      start_response: See WSGI spec (PEP 3333).
     """
     request = wrappers.Request(environ)
     parsed_url = urlparse.urlparse(request.path)
