@@ -40,10 +40,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import empty_path_redirect
-<<<<<<< HEAD
 from tensorboard.backend import experiment_id
-=======
->>>>>>> 45b62065642b56da62fb5a4a0c930ca04b8b55f6
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend.event_processing import db_import_multiplexer
@@ -335,10 +332,7 @@ class TensorBoardWSGI(object):
     """Apply middleware to create the final WSGI app."""
     app = self._route_request
     app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
-<<<<<<< HEAD
     app = experiment_id.ExperimentIdMiddleware(app)
-=======
->>>>>>> 45b62065642b56da62fb5a4a0c930ca04b8b55f6
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
     app = _handling_errors(app)
     return app
