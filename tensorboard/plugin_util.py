@@ -24,6 +24,9 @@ import bleach
 import markdown
 import six
 
+from tensorboard.backend import experiment_id as _experiment_id
+
+
 _ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title'],
     'img': ['src', 'title', 'alt'],
@@ -85,3 +88,20 @@ def markdown_to_safe_html(markdown_string):
   string_sanitized = bleach.clean(
       string_html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES)
   return warning + string_sanitized
+
+
+def experiment_id(environ):
+  """Determine the experiment ID associated with a WSGI request.
+
+  Each request to TensorBoard has an associated experiment ID, which is
+  always a string and may be empty. This experiment ID should be passed
+  to data providers.
+
+  Args:
+    environ: A WSGI environment `dict`. For a Werkzeug request, this is
+      `request.environ`.
+
+  Returns:
+    A experiment ID, as a possibly-empty `str`.
+  """
+  return environ.get(_experiment_id.WSGI_ENVIRON_KEY, "")

@@ -63,6 +63,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":empty_path_redirect",
+        ":experiment_id",
         ":http_util",
         ":path_prefix",
         "//tensorboard:errors",
@@ -91,6 +92,7 @@ py_test(
     deps = [
         ":application",
         "//tensorboard:errors",
+        "//tensorboard:plugin_util",
         "//tensorboard:test",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -113,6 +115,23 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":empty_path_redirect",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "experiment_id",
+    srcs = ["experiment_id.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "experiment_id_test",
+    srcs = ["experiment_id_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":experiment_id",
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],

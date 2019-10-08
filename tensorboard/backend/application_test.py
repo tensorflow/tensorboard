@@ -41,6 +41,7 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard import errors
+from tensorboard import plugin_util
 from tensorboard import test as tb_test
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
@@ -621,6 +622,11 @@ class TensorBoardPluginsTest(tb_test.TestCase):
                     '/wildcard/special/exact': self._foo_handler,
                 },
                 construction_callback=self._construction_callback),
+            FakePluginLoader(
+                plugin_name='whoami',
+                routes_mapping={
+                    '/eid': self._eid_handler,
+                }),
         ],
         dummy_assets_zip_provider)
 
@@ -640,6 +646,12 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def _bar_handler(self):
     pass
+
+  @wrappers.Request.application
+  def _eid_handler(self, request):
+    eid = plugin_util.experiment_id(request.environ)
+    body = json.dumps({'experiment_id': eid})
+    return wrappers.Response(body, 200, content_type='application/json')
 
   @wrappers.Request.application
   def _wildcard_handler(self, request):
@@ -664,11 +676,12 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.assertLessEqual(expected_routes, frozenset(self.app.exact_routes))
 
   def testNameToPluginMapping(self):
-    # The mapping from plugin name to instance should include both plugins.
+    # The mapping from plugin name to instance should include all plugins.
     mapping = self.context.plugin_name_to_instance
-    self.assertItemsEqual(['foo', 'bar'], list(mapping.keys()))
+    self.assertItemsEqual(['foo', 'bar', 'whoami'], list(mapping.keys()))
     self.assertEqual('foo', mapping['foo'].plugin_name)
     self.assertEqual('bar', mapping['bar'].plugin_name)
+    self.assertEqual('whoami', mapping['whoami'].plugin_name)
 
   def testNormalRoute(self):
     self._test_route('/data/plugin/foo/foo_route', 200)
@@ -678,6 +691,18 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def testMissingRoute(self):
     self._test_route('/data/plugin/foo/bogus', 404)
+
+  def testExperimentIdIntegration_withNoExperimentId(self):
+    response = self.server.get('/data/plugin/whoami/eid')
+    self.assertEqual(response.status_code, 200)
+    data = json.loads(response.get_data().decode('utf-8'))
+    self.assertEqual(data, {'experiment_id': ''})
+
+  def testExperimentIdIntegration_withExperimentId(self):
+    response = self.server.get('/experiment/123/data/plugin/whoami/eid')
+    self.assertEqual(response.status_code, 200)
+    data = json.loads(response.get_data().decode('utf-8'))
+    self.assertEqual(data, {'experiment_id': '123'})
 
   def testEmptyRoute(self):
     self._test_route('', 301)
