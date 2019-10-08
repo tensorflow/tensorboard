@@ -334,4 +334,4 @@ class InteractiveDebuggerPlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, response, response_encoding)
     else:
       response = {'error': 'Invalid mode for source_code endpoint: %s' % mode}
-      return http_util.Response(request, response, response_encoding, 500)
+      return http_util.Respond(request, response, response_encoding, 500)
