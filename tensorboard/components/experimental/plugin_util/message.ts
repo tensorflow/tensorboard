@@ -65,12 +65,15 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
 
     private async onMessage(event: MessageEvent) {
       const message = JSON.parse(event.data) as Message;
-      const callback = this.listeners.get(message.type);
+      const type = message['type'];
+      const id = message['id'];
+      const payload = message['payload'];
+      const error = message['error'];
+      const isReply = message['isReply'];
 
-      if (message.isReply) {
-        if (!this.responseWaits.has(message.id)) return;
-        const {id, payload, error} = message;
-        const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
+      if (isReply) {
+        if (!this.responseWaits.has(id)) return;
+        const {resolve, reject} = this.responseWaits.get(id);
         this.responseWaits.delete(id);
         if (error) {
           reject(new Error(error));
@@ -80,23 +83,23 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
         return;
       }
 
-      let payload = null;
-      let error = null;
-      if (this.listeners.has(message.type)) {
-        const callback = this.listeners.get(message.type) as MessageCallback;
+      let replyPayload = null;
+      let replyError = null;
+      if (this.listeners.has(type)) {
+        const callback = this.listeners.get(type);
         try {
-          const result = await callback(message.payload);
-          payload = result;
+          const result = await callback(payload);
+          replyPayload = result;
         } catch (e) {
-          error = e;
+          replyError = e;
         }
       }
       const replyMessage: Message = {
-        type: message.type,
-        id: message.id,
-        payload,
-        error,
-        isReply: true,
+        ['type']: type,
+        ['id']: id,
+        ['payload']: replyPayload,
+        ['error']: replyError,
+        ['isReply']: true,
       };
       this.postMessage(replyMessage);
     }
