@@ -125,7 +125,7 @@ public final class Vulcanize {
 
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws FileNotFoundException, IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
     wantsCompile = args[1].equals("true");
     testOnly = args[2].equals("true");
@@ -731,15 +731,14 @@ public final class Vulcanize {
     // jsoup parser creates body elements for each HTML files. Since document.body() returns the
     // first instance and we want to insert the script element at the end of the document, we
     // manually grab the last one.
-    Elements bodies = document.getElementsByTag("body");
-    Element lastBody = bodies.get(bodies.size() - 1);
+    Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
 
     Element scriptTag = new Element(Tag.valueOf("script"), "")
         .appendChild(new DataNode(sources.toString(), ""));
     lastBody.appendChild(scriptTag);
   }
 
-  private static ArrayList<String> computeScriptShasum(Document document) throws IOException {
+  private static ArrayList<String> computeScriptShasum(Document document) throws FileNotFoundException, IOException {
     ArrayList<String> hashes = new ArrayList<>();
     for (Element script : document.getElementsByTag("script")) {
       String src = script.attr("src");
@@ -747,11 +746,23 @@ public final class Vulcanize {
       if (src.isEmpty()) {
         sourceContent = script.html();
       } else {
-        // script element that remains are the one that are annotated with `jscomp-ignore` or one
-        // that appear inside descendant of a node annotated with `vulcanize-noinline`.  They must
-        // resolve from the root because those srcs are rootified.
-        Webpath path = Webpath.get("/").resolve(Webpath.get(src)).normalize();
-        sourceContent = new String(Files.readAllBytes(webfiles.get(path)), UTF_8);
+        // script element that remains are the ones with src that is absolute, annotated with
+        // `jscomp-ignore`, or appear inside descendant of a node annotated with
+        // `vulcanize-noinline`. They must resolve from the root because those srcs are rootified.
+        Webpath webpathSrc = Webpath.get(src);
+        Webpath webpath = Webpath.get("/").resolve(Webpath.get(src)).normalize();
+        if (isAbsolutePath(webpathSrc)) {
+          System.err.println(
+              "WARNING: "
+                  + webpathSrc
+                  + " refers to a remote resource. Please add it to CSP manually. Detail: "
+                  + script.outerHtml());
+          continue;
+        } else if (!webfiles.containsKey(webpath)) {
+          throw new FileNotFoundException(
+              "Expected webfiles for " + webpath + " to exist. Related: " + script.outerHtml());
+        }
+        sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
       }
       String hash = Hashing.sha256().hashString(sourceContent, UTF_8).toString();
       hashes.add(hash);
@@ -760,7 +771,7 @@ public final class Vulcanize {
   }
 
   // Writes sha256 of script tags in hex in the document.
-  private static void writeShasum(Document document, Path output) throws IOException {
+  private static void writeShasum(Document document, Path output) throws FileNotFoundException, IOException {
     String hashes = Joiner.on("\n").join(computeScriptShasum(document));
     Files.write(
         output,
