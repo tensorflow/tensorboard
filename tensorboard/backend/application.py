@@ -252,10 +252,10 @@ class TensorBoardWSGI(object):
     :type plugins: list[base_plugin.TBPlugin]
     """
     self._plugins = plugins
-    if path_prefix.endswith('/'):
-      self._path_prefix = path_prefix[:-1]
-    else:
-      self._path_prefix = path_prefix
+    self._path_prefix = path_prefix
+    if self._path_prefix.endswith('/'):
+      # Should have been fixed by `fix_flags`.
+      raise ValueError('Trailing slash in path prefix: %r' % self._path_prefix)
 
     self.exact_routes = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
