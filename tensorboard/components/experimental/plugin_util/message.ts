@@ -73,7 +73,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
 
       if (isReply) {
         if (!this.responseWaits.has(id)) return;
-        const {resolve, reject} = this.responseWaits.get(id);
+        const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
         this.responseWaits.delete(id);
         if (error) {
           reject(new Error(error));
@@ -86,7 +86,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
       let replyPayload = null;
       let replyError = null;
       if (this.listeners.has(type)) {
-        const callback = this.listeners.get(type);
+        const callback = this.listeners.get(type) as MessageCallback;
         try {
           const result = await callback(payload);
           replyPayload = result;
