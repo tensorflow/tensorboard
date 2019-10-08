@@ -189,7 +189,7 @@ class CorePluginTest(tf.test.TestCase):
     [exp1, exp2] = self._get_json(self.db_based_server, '/data/experiments')
 
     exp1_runs = self._get_json(self.db_based_server,
-        '/data/experiment_runs?experiment=%s' % exp1.get('id'))
+        '/experiment/%s/data/experiment_runs' % exp1.get('id'))
     self.assertEqual(len(exp1_runs), 2);
     self.assertEqual(exp1_runs[0].get('name'), 'run1');
     self.assertEqual(exp1_runs[1].get('name'), 'run2');
@@ -199,7 +199,7 @@ class CorePluginTest(tf.test.TestCase):
     self.assertEqual(exp1_runs[1].get('tags')[0].get('name'), 'mytag');
 
     exp2_runs = self._get_json(self.db_based_server,
-        '/data/experiment_runs?experiment=%s' % exp2.get('id'))
+        '/experiment/%s/data/experiment_runs' % exp2.get('id'))
     self.assertEqual(len(exp2_runs), 1);
     self.assertEqual(exp2_runs[0].get('name'), 'run3');
 
