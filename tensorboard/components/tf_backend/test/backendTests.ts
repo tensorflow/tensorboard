@@ -82,22 +82,22 @@ namespace tf_backend {
 
         it('leading slash in pathPrefix is an absolute path', () => {
           const router = createRouter('/data/');
-          assert.equal(router.runs(), '/data/runs?experiment=');
+          assert.equal(router.runs(), '/data/runs');
         });
 
         it('returns complete pathname when pathPrefix omits slash', () => {
           const router = createRouter('data/');
-          assert.equal(router.runs(), 'data/runs?experiment=');
+          assert.equal(router.runs(), 'data/runs');
         });
 
         it('does not prune many leading slashes that forms full url', () => {
           const router = createRouter('///data/hello');
-          // This becomes 'http://data/hello/runs?experiment='
-          assert.equal(router.runs(), '///data/hello/runs?experiment=');
+          // This becomes 'http://data/hello/runs'
+          assert.equal(router.runs(), '///data/hello/runs');
         });
 
         it('returns correct value for #environment', () => {
-          assert.equal(router.environment(), 'data/environment?experiment=');
+          assert.equal(router.environment(), 'data/environment');
         });
 
         it('returns correct value for #experiments', () => {
@@ -177,7 +177,7 @@ namespace tf_backend {
         });
 
         it('returns correct value for #runs', () => {
-          assert.equal(router.runs(), 'data/runs?experiment=');
+          assert.equal(router.runs(), 'data/runs');
         });
 
         it('returns correct value for #runsForExperiment', () => {

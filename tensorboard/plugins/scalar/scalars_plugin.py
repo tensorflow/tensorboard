@@ -235,7 +235,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def tags_route(self, request):
-    experiment = request.args.get('experiment', '')
+    experiment = plugin_util.experiment_id(request.environ)
     index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
@@ -244,7 +244,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     """Given a tag and single run, return array of ScalarEvents."""
     tag = request.args.get('tag')
     run = request.args.get('run')
-    experiment = request.args.get('experiment', '')
+    experiment = plugin_util.experiment_id(request.environ)
     output_format = request.args.get('format')
     (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
     return http_util.Respond(request, body, mime_type)

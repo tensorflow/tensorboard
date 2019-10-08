@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
   export interface Router {
-    environment: (experiment?: string) => string;
+    environment: () => string;
     experiments: () => string;
     pluginRoute: (
       pluginName: string,
@@ -22,7 +22,7 @@ namespace tf_backend {
       params?: URLSearchParams
     ) => string;
     pluginsListing: () => string;
-    runs: (experiment?: string) => string;
+    runs: () => string;
     runsForExperiment: (id: tf_backend.ExperimentId) => string;
   }
 
@@ -39,11 +39,7 @@ namespace tf_backend {
       dataDir = dataDir.slice(0, dataDir.length - 1);
     }
     return {
-      environment: (experiment?: string) => {
-        const searchParams = new URLSearchParams();
-        searchParams.set('experiment', experiment || '');
-        return createDataPath(dataDir, '/environment', searchParams);
-      },
+      environment: () => createDataPath(dataDir, '/environment'),
       experiments: () => createDataPath(dataDir, '/experiments'),
       pluginRoute: (
         pluginName: string,
@@ -57,11 +53,7 @@ namespace tf_backend {
         );
       },
       pluginsListing: () => createDataPath(dataDir, '/plugins_listing'),
-      runs: (experiment?: string) => {
-        const searchParams = new URLSearchParams();
-        searchParams.set('experiment', experiment || '');
-        return createDataPath(dataDir, '/runs', searchParams);
-      },
+      runs: () => createDataPath(dataDir, '/runs'),
       runsForExperiment: (id) => {
         return createDataPath(
           dataDir,
@@ -77,13 +69,6 @@ namespace tf_backend {
    */
   export function getRouter(): Router {
     return _router;
-  }
-
-  /**
-   * @return {string} the experiment ID for the currently loaded page
-   */
-  export function getExperimentId() {
-    return new URLSearchParams(window.location.search).get('experiment') || '';
   }
 
   /**

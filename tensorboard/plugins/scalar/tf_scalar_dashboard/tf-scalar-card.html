@@ -234,16 +234,14 @@ limitations under the License.
         getDataLoadUrl: {
           type: Function,
           value: function() {
-            return ({tag, run, experiment}) => {
-              return tf_backend.getRouter().pluginRoute(
-                'scalars',
-                '/scalars',
-                new URLSearchParams({
-                  tag,
-                  run,
-                  experiment: experiment || '',
-                })
-              );
+            return ({tag, run}) => {
+              return tf_backend
+                .getRouter()
+                .pluginRoute(
+                  'scalars',
+                  '/scalars',
+                  new URLSearchParams({tag, run})
+                );
             };
           },
         },
@@ -252,12 +250,7 @@ limitations under the License.
         _downloadUrlFn: {
           type: Function,
           value: function() {
-            return (tag, run) =>
-              this.getDataLoadUrl({
-                tag,
-                run,
-                experiment: tf_backend.getExperimentId(),
-              });
+            return (tag, run) => this.getDataLoadUrl({tag, run});
           },
         },
 
