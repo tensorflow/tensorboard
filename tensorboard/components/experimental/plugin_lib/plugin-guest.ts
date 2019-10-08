@@ -12,44 +12,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
-  /**
-   * This code is part of a public bundle provided to plugin authors,
-   * and runs within an IFrame to setup communication with TensorBoard's frame.
-   */
-  if (!window.parent) {
-    throw Error(
-      'The library must run within a TensorBoard iframe-based plugin.'
-    );
-  }
+import {IPC} from './message';
 
-  const channel = new MessageChannel();
-  const ipc = new IPC(channel.port1);
-  channel.port1.start();
+/**
+ * This code is part of a public bundle provided to plugin authors,
+ * and runs within an IFrame to setup communication with TensorBoard's frame.
+ */
+if (!window.parent) {
+  throw Error('The library must run within a TensorBoard iframe-based plugin.');
+}
 
-  const VERSION = 'experimental';
-  window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
+const channel = new MessageChannel();
+const ipc = new IPC(channel.port1);
+channel.port1.start();
 
-  // Only export for testability.
-  export const _guestIPC = ipc;
+const VERSION = 'experimental';
+window.parent.postMessage(`${VERSION}.bootstrap`, '*', [channel.port2]);
 
-  /**
-   * Sends a message to the parent frame.
-   * @return Promise that resolves with a payload from parent in response to this message.
-   *
-   * @example
-   * const someList = await sendMessage('v1.some.type.parent.understands');
-   * // do fun things with someList.
-   */
-  export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
+// Only export for testability.
+export const _guestIPC = ipc;
 
-  /**
-   * Subscribes a callback to a message with particular type.
-   */
-  export const listen = _guestIPC.listen.bind(_guestIPC);
+/**
+ * Sends a message to the parent frame.
+ * @return Promise that resolves with a payload from parent in response to this message.
+ *
+ * @example
+ * const someList = await sendMessage('v1.some.type.parent.understands');
+ * // do fun things with someList.
+ */
+export const sendMessage = _guestIPC.sendMessage.bind(_guestIPC);
 
-  /**
-   * Unsubscribes a callback to a message.
-   */
-  export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
-} // namespace tb_plugin.lib.DO_NOT_USE_INTERNAL
+/**
+ * Subscribes a callback to a message with particular type.
+ */
+export const listen = _guestIPC.listen.bind(_guestIPC);
+
+/**
+ * Unsubscribes a callback to a message.
+ */
+export const unlisten = _guestIPC.unlisten.bind(_guestIPC);
