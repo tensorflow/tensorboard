@@ -16,6 +16,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tb_logging",
