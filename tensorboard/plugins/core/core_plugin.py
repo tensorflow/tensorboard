@@ -157,7 +157,7 @@ class CorePlugin(base_plugin.TBPlugin):
         gzipped_asset_bytes,
         'text/html',
         content_encoding='gzip',
-        csp_scripts_sha256s=shasums
+        csp_scripts_sha256s=shasums,
     )
 
   @wrappers.Request.application
