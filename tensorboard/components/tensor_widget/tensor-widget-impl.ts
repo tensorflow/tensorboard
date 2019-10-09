@@ -1011,6 +1011,10 @@ export class TensorWidgetImpl implements TensorWidget {
     await this.renderValueDivs();
   }
 
+  /**
+   * Determine if indices should be displayed on ruler ticks given
+   * the current tick sizes.
+   */
   private calculateShowIndicesOnRulerTicks() {
     if (this.rank >= 2) {
       const tickBox = this.topRulerTicks[0].getBoundingClientRect();
