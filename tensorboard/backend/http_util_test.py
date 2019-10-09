@@ -33,6 +33,10 @@ from tensorboard.backend import http_util
 
 class RespondTest(tb_test.TestCase):
 
+  def setUp(self):
+    # http_util is stateful. Unset the state.
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
+
   def testHelloWorld(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html')
@@ -179,6 +183,70 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html', expires=60)
     self.assertEqual(r.headers.get('Cache-Control'), 'private, max-age=60')
+
+  def testCsp(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(
+        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    expected_csp = (
+        "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src  strict-dynamic 'sha256-abcdefghi'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  def testCsp_noHash(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
+    expected_csp = (
+        "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'none'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  def testCsp_globalDomainWhiteList(self):
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = ['https://tensorflow.org']
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    expected_csp = (
+        "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src https://tensorflow.org strict-dynamic 'sha256-abcd'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  def testCsp_badGlobalDomainWhiteList(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = ['http://tensorflow.org']
+    with self.assertRaisesRegexp(
+        ValueError, '^Expected all whitelist to be a https URL'):
+      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = ['https://tensorflow.org/']
+    with self.assertRaisesRegexp(
+        ValueError, '^Expected whitelist domain to not have a path:'):
+      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = ['https://tensorflow.org/foo/bar']
+    with self.assertRaisesRegexp(
+        ValueError, '^Expected whitelist domain to not have a path:'):
+      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+    # Cannot grant more trust to a script from a remote source.
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = ['strict-dynamic https://tensorflow.org/']
+    with self.assertRaisesRegexp(
+        ValueError, '^Expected all whitelist to be a https URL'):
+      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+    # Attempt to terminate the script-src to specify a new one that allows ALL!
+    http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = [
+      'https://tensorflow.org;script-src *'
+    ]
+    with self.assertRaisesRegexp(
+        ValueError, '^Expected whitelist domain to not contain ";"'):
+      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
 
 def _gzip(bs):

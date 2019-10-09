@@ -27,12 +27,17 @@ import time
 import wsgiref.handlers
 
 import six
+from six.moves.urllib import parse as urlparse  # pylint: disable=wrong-import-order
 
 import werkzeug
 
 from tensorboard.backend import json_util
 from tensorboard.compat import tf
 
+# TODO(stephanwlee): Refactor this to not use the module variable but
+# instead use a configurable via some kind of assets provider which would
+# hold configurations for the CSP.
+DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
 _EXTRACT_CHARSET_PATTERN = re.compile(r'charset=([-_0-9A-Za-z]+)')
@@ -168,9 +173,24 @@ def Respond(request,
     if csp_scripts_sha256s:
       whitelist_hashes = ' '.join(
           ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
+
+      whitelist_domains = []
+      for domain in DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST:
+        url = urlparse.urlparse(domain)
+        if not url.scheme == 'https' or not url.netloc:
+          raise ValueError('Expected all whitelist to be a https URL: %s' % domain)
+        if url.path:
+          raise ValueError('Expected whitelist domain to not have a path: %s' % domain)
+        if ';' in domain:
+          raise ValueError('Expected whitelist domain to not contain ";": %s' % domain)
+        whitelist_domains.append('%s://%s' % (url.scheme, url.netloc))
+
       # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
       # resources can be hashed upfront.
-      script_srcs = 'strict-dynamic %s' % whitelist_hashes
+      script_srcs = '{domains} strict-dynamic {shas}'.format(
+          domains=' '.join(whitelist_domains),
+          shas=whitelist_hashes,
+      )
     else:
       script_srcs = "'none'"
 
