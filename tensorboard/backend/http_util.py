@@ -165,10 +165,9 @@ def Respond(request,
     headers.append(('Expires', '0'))
     headers.append(('Cache-Control', 'no-cache, must-revalidate'))
   if mimetype == _HTML_MIMETYPE:
-    # The quotes need to be single quotes per csp requirement.
     if csp_scripts_sha256s:
       whitelist_hashes = ' '.join(
-        ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
+          ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
       # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
       # resources can be hashed upfront.
       script_srcs = 'strict-dynamic %s' % whitelist_hashes
