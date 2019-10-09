@@ -21,6 +21,7 @@ from __future__ import print_function
 import json
 
 import werkzeug
+from werkzeug import test as werkzeug_test
 
 from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
@@ -32,7 +33,7 @@ class ExperimentIdMiddlewareTest(tb_test.TestCase):
   def setUp(self):
     super(ExperimentIdMiddlewareTest, self).setUp()
     self.app = experiment_id.ExperimentIdMiddleware(self._echo_app)
-    self.server = werkzeug.test.Client(self.app, werkzeug.BaseResponse)
+    self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
 
   def _echo_app(self, environ, start_response):
     # https://www.python.org/dev/peps/pep-0333/#environ-variables

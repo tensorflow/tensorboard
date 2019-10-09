@@ -21,6 +21,7 @@ from __future__ import print_function
 import json
 
 import werkzeug
+from werkzeug import test as werkzeug_test
 
 from tensorboard import errors
 from tensorboard import test as tb_test
@@ -62,7 +63,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
 
   def test_empty_path_prefix(self):
     app = path_prefix.PathPrefixMiddleware(self._echo_app, "")
-    server = werkzeug.test.Client(app, werkzeug.BaseResponse)
+    server = werkzeug_test.Client(app, werkzeug.BaseResponse)
 
     with self.subTest("at empty"):
       self._assert_ok(server.get(""), path="", script="")
@@ -76,7 +77,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
 
   def test_nonempty_path_prefix(self):
     app = path_prefix.PathPrefixMiddleware(self._echo_app, "/pfx")
-    server = werkzeug.test.Client(app, werkzeug.BaseResponse)
+    server = werkzeug_test.Client(app, werkzeug.BaseResponse)
 
     with self.subTest("at root"):
       response = server.get("/pfx")
@@ -102,7 +103,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
     app = self._echo_app
     app = path_prefix.PathPrefixMiddleware(app, "/bar")
     app = path_prefix.PathPrefixMiddleware(app, "/foo")
-    server = werkzeug.test.Client(app, werkzeug.BaseResponse)
+    server = werkzeug_test.Client(app, werkzeug.BaseResponse)
 
     response = server.get("/foo/bar/baz/quux")
     self._assert_ok(response, path="/baz/quux", script="/foo/bar")
