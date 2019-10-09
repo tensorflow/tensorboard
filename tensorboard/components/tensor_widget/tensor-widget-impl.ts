@@ -57,7 +57,7 @@ type ValueClass = 'numeric' | 'boolean' | 'string';
 
 enum ValueRenderMode {
   TEXT = 1,
-  IMAGE = 2
+  IMAGE = 2,
 }
 
 /**

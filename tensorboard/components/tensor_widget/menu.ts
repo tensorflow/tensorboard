@@ -90,6 +90,9 @@ class FlatMenu {
   private isShown: boolean = false;
   private dropdown: HTMLDivElement;
 
+  // Callback function for clicking outside the menu item.
+  private blurHideFunction: (() => void) | null = null;
+
   /**
    * Constructor of FlatMenu.
    * @param parentElement The parent element that the root UI element of this
@@ -100,9 +103,6 @@ class FlatMenu {
     this.dropdown.classList.add('tensor-widget-dim-dropdown');
     this.dropdown.style.position = 'fixed';
     this.dropdown.style.display = 'none';
-    this.dropdown.addEventListener('mouseleave', () => {
-      this.hide();
-    });
     parentElement.appendChild(this.dropdown);
   }
 
@@ -122,8 +122,9 @@ class FlatMenu {
         menuItem.classList.add('tensor-widget-dim-dropdown-menu-item-disabled');
         return;
       }
-
       menuItem.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.dropdown.click();
         if (itemConfig.onClick !== null) {
           itemConfig.onClick(event);
         }
@@ -161,6 +162,15 @@ class FlatMenu {
     this.dropdown.style.top = (top - topOffset).toFixed(1) + 'px';
     this.dropdown.style.left = (left - leftOffset).toFixed(1) + 'px';
     this.isShown = true;
+
+    this.blurHideFunction = () => {
+      this.hide();
+    };
+    setTimeout(
+      () =>
+        window.addEventListener('click', this.blurHideFunction as () => void),
+      50
+    );
   }
 
   /** Hide this FlatMenu: Remove it from screen display. */
@@ -170,6 +180,9 @@ class FlatMenu {
       this.dropdown.removeChild(this.dropdown.firstChild);
     }
     this.isShown = false;
+    if (this.blurHideFunction != null) {
+      window.removeEventListener('click', this.blurHideFunction);
+    }
   }
 
   /** Whether this FlatMenu is being shown currently. */
