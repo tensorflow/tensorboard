@@ -114,7 +114,7 @@ export class TensorWidgetImpl implements TensorWidget {
   protected showIndicesOnTicks: boolean = false;
 
   // Size of each cell used to display the tensor value under the 'image' mode.
-  protected imageCellSize = 12;
+  protected imageCellSize = 16;
 
   protected numericSummary: BaseTensorNumericSummary | null = null;
 
@@ -711,17 +711,6 @@ export class TensorWidgetImpl implements TensorWidget {
         this.slicingSpec.viewingDims[1]
       ];
 
-      this.showIndicesOnTicks = false;
-      if (this.topRulerTicks.length > 0) {
-        const tickBox = this.topRulerTicks[0].getBoundingClientRect();
-        const tickWidth = tickBox.right - tickBox.left;
-        const dimSize = this.tensorView.spec.shape[
-          this.slicingSpec.viewingDims[0]
-        ];
-        this.showIndicesOnTicks =
-          tickWidth > 8 * Math.ceil(Math.log(dimSize) / Math.LN10);
-      }
-
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
         if (this.slicingSpec.horizontalRange === null) {
           throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
@@ -1015,9 +1004,30 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.slicingControl != null) {
       this.slicingControl.setSlicingSpec(this.slicingSpec);
     }
+    // Determine if indices should be rendered on ruler ticks.
+    this.calculateShowIndicesOnRulerTicks();
     this.renderTopRuler();
     this.renderLeftRuler();
     await this.renderValueDivs();
+  }
+
+  private calculateShowIndicesOnRulerTicks() {
+    if (this.rank >= 2) {
+      const tickBox = this.topRulerTicks[0].getBoundingClientRect();
+      const tickWidth = tickBox.right - tickBox.left;
+      const dimSize = this.tensorView.spec.shape[
+        this.slicingSpec.viewingDims[0]
+      ];
+      this.showIndicesOnTicks =
+        tickWidth > 9 * Math.ceil(Math.log(dimSize) / Math.LN10);
+    } else if (this.rank === 1) {
+      const tickBox = this.leftRulerTicks[0].getBoundingClientRect();
+      const tickHeight = tickBox.bottom - tickBox.top;
+      this.showIndicesOnTicks = tickHeight > 16;
+    } else {
+      // rank is 0.
+      this.showIndicesOnTicks = false;
+    }
   }
 
   /**
