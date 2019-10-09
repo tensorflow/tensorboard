@@ -101,22 +101,6 @@ class CorePlugin(base_plugin.TBPlugin):
 
     with self._assets_zip_provider() as fp:
       with zipfile.ZipFile(fp) as zip_:
-
-        # First collect the shasums that will later be used.
-        # TODO(stephanwlee): since index.html creates dynamic plugin and imports
-        # their entry point (es_module_path), the CSP should include shasum
-        # of those, too.
-        shasums = {}
-        for path in zip_.namelist():
-          if os.path.splitext(path)[1] != '.html':
-            continue
-
-          checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
-          # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
-          # the assets zip file.
-          if checksum_path in zip_.namelist():
-            shasums[path] = zip_.read(checksum_path).splitlines(False)
-
         for path in zip_.namelist():
           # Do not serve the shasum data as static files.
           if path.startswith(SHASUM_DIR):
@@ -125,8 +109,15 @@ class CorePlugin(base_plugin.TBPlugin):
           gzipped_asset_bytes = _gzip(zip_.read(path))
 
           if os.path.splitext(path)[1] == '.html':
+            checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
+            shasum = None
+            # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
+            # the assets zip file.
+            if checksum_path in zip_.namelist():
+              shasum = zip_.read(checksum_path).splitlines(False)
+
             wsgi_app = functools.partial(
-                self._serve_html, shasums.get(path), gzipped_asset_bytes)
+                self._serve_html, shasum, gzipped_asset_bytes)
           else:
             wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
