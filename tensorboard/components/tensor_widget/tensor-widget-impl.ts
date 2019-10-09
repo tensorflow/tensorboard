@@ -109,6 +109,10 @@ export class TensorWidgetImpl implements TensorWidget {
   // Value render mode.
   protected valueRenderMode: ValueRenderMode;
 
+  // Whether indices should be rendered on ruler ticks on the top and left.
+  // Determined dynamically based on the current size of the ticks.
+  protected showIndicesOnTicks: boolean = false;
+
   // Size of each cell used to display the tensor value under the 'image' mode.
   protected imageCellSize = 12;
 
@@ -706,12 +710,24 @@ export class TensorWidgetImpl implements TensorWidget {
       const numCols = this.tensorView.spec.shape[
         this.slicingSpec.viewingDims[1]
       ];
+
+      this.showIndicesOnTicks = false;
+      if (this.topRulerTicks.length > 0) {
+        const tickBox = this.topRulerTicks[0].getBoundingClientRect();
+        const tickWidth = tickBox.right - tickBox.left;
+        const dimSize = this.tensorView.spec.shape[
+          this.slicingSpec.viewingDims[0]
+        ];
+        this.showIndicesOnTicks =
+          tickWidth > 8 * Math.ceil(Math.log(dimSize) / Math.LN10);
+      }
+
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
         if (this.slicingSpec.horizontalRange === null) {
           throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
         }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
-        if (this.valueRenderMode === ValueRenderMode.TEXT) {
+        if (this.showIndicesOnTicks) {
           if (colIndex < numCols) {
             this.topRulerTicks[i].textContent = `${colIndex}`;
           } else {
@@ -737,7 +753,7 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
         }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
-        if (this.valueRenderMode === ValueRenderMode.TEXT) {
+        if (this.showIndicesOnTicks) {
           if (rowIndex < numRows) {
             this.leftRulerTicks[i].textContent = `${rowIndex}`;
           } else {
