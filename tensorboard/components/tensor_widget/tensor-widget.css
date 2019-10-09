@@ -61,11 +61,15 @@ limitations under the License.
   border-bottom: 1px solid rgb(180, 180, 180);
   font-size: 12px;
   padding: 3px;
+  user-select: none;
 }
 
 .tensor-widget-dim-dropdown-menu-item-active {
   background-color: rgb(100, 180, 255);
-  color: rgb(255, 255, 255);
+}
+
+.tensor-widget-dim-dropdown-menu-item-disabled {
+  color: rgb(128, 128, 128);
 }
 
 .tensor-widget-dtype {
@@ -108,6 +112,22 @@ limitations under the License.
   max-height: 22px;
   position: relative;
   vertical-align: middle;
+}
+
+.tensor-widget-menu-thumb {
+  color: rgb(32, 33, 36);
+  cursor: pointer;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 16px;
+  margin-left: 10px;
+  margin-right: 5px;
+  position: relative;
+  user-select: none;
+}
+
+.tensor-widget-menu-thumb:hover {
+  color: rgb(227, 116, 0);
 }
 
 .tensor-widget-shape {

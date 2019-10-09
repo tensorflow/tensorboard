@@ -52,6 +52,8 @@ limitations under the License.
           type: Number,
           value: 0,
         },
+
+        getHealthPill: Function,
       },
 
       addView(view) {
@@ -61,6 +63,8 @@ limitations under the License.
         viewCard.viewId = view.viewId;
         viewCard.tensorName = view.tensorName;
         viewCard.debugOp = view.debugOp;
+        viewCard.deviceName = view.deviceName;
+        viewCard.maybeBaseExpandedNodeName = view.maybeBaseExpandedNodeName;
         viewCard.dtype = view.dtype;
         viewCard.shape = view.shape;
         viewCard.slicing = view.slicing;
@@ -80,6 +84,7 @@ limitations under the License.
             view.maybeBaseExpandedNodeName
           );
         };
+        viewCard.getHealthPill = this.getHealthPill;
         multiViewContainer.appendChild(viewCard);
         viewCard.refresh();
       },

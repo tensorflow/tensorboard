@@ -45,8 +45,10 @@ tf_ts_library(
 tf_ts_library(
     name = "tensor_widget_lib",
     srcs = [
+        "colormap.ts",
         "dtype-utils.ts",
         "health-pill-types.ts",
+        "menu.ts",
         "selection.ts",
         "shape-utils.ts",
         "slicing-control.ts",
@@ -63,6 +65,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
+        "colormap-test.ts",
         "dtype-utils-test.ts",
         "selection-test.ts",
         "shape-utils-test.ts",
