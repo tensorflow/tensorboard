@@ -31,6 +31,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import com.google.javascript.jscomp.BasicErrorManager;
 import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
@@ -793,13 +794,14 @@ public final class Vulcanize {
         }
         sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
       }
-      String hash = Hashing.sha256().hashString(sourceContent, UTF_8).toString();
+      String hash = BaseEncoding.base64().encode(
+          Hashing.sha256().hashString(sourceContent, UTF_8).asBytes());
       hashes.add(hash);
     }
     return hashes;
   }
 
-  // Writes sha256 of script tags in hex in the document.
+  // Writes sha256 of script tags in base64 in the document.
   private static void writeShasum(Document document, Path output) throws FileNotFoundException, IOException {
     String hashes = Joiner.on("\n").join(computeScriptShasum(document));
     Files.write(
