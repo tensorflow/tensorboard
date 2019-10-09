@@ -50,8 +50,9 @@ import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
 import io.bazel.rules.closure.webfiles.BuildInfo.WebfilesSource;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -718,23 +719,51 @@ public final class Vulcanize {
     return ImmutableMultimap.copyOf(builder);
   }
 
-  // Combines all script elements into one and append it at the bottom of the
-  // document.
+  // Combine content of script tags into a group. To guarantee the correctness, it only groups
+  // content of `src`-less scripts between `src`-full scripts. The last combination gets inserted at the
+  // end of the document.
+  // e.g.,
+  //   <script>A</script>
+  //   <script>B</script>
+  //   <script src="srcful1"></script>
+  //   <script src="srcful2"></script>
+  //   <script>C</script>
+  //   <script>D</script>
+  //   <script src="srcful3"></script>
+  //   <script>E</script>
+  // gets compiled as
+  //   <script>A,B</script>
+  //   <script src="srcful1"></script>
+  //   <script src="srcful2"></script>
+  //   <script>C,D</script>
+  //   <script src="srcful3"></script>
+  //   <script>E</script>
   private static void combineScriptElements(Document document) {
     Elements scripts = document.getElementsByTag("script");
-    final StringBuilder sources = new StringBuilder();
+    StringBuilder sourcesBuilder = new StringBuilder();
+
     for (Element script : scripts) {
-      if (!script.attr("src").isEmpty()) continue;
-      sources.append(script.html()).append("\n");
-      script.remove();
+      if (!script.attr("src").isEmpty()) {
+        if (sourcesBuilder.length() == 0) {
+          continue;
+        }
+        Element scriptTag = new Element(Tag.valueOf("script"), "")
+            .appendChild(new DataNode(sourcesBuilder.toString(), ""));
+        script.before(scriptTag);
+        sourcesBuilder = new StringBuilder();
+      } else {
+        sourcesBuilder.append(script.html()).append("\n");
+        script.remove();
+      }
     }
+
     // jsoup parser creates body elements for each HTML files. Since document.body() returns the
     // first instance and we want to insert the script element at the end of the document, we
     // manually grab the last one.
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
 
     Element scriptTag = new Element(Tag.valueOf("script"), "")
-        .appendChild(new DataNode(sources.toString(), ""));
+        .appendChild(new DataNode(sourcesBuilder.toString(), ""));
     lastBody.appendChild(scriptTag);
   }
 
