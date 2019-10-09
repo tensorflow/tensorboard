@@ -110,14 +110,15 @@ class CorePlugin(base_plugin.TBPlugin):
 
           if os.path.splitext(path)[1] == '.html':
             checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
-            shasum = None
             # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
             # the assets zip file.
             if checksum_path in zip_.namelist():
-              shasum = zip_.read(checksum_path).splitlines(False)
+              shasums = zip_.read(checksum_path).splitlines(False)
+            else:
+              shasums = None
 
             wsgi_app = functools.partial(
-                self._serve_html, shasum, gzipped_asset_bytes)
+                self._serve_html, shasums, gzipped_asset_bytes)
           else:
             wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
