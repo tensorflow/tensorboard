@@ -16,6 +16,7 @@ py_library(
     deps = [
         ":keras_util",
         ":graph_util",
+        ":metadata",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:event_accumulator",
@@ -140,4 +141,10 @@ py_test(
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
     ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
 )
