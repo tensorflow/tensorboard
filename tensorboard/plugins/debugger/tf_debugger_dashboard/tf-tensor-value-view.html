@@ -192,6 +192,9 @@ limitations under the License.
 
         tensorName: String,
         debugOp: String,
+        deviceName: String,
+        maybeBaseExpandedNodeName: String,
+
         slicing: String,
         timeIndices: String,
 
@@ -203,6 +206,7 @@ limitations under the License.
         tensorNameCallback: Object,
 
         tensorWidget: Object,
+        getHealthPill: Function,
 
         _isTensorValueScalar: {
           type: Boolean,
@@ -305,6 +309,31 @@ limitations under the License.
                     }
                   })
                   .catch((err) => reject(err));
+              });
+            },
+            getNumericSummary: async () => {
+              return new Promise((resolve, reject) => {
+                const watch_key = this.tensorName + ':' + this.debugOp;
+                this.getHealthPill(
+                  watch_key,
+                  this.deviceName,
+                  this.maybeBaseExpandedNodeName,
+                  (healthPill) => {
+                    if (healthPill == null) {
+                      reject(
+                        `Failed to get health pill for watch key ${watch_key}`
+                      );
+                    } else {
+                      resolve({
+                        // See health_pill_calc.py for more details of the tfdbg v1
+                        // health-pill (numeric-summary) format.
+                        elementCount: healthPill[1],
+                        minimum: healthPill[8],
+                        maximum: healthPill[9],
+                      });
+                    }
+                  }
+                );
               });
             },
           };

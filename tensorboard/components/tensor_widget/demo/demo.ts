@@ -15,6 +15,10 @@ limitations under the License.
 
 import * as tensorWidget from '../tensor-widget';
 import {TensorViewSlicingSpec, TensorView} from '../types';
+import {
+  BaseTensorNumericSummary,
+  BooleanOrNumericTensorNumericSummary,
+} from '../health-pill-types';
 
 // TODO(cais): Find a way to import tfjs-core here, instead of depending on
 // a global variable.
@@ -171,9 +175,33 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
       // TODO(cais): Check memory leak.
       return retval;
     },
-    getHealthPill: async () => {
-      // return calculateHealthPill(x);
-      throw new Error('Not implemented yet.');
+    getNumericSummary: async () => {
+      if (x.dtype === 'float32' || x.dtype === 'int32' || x.dtype == 'bool') {
+        // This is not an efficient way to compute the maximum and minimum of
+        // finite values in a tensor. But it is okay as this is just a demo.
+        const data = x.dataSync() as Float32Array;
+        let minimum = Infinity;
+        let maximum = -Infinity;
+        for (let i = 0; i < data.length; ++i) {
+          const value = data[i];
+          if (!isFinite(value)) {
+            continue;
+          }
+          if (value < minimum) {
+            minimum = value;
+          }
+          if (value > maximum) {
+            maximum = value;
+          }
+        }
+        return {
+          elementCount: x.size,
+          minimum,
+          maximum,
+        };
+      } else {
+        return {elementCount: x.size};
+      }
     },
   };
 }
