@@ -176,9 +176,6 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
       return retval;
     },
     getNumericSummary: async () => {
-      const numericSummary: BaseTensorNumericSummary = {
-        elementCount: x.size,
-      };
       if (x.dtype === 'float32' || x.dtype === 'int32' || x.dtype == 'bool') {
         // This is not an efficient way to compute the maximum and minimum of
         // finite values in a tensor. But it is okay as this is just a demo.
@@ -197,11 +194,14 @@ export function tensorToTensorView(x: any): tensorWidget.TensorView {
             maximum = value;
           }
         }
-        (numericSummary as BooleanOrNumericTensorNumericSummary).minimum = minimum;
-        (numericSummary as BooleanOrNumericTensorNumericSummary).maximum = maximum;
+        return {
+          elementCount: x.size,
+          minimum,
+          maximum,
+        };
+      } else {
+        return {elementCount: x.size};
       }
-      // TODO(cais): Take care of boolean dtype.
-      return numericSummary;
     },
   };
 }

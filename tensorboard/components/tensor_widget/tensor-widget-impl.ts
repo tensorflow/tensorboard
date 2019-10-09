@@ -55,6 +55,11 @@ const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
 type ValueClass = 'numeric' | 'boolean' | 'string';
 
+enum ValueRenderMode {
+  TEXT = 1,
+  IMAGE = 2
+}
+
 /**
  * Implementation of TensorWidget.
  */
@@ -102,7 +107,7 @@ export class TensorWidgetImpl implements TensorWidget {
   private menu: Menu | null = null;
 
   // Value render mode.
-  protected valueRenderMode: 'text' | 'image';
+  protected valueRenderMode: ValueRenderMode;
 
   // Size of each cell used to display the tensor value under the 'image' mode.
   protected imageCellSize = 12;
@@ -117,7 +122,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.options = options || {};
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
     this.rank = this.tensorView.spec.shape.length;
-    this.valueRenderMode = 'text';
+    this.valueRenderMode = ValueRenderMode.TEXT;
   }
 
   /**
@@ -271,10 +276,10 @@ export class TensorWidgetImpl implements TensorWidget {
         defaultSelection: 0,
         callback: (currentMode: number) => {
           if (currentMode === 0) {
-            this.valueRenderMode = 'text';
+            this.valueRenderMode = ValueRenderMode.TEXT;
             this.renderValues();
           } else {
-            this.valueRenderMode = 'image';
+            this.valueRenderMode = ValueRenderMode.IMAGE;
             this.tensorView.getNumericSummary().then((numericSummary) => {
               this.numericSummary = numericSummary;
               this.renderValues();
@@ -289,7 +294,7 @@ export class TensorWidgetImpl implements TensorWidget {
           this.imageCellSize *= zoomStepRatio;
           this.renderValues();
         },
-        isEnabled: () => this.valueRenderMode === 'image',
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
       this.menuConfig.items.push({
         caption: 'Zoom out (Image mode only)',
@@ -297,7 +302,7 @@ export class TensorWidgetImpl implements TensorWidget {
           this.imageCellSize /= zoomStepRatio;
           this.renderValues();
         },
-        isEnabled: () => this.valueRenderMode === 'image',
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
     }
     if (this.menuConfig !== null && this.menuConfig.items.length > 0) {
@@ -519,7 +524,7 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumCols; ++i) {
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
-      if (this.valueRenderMode === 'image') {
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
         tick.style.width = `${this.imageCellSize}px`;
       }
       this.topRuler.appendChild(tick);
@@ -573,7 +578,7 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumRows; ++i) {
       const row = document.createElement('div');
       row.classList.add('tensor-widget-value-row');
-      if (this.valueRenderMode === 'image') {
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
         row.style.height = `${this.imageCellSize}px`;
         row.style.lineHeight = `${this.imageCellSize}px`;
       }
@@ -582,7 +587,7 @@ export class TensorWidgetImpl implements TensorWidget {
 
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
-      if (this.valueRenderMode === 'image') {
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
         tick.style.height = `${this.imageCellSize}px`;
         tick.style.lineHeight = `${this.imageCellSize}px`;
       }
@@ -632,7 +637,7 @@ export class TensorWidgetImpl implements TensorWidget {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = document.createElement('div');
         valueDiv.classList.add('tensor-widget-value-div');
-        if (this.valueRenderMode === 'image') {
+        if (this.valueRenderMode === ValueRenderMode.IMAGE) {
           valueDiv.style.width = `${this.imageCellSize}px`;
           valueDiv.style.height = `${this.imageCellSize}px`;
           valueDiv.style.lineHeight = `${this.imageCellSize}px`;
@@ -706,7 +711,7 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
         }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
-        if (this.valueRenderMode === 'text') {
+        if (this.valueRenderMode === ValueRenderMode.TEXT) {
           if (colIndex < numCols) {
             this.topRulerTicks[i].textContent = `${colIndex}`;
           } else {
@@ -732,7 +737,7 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
         }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
-        if (this.valueRenderMode === 'text') {
+        if (this.valueRenderMode === ValueRenderMode.TEXT) {
           if (rowIndex < numRows) {
             this.leftRulerTicks[i].textContent = `${rowIndex}`;
           } else {
@@ -763,7 +768,7 @@ export class TensorWidgetImpl implements TensorWidget {
 
     let colorMap: ColorMap | null = null;
     const valueRenderMode = this.valueRenderMode;
-    if (valueRenderMode === 'image') {
+    if (valueRenderMode === ValueRenderMode.IMAGE) {
       if (this.numericSummary == null) {
         throw new Error(
           'Failed to render image representation of tensor due to ' +
@@ -789,7 +794,7 @@ export class TensorWidgetImpl implements TensorWidget {
           j < (values as number[][])[i].length
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
-          if (valueRenderMode === 'image') {
+          if (valueRenderMode === ValueRenderMode.IMAGE) {
             const [red, green, blue] = (colorMap as ColorMap).getRGB(
               value as number
             );

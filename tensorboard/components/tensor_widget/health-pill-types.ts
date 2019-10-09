@@ -39,5 +39,5 @@ export interface BooleanOrNumericTensorNumericSummary
   maximum: number | boolean;
 }
 
-// TODO(cais): Add sub-interfaces of `BaseTensorHealthPill` for other tensor
+// TODO(cais): Add sub-interfaces of `BaseTensorNumericSummary` for other tensor
 // dtypes.
