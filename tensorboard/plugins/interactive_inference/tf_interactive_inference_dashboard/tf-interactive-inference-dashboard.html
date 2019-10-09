@@ -3142,6 +3142,64 @@ limitations under the License.
                                   </tf-confusion-matrix>
                                 </template>
                               </div>
+                              <div class="curves-holder">
+                                <template
+                                  is="dom-repeat"
+                                  items="[[allConfMatrixLabels]]"
+                                  as="label"
+                                  index-as="labelInd"
+                                >
+                                  <div class="curve-holder">
+                                    <div class="roc-text">
+                                      ROC curve for [[getLabelVocab(labelInd)]]
+                                      <paper-icon-button
+                                        icon="info-outline"
+                                        class="info-icon threshold-info-icon no-padding"
+                                        on-tap="openDialog"
+                                      >
+                                      </paper-icon-button>
+                                      <paper-dialog
+                                        class="dialog-text"
+                                        horizontal-align="right"
+                                        vertical-align="bottom"
+                                      >
+                                        <div class="dialog-title">
+                                          ROC curve
+                                        </div>
+                                        <div>
+                                          A receiver operating characteristic
+                                          (ROC) curve plots the true positive
+                                          rate (TPR) against the false positive
+                                          rate (FPR) at various classification
+                                          thresholds.
+                                        </div>
+                                        <div>
+                                          For this multi-class classification
+                                          problem, we plot one ROC curve for
+                                          each class, at each time considering
+                                          the class in question as the positive
+                                          one and all the others as negatives
+                                          (<i>i.e.</i> <i>binarized</i> versions
+                                          of the problem).
+                                        </div>
+                                      </paper-dialog>
+                                    </div>
+                                    <div class="roc-x-label">
+                                      False positive rate
+                                    </div>
+                                    <div class="roc-y-label">
+                                      True positive rate
+                                    </div>
+                                    <vz-line-chart2
+                                      id="[[getRocChartLabelId(labelInd, index)]]"
+                                      class="pr-line-chart"
+                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    >
+                                    </vz-line-chart2>
+                                  </div>
+                                </template>
+                              </div>
                             </template>
                           </div>
                         </div>
@@ -4794,6 +4852,52 @@ limitations under the License.
                   }
                 }
                 this.allConfMatrixLabels = Array.from(allLabels.values());
+                // ROC curves
+                const thresholds = {};
+                for (let i = 0; i < this.examplesAndInferences.length; i++) {
+                  const item = this.examplesAndInferences[i];
+                  const trueLabel = this.visdata[i][
+                    this.selectedLabelFeature
+                  ].toString();
+                  const scores =
+                    item.inferences[item.inferences.length - 1][modelInd];
+                  const slice = this.getSliceKey_(
+                    this.visdata[i],
+                    this.selectedBreakdownFeature,
+                    this.selectedSecondBreakdownFeature
+                  );
+                  if (!(slice in thresholds)) {
+                    thresholds[slice] = {};
+                  }
+                  for (let k = 0; k < scores.length; k++) {
+                    const label = scores[k].label;
+                    if (!(label in thresholds[slice])) {
+                      thresholds[slice][label] = [];
+                      for (let thresh = 0; thresh <= 100; thresh++) {
+                        thresholds[slice][label].push({
+                          TP: 0,
+                          FP: 0,
+                          FN: 0,
+                          TN: 0,
+                        });
+                      }
+                    }
+                    const score = scores[k].score * 100;
+                    let result = '';
+                    for (let thresh = 0; thresh <= 100; thresh++) {
+                      if (label === trueLabel) {
+                        result = score > thresh ? 'TP' : 'FN';
+                      } else {
+                        result = score > thresh ? 'FP' : 'TN';
+                      }
+                      thresholds[slice][label][thresh][result] += 1;
+                    }
+                  }
+                }
+                Object.values(thresholds).forEach((t) =>
+                  Object.values(t).forEach(this.calcThresholdStats)
+                );
+                inferenceStats.allThresholds = thresholds;
               } else {
                 // For regression models, calculate inference error.
                 inferenceStats.results = {errors: []};
@@ -4854,7 +4958,7 @@ limitations under the License.
           this.featureValueThresholds = [];
           this.featureValueThresholds = this.sortFeatureValues(tempArray);
 
-          // ROC curves should only exist for the binary case
+          // ROC curves for the binary case
           if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             for (let i = 0; i < this.featureValueThresholds.length; i++) {
               const plotStats = [];
@@ -4912,6 +5016,43 @@ limitations under the License.
               regenInferenceStats,
               false
             );
+          }
+          // ROC curves for the multi-class case
+          else if (this.isMultiClass_(this.modelType, this.multiClass)) {
+            const slices = this.featureValueThresholds.map((slice) =>
+              this.createCombinedValueString_(slice.value, slice.value2)
+            );
+            for (let sliceInd = 0; sliceInd < slices.length; sliceInd++) {
+              const slice = slices[sliceInd];
+              for (
+                let labelInd = 0;
+                labelInd < this.allConfMatrixLabels.length;
+                labelInd++
+              ) {
+                const label = this.allConfMatrixLabels[labelInd];
+                const plotStats = [];
+                const plotThresholds = [];
+                const thresholds = this.featureValueThresholds[sliceInd]
+                  .threshold;
+                for (
+                  let modelInd = 0;
+                  modelInd < this.inferenceStats_.length;
+                  modelInd++
+                ) {
+                  plotStats.push(
+                    this.inferenceStats_[modelInd].allThresholds[slice][label]
+                  );
+                  plotThresholds.push(thresholds[modelInd].threshold);
+                }
+                this.plotChart(
+                  this.$$('#' + this.getRocChartLabelId(labelInd, sliceInd)),
+                  plotStats,
+                  plotThresholds,
+                  regenInferenceStats,
+                  true
+                );
+              }
+            }
           }
           this.updateCorrectness_();
         },
@@ -5862,6 +6003,14 @@ limitations under the License.
 
         getRocChartId: function(index) {
           return 'rocchart' + index;
+        },
+
+        getRocChartLabelId: function(label, index) {
+          return 'rocchart-' + label + '-' + index;
+        },
+
+        getLabelVocab: function(index) {
+          return this.labelVocab[index];
         },
 
         getPrChartId: function(index) {
