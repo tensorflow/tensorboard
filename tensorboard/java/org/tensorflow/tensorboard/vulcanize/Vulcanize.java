@@ -258,7 +258,7 @@ public final class Vulcanize {
           break;
         }
       }
-      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent() && !ignoreFile) {
+      if (!ignoreFile) {
         if (isExternalCssNode(node)
             && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
@@ -775,9 +775,8 @@ public final class Vulcanize {
       if (src.isEmpty()) {
         sourceContent = script.html();
       } else {
-        // script element that remains are the ones with src that is absolute, annotated with
-        // `jscomp-ignore`, or appear inside descendant of a node annotated with
-        // `vulcanize-noinline`. They must resolve from the root because those srcs are rootified.
+        // script element that remains are the ones with src that is absolute or annotated with
+        // `jscomp-ignore`. They must resolve from the root because those srcs are rootified.
         Webpath webpathSrc = Webpath.get(src);
         Webpath webpath = Webpath.get("/").resolve(Webpath.get(src)).normalize();
         if (isAbsolutePath(webpathSrc)) {
