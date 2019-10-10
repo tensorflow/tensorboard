@@ -16,13 +16,12 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "iframe.html",
         "plugin-test.js",
         "tests.html",
     ],
     path = "/tf-plugin-util/test",
     deps = [
-        "//tensorboard/components/experimental/plugin_lib:plugin_lib",
+        "//tensorboard/components/experimental/plugin_lib/test:testable_plugin_lib",
         "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/components/tf_imports:web_component_tester",
     ],

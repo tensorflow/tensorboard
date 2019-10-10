@@ -1,3 +1,11 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +20,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 /**
  * This file defines utilities shared by TensorBoard (plugin host) and the
  * dynamic plugin library, used by plugin authors.
+ */
+/**
+ * [1]: Using string to access property prevents JSCompiler mangling and make the
+ * property stable across different versions of a bundle.
  */
 var tb_plugin;
 (function (tb_plugin) {
@@ -47,11 +51,15 @@ var tb_plugin;
                 onMessage(event) {
                     return __awaiter(this, void 0, void 0, function* () {
                         const message = JSON.parse(event.data);
-                        const callback = this.listeners.get(message.type);
-                        if (message.isReply) {
-                            if (!this.responseWaits.has(message.id))
+                        // Please see [1] for reason why we use string to access the property.
+                        const type = message['type'];
+                        const id = message['id'];
+                        const payload = message['payload'];
+                        const error = message['error'];
+                        const isReply = message['isReply'];
+                        if (isReply) {
+                            if (!this.responseWaits.has(id))
                                 return;
-                            const { id, payload, error } = message;
                             const { resolve, reject } = this.responseWaits.get(id);
                             this.responseWaits.delete(id);
                             if (error) {
@@ -62,24 +70,25 @@ var tb_plugin;
                             }
                             return;
                         }
-                        let payload = null;
-                        let error = null;
-                        if (this.listeners.has(message.type)) {
-                            const callback = this.listeners.get(message.type);
+                        let replyPayload = null;
+                        let replyError = null;
+                        if (this.listeners.has(type)) {
+                            const callback = this.listeners.get(type);
                             try {
-                                const result = yield callback(message.payload);
-                                payload = result;
+                                const result = yield callback(payload);
+                                replyPayload = result;
                             }
                             catch (e) {
-                                error = e;
+                                replyError = e;
                             }
                         }
+                        // Please see [1] for reason why we use string to access the property.
                         const replyMessage = {
-                            type: message.type,
-                            id: message.id,
-                            payload,
-                            error,
-                            isReply: true,
+                            ['type']: type,
+                            ['id']: id,
+                            ['payload']: replyPayload,
+                            ['error']: replyError,
+                            ['isReply']: true,
                         };
                         this.postMessage(replyMessage);
                     });

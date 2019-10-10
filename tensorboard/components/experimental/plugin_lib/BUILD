@@ -1,32 +1,34 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
-    name = "guest_internals",
+# Generating module friendly message.ts.
+# The genrule creates a new version of message.ts that strips `namespace {` and
+# `} // namespace`.
+# TODO(tensorboard-team): tf_ts_library and tf_web_library do not interoperate
+# yet we do have a requirement to make the plugin_lib use tf_ts_library. Remove
+# this when the two can interop or tf_web_library gets deprecated.
+genrule(
+    name = "message_lib",
     srcs = [
-        "plugin-guest.js",
+        "//tensorboard/components/experimental/plugin_util:message.ts",
     ],
-    path = "/tf-plugin-lib",
-    deps = [
-        "//tensorboard/components/experimental/plugin_util:message",
-    ],
+    outs = ["message.ts"],
+    cmd = """
+        cat $< | sed -e "s|^namespace .*||" | sed -e "s|^} // namespace .*||" >$@
+    """,
 )
 
-# TODO(psybuzz): figure out how this tf_web_library can be used to create
-# maybe a NPM package.
-tf_web_library(
+# TODO(psybuzz): create a NPM package when a better requirement comes up using
+# tf_js_binary.
+tf_ts_library(
     name = "plugin_lib",
     srcs = [
-        "runs.js",
-        "tf-plugin-lib.html",
-    ],
-    path = "/tf-plugin-lib",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":guest_internals",
-        "//tensorboard/components/experimental/plugin_util:message",
+        "index.ts",
+        "plugin-guest.ts",
+        "runs.ts",
+        ":message_lib",
     ],
 )

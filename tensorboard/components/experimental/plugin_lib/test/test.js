@@ -38,13 +38,14 @@ describe('plugin lib integration', () => {
             this.sandbox.server.respondImmediately = true;
             this.iframe = yield createIframe();
             this.lib = this.iframe.contentWindow.plugin_lib;
+            this.libInternal = this.iframe.contentWindow.plugin_internal;
         });
     });
     afterEach(function () {
         document.body.removeChild(this.iframe);
         this.sandbox.restore();
     });
-    describe('tb_plugin.lib.run', () => {
+    describe('lib.run', () => {
         describe('#getRuns', () => {
             it('returns list of runs', function () {
                 return __awaiter(this, void 0, void 0, function* () {
@@ -89,7 +90,7 @@ describe('plugin lib integration', () => {
                     yield tf_backend.runsStore.refresh();
                     // Await another message to ensure the iframe processed the next message
                     // (if any).
-                    yield this.lib.DO_NOT_USE_INTERNAL.sendMessage('foo');
+                    yield this.libInternal.sendMessage('foo');
                     expect(runsChanged).to.not.have.been.called;
                 });
             });

@@ -44,13 +44,13 @@ var tb_plugin;
                     this.sandbox.restore();
                 });
                 it('setUp sanity check', function () {
-                    expect(this.guestWindow.test)
+                    expect(this.guestWindow.plugin_internal)
                         .to.have.property('sendMessage')
                         .that.is.a('function');
-                    expect(this.guestWindow.test)
+                    expect(this.guestWindow.plugin_internal)
                         .to.have.property('listen')
                         .that.is.a('function');
-                    expect(this.guestWindow.test)
+                    expect(this.guestWindow.plugin_internal)
                         .to.have.property('unlisten')
                         .that.is.a('function');
                 });
@@ -59,9 +59,9 @@ var tb_plugin;
                         spec: 'host (src) to guest (dest)',
                         beforeEachFunc: function () {
                             this.destWindow = this.guestWindow;
-                            this.destListen = this.guestWindow.test.listen;
-                            this.destUnlisten = this.guestWindow.test.unlisten;
-                            this.destSendMessage = this.guestWindow.test.sendMessage;
+                            this.destListen = this.guestWindow.plugin_internal.listen;
+                            this.destUnlisten = this.guestWindow.plugin_internal.unlisten;
+                            this.destSendMessage = this.guestWindow.plugin_internal.sendMessage;
                             this.srcSendMessage = (type, payload) => {
                                 return tb_plugin.host
                                     .broadcast(type, payload)
@@ -80,7 +80,7 @@ var tb_plugin;
                                     .broadcast(type, payload)
                                     .then(([result]) => result);
                             };
-                            this.srcSendMessage = this.guestWindow.test.sendMessage;
+                            this.srcSendMessage = this.guestWindow.plugin_internal.sendMessage;
                         },
                     },
                 ].forEach(({ spec, beforeEachFunc }) => {
