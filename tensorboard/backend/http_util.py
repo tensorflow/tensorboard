@@ -60,6 +60,8 @@ _JSON_MIMETYPES = set([
     'application/json+protobuf',
 ])
 
+# Do not support xhtml for now.
+_HTML_MIMETYPE = 'text/html'
 
 def Respond(request,
             content,
@@ -67,7 +69,8 @@ def Respond(request,
             code=200,
             expires=0,
             content_encoding=None,
-            encoding='utf-8'):
+            encoding='utf-8',
+            csp_scripts_sha256s=None):
   """Construct a werkzeug Response.
 
   Responses are transmitted to the browser with compression if: a) the browser
@@ -103,6 +106,10 @@ def Respond(request,
     expires: Second duration for browser caching.
     content_encoding: Encoding if content is already encoded, e.g. 'gzip'.
     encoding: Input charset if content parameter has byte strings.
+    csp_scripts_sha256s: List of base64 serialized sha256 of whitelisted script
+      elements for script-src of the Content-Security-Policy. If it is None, the
+      HTML will disallow any script to execute. It is only be used when the
+      content_type is text/html.
 
   Returns:
     A werkzeug Response object (a WSGI application).
@@ -157,6 +164,29 @@ def Respond(request,
   else:
     headers.append(('Expires', '0'))
     headers.append(('Cache-Control', 'no-cache, must-revalidate'))
+  if mimetype == _HTML_MIMETYPE:
+    if csp_scripts_sha256s:
+      whitelist_hashes = ' '.join(
+          ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
+      # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
+      # resources can be hashed upfront.
+      script_srcs = 'strict-dynamic %s' % whitelist_hashes
+    else:
+      script_srcs = "'none'"
+
+    csp_string = ';'.join([
+        "default-src 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        # data uri used by favicon
+        "img-src 'self' data:",
+        # gstatic: used by google-chart
+        # inline styles: Polymer templates + d3 uses inline styles.
+        "style-src https://www.gstatic.com data: 'unsafe-inline'",
+        "script-src %s" % script_srcs,
+    ])
+
+    headers.append(('Content-Security-Policy', csp_string))
 
   if request.method == 'HEAD':
     content = None

@@ -42,6 +42,8 @@ logger = tb_logging.get_logger()
 # for more details.
 DEFAULT_PORT = 6006
 
+SHASUM_DIR = '_shasums'
+SHASUM_FILE_SUFFIX = '.scripts_sha256'
 
 class CorePlugin(base_plugin.TBPlugin):
   """Core plugin for TensorBoard.
@@ -89,14 +91,39 @@ class CorePlugin(base_plugin.TBPlugin):
         '/histograms': self._redirect_to_index,
         '/images': self._redirect_to_index,
     }
-    if self._assets_zip_provider:
-      with self._assets_zip_provider() as fp:
-        with zipfile.ZipFile(fp) as zip_:
-          for path in zip_.namelist():
-            gzipped_asset_bytes = _gzip(zip_.read(path))
-            apps['/' + path] = functools.partial(
+    apps.update(self.get_resource_apps())
+    return apps
+
+  def get_resource_apps(self):
+    apps = {}
+    if not self._assets_zip_provider:
+      return apps
+
+    with self._assets_zip_provider() as fp:
+      with zipfile.ZipFile(fp) as zip_:
+        for path in zip_.namelist():
+          # Do not serve the shasum data as static files.
+          if path.startswith(SHASUM_DIR):
+            continue
+
+          gzipped_asset_bytes = _gzip(zip_.read(path))
+
+          if os.path.splitext(path)[1] == '.html':
+            checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
+            # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
+            # the assets zip file.
+            if checksum_path in zip_.namelist():
+              shasums = zip_.read(checksum_path).splitlines(False)
+            else:
+              shasums = None
+
+            wsgi_app = functools.partial(
+                self._serve_html, shasums, gzipped_asset_bytes)
+          else:
+            wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
-      apps['/'] = apps['/index.html']
+          apps['/' + path] = wsgi_app
+    apps['/'] = apps['/index.html']
     return apps
 
   @wrappers.Request.application
@@ -113,6 +140,17 @@ class CorePlugin(base_plugin.TBPlugin):
     mimetype = mimetypes.guess_type(path)[0] or 'application/octet-stream'
     return http_util.Respond(
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
+
+  @wrappers.Request.application
+  def _serve_html(self, shasums, gzipped_asset_bytes, request):
+    """Serves a pre-gzipped static HTML with script shasums."""
+    return http_util.Respond(
+        request,
+        gzipped_asset_bytes,
+        'text/html',
+        content_encoding='gzip',
+        csp_scripts_sha256s=shasums,
+    )
 
   @wrappers.Request.application
   def _serve_environment(self, request):
