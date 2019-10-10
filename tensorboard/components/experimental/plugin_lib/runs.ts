@@ -12,17 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tb_plugin.lib.runs {
-  export async function getRuns() {
-    return tb_plugin.lib.DO_NOT_USE_INTERNAL.sendMessage(
-      'experimental.GetRuns'
-    );
-  }
+import {sendMessage, listen} from './plugin-guest';
 
-  export function setOnRunsChanged(callback: (runs: string[]) => void | void) {
-    return tb_plugin.lib.DO_NOT_USE_INTERNAL.listen(
-      'experimental.RunsChanged',
-      callback
-    );
-  }
+export async function getRuns() {
+  return sendMessage('experimental.GetRuns');
+}
+
+export function setOnRunsChanged(callback: (runs: string[]) => void | void) {
+  return listen('experimental.RunsChanged', callback);
 }

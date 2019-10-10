@@ -12,10 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 /**
  * This file defines utilities shared by TensorBoard (plugin host) and the
  * dynamic plugin library, used by plugin authors.
+ */
+/**
+ * [1]: Using string to access property prevents JSCompiler mangling and make the
+ * property stable across different versions of a bundle.
  */
 namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
   export type PayloadType =
@@ -65,12 +68,16 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
 
     private async onMessage(event: MessageEvent) {
       const message = JSON.parse(event.data) as Message;
-      const callback = this.listeners.get(message.type);
+      // Please see [1] for reason why we use string to access the property.
+      const type = message['type'];
+      const id = message['id'];
+      const payload = message['payload'];
+      const error = message['error'];
+      const isReply = message['isReply'];
 
-      if (message.isReply) {
-        if (!this.responseWaits.has(message.id)) return;
-        const {id, payload, error} = message;
-        const {resolve, reject} = this.responseWaits.get(id);
+      if (isReply) {
+        if (!this.responseWaits.has(id)) return;
+        const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
         this.responseWaits.delete(id);
         if (error) {
           reject(new Error(error));
@@ -80,23 +87,25 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
         return;
       }
 
-      let payload = null;
-      let error = null;
-      if (this.listeners.has(message.type)) {
-        const callback = this.listeners.get(message.type);
+      let replyPayload = null;
+      let replyError = null;
+      if (this.listeners.has(type)) {
+        const callback = this.listeners.get(type) as MessageCallback;
         try {
-          const result = await callback(message.payload);
-          payload = result;
+          const result = await callback(payload);
+          replyPayload = result;
         } catch (e) {
-          error = e;
+          replyError = e;
         }
       }
+
+      // Please see [1] for reason why we use string to access the property.
       const replyMessage: Message = {
-        type: message.type,
-        id: message.id,
-        payload,
-        error,
-        isReply: true,
+        ['type']: type,
+        ['id']: id,
+        ['payload']: replyPayload,
+        ['error']: replyError,
+        ['isReply']: true,
       };
       this.postMessage(replyMessage);
     }

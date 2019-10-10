@@ -30,6 +30,7 @@ describe('plugin lib integration', () => {
     this.sandbox.server.respondImmediately = true;
     this.iframe = await createIframe();
     this.lib = (this.iframe.contentWindow as any).plugin_lib;
+    this.libInternal = (this.iframe.contentWindow as any).plugin_internal;
   });
 
   afterEach(function() {
@@ -37,7 +38,7 @@ describe('plugin lib integration', () => {
     this.sandbox.restore();
   });
 
-  describe('tb_plugin.lib.run', () => {
+  describe('lib.run', () => {
     describe('#getRuns', () => {
       it('returns list of runs', async function() {
         this.sandbox
@@ -82,7 +83,7 @@ describe('plugin lib integration', () => {
 
         // Await another message to ensure the iframe processed the next message
         // (if any).
-        await this.lib.DO_NOT_USE_INTERNAL.sendMessage('foo');
+        await this.libInternal.sendMessage('foo');
 
         expect(runsChanged).to.not.have.been.called;
       });
