@@ -12,10 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 /**
  * This file defines utilities shared by TensorBoard (plugin host) and the
  * dynamic plugin library, used by plugin authors.
+ */
+/**
+ * [1]: Using string to access property prevents JSCompiler mangling and make the
+ * property stable across different versions of a bundle.
  */
 namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
   export type PayloadType =
@@ -65,6 +68,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
 
     private async onMessage(event: MessageEvent) {
       const message = JSON.parse(event.data) as Message;
+      // Please see [1] for reason why we use string to access the property.
       const type = message['type'];
       const id = message['id'];
       const payload = message['payload'];
@@ -94,6 +98,8 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           replyError = e;
         }
       }
+
+      // Please see [1] for reason why we use string to access the property.
       const replyMessage: Message = {
         ['type']: type,
         ['id']: id,

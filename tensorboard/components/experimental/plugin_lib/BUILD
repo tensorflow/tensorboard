@@ -5,6 +5,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 licenses(["notice"])  # Apache 2.0
 
 # Generating module friendly message.ts.
+# The genrule creates a new version of message.ts that strips `namespace {` and
+# `} // namespace`.
 # TODO(tensorboard-team): tf_ts_library and tf_web_library do not interoperate
 # yet we do have a requirement to make the plugin_lib use tf_ts_library. Remove
 # this when the two can interop or tf_web_library gets deprecated.
@@ -19,6 +21,8 @@ genrule(
     """,
 )
 
+# TODO(psybuzz): create a NPM package when a better requirement comes up using
+# tf_js_binary.
 tf_ts_library(
     name = "plugin_lib",
     srcs = [
