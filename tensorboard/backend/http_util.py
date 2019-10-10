@@ -37,8 +37,11 @@ from tensorboard.compat import tf
 # TODO(stephanwlee): Refactor this to not use the module variable but
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
-DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
-DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
+def DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST():
+  return []
+
+def DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC():
+  return True
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
 _EXTRACT_CHARSET_PATTERN = re.compile(r'charset=([-_0-9A-Za-z]+)')
@@ -176,7 +179,7 @@ def Respond(request,
           ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
 
       whitelist_domains = []
-      for domain in DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST:
+      for domain in DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST():
         url = urlparse.urlparse(domain)
         if not url.scheme == 'https' or not url.netloc:
           raise ValueError('Expected all whitelist to be a https URL: %s' % domain)
@@ -190,7 +193,7 @@ def Respond(request,
       # resources can be hashed upfront.
       script_srcs_fragments = [
         ' '.join(whitelist_domains),
-        'strict-dynamic' if DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC else '',
+        'strict-dynamic' if DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC() else '',
         whitelist_hashes
       ]
       script_srcs = ' '.join([frag for frag in script_srcs_fragments if frag])
