@@ -36,6 +36,7 @@ class RespondTest(tb_test.TestCase):
   def setUp(self):
     # http_util is stateful. Unset the state.
     http_util.DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
+    http_util.DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
 
   def testHelloWorld(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
@@ -191,7 +192,7 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src  strict-dynamic 'sha256-abcdefghi'"
+        "script-src strict-dynamic 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -202,6 +203,18 @@ class RespondTest(tb_test.TestCase):
         "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'none'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  def testCsp_disableStrictDynamic(self):
+    http_util.DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = False
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(
+        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    expected_csp = (
+        "default-src 'self';base-uri 'self';object-src 'none';img-src 'self' data:;"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 

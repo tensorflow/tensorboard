@@ -38,6 +38,7 @@ from tensorboard.compat import tf
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
 DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
+DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
 _EXTRACT_CHARSET_PATTERN = re.compile(r'charset=([-_0-9A-Za-z]+)')
@@ -187,10 +188,12 @@ def Respond(request,
 
       # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
       # resources can be hashed upfront.
-      script_srcs = '{domains} strict-dynamic {shas}'.format(
-          domains=' '.join(whitelist_domains),
-          shas=whitelist_hashes,
-      )
+      script_srcs_fragments = [
+        ' '.join(whitelist_domains),
+        'strict-dynamic' if DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC else '',
+        whitelist_hashes
+      ]
+      script_srcs = ' '.join([frag for frag in script_srcs_fragments if frag])
     else:
       script_srcs = "'none'"
 
