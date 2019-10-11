@@ -3304,12 +3304,11 @@ limitations under the License.
                                     </div>
                                     <div>
                                       For this multi-class classification
-                                      problem, we plot one ROC curve for
-                                      each class, at each time considering
-                                      the class in question as the positive
-                                      one and all the others as negatives
-                                      (<i>i.e.</i> <i>binarized</i> versions
-                                      of the problem).
+                                      problem, we plot one ROC curve for each
+                                      class, at each time considering the class
+                                      in question as the positive one and all
+                                      the others as negatives (<i>i.e.</i>
+                                      <i>binarized</i> versions of the problem).
                                     </div>
                                   </paper-dialog>
                                 </div>
@@ -4916,11 +4915,14 @@ limitations under the License.
                   ].toString();
                   const scores =
                     item.inferences[item.inferences.length - 1][modelInd];
-                  const slice = this.selectedBreakdownFeature != '' ? this.getSliceKey_(
-                    this.visdata[i],
-                    this.selectedBreakdownFeature,
-                    this.selectedSecondBreakdownFeature
-                  ) : '';
+                  const slice =
+                    this.selectedBreakdownFeature != ''
+                      ? this.getSliceKey_(
+                          this.visdata[i],
+                          this.selectedBreakdownFeature,
+                          this.selectedSecondBreakdownFeature
+                        )
+                      : '';
                   if (!(slice in thresholds)) {
                     thresholds[slice] = {};
                   }
@@ -5104,8 +5106,13 @@ limitations under the License.
                   plotThresholds.push(thresholds[modelInd].threshold);
                 }
                 this.plotChart(
-                  this.$$('#' + this.getRocChartLabelId(labelInd, 
-                        isSliced ? sliceInd : '')),
+                  this.$$(
+                    '#' +
+                      this.getRocChartLabelId(
+                        labelInd,
+                        isSliced ? sliceInd : ''
+                      )
+                  ),
                   plotStats,
                   plotThresholds,
                   regenInferenceStats,
