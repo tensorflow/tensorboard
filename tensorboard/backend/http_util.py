@@ -37,11 +37,8 @@ from tensorboard.compat import tf
 # TODO(stephanwlee): Refactor this to not use the module variable but
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
-def DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST():
-  return []
-
-def DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC():
-  return True
+DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = lambda: []
+DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = lambda: True
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
 _EXTRACT_CHARSET_PATTERN = re.compile(r'charset=([-_0-9A-Za-z]+)')
