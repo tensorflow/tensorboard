@@ -3198,6 +3198,47 @@ limitations under the License.
                                     >
                                     </vz-line-chart2>
                                   </div>
+                                  <div class="curve-holder">
+                                    <div class="roc-text">
+                                      PR curve [[getLabel(labelInd)]]
+                                      <paper-icon-button
+                                        icon="info-outline"
+                                        class="info-icon threshold-info-icon no-padding"
+                                        on-tap="openDialog"
+                                      >
+                                      </paper-icon-button>
+                                      <paper-dialog
+                                        class="dialog-text"
+                                        horizontal-align="right"
+                                        vertical-align="bottom"
+                                      >
+                                        <div class="dialog-title">PR curve</div>
+                                        <div>
+                                          A precision-recall (PR) curve plots
+                                          precision against recall at various
+                                          classification thresholds.
+                                        </div>
+                                        <div>
+                                          For this multi-class classification
+                                          problem, we plot one PR curve for
+                                          each class, at each time considering
+                                          the class in question as the positive
+                                          one and all the others as negatives
+                                          (<i>i.e.</i> <i>binarized</i> versions
+                                          of the problem).
+                                        </div>
+                                      </paper-dialog>
+                                    </div>
+                                    <div class="pr-x-label">Recall</div>
+                                    <div class="pr-y-label">Precision</div>
+                                    <vz-line-chart2
+                                      id="[[getPrChartLabelId(labelInd, index)]]"
+                                      class="pr-line-chart"
+                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    >
+                                    </vz-line-chart2>
+                                  </div>
                                 </template>
                               </div>
                             </template>
@@ -3320,6 +3361,47 @@ limitations under the License.
                                 </div>
                                 <vz-line-chart2
                                   id="[[getRocChartLabelId(label, '')]]"
+                                  class="pr-line-chart"
+                                  x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                  y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                >
+                                </vz-line-chart2>
+                              </div>
+                              <div class="curve-holder">
+                                <div class="roc-text">
+                                  PR curve for [[getLabel(labelInd)]]
+                                  <paper-icon-button
+                                    icon="info-outline"
+                                    class="info-icon threshold-info-icon no-padding"
+                                    on-tap="openDialog"
+                                  >
+                                  </paper-icon-button>
+                                  <paper-dialog
+                                    class="dialog-text"
+                                    horizontal-align="right"
+                                    vertical-align="bottom"
+                                  >
+                                    <div class="dialog-title">PR curve</div>
+                                    <div>
+                                      A precision-recall (PR) curve plots
+                                      precision against recall at various
+                                      classification thresholds.
+                                    </div>
+                                    <div>
+                                      For this multi-class classification
+                                      problem, we plot one PR curve for
+                                      each class, at each time considering
+                                      the class in question as the positive
+                                      one and all the others as negatives
+                                      (<i>i.e.</i> <i>binarized</i> versions
+                                      of the problem).
+                                    </div>
+                                  </paper-dialog>
+                                </div>
+                                <div class="pr-x-label">Recall</div>
+                                <div class="pr-y-label">Precision</div>
+                                <vz-line-chart2
+                                  id="[[getPrChartLabelId(label, '')]]"
                                   class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
@@ -5015,7 +5097,7 @@ limitations under the License.
           this.featureValueThresholds = [];
           this.featureValueThresholds = this.sortFeatureValues(tempArray);
 
-          // ROC curves for the binary case
+          // ROC and PR curves for the binary case
           if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
             for (let i = 0; i < this.featureValueThresholds.length; i++) {
               const plotStats = [];
@@ -5074,7 +5156,7 @@ limitations under the License.
               false
             );
           }
-          // ROC curves for the multi-class case
+          // ROC and PR curves for the multi-class case
           else if (this.isMultiClass_(this.modelType, this.multiClass)) {
             const isSliced = this.featureValueThresholds.length > 0;
             const slices = isSliced
@@ -5117,6 +5199,19 @@ limitations under the License.
                   plotThresholds,
                   regenInferenceStats,
                   true
+                );
+                this.plotChart(
+                  this.$$(
+                    '#' +
+                      this.getPrChartLabelId(
+                        labelInd,
+                        isSliced ? sliceInd : ''
+                      )
+                  ),
+                  plotStats,
+                  plotThresholds,
+                  regenInferenceStats,
+                  false
                 );
               }
             }
@@ -6082,6 +6177,10 @@ limitations under the License.
 
         getPrChartId: function(index) {
           return 'prchart' + index;
+        },
+
+        getPrChartLabelId: function(label, index) {
+          return this.getPrChartId(index) + '-' + label;
         },
 
         /**
