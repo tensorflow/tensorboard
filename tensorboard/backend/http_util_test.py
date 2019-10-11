@@ -210,7 +210,7 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC', False)
+  @mock.patch.object(http_util, '_CSP_SCRIPT_HASHES_STRICT_DYNAMIC', False)
   def testCsp_disableStrictDynamic(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(
@@ -223,12 +223,10 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_IMG_DOMAINS_WHITELIST',
-    ['https://example.com'])
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+  @mock.patch.object(http_util, '_CSP_IMG_DOMAINS_WHITELIST', ['https://example.com'])
+  @mock.patch.object(http_util, '_CSP_SCRIPT_DOMAINS_WHITELIST',
     ['https://tensorflow.org/tensorboard'])
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_STYLE_DOMAINS_WHITELIST',
-    ['https://googol.com'])
+  @mock.patch.object(http_util, '_CSP_STYLE_DOMAINS_WHITELIST', ['https://googol.com'])
   def testCsp_globalDomainWhiteList(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
@@ -243,10 +241,10 @@ class RespondTest(tb_test.TestCase):
   def testCsp_badGlobalDomainWhiteList(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     configs = [
-        'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
-        'DO_NOT_USE_CSP_IMG_DOMAINS_WHITELIST',
-        'DO_NOT_USE_CSP_STYLE_DOMAINS_WHITELIST',
-        'DO_NOT_USE_CSP_FONT_DOMAINS_WHITELIST',
+        '_CSP_SCRIPT_DOMAINS_WHITELIST',
+        '_CSP_IMG_DOMAINS_WHITELIST',
+        '_CSP_STYLE_DOMAINS_WHITELIST',
+        '_CSP_FONT_DOMAINS_WHITELIST',
     ]
 
     for config in configs:
