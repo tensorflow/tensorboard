@@ -246,13 +246,6 @@ limitations under the License.
         --paper-slider-active-color: #fa7817;
       }
 
-      .pr-line-chart {
-        margin: 0;
-        height: 200px;
-        width: 280px;
-        display: inline-block;
-      }
-
       paper-dialog.inference-settings {
         padding: 20px;
         width: 40%;
@@ -376,16 +369,6 @@ limitations under the License.
 
       tf-confusion-matrix {
         display: block;
-      }
-
-      .conf-matrix-holder {
-        margin-top: 20px;
-        margin-bottom: 18px;
-        margin-right: 24px;
-      }
-
-      .conf-matrix {
-        margin-bottom: 18px;
       }
 
       .datapoint-controls-holder.datapoint-control-buttons-holder {
@@ -569,57 +552,41 @@ limitations under the License.
         font-weight: 500;
       }
 
-      .curves-holder {
+      .perfs-holder {
         display: flex;
+        justify-content: center;
+        width: 100%;
         flex-wrap: wrap;
-        margin-top: 20px;
+        margin: 4px;
         position: relative;
       }
 
-      .curve-holder {
-        width: 300px;
-        height: 235px;
-        margin-bottom: 20px;
-        margin-right: 20px;
+      .perf-holder {
+        margin: 8px;
         position: relative;
       }
 
-      .roc-x-label {
+      .perf-curve-x-label {
         position: absolute;
-        bottom: 0;
-        left: 120px;
+        bottom: 2px;
+        left: 138px;
         font-size: 12px;
         color: #5f6368;
         padding: 0px;
+        width: 120px;
+        text-align: center;
       }
 
-      .roc-y-label {
+      .perf-curve-y-label {
         position: absolute;
-        left: -4px;
-        bottom: 110px;
+        left: 44px;
+        bottom: 54px;
         transform: rotate(270deg);
+        transform-origin: left bottom;
         font-size: 12px;
         color: #5f6368;
-        padding: 0px;
-      }
-
-      .pr-x-label {
-        position: absolute;
-        bottom: 0;
-        left: 140px;
-        font-size: 12px;
-        color: #5f6368;
-        padding: 0px;
-      }
-
-      .pr-y-label {
-        position: absolute;
-        left: -14px;
-        bottom: 110px;
-        transform: rotate(270deg);
-        font-size: 12px;
-        color: #5f6368;
-        padding: 0px;
+        width: 120px;
+        text-align: center;
       }
 
       .flex {
@@ -695,6 +662,7 @@ limitations under the License.
       .main-bottom-bar {
         height: 52px;
         min-height: 52px;
+        margin-left: 44px;
         flex-grow: 0;
         display: flex;
         /* box-shadow: 0 2px 5px grey;
@@ -932,14 +900,15 @@ limitations under the License.
         cursor: pointer;
       }
 
-      .roc-text {
+      .perf-curve-text {
         color: #3c4043;
         font-size: 16px;
         margin-left: 44px;
+        margin-bottom: -10px;
       }
 
       .conf-text {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         color: #3c4043;
         font-size: 16px;
       }
@@ -1099,6 +1068,7 @@ limitations under the License.
       .perf-table-entry-expanded {
         display: flex;
         flex-wrap: wrap;
+        width: 100%;
         margin: 0 12px;
         border-left: 1px solid var(--wit-color-gray300);
         border-bottom: 1px solid var(--wit-color-gray300);
@@ -2689,25 +2659,9 @@ limitations under the License.
                             is="dom-if"
                             if="[[shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                           >
-                            <div class="conf-matrix-holder">
-                              <div class="conf-text">Confusion matrix</div>
-                              <template
-                                is="dom-repeat"
-                                items="{{featureValueThreshold.threshold}}"
-                              >
-                                <tf-confusion-matrix
-                                  counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
-                                  label="[[getConfusionMatrixLabel(index, numModels)]]"
-                                  background="[[getConfusionMatrixColor(index)]]"
-                                  all-items="[[allConfMatrixLabels]]"
-                                  class="conf-matrix"
-                                >
-                                </tf-confusion-matrix>
-                              </template>
-                            </div>
-                            <div class="curves-holder">
-                              <div class="curve-holder">
-                                <div class="roc-text">
+                            <div class="perfs-holder">
+                              <div class="perf-holder">
+                                <div class="perf-curve-text">
                                   ROC curve
                                   <paper-icon-button
                                     icon="info-outline"
@@ -2729,22 +2683,21 @@ limitations under the License.
                                     </div>
                                   </paper-dialog>
                                 </div>
-                                <div class="roc-x-label">
+                                <div class="perf-curve-x-label">
                                   False positive rate
                                 </div>
-                                <div class="roc-y-label">
+                                <div class="perf-curve-y-label">
                                   True positive rate
                                 </div>
                                 <vz-line-chart2
                                   id="[[getRocChartId(index)]]"
-                                  class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 >
                                 </vz-line-chart2>
                               </div>
-                              <div class="curve-holder">
-                                <div class="roc-text">
+                              <div class="perf-holder">
+                                <div class="perf-curve-text">
                                   PR curve
                                   <paper-icon-button
                                     icon="info-outline"
@@ -2765,15 +2718,29 @@ limitations under the License.
                                     </div>
                                   </paper-dialog>
                                 </div>
-                                <div class="pr-x-label">Recall</div>
-                                <div class="pr-y-label">Precision</div>
+                                <div class="perf-curve-x-label">Recall</div>
+                                <div class="perf-curve-y-label">Precision</div>
                                 <vz-line-chart2
                                   id="[[getPrChartId(index)]]"
-                                  class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 >
                                 </vz-line-chart2>
+                              </div>
+                              <div class="perf-holder">
+                                <div class="conf-text">Confusion matrix</div>
+                                <template
+                                  is="dom-repeat"
+                                  items="{{featureValueThreshold.threshold}}"
+                                >
+                                  <tf-confusion-matrix
+                                    counts="[[getConfusionCountsModelIndex(inferenceStats_, featureValueThreshold.threshold, index, featureValueThreshold)]]"
+                                    label="[[getConfusionMatrixLabel(index, numModels)]]"
+                                    background="[[getConfusionMatrixColor(index)]]"
+                                    all-items="[[allConfMatrixLabels]]"
+                                  >
+                                  </tf-confusion-matrix>
+                                </template>
                               </div>
                             </div>
                           </template>
@@ -2881,25 +2848,9 @@ limitations under the License.
                           is="dom-if"
                           if="[[shouldShowOverallPerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                         >
-                          <div class="conf-matrix-holder">
-                            <div class="conf-text">Confusion matrix</div>
-                            <template
-                              is="dom-repeat"
-                              items="{{overallThresholds}}"
-                            >
-                              <tf-confusion-matrix
-                                counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
-                                label="[[getConfusionMatrixLabel(index, numModels)]]"
-                                background="[[getConfusionMatrixColor(index)]]"
-                                all-items="[[allConfMatrixLabels]]"
-                                class="conf-matrix"
-                              >
-                              </tf-confusion-matrix>
-                            </template>
-                          </div>
-                          <div class="curves-holder">
-                            <div class="curve-holder">
-                              <div class="roc-text">
+                          <div class="perfs-holder">
+                            <div class="perf-holder">
+                              <div class="perf-curve-text">
                                 ROC curve
                                 <paper-icon-button
                                   icon="info-outline"
@@ -2921,18 +2872,21 @@ limitations under the License.
                                   </div>
                                 </paper-dialog>
                               </div>
-                              <div class="roc-x-label">False positive rate</div>
-                              <div class="roc-y-label">True positive rate</div>
+                              <div class="perf-curve-x-label">
+                                False positive rate
+                              </div>
+                              <div class="perf-curve-y-label">
+                                True positive rate
+                              </div>
                               <vz-line-chart2
                                 id="rocchart"
-                                class="pr-line-chart"
                                 x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                               >
                               </vz-line-chart2>
                             </div>
-                            <div class="curve-holder">
-                              <div class="roc-text">
+                            <div class="perf-holder">
+                              <div class="perf-curve-text">
                                 PR curve
                                 <paper-icon-button
                                   icon="info-outline"
@@ -2953,15 +2907,29 @@ limitations under the License.
                                   </div>
                                 </paper-dialog>
                               </div>
-                              <div class="pr-x-label">Recall</div>
-                              <div class="pr-y-label">Precision</div>
+                              <div class="perf-curve-x-label">Recall</div>
+                              <div class="perf-curve-y-label">Precision</div>
                               <vz-line-chart2
                                 id="prchart"
-                                class="pr-line-chart"
                                 x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                               >
                               </vz-line-chart2>
+                            </div>
+                            <div class="perf-holder">
+                              <div class="conf-text">Confusion matrix</div>
+                              <template
+                                is="dom-repeat"
+                                items="{{overallThresholds}}"
+                              >
+                                <tf-confusion-matrix
+                                  counts="[[getConfusionCountsModelIndex(inferenceStats_, overallThresholds, index)]]"
+                                  label="[[getConfusionMatrixLabel(index, numModels)]]"
+                                  background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
+                                >
+                                </tf-confusion-matrix>
+                              </template>
                             </div>
                           </div>
                         </template>
@@ -3120,12 +3088,12 @@ limitations under the License.
                         <div
                           class="perf-table-entry-expanded flex-row-reverse scroll-x"
                         >
-                          <div>
-                            <template
-                              is="dom-if"
-                              if="[[shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
-                            >
-                              <div class="conf-matrix-holder">
+                          <template
+                            is="dom-if"
+                            if="[[shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                          >
+                            <div class="perfs-holder">
+                              <div class="perf-holder">
                                 <div class="conf-text">Confusion matrix</div>
                                 <template
                                   is="dom-repeat"
@@ -3137,112 +3105,115 @@ limitations under the License.
                                     label="[[getConfusionMatrixLabel(index, numModels)]]"
                                     background="[[getConfusionMatrixColor(index)]]"
                                     all-items="[[allConfMatrixLabels]]"
-                                    class="conf-matrix"
                                   >
                                   </tf-confusion-matrix>
                                 </template>
                               </div>
-                              <div class="curves-holder">
-                                <template
-                                  is="dom-repeat"
-                                  items="[[allConfMatrixLabels]]"
-                                  as="label"
-                                  index-as="labelInd"
-                                >
-                                  <div class="curve-holder">
-                                    <div class="roc-text">
-                                      ROC curve for [[getLabel(labelInd)]]
-                                      <paper-icon-button
-                                        icon="info-outline"
-                                        class="info-icon threshold-info-icon no-padding"
-                                        on-tap="openDialog"
-                                      >
-                                      </paper-icon-button>
-                                      <paper-dialog
-                                        class="dialog-text"
-                                        horizontal-align="right"
-                                        vertical-align="bottom"
-                                      >
-                                        <div class="dialog-title">
-                                          ROC curve
-                                        </div>
-                                        <div>
-                                          A receiver operating characteristic
-                                          (ROC) curve plots the true positive
-                                          rate (TPR) against the false positive
-                                          rate (FPR) at various classification
-                                          thresholds.
-                                        </div>
-                                        <div>
-                                          For this multi-class classification
-                                          problem, we plot one ROC curve for
-                                          each class, at each time considering
-                                          the class in question as the positive
-                                          one and all the others as negatives
-                                          (<i>i.e.</i> <i>binarized</i> versions
-                                          of the problem).
-                                        </div>
-                                      </paper-dialog>
-                                    </div>
-                                    <div class="roc-x-label">
-                                      False positive rate
-                                    </div>
-                                    <div class="roc-y-label">
-                                      True positive rate
-                                    </div>
-                                    <vz-line-chart2
-                                      id="[[getRocChartLabelId(labelInd, index)]]"
-                                      class="pr-line-chart"
-                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                            </div>
+                            <template
+                              is="dom-repeat"
+                              items="[[allConfMatrixLabels]]"
+                              as="label"
+                              index-as="labelInd"
+                            >
+                              <div class="perfs-holder">
+                                <div class="perf-holder">
+                                  <div class="perf-curve-text">
+                                    ROC curve for [[getLabel(labelInd)]]
+                                    <paper-icon-button
+                                      icon="info-outline"
+                                      class="info-icon threshold-info-icon no-padding"
+                                      on-tap="openDialog"
                                     >
-                                    </vz-line-chart2>
-                                  </div>
-                                  <div class="curve-holder">
-                                    <div class="roc-text">
-                                      PR curve [[getLabel(labelInd)]]
-                                      <paper-icon-button
-                                        icon="info-outline"
-                                        class="info-icon threshold-info-icon no-padding"
-                                        on-tap="openDialog"
-                                      >
-                                      </paper-icon-button>
-                                      <paper-dialog
-                                        class="dialog-text"
-                                        horizontal-align="right"
-                                        vertical-align="bottom"
-                                      >
-                                        <div class="dialog-title">PR curve</div>
-                                        <div>
-                                          A precision-recall (PR) curve plots
-                                          precision against recall at various
-                                          classification thresholds.
-                                        </div>
-                                        <div>
-                                          For this multi-class classification
-                                          problem, we plot one PR curve for
-                                          each class, at each time considering
-                                          the class in question as the positive
-                                          one and all the others as negatives
-                                          (<i>i.e.</i> <i>binarized</i> versions
-                                          of the problem).
-                                        </div>
-                                      </paper-dialog>
-                                    </div>
-                                    <div class="pr-x-label">Recall</div>
-                                    <div class="pr-y-label">Precision</div>
-                                    <vz-line-chart2
-                                      id="[[getPrChartLabelId(labelInd, index)]]"
-                                      class="pr-line-chart"
-                                      x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
-                                      y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    </paper-icon-button>
+                                    <paper-dialog
+                                      class="dialog-text"
+                                      horizontal-align="right"
+                                      vertical-align="bottom"
                                     >
-                                    </vz-line-chart2>
+                                      <div class="dialog-title">
+                                        ROC curve
+                                      </div>
+                                      <div>
+                                        A receiver operating characteristic
+                                        (ROC) curve plots the true positive rate
+                                        (TPR) against the false positive rate
+                                        (FPR) at various classification
+                                        thresholds.
+                                      </div>
+                                      <div>
+                                        For this multi-class classification
+                                        problem, we plot one ROC curve for each
+                                        class, at each time considering the
+                                        class in question as the positive one
+                                        and all the others as negatives (<i
+                                          >i.e.</i
+                                        >
+                                        <i>binarized</i> versions of the
+                                        problem).
+                                      </div>
+                                    </paper-dialog>
                                   </div>
-                                </template>
+                                  <div class="perf-curve-x-label">
+                                    False positive rate
+                                  </div>
+                                  <div class="perf-curve-y-label">
+                                    True positive rate
+                                  </div>
+                                  <vz-line-chart2
+                                    id="[[getRocChartLabelId(labelInd, index)]]"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                  >
+                                  </vz-line-chart2>
+                                </div>
+                                <div class="perf-holder">
+                                  <div class="perf-curve-text">
+                                    PR curve for [[getLabel(labelInd)]]
+                                    <paper-icon-button
+                                      icon="info-outline"
+                                      class="info-icon threshold-info-icon no-padding"
+                                      on-tap="openDialog"
+                                    >
+                                    </paper-icon-button>
+                                    <paper-dialog
+                                      class="dialog-text"
+                                      horizontal-align="right"
+                                      vertical-align="bottom"
+                                    >
+                                      <div class="dialog-title">PR curve</div>
+                                      <div>
+                                        A precision-recall (PR) curve plots
+                                        precision against recall at various
+                                        classification thresholds.
+                                      </div>
+                                      <div>
+                                        For this multi-class classification
+                                        problem, we plot one PR curve for each
+                                        class, at each time considering the
+                                        class in question as the positive one
+                                        and all the others as negatives (<i
+                                          >i.e.</i
+                                        >
+                                        <i>binarized</i> versions of the
+                                        problem).
+                                      </div>
+                                    </paper-dialog>
+                                  </div>
+                                  <div class="perf-curve-x-label">Recall</div>
+                                  <div class="perf-curve-y-label">
+                                    Precision
+                                  </div>
+                                  <vz-line-chart2
+                                    id="[[getPrChartLabelId(labelInd, index)]]"
+                                    x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                    y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
+                                  >
+                                  </vz-line-chart2>
+                                </div>
                               </div>
                             </template>
-                          </div>
+                          </template>
                         </div>
                       </iron-collapse>
                     </template>
@@ -3298,32 +3269,33 @@ limitations under the License.
                           is="dom-if"
                           if="[[shouldShowOverallPerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                         >
-                          <div class="conf-matrix-holder">
-                            <div class="conf-text">Confusion matrix</div>
-                            <template
-                              is="dom-repeat"
-                              items="[[inferenceStats_]]"
-                              as="inferenceStat"
-                            >
-                              <tf-confusion-matrix
-                                counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
-                                label="[[getConfusionMatrixLabel(index, numModels)]]"
-                                background="[[getConfusionMatrixColor(index)]]"
-                                all-items="[[allConfMatrixLabels]]"
-                                class="conf-matrix"
+                          <div class="perfs-holder">
+                            <div class="perf-holder">
+                              <div class="conf-text">Confusion matrix</div>
+                              <template
+                                is="dom-repeat"
+                                items="[[inferenceStats_]]"
+                                as="inferenceStat"
                               >
-                              </tf-confusion-matrix>
-                            </template>
+                                <tf-confusion-matrix
+                                  counts="[[getMultiClassConfMatrix(inferenceStats_, index)]]"
+                                  label="[[getConfusionMatrixLabel(index, numModels)]]"
+                                  background="[[getConfusionMatrixColor(index)]]"
+                                  all-items="[[allConfMatrixLabels]]"
+                                >
+                                </tf-confusion-matrix>
+                              </template>
+                            </div>
                           </div>
-                          <div class="curves-holder">
-                            <template
-                              is="dom-repeat"
-                              items="[[allConfMatrixLabels]]"
-                              as="label"
-                              index-as="labelInd"
-                            >
-                              <div class="curve-holder">
-                                <div class="roc-text">
+                          <template
+                            is="dom-repeat"
+                            items="[[allConfMatrixLabels]]"
+                            as="label"
+                            index-as="labelInd"
+                          >
+                            <div class="perfs-holder">
+                              <div class="perf-holder">
+                                <div class="perf-curve-text">
                                   ROC curve for [[getLabel(labelInd)]]
                                   <paper-icon-button
                                     icon="info-outline"
@@ -3353,22 +3325,21 @@ limitations under the License.
                                     </div>
                                   </paper-dialog>
                                 </div>
-                                <div class="roc-x-label">
+                                <div class="perf-curve-x-label">
                                   False positive rate
                                 </div>
-                                <div class="roc-y-label">
+                                <div class="perf-curve-y-label">
                                   True positive rate
                                 </div>
                                 <vz-line-chart2
                                   id="[[getRocChartLabelId(label, '')]]"
-                                  class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 >
                                 </vz-line-chart2>
                               </div>
-                              <div class="curve-holder">
-                                <div class="roc-text">
+                              <div class="perf-holder">
+                                <div class="perf-curve-text">
                                   PR curve for [[getLabel(labelInd)]]
                                   <paper-icon-button
                                     icon="info-outline"
@@ -3389,27 +3360,25 @@ limitations under the License.
                                     </div>
                                     <div>
                                       For this multi-class classification
-                                      problem, we plot one PR curve for
-                                      each class, at each time considering
-                                      the class in question as the positive
-                                      one and all the others as negatives
-                                      (<i>i.e.</i> <i>binarized</i> versions
-                                      of the problem).
+                                      problem, we plot one PR curve for each
+                                      class, at each time considering the class
+                                      in question as the positive one and all
+                                      the others as negatives (<i>i.e.</i>
+                                      <i>binarized</i> versions of the problem).
                                     </div>
                                   </paper-dialog>
                                 </div>
-                                <div class="pr-x-label">Recall</div>
-                                <div class="pr-y-label">Precision</div>
+                                <div class="perf-curve-x-label">Recall</div>
+                                <div class="perf-curve-y-label">Precision</div>
                                 <vz-line-chart2
                                   id="[[getPrChartLabelId(label, '')]]"
-                                  class="pr-line-chart"
                                   x-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                   y-axis-formatter="[[getSimpleAxisFormatter(axisPrecision)]]"
                                 >
                                 </vz-line-chart2>
                               </div>
-                            </template>
-                          </div>
+                            </div>
+                          </template>
                         </template>
                       </div>
                     </template>
@@ -5203,10 +5172,7 @@ limitations under the License.
                 this.plotChart(
                   this.$$(
                     '#' +
-                      this.getPrChartLabelId(
-                        labelInd,
-                        isSliced ? sliceInd : ''
-                      )
+                      this.getPrChartLabelId(labelInd, isSliced ? sliceInd : '')
                   ),
                   plotStats,
                   plotThresholds,
@@ -6172,7 +6138,7 @@ limitations under the License.
         },
 
         getLabel: function(index) {
-          return this.labelVocab[index];
+          return this.labelVocab[index] || index;
         },
 
         getPrChartId: function(index) {
