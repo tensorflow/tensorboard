@@ -208,9 +208,8 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC')
-  def testCsp_disableStrictDynamic(self, mock_strict_dynamic):
-    mock_strict_dynamic.return_value = False
+  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC', False)
+  def testCsp_disableStrictDynamic(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(
         q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
@@ -221,9 +220,9 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST')
-  def testCsp_globalDomainWhiteList(self, mock_domain_whitelist):
-    mock_domain_whitelist.return_value = ['https://tensorflow.org']
+  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+    ['https://tensorflow.org'])
+  def testCsp_globalDomainWhiteList(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
     expected_csp = (
@@ -233,36 +232,40 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST')
-  def testCsp_badGlobalDomainWhiteList(self, mock_domain_whitelist):
+  def testCsp_badGlobalDomainWhiteList(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
 
-    mock_domain_whitelist.return_value = ['http://tensorflow.org']
-    with self.assertRaisesRegex(
-        ValueError, '^Expected all whitelist to be a https URL'):
-      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    with mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+        ['http://tensorflow.org']):
+      with self.assertRaisesRegex(
+          ValueError, '^Expected all whitelist to be a https URL'):
+        http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
-    mock_domain_whitelist.return_value = ['https://tensorflow.org/']
-    with self.assertRaisesRegex(
-        ValueError, '^Expected whitelist domain to not have a path:'):
-      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    with mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+        ['https://tensorflow.org/']):
+      with self.assertRaisesRegex(
+          ValueError, '^Expected whitelist domain to not have a path:'):
+        http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
-    mock_domain_whitelist.return_value = ['https://tensorflow.org/foo/bar']
-    with self.assertRaisesRegex(
-        ValueError, '^Expected whitelist domain to not have a path:'):
-      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    with mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+        ['https://tensorflow.org/foo/bar']):
+      with self.assertRaisesRegex(
+          ValueError, '^Expected whitelist domain to not have a path:'):
+        http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
     # Cannot grant more trust to a script from a remote source.
-    mock_domain_whitelist.return_value = ['strict-dynamic https://tensorflow.org/']
-    with self.assertRaisesRegex(
-        ValueError, '^Expected all whitelist to be a https URL'):
-      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    with mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+        ['strict-dynamic https://tensorflow.org/']):
+      with self.assertRaisesRegex(
+          ValueError, '^Expected all whitelist to be a https URL'):
+        http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
     # Attempt to terminate the script-src to specify a new one that allows ALL!
-    mock_domain_whitelist.return_value = ['https://tensorflow.org;script-src *']
-    with self.assertRaisesRegex(
-        ValueError, '^Expected whitelist domain to not contain ";"'):
-      http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    with mock.patch.object(http_util, 'DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST',
+        ['https://tensorflow.org;script-src *']):
+      with self.assertRaisesRegex(
+          ValueError, '^Expected whitelist domain to not contain ";"'):
+        http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
 
 def _gzip(bs):
