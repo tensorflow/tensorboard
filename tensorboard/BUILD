@@ -147,6 +147,7 @@ py_library(
     deps = [
         ":manager",
         ":version",
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
