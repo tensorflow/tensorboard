@@ -3151,7 +3151,7 @@ limitations under the License.
                                 >
                                   <div class="curve-holder">
                                     <div class="roc-text">
-                                      ROC curve for [[getLabelVocab(labelInd)]]
+                                      ROC curve for [[getLabel(labelInd)]]
                                       <paper-icon-button
                                         icon="info-outline"
                                         class="info-icon threshold-info-icon no-padding"
@@ -3283,7 +3283,7 @@ limitations under the License.
                             >
                               <div class="curve-holder">
                                 <div class="roc-text">
-                                  ROC curve for [[getLabelVocab(labelInd)]]
+                                  ROC curve for [[getLabel(labelInd)]]
                                   <paper-icon-button
                                     icon="info-outline"
                                     class="info-icon threshold-info-icon no-padding"
@@ -6076,7 +6076,7 @@ limitations under the License.
           return this.getRocChartId(index) + '-' + label;
         },
 
-        getLabelVocab: function(index) {
+        getLabel: function(index) {
           return this.labelVocab[index];
         },
 
