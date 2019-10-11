@@ -68,13 +68,52 @@ export class GrayscaleColorMap extends ColorMap {
         return [MAX_RGB, MAX_RGB / 2, 0];
       }
     }
-    let relativeValue =
+    let relValue =
       this.min === this.max ? 0.5 : (value - this.min) / (this.max - this.min);
-    relativeValue = Math.max(Math.min(relativeValue, 1), 0);
+    relValue = Math.max(Math.min(relValue, 1), 0);
     return [
-      MAX_RGB * relativeValue,
-      MAX_RGB * relativeValue,
-      MAX_RGB * relativeValue,
+      MAX_RGB * relValue,
+      MAX_RGB * relValue,
+      MAX_RGB * relValue,
     ];
+  }
+}
+
+export class JetColorMap extends ColorMap {
+  getRGB(value: number): [number, number, number] {
+    if (isNaN(value)) {
+      // NaN.
+      return [MAX_RGB * 0.75, MAX_RGB * 0.75, MAX_RGB * 0.75];
+    } else if (!isFinite(value)) {
+      if (value > 0) {
+        // +Infinity.
+        return [MAX_RGB * 0.5, MAX_RGB * 0.5, MAX_RGB * 0.5];
+      } else {
+        // -Infinity.
+        return [MAX_RGB * 0.25, MAX_RGB * 0.25, MAX_RGB * 0.25];
+      }
+    }
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    const lim0 = 0.35;
+    const lim1 = 0.65;
+
+    const relValue =
+      this.min === this.max ? 0.5 : (value - this.min) / (this.max - this.min);
+    if (relValue <= lim0) {
+      // TODO(cais):
+      g = relValue / lim0 * MAX_RGB;
+      b = MAX_RGB;
+    } else if (relValue > lim0 && relValue <= lim1) {
+      r = (relValue - lim0) / (lim1 - lim0) * MAX_RGB;
+      g = MAX_RGB;
+      b = (lim1 - relValue) / (lim1 - lim0) * MAX_RGB;
+    } else if (relValue > lim1) {
+      r = MAX_RGB;
+      g = (1 - relValue) / (1 - lim1) * MAX_RGB
+    }
+    return [r, g, b];
   }
 }

@@ -77,3 +77,5 @@ describe('GrayscaleColorMap', () => {
     expect(colormap.getRGB(Infinity)).to.eql([0, 0, 255]);
   });
 });
+
+// TODO(cais): Add unit tests for JetColormap.

@@ -49,7 +49,7 @@ import {
   BaseTensorNumericSummary,
   BooleanOrNumericTensorNumericSummary,
 } from './health-pill-types';
-import {ColorMap, GrayscaleColorMap} from './colormap';
+import {ColorMap, GrayscaleColorMap, JetColorMap} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
@@ -115,6 +115,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
   // Size of each cell used to display the tensor value under the 'image' mode.
   protected imageCellSize = 16;
+  protected readonly minImageCellSize = 4;
+  protected readonly maxImageCellSize = 40;
+  protected readonly zoomStepRatio = 1.2;
 
   protected numericSummary: BaseTensorNumericSummary | null = null;
 
@@ -291,20 +294,18 @@ export class TensorWidgetImpl implements TensorWidget {
           }
         },
       } as ChoiceMenuItemConfig);
-      const zoomStepRatio = 1.2;
+
       this.menuConfig.items.push({
         caption: 'Zoom in (Image mode only)',
-        callback: (event) => {
-          this.imageCellSize *= zoomStepRatio;
-          this.renderValues();
+        callback: () => {
+          this.zoomInOneStepAndRenderValues();
         },
         isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
       this.menuConfig.items.push({
         caption: 'Zoom out (Image mode only)',
-        callback: (event) => {
-          this.imageCellSize /= zoomStepRatio;
-          this.renderValues();
+        callback: () => {
+          this.zoomOutOneStepAndRenderValues();
         },
         isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
@@ -313,6 +314,20 @@ export class TensorWidgetImpl implements TensorWidget {
       this.menu = new Menu(this.menuConfig, this
         .headerSection as HTMLDivElement);
       this.renderMenuThumb();
+    }
+  }
+
+  private zoomInOneStepAndRenderValues() {
+    if (this.imageCellSize * this.zoomStepRatio <= this.maxImageCellSize) {
+      this.imageCellSize *= this.zoomStepRatio;
+      this.renderValues();
+    }
+  }
+
+  private zoomOutOneStepAndRenderValues() {
+    if (this.imageCellSize / this.zoomStepRatio >= this.minImageCellSize) {
+      this.imageCellSize /= this.zoomStepRatio;
+      this.renderValues();
     }
   }
 
@@ -360,6 +375,18 @@ export class TensorWidgetImpl implements TensorWidget {
       this.rootElement.appendChild(this.valueSection);
 
       this.valueSection.addEventListener('wheel', async (event) => {
+        if (event.ctrlKey && this.valueRenderMode === ValueRenderMode.IMAGE) {
+          event.stopPropagation();
+          event.preventDefault();
+          if (event.deltaY > 0) {
+            this.zoomOutOneStepAndRenderValues();
+          } else {
+            this.zoomInOneStepAndRenderValues();
+          }
+          console.log(`ctrl + wheel: ${event.deltaY}`);  // DEBUG
+          return;
+        }
+
         if (this.selection == null) {
           return;
         }
@@ -788,7 +815,8 @@ export class TensorWidgetImpl implements TensorWidget {
             'missing minimum or maximum values in numeric summary'
         );
       }
-      colorMap = new GrayscaleColorMap(minimum as number, maximum as number);
+      // colorMap = new GrayscaleColorMap(minimum as number, maximum as number);
+      colorMap = new JetColorMap(minimum as number, maximum as number);
     }
 
     for (let i = 0; i < numRows; ++i) {
