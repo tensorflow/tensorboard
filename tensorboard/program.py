@@ -44,6 +44,8 @@ import sys
 import threading
 import time
 
+from absl import flags as absl_flags
+from absl.flags import argparse_flags
 import absl.logging
 import six
 from six.moves import urllib
@@ -58,13 +60,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import tb_logging
 
-try:
-  from absl import flags as absl_flags
-  from absl.flags import argparse_flags
-except ImportError:
-  # Fall back to argparse with no absl flags integration.
-  absl_flags = None
-  argparse_flags = argparse
 
 logger = tb_logging.get_logger()
 
@@ -173,7 +168,7 @@ class TensorBoard(object):
         arguments=argv[1:],
         configure_kwargs=kwargs,
     )
-    if absl_flags and arg0:
+    if arg0:
       # Only expose main module Abseil flags as TensorBoard native flags.
       # This is the same logic Abseil's ArgumentParser uses for determining
       # which Abseil flags to include in the short helpstring.
