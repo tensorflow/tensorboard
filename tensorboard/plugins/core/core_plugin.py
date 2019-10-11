@@ -113,7 +113,8 @@ class CorePlugin(base_plugin.TBPlugin):
             # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
             # the assets zip file.
             if checksum_path in zip_.namelist():
-              shasums = zip_.read(checksum_path).splitlines(False)
+              lines = zip_.read(checksum_path).splitlines(False);
+              shasums = [hash.decode('utf8') for hash in lines]
             else:
               shasums = None
 
