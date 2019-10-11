@@ -2319,7 +2319,7 @@ limitations under the License.
                           <paper-radio-button
                             name="demoparity"
                             class="optimization-radio"
-                            disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                            disabled$="[[!shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                             >Demographic parity
                             <paper-icon-button
                               icon="info-outline"
@@ -2348,7 +2348,7 @@ limitations under the License.
                           <paper-radio-button
                             name="equalopp"
                             class="optimization-radio"
-                            disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                            disabled$="[[!shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                             >Equal opportunity
                             <paper-icon-button
                               icon="info-outline"
@@ -2378,7 +2378,7 @@ limitations under the License.
                           <paper-radio-button
                             name="equalacc"
                             class="optimization-radio"
-                            disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                            disabled$="[[!shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                             >Equal accuracy
                             <paper-icon-button
                               icon="info-outline"
@@ -2406,7 +2406,7 @@ limitations under the License.
                           <paper-radio-button
                             name="group"
                             class="optimization-radio"
-                            disabled$="[[!shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                            disabled$="[[!shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                             >Group thresholds
                             <paper-icon-button
                               icon="info-outline"
@@ -2687,7 +2687,7 @@ limitations under the License.
                         <div class="perf-table-entry-expanded flex-row-reverse">
                           <template
                             is="dom-if"
-                            if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                            if="[[shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                           >
                             <div class="conf-matrix-holder">
                               <div class="conf-text">Confusion matrix</div>
@@ -2879,7 +2879,7 @@ limitations under the License.
                       <div class="perf-table-entry-expanded flex-row-reverse">
                         <template
                           is="dom-if"
-                          if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                          if="[[shouldShowOverallPerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                         >
                           <div class="conf-matrix-holder">
                             <div class="conf-text">Confusion matrix</div>
@@ -3123,7 +3123,7 @@ limitations under the License.
                           <div>
                             <template
                               is="dom-if"
-                              if="[[shouldShowFeaturePrCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                              if="[[shouldShowFeaturePerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                             >
                               <div class="conf-matrix-holder">
                                 <div class="conf-text">Confusion matrix</div>
@@ -3296,7 +3296,7 @@ limitations under the License.
                       >
                         <template
                           is="dom-if"
-                          if="[[shouldShowOverallPrChart_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
+                          if="[[shouldShowOverallPerfCharts_(selectedLabelFeature, selectedBreakdownFeature, inferences)]]"
                         >
                           <div class="conf-matrix-holder">
                             <div class="conf-text">Confusion matrix</div>
@@ -4591,7 +4591,7 @@ limitations under the License.
           return !(modelNames && modelNames.length > 1);
         },
 
-        shouldShowOverallPrChart_: function(
+        shouldShowOverallPerfCharts_: function(
           selectedLabelFeature,
           selectedBreakdownFeature,
           inferences
@@ -4603,7 +4603,7 @@ limitations under the License.
           );
         },
 
-        shouldShowFeaturePrCharts_: function(
+        shouldShowFeaturePerfCharts_: function(
           selectedLabelFeature,
           selectedBreakdownFeature,
           inferences
@@ -4988,7 +4988,7 @@ limitations under the License.
                   }
                 }
                 this.allConfMatrixLabels = Array.from(allLabels.values());
-                // ROC curves
+                // Compute confusion data for perf curves
                 const thresholds = {};
                 for (let i = 0; i < this.examplesAndInferences.length; i++) {
                   const item = this.examplesAndInferences[i];
