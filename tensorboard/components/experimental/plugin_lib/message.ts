@@ -13,6 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
+ * PLEASE KEEP THIS FILE IN SYNC WITH plugin_util/message.ts.
+ * The differences are:
+ * plugin_lib/message.ts
+ * - uses module style
+ * - uses tf_ts_library whose srcs require to end with .ts
+ * plugin_util/message.ts
+ * - uses namespace and tf_web_library
+ * - gets combined as JS before sync and requires to be end with ".js" internally.
+ * Because of above requirements, we bypass by copying the source.
+ */
+/**
  * This file defines utilities shared by TensorBoard (plugin host) and the
  * dynamic plugin library, used by plugin authors.
  */
