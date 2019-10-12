@@ -34,11 +34,17 @@ import werkzeug
 from tensorboard.backend import json_util
 from tensorboard.compat import tf
 
+_DISALLOWED_CHAR_IN_DOMAIN = re.compile(r'\s')
+
 # TODO(stephanwlee): Refactor this to not use the module variable but
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
-DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST = []
-DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
+_CSP_FONT_DOMAINS_WHITELIST = []
+_CSP_IMG_DOMAINS_WHITELIST = []
+_CSP_SCRIPT_DOMAINS_WHITELIST = []
+_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
+_CSP_SCRIPT_SELF = False
+_CSP_STYLE_DOMAINS_WHITELIST = []
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
 _EXTRACT_CHARSET_PATTERN = re.compile(r'charset=([-_0-9A-Za-z]+)')
@@ -171,41 +177,48 @@ def Respond(request,
     headers.append(('Expires', '0'))
     headers.append(('Cache-Control', 'no-cache, must-revalidate'))
   if mimetype == _HTML_MIMETYPE:
-    if csp_scripts_sha256s:
-      whitelist_hashes = ' '.join(
-          ["'sha256-{}'".format(sha256) for sha256 in csp_scripts_sha256s])
+    _validate_global_whitelist(_CSP_IMG_DOMAINS_WHITELIST)
+    _validate_global_whitelist(_CSP_STYLE_DOMAINS_WHITELIST)
+    _validate_global_whitelist(_CSP_FONT_DOMAINS_WHITELIST)
+    _validate_global_whitelist(_CSP_SCRIPT_DOMAINS_WHITELIST)
 
-      whitelist_domains = []
-      for domain in DO_NOT_USE_CSP_SCRIPT_DOMAINS_WHITELIST:
-        url = urlparse.urlparse(domain)
-        if not url.scheme == 'https' or not url.netloc:
-          raise ValueError('Expected all whitelist to be a https URL: %s' % domain)
-        if url.path:
-          raise ValueError('Expected whitelist domain to not have a path: %s' % domain)
-        if ';' in domain:
-          raise ValueError('Expected whitelist domain to not contain ";": %s' % domain)
-        whitelist_domains.append('%s://%s' % (url.scheme, url.netloc))
-
-      # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
-      # resources can be hashed upfront.
-      script_srcs_fragments = [
-        ' '.join(whitelist_domains),
-        'strict-dynamic' if DO_NOT_USE_CSP_SCRIPT_HASHES_STRICT_DYNAMIC else '',
-        whitelist_hashes
-      ]
-      script_srcs = ' '.join([frag for frag in script_srcs_fragments if frag])
-    else:
-      script_srcs = "'none'"
+    # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
+    # resources can be hashed upfront.
+    enable_strict_dynamic = (
+        _CSP_SCRIPT_HASHES_STRICT_DYNAMIC
+        and csp_scripts_sha256s
+    )
+    frags = _CSP_SCRIPT_DOMAINS_WHITELIST + [
+        "'self'" if _CSP_SCRIPT_SELF else '',
+        'strict-dynamic' if enable_strict_dynamic else '',
+    ] + [
+        "'sha256-{}'".format(sha256) for sha256 in (csp_scripts_sha256s or [])
+    ]
+    script_srcs = _create_csp_string(*frags)
 
     csp_string = ';'.join([
-        "default-src 'self'",
+        "default-src 'none'",
         "base-uri 'self'",
-        "object-src 'none'",
+        "connect-src 'self'",
+        'font-src %s' % _create_csp_string(
+            "'self'",
+            *_CSP_FONT_DOMAINS_WHITELIST
+        ),
         # data uri used by favicon
-        "img-src 'self' data:",
-        # gstatic: used by google-chart
-        # inline styles: Polymer templates + d3 uses inline styles.
-        "style-src https://www.gstatic.com data: 'unsafe-inline'",
+        'img-src %s' % _create_csp_string(
+            "'self'",
+            'data:',
+            *_CSP_IMG_DOMAINS_WHITELIST
+        ),
+        "object-src 'none'",
+        'style-src %s' % _create_csp_string(
+            # used by google-chart
+            'https://www.gstatic.com',
+            'data:',
+            # inline styles: Polymer templates + d3 uses inline styles.
+            "'unsafe-inline'",
+            *_CSP_STYLE_DOMAINS_WHITELIST
+        ),
         "script-src %s" % script_srcs,
     ])
 
@@ -217,3 +230,18 @@ def Respond(request,
   return werkzeug.wrappers.Response(
       response=content, status=code, headers=headers, content_type=content_type,
       direct_passthrough=direct_passthrough)
+
+def _validate_global_whitelist(whitelists):
+  for domain in whitelists:
+    url = urlparse.urlparse(domain)
+    if not url.scheme == 'https' or not url.netloc:
+      raise ValueError('Expected all whitelist to be a https URL: %r' % domain)
+    if ';' in domain:
+      raise ValueError('Expected whitelist domain to not contain ";": %r' % domain)
+    if _DISALLOWED_CHAR_IN_DOMAIN.search(domain):
+      raise ValueError(
+          'Expected whitelist domain to not contain a whitespace: %r' % domain)
+
+def _create_csp_string(*csp_fragments):
+  csp_string = ' '.join([frag for frag in csp_fragments if frag])
+  return csp_string if csp_string else "'none'"
