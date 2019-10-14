@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +17,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+
 from tensorboard import test as tb_test
 from tensorboard.util import platform_util
 
 
 class PlatformUtilTest(tb_test.TestCase):
 
+  def _write_temp_file(self, body):
+    filename = os.path.join(self.get_temp_dir(), 'foo.txt')
+    with open(filename, 'w') as temp_file:
+      temp_file.write(body)
+    return filename
+
   def test_readahead_file_path(self):
     self.assertEqual('foo/bar', platform_util.readahead_file_path('foo/bar'))
+
+  def test_get_resource_as_file(self):
+    filename = self._write_temp_file('haha😊')
+    with platform_util.get_resource_as_file(filename, 'r') as file:
+      self.assertEqual('haha😊', file.read())
 
 
 if __name__ == '__main__':

@@ -37,6 +37,7 @@ from tensorboard.compat import tf
 from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
+from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -485,7 +486,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
   def _serve_file(self, file_path, request):
     """Returns a resource file."""
     res_path = os.path.join(os.path.dirname(__file__), file_path)
-    with open(res_path, 'rb') as read_file:
+    with platform_util.get_resource_as_file(res_path, 'rb') as read_file:
       mimetype = mimetypes.guess_type(file_path)[0]
       return Respond(request, read_file.read(), content_type=mimetype)
 

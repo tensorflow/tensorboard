@@ -58,6 +58,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
 
 
@@ -93,7 +94,7 @@ def get_default_assets_zip_provider():
   if not os.path.exists(path):
     logger.warning('webfiles.zip static assets not found: %s', path)
     return None
-  return lambda: open(path, 'rb')
+  return lambda: platform_util.get_resource_as_file(path, 'rb')
 
 class TensorBoard(object):
   """Class for running TensorBoard.

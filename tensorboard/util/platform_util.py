@@ -23,3 +23,22 @@ from __future__ import print_function
 def readahead_file_path(path, unused_readahead=None):
   """Readahead files not implemented; simply returns given path."""
   return path
+
+
+def get_resource_as_file(name, mode='rb'):
+  """Get the open file object to the named resource.
+
+  Args:
+    name: The name of the resource.
+    mode: The file mode. read_resource only supports 'r', 'rt' and 'rb'.
+  Returns:
+    The open file object to the named resource.
+  Raises:
+    IOError: if the name is not found, or the resource cannot be opened.
+    ValueError: If the mode is not supported.
+  """
+
+  if mode not in ('r', 'rb', 'rt'):
+    raise ValueError('Invalid mode: %r' % mode)
+
+  return open(name, mode)
