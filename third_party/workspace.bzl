@@ -15,7 +15,7 @@
 # TensorBoard external dependencies that can be loaded in WORKSPACE files.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@io_bazel_rules_closure//closure/private:java_import_external.bzl", "java_import_external")
+load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")
