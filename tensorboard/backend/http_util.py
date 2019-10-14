@@ -44,6 +44,8 @@ _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
 _CSP_SCRIPT_SELF = False
+# numericjs (via projector) uses unsafe-eval :(.
+_CSP_SCRIPT_UNSAFE_EVAL = True
 _CSP_STYLE_DOMAINS_WHITELIST = []
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
@@ -188,9 +190,14 @@ def Respond(request,
         _CSP_SCRIPT_HASHES_STRICT_DYNAMIC
         and csp_scripts_sha256s
     )
+    enable_unsafe_eval = (
+      (_CSP_SCRIPT_DOMAINS_WHITELIST or csp_scripts_sha256s)
+      and _CSP_SCRIPT_UNSAFE_EVAL
+    )
     frags = _CSP_SCRIPT_DOMAINS_WHITELIST + [
         "'self'" if _CSP_SCRIPT_SELF else '',
-        'strict-dynamic' if enable_strict_dynamic else '',
+        "'strict-dynamic'" if enable_strict_dynamic else '',
+        "'unsafe-eval'" if enable_unsafe_eval else '',
     ] + [
         "'sha256-{}'".format(sha256) for sha256 in (csp_scripts_sha256s or [])
     ]
@@ -204,6 +211,8 @@ def Respond(request,
             "'self'",
             *_CSP_FONT_DOMAINS_WHITELIST
         ),
+        # Dynamic plugins are rendered inside an iframe.
+        "frame-src 'self'",
         # data uri used by favicon
         'img-src %s' % _create_csp_string(
             "'self'",

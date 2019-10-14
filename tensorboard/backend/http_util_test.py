@@ -192,10 +192,10 @@ class RespondTest(tb_test.TestCase):
     r = http_util.Respond(
         q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
     expected_csp = (
-        "default-src 'none';base-uri 'self';connect-src 'self';"
-        "font-src 'self';img-src 'self' data:;object-src 'none';"
+        "default-src 'none';base-uri 'self';connect-src 'self';font-src 'self';"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src strict-dynamic 'sha256-abcdefghi'"
+        "script-src 'strict-dynamic' 'unsafe-eval' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -203,8 +203,8 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
     expected_csp = (
-        "default-src 'none';base-uri 'self';connect-src 'self';"
-        "font-src 'self';img-src 'self' data:;object-src 'none';"
+        "default-src 'none';base-uri 'self';connect-src 'self';font-src 'self';"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'none'"
     )
@@ -216,10 +216,23 @@ class RespondTest(tb_test.TestCase):
     r = http_util.Respond(
         q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
     expected_csp = (
-        "default-src 'none';base-uri 'self';connect-src 'self';"
-        "font-src 'self';img-src 'self' data:;object-src 'none';"
+        "default-src 'none';base-uri 'self';connect-src 'self';font-src 'self';"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'sha256-abcdefghi'"
+        "script-src 'unsafe-eval' 'sha256-abcdefghi'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
+  def testCsp_disableUnsafeEval(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(
+        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    expected_csp = (
+        "default-src 'none';base-uri 'self';connect-src 'self';font-src 'self';"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'strict-dynamic' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -231,10 +244,11 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
     expected_csp = (
-        "default-src 'none';base-uri 'self';connect-src 'self';"
-        "font-src 'self';img-src 'self' data: https://example.com;object-src 'none';"
+        "default-src 'none';base-uri 'self';connect-src 'self';font-src 'self';"
+        "frame-src 'self';img-src 'self' data: https://example.com;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline' https://googol.com;"
-        "script-src https://tensorflow.org/tensorboard strict-dynamic 'sha256-abcd'"
+        "script-src https://tensorflow.org/tensorboard 'strict-dynamic' 'unsafe-eval' "
+        "'sha256-abcd'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -255,7 +269,7 @@ class RespondTest(tb_test.TestCase):
 
       # Cannot grant more trust to a script from a remote source.
       with mock.patch.object(http_util, config,
-          ['strict-dynamic https://tensorflow.org/']):
+          ["'strict-dynamic' 'unsafe-eval' https://tensorflow.org/"]):
         with self.assertRaisesRegex(
             ValueError, '^Expected all whitelist to be a https URL'):
           http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
