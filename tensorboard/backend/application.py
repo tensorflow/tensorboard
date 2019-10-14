@@ -41,6 +41,7 @@ from werkzeug import wrappers
 from tensorboard import errors
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
+from tensorboard.backend import frame_ancestors
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend.event_processing import db_import_multiplexer
@@ -225,18 +226,20 @@ def TensorBoardWSGIApp(
       continue
     tbplugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGI(tbplugins, flags.path_prefix)
+  return TensorBoardWSGI(tbplugins, flags.path_prefix, flags.frame_ancestors)
 
 
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins, path_prefix=''):
+  def __init__(self, plugins, path_prefix='', frame_ancestors='unsafe'):
     """Constructs TensorBoardWSGI instance.
 
     Args:
       plugins: A list of base_plugin.TBPlugin subclass instances.
       flags: An argparse.Namespace containing TensorBoard CLI flags.
+      frame_ancestors: A setting to configure frame-ancestors Content-Security-Policy.
+          Please refer to frame_ancestors flag in core_plugin.
 
     Returns:
       A WSGI application for the set of all TBPlugin instances.
@@ -257,6 +260,7 @@ class TensorBoardWSGI(object):
       # Should have been fixed by `fix_flags`.
       raise ValueError('Trailing slash in path prefix: %r' % self._path_prefix)
 
+    self._frame_ancestors = frame_ancestors
     self.exact_routes = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
         # obviate the need for the frontend to determine which plugins are
@@ -332,6 +336,7 @@ class TensorBoardWSGI(object):
     """Apply middleware to create the final WSGI app."""
     app = self._route_request
     app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
+    app = frame_ancestors.FrameAncestorsMiddleware(app, self._frame_ancestors)
     app = experiment_id.ExperimentIdMiddleware(app)
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
     app = _handling_errors(app)

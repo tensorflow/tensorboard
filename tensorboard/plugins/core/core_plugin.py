@@ -583,6 +583,25 @@ keeps 500 scalars and all images. Most users should not need to set this
 flag.\
 ''')
 
+    # TODO(stephanwlee): change the default to none at TB 3.0.
+    parser.add_argument(
+        '--frame_ancestors',
+        metavar='TYPE',
+        type=str,
+        choices=['none', 'colab', 'notebook', 'unsafe'],
+        default='unsafe',
+        help='''\
+[experimental] Controls whether TensorBoard can be rendered inside an iframe.
+frame-ancestors is an item in Content-Security-Policy that tells browser whether
+a document can be rendered inside an iframe under a host. (default:
+%(default)s). Possible configurations are:
+'none': disallows any site from rendering TensorBoard inside an iframe.
+'colab': only can be rendered inside Colab notebook.
+'notebook': preset for Jupyter like notebooks.
+'unsafe': allow any site from embedding TensorBoard.\
+''')
+
+
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     FlagsError = base_plugin.FlagsError

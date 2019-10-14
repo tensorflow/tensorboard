@@ -151,6 +151,7 @@ def start(args_string):
     else:
       handle.update(IPython.display.Pretty(message))
 
+  args_string='%s %s' % (_get_context_default_args(), args_string)
   parsed_args = shlex.split(args_string, comments=True, posix=True)
   start_result = manager.start(parsed_args)
 
@@ -314,6 +315,15 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
       _CONTEXT_NONE: _display_cli,
   }[_get_context()]
   return fn(port=port, height=height, display_handle=display_handle)
+
+
+def _get_context_default_args():
+  context = _get_context()
+  if context == _CONTEXT_COLAB:
+    return '--frame_ancestors=colab'
+  if context == _CONTEXT_IPYTHON:
+    return '--frame_ancestors=notebook'
+  return ''
 
 
 def _display_colab(port, height, display_handle):

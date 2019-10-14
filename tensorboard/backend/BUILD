@@ -64,6 +64,7 @@ py_library(
     deps = [
         ":empty_path_redirect",
         ":experiment_id",
+        ":frame_ancestors",
         ":http_util",
         ":path_prefix",
         "//tensorboard:errors",
@@ -132,6 +133,28 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":experiment_id",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "frame_ancestors",
+    srcs = ["frame_ancestors.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_test(
+    name = "frame_ancestors_test",
+    size = "small",
+    srcs = ["frame_ancestors_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":frame_ancestors",
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
