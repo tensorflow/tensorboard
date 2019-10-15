@@ -8,12 +8,13 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "header",
     srcs = [
+        "components/header.component.ts",
         "containers/header.component.ts",
         "header.module.ts",
     ],
     assets = [
-        "containers/header.component.css",
-        "containers/header.component.html",
+        "components/header.component.css",
+        "components/header.component.html",
     ],
     deps = [
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_select",
@@ -32,7 +33,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "containers/header.component.test.ts",
+        "header.test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
@@ -44,6 +45,7 @@ tf_ts_library(
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/core/testing",
+        "//tensorboard/components/tf_ng_tensorboard/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

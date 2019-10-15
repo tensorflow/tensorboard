@@ -67,109 +67,155 @@ describe('plugins.component', () => {
     store = TestBed.get(Store);
   });
 
-  function setActivePlugin(plugin: PluginId) {
-    store.setState(
-      createState(
-        createCoreState({
-          ...INITIAL_CORE_STATE,
-          activePlugin: plugin,
-        })
-      )
-    );
-  }
+  describe('plugin DOM creation', () => {
+    function setActivePlugin(plugin: PluginId) {
+      store.setState(
+        createState(
+          createCoreState({
+            ...INITIAL_CORE_STATE,
+            activePlugin: plugin,
+          })
+        )
+      );
+    }
 
-  it('creates no plugin when there is no activePlugin', () => {
-    const fixture = TestBed.createComponent(PluginsComponent);
-    const el = fixture.debugElement.query(By.css('.plugins'));
-    expect(el.nativeElement.childElementCount).toBe(0);
+    it('creates no plugin when there is no activePlugin', () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
+      const el = fixture.debugElement.query(By.css('.plugins'));
+      expect(el.nativeElement.childElementCount).toBe(0);
+    });
+
+    it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
+      fixture.detectChanges();
+
+      setActivePlugin('bar');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(1);
+      const pluginElement = nativeElement.children[0];
+      expect(pluginElement.tagName).toBe('TB-BAR');
+      expect(pluginElement.id).toBe('bar');
+    });
+
+    it('creates an element for IFRAME type of plugin', async () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(1);
+      const pluginElement = nativeElement.children[0];
+      expect(pluginElement.tagName).toBe('IFRAME');
+      expect(pluginElement.id).toBe('foo');
+      expect(pluginElement.contentDocument.body.innerHTML).toContain(
+        'random_esmodule.js'
+      );
+    });
+
+    it('keeps instance of plugin after being inactive but hides it', async () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        fixture.debugElement.query(By.css('.plugins')).nativeElement
+          .childElementCount
+      ).toBe(1);
+
+      setActivePlugin('bar');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(2);
+      const [fooElement, barElement] = nativeElement.children;
+      expect(fooElement.id).toBe('foo');
+      expect(fooElement.style.display).toBe('none');
+      expect(barElement.id).toBe('bar');
+      expect(barElement.style.display).not.toBe('none');
+    });
+
+    it('does not create same instance of plugin', async () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      setActivePlugin('bar');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      setActivePlugin('foo');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(2);
+      const [fooElement, barElement] = nativeElement.children;
+      expect(fooElement.id).toBe('foo');
+      expect(fooElement.style.display).not.toBe('none');
+    });
   });
 
-  it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
-    const fixture = TestBed.createComponent(PluginsComponent);
-    fixture.detectChanges();
+  describe('updates', () => {
+    function setLastLoadedTime(
+      timeInMs: number | null,
+      state = LoadState.LOADED
+    ) {
+      store.setState(
+        createState(
+          createCoreState({
+            ...INITIAL_CORE_STATE,
+            activePlugin: 'bar',
+            pluginsListLoaded: {
+              state,
+              lastLoadedTimeInMs: timeInMs,
+            },
+          })
+        )
+      );
+    }
 
-    setActivePlugin('bar');
+    it('invokes reload method on the dashboard DOM', () => {
+      const fixture = TestBed.createComponent(PluginsComponent);
 
-    fixture.detectChanges();
-    await fixture.whenStable();
+      setLastLoadedTime(null, LoadState.NOT_LOADED);
+      fixture.detectChanges();
 
-    const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-    expect(nativeElement.childElementCount).toBe(1);
-    const pluginElement = nativeElement.children[0];
-    expect(pluginElement.tagName).toBe('TB-BAR');
-    expect(pluginElement.id).toBe('bar');
-  });
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      const [barElement] = nativeElement.children;
+      const reloadSpy = jasmine.createSpy();
+      barElement.reload = reloadSpy;
 
-  it('creates an element for IFRAME type of plugin', async () => {
-    const fixture = TestBed.createComponent(PluginsComponent);
-    fixture.detectChanges();
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(reloadSpy).toHaveBeenCalledTimes(1);
 
-    setActivePlugin('foo');
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(reloadSpy).toHaveBeenCalledTimes(1);
 
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-    expect(nativeElement.childElementCount).toBe(1);
-    const pluginElement = nativeElement.children[0];
-    expect(pluginElement.tagName).toBe('IFRAME');
-    expect(pluginElement.id).toBe('foo');
-    expect(pluginElement.contentDocument.body.innerHTML).toContain(
-      'random_esmodule.js'
-    );
-  });
-
-  it('keeps instance of plugin after being inactive but hides it', async () => {
-    const fixture = TestBed.createComponent(PluginsComponent);
-    fixture.detectChanges();
-
-    setActivePlugin('foo');
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(
-      fixture.debugElement.query(By.css('.plugins')).nativeElement
-        .childElementCount
-    ).toBe(1);
-
-    setActivePlugin('bar');
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-    expect(nativeElement.childElementCount).toBe(2);
-    const [fooElement, barElement] = nativeElement.children;
-    expect(fooElement.id).toBe('foo');
-    expect(fooElement.style.display).toBe('none');
-    expect(barElement.id).toBe('bar');
-    expect(barElement.style.display).not.toBe('none');
-  });
-
-  it('does not create same instance of plugin', async () => {
-    const fixture = TestBed.createComponent(PluginsComponent);
-    fixture.detectChanges();
-
-    setActivePlugin('foo');
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    setActivePlugin('bar');
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    setActivePlugin('foo');
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-    expect(nativeElement.childElementCount).toBe(2);
-    const [fooElement, barElement] = nativeElement.children;
-    expect(fooElement.id).toBe('foo');
-    expect(fooElement.style.display).not.toBe('none');
+      setLastLoadedTime(2);
+      fixture.detectChanges();
+      expect(reloadSpy).toHaveBeenCalledTimes(2);
+    });
   });
 });
