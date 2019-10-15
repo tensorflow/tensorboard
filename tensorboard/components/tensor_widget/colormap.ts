@@ -62,6 +62,56 @@ export abstract class ColorMap {
    *   The range of RGB values is [0, 255].
    */
   abstract getRGB(value: number): [number, number, number];
+
+  /**
+   * Render the colormap as a horizontal scale, while highlighting a specifc
+   * value.
+   *
+   * The value is highlighted if and only if it is `>= this.config.min` and
+   * `<= this.config.max`.
+   *
+   * @param canvas The canvas on which
+   * @param value The number to highlight.
+   */
+  render(canvas: HTMLCanvasElement, value: number) {
+    if (this.config.min === this.config.max) {
+      return;
+    }
+    const context = canvas.getContext('2d');
+    if (context == null) {
+      return;
+    }
+    const steps = 100;
+    const cellWidth = canvas.width / steps;
+    const height = canvas.height;
+    const verticalMargin = 0.2;
+    const barHeight = height * (1 - 2 * verticalMargin);
+    for (let i = 0; i < steps; ++i) {
+      const value =
+        (this.config.max - this.config.min) * (i / steps) + this.config.min;
+      const x = cellWidth * i;
+      const y = height * verticalMargin;
+      const [r, g, b] = this.getRGB(value);
+      context.beginPath();
+      context.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
+      context.fillRect(x, y, cellWidth, barHeight);
+      context.stroke();
+    }
+
+    const tickWidth = 8;
+    if (value >= this.config.min && value <= this.config.max) {
+      // Highlight the relative position of `value` along the color scale.
+      const tickX = (value - this.config.min) /
+          (this.config.max - this.config.min) * canvas.width;
+
+      context.beginPath();
+      context.fillStyle = 'rgba(0, 0, 0, 1)';
+      context.moveTo(tickX, verticalMargin * height);
+      context.lineTo(tickX - tickWidth / 2, 0);
+      context.lineTo(tickX + tickWidth / 2, 0);
+      context.fill();
+    }
+  }
 }
 
 /**
