@@ -22,6 +22,7 @@ from IPython import display
 from google.protobuf import json_format
 from numbers import Number
 from six import ensure_str
+from six import integer_types
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
@@ -84,10 +85,10 @@ class WitWidgetBase(object):
     if 'compare_adjust_attribution' in copied_config:
       del copied_config['compare_adjust_attribution']
 
+    self.config = copied_config
     self.set_examples(config['examples'])
     del copied_config['examples']
 
-    self.config = copied_config
 
     # If using AI Platform for prediction, set the correct custom prediction
     # functions.
@@ -122,7 +123,11 @@ class WitWidgetBase(object):
     builder during construction. This method can change which examples WIT
     displays.
     """
-    self.examples = [json_format.MessageToJson(ex) for ex in examples]
+    if self.config.get('uses_json_input'):
+      tf_examples = self._json_to_tf_examples(examples)
+      self.examples = [json_format.MessageToJson(ex) for ex in tf_examples]
+    else:
+      self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 
   def compute_custom_distance_impl(self, index, params=None):
@@ -317,6 +322,37 @@ class WitWidgetBase(object):
               ex.features.feature[feat].bytes_list.value[0])
       json_exs.append(json_ex)
     return json_exs
+
+  def _json_to_tf_examples(self, examples):
+    def add_single_feature(feat, value, ex):
+      if isinstance(value, integer_types):
+        ex.features.feature[feat].int64_list.value.append(value)
+      elif isinstance(value, Number):
+        ex.features.feature[feat].float_list.value.append(value)
+      else:
+        ex.features.feature[feat].bytes_list.value.append(value.encode('utf-8'))
+
+    tf_examples = []
+    for json_ex in examples:
+      ex = tf.train.Example()
+      # JSON examples can be lists of values (for xgboost models for instance),
+      # or dicts of key/value pairs.
+      if self.config.get('uses_json_list'):
+        feature_names = self.config.get('feature_names')
+        for (i, value) in enumerate(json_ex):
+          # If feature names have been provided, use those feature names instead
+          # of list indices for feature name when storing as tf.Example.
+          if feature_names and len(feature_names) > i:
+            feat = feature_names[i]
+          else:
+            feat = str(i)
+          add_single_feature(feat, value, ex)
+        tf_examples.append(ex)
+      else:
+        for feat in json_ex:
+          add_single_feature(feat, json_ex[feat], ex)
+        tf_examples.append(ex)
+    return tf_examples
 
   def _predict_aip_model(self, examples):
     return self._predict_aip_impl(
