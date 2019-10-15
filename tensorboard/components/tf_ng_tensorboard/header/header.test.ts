@@ -23,7 +23,7 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {HeaderComponent} from './components/header.component';
-import {HeaderComponent as HeaderContainer} from './containers/header.component';
+import {HeaderContainer} from './containers/header.component';
 
 import {changePlugin} from '../core/core.actions';
 import {State} from '../core/core.reducers';

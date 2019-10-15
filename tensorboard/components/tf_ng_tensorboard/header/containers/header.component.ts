@@ -50,7 +50,7 @@ const getDisabledPlugins = createSelector(
     ></app-header-component>
   `,
 })
-export class HeaderComponent {
+export class HeaderContainer {
   readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
   readonly plugins$ = this.store.pipe(select(getUiPlugins));
   readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
