@@ -71,9 +71,9 @@ export abstract class ColorMap {
    * `<= this.config.max`.
    *
    * @param canvas The canvas on which
-   * @param value The number to highlight.
+   * @param value The number to highlight (optional).
    */
-  render(canvas: HTMLCanvasElement, value: number) {
+  render(canvas: HTMLCanvasElement, value?: number) {
     if (this.config.min === this.config.max) {
       return;
     }
@@ -98,19 +98,29 @@ export abstract class ColorMap {
       context.stroke();
     }
 
-    const tickWidth = 8;
-    if (value >= this.config.min && value <= this.config.max) {
-      // Highlight the relative position of `value` along the color scale.
-      const tickX =
-        ((value - this.config.min) / (this.config.max - this.config.min)) *
-        canvas.width;
+    if (value != null) {
+      const tickWidth = 8;
+      if (value >= this.config.min && value <= this.config.max) {
+        // Highlight the relative position of `value` along the color scale.
+        const tickX =
+          ((value - this.config.min) / (this.config.max - this.config.min)) *
+          canvas.width;
 
-      context.beginPath();
-      context.fillStyle = 'rgba(0, 0, 0, 1)';
-      context.moveTo(tickX, verticalMargin * height);
-      context.lineTo(tickX - tickWidth / 2, 0);
-      context.lineTo(tickX + tickWidth / 2, 0);
-      context.fill();
+        // Draw the triangle on the top.
+        context.beginPath();
+        context.fillStyle = 'rgba(0, 0, 0, 1)';
+        context.moveTo(tickX, verticalMargin * height);
+        context.lineTo(tickX - tickWidth / 2, 0);
+        context.lineTo(tickX + tickWidth / 2, 0);
+        context.fill();
+
+        // Draw the triangle on the bottom.
+        context.beginPath();
+        context.moveTo(tickX, (1 - verticalMargin) * height);
+        context.lineTo(tickX - tickWidth / 2, height);
+        context.lineTo(tickX + tickWidth / 2, height);
+        context.fill();
+      }
     }
   }
 }
@@ -170,7 +180,6 @@ export class JetColorMap extends ColorMap {
         : (value - this.config.min) / (this.config.max - this.config.min);
     relValue = Math.max(Math.min(relValue, 1), 0);
     if (relValue <= lim0) {
-      // TODO(cais):
       g = (relValue / lim0) * MAX_RGB;
       b = MAX_RGB;
     } else if (relValue > lim0 && relValue <= lim1) {
