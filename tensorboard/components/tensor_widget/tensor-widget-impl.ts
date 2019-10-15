@@ -404,7 +404,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
       this.valueSection.addEventListener('wheel', async (event) => {
         let zoomKeyPressed = false;
-        if (this.options.wheelZoomKey == null || this.options.wheelZoomKey === 'ctrl') {
+        if (
+          this.options.wheelZoomKey == null ||
+          this.options.wheelZoomKey === 'ctrl'
+        ) {
           zoomKeyPressed = event.ctrlKey;
         } else if (this.options.wheelZoomKey === 'alt') {
           zoomKeyPressed = event.altKey;
@@ -1062,8 +1065,10 @@ export class TensorWidgetImpl implements TensorWidget {
 
     // If the current render mode is IMAGE, show the color bar and
     // indicate the position of the current element along the color-bar scale.
-    if (this.valueRenderMode == ValueRenderMode.IMAGE &&
-        this.colorMap != null) {
+    if (
+      this.valueRenderMode == ValueRenderMode.IMAGE &&
+      this.colorMap != null
+    ) {
       const colorBarCanvas = document.createElement('canvas');
       colorBarCanvas.classList.add('tensor-widget-value-tooltip-colorbar');
       this.valueTooltip.appendChild(colorBarCanvas);

@@ -17,7 +17,7 @@ limitations under the License.
 
 import {expect} from 'chai';
 
-import {GrayscaleColorMap} from './colormap';
+import {GrayscaleColorMap, JetColorMap} from './colormap';
 
 describe('GrayscaleColorMap', () => {
   it('max < min causes constructor error', () => {
@@ -82,4 +82,60 @@ describe('GrayscaleColorMap', () => {
   });
 });
 
-// TODO(cais): Add unit tests for JetColormap.
+describe('JetColormap', () => {
+  it('max < min causes constructor error', () => {
+    const min = 3;
+    const max = 2;
+    expect(() => new JetColorMap({min, max})).to.throw(/max.*<.*min/);
+  });
+
+  it('NaN or Infinity min or max causes constructor error', () => {
+    expect(() => new JetColorMap({min: 0, max: Infinity})).to.throw(
+      /max.*not finite/
+    );
+    expect(() => new JetColorMap({min: 0, max: -Infinity})).to.throw(
+      /max.*not finite/
+    );
+    expect(() => new JetColorMap({min: 0, max: NaN})).to.throw(
+      /max.*not finite/
+    );
+    expect(() => new JetColorMap({min: Infinity, max: 0})).to.throw(
+      /min.*not finite/
+    );
+    expect(() => new JetColorMap({min: -Infinity, max: 0})).to.throw(
+      /min.*not finite/
+    );
+    expect(() => new JetColorMap({min: NaN, max: 0})).to.throw(
+      /min.*not finite/
+    );
+  });
+
+  it('max > min, finite values', () => {
+    const min = 0;
+    const max = 10;
+    const colormap = new JetColorMap({min, max});
+    expect(colormap.getRGB(0)).to.eql([0, 0, 255]);
+    expect(colormap.getRGB(5)).to.eql([127.5, 255, 127.5]);
+    expect(colormap.getRGB(10)).to.eql([255, 0, 0]);
+    // Over-limits.
+    expect(colormap.getRGB(-100)).to.eql([0, 0, 255]);
+    expect(colormap.getRGB(500)).to.eql([255, 0, 0]);
+  });
+
+  it('max > min, non-finite values', () => {
+    const min = 0;
+    const max = 10;
+    const colormap = new JetColorMap({min, max});
+    expect(colormap.getRGB(NaN)).to.eql([255 * 0.25, 255 * 0.25, 255 * 0.25]);
+    expect(colormap.getRGB(-Infinity)).to.eql([
+      255 * 0.5,
+      255 * 0.5,
+      255 * 0.5,
+    ]);
+    expect(colormap.getRGB(Infinity)).to.eql([
+      255 * 0.75,
+      255 * 0.75,
+      255 * 0.75,
+    ]);
+  });
+});

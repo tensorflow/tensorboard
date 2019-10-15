@@ -101,8 +101,9 @@ export abstract class ColorMap {
     const tickWidth = 8;
     if (value >= this.config.min && value <= this.config.max) {
       // Highlight the relative position of `value` along the color scale.
-      const tickX = (value - this.config.min) /
-          (this.config.max - this.config.min) * canvas.width;
+      const tickX =
+        ((value - this.config.min) / (this.config.max - this.config.min)) *
+        canvas.width;
 
       context.beginPath();
       context.fillStyle = 'rgba(0, 0, 0, 1)';
@@ -146,14 +147,14 @@ export class JetColorMap extends ColorMap {
   getRGB(value: number): [number, number, number] {
     if (isNaN(value)) {
       // NaN.
-      return [MAX_RGB * 0.75, MAX_RGB * 0.75, MAX_RGB * 0.75];
+      return [MAX_RGB * 0.25, MAX_RGB * 0.25, MAX_RGB * 0.25];
     } else if (!isFinite(value)) {
-      if (value > 0) {
-        // +Infinity.
+      if (value < 0) {
+        // -Infinity.
         return [MAX_RGB * 0.5, MAX_RGB * 0.5, MAX_RGB * 0.5];
       } else {
-        // -Infinity.
-        return [MAX_RGB * 0.25, MAX_RGB * 0.25, MAX_RGB * 0.25];
+        // +Infinity.
+        return [MAX_RGB * 0.75, MAX_RGB * 0.75, MAX_RGB * 0.75];
       }
     }
 
@@ -163,10 +164,11 @@ export class JetColorMap extends ColorMap {
     const lim0 = 0.35;
     const lim1 = 0.65;
 
-    const relValue =
+    let relValue =
       this.config.min === this.config.max
         ? 0.5
         : (value - this.config.min) / (this.config.max - this.config.min);
+    relValue = Math.max(Math.min(relValue, 1), 0);
     if (relValue <= lim0) {
       // TODO(cais):
       g = (relValue / lim0) * MAX_RGB;
