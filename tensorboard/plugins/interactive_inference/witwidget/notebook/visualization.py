@@ -15,8 +15,6 @@
 """Visualization API."""
 import sys
 import tensorflow as tf
-from numbers import Number
-from six import integer_types
 
 
 def _is_colab():
@@ -80,19 +78,18 @@ class WitConfigBuilder(object):
     Returns:
       self, in order to enabled method chaining.
     """
+    self.store('examples', examples)
     if feature_names:
       self.store('feature_names', feature_names)
     if len(examples) > 0 and not (
       isinstance(examples[0], tf.train.Example) or
       isinstance(examples[0], tf.train.SequenceExample)):
-      # For examples provided as JSON, convert them to tf.Examples internally.
-      converted_examples = self._convert_json_to_tf_examples(examples)
-      self.store('examples', converted_examples)
-    else:
-      self.store('examples', examples)
-      if len(examples) > 0:
-        self.store('are_sequence_examples',
-                  isinstance(examples[0], tf.train.SequenceExample))
+      self._set_uses_json_input(True)
+      if isinstance(examples[0], list):
+        self._set_uses_json_list(True)
+    elif len(examples) > 0:
+      self.store('are_sequence_examples',
+                 isinstance(examples[0], tf.train.SequenceExample))
     return self
 
   def set_model_type(self, model):
@@ -531,39 +528,6 @@ class WitConfigBuilder(object):
     else:
       self.store('custom_distance_fn', distance_fn)
     return self
-
-  def _convert_json_to_tf_examples(self, examples):
-    self._set_uses_json_input(True)
-    tf_examples = []
-    for json_ex in examples:
-      ex = tf.train.Example()
-      # JSON examples can be lists of values (for xgboost models for instance),
-      # or dicts of key/value pairs.
-      if isinstance(json_ex, list):
-        self._set_uses_json_list(True)
-        feature_names = self.config.get('feature_names')
-        for (i, value) in enumerate(json_ex):
-          # If feature names have been provided, use those feature names instead
-          # of list indices for feature name when storing as tf.Example.
-          if feature_names and len(feature_names) > i:
-            feat = feature_names[i]
-          else:
-            feat = str(i)
-          self._add_single_feature(feat, value, ex)
-        tf_examples.append(ex)
-      else:
-        for feat in json_ex:
-          self._add_single_feature(feat, json_ex[feat], ex)
-        tf_examples.append(ex)
-    return tf_examples
-
-  def _add_single_feature(self, feat, value, ex):
-    if isinstance(value, integer_types):
-      ex.features.feature[feat].int64_list.value.append(value)
-    elif isinstance(value, Number):
-      ex.features.feature[feat].float_list.value.append(value)
-    else:
-      ex.features.feature[feat].bytes_list.value.append(value.encode('utf-8'))
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
