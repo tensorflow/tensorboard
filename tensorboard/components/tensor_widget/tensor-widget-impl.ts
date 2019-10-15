@@ -49,7 +49,12 @@ import {
   BaseTensorNumericSummary,
   BooleanOrNumericTensorNumericSummary,
 } from './health-pill-types';
-import {ColorMap, GrayscaleColorMap, JetColorMap} from './colormap';
+import {
+  ColorMap,
+  ColorMapConfig,
+  GrayscaleColorMap,
+  JetColorMap,
+} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
@@ -63,6 +68,14 @@ enum ValueRenderMode {
 /**
  * Implementation of TensorWidget.
  */
+
+/** Color-map look-up table. The keys are meant to be case-insensitive. */
+const colorMaps: {
+  [colorMapName: string]: new (config: ColorMapConfig) => ColorMap;
+} = {
+  grayscale: GrayscaleColorMap,
+  jet: JetColorMap,
+};
 
 /** An implementation of TensorWidget single-tensor view. */
 export class TensorWidgetImpl implements TensorWidget {
@@ -108,6 +121,9 @@ export class TensorWidgetImpl implements TensorWidget {
 
   // Value render mode.
   protected valueRenderMode: ValueRenderMode;
+
+  // Name of color map (takes effect on IMAGE value render mode only).
+  protected colorMapName: string = 'Grayscale';
 
   // Whether indices should be rendered on ruler ticks on the top and left.
   // Determined dynamically based on the current size of the ticks.
@@ -296,14 +312,25 @@ export class TensorWidgetImpl implements TensorWidget {
       } as ChoiceMenuItemConfig);
 
       this.menuConfig.items.push({
-        caption: 'Zoom in (Image mode only)',
+        caption: 'Select color map...',
+        options: Object.keys(colorMaps),
+        defaultSelection: 0,
+        callback: (currentMode: number) => {
+          this.colorMapName = Object.keys(colorMaps)[currentMode];
+          this.renderValues();
+        },
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
+      } as ChoiceMenuItemConfig);
+
+      this.menuConfig.items.push({
+        caption: 'Zoom in (Image mode)',
         callback: () => {
           this.zoomInOneStepAndRenderValues();
         },
         isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
       this.menuConfig.items.push({
-        caption: 'Zoom out (Image mode only)',
+        caption: 'Zoom out (Image mode)',
         callback: () => {
           this.zoomOutOneStepAndRenderValues();
         },
@@ -383,7 +410,7 @@ export class TensorWidgetImpl implements TensorWidget {
           } else {
             this.zoomInOneStepAndRenderValues();
           }
-          console.log(`ctrl + wheel: ${event.deltaY}`);  // DEBUG
+          console.log(`ctrl + wheel: ${event.deltaY}`); // DEBUG
           return;
         }
 
@@ -815,8 +842,10 @@ export class TensorWidgetImpl implements TensorWidget {
             'missing minimum or maximum values in numeric summary'
         );
       }
-      // colorMap = new GrayscaleColorMap(minimum as number, maximum as number);
-      colorMap = new JetColorMap(minimum as number, maximum as number);
+      colorMap = new colorMaps[this.colorMapName.toLowerCase()]({
+        min: minimum as number,
+        max: maximum as number,
+      });
     }
 
     for (let i = 0; i < numRows; ++i) {

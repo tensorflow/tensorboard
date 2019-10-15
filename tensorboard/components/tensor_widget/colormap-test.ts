@@ -23,30 +23,34 @@ describe('GrayscaleColorMap', () => {
   it('max < min causes constructor error', () => {
     const min = 3;
     const max = 2;
-    expect(() => new GrayscaleColorMap(min, max)).to.throw(/max.*<.*min/);
+    expect(() => new GrayscaleColorMap({min, max})).to.throw(/max.*<.*min/);
   });
 
   it('NaN or Infinity min or max causes constructor error', () => {
-    expect(() => new GrayscaleColorMap(0, Infinity)).to.throw(
+    expect(() => new GrayscaleColorMap({min: 0, max: Infinity})).to.throw(
       /max.*not finite/
     );
-    expect(() => new GrayscaleColorMap(0, -Infinity)).to.throw(
+    expect(() => new GrayscaleColorMap({min: 0, max: -Infinity})).to.throw(
       /max.*not finite/
     );
-    expect(() => new GrayscaleColorMap(0, NaN)).to.throw(/max.*not finite/);
-    expect(() => new GrayscaleColorMap(Infinity, 0)).to.throw(
+    expect(() => new GrayscaleColorMap({min: 0, max: NaN})).to.throw(
+      /max.*not finite/
+    );
+    expect(() => new GrayscaleColorMap({min: Infinity, max: 0})).to.throw(
       /min.*not finite/
     );
-    expect(() => new GrayscaleColorMap(-Infinity, 0)).to.throw(
+    expect(() => new GrayscaleColorMap({min: -Infinity, max: 0})).to.throw(
       /min.*not finite/
     );
-    expect(() => new GrayscaleColorMap(NaN, 0)).to.throw(/min.*not finite/);
+    expect(() => new GrayscaleColorMap({min: NaN, max: 0})).to.throw(
+      /min.*not finite/
+    );
   });
 
   it('max > min, finite values', () => {
     const min = 0;
     const max = 10;
-    const colormap = new GrayscaleColorMap(min, max);
+    const colormap = new GrayscaleColorMap({min, max});
     expect(colormap.getRGB(0)).to.eql([0, 0, 0]);
     expect(colormap.getRGB(5)).to.eql([127.5, 127.5, 127.5]);
     expect(colormap.getRGB(10)).to.eql([255, 255, 255]);
@@ -58,7 +62,7 @@ describe('GrayscaleColorMap', () => {
   it('max > min, non-finite values', () => {
     const min = 0;
     const max = 10;
-    const colormap = new GrayscaleColorMap(min, max);
+    const colormap = new GrayscaleColorMap({min, max});
     expect(colormap.getRGB(NaN)).to.eql([255, 0, 0]);
     expect(colormap.getRGB(-Infinity)).to.eql([255, 255 / 2, 0]);
     expect(colormap.getRGB(Infinity)).to.eql([0, 0, 255]);
@@ -67,7 +71,7 @@ describe('GrayscaleColorMap', () => {
   it('max === min, non-finite values', () => {
     const min = -3.2;
     const max = -3.2;
-    const colormap = new GrayscaleColorMap(min, max);
+    const colormap = new GrayscaleColorMap({min, max});
     expect(colormap.getRGB(-32)).to.eql([127.5, 127.5, 127.5]);
     expect(colormap.getRGB(-3.2)).to.eql([127.5, 127.5, 127.5]);
     expect(colormap.getRGB(0)).to.eql([127.5, 127.5, 127.5]);

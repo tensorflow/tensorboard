@@ -17,6 +17,21 @@ limitations under the License.
 
 const MAX_RGB = 255;
 
+/** Configuration for a colormap. */
+export interface ColorMapConfig {
+  /**
+   * Minimum value that the color map can map to without clipping.
+   * Must be a finite value.
+   */
+  min: number;
+
+  /**
+   * Minimum value that the color map can map to without clipping.
+   * Must be a finite value and be >= `min`.
+   */
+  max: number;
+}
+
 /**
  * Abstract base class for colormap.
  *
@@ -28,15 +43,15 @@ export abstract class ColorMap {
    * @param min Minimum. Must be a finite value.
    * @param max Maximum. Must be finite and >= `min`.
    */
-  constructor(protected readonly min: number, protected readonly max: number) {
-    if (!isFinite(min)) {
-      throw new Error(`min value (${min}) is not finite`);
+  constructor(protected config: ColorMapConfig) {
+    if (!isFinite(config.min)) {
+      throw new Error(`min value (${config.min}) is not finite`);
     }
-    if (!isFinite(max)) {
-      throw new Error(`max value (${max}) is not finite`);
+    if (!isFinite(config.max)) {
+      throw new Error(`max value (${config.max}) is not finite`);
     }
-    if (max < min) {
-      throw new Error(`max (${max}) is < min (${min})`);
+    if (config.max < config.min) {
+      throw new Error(`max (${config.max}) is < min (${config.min})`);
     }
   }
 
@@ -69,13 +84,11 @@ export class GrayscaleColorMap extends ColorMap {
       }
     }
     let relValue =
-      this.min === this.max ? 0.5 : (value - this.min) / (this.max - this.min);
+      this.config.min === this.config.max
+        ? 0.5
+        : (value - this.config.min) / (this.config.max - this.config.min);
     relValue = Math.max(Math.min(relValue, 1), 0);
-    return [
-      MAX_RGB * relValue,
-      MAX_RGB * relValue,
-      MAX_RGB * relValue,
-    ];
+    return [MAX_RGB * relValue, MAX_RGB * relValue, MAX_RGB * relValue];
   }
 }
 
@@ -101,18 +114,20 @@ export class JetColorMap extends ColorMap {
     const lim1 = 0.65;
 
     const relValue =
-      this.min === this.max ? 0.5 : (value - this.min) / (this.max - this.min);
+      this.config.min === this.config.max
+        ? 0.5
+        : (value - this.config.min) / (this.config.max - this.config.min);
     if (relValue <= lim0) {
       // TODO(cais):
-      g = relValue / lim0 * MAX_RGB;
+      g = (relValue / lim0) * MAX_RGB;
       b = MAX_RGB;
     } else if (relValue > lim0 && relValue <= lim1) {
-      r = (relValue - lim0) / (lim1 - lim0) * MAX_RGB;
+      r = ((relValue - lim0) / (lim1 - lim0)) * MAX_RGB;
       g = MAX_RGB;
-      b = (lim1 - relValue) / (lim1 - lim0) * MAX_RGB;
+      b = ((lim1 - relValue) / (lim1 - lim0)) * MAX_RGB;
     } else if (relValue > lim1) {
       r = MAX_RGB;
-      g = (1 - relValue) / (1 - lim1) * MAX_RGB
+      g = ((1 - relValue) / (1 - lim1)) * MAX_RGB;
     }
     return [r, g, b];
   }

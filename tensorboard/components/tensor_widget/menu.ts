@@ -21,6 +21,13 @@ type EventCallback = (event: Event) => void | Promise<void>;
 export interface MenuItemConfig {
   /** Caption displayed on the menu item. */
   caption: string;
+
+  /**
+   * A function that determines whether menu item is currently enabled.
+   *
+   * If not provided, the menu item will always be enabled.
+   */
+  isEnabled?: () => boolean;
 }
 
 /**
@@ -29,13 +36,6 @@ export interface MenuItemConfig {
 export interface SingleActionMenuItemConfig extends MenuItemConfig {
   /** The callback that gets called when the menu item is clicked. */
   callback: EventCallback;
-
-  /**
-   * A function that determines whether menu item is currently enabled.
-   *
-   * If not provided, the menu item will always be enabled.
-   */
-  isEnabled?: () => boolean;
 }
 
 export interface ChoiceMenuItemConfig extends MenuItemConfig {
@@ -267,12 +267,9 @@ export class Menu {
         // This is a single-command item.
         const singleActionConfig = item as SingleActionMenuItemConfig;
         outerItemConfig.onClick = singleActionConfig.callback;
-        if (
-          singleActionConfig.isEnabled != null &&
-          !singleActionConfig.isEnabled()
-        ) {
-          outerItemConfig.disabled = true;
-        }
+      }
+      if (item.isEnabled != null && !item.isEnabled()) {
+        outerItemConfig.disabled = true;
       }
       outerItemConfigs.push(outerItemConfig);
     });
