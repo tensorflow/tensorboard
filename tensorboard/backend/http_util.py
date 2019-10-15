@@ -204,9 +204,7 @@ def Respond(request,
     script_srcs = _create_csp_string(*frags)
 
     csp_string = ';'.join([
-        "default-src 'none'",
-        "base-uri 'self'",
-        "connect-src 'self'",
+        "default-src 'self'",
         'font-src %s' % _create_csp_string(
             "'self'",
             *_CSP_FONT_DOMAINS_WHITELIST
