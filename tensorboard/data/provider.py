@@ -129,10 +129,9 @@ class DataProvider(object):
     """Not yet specified."""
     pass
 
-  def list_blob_sequences(self,
-                          experiment_id,
-                          plugin_name,
-                          run_tag_filter=None):
+  def list_blob_sequences(
+      self, experiment_id, plugin_name, run_tag_filter=None
+  ):
     """List metadata about blob sequence time series.
 
     Args:
@@ -153,11 +152,9 @@ class DataProvider(object):
     """
     pass
 
-  def read_blob_sequences(self,
-                          experiment_id,
-                          plugin_name,
-                          downsample=None,
-                          run_tag_filter=None):
+  def read_blob_sequences(
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+  ):
     """Read values from blob sequence time series.
 
     Args:
@@ -426,13 +423,21 @@ class BlobSequenceTimeSeries(TimeSeries):
     display_name: An optional long-form Markdown description, as a `str` that is
       empty if no description was specified. Deprecated; may be removed soon.
   """
+
   __slots__ = ("_latest_max_index",)
 
-  def __init__(self, max_step, max_wall_time, latest_max_index, plugin_content,
-               description, display_name):
-    super(BlobSequenceTimeSeries,
-          self).__init__(max_step, max_wall_time, plugin_content, description,
-                         display_name)
+  def __init__(
+      self,
+      max_step,
+      max_wall_time,
+      latest_max_index,
+      plugin_content,
+      description,
+      display_name,
+  ):
+    super(BlobSequenceTimeSeries, self).__init__(
+        max_step, max_wall_time, plugin_content, description, display_name
+    )
     self._latest_max_index = latest_max_index
 
   @property
