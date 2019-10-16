@@ -442,3 +442,38 @@ class WitWidgetBase(object):
         pred = adjust_prediction(pred)
       results.append(pred)
     return {'predictions': results, 'attributions': attributions}
+
+  def create_selection_callback(self, examples, max_examples):
+    """Returns an example selection callback for use with TFMA.
+
+    The returned function can be provided as an event handler for a TFMA
+    visualization to dynamically load examples matching a selected slice into
+    WIT.
+
+    Args:
+      examples: A list of tf.Examples to filter and use with WIT.
+      max_examples: The maximum number of examples to create.
+    """
+    def handle_selection(selected):
+      def extract_values(feat):
+        if feat.HasField('bytes_list'):
+          return feat.bytes_list.value
+        elif feat.HasField('int64_list'):
+          return feat.int64_list.value
+        elif feat.HasField('float_list'):
+          return feat.float_list.value
+        return None
+
+      filtered_examples = []
+      for ex in examples:
+        if selected['sliceName'] == 'Overall':
+          filtered_examples.append(ex)
+        else:
+          values = extract_values(ex.features.feature[selected['sliceName']])
+          if selected['sliceValue'] in values:
+            filtered_examples.append(ex)
+        if len(filtered_examples) == max_examples:
+          break
+
+      self.set_examples(filtered_examples)
+    return handle_selection
