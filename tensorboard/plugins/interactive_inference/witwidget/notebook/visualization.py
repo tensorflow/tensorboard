@@ -531,7 +531,8 @@ class WitConfigBuilder(object):
 
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None, adjust_example=None, adjust_attribution=None):
+    adjust_prediction=None, adjust_example=None, adjust_attribution=None,
+    service_name='ml', service_version='v1'):
     """Sets the model information for a model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -556,6 +557,10 @@ class WitConfigBuilder(object):
       example and converts it to the format expected by the tool, which is a
       dictionary of input feature names to attribution scores. Usually necessary
       if making use of adjust_example and the model returns attribution results.
+      service_name: Optional. Name of the AI Platform Prediction service. Defaults
+      to 'ml'.
+      service_version: Optional. Version of the AI Platform Prediction service. Defaults
+      to 'v1'.
 
     Returns:
       self, in order to enabled method chaining.
@@ -563,6 +568,8 @@ class WitConfigBuilder(object):
     self.set_inference_address(project)
     self.set_model_name(model)
     self.store('use_aip', True)
+    self.store('aip_service_name', service_name)
+    self.store('aip_service_version', service_version)
     if version is not None:
       self.set_model_signature(version)
     if force_json_input:
@@ -577,7 +584,8 @@ class WitConfigBuilder(object):
 
   def set_compare_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
-    adjust_prediction=None, adjust_example=None, adjust_attribution=None):
+    adjust_prediction=None, adjust_example=None, adjust_attribution=None,
+    service_name='ml', service_version='v1'):
     """Sets the model information for a second model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -602,6 +610,10 @@ class WitConfigBuilder(object):
       example and converts it to the format expected by the tool, which is a
       dictionary of input feature names to attribution scores. Usually necessary
       if making use of adjust_example and the model returns attribution results.
+      service_name: Optional. Name of the AI Platform Prediction service. Defaults
+      to 'ml'.
+      service_version: Optional. Version of the AI Platform Prediction service. Defaults
+      to 'v1'.
 
     Returns:
       self, in order to enabled method chaining.
@@ -609,6 +621,8 @@ class WitConfigBuilder(object):
     self.set_compare_inference_address(project)
     self.set_compare_model_name(model)
     self.store('compare_use_aip', True)
+    self.store('compare_aip_service_name', service_name)
+    self.store('compare_aip_service_version', service_version)
     if version is not None:
       self.set_compare_model_signature(version)
     if force_json_input:
