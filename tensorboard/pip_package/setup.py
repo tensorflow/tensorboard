@@ -73,6 +73,7 @@ setup(
         'tensorboard.plugins.projector': [
             'tf_projector_plugin/index.js',
             'tf_projector_plugin/projector_binary.html',
+            'tf_projector_plugin/projector_binary.html.scripts_sha256',
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
