@@ -17,6 +17,7 @@ namespace tf_backend {
   // tf-ng-tensorboard by exposing otherwise mangled smybols.
   Polymer({
     is: 'tf-backend',
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
     tf_backend: tf_backend,
   });
 } // namespace tf_backend
