@@ -10,6 +10,7 @@ tf_web_library(
     srcs = [
         # Keep this in sync with pip_package/setup.py
         ":projector_binary.html",
+        ":projector_binary.html.scripts_sha256",
         "index.js",
     ],
     path = "/tf-projector",
