@@ -18,6 +18,7 @@ var tf_backend;
     // tf-ng-tensorboard by exposing otherwise mangled smybols.
     Polymer({
         is: 'tf-backend',
+        _template: null,
         tf_backend: tf_backend,
     });
 })(tf_backend || (tf_backend = {})); // namespace tf_backend

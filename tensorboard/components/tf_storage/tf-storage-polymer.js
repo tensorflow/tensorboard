@@ -18,6 +18,7 @@ var tf_storage;
     // tf-ng-tensorboard by exposing otherwise mangled smybols.
     Polymer({
         is: 'tf-storage',
+        _template: null,
         tf_storage: tf_storage,
     });
 })(tf_storage || (tf_storage = {})); // namespace tf_storage
