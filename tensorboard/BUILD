@@ -170,6 +170,7 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
     ],
 )
 

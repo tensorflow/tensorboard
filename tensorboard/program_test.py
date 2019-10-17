@@ -19,8 +19,16 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
+import contextlib
+import sys
 
 import six
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import program
 from tensorboard import test as tb_test
@@ -119,6 +127,136 @@ class WerkzeugServerTest(tb_test.TestCase):
       # IPv6 is not supported
       pass
     self.assertTrue(one_passed)  # We expect either IPv4 or IPv6 to be supported
+
+
+class SubcommandTest(tb_test.TestCase):
+
+  def setUp(self):
+    super(SubcommandTest, self).setUp()
+    self.stderr = six.StringIO()
+    patchers = [
+        mock.patch.object(program.TensorBoard, '_install_signal_handler'),
+        mock.patch.object(program.TensorBoard, '_run_serve_subcommand'),
+        mock.patch.object(_TestSubcommand, 'run'),
+        mock.patch.object(sys, 'stderr', self.stderr),
+    ]
+    for p in patchers:
+      p.start()
+      self.addCleanup(p.stop)
+    _TestSubcommand.run.return_value = None
+
+  def tearDown(self):
+    stderr = self.stderr.getvalue()
+    if stderr:
+      # In case of failing tests, let there be debug info.
+      print('Stderr:\n%s' % stderr)
+
+  def testImplicitServe(self):
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand(lambda parser: None)],
+    )
+    tb.configure(('tb', '--logdir', 'logs', '--path_prefix', '/x///'))
+    tb.main()
+    program.TensorBoard._run_serve_subcommand.assert_called_once()
+    flags = program.TensorBoard._run_serve_subcommand.call_args[0][0]
+    self.assertEqual(flags.logdir, 'logs')
+    self.assertEqual(flags.path_prefix, '/x')  # fixed by core_plugin
+
+  def testExplicitServe(self):
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand()],
+    )
+    tb.configure(('tb', 'serve', '--logdir', 'logs', '--path_prefix', '/x///'))
+    tb.main()
+    program.TensorBoard._run_serve_subcommand.assert_called_once()
+    flags = program.TensorBoard._run_serve_subcommand.call_args[0][0]
+    self.assertEqual(flags.logdir, 'logs')
+    self.assertEqual(flags.path_prefix, '/x')  # fixed by core_plugin
+
+  def testSubcommand(self):
+    def define_flags(parser):
+      parser.add_argument('--hello')
+
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand(define_flags=define_flags)],
+    )
+    tb.configure(('tb', 'test', '--hello', 'world'))
+    self.assertEqual(tb.main(), 0)
+    _TestSubcommand.run.assert_called_once()
+    flags = _TestSubcommand.run.call_args[0][0]
+    self.assertEqual(flags.hello, 'world')
+
+  def testSubcommand_ExitCode(self):
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand()],
+    )
+    _TestSubcommand.run.return_value = 77
+    tb.configure(('tb', 'test'))
+    self.assertEqual(tb.main(), 77)
+
+  def testSubcommand_DoesNotInheritBaseArgs(self):
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand()],
+    )
+    with self.assertRaises(SystemExit):
+      tb.configure(('tb', 'test', '--logdir', 'logs'))
+    self.assertIn(
+        'unrecognized arguments: --logdir logs', self.stderr.getvalue())
+    self.stderr.truncate(0)
+
+  def testSubcommand_MayRequirePositionals(self):
+    def define_flags(parser):
+      parser.add_argument('payload')
+
+    tb = program.TensorBoard(
+        plugins=[core_plugin.CorePluginLoader],
+        subcommands=[_TestSubcommand(define_flags=define_flags)],
+    )
+    with self.assertRaises(SystemExit):
+      tb.configure(('tb', 'test'))
+    self.assertIn('required', self.stderr.getvalue())
+    self.assertIn('payload', self.stderr.getvalue())
+    self.stderr.truncate(0)
+
+  def testConflictingNames_AmongSubcommands(self):
+    with self.assertRaises(ValueError) as cm:
+      tb = program.TensorBoard(
+          plugins=[core_plugin.CorePluginLoader],
+          subcommands=[_TestSubcommand(), _TestSubcommand()],
+      )
+    self.assertIn('Duplicate subcommand name:', str(cm.exception))
+    self.assertIn('test', str(cm.exception))
+
+  def testConflictingNames_WithServe(self):
+    with self.assertRaises(ValueError) as cm:
+      tb = program.TensorBoard(
+          plugins=[core_plugin.CorePluginLoader],
+          subcommands=[_TestSubcommand(name='serve')],
+      )
+    self.assertIn('Duplicate subcommand name:', str(cm.exception))
+    self.assertIn('serve', str(cm.exception))
+
+
+class _TestSubcommand(program.TensorBoardSubcommand):
+
+  def __init__(self, name=None, define_flags=None):
+    self._name = name
+    self._define_flags = define_flags
+
+  def name(self):
+    return self._name or 'test'
+
+  def define_flags(self, parser):
+    if self._define_flags:
+      self._define_flags(parser)
+
+  def run(self, flags):
+    pass
 
 
 if __name__ == '__main__':

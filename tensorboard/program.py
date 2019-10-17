@@ -35,6 +35,7 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
+import gettext
 import inspect
 import logging
 import os
@@ -62,6 +63,11 @@ from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
+
+# Default subcommand name. This is a user-facing CLI and should not change.
+_SERVE_SUBCOMMAND_NAME = 'serve'
+# Internal flag name used to store which subcommand was invoked.
+_SUBCOMMAND_FLAG = '__tensorboard_subcommand'
 
 
 def setup_environment():
@@ -106,10 +112,13 @@ class TensorBoard(object):
     cache_key: As `manager.cache_key`; set by the configure() method.
   """
 
-  def __init__(self,
-               plugins=None,
-               assets_zip_provider=None,
-               server_class=None):
+  def __init__(
+      self,
+      plugins=None,
+      assets_zip_provider=None,
+      server_class=None,
+      subcommands=None,
+  ):
     """Creates new instance.
 
     Args:
@@ -128,9 +137,17 @@ class TensorBoard(object):
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
       server_class = create_port_scanning_werkzeug_server
+    if subcommands is None:
+      subcommands = []
     self.plugin_loaders = [application.make_plugin_loader(p) for p in plugins]
     self.assets_zip_provider = assets_zip_provider
     self.server_class = server_class
+    self.subcommands = {}
+    for subcommand in subcommands:
+      name = subcommand.name()
+      if name in self.subcommands or name == _SERVE_SUBCOMMAND_NAME:
+        raise ValueError("Duplicate subcommand name: %r" % name)
+      self.subcommands[name] = subcommand
     self.flags = None
 
   def configure(self, argv=('',), **kwargs):
@@ -154,15 +171,46 @@ class TensorBoard(object):
     Raises:
       ValueError: If flag values are invalid.
     """
-    parser = argparse_flags.ArgumentParser(
+
+    base_parser = argparse_flags.ArgumentParser(
         prog='tensorboard',
         description=('TensorBoard is a suite of web applications for '
                      'inspecting and understanding your TensorFlow runs '
                      'and graphs. https://github.com/tensorflow/tensorboard '))
+    base_parser.set_defaults(**{_SUBCOMMAND_FLAG: _SERVE_SUBCOMMAND_NAME})
+    subparsers = base_parser.add_subparsers(
+        help="TensorBoard subcommand (defaults to %r)" % _SERVE_SUBCOMMAND_NAME)
+
+    serve_subparser = subparsers.add_parser(
+        _SERVE_SUBCOMMAND_NAME,
+        help='start local TensorBoard server (default subcommand)')
+    serve_subparser.set_defaults(**{_SUBCOMMAND_FLAG: _SERVE_SUBCOMMAND_NAME})
+
+    if len(argv) < 2 or argv[1].startswith('-'):
+      # This invocation, if valid, must not use any subcommands: we
+      # don't permit flags before the subcommand name.
+      serve_parser = base_parser
+    else:
+      # This invocation, if valid, must use a subcommand: we don't take
+      # any positional arguments to `serve`.
+      serve_parser = serve_subparser
+
+    for (name, subcommand) in six.iteritems(self.subcommands):
+      subparser = subparsers.add_parser(
+          name, help=subcommand.help(), description=subcommand.description())
+      subparser.set_defaults(**{_SUBCOMMAND_FLAG: name})
+      subcommand.define_flags(subparser)
+
     for loader in self.plugin_loaders:
-      loader.define_flags(parser)
+      loader.define_flags(serve_parser)
+
     arg0 = argv[0] if argv else ''
-    flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+
+    argparse_monkey_patch = _ArgparseMonkeyPatch()
+    argparse_monkey_patch.install()
+    flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
+    argparse_monkey_patch.uninstall()
+
     self.cache_key = manager.cache_key(
         working_directory=os.getcwd(),
         arguments=argv[1:],
@@ -180,8 +228,9 @@ class TensorBoard(object):
       if not hasattr(flags, k):
         raise ValueError('Unknown TensorBoard flag: %s' % k)
       setattr(flags, k, v)
-    for loader in self.plugin_loaders:
-      loader.fix_flags(flags)
+    if getattr(flags, _SUBCOMMAND_FLAG) == _SERVE_SUBCOMMAND_NAME:
+      for loader in self.plugin_loaders:
+        loader.fix_flags(flags)
     self.flags = flags
     return [arg0]
 
@@ -203,12 +252,21 @@ class TensorBoard(object):
     :rtype: int
     """
     self._install_signal_handler(signal.SIGTERM, "SIGTERM")
-    if self.flags.inspect:
+    subcommand_name = getattr(self.flags, _SUBCOMMAND_FLAG)
+    if subcommand_name == _SERVE_SUBCOMMAND_NAME:
+      runner = self._run_serve_subcommand
+    else:
+      runner = self.subcommands[subcommand_name].run
+    return runner(self.flags) or 0
+
+  def _run_serve_subcommand(self, flags):
+    if flags.inspect:
+      # TODO(@wchargin): Convert `inspect` to a normal subcommand?
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
-      event_file = os.path.expanduser(self.flags.event_file)
-      efi.inspect(self.flags.logdir, event_file, self.flags.tag)
+      event_file = os.path.expanduser(flags.event_file)
+      efi.inspect(flags.logdir, event_file, flags.tag)
       return 0
-    if self.flags.version_tb:
+    if flags.version_tb:
       print(version.VERSION)
       return 0
     try:
@@ -293,6 +351,56 @@ class TensorBoard(object):
                                                 self.plugin_loaders,
                                                 self.assets_zip_provider)
     return self.server_class(app, self.flags)
+
+
+@six.add_metaclass(ABCMeta)
+class TensorBoardSubcommand(object):
+  """Experimental private API for defining subcommands to tensorboard(1)."""
+
+  @abstractmethod
+  def name(self):
+    """Name of this subcommand, as specified on the command line.
+
+    This must be unique across all subcommands.
+
+    Returns:
+      A string.
+    """
+    pass
+
+  @abstractmethod
+  def define_flags(self, parser):
+    """Configure an argument parser for this subcommand.
+
+    Flags whose names start with two underscores (e.g., `__foo`) are
+    reserved for use by the runtime and must not be defined by
+    subcommands.
+
+    Args:
+      parser: An `argparse.ArgumentParser` scoped to this subcommand,
+        which this function should mutate.
+    """
+    pass
+
+  @abstractmethod
+  def run(self, flags):
+    """Execute this subcommand with user-provided flags.
+
+    Args:
+      flags: An `argparse.Namespace` object with all defined flags.
+
+    Returns:
+      An `int` exit code, or `None` as an alias for `0`.
+    """
+    pass
+
+  def help(self):
+    """Short, one-line help text to display on `tensorboard --help`."""
+    return None
+
+  def description(self):
+    """Description to display on `tensorboard SUBCOMMAND --help`."""
+    return None
 
 
 @six.add_metaclass(ABCMeta)
@@ -554,6 +662,43 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     # unset (and thus make messages logged to it inherit the root logger level).
     self.log('debug', 'Fixing werkzeug logger to inherit TensorBoard log level')
     logging.getLogger('werkzeug').setLevel(logging.NOTSET)
+
+
+class _ArgparseMonkeyPatch(object):
+  """Make Python 2.7 behave like Python 3 w.r.t. default subcommands.
+
+  The behavior of argparse was changed in Python 3.3. When a parser
+  defines subcommands, it used to be an error for the user to invoke the
+  binary without specifying a subcommand; as of Python 3.3, this is
+  permitted. This monkey patch backports that behavior to earlier
+  versions of Python.
+  """
+
+  def __init__(self):
+    self._real_error = argparse.ArgumentParser.error
+
+  def install(self):
+    real_error = argparse.ArgumentParser.error
+    # This must exactly match the error message raised by Python 2.7's
+    # `argparse` when no subparser is given. This is `argparse.py:1954` at
+    # Git tag `v2.7.16`.
+    ignored_message = gettext.gettext("too few arguments")
+
+    def error(*args, **kwargs):
+      # Expected signature is `error(self, message)`, but we retain more
+      # flexibility to be forward-compatible with implementation changes.
+      if "message" not in kwargs and len(args) < 2:
+        return self._real_error(*args, **kwargs)
+      message = kwargs["message"] if "message" in kwargs else args[1]
+      if message == ignored_message:
+        return None
+      else:
+        return self._real_error(*args, **kwargs)
+
+    argparse.ArgumentParser.error = error
+
+  def uninstall(self):
+    argparse.ArgumentParser.error = self._real_error
 
 
 create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)
