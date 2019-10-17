@@ -105,7 +105,10 @@ class LocalFileSystem(object):
                 from the very beginning
 
         Returns:
-            Subset of the contents of the file as a string or bytes.
+            A tuple of `(data, new_byte_offset)` where `data' provides either
+            bytes read from the file (if `binary_mode == true`) or the decoded
+            string representation thereof (otherwise), and `new_byte_offset` is
+            the next unread position in the file, counted in bytes.
         """
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
@@ -236,7 +239,10 @@ class S3FileSystem(object):
                 from the very beginning
 
         Returns:
-            Subset of the contents of the file as a string or bytes.
+            A tuple of `(data, new_byte_offset)` where `data' provides either
+            bytes read from the file (if `binary_mode == true`) or the decoded
+            string representation thereof (otherwise), and `new_byte_offset` is
+            the next unread position in the file, counted in bytes.
         """
         s3 = boto3.resource("s3")
         bucket, path = self.bucket_and_path(filename)
