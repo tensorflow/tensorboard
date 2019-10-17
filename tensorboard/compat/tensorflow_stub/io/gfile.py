@@ -101,7 +101,7 @@ class LocalFileSystem(object):
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
                 read all the contents of the file from the offset
-            offset: int, offset into file to read from, otherwise read
+            offset: int, offset into file to read from, in bytes; otherwise read
                 from the very beginning
 
         Returns:
@@ -112,10 +112,12 @@ class LocalFileSystem(object):
         with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
-            if size is not None:
-                return f.read(size)
-            else:
-                return f.read()
+            data = f.read(size)
+            # The new offset may not be `offset + len(data)`, due to decoding
+            # and newline translation.
+            # So, just measure it in terms of raw file bytes.
+            new_byte_offset = f.tell()
+            return (data, new_byte_offset)
 
     def write(self, filename, file_content, binary_mode=False):
         """Writes string file contents to a file, overwriting any
@@ -230,7 +232,7 @@ class S3FileSystem(object):
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
                 read all the contents of the file from the offset
-            offset: int, offset into file to read from, otherwise read
+            offset: int, offset into file to read from, in bytes; otherwise read
                 from the very beginning
 
         Returns:
@@ -266,10 +268,13 @@ class S3FileSystem(object):
                     stream = s3.Object(bucket, path).get(**args)['Body'].read()
             else:
                 raise
+        # `stream` should contain raw bytes here (i.e., there has been neither
+        # decoding nor newline translation), so the byte offset increases by
+        # the expected amount.
         if binary_mode:
-            return bytes(stream)
+            return (bytes(stream), offset + len(stream))
         else:
-            return stream.decode('utf-8')
+            return (stream.decode('utf-8'), offset + len(stream))
 
     def write(self, filename, file_content, binary_mode=False):
         """Writes string file contents to a file.
@@ -386,8 +391,8 @@ class GFile(object):
         self.fs_supports_append = hasattr(self.fs, 'append')
         self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
         self.buff = None
-        self.buff_offset = 0
-        self.offset = 0
+        self.buff_char_offset = 0
+        self.file_byte_offset = 0
         self.write_temp = None
         self.write_started = False
         self.binary_mode = 'b' in mode
@@ -400,17 +405,16 @@ class GFile(object):
     def __exit__(self, *args):
         self.close()
         self.buff = None
-        self.buff_offset = 0
-        self.offset = 0
+        self.buff_char_offset = 0
+        self.file_byte_offset = 0
 
     def __iter__(self):
         return self
 
     def _read_buffer_to_offset(self, new_buff_offset):
-        old_buff_offset = self.buff_offset
+        old_buff_offset = self.buff_char_offset
         read_size = min(len(self.buff), new_buff_offset) - old_buff_offset
-        self.offset += read_size
-        self.buff_offset += read_size
+        self.buff_char_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
     def read(self, n=None):
@@ -424,10 +428,10 @@ class GFile(object):
             Subset of the contents of the file as a string or bytes.
         """
         result = None
-        if self.buff and len(self.buff) > self.buff_offset:
+        if self.buff and len(self.buff) > self.buff_char_offset:
             # read from local buffer
             if n is not None:
-                chunk = self._read_buffer_to_offset(self.buff_offset + n)
+                chunk = self._read_buffer_to_offset(self.buff_char_offset + n)
                 if len(chunk) == n:
                     return chunk
                 result = chunk
@@ -438,9 +442,9 @@ class GFile(object):
 
         # read from filesystem
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        self.buff = self.fs.read(self.filename, self.binary_mode,
-                                 read_size, self.offset)
-        self.buff_offset = 0
+        (self.buff, self.file_byte_offset) = self.fs.read(self.filename, self.binary_mode,
+                                 read_size, self.file_byte_offset)
+        self.buff_char_offset = 0
 
         # add from filesystem
         if n is not None:
@@ -490,15 +494,15 @@ class GFile(object):
                 if not self.buff:
                     raise StopIteration()
             else:
-                index = self.buff.find('\n', self.buff_offset)
+                index = self.buff.find('\n', self.buff_char_offset)
                 if index != -1:
                     # include line until now plus newline
-                    chunk = self.read(index + 1 - self.buff_offset)
+                    chunk = self.read(index + 1 - self.buff_char_offset)
                     line = line + chunk if line else chunk
                     return line
 
                 # read one unit past end of buffer
-                chunk = self.read(len(self.buff) + 1 - self.buff_offset)
+                chunk = self.read(len(self.buff) + 1 - self.buff_char_offset)
                 line = line + chunk if line else chunk
                 if line and (line[-1] == '\n' or not self.buff):
                     return line
