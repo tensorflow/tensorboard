@@ -274,6 +274,47 @@ class ApplicationTest(tb_test.TestCase):
         }
     )
 
+  def testPluginEntry(self):
+    """Test the plugin.html endpoint."""
+    response = self.server.get('/plugin.html?name=baz')
+    self.assertEqual(200, response.status_code)
+    self.assertEqual('text/html; charset=utf-8', response.headers.get('Content-Type'))
+
+    document = response.get_data().decode('utf-8')
+    self.assertIn('<head><base href="data/plugin/baz/" /></head>', document)
+    self.assertIn('import("./esmodule").then((m) => void m.render());', document)
+    # base64 sha256 of of above script
+    self.assertIn(
+        "'sha256-3KGOnqHhLsX2RmjH/K2DurN9N2qtApZk5zHdSPg4LcA='",
+        response.headers.get('Content-Security-Policy'),
+    )
+
+    for name in ['bazz', 'baz ']:
+      response = self.server.get('/plugin.html?name=%s' % name)
+      self.assertEqual(404, response.status_code)
+
+    for name in ['foo', 'bar']:
+      response = self.server.get('/plugin.html?name=%s' % name)
+      self.assertEqual(400, response.status_code)
+      self.assertEqual(
+          response.get_data().decode('utf-8'),
+          'Plugin is not module loadable',
+      )
+
+  def testPluginEntryBadModulePath(self):
+    plugins = [
+        FakePlugin(
+            plugin_name='mallory',
+            es_module_path_value='//pwn.tb/somepath'
+        ),
+    ]
+    app = application.TensorBoardWSGI(plugins)
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    response = server.get('/plugin.html?name=mallory')
+    self.assertEqual(200, response.status_code)
+    document = response.get_data().decode('utf-8')
+    self.assertIn('import("./somepath").then((m) => void m.render());', document)
+
 
 class ApplicationBaseUrlTest(tb_test.TestCase):
   path_prefix = '/test'

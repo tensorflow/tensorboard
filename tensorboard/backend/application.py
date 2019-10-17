@@ -22,14 +22,17 @@ from __future__ import division
 from __future__ import print_function
 
 import atexit
+import base64
 import collections
 import contextlib
+import hashlib
 import json
 import os
 import re
 import shutil
 import sqlite3
 import tempfile
+import textwrap
 import threading
 import time
 
@@ -74,6 +77,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
 DATA_PREFIX = '/data'
 PLUGIN_PREFIX = '/plugin'
 PLUGINS_LISTING_ROUTE = '/plugins_listing'
+PLUGIN_ENTRY_ROUTE = '/plugin.html'
 
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
@@ -262,6 +266,7 @@ class TensorBoardWSGI(object):
         # obviate the need for the frontend to determine which plugins are
         # active.
         DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
+        PLUGIN_ENTRY_ROUTE: self._serve_plugin_entry,
     }
     unordered_prefix_routes = {}
 
@@ -336,6 +341,55 @@ class TensorBoardWSGI(object):
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
     app = _handling_errors(app)
     return app
+
+  @wrappers.Request.application
+  def _serve_plugin_entry(self, request):
+    """Serves a HTML for iframed plugin entry point.
+
+    Args:
+      request: The werkzeug.Request object.
+
+    Returns:
+      A werkzeug.Response object.
+    """
+    name = request.args.get('name')
+    plugins = [
+        plugin for plugin in self._plugins if plugin.plugin_name == name]
+
+    if not plugins:
+      return http_util.Respond(
+          request, 'Plugin not found', 'text/plain', code=404)
+
+    if len(plugins) > 1:
+      # Technically is not possible as plugin names are unique and is checked
+      # by the check on __init__.
+      return http_util.Respond(
+          request, 'Invariant error', 'text/plain', code=400)
+
+    plugin = plugins[0]
+    module_url = plugin.frontend_metadata().es_module_path
+    if not module_url:
+      return http_util.Respond(
+          request, 'Plugin is not module loadable', 'text/plain', code=400)
+
+    # Prevent a malicious plugin from using an absolute path that would make this trusted
+    # script load an arbitrary script from a remote source.
+    module_path = urlparse.urlparse(module_url).path
+    script_content = 'import(".{module}").then((m) => void m.render());'.format(
+        module = module_path)
+    digest = hashlib.sha256(script_content.encode('utf8')).digest()
+    script_sha = base64.b64encode(digest).decode("ascii")
+
+    html = textwrap.dedent("""
+      <head><base href="data/plugin/{name}/" /></head>
+      <body><script type="module">{script_content}</script></body>
+    """).format(name = name, script_content = script_content)
+    return http_util.Respond(
+        request,
+        html,
+        'text/html',
+        csp_scripts_sha256s=[script_sha],
+    )
 
   @wrappers.Request.application
   def _serve_plugins_listing(self, request):
