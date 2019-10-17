@@ -1068,6 +1068,7 @@ var vz_example_viewer;
          */
         createCompareExamplesFromJson: function (json) {
             if (!json) {
+                this.compareExample = null;
                 return;
             }
             this.compareExample = this.createExamplesFromJsonHelper(json);
