@@ -14,14 +14,20 @@
 
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 
-def tb_proto_library(name, srcs=None, visibility=None, testonly=None):
-  py_proto_library(
-      name = name + "_py_pb2",
-      srcs = srcs,
-      srcs_version = "PY2AND3",
-      deps = ["@com_google_protobuf//:protobuf_python"],
-      protoc = "@com_google_protobuf//:protoc",
-      visibility = visibility,
-      default_runtime = "@com_google_protobuf//:protobuf_python",
-      testonly = testonly,
-  )
+def tb_proto_library(
+        name,
+        srcs = None,
+        visibility = None,
+        testonly = None,
+        has_services = False):
+    py_proto_library(
+        name = name + "_py_pb2",
+        srcs = srcs,
+        srcs_version = "PY2AND3",
+        use_grpc_plugin = has_services,
+        deps = ["@com_google_protobuf//:protobuf_python"],
+        protoc = "@com_google_protobuf//:protoc",
+        visibility = visibility,
+        default_runtime = "@com_google_protobuf//:protobuf_python",
+        testonly = testonly,
+    )
