@@ -338,7 +338,7 @@ def _display_colab(port, height, display_handle):
   affects all requests (XHRs and resources alike).
   """
   from google.colab.output import eval_js
-  url = eval_js('google.colab.kernel.proxyPort(%d)' % port)
+  url = eval_js("google.colab.kernel.proxyPort(%d)" % port)
 
   import IPython.display
   iframe = IPython.display.IFrame(
