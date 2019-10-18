@@ -185,8 +185,8 @@ class DataProvider(object):
     """Read data for a single blob.
 
     Args:
-      blob_key: a key identifying the desired blob, as provided by
-        `read_blob_sequences()`.
+      blob_key: A key identifying the desired blob, as provided by
+        `read_blob_sequences(...)`.
 
     Returns:
       Raw binary data as `bytes`.
@@ -249,22 +249,10 @@ class Run(object):
     ))
 
 
-@six.add_metaclass(abc.ABCMeta)
-class TimeSeries(object):
+class _TimeSeries(object):
   """Metadata about time series data for a particular run and tag.
 
-  Attributes:
-    max_step: The largest step value of any datum in this time series; a
-      nonnegative integer.
-    max_wall_time: The largest wall time of any datum in this time series, as
-      `float` seconds since epoch.
-    plugin_content: A bytestring of arbitrary plugin-specific metadata for this
-      time series, as provided to `tf.summary.write` in the
-      `plugin_data.content` field of the `metadata` argument.
-    description: An optional long-form Markdown description, as a `str` that is
-      empty if no description was specified.
-    display_name: An optional long-form Markdown description, as a `str` that is
-      empty if no description was specified. Deprecated; may be removed soon.
+  Superclass of `ScalarTimeSeries` and `BlobSequenceTimeSeries`.
   """
 
   __slots__ = (
@@ -305,7 +293,7 @@ class TimeSeries(object):
     return self._display_name
 
 
-class ScalarTimeSeries(TimeSeries):
+class ScalarTimeSeries(_TimeSeries):
   """Metadata about a scalar time series for a particular run and tag.
 
   Attributes:
@@ -408,7 +396,7 @@ class ScalarDatum(object):
     ))
 
 
-class BlobSequenceTimeSeries(TimeSeries):
+class BlobSequenceTimeSeries(_TimeSeries):
   """Metadata about a blob sequence time series for a particular run and tag.
 
   Attributes:
@@ -476,8 +464,59 @@ class BlobSequenceTimeSeries(TimeSeries):
         "display_name=%r" % (self._display_name,),
     ))
 
+class BlobReference(object):
+  """A reference to a blob.  
 
-# TODO(soergel): collapse with ScalarDatum?
+  Attributes:
+    url: A string containing a URL from which the blob data may be fetched
+      directly, bypassing the data provider (optional).
+    blob_key: A string containing an key uniquely identifying a blob, which
+      may be dereferenced via `provider.read_blob(blob_key)`.  These keys must
+      be constructed such that they can be included directly in a URL, with no
+      further encoding.  Concretely, this means that they consist exclusively
+      of "unreserved characters" per RFC 3986, namely [a-zA-Z0-9._~-].
+      These keys are case-sensitive; it may be wise for implementations to
+      normalize case to reduce confusion.  The empty string is not a valid key. 
+  """
+  __slots__ = ("_url", "_blob_key")
+
+  def __init__(self, url, blob_key):
+    self._url = url
+    self._blob_key = blob_key
+
+  @property
+  def url(self):
+    """Provide the direct-access URL for this blob, if available.
+    
+    Note that this method is *not* expected to construct a URL to the
+    data-loading endpoint provided by TensorBoard.  If this method returns
+    None, then the caller should proceed to use `blob_key()` to build the URL,
+    as needed.
+    """
+    return self._url
+
+  @property
+  def blob_key(self):
+    return self._blob_key
+
+  def __eq__(self, other):
+    if not isinstance(other, BlobReference):
+      return False
+    if self._url != other._url:
+      return False
+    if self._blob_key != other._blob_key:
+      return False
+    return True
+
+  def __hash__(self):
+    return hash((self._url, self._blob_key))
+
+  def __repr__(self):
+    return "BlobReference(%s)" % ", ".join((
+        "url=%r" % (self._url,),
+        "blob_key=%r" % (self._blob_key,),
+    ))
+
 class BlobSequenceDatum(object):
   """A single datum in a blob sequence time series for a run and tag.
 
@@ -486,18 +525,16 @@ class BlobSequenceDatum(object):
       unique key among data of this time series.
     wall_time: The real-world time at which this datum occurred, as `float`
       seconds since epoch.
-    value: A tuple of blob references, providing access to elements of this
-      sequence.  The references may be either absolute URLs that can be loaded
-      directly, or unique keys that may later be dereferenced via
-      `provider.read_blob`.
+    values: A tuple of `BlobReference` objects, providing access to elements of
+      this sequence.
   """
 
-  __slots__ = ("_step", "_wall_time", "_value")
+  __slots__ = ("_step", "_wall_time", "_values")
 
-  def __init__(self, step, wall_time, value):
+  def __init__(self, step, wall_time, values):
     self._step = step
     self._wall_time = wall_time
-    self._value = value
+    self._values = values
 
   @property
   def step(self):
@@ -508,8 +545,8 @@ class BlobSequenceDatum(object):
     return self._wall_time
 
   @property
-  def value(self):
-    return self._value
+  def values(self):
+    return self._values
 
   def __eq__(self, other):
     if not isinstance(other, BlobSequenceDatum):
@@ -518,18 +555,18 @@ class BlobSequenceDatum(object):
       return False
     if self._wall_time != other._wall_time:
       return False
-    if self._value != other._value:
+    if self._values != other._values:
       return False
     return True
 
   def __hash__(self):
-    return hash((self._step, self._wall_time, self._value))
+    return hash((self._step, self._wall_time, self._values))
 
   def __repr__(self):
     return "BlobSequenceDatum(%s)" % ", ".join((
         "step=%r" % (self._step,),
         "wall_time=%r" % (self._wall_time,),
-        "value=%r" % (self._value,),
+        "values=%r" % (self._values,),
     ))
 
 

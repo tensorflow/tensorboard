@@ -147,32 +147,59 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
     self.assertNotEqual(hash(x1), hash(x3))
 
 
+class BlobReferenceTest(tb_test.TestCase):
+
+  def test_repr(self):
+    x = provider.BlobReference(url="foo", blob_key="baz")
+    repr_ = repr(x)
+    self.assertIn(repr(x.url), repr_)
+    self.assertIn(repr(x.blob_key), repr_)
+
+  def test_eq(self):
+    x1 = provider.BlobReference(url="foo", blob_key="baz")
+    x2 = provider.BlobReference(url="foo", blob_key="baz")
+    x3 = provider.BlobReference(url="foo", blob_key="qux")
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_hash(self):
+    x1 = provider.BlobReference(url="foo", blob_key="baz")
+    x2 = provider.BlobReference(url="foo", blob_key="baz")
+    x3 = provider.BlobReference(url="foo", blob_key="qux")
+    self.assertEqual(hash(x1), hash(x2))
+    # The next check is technically not required by the `__hash__`
+    # contract, but _should_ pass; failure on this assertion would at
+    # least warrant some scrutiny.
+    self.assertNotEqual(hash(x1), hash(x3))
+
+
 class BlobSequenceDatumTest(tb_test.TestCase):
 
   def test_repr(self):
     x = provider.BlobSequenceDatum(
-        step=123, wall_time=234.5, value=("foo", "bar", "baz"))
+        step=123, wall_time=234.5, values=("foo", "bar", "baz"))
     repr_ = repr(x)
     self.assertIn(repr(x.step), repr_)
     self.assertIn(repr(x.wall_time), repr_)
-    self.assertIn(repr(x.value), repr_)
+    self.assertIn(repr(x.values), repr_)
 
   def test_eq(self):
     x1 = provider.BlobSequenceDatum(
-        step=12, wall_time=0.25, value=("foo", "bar", "baz"))
+        step=12, wall_time=0.25, values=("foo", "bar", "baz"))
     x2 = provider.BlobSequenceDatum(
-        step=12, wall_time=0.25, value=("foo", "bar", "baz"))
-    x3 = provider.BlobSequenceDatum(step=23, wall_time=3.25, value=("qux"))
+        step=12, wall_time=0.25, values=("foo", "bar", "baz"))
+    x3 = provider.BlobSequenceDatum(step=23, wall_time=3.25, values=("qux",))
     self.assertEqual(x1, x2)
     self.assertNotEqual(x1, x3)
     self.assertNotEqual(x1, object())
 
   def test_hash(self):
     x1 = provider.BlobSequenceDatum(
-        step=12, wall_time=0.25, value=("foo", "bar", "baz"))
+        step=12, wall_time=0.25, values=("foo", "bar", "baz"))
     x2 = provider.BlobSequenceDatum(
-        step=12, wall_time=0.25, value=("foo", "bar", "baz"))
-    x3 = provider.BlobSequenceDatum(step=23, wall_time=3.25, value=("qux"))
+        step=12, wall_time=0.25, values=("foo", "bar", "baz"))
+    x3 = provider.BlobSequenceDatum(step=23, wall_time=3.25, values=("qux",))
     self.assertEqual(hash(x1), hash(x2))
     # The next check is technically not required by the `__hash__`
     # contract, but _should_ pass; failure on this assertion would at
