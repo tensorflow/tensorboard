@@ -201,6 +201,7 @@ def Respond(request,
             "'self'",
             *_CSP_FONT_DOMAINS_WHITELIST
         ),
+        'frame-ancestors *',
         # Dynamic plugins are rendered inside an iframe.
         "frame-src 'self'",
         # data uri used by favicon
