@@ -362,12 +362,11 @@ class TensorBoardWSGI(object):
     if len(plugins) > 1:
       # Technically is not possible as plugin names are unique and is checked
       # by the check on __init__.
-      raise AssertionError(
-          'Plugin invariant error: multiple plugins with name {name} found: {list}'.format(
-              name=name,
-              list=plugins,
-          )
-      )
+      reason = (
+          'Plugin invariant error: multiple plugins with name '
+          '{name} found: {list}'
+      ).format(name=name, list=plugins)
+      raise AssertionError(reason)
 
     plugin = plugins[0]
     module_path = plugin.frontend_metadata().es_module_path
@@ -379,10 +378,11 @@ class TensorBoardWSGI(object):
     if urlparse.urlparse(module_path).netloc:
       raise ValueError('Expected es_module_path to be non-absolute path')
 
-    module_json = json.dumps("." + module_path)
-    script_content = 'import({}).then((m) => void m.render());'.format(module_json)
+    module_json = json.dumps('.' + module_path)
+    script_content = 'import({}).then((m) => void m.render());'.format(
+        module_json)
     digest = hashlib.sha256(script_content.encode('utf-8')).digest()
-    script_sha = base64.b64encode(digest).decode("ascii")
+    script_sha = base64.b64encode(digest).decode('ascii')
 
     html = textwrap.dedent("""
       <!DOCTYPE html>
