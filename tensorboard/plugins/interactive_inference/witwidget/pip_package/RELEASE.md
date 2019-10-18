@@ -1,5 +1,14 @@
 # What-If Tool witwidget package releases
 
+## Release 1.4.3
+
+### Notable Features
+- #2787 - Add ml service name and version for CAIP .
+- #2781 - Add callback creator for TFMA slicing usage.
+
+### Notable Bug Fixes
+- #2785 - Fix sliced intersection.
+
 ## Release 1.4.2
 
 ### Notable Features
