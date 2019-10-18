@@ -120,7 +120,7 @@ def _start_magic(line):
   return start(line)
 
 
-def start(args_string):
+def start(args_string, skip_display=False):
   """Launch and display a TensorBoard instance as if at the command line.
 
   Args:
@@ -128,6 +128,8 @@ def start(args_string):
       interpreted by `shlex.split`: e.g., "--logdir ./logs --port 0".
       Shell metacharacters are not supported: e.g., "--logdir 2>&1" will
       point the logdir at the literal directory named "2>&1".
+    skip_display: (Default: False) When true, does not display the
+      tensorboard window directly in the notebook.
   """
   context = _get_context()
   try:
@@ -155,11 +157,12 @@ def start(args_string):
   start_result = manager.start(parsed_args)
 
   if isinstance(start_result, manager.StartLaunched):
-    _display(
-        port=start_result.info.port,
-        print_message=False,
-        display_handle=handle,
-    )
+    if not skip_display:
+      _display(
+          port=start_result.info.port,
+          print_message=False,
+          display_handle=handle,
+      )
 
   elif isinstance(start_result, manager.StartReused):
     template = (
@@ -172,11 +175,12 @@ def start(args_string):
         delta=_time_delta_from_info(start_result.info),
     )
     print_or_update(message)
-    _display(
-        port=start_result.info.port,
-        print_message=False,
-        display_handle=None,
-    )
+    if not skip_display:
+      _display(
+          port=start_result.info.port,
+          print_message=False,
+          display_handle=None,
+      )
 
   elif isinstance(start_result, manager.StartFailed):
     def format_stream(name, value):
