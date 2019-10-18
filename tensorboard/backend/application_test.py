@@ -283,8 +283,9 @@ class ApplicationTest(tb_test.TestCase):
 
     document = response.get_data().decode('utf-8')
     self.assertIn('<head><base href="plugin/baz/" /></head>', document)
-    self.assertIn('import("./esmodule").then((m) => void m.render());', document)
-    # base64 sha256 of of above script
+    self.assertIn(
+        'import("./esmodule").then((m) => void m.render());', document)
+    # base64 sha256 of above script
     self.assertIn(
         "'sha256-3KGOnqHhLsX2RmjH/K2DurN9N2qtApZk5zHdSPg4LcA='",
         response.headers.get('Content-Security-Policy'),
