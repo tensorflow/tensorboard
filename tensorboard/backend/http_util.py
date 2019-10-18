@@ -204,10 +204,12 @@ def Respond(request,
         'frame-ancestors *',
         # Dynamic plugins are rendered inside an iframe.
         "frame-src 'self'",
-        # data uri used by favicon
         'img-src %s' % _create_csp_string(
             "'self'",
+            # used by favicon
             'data:',
+            # used by What-If tool for image sprites.
+            'blob:',
             *_CSP_IMG_DOMAINS_WHITELIST
         ),
         "object-src 'none'",
