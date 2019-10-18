@@ -312,7 +312,7 @@ class ApplicationTest(tb_test.TestCase):
     app = application.TensorBoardWSGI(plugins)
     server = werkzeug_test.Client(app, wrappers.BaseResponse)
     with six.assertRaisesRegex(
-        self, AssertionError, 'Expected es_module_path to be non-absolute path'):
+        self, ValueError, 'Expected es_module_path to be non-absolute path'):
       server.get('/data/plugin_entry.html?name=mallory')
 
 

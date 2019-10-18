@@ -357,13 +357,17 @@ class TensorBoardWSGI(object):
         plugin for plugin in self._plugins if plugin.plugin_name == name]
 
     if not plugins:
-      return http_util.Respond(
-          request, 'Plugin not found', 'text/plain', code=404)
+      raise errors.NotFoundError(name)
 
     if len(plugins) > 1:
       # Technically is not possible as plugin names are unique and is checked
       # by the check on __init__.
-      raise AssertionError('Plugin invariant error')
+      raise AssertionError(
+          'Plugin invariant error: multiple plugins with name {name} found: {list}'.format(
+              name=name,
+              list=plugins,
+          )
+      )
 
     plugin = plugins[0]
     module_path = plugin.frontend_metadata().es_module_path
@@ -373,7 +377,7 @@ class TensorBoardWSGI(object):
 
     # non-self origin is blocked by CSP but this is a good invariant checking.
     if urlparse.urlparse(module_path).netloc:
-      raise AssertionError('Expected es_module_path to be non-absolute path')
+      raise ValueError('Expected es_module_path to be non-absolute path')
 
     module_json = json.dumps("." + module_path)
     script_content = 'import({}).then((m) => void m.render());'.format(module_json)
