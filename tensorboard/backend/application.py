@@ -77,7 +77,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
 DATA_PREFIX = '/data'
 PLUGIN_PREFIX = '/plugin'
 PLUGINS_LISTING_ROUTE = '/plugins_listing'
-PLUGIN_ENTRY_ROUTE = '/plugin.html'
+PLUGIN_ENTRY_ROUTE = '/plugin_entry.html'
 
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
@@ -266,7 +266,7 @@ class TensorBoardWSGI(object):
         # obviate the need for the frontend to determine which plugins are
         # active.
         DATA_PREFIX + PLUGINS_LISTING_ROUTE: self._serve_plugins_listing,
-        PLUGIN_ENTRY_ROUTE: self._serve_plugin_entry,
+        DATA_PREFIX + PLUGIN_ENTRY_ROUTE: self._serve_plugin_entry,
     }
     unordered_prefix_routes = {}
 
@@ -363,27 +363,28 @@ class TensorBoardWSGI(object):
     if len(plugins) > 1:
       # Technically is not possible as plugin names are unique and is checked
       # by the check on __init__.
-      return http_util.Respond(
-          request, 'Invariant error', 'text/plain', code=400)
+      raise AssertionError('Plugin invariant error')
 
     plugin = plugins[0]
-    module_url = plugin.frontend_metadata().es_module_path
-    if not module_url:
+    module_path = plugin.frontend_metadata().es_module_path
+    if not module_path:
       return http_util.Respond(
           request, 'Plugin is not module loadable', 'text/plain', code=400)
 
-    # Prevent a malicious plugin from using an absolute path that would make this trusted
-    # script load an arbitrary script from a remote source.
-    module_path = urlparse.urlparse(module_url).path
-    script_content = 'import(".{module}").then((m) => void m.render());'.format(
-        module = module_path)
-    digest = hashlib.sha256(script_content.encode('utf8')).digest()
+    # non-self origin is blocked by CSP but this is a good invariant checking.
+    if urlparse.urlparse(module_path).netloc:
+      raise AssertionError('Expected es_module_path to be non-absolute path')
+
+    module_json = json.dumps("." + module_path)
+    script_content = 'import({}).then((m) => void m.render());'.format(module_json)
+    digest = hashlib.sha256(script_content.encode('utf-8')).digest()
     script_sha = base64.b64encode(digest).decode("ascii")
 
     html = textwrap.dedent("""
-      <head><base href="data/plugin/{name}/" /></head>
+      <!DOCTYPE html>
+      <head><base href="plugin/{name}/" /></head>
       <body><script type="module">{script_content}</script></body>
-    """).format(name = name, script_content = script_content)
+    """).format(name=name, script_content=script_content)
     return http_util.Respond(
         request,
         html,

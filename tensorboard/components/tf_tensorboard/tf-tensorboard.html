@@ -887,7 +887,7 @@ limitations under the License.
         }
         const iframe = document.createElement('iframe');
         iframe.id = 'dashboard'; // used in `_selectedDashboardComponent`
-        const srcUrl = new URL('plugin.html', window.location.href);
+        const srcUrl = new URL('data/plugin_entry.html', window.location.href);
         srcUrl.searchParams.set('name', selectedDashboard);
         iframe.setAttribute('src', srcUrl.toString());
         container.appendChild(iframe);
