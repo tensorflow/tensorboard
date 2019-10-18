@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("@com_google_protobuf//:protobuf.bzl", "proto_gen")
 
 def tb_proto_library(
         name,
@@ -20,14 +20,47 @@ def tb_proto_library(
         visibility = None,
         testonly = None,
         has_services = False):
-    py_proto_library(
-        name = name + "_py_pb2",
+    outs_proto = _PyOuts(srcs, grpc = False)
+    outs_grpc = _PyOuts(srcs, grpc = True) if has_services else []
+    outs_all = outs_proto + outs_grpc
+
+    proto_gen(
+        name = name + "_py_pb2_genproto",
         srcs = srcs,
-        srcs_version = "PY2AND3",
-        use_grpc_plugin = has_services,
-        deps = ["@com_google_protobuf//:protobuf_python"],
+        deps = ["@com_google_protobuf//:protobuf_python_genproto"],
+        includes = [],
         protoc = "@com_google_protobuf//:protoc",
-        visibility = visibility,
-        default_runtime = "@com_google_protobuf//:protobuf_python",
-        testonly = testonly,
+        gen_py = True,
+        outs = outs_all,
+        visibility = ["//visibility:public"],
+        plugin = "//external:grpc_python_plugin" if has_services else None,
+        plugin_language = "grpc",
     )
+
+    native.py_library(
+        name = name + "_py_pb2",
+        srcs = outs_proto,
+        imports = [],
+        srcs_version = "PY2AND3",
+        deps = ["@com_google_protobuf//:protobuf_python"],
+        testonly = testonly,
+        visibility = visibility,
+    )
+    if has_services:
+        native.py_library(
+            name = name + "_py_pb2_grpc",
+            srcs = outs_grpc,
+            imports = [],
+            srcs_version = "PY2AND3",
+            deps = [
+                name + "_py_pb2",
+                "@com_google_protobuf//:protobuf_python",
+            ],
+            testonly = testonly,
+            visibility = visibility,
+        )
+
+def _PyOuts(srcs, grpc):
+    # Adapted from @com_google_protobuf//:protobuf.bzl.
+    ext = "_pb2.py" if not grpc else "_pb2_grpc.py"
+    return [s[:-len(".proto")] + ext for s in srcs]
