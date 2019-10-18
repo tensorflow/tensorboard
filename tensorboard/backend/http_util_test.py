@@ -192,7 +192,7 @@ class RespondTest(tb_test.TestCase):
     r = http_util.Respond(
         q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
     expected_csp = (
-        "default-src 'self';font-src 'self';"
+        "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
@@ -204,7 +204,7 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
     expected_csp = (
-        "default-src 'self';font-src 'self';"
+        "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'none'"
@@ -216,7 +216,7 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
     expected_csp = (
-        "default-src 'self';font-src 'self';"
+        "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self'"
@@ -229,7 +229,7 @@ class RespondTest(tb_test.TestCase):
     r = http_util.Respond(
         q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
     expected_csp = (
-        "default-src 'self';font-src 'self';"
+        "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self' 'sha256-abcdefghi'"
@@ -244,7 +244,7 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
     expected_csp = (
-        "default-src 'self';font-src 'self';"
+        "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: https://example.com;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline' https://googol.com;"
         "script-src https://tensorflow.org/tensorboard 'self' 'unsafe-eval' "
