@@ -39,6 +39,18 @@ py_test(
 )
 
 py_test(
+    name = "gfile_tf_test",
+    size = "small",
+    srcs = ["io/gfile_tf_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":tensorflow_stub",
+        "//tensorboard:test",
+    ],
+)
+
+py_test(
     name = "gfile_s3_test",
     size = "small",
     srcs = ["io/gfile_s3_test.py"],

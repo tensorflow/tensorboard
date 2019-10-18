@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""File IO methods that wrap the C++ FileSystem API.
+"""A limited reimplementation of the TensorFlow FileIO API.
 
-The C++ FileSystem API is SWIG wrapped in file_io.i. These functions call those
-to accomplish basic File IO operations.
+The TensorFlow version wraps the C++ FileSystem API.  Here we provide a pure
+Python implementation, limited to the features required for TensorBoard.  This
+allows running TensorBoard without depending on TensorFlow for file operations.
+
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -112,6 +114,9 @@ class LocalFileSystem(object):
         """
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
+        if not exists(filename):
+          raise errors.NotFoundError(
+              None, None, 'Not Found: ' + compat.as_text(filename))
         with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
@@ -184,7 +189,8 @@ class LocalFileSystem(object):
         try:
             os.makedirs(path)
         except FileExistsError:
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists")
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -347,7 +353,8 @@ class S3FileSystem(object):
             path += "/"  # This will now only retrieve subdir content
         keys = []
         for r in p.paginate(Bucket=bucket, Prefix=path, Delimiter="/"):
-            keys.extend(o["Prefix"][len(path):-1] for o in r.get("CommonPrefixes", []))
+            keys.extend(
+                o["Prefix"][len(path):-1] for o in r.get("CommonPrefixes", []))
             for o in r.get("Contents", []):
                 key = o["Key"][len(path):]
                 if key:  # Skip the base dir, which would add an empty string
@@ -357,7 +364,8 @@ class S3FileSystem(object):
     def makedirs(self, dirname):
         """Creates a directory and all parent/intermediate directories."""
         if self.exists(dirname):
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists")
         client = boto3.client("s3")
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
@@ -423,6 +431,9 @@ class GFile(object):
         self.buff_char_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
+    def size(self):
+      return self.fs.stat(self.filename).length
+
     def read(self, n=None):
         """Reads contents of file to a string.
 
@@ -433,6 +444,10 @@ class GFile(object):
         Returns:
             Subset of the contents of the file as a string or bytes.
         """
+        if self.write_mode:
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in read mode")
+
         result = None
         if self.buff and len(self.buff) > self.buff_char_offset:
             # read from local buffer
@@ -448,8 +463,8 @@ class GFile(object):
 
         # read from filesystem
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        (self.buff, self.file_byte_offset) = self.fs.read(self.filename, self.binary_mode,
-                                 read_size, self.file_byte_offset)
+        (self.buff, self.file_byte_offset) = self.fs.read(
+            self.filename, self.binary_mode, read_size, self.file_byte_offset)
         self.buff_char_offset = 0
 
         # add from filesystem
@@ -470,9 +485,11 @@ class GFile(object):
             file_content: string, the contents
         """
         if not self.write_mode:
-            raise errors.OpError(None, None, "File not opened in write mode")
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in write mode")
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed")
 
         if self.fs_supports_append:
             if not self.write_started:
@@ -518,9 +535,27 @@ class GFile(object):
     def next(self):
         return self.__next__()
 
+    def readline(self):
+      try:
+        return self.__next__()
+      except StopIteration:
+        return None
+
+    def readlines(self):
+      """Returns all lines from the file in a list."""
+      # self._preread_check()
+      lines = []
+      while True:
+        s = self.readline()
+        if not s:
+          break
+        lines.append(s)
+      return lines
+
     def flush(self):
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed")
 
         if not self.fs_supports_append:
             if self.write_temp is not None:
@@ -540,6 +575,12 @@ class GFile(object):
             self.write_temp = None
             self.write_started = False
         self.closed = True
+    
+    # Note we do not implement `tell()` or `seek(n)`, because those calls
+    # make sense only in terms of raw byte offsets.  This implementation
+    # abstracts the underlying storage, in such a way that byte offsets are
+    # not immediately available at the GFile level, because decoding happens in
+    # the 'filesystem' layer.
 
 
 def exists(filename):
@@ -572,8 +613,19 @@ def glob(filename):
     """
     return get_filesystem(filename).glob(filename)
 
-
 def isdir(dirname):
+    """Returns whether the path is a directory or not.
+
+    Args:
+      dirname: string, path to a potential directory
+
+    Returns:
+      True, if the path is a directory; False otherwise
+    """
+    return is_directory(dirname)
+
+
+def is_directory(dirname):
     """Returns whether the path is a directory or not.
 
     Args:
@@ -586,6 +638,24 @@ def isdir(dirname):
 
 
 def listdir(dirname):
+    """Returns a list of entries contained within a directory.
+
+    The list is in arbitrary order. It does not contain the special entries "."
+    and "..".
+
+    Args:
+      dirname: string, path to a directory
+
+    Returns:
+      [filename1, filename2, ... filenameN] as strings
+
+    Raises:
+      errors.NotFoundError if directory doesn't exist
+    """
+    return list_directory(dirname)
+
+
+def list_directory(dirname):
     """Returns a list of entries contained within a directory.
 
     The list is in arbitrary order. It does not contain the special entries "."
@@ -618,7 +688,40 @@ def makedirs(path):
     return get_filesystem(path).makedirs(path)
 
 
-def walk(top, topdown=True, onerror=None):
+def file_exists(filename):
+  """Determines whether a path exists or not.
+
+  Args:
+    filename: string, a path
+
+  Returns:
+    True if the path exists, whether it's a file or a directory.
+    False if the path does not exist and there are no filesystem errors.
+
+  Raises:
+    errors.OpError: Propagates any errors reported by the FileSystem API.
+  """
+  return get_filesystem(filename).exists(filename)
+
+
+def walk(top, in_order=True):
+  """Recursive directory tree generator for directories.
+
+  Args:
+    top: string, a Directory name
+    in_order: bool, Traverse in order if True, post order if False.  Errors that
+      happen while listing directories are ignored.
+
+  Yields:
+    Each yield is a 3-tuple:  the pathname of a directory, followed by lists of
+    all its subdirectories and leaf files. That is, each yield looks like:
+    `(dirname, [subdirname, subdirname, ...], [filename, filename, ...])`.
+    Each item is a string.
+  """
+  return walk_v2(top, in_order)
+
+
+def walk_v2(top, topdown=True, onerror=None):
     """Recursive directory tree generator for directories.
 
     Args:
@@ -630,15 +733,15 @@ def walk(top, topdown=True, onerror=None):
     Errors that happen while listing directories are ignored.
 
     Yields:
-      Each yield is a 3-tuple:  the pathname of a directory, followed by lists of
-      all its subdirectories and leaf files.
+      Each yield is a 3-tuple:  the pathname of a directory, followed by lists
+      of all its subdirectories and leaf files.
       (dirname, [subdirname, subdirname, ...], [filename, filename, ...])
       as strings
     """
     top = compat.as_str_any(top)
     fs = get_filesystem(top)
     try:
-        listing = listdir(top)
+        listing = list_directory(top)
     except errors.NotFoundError as err:
         if onerror:
             onerror(err)
@@ -649,7 +752,7 @@ def walk(top, topdown=True, onerror=None):
     subdirs = []
     for item in listing:
         full_path = fs.join(top, compat.as_str_any(item))
-        if isdir(full_path):
+        if is_directory(full_path):
             subdirs.append(item)
         else:
             files.append(item)
@@ -661,7 +764,7 @@ def walk(top, topdown=True, onerror=None):
 
     for subdir in subdirs:
         joined_subdir = fs.join(top, compat.as_str_any(subdir))
-        for subitem in walk(joined_subdir, topdown, onerror=onerror):
+        for subitem in walk_v2(joined_subdir, topdown, onerror=onerror):
             yield subitem
 
     if not topdown:
@@ -681,3 +784,39 @@ def stat(filename):
       errors.OpError: If the operation fails.
     """
     return get_filesystem(filename).stat(filename)
+
+
+def write_string_to_file(filename, file_content):
+  """Writes a string to a given file.
+
+  Args:
+    filename: string, path to a file
+    file_content: string, contents that need to be written to the file
+
+  Raises:
+    errors.OpError: If there are errors during the operation.
+  """
+  with GFile(filename, mode="w") as f:
+    f.write(file_content)
+
+
+def read_file_to_string(filename, binary_mode=False):
+  """Reads the entire contents of a file to a string.
+
+  Args:
+    filename: string, path to a file
+    binary_mode: whether to open the file in binary mode or not. This changes
+      the type of the object returned.
+
+  Returns:
+    contents of the file as a string or bytes.
+
+  Raises:
+    errors.OpError: Raises variety of errors that are subtypes e.g.
+    `NotFoundError` etc.
+  """
+  if binary_mode:
+    f = GFile(filename, mode="rb")
+  else:
+    f = GFile(filename, mode="r")
+  return f.read()
