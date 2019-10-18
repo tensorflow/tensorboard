@@ -195,10 +195,11 @@ class RespondTest(tb_test.TestCase):
         "default-src 'self';font-src 'self';"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'strict-dynamic' 'unsafe-eval' 'sha256-abcdefghi'"
+        "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
   def testCsp_noHash(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
@@ -210,16 +211,15 @@ class RespondTest(tb_test.TestCase):
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
-  @mock.patch.object(http_util, '_CSP_SCRIPT_HASHES_STRICT_DYNAMIC', False)
-  def testCsp_disableStrictDynamic(self):
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', True)
+  def testCsp_onlySelf(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(
-        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
     expected_csp = (
         "default-src 'self';font-src 'self';"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'unsafe-eval' 'sha256-abcdefghi'"
+        "script-src 'self'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -232,7 +232,7 @@ class RespondTest(tb_test.TestCase):
         "default-src 'self';font-src 'self';"
         "frame-src 'self';img-src 'self' data:;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'strict-dynamic' 'sha256-abcdefghi'"
+        "script-src 'self' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
@@ -247,7 +247,7 @@ class RespondTest(tb_test.TestCase):
         "default-src 'self';font-src 'self';"
         "frame-src 'self';img-src 'self' data: https://example.com;object-src 'none';"
         "style-src https://www.gstatic.com data: 'unsafe-inline' https://googol.com;"
-        "script-src https://tensorflow.org/tensorboard 'strict-dynamic' 'unsafe-eval' "
+        "script-src https://tensorflow.org/tensorboard 'self' 'unsafe-eval' "
         "'sha256-abcd'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)

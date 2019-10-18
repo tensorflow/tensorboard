@@ -33,6 +33,15 @@ Example response:
 
 The `logdir` argument is the path of the directory that contains events files.
 
+## `data/plugin_entry.html`
+
+Returns a document for configuring iframe loaded plugin. It takes a plugin name
+as a query parameter `name`.
+
+Abridged response:
+
+    <script type="module">import("./index.js").then((m) => void m.render());
+
 ## `data/plugins_listing`
 
 Returns a dict mapping from plugin name to an object that describes a
