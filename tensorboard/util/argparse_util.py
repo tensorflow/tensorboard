@@ -59,5 +59,7 @@ def allow_missing_subcommand():
       return real_error(*args, **kwargs)
 
   argparse.ArgumentParser.error = error
-  yield
-  argparse.ArgumentParser.error = real_error
+  try:
+    yield
+  finally:
+    argparse.ArgumentParser.error = real_error
