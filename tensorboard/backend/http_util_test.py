@@ -24,6 +24,13 @@ import gzip
 import struct
 
 import six
+
+try:
+  # python version >= 3.3
+  from unittest import mock  # pylint: disable=g-import-not-at-top
+except ImportError:
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
+
 from werkzeug import test as wtest
 from werkzeug import wrappers
 
@@ -179,6 +186,105 @@ class RespondTest(tb_test.TestCase):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello world</b>', 'text/html', expires=60)
     self.assertEqual(r.headers.get('Cache-Control'), 'private, max-age=60')
+
+  def testCsp(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(
+        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
+  def testCsp_noHash(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'none'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', True)
+  def testCsp_onlySelf(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'self'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
+  def testCsp_disableUnsafeEval(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(
+        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'self' 'sha256-abcdefghi'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_IMG_DOMAINS_WHITELIST', ['https://example.com'])
+  @mock.patch.object(http_util, '_CSP_SCRIPT_DOMAINS_WHITELIST',
+    ['https://tensorflow.org/tensorboard'])
+  @mock.patch.object(http_util, '_CSP_STYLE_DOMAINS_WHITELIST', ['https://googol.com'])
+  def testCsp_globalDomainWhiteList(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data: https://example.com;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline' https://googol.com;"
+        "script-src https://tensorflow.org/tensorboard 'self' 'unsafe-eval' "
+        "'sha256-abcd'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  def testCsp_badGlobalDomainWhiteList(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    configs = [
+        '_CSP_SCRIPT_DOMAINS_WHITELIST',
+        '_CSP_IMG_DOMAINS_WHITELIST',
+        '_CSP_STYLE_DOMAINS_WHITELIST',
+        '_CSP_FONT_DOMAINS_WHITELIST',
+    ]
+
+    for config in configs:
+      with mock.patch.object(http_util, config, ['http://tensorflow.org']):
+        with self.assertRaisesRegex(
+            ValueError, '^Expected all whitelist to be a https URL'):
+          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+      # Cannot grant more trust to a script from a remote source.
+      with mock.patch.object(http_util, config,
+          ["'strict-dynamic' 'unsafe-eval' https://tensorflow.org/"]):
+        with self.assertRaisesRegex(
+            ValueError, '^Expected all whitelist to be a https URL'):
+          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+      # Attempt to terminate the script-src to specify a new one that allows ALL!
+      with mock.patch.object(http_util, config, ['https://tensorflow.org;script-src *']):
+        with self.assertRaisesRegex(
+            ValueError, '^Expected whitelist domain to not contain ";"'):
+          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+
+      # Attempt to use whitespace, delimit character, to specify a new one.
+      with mock.patch.object(http_util, config, ['https://tensorflow.org *']):
+        with self.assertRaisesRegex(
+            ValueError, '^Expected whitelist domain to not contain a whitespace'):
+          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
 
 
 def _gzip(bs):

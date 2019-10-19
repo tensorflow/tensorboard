@@ -147,6 +147,7 @@ py_library(
     deps = [
         ":manager",
         ":version",
+        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
@@ -258,15 +259,15 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
+        "//conditions:default": [],
+    }),
     path = "/",
     deps = [
         ":html_assets_shasums",
         "@com_google_fonts_roboto",
-    ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/components:ng_tensorboard"],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 tf_web_library(
@@ -274,7 +275,12 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html.scripts_sha256",
         "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": [
+            "//tensorboard/components:ng_index.html.scripts_sha256",
+        ],
+        "//conditions:default": [],
+    }),
     path = "/_shasums",
 )
 

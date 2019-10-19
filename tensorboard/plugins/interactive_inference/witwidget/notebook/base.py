@@ -22,6 +22,7 @@ from IPython import display
 from google.protobuf import json_format
 from numbers import Number
 from six import ensure_str
+from six import integer_types
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 
 # Constants used in mutant inference generation.
@@ -84,10 +85,10 @@ class WitWidgetBase(object):
     if 'compare_adjust_attribution' in copied_config:
       del copied_config['compare_adjust_attribution']
 
+    self.config = copied_config
     self.set_examples(config['examples'])
     del copied_config['examples']
 
-    self.config = copied_config
 
     # If using AI Platform for prediction, set the correct custom prediction
     # functions.
@@ -100,12 +101,13 @@ class WitWidgetBase(object):
     # function, then convert examples to JSON before sending to the
     # custom predict function.
     if self.config.get('uses_json_input'):
-      if self.custom_predict_fn is not None:
+      if self.custom_predict_fn is not None and not self.config.get('use_aip'):
         user_predict = self.custom_predict_fn
         def wrapped_custom_predict_fn(examples):
           return user_predict(self._json_from_tf_examples(examples))
         self.custom_predict_fn = wrapped_custom_predict_fn
-      if self.compare_custom_predict_fn is not None:
+      if (self.compare_custom_predict_fn is not None and
+          not self.config.get('compare_use_aip')):
         compare_user_predict = self.compare_custom_predict_fn
         def wrapped_compare_custom_predict_fn(examples):
           return compare_user_predict(self._json_from_tf_examples(examples))
@@ -122,7 +124,11 @@ class WitWidgetBase(object):
     builder during construction. This method can change which examples WIT
     displays.
     """
-    self.examples = [json_format.MessageToJson(ex) for ex in examples]
+    if self.config.get('uses_json_input'):
+      tf_examples = self._json_to_tf_examples(examples)
+      self.examples = [json_format.MessageToJson(ex) for ex in tf_examples]
+    else:
+      self.examples = [json_format.MessageToJson(ex) for ex in examples]
     self.updated_example_indices = set(range(len(examples)))
 
   def compute_custom_distance_impl(self, index, params=None):
@@ -318,12 +324,44 @@ class WitWidgetBase(object):
       json_exs.append(json_ex)
     return json_exs
 
+  def _json_to_tf_examples(self, examples):
+    def add_single_feature(feat, value, ex):
+      if isinstance(value, integer_types):
+        ex.features.feature[feat].int64_list.value.append(value)
+      elif isinstance(value, Number):
+        ex.features.feature[feat].float_list.value.append(value)
+      else:
+        ex.features.feature[feat].bytes_list.value.append(value.encode('utf-8'))
+
+    tf_examples = []
+    for json_ex in examples:
+      ex = tf.train.Example()
+      # JSON examples can be lists of values (for xgboost models for instance),
+      # or dicts of key/value pairs.
+      if self.config.get('uses_json_list'):
+        feature_names = self.config.get('feature_names')
+        for (i, value) in enumerate(json_ex):
+          # If feature names have been provided, use those feature names instead
+          # of list indices for feature name when storing as tf.Example.
+          if feature_names and len(feature_names) > i:
+            feat = feature_names[i]
+          else:
+            feat = str(i)
+          add_single_feature(feat, value, ex)
+        tf_examples.append(ex)
+      else:
+        for feat in json_ex:
+          add_single_feature(feat, json_ex[feat], ex)
+        tf_examples.append(ex)
+    return tf_examples
+
   def _predict_aip_model(self, examples):
     return self._predict_aip_impl(
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
       self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn, self.adjust_attribution_fn)
+      self.adjust_prediction_fn, self.adjust_attribution_fn,
+      self.config.get('aip_service_name'), self.config.get('aip_service_version'))
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
@@ -332,16 +370,20 @@ class WitWidgetBase(object):
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
       self.compare_adjust_prediction_fn,
-      self.compare_adjust_attribution_fn)
+      self.compare_adjust_attribution_fn,
+      self.config.get('compare_aip_service_name'),
+      self.config.get('compare_aip_service_version'))
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_example, adjust_prediction, adjust_attribution):
+                        adjust_example, adjust_prediction, adjust_attribution,
+                        service_name, service_version):
     """Custom prediction function for running inference through AI Platform."""
 
     # Set up environment for GCP call for specified project.
     os.environ['GOOGLE_CLOUD_PROJECT'] = project
 
-    service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
+    service = googleapiclient.discovery.build(
+      service_name, service_version, cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
       name += '/versions/{}'.format(version)
@@ -405,3 +447,38 @@ class WitWidgetBase(object):
         pred = adjust_prediction(pred)
       results.append(pred)
     return {'predictions': results, 'attributions': attributions}
+
+  def create_selection_callback(self, examples, max_examples):
+    """Returns an example selection callback for use with TFMA.
+
+    The returned function can be provided as an event handler for a TFMA
+    visualization to dynamically load examples matching a selected slice into
+    WIT.
+
+    Args:
+      examples: A list of tf.Examples to filter and use with WIT.
+      max_examples: The maximum number of examples to create.
+    """
+    def handle_selection(selected):
+      def extract_values(feat):
+        if feat.HasField('bytes_list'):
+          return feat.bytes_list.value
+        elif feat.HasField('int64_list'):
+          return feat.int64_list.value
+        elif feat.HasField('float_list'):
+          return feat.float_list.value
+        return None
+
+      filtered_examples = []
+      for ex in examples:
+        if selected['sliceName'] == 'Overall':
+          filtered_examples.append(ex)
+        else:
+          values = extract_values(ex.features.feature[selected['sliceName']])
+          if selected['sliceValue'] in values:
+            filtered_examples.append(ex)
+        if len(filtered_examples) == max_examples:
+          break
+
+      self.set_examples(filtered_examples)
+    return handle_selection

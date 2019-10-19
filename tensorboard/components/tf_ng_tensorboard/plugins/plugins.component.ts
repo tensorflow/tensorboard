@@ -14,9 +14,15 @@ limitations under the License.
 ==============================================================================*/
 import {Component, ElementRef, ViewChild, OnInit} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
-import {filter} from 'rxjs/operators';
+import {filter, distinctUntilChanged} from 'rxjs/operators';
 
-import {State, getPlugins, getActivePlugin} from '../core/core.reducers';
+import {
+  State,
+  getPlugins,
+  getActivePlugin,
+  getPluginsListLoaded,
+  LoadState,
+} from '../core/core.reducers';
 import {
   PluginMetadata,
   LoadingMechanismType,
@@ -39,6 +45,13 @@ const activePlugin = createSelector(
   }
 );
 
+const lastLoadedTimeInMs = createSelector(
+  getPluginsListLoaded,
+  (loadState: LoadState) => {
+    return loadState.lastLoadedTimeInMs;
+  }
+);
+
 @Component({
   selector: 'plugins',
   templateUrl: './plugins.component.html',
@@ -49,6 +62,10 @@ export class PluginsComponent implements OnInit {
   private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
 
   private readonly activePlugin$ = this.store.pipe(select(activePlugin));
+  private readonly lastLoadedTimeInMs$ = this.store.pipe(
+    select(lastLoadedTimeInMs)
+  );
+
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   constructor(private readonly store: Store<State>) {}
@@ -57,8 +74,28 @@ export class PluginsComponent implements OnInit {
     // We manually create plugin DOM (with custom tagName and script inside
     // an iframe) when the `activePlugin` changes.
     this.activePlugin$
-      .pipe(filter(Boolean))
-      .subscribe((plugin) => this.renderPlugin(plugin as UiPluginMetadata));
+      .pipe(
+        filter(Boolean),
+        distinctUntilChanged(
+          (prev: UiPluginMetadata, curr: UiPluginMetadata) =>
+            prev.id === curr.id
+        )
+      )
+      .subscribe((plugin: UiPluginMetadata) => this.renderPlugin(plugin));
+
+    this.lastLoadedTimeInMs$
+      .pipe(
+        filter(Boolean),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        for (const instance of this.pluginInstances.values()) {
+          const maybePolymerDashboard = instance as any;
+          if (maybePolymerDashboard.reload) {
+            maybePolymerDashboard.reload();
+          }
+        }
+      });
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {

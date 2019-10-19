@@ -22,19 +22,21 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {HeaderComponent} from './header.component';
+import {HeaderComponent} from './components/header.component';
+import {HeaderContainer} from './containers/header.component';
 
-import {changePlugin} from '../../core/core.actions';
-import {State, CoreState} from '../../core/core.reducers';
+import {changePlugin} from '../core/core.actions';
+import {State} from '../core/core.reducers';
 import {
   createPluginMetadata,
   createState,
   createCoreState,
-} from '../../core/testing';
+} from '../core/testing';
+import {PluginId} from '../types/api';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('header.component', () => {
+describe('header test', () => {
   let store: MockStore<State>;
 
   beforeEach(async () => {
@@ -57,8 +59,9 @@ describe('header.component', () => {
           ),
         }),
         HeaderComponent,
+        HeaderContainer,
       ],
-      declarations: [HeaderComponent],
+      declarations: [HeaderComponent, HeaderContainer],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -67,8 +70,22 @@ describe('header.component', () => {
     expect(el.nativeElement.innerText.trim().toUpperCase()).toBe(text);
   }
 
+  function setActivePlugin(activePlugin: PluginId) {
+    store.setState(
+      createState(
+        createCoreState({
+          plugins: {
+            foo: createPluginMetadata('Foo Fighter'),
+            bar: createPluginMetadata('Barber'),
+          },
+          activePlugin,
+        })
+      )
+    );
+  }
+
   it('renders pluginsList', () => {
-    const fixture = TestBed.createComponent(HeaderComponent);
+    const fixture = TestBed.createComponent(HeaderContainer);
     fixture.detectChanges();
 
     const els = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
@@ -79,7 +96,7 @@ describe('header.component', () => {
   });
 
   it('updates list of tabs when pluginsList updates', async () => {
-    const fixture = TestBed.createComponent(HeaderComponent);
+    const fixture = TestBed.createComponent(HeaderContainer);
     fixture.detectChanges();
 
     const nextState = createState(
@@ -103,7 +120,7 @@ describe('header.component', () => {
   });
 
   it('selects 0th element by default', () => {
-    const fixture = TestBed.createComponent(HeaderComponent);
+    const fixture = TestBed.createComponent(HeaderContainer);
     fixture.detectChanges();
 
     const group = fixture.debugElement.query(By.css('mat-tab-group'));
@@ -111,20 +128,10 @@ describe('header.component', () => {
   });
 
   it('sets tab group selection to match index of activePlugin', async () => {
-    const fixture = TestBed.createComponent(HeaderComponent);
+    const fixture = TestBed.createComponent(HeaderContainer);
     fixture.detectChanges();
 
-    store.setState(
-      createState(
-        createCoreState({
-          plugins: {
-            foo: createPluginMetadata('Foo Fighter'),
-            bar: createPluginMetadata('Barber'),
-          },
-          activePlugin: 'bar',
-        })
-      )
-    );
+    setActivePlugin('bar');
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -134,11 +141,11 @@ describe('header.component', () => {
 
   it('fires an action when a tab is clicked', async () => {
     const dispatch = spyOn(store, 'dispatch');
-    const fixture = TestBed.createComponent(HeaderComponent);
+    const fixture = TestBed.createComponent(HeaderContainer);
     fixture.detectChanges();
 
-    const [, debugEl] = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
-    debugEl.nativeElement.click();
+    const [, barEl] = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+    barEl.nativeElement.click();
     fixture.detectChanges();
     await fixture.whenStable();
 

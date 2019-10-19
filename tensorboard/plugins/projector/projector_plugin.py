@@ -269,7 +269,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 os.path.join('tf_projector_plugin', 'index.js')),
         '/projector_binary.html':
             functools.partial(
-                self._serve_file,
+                self._serve_html,
                 os.path.join('tf_projector_plugin', 'projector_binary.html')),
     }
     return self._handlers
@@ -488,6 +488,24 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     with open(res_path, 'rb') as read_file:
       mimetype = mimetypes.guess_type(file_path)[0]
       return Respond(request, read_file.read(), content_type=mimetype)
+
+  @wrappers.Request.application
+  def _serve_html(self, file_path, request):
+    """Returns a resource file."""
+    res_path = os.path.join(os.path.dirname(__file__), file_path)
+    sha_path = '%s.scripts_sha256' % res_path
+    with open(sha_path, 'rb') as sha_file:
+      lines = sha_file.read().splitlines(False);
+      shasums = [hash.decode('utf8') for hash in lines]
+
+    with open(res_path, 'rb') as read_file:
+      mimetype = mimetypes.guess_type(file_path)[0]
+      return Respond(
+          request,
+          read_file.read(),
+          content_type='text/html',
+          csp_scripts_sha256s=shasums,
+      )
 
   @wrappers.Request.application
   def _serve_runs(self, request):

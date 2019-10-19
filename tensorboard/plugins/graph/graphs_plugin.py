@@ -30,11 +30,10 @@ from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graph_util
 from tensorboard.plugins.graph import keras_util
+from tensorboard.plugins.graph import metadata
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
-
-_PLUGIN_PREFIX_ROUTE = 'graphs'
 
 # The Summary API is implemented in TensorFlow because it uses TensorFlow internal APIs.
 # As a result, this SummaryMetadata is a bit unconventional and uses non-public
@@ -50,7 +49,7 @@ _PLUGIN_NAME_KERAS_MODEL = 'graph_keras_model'
 class GraphsPlugin(base_plugin.TBPlugin):
   """Graphs Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates GraphsPlugin via TensorBoard core.

@@ -17,6 +17,7 @@ namespace tf_storage {
   // tf-ng-tensorboard by exposing otherwise mangled smybols.
   Polymer({
     is: 'tf-storage',
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
     tf_storage: tf_storage,
   });
 } // namespace tf_storage
