@@ -35,7 +35,6 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
-import gettext
 import inspect
 import logging
 import os
@@ -59,6 +58,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
 
 
@@ -206,10 +206,8 @@ class TensorBoard(object):
 
     arg0 = argv[0] if argv else ''
 
-    argparse_monkey_patch = _ArgparseMonkeyPatch()
-    argparse_monkey_patch.install()
-    flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
-    argparse_monkey_patch.uninstall()
+    with argparse_util.allow_missing_subcommand():
+      flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
 
     self.cache_key = manager.cache_key(
         working_directory=os.getcwd(),
@@ -260,14 +258,15 @@ class TensorBoard(object):
     return runner(self.flags) or 0
 
   def _run_serve_subcommand(self, flags):
+    # TODO(#2801): Make `--version` a flag on only the base parser, not `serve`.
+    if flags.version_tb:
+      print(version.VERSION)
+      return 0
     if flags.inspect:
       # TODO(@wchargin): Convert `inspect` to a normal subcommand?
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
       event_file = os.path.expanduser(flags.event_file)
       efi.inspect(flags.logdir, event_file, flags.tag)
-      return 0
-    if flags.version_tb:
-      print(version.VERSION)
       return 0
     try:
       server = self._make_server()
@@ -662,43 +661,6 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     # unset (and thus make messages logged to it inherit the root logger level).
     self.log('debug', 'Fixing werkzeug logger to inherit TensorBoard log level')
     logging.getLogger('werkzeug').setLevel(logging.NOTSET)
-
-
-class _ArgparseMonkeyPatch(object):
-  """Make Python 2.7 behave like Python 3 w.r.t. default subcommands.
-
-  The behavior of argparse was changed in Python 3.3. When a parser
-  defines subcommands, it used to be an error for the user to invoke the
-  binary without specifying a subcommand; as of Python 3.3, this is
-  permitted. This monkey patch backports that behavior to earlier
-  versions of Python.
-  """
-
-  def __init__(self):
-    self._real_error = argparse.ArgumentParser.error
-
-  def install(self):
-    real_error = argparse.ArgumentParser.error
-    # This must exactly match the error message raised by Python 2.7's
-    # `argparse` when no subparser is given. This is `argparse.py:1954` at
-    # Git tag `v2.7.16`.
-    ignored_message = gettext.gettext("too few arguments")
-
-    def error(*args, **kwargs):
-      # Expected signature is `error(self, message)`, but we retain more
-      # flexibility to be forward-compatible with implementation changes.
-      if "message" not in kwargs and len(args) < 2:
-        return self._real_error(*args, **kwargs)
-      message = kwargs["message"] if "message" in kwargs else args[1]
-      if message == ignored_message:
-        return None
-      else:
-        return self._real_error(*args, **kwargs)
-
-    argparse.ArgumentParser.error = error
-
-  def uninstall(self):
-    argparse.ArgumentParser.error = self._real_error
 
 
 create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)
