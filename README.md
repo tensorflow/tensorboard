@@ -1,5 +1,7 @@
 # TensorBoard [![Travis build status](https://www.travis-ci.com/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.com/tensorflow/tensorboard/) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
 
+![Animated example of using TensorBoard](images/tensorboard.gif)
+
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
 
