@@ -208,6 +208,9 @@ class TensorBoard(object):
     with argparse_util.allow_missing_subcommand():
       flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
     if getattr(flags, _SUBCOMMAND_FLAG, None) is None:
+      # Manually assign default value rather than using `set_defaults`
+      # on the base parser to work around Python bug #9351 on old
+      # versions of `argparse`: <https://bugs.python.org/issue9351>
       setattr(flags, _SUBCOMMAND_FLAG, _SERVE_SUBCOMMAND_NAME)
 
     self.cache_key = manager.cache_key(
