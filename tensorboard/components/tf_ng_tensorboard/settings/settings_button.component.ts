@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {Store, select, createSelector} from '@ngrx/store';
 
 import {SettingsDialogComponent} from './dialog.component';
 

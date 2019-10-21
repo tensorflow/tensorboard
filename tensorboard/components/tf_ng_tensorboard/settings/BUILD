@@ -7,8 +7,8 @@ ng_module(
     name = "settings",
     srcs = [
         "dialog.component.ts",
-        "settings.component.ts",
         "settings.module.ts",
+        "settings_button.component.ts",
     ],
     assets = [
         "dialog.component.css",
