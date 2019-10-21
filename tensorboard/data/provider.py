@@ -51,7 +51,6 @@ class DataProvider(object):
     """
     return ""
 
-
   @abc.abstractmethod
   def list_runs(self, experiment_id):
     """List all runs within an experiment.
@@ -469,6 +468,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
         "display_name=%r" % (self._display_name,),
     ))
 
+
 class BlobReference(object):
   """A reference to a blob.  
 
@@ -491,6 +491,7 @@ class BlobReference(object):
       kept secret.  Privacy-sensitive applications should use random keys
       (e.g. UUIDs), or encrypt keys containing secret fields. 
   """
+
   __slots__ = ("_url", "_blob_key")
 
   def __init__(self, url, blob_key):
@@ -532,10 +533,10 @@ class BlobReference(object):
     return hash((self._url, self._blob_key))
 
   def __repr__(self):
-    return "BlobReference(%s)" % ", ".join((
-        "url=%r" % (self._url,),
-        "blob_key=%r" % (self._blob_key,),
-    ))
+    return "BlobReference(%s)" % ", ".join(
+      ("url=%r" % (self._url,), "blob_key=%r" % (self._blob_key,))
+    )
+
 
 class BlobSequenceDatum(object):
   """A single datum in a blob sequence time series for a run and tag.
@@ -620,7 +621,6 @@ class RunTagFilter(object):
     return self._tags
 
   def __repr__(self):
-    return "RunTagFilter(%s)" % ", ".join((
-        "runs=%r" % (self._runs,),
-        "tags=%r" % (self._tags,),
-    ))
+    return "RunTagFilter(%s)" % ", ".join(
+      ("runs=%r" % (self._runs,), "tags=%r" % (self._tags,))
+    )
