@@ -93,34 +93,40 @@ class LocalFileSystem(object):
         """Join paths with path delimiter."""
         return os.path.join(path, *paths)
 
-    def read(self, filename, binary_mode=False, size=None, offset=None):
+    def read(self, filename, binary_mode=False, size=None, continue_from=None):
         """Reads contents of a file to a string.
 
         Args:
             filename: string, a path
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
-                read all the contents of the file from the offset
-            offset: int, offset into file to read from, in bytes; otherwise read
-                from the very beginning
+                read all the contents of the file (from the continuation
+                marker, if present).
+            continue_from: An opaque value returned from a prior invocation of
+                `read(...)` marking the last read position, so that reading
+                may continue from there.  Otherwise read from the beginning.
 
         Returns:
-            A tuple of `(data, new_byte_offset)` where `data' provides either
+            A tuple of `(data, continuation_token)` where `data' provides either
             bytes read from the file (if `binary_mode == true`) or the decoded
-            string representation thereof (otherwise), and `new_byte_offset` is
-            the next unread position in the file, counted in bytes.
+            string representation thereof (otherwise), and `continuation_token`
+            is an opaque value that can be passed to the next invocation of
+            `read(...) ' in order to continue from the last read position.
         """
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
+        offset = None
+        if(continue_from is not None):
+            offset = continue_from.get("opaque_offset", None)
         with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
             data = f.read(size)
             # The new offset may not be `offset + len(data)`, due to decoding
             # and newline translation.
-            # So, just measure it in terms of raw file bytes.
-            new_byte_offset = f.tell()
-            return (data, new_byte_offset)
+            # So, just measure it in whatever terms the underlying stream uses.
+            continuation_token = {"opaque_offset": f.tell()}
+            return (data, continuation_token)
 
     def write(self, filename, file_content, binary_mode=False):
         """Writes string file contents to a file, overwriting any
@@ -227,30 +233,41 @@ class S3FileSystem(object):
         """Join paths with a slash."""
         return "/".join((path,) + paths)
 
-    def read(self, filename, binary_mode=False, size=None, offset=None):
+    def read(self, filename, binary_mode=False, size=None, continue_from=None):
         """Reads contents of a file to a string.
 
         Args:
             filename: string, a path
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
-                read all the contents of the file from the offset
-            offset: int, offset into file to read from, in bytes; otherwise read
-                from the very beginning
+                read all the contents of the file (from the continuation
+                marker, if present).
+            continue_from: An opaque value returned from a prior invocation of
+                `read(...)` marking the last read position, so that reading
+                may continue from there.  Otherwise read from the beginning.
 
         Returns:
-            A tuple of `(data, new_byte_offset)` where `data' provides either
+            A tuple of `(data, continuation_token)` where `data' provides either
             bytes read from the file (if `binary_mode == true`) or the decoded
-            string representation thereof (otherwise), and `new_byte_offset` is
-            the next unread position in the file, counted in bytes.
+            string representation thereof (otherwise), and `continuation_token`
+            is an opaque value that can be passed to the next invocation of
+            `read(...) ' in order to continue from the last read position.
         """
         s3 = boto3.resource("s3")
         bucket, path = self.bucket_and_path(filename)
         args = {}
         endpoint = 0
+        # For the S3 case, we use continuation tokens of the form
+        # {byte_offset: number}
+        offset = None
+        if(continue_from is not None):
+            offset = continue_from.get("byte_offset", None)
         if size is not None or offset is not None:
             if offset is None:
                 offset = 0
+            # TODO(orionr): This endpoint risks splitting a multi-byte
+            # character or splitting \r and \n in the case of CRLFs,
+            # producing decoding errors below.
             endpoint = '' if size is None else (offset + size)
             if offset != 0 or endpoint != '':
                 # Asked for a range, so modify the request
@@ -277,10 +294,11 @@ class S3FileSystem(object):
         # `stream` should contain raw bytes here (i.e., there has been neither
         # decoding nor newline translation), so the byte offset increases by
         # the expected amount.
+        continuation_token = {'byte_offset': (offset + len(stream))}
         if binary_mode:
-            return (bytes(stream), offset + len(stream))
+            return (bytes(stream), continuation_token)
         else:
-            return (stream.decode('utf-8'), offset + len(stream))
+            return (stream.decode('utf-8'), continuation_token)
 
     def write(self, filename, file_content, binary_mode=False):
         """Writes string file contents to a file.
@@ -395,10 +413,13 @@ class GFile(object):
         self.filename = compat.as_bytes(filename)
         self.fs = get_filesystem(self.filename)
         self.fs_supports_append = hasattr(self.fs, 'append')
-        self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
         self.buff = None
-        self.buff_char_offset = 0
-        self.file_byte_offset = 0
+        # The buffer offset and the buffer chunk size are measured in the
+        # natural units of the underlying stream, i.e. bytes for binary mode,
+        # or characters in text mode.
+        self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
+        self.buff_offset = 0
+        self.continuation_token = None
         self.write_temp = None
         self.write_started = False
         self.binary_mode = 'b' in mode
@@ -411,16 +432,16 @@ class GFile(object):
     def __exit__(self, *args):
         self.close()
         self.buff = None
-        self.buff_char_offset = 0
-        self.file_byte_offset = 0
+        self.buff_offset = 0
+        self.continuation_token = None
 
     def __iter__(self):
         return self
 
     def _read_buffer_to_offset(self, new_buff_offset):
-        old_buff_offset = self.buff_char_offset
+        old_buff_offset = self.buff_offset
         read_size = min(len(self.buff), new_buff_offset) - old_buff_offset
-        self.buff_char_offset += read_size
+        self.buff_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
     def read(self, n=None):
@@ -434,10 +455,10 @@ class GFile(object):
             Subset of the contents of the file as a string or bytes.
         """
         result = None
-        if self.buff and len(self.buff) > self.buff_char_offset:
+        if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
             if n is not None:
-                chunk = self._read_buffer_to_offset(self.buff_char_offset + n)
+                chunk = self._read_buffer_to_offset(self.buff_offset + n)
                 if len(chunk) == n:
                     return chunk
                 result = chunk
@@ -448,9 +469,9 @@ class GFile(object):
 
         # read from filesystem
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        (self.buff, self.file_byte_offset) = self.fs.read(self.filename, self.binary_mode,
-                                 read_size, self.file_byte_offset)
-        self.buff_char_offset = 0
+        (self.buff, self.continuation_token) = self.fs.read(
+            self.filename, self.binary_mode, read_size, self.continuation_token)
+        self.buff_offset = 0
 
         # add from filesystem
         if n is not None:
@@ -500,15 +521,15 @@ class GFile(object):
                 if not self.buff:
                     raise StopIteration()
             else:
-                index = self.buff.find('\n', self.buff_char_offset)
+                index = self.buff.find('\n', self.buff_offset)
                 if index != -1:
                     # include line until now plus newline
-                    chunk = self.read(index + 1 - self.buff_char_offset)
+                    chunk = self.read(index + 1 - self.buff_offset)
                     line = line + chunk if line else chunk
                     return line
 
                 # read one unit past end of buffer
-                chunk = self.read(len(self.buff) + 1 - self.buff_char_offset)
+                chunk = self.read(len(self.buff) + 1 - self.buff_offset)
                 line = line + chunk if line else chunk
                 if line and (line[-1] == '\n' or not self.buff):
                     return line
