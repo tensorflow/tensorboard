@@ -128,6 +128,22 @@ class FileWriterCache(object):
       return FileWriterCache._cache[logdir]
 
 
+class FakeTime(object):
+  """Thread-safe fake replacement for the `time` module."""
+
+  def __init__(self, current=0.0):
+    self._time = float(current)
+    self._lock = threading.Lock()
+
+  def time(self):
+    with self._lock:
+      return self._time
+
+  def sleep(self, secs):
+    with self._lock:
+      self._time += secs
+
+
 def ensure_tb_summary_proto(summary):
   """Ensures summary is TensorBoard Summary proto.
 
