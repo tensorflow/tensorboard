@@ -23,6 +23,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {HeaderComponent} from './components/header.component';
 import {HeaderContainer} from './containers/header.component';
 import {CoreModule} from '../core/core.module';
+import {SettingsModule} from '../settings/settings.module';
 
 @NgModule({
   declarations: [HeaderComponent, HeaderContainer],
@@ -34,6 +35,7 @@ import {CoreModule} from '../core/core.module';
     MatSelectModule,
     CommonModule,
     CoreModule,
+    SettingsModule,
   ],
 })
 export class HeaderModule {}
