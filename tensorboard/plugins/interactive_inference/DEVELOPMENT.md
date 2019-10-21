@@ -33,7 +33,7 @@ when testing WIT in TensorBoard).
             - For use in Colab notebooks, upload the package to the notebook and install it from there
                 1. In a notebook cell, to upload a file from local disk, run
                     ```
-                    from google.colab import file
+                    from google.colab import files
                     uploaded = files.upload()
                     ```
                 2. In a notebook cell, to install the uploaded pip package, run `!pip install <nameOfPackage.whl>`.
