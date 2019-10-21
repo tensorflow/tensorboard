@@ -17,6 +17,7 @@ load("@com_google_protobuf//:protobuf.bzl", "proto_gen")
 def tb_proto_library(
         name,
         srcs = None,
+        deps = [],
         visibility = None,
         testonly = None,
         has_services = False):
@@ -24,10 +25,12 @@ def tb_proto_library(
     outs_grpc = _PyOuts(srcs, grpc = True) if has_services else []
     outs_all = outs_proto + outs_grpc
 
+    runtime = "@com_google_protobuf//:protobuf_python"
+
     proto_gen(
-        name = name + "_py_pb2_genproto",
+        name = name + "_genproto",
         srcs = srcs,
-        deps = ["@com_google_protobuf//:protobuf_python_genproto"],
+        deps = [s + "_genproto" for s in deps] + [runtime + "_genproto"],
         includes = [],
         protoc = "@com_google_protobuf//:protoc",
         gen_py = True,
@@ -37,12 +40,13 @@ def tb_proto_library(
         plugin_language = "grpc",
     )
 
+    py_deps = [s + "_py_pb2" for s in deps] + [runtime]
     native.py_library(
         name = name + "_py_pb2",
         srcs = outs_proto,
         imports = [],
         srcs_version = "PY2AND3",
-        deps = ["@com_google_protobuf//:protobuf_python"],
+        deps = py_deps,
         testonly = testonly,
         visibility = visibility,
     )
@@ -52,10 +56,7 @@ def tb_proto_library(
             srcs = outs_grpc,
             imports = [],
             srcs_version = "PY2AND3",
-            deps = [
-                name + "_py_pb2",
-                "@com_google_protobuf//:protobuf_python",
-            ],
+            deps = [name + "_py_pb2"] + py_deps,
             testonly = testonly,
             visibility = visibility,
         )
