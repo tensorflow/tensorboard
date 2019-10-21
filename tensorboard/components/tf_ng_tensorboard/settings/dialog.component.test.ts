@@ -73,7 +73,7 @@ describe('settings dialog test', () => {
     const checkbox = fixture.debugElement.query(By.css('mat-checkbox'));
     expect(checkbox.classes['mat-checkbox-checked']).toBeTruthy();
 
-    const reloadPeriod = fixture.debugElement.query(By.css('#reload-period'));
+    const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
     expect(reloadPeriod.nativeElement.value).toBe('30');
   });
 
@@ -97,7 +97,7 @@ describe('settings dialog test', () => {
 
     expect(checkbox.classes['mat-checkbox-checked']).toBeFalsy();
 
-    const reloadPeriod = fixture.debugElement.query(By.css('#reload-period'));
+    const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
     expect(reloadPeriod.nativeElement.value).toBe('60');
   });
 
@@ -118,7 +118,7 @@ describe('settings dialog test', () => {
       const fixture = TestBed.createComponent(SettingsDialogComponent);
       fixture.detectChanges();
 
-      const reloadPeriod = fixture.debugElement.query(By.css('#reload-period'));
+      const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
       reloadPeriod.nativeElement.value = 20;
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 
@@ -136,7 +136,7 @@ describe('settings dialog test', () => {
       const fixture = TestBed.createComponent(SettingsDialogComponent);
       fixture.detectChanges();
 
-      const reloadPeriod = fixture.debugElement.query(By.css('#reload-period'));
+      const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
       reloadPeriod.nativeElement.value = 5;
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 
@@ -157,7 +157,7 @@ describe('settings dialog test', () => {
       const fixture = TestBed.createComponent(SettingsDialogComponent);
       fixture.detectChanges();
 
-      const reloadPeriod = fixture.debugElement.query(By.css('#reload-period'));
+      const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
       reloadPeriod.nativeElement.value = 30;
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 

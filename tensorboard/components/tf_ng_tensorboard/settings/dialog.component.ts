@@ -47,7 +47,7 @@ const getReloadPeriodInSec = createSelector(
     <div class="item">
       <mat-form-field>
         <input
-          id="reload-period"
+          class="reload-period"
           matInput
           type="number"
           placeholder="Reload Period"
