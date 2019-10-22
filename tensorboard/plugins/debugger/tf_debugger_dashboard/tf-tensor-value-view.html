@@ -342,7 +342,8 @@ limitations under the License.
             if (this.tensorWidget == null) {
               this.tensorWidget = tensor_widget.tensorWidget(
                 this.$$('#tensor-widget'),
-                tensorView
+                tensorView,
+                {wheelZoomKey: 'alt'}
               );
             }
             this.tensorWidget.render();

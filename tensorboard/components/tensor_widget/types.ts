@@ -185,6 +185,14 @@ export interface TensorWidgetOptions {
    */
   decimalPlaces?: number;
 
+  /**
+   * Whether to use the Alt, Ctrl or Shift key with the mouse for zooming under
+   * the image value-rendering mode.
+   *
+   * Defaults to Ctrl key ('ctrl').
+   */
+  wheelZoomKey?: 'alt' | 'ctrl' | 'shift';
+
   /** TODO(cais): Add support for custom tensor renderers. */
 }
 
