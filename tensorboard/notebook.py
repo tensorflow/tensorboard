@@ -337,19 +337,30 @@ def _display_colab(port, height, display_handle):
   redirect them, we change the document base URI, which transparently
   affects all requests (XHRs and resources alike).
   """
-  from google.colab.output import eval_js
-  url = eval_js("google.colab.kernel.proxyPort(%d)" % port)
-
   import IPython.display
-  iframe = IPython.display.IFrame(
-      src=url,
-      height=height,
-      width="100%",
-  )
+  shell = """
+  (async () => {
+      const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.setAttribute('width', '100%');
+      iframe.setAttribute('height', '%HEIGHT%');
+      iframe.setAttribute('frameborder', 0);
+      document.body.appendChild(iframe);
+  })();
+  """
+  replacements = [
+      ("%PORT%", "%d" % port),
+      ("%HEIGHT%", "%d" % height),
+  ]
+  for (k, v) in replacements:
+    shell = shell.replace(k, v)
+  script = IPython.display.Javascript(shell)
+
   if display_handle:
-    display_handle.update(iframe)
+    display_handle.update(script)
   else:
-    IPython.display.display(iframe)
+    IPython.display.display(script)
 
 
 def _display_ipython(port, height, display_handle):
