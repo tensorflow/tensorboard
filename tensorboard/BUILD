@@ -306,7 +306,7 @@ py_library(
     name = "expect_grpc_installed",
     # This is a dummy rule used as a grpc dependency in open-source.
     # We expect grpc to already be installed on the system, e.g. via
-    # `pip install grpc`
+    # `pip install grpcio`
     visibility = ["//visibility:public"],
 )
 
