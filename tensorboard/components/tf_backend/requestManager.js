@@ -76,7 +76,7 @@ var tf_backend;
     }
     tf_backend.RequestOptions = RequestOptions;
     class RequestManager {
-        constructor(nSimultaneousRequests = 10, maxRetries = 3) {
+        constructor(nSimultaneousRequests = 1000, maxRetries = 3) {
             this._queue = [];
             this._nActiveRequests = 0;
             this._nSimultaneousRequests = nSimultaneousRequests;
