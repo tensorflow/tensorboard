@@ -27,7 +27,10 @@ export interface ColorMapConfig {
 
   /**
    * Minimum value that the color map can map to without clipping.
-   * Must be a finite value and be >= `min`.
+   * Must be a finite value and be `>= min`.
+   *
+   * In the case of `max === min`, all finite values mapped to the
+   * midpoint of the color scale.
    */
   max: number;
 }
@@ -168,9 +171,9 @@ export class JetColorMap extends ColorMap {
       }
     }
 
-    let r = 0;
-    let g = 0;
-    let b = 0;
+    let relR = 0;
+    let relG = 0;
+    let relB = 0;
     const lim0 = 0.35;
     const lim1 = 0.65;
 
@@ -180,16 +183,16 @@ export class JetColorMap extends ColorMap {
         : (value - this.config.min) / (this.config.max - this.config.min);
     relValue = Math.max(Math.min(relValue, 1), 0);
     if (relValue <= lim0) {
-      g = (relValue / lim0) * MAX_RGB;
-      b = MAX_RGB;
+      relG = relValue / lim0;
+      relB = 1;
     } else if (relValue > lim0 && relValue <= lim1) {
-      r = ((relValue - lim0) / (lim1 - lim0)) * MAX_RGB;
-      g = MAX_RGB;
-      b = ((lim1 - relValue) / (lim1 - lim0)) * MAX_RGB;
+      relR = (relValue - lim0) / (lim1 - lim0);
+      relG = 1;
+      relB = (lim1 - relValue) / (lim1 - lim0);
     } else if (relValue > lim1) {
-      r = MAX_RGB;
-      g = ((1 - relValue) / (1 - lim1)) * MAX_RGB;
+      relR = 1;
+      relG = (1 - relValue) / (1 - lim1);
     }
-    return [r, g, b];
+    return [relR * MAX_RGB, relG * MAX_RGB, relB * MAX_RGB];
   }
 }
