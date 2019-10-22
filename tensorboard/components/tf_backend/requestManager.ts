@@ -104,7 +104,7 @@ namespace tf_backend {
     private _nActiveRequests: number;
     private _nSimultaneousRequests: number;
 
-    constructor(nSimultaneousRequests = 10, maxRetries = 3) {
+    constructor(nSimultaneousRequests = 1000, maxRetries = 3) {
       this._queue = [];
       this._nActiveRequests = 0;
       this._nSimultaneousRequests = nSimultaneousRequests;
