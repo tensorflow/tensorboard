@@ -162,10 +162,18 @@ namespace tf_dashboard_common {
             return !this._inflightOrLoadedData.has(name);
           })
           .map((datum) => {
-            const name = this.getDataLoadName(datum);
-            this._inflightOrLoadedData.add(name);
+            const cacheKey = this.getDataLoadName(datum);
+            this._inflightOrLoadedData.add(cacheKey);
             return this.requestData(datum).then((value) => {
-              this.loadDataCallback(this, datum, value);
+              // dataToLoad can change while the request in-flight and it may
+              // not be no longer required (loadDataCallback can be an expensive
+              // proess so we would like to omit it if possible).
+              const isDataRequiredNow = this.dataToLoad.find(
+                (datum) => this.getDataLoadName(datum) === cacheKey
+              );
+              if (isDataRequiredNow) {
+                this.loadDataCallback(this, datum, value);
+              }
             });
           });
 
