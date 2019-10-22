@@ -462,7 +462,7 @@ class WitWidgetBase(object):
     def handle_selection(selected):
       def extract_values(feat):
         if feat.HasField('bytes_list'):
-          return feat.bytes_list.value
+          return [v.decode('utf-8') for v in feat.bytes_list.value]
         elif feat.HasField('int64_list'):
           return feat.int64_list.value
         elif feat.HasField('float_list'):
