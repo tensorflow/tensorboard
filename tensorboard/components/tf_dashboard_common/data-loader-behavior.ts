@@ -129,9 +129,9 @@ namespace tf_dashboard_common {
     },
 
     created() {
-      this._loadData = _.debounce(this._loadDataImpl, 100, {
+      this._loadData = _.throttle(this._loadDataImpl, 100, {
         leading: true,
-        trailing: true,
+        trailing: false,
       });
     },
 
