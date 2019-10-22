@@ -428,21 +428,6 @@ limitations under the License.
         }
       }
     </style>
-    <template id="colabNotSupported" preserve-content>
-      <div style="max-width: 540px; margin: 80px auto 0 auto;">
-        <h3>Dynamic plugin isn’t supported in Colab yet.</h3>
-        <p>
-          Please see
-          <a
-            href="https://github.com/tensorflow/tensorboard/issues/1913"
-            rel="noopener"
-            target="_blank"
-            >GitHub issue #1913</a
-          >
-          for more information.
-        </p>
-      </div>
-    </template>
   </template>
   <script src="autoReloadBehavior.js"></script>
   <script>
@@ -659,11 +644,6 @@ limitations under the License.
           type: Boolean,
           value: false,
         },
-        _inColab: {
-          type: Boolean,
-          value: () => !!(window.TENSORBOARD_ENV || {}).IN_COLAB,
-          readOnly: true,
-        },
       },
       observers: [
         '_updateSelectedDashboardFromActive(' +
@@ -877,14 +857,6 @@ limitations under the License.
       },
 
       _renderPluginIframe(container, selectedDashboard, loadingMechanism) {
-        if (this._inColab) {
-          const templateContent = this.$.colabNotSupported.content;
-          const node = document.importNode(templateContent, true);
-          node.id = 'dashboard'; // used in `_selectedDashboardComponent`
-          this.scopeSubtree(node);
-          container.appendChild(node);
-          return;
-        }
         const iframe = document.createElement('iframe');
         iframe.id = 'dashboard'; // used in `_selectedDashboardComponent`
         const srcUrl = new URL('data/plugin_entry.html', window.location.href);
