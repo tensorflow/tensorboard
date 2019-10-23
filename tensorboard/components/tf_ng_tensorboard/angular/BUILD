@@ -82,6 +82,24 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/icon dependency.
+tf_ts_library(
+    name = "expect_angular_material_icon",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/input dependency.
+tf_ts_library(
+    name = "expect_angular_material_input",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/platform-browser/animations dependency.
 # This is not a replacement for @angular/platform-browser dependency.
 tf_ts_library(
