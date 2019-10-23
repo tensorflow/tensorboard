@@ -203,10 +203,10 @@ class LocalFileSystem(object):
         # NOTE: Size of the file is given by .st_size as returned from
         # os.stat(), but we convert to .length
         try:
-            len = os.stat(compat.as_bytes(filename)).st_size
+            file_length = os.stat(compat.as_bytes(filename)).st_size
         except OSError:
             raise errors.NotFoundError(None, None, "Could not find file")
-        return StatData(len)
+        return StatData(file_length)
 
 
 class S3FileSystem(object):
@@ -287,8 +287,8 @@ class S3FileSystem(object):
                     # in a second request so we don't check length in all cases.
                     client = boto3.client("s3")
                     obj = client.head_object(Bucket=bucket, Key=path)
-                    len = obj['ContentLength']
-                    endpoint = min(len, offset + size)
+                    content_length = obj['ContentLength']
+                    endpoint = min(content_length, offset + size)
                 if offset == endpoint:
                     # Asked for no bytes, so just return empty
                     stream = b''
