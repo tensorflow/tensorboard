@@ -43,7 +43,7 @@ tf_ts_library(
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_dialog",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_icon",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_input",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animation",
+        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/core/testing",
         "@npm//@angular/common",
