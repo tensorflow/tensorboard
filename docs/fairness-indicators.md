@@ -14,11 +14,15 @@ Many existing tools for evaluating fairness concerns don’t work well on large 
 
 To install Fairness Indicators for Tensorboard, run:
 
+`pip install tensorflow_plugin_fairness_indicators`
+
 `pip install tensorflow` (1.15+)
 
 `pip install tensorflow_model_analysis` (0.15.1+)
 
-`pip install tensorflow_plugin_fairness_indicators`
+`pip uninstall tensorboard`
+
+`pip install tf-nightly` (2.1+)
 
 ## Demo
 
