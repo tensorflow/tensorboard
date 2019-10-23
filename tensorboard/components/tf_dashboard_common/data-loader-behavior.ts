@@ -90,11 +90,11 @@ namespace tf_dashboard_common {
       },
 
       /*
-       * A set of data that has been loaded the data already. This exists to
-       * prevent fetching same data again.
+       * A set of data that is inflight or has been loaded already. This exists
+       * to prevent fetching same data again.
        * Invoking `reload` or a change in `loadKey` clears the cache.
        */
-      _loadedData: {
+      _inflightOrLoadedData: {
         type: Object,
         value: () => new Set(),
       },
@@ -112,7 +112,7 @@ namespace tf_dashboard_common {
     },
 
     reload() {
-      this._loadedData.clear();
+      this._inflightOrLoadedData.clear();
       this._loadData();
     },
 
@@ -120,7 +120,7 @@ namespace tf_dashboard_common {
       // https://github.com/tensorflow/tensorboard/issues/1499
       // Cannot use the observer to observe `loadKey` changes directly.
       if (this._canceller) this._canceller.cancelAll();
-      if (this._loadedData) this._loadedData.clear();
+      if (this._inflightOrLoadedData) this._inflightOrLoadedData.clear();
       if (this.isAttached) this._loadData();
     },
 
@@ -129,7 +129,7 @@ namespace tf_dashboard_common {
     },
 
     created() {
-      this._loadData = _.debounce(this._loadDataImpl, 100, {
+      this._loadData = _.throttle(this._loadDataImpl, 100, {
         leading: true,
         trailing: true,
       });
@@ -159,16 +159,22 @@ namespace tf_dashboard_common {
         const promises = this.dataToLoad
           .filter((datum) => {
             const name = this.getDataLoadName(datum);
-            return !this._loadedData.has(name);
+            return !this._inflightOrLoadedData.has(name);
           })
           .map((datum) => {
-            const name = this.getDataLoadName(datum);
-            const updateSeries = this._canceller.cancellable((result) => {
-              if (result.cancelled) return;
-              this._loadedData.add(name);
-              this.loadDataCallback(this, datum, result.value);
+            const cacheKey = this.getDataLoadName(datum);
+            this._inflightOrLoadedData.add(cacheKey);
+            return this.requestData(datum).then((value) => {
+              // dataToLoad can change while the request in-flight and it may
+              // not be no longer required (loadDataCallback can be an expensive
+              // proess so we would like to omit it if possible).
+              const isDataRequiredNow = this.dataToLoad.find(
+                (datum) => this.getDataLoadName(datum) === cacheKey
+              );
+              if (isDataRequiredNow) {
+                this.loadDataCallback(this, datum, value);
+              }
             });
-            return this.requestData(datum).then(updateSeries);
           });
 
         return Promise.all(promises).then(
