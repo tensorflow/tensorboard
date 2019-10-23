@@ -116,7 +116,7 @@ class LocalFileSystem(object):
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
         offset = None
-        if(continue_from is not None):
+        if continue_from is not None:
             offset = continue_from.get("opaque_offset", None)
         with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
@@ -260,7 +260,7 @@ class S3FileSystem(object):
         # For the S3 case, we use continuation tokens of the form
         # {byte_offset: number}
         offset = None
-        if(continue_from is not None):
+        if continue_from is not None:
             offset = continue_from.get("byte_offset", None)
         if size is not None or offset is not None:
             if offset is None:
