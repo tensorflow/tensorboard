@@ -7,9 +7,17 @@ from __future__ import print_function
 import os
 import unittest
 
-import mock
 
-from from google.protobuf import timestamp_pb2
+try:
+  # python version >= 3.3
+  from unittest import mock
+except ImportError:
+  # mock==1.0.0 backport lacks `assert_called_once` and friends
+  print("Test disabled in Python 2")
+  exit(0)
+
+
+from google.protobuf import timestamp_pb2
 from tensorboard.uploader import test_util
 from tensorboard.uploader import util
 from tensorboard import test as tb_test

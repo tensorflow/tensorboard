@@ -9,7 +9,15 @@ import os
 
 import grpc
 import grpc_testing
-import mock
+
+try:
+  # python version >= 3.3
+  from unittest import mock
+except ImportError:
+  # mock==1.0.0 backport lacks `assert_called_once` and friends
+  print("Test disabled in Python 2")
+  exit(0)
+
 import tensorflow as tf
 
 from tensorboard.uploader.proto import scalar_pb2

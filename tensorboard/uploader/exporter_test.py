@@ -10,7 +10,15 @@ import json
 import os
 
 import grpc_testing
-import mock
+
+try:
+  # python version >= 3.3
+  from unittest import mock
+except ImportError:
+  # mock==1.0.0 backport lacks `assert_called_once` and friends
+  print("Test disabled in Python 2")
+  exit(0)
+
 
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc

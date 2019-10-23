@@ -8,7 +8,7 @@ import threading
 
 import grpc
 
-from from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2
 from tensorboard.compat.proto import summary_pb2
 
 
