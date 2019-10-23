@@ -219,6 +219,7 @@ class TBContext(object):
       data_provider=None,
       db_connection_provider=None,
       db_uri=None,
+      extra_routes=None,
       flags=None,
       logdir=None,
       multiplexer=None,
@@ -247,6 +248,10 @@ class TBContext(object):
           implementation details of the provider.
       db_uri: The string db URI TensorBoard was started with. If this is set,
           the logdir should be None.
+      extra_routes: An object that defines extra routes for serving assets. Keys
+          are paths and values are dicts that configure the asset path based on
+          presence of an experiment id. e.g.
+          `{'/': {'with_experiment': '/a', 'without_experiment': '/b'}}`.
       flags: An object of the runtime flags provided to TensorBoard to their
           values.
       logdir: The string logging directory TensorBoard was started with. If this
@@ -265,6 +270,7 @@ class TBContext(object):
     self.data_provider = data_provider
     self.db_connection_provider = db_connection_provider
     self.db_uri = db_uri
+    self.extra_routes = extra_routes
     self.flags = flags
     self.logdir = logdir
     self.multiplexer = multiplexer

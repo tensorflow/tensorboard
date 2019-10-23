@@ -67,6 +67,7 @@ class CorePlugin(base_plugin.TBPlugin):
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
+    self._extra_routes = context.extra_routes
     if context.flags and context.flags.generic_data == 'true':
       self._data_provider = context.data_provider
     else:
@@ -92,6 +93,13 @@ class CorePlugin(base_plugin.TBPlugin):
         '/images': self._redirect_to_index,
     }
     apps.update(self.get_resource_apps())
+    if self._extra_routes:
+      for path in self._extra_routes:
+        config = self._extra_routes[path]
+        path_experiment = config['with_experiment']
+        path_no_experiment = config['without_experiment']
+        apps[path] = functools.partial(
+            self._serve_if_experiment, apps, path_experiment, path_no_experiment)
     return apps
 
   def get_resource_apps(self):
@@ -124,7 +132,6 @@ class CorePlugin(base_plugin.TBPlugin):
             wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
           apps['/' + path] = wsgi_app
-    apps['/'] = apps['/index.html']
     return apps
 
   @wrappers.Request.application
@@ -134,6 +141,16 @@ class CorePlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def _redirect_to_index(self, unused_request):
     return utils.redirect('/')
+
+  @wrappers.Request.application
+  def _serve_if_experiment(self, apps, path_experiment, path_no_experiment, request):
+    """Conditionally serve paths based on whether there is an experiment id."""
+    has_experiment = plugin_util.experiment_id(request.environ)
+    if has_experiment and path_experiment in apps:
+      return apps[path_experiment]
+    elif not has_experiment and path_no_experiment in apps:
+      return apps[path_no_experiment]
+    return self._send_404_without_logging
 
   @wrappers.Request.application
   def _serve_asset(self, path, gzipped_asset_bytes, request):

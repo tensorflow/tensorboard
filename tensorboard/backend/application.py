@@ -160,8 +160,16 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       path_to_run = parse_event_files_spec(flags.logdir_spec)
     start_reloading_multiplexer(
         multiplexer, path_to_run, reload_interval, flags.reload_task)
+
+  extra_routes = {
+    '/': {
+        'with_experiment': '/index.html',
+        'without_experiment': '/index.html',
+    },
+  }
   return TensorBoardWSGIApp(
-      flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
+      flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer,
+      extra_routes)
 
 
 def _handling_errors(wsgi_app):
@@ -185,7 +193,8 @@ def TensorBoardWSGIApp(
     plugins,
     data_provider=None,
     assets_zip_provider=None,
-    deprecated_multiplexer=None):
+    deprecated_multiplexer=None,
+    extra_routes=None):
   """Constructs a TensorBoard WSGI app from plugins and data providers.
 
   Args:
@@ -199,6 +208,7 @@ def TensorBoardWSGIApp(
     deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
         to use for any plugins not yet enabled for the DataProvider API.
         Required if the data_provider argument is not passed.
+    extra_routes: See TBContext documentation for more information.
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
@@ -215,6 +225,7 @@ def TensorBoardWSGIApp(
       data_provider=data_provider,
       db_connection_provider=db_connection_provider,
       db_uri=db_uri,
+      extra_routes=extra_routes,
       flags=flags,
       logdir=flags.logdir,
       multiplexer=deprecated_multiplexer,
