@@ -1,5 +1,7 @@
 # Evaluating Models with the Fairness Indicators Dashboard [Beta]
 
+![What-If Tool](./images/fairness-indicators.png)
+
 Fairness Indicators for TensorBoard enables easy computation of commonly-identified fairness metrics for _binary_ and _multiclass_ classifiers. With the plugin, you can visualize fairness evaluations for your runs and easily compare performance across groups. 
 
 In particular, Fairness Indicators for TensorBoard includes the ability to:
