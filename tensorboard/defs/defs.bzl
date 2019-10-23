@@ -67,3 +67,15 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         ],
         **kwargs
     )
+
+def tf_svg_bundle(name, srcs, output_name):
+    native.genrule(
+        name = name,
+        srcs = srcs,
+        outs = [output_name],
+        cmd = "$(execpath //tensorboard/tools:mat_bundle_icon_svg) $@ $(SRCS)",
+        tools = [
+            "//tensorboard/tools:mat_bundle_icon_svg",
+        ],
+    )
+
