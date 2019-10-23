@@ -71,7 +71,7 @@ def _prompt_for_user_ack(intent):
   user_ack_message = '\n'.join((header, body, _MESSAGE_TOS))
   sys.stderr.write(user_ack_message)
   sys.stderr.write('\n')
-  response = raw_input('Continue? (yes/NO) ')
+  response = six.moves.input('Continue? (yes/NO) ')
   if response.lower() not in ('y', 'yes'):
     sys.exit(0)
   sys.stderr.write('\n')
