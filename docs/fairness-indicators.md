@@ -18,8 +18,6 @@ To install Fairness Indicators for Tensorboard, run:
 
 `pip uninstall -y tensorflow tf-nightly`
 
-`pip install tensorflow` (1.15+)
-
 `pip install tensorflow_model_analysis` (0.15.1+)
 
 `pip uninstall -y tensorboard tb-nightly`
