@@ -259,12 +259,10 @@ class S3FileSystem(object):
         endpoint = 0
         # For the S3 case, we use continuation tokens of the form
         # {byte_offset: number}
-        offset = None
+        offset = 0
         if continue_from is not None:
-            offset = continue_from.get("byte_offset", None)
-        if size is not None or offset is not None:
-            if offset is None:
-                offset = 0
+            offset = continue_from.get("byte_offset", 0)
+        if size is not None:
             # TODO(orionr): This endpoint risks splitting a multi-byte
             # character or splitting \r and \n in the case of CRLFs,
             # producing decoding errors below.
