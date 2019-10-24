@@ -41,6 +41,7 @@ from tensorboard import default
 from tensorboard import program
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
+from tensorboard.uploader import uploader_main
 from tensorboard.util import tb_logging
 
 
@@ -56,7 +57,8 @@ def run_main():
 
   tensorboard = program.TensorBoard(
       default.get_plugins() + default.get_dynamic_plugins(),
-      program.get_default_assets_zip_provider())
+      program.get_default_assets_zip_provider(),
+      subcommands=[uploader_main.UploaderSubcommand()])
   try:
     from absl import app
     # Import this to check that app.run() will accept the flags_parser argument.
