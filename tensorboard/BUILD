@@ -28,6 +28,7 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/uploader:uploader_main_lib",
         "//tensorboard/util:tb_logging",
     ],
 )
@@ -285,6 +286,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_grpc_testing_installed",
+    # This is a dummy rule used as a grpc_testing dependency in open-source.
+    # We expect grpc_testing to already be installed on the system, e.g. via
+    # `pip install grpcio_testing`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "expect_sqlite3_installed",
     # This is a dummy rule used as a sqlite3 dependency in open-source.
     # We expect sqlite3 to already be present, as it is part of the standard
@@ -317,6 +326,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_absl_flags_argparse_flags_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "expect_absl_logging_installed",
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
@@ -329,6 +346,22 @@ py_library(
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
     # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_google_auth_installed",
+    # This is a dummy rule used as a google_auth dependency in open-source.
+    # We expect google_auth to already be installed on the system, e.g., via
+    # `pip install google-auth`.
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_google_auth_oauthlib_installed",
+    # This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
+    # We expect google_auth_oauthlib to already be installed on the system, e.g., via
+    # `pip install google-auth-oauthlib`.
     visibility = ["//visibility:public"],
 )
 
