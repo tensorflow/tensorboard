@@ -113,7 +113,7 @@ To use the tool in TensorBoard, only the following information needs to be provi
 * An indication if the model is a regression, binary classification or
   multi-class classification model.
 * An optional vocab file for the labels for a classification model. This file
-  maps the preidcted class indices returned from the model prediction into class
+  maps the predicted class indices returned from the model prediction into class
   labels. The text file contains one label per line, corresponding to the class
   indices returned by the model, starting with index 0.
     * If this file is provided, then the dashboard will show the predicted
