@@ -256,20 +256,24 @@ class S3FileSystem(object):
         s3 = boto3.resource("s3")
         bucket, path = self.bucket_and_path(filename)
         args = {}
-        endpoint = 0
+
         # For the S3 case, we use continuation tokens of the form
         # {byte_offset: number}
         offset = 0
         if continue_from is not None:
             offset = continue_from.get("byte_offset", 0)
+        
+        endpoint = ''
         if size is not None:
             # TODO(orionr): This endpoint risks splitting a multi-byte
             # character or splitting \r and \n in the case of CRLFs,
             # producing decoding errors below.
-            endpoint = '' if size is None else (offset + size)
-            if offset != 0 or endpoint != '':
-                # Asked for a range, so modify the request
-                args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
+            endpoint = offset + size
+
+        if offset != 0 or endpoint != '':
+            # Asked for a range, so modify the request
+            args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
+
         try:
             stream = s3.Object(bucket, path).get(**args)['Body'].read()
         except botocore.exceptions.ClientError as exc:
