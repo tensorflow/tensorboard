@@ -3,7 +3,7 @@
 ## Release 1.4.4
 
 ### Notable Bug Fixes
-- #2785 - Fix an issue with TFMA slicing callback.
+- #2816 - Fix an issue with TFMA slicing callback.
 
 ## Release 1.4.3
 
