@@ -193,6 +193,13 @@ limitations under the License.
   font-size: 13px;
   padding: 5px;
   position: absolute;
+  user-select: none;
+  width: 240px;
+}
+
+.tensor-widget-value-tooltip-colorbar {
+  height: 24px;
+  width: 95%;
 }
 
 .tensor-widget-value-tooltip-indices {

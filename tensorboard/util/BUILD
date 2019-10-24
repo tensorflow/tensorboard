@@ -1,8 +1,27 @@
 package(default_visibility = ["//tensorboard:internal"])
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])  # Needed for internal repo.
+
+py_library(
+    name = "argparse_util",
+    srcs = ["argparse_util.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "argparse_util_test",
+    size = "small",
+    srcs = ["argparse_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":argparse_util",
+        "//tensorboard:test",
+    ],
+)
 
 py_library(
     name = "encoder",
@@ -26,6 +45,40 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
+)
+
+py_library(
+    name = "grpc_util",
+    srcs = ["grpc_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "grpc_util_test",
+    size = "small",
+    srcs = ["grpc_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":grpc_util",
+        ":grpc_util_test_proto_py_pb2",
+        ":grpc_util_test_proto_py_pb2_grpc",
+        ":test_util",
+        "//tensorboard:expect_futures_installed",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard:test",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+tb_proto_library(
+    name = "grpc_util_test_proto",
+    has_services = True,
+    srcs = ["grpc_util_test.proto"],
+    testonly = True,
 )
 
 py_library(

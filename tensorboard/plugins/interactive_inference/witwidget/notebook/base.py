@@ -360,7 +360,8 @@ class WitWidgetBase(object):
       examples, self.config.get('inference_address'),
       self.config.get('model_name'), self.config.get('model_signature'),
       self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn, self.adjust_attribution_fn)
+      self.adjust_prediction_fn, self.adjust_attribution_fn,
+      self.config.get('aip_service_name'), self.config.get('aip_service_version'))
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
@@ -369,16 +370,20 @@ class WitWidgetBase(object):
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
       self.compare_adjust_prediction_fn,
-      self.compare_adjust_attribution_fn)
+      self.compare_adjust_attribution_fn,
+      self.config.get('compare_aip_service_name'),
+      self.config.get('compare_aip_service_version'))
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
-                        adjust_example, adjust_prediction, adjust_attribution):
+                        adjust_example, adjust_prediction, adjust_attribution,
+                        service_name, service_version):
     """Custom prediction function for running inference through AI Platform."""
 
     # Set up environment for GCP call for specified project.
     os.environ['GOOGLE_CLOUD_PROJECT'] = project
 
-    service = googleapiclient.discovery.build('ml', 'v1', cache_discovery=False)
+    service = googleapiclient.discovery.build(
+      service_name, service_version, cache_discovery=False)
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
       name += '/versions/{}'.format(version)
@@ -442,3 +447,38 @@ class WitWidgetBase(object):
         pred = adjust_prediction(pred)
       results.append(pred)
     return {'predictions': results, 'attributions': attributions}
+
+  def create_selection_callback(self, examples, max_examples):
+    """Returns an example selection callback for use with TFMA.
+
+    The returned function can be provided as an event handler for a TFMA
+    visualization to dynamically load examples matching a selected slice into
+    WIT.
+
+    Args:
+      examples: A list of tf.Examples to filter and use with WIT.
+      max_examples: The maximum number of examples to create.
+    """
+    def handle_selection(selected):
+      def extract_values(feat):
+        if feat.HasField('bytes_list'):
+          return [v.decode('utf-8') for v in feat.bytes_list.value]
+        elif feat.HasField('int64_list'):
+          return feat.int64_list.value
+        elif feat.HasField('float_list'):
+          return feat.float_list.value
+        return None
+
+      filtered_examples = []
+      for ex in examples:
+        if selected['sliceName'] == 'Overall':
+          filtered_examples.append(ex)
+        else:
+          values = extract_values(ex.features.feature[selected['sliceName']])
+          if selected['sliceValue'] in values:
+            filtered_examples.append(ex)
+        if len(filtered_examples) == max_examples:
+          break
+
+      self.set_examples(filtered_examples)
+    return handle_selection

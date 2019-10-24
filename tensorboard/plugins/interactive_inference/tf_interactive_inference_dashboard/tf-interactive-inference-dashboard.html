@@ -4753,7 +4753,11 @@ limitations under the License.
         featureValueThresholdsChanged_: function(featureValueThresholds) {
           const map = {};
           for (let i = 0; i < featureValueThresholds.length; i++) {
-            map[featureValueThresholds[i].value] = i;
+            const key = this.createCombinedValueString_(
+              featureValueThresholds[i].value,
+              featureValueThresholds[i].value2
+            );
+            map[key] = i;
           }
           this.featureValueThresholdsIndexMap = map;
         },
@@ -6854,12 +6858,11 @@ limitations under the License.
         },
 
         createCombinedValueString_: function(val1, val2) {
-          let str = val1 == null ? '' : val1;
-          if (val2 == null || val2 == '') {
+          let str = val1 === undefined || val1 === null ? '' : val1;
+          if (val2 === undefined || val2 === null || val2 === '') {
             return str;
           }
-          str += '/' + val2;
-          return str;
+          return str + '/' + val2;
         },
 
         /**

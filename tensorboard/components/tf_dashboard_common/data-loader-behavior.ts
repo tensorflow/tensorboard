@@ -13,6 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_dashboard_common {
+  type CacheKey = string;
+
+  // NOT_LOADED is implicit
+  enum LoadState {
+    LOADING,
+    LOADED,
+  }
+
   /**
    * @polymerBehavior
    */
@@ -46,7 +54,7 @@ namespace tf_dashboard_common {
        */
       getDataLoadName: {
         type: Function,
-        value: () => (datum) => String(datum),
+        value: () => (datum): CacheKey => String(datum),
       },
 
       /**
@@ -90,13 +98,13 @@ namespace tf_dashboard_common {
       },
 
       /*
-       * A set of data that has been loaded the data already. This exists to
-       * prevent fetching same data again.
+       * A map of a cache key to LoadState. If a cacheKey does not exist in the
+       * map, it is considered NOT_LOADED.
        * Invoking `reload` or a change in `loadKey` clears the cache.
        */
-      _loadedData: {
+      _dataLoadState: {
         type: Object,
-        value: () => new Set(),
+        value: () => new Map<CacheKey, LoadState>(),
       },
 
       _canceller: {
@@ -112,15 +120,16 @@ namespace tf_dashboard_common {
     },
 
     reload() {
-      this._loadedData.clear();
+      this._dataLoadState.clear();
       this._loadData();
     },
 
     reset() {
       // https://github.com/tensorflow/tensorboard/issues/1499
       // Cannot use the observer to observe `loadKey` changes directly.
+      this.cancelAsync(this._loadDataAsync);
       if (this._canceller) this._canceller.cancelAll();
-      if (this._loadedData) this._loadedData.clear();
+      if (this._dataLoadState) this._dataLoadState.clear();
       if (this.isAttached) this._loadData();
     },
 
@@ -129,14 +138,20 @@ namespace tf_dashboard_common {
     },
 
     created() {
-      this._loadData = _.debounce(this._loadDataImpl, 100, {
+      this._loadData = _.throttle(this._loadDataImpl, 100, {
         leading: true,
         trailing: true,
       });
     },
 
     detached() {
-      this._canceller.cancelAll();
+      // Note: Cannot call canceller.cancelAll since it will poison the cache.
+      // detached gets called when a component gets unmounted from the document
+      // but it can be re-mounted. When remounted, poisoned cache will manifest.
+      // t=0: dataLoadState: 'a' = loading
+      // t=10: unmount
+      // t=20: request for 'a' resolves but we do not change the loadState
+      // because we do not want to set one if, instead, it was resetted at t=10.
       this.cancelAsync(this._loadDataAsync);
     },
 
@@ -149,37 +164,62 @@ namespace tf_dashboard_common {
     _loadDataImpl() {
       if (!this.active) return;
       this.cancelAsync(this._loadDataAsync);
-      this._loadDataAsync = this.async(() => {
-        // Read-only property have a special setter.
-        this._setDataLoading(true);
+      this._loadDataAsync = this.async(
+        this._canceller.cancellable((result) => {
+          if (result.cancelled) {
+            return;
+          }
+          // Read-only property have a special setter.
+          this._setDataLoading(true);
 
-        // Before updating, cancel any network-pending updates, to
-        // prevent race conditions where older data stomps newer data.
-        this._canceller.cancelAll();
-        const promises = this.dataToLoad
-          .filter((datum) => {
-            const name = this.getDataLoadName(datum);
-            return !this._loadedData.has(name);
-          })
-          .map((datum) => {
-            const name = this.getDataLoadName(datum);
-            const updateSeries = this._canceller.cancellable((result) => {
-              if (result.cancelled) return;
-              this._loadedData.add(name);
-              this.loadDataCallback(this, datum, result.value);
+          // Promises return cacheKeys of the data that were fetched.
+          const promises = this.dataToLoad
+            .filter((datum) => {
+              const cacheKey = this.getDataLoadName(datum);
+              return !this._dataLoadState.has(cacheKey);
+            })
+            .map((datum) => {
+              const cacheKey = this.getDataLoadName(datum);
+              this._dataLoadState.set(cacheKey, LoadState.LOADING);
+              return this.requestData(datum).then(
+                this._canceller.cancellable((result) => {
+                  // It was resetted. Do not notify of the response.
+                  if (!result.cancelled) {
+                    this._dataLoadState.set(cacheKey, LoadState.LOADED);
+                    this.loadDataCallback(this, datum, result.value);
+                  }
+                  return cacheKey;
+                })
+              );
             });
-            return this.requestData(datum).then(updateSeries);
-          });
 
-        return Promise.all(promises).then(
-          this._canceller.cancellable((result) => {
-            // Read-only property have a special setter.
-            this._setDataLoading(false);
-            if (result.cancelled) return;
-            this.onLoadFinish();
-          })
-        );
-      });
+          return Promise.all(promises).then(
+            this._canceller.cancellable((result) => {
+              // It was resetted. Do not notify of the data load.
+              if (!result.cancelled) {
+                const keysFetched = result.value;
+                const fetched = new Set(keysFetched);
+                const shouldNotify = this.dataToLoad.some((datum) =>
+                  fetched.has(this.getDataLoadName(datum))
+                );
+
+                if (shouldNotify) {
+                  this.onLoadFinish();
+                }
+              }
+
+              const isDataFetchPending = Array.from(
+                this._dataLoadState.values()
+              ).some((loadState) => loadState === LoadState.LOADING);
+
+              if (!isDataFetchPending) {
+                // Read-only property have a special setter.
+                this._setDataLoading(false);
+              }
+            })
+          );
+        })
+      );
     },
   };
 } // namespace tf_dashboard_common
