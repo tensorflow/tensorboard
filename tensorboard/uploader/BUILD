@@ -1,3 +1,12 @@
+# Description:
+# Uploader for a hosted TensorBoard service
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])  # Apache 2.0
+
+exports_files(["LICENSE"])
+
 py_library(
     name = "dev_creds",
     srcs = ["dev_creds.py"],
