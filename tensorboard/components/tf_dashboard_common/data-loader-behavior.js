@@ -14,6 +14,12 @@ limitations under the License.
 ==============================================================================*/
 var tf_dashboard_common;
 (function (tf_dashboard_common) {
+    // NOT_LOADED is implicit
+    let LoadState;
+    (function (LoadState) {
+        LoadState[LoadState["LOADING"] = 0] = "LOADING";
+        LoadState[LoadState["LOADED"] = 1] = "LOADED";
+    })(LoadState || (LoadState = {}));
     /**
      * @polymerBehavior
      */
@@ -82,13 +88,13 @@ var tf_dashboard_common;
                 value: false,
             },
             /*
-             * A set of data that is inflight or has been loaded already. This exists
-             * to prevent fetching same data again.
+             * A map of a cache key to LoadState. If a cacheKey does not exist in the
+             * map, it is considered NOT_LOADED.
              * Invoking `reload` or a change in `loadKey` clears the cache.
              */
-            _inflightOrLoadedData: {
+            _dataLoadState: {
                 type: Object,
-                value: () => new Set(),
+                value: () => new Map(),
             },
             _canceller: {
                 type: Object,
@@ -100,16 +106,17 @@ var tf_dashboard_common;
             // Override to do something useful.
         },
         reload() {
-            this._inflightOrLoadedData.clear();
+            this._dataLoadState.clear();
             this._loadData();
         },
         reset() {
             // https://github.com/tensorflow/tensorboard/issues/1499
             // Cannot use the observer to observe `loadKey` changes directly.
+            this.cancelAsync(this._loadDataAsync);
             if (this._canceller)
                 this._canceller.cancelAll();
-            if (this._inflightOrLoadedData)
-                this._inflightOrLoadedData.clear();
+            if (this._dataLoadState)
+                this._dataLoadState.clear();
             if (this.isAttached)
                 this._loadData();
         },
@@ -124,7 +131,13 @@ var tf_dashboard_common;
             });
         },
         detached() {
-            this._canceller.cancelAll();
+            // Note: Cannot call canceller.cancelAll since it will poison the cache.
+            // detached gets called when a component gets unmounted from the document
+            // but it can be re-mounted. When remounted, poisoned cache will manifest.
+            // t=0: dataLoadState: 'a' = loading
+            // t=10: unmount
+            // t=20: request for 'a' resolves but we do not change the loadState
+            // because we do not want to set one if, instead, it was resetted at t=10.
             this.cancelAsync(this._loadDataAsync);
         },
         _loadDataIfActive() {
@@ -136,38 +149,47 @@ var tf_dashboard_common;
             if (!this.active)
                 return;
             this.cancelAsync(this._loadDataAsync);
-            this._loadDataAsync = this.async(() => {
+            this._loadDataAsync = this.async(this._canceller.cancellable((result) => {
+                if (result.cancelled) {
+                    return;
+                }
                 // Read-only property have a special setter.
                 this._setDataLoading(true);
-                // Before updating, cancel any network-pending updates, to
-                // prevent race conditions where older data stomps newer data.
-                this._canceller.cancelAll();
+                // Promises return cacheKeys of the data that were fetched.
                 const promises = this.dataToLoad
                     .filter((datum) => {
-                    const name = this.getDataLoadName(datum);
-                    return !this._inflightOrLoadedData.has(name);
+                    const cacheKey = this.getDataLoadName(datum);
+                    return !this._dataLoadState.has(cacheKey);
                 })
                     .map((datum) => {
                     const cacheKey = this.getDataLoadName(datum);
-                    this._inflightOrLoadedData.add(cacheKey);
-                    return this.requestData(datum).then((value) => {
-                        // dataToLoad can change while the request in-flight and it may
-                        // not be no longer required (loadDataCallback can be an expensive
-                        // proess so we would like to omit it if possible).
-                        const isDataRequiredNow = this.dataToLoad.find((datum) => this.getDataLoadName(datum) === cacheKey);
-                        if (isDataRequiredNow) {
-                            this.loadDataCallback(this, datum, value);
+                    this._dataLoadState.set(cacheKey, LoadState.LOADING);
+                    return this.requestData(datum).then(this._canceller.cancellable((result) => {
+                        // It was resetted. Do not notify of the response.
+                        if (!result.cancelled) {
+                            this._dataLoadState.set(cacheKey, LoadState.LOADED);
+                            this.loadDataCallback(this, datum, result.value);
                         }
-                    });
+                        return cacheKey;
+                    }));
                 });
                 return Promise.all(promises).then(this._canceller.cancellable((result) => {
-                    // Read-only property have a special setter.
-                    this._setDataLoading(false);
-                    if (result.cancelled)
-                        return;
-                    this.onLoadFinish();
+                    // It was resetted. Do not notify of the data load.
+                    if (!result.cancelled) {
+                        const keysFetched = result.value;
+                        const fetched = new Set(keysFetched);
+                        const shouldNotify = this.dataToLoad.some((datum) => fetched.has(this.getDataLoadName(datum)));
+                        if (shouldNotify) {
+                            this.onLoadFinish();
+                        }
+                    }
+                    const isDataFetchPending = Array.from(this._dataLoadState.values()).some((loadState) => loadState === LoadState.LOADING);
+                    if (!isDataFetchPending) {
+                        // Read-only property have a special setter.
+                        this._setDataLoading(false);
+                    }
                 }));
-            });
+            }));
         },
     };
 })(tf_dashboard_common || (tf_dashboard_common = {})); // namespace tf_dashboard_common
