@@ -21,7 +21,7 @@ pip install tensorboard_plugin_fairness_indicators
 pip uninstall -y tensorflow tf-nightly
 pip install "tensorflow_model_analysis>=0.15.1"
 pip uninstall -y tensorboard tb-nightly
-pip install "tf-nightly>=2.1.0.dev20191024"
+pip install "tb-nightly>=2.1.0a20191024"
 ```
 
 ## Demo
