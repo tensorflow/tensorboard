@@ -53,7 +53,7 @@ install:
   - pip install yamllint==1.17.0
   # TensorBoard deps.
   - pip install futures==3.1.1
-  - pip install grpcio==1.6.3
+  - pip install grpcio==1.24.3
   - pip install grpcio-testing==1.24.3
   - pip install 'google-auth >= 1.6.3, < 2'
   - pip install 'google-auth-oauthlib >= 0.4.1, < 0.5'
