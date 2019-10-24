@@ -26,7 +26,7 @@ To install Fairness Indicators for Tensorboard, run:
 
 ## Demo
 
-If you want to test out Fairness Indicators in TensorBoard, you can download sample TensorFlow Model Analysis evaluation results and a `demo.py` utility from Google Cloud Platform, [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators?pli=1). This evaluation data is based on the [Civil Comments dataset](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification), calculated using the [tensorflow_model_analysis.ExtractEvaluateAndWriteResult](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py) API. It also contains a sample TensorBoard summary data file for reference. See the [Tensorboard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md) for more information on summary data files.
+If you want to test out Fairness Indicators in TensorBoard, you can download sample TensorFlow Model Analysis evaluation results (eval_config, metrics and plots files) and a `demo.py` utility from Google Cloud Platform, [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/). This evaluation data is based on the [Civil Comments dataset](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification), calculated using the [tensorflow_model_analysis.ExtractEvaluateAndWriteResult](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py) API. It also contains a sample TensorBoard summary data file for reference. See the [Tensorboard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md) for more information on summary data files.
 
 The `demo.py` utility writes a TensorBoard summary data file, which will be read by TensorBoard to render the Fairness Indicators dashboard. Flags to be used with the `demo.py` utility: 
 
@@ -49,7 +49,7 @@ To use the Fairness Indicators with your own data and evaluations:
 
 1. Train a new model and evaluate using [tensorflow_model_analysis.ExtractEvaluateAndWriteResult](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py) API. For code snippets on how to do this, see the Fairness Indicators colab [here](https://github.com/tensorflow/fairness-indicators). 
 
-2. Run the `demo.py` file (download [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators?pli=1))
+2. Run the `demo.py` file (download [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/demo))
     * Set `--logdir=<logdir>/testing_tensorboard`
     * Set `--eval_result_output_dir` flag value to the directory containing your model’s evaluation result.
   
