@@ -262,7 +262,7 @@ class S3FileSystem(object):
         offset = 0
         if continue_from is not None:
             offset = continue_from.get("byte_offset", 0)
-        
+
         endpoint = ''
         if size is not None:
             # TODO(orionr): This endpoint risks splitting a multi-byte
