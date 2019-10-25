@@ -29,7 +29,7 @@ from tensorboard.compat.tensorflow_stub import compat, errors
 from tensorboard.compat.tensorflow_stub.io import gfile
 
 # These tests are forked from
-# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/lib/io/file_io_test.py
+# https://github.com/tensorflow/tensorflow/blob/0bd715841dba30157beb6ca59f1024ba8cad2f92/tensorflow/python/lib/io/file_io_test.py
 
 # The purpose is to establish that our GFile reimplementation is faithful to
 # the TensorFlow FileIO API (to the extent that it's implemented at all).

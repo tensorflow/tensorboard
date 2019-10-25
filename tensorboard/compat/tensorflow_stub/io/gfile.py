@@ -598,12 +598,6 @@ class GFile(object):
             self.write_temp = None
             self.write_started = False
         self.closed = True
-    
-    # Note we do not implement `tell()` or `seek(n)`, because those calls
-    # make sense only in terms of raw byte offsets.  This implementation
-    # abstracts the underlying storage, in such a way that byte offsets are
-    # not immediately available at the GFile level, because decoding happens in
-    # the 'filesystem' layer.
 
 
 def exists(filename):
