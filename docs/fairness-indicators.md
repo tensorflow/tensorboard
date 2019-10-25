@@ -4,9 +4,7 @@
 
 Fairness Indicators for TensorBoard enables easy computation of commonly-identified fairness metrics for _binary_ and _multiclass_ classifiers. With the plugin, you can visualize fairness evaluations for your runs and easily compare performance across groups. 
 
-In particular, Fairness Indicators for TensorBoard includes the ability to:
-* Evaluate the distribution of datasets
-* Evaluate model performance, sliced across defined groups of users. Feel confident about your results with confidence intervals and evaluations at multiple thresholds 
+In particular, Fairness Indicators for TensorBoard allows you to evaluate and visualize model performance, sliced across defined groups of users. Feel confident about your results with confidence intervals and evaluations at multiple thresholds.
 
 Many existing tools for evaluating fairness concerns don’t work well on large scale datasets and models. At Google, it is important for us to have tools that can work on billion-user systems. Fairness Indicators will allow you to evaluate across any size of use case, in the Tensorboard environment or in [Colab](https://github.com/tensorflow/fairness-indicators). 
 
