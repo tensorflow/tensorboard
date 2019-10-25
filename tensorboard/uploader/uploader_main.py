@@ -325,11 +325,17 @@ class _UploadIntent(_Intent):
     api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(channel)
     uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
     url = uploader.create_experiment()
-    print('Uploading to %s' % url)
+    print("Upload started and will continue reading any new data as it's added")
+    print("to the logdir. To stop uploading, press Ctrl-C.")
+    print("View your TensorBoard live at: %s" % url)
     try:
       uploader.start_uploading()
     except uploader_lib.ExperimentNotFoundError:
       print('Experiment was deleted; uploading has been cancelled')
+      return
+    except KeyboardInterrupt:
+      print()
+      print('Upload stopped. View your TensorBoard at %s' % url)
       return
     # TODO(@nfelt): make it possible for the upload cycle to end once we
     #   detect that no more runs are active, so this code can be reached.
