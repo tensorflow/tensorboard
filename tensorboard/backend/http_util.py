@@ -42,8 +42,9 @@ _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r'\s')
 _CSP_FONT_DOMAINS_WHITELIST = []
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
-_CSP_SCRIPT_HASHES_STRICT_DYNAMIC = True
-_CSP_SCRIPT_SELF = False
+_CSP_SCRIPT_SELF = True
+# numericjs (via projector) uses unsafe-eval :(.
+_CSP_SCRIPT_UNSAFE_EVAL = True
 _CSP_STYLE_DOMAINS_WHITELIST = []
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r'^[^;\s]*')
@@ -182,32 +183,33 @@ def Respond(request,
     _validate_global_whitelist(_CSP_FONT_DOMAINS_WHITELIST)
     _validate_global_whitelist(_CSP_SCRIPT_DOMAINS_WHITELIST)
 
-    # TODO(stephanwlee): remove `'strict dynamic'` when dynamic plugin
-    # resources can be hashed upfront.
-    enable_strict_dynamic = (
-        _CSP_SCRIPT_HASHES_STRICT_DYNAMIC
-        and csp_scripts_sha256s
+    enable_unsafe_eval = (
+      (_CSP_SCRIPT_DOMAINS_WHITELIST or csp_scripts_sha256s)
+      and _CSP_SCRIPT_UNSAFE_EVAL
     )
     frags = _CSP_SCRIPT_DOMAINS_WHITELIST + [
         "'self'" if _CSP_SCRIPT_SELF else '',
-        'strict-dynamic' if enable_strict_dynamic else '',
+        "'unsafe-eval'" if enable_unsafe_eval else '',
     ] + [
         "'sha256-{}'".format(sha256) for sha256 in (csp_scripts_sha256s or [])
     ]
     script_srcs = _create_csp_string(*frags)
 
     csp_string = ';'.join([
-        "default-src 'none'",
-        "base-uri 'self'",
-        "connect-src 'self'",
+        "default-src 'self'",
         'font-src %s' % _create_csp_string(
             "'self'",
             *_CSP_FONT_DOMAINS_WHITELIST
         ),
-        # data uri used by favicon
+        'frame-ancestors *',
+        # Dynamic plugins are rendered inside an iframe.
+        "frame-src 'self'",
         'img-src %s' % _create_csp_string(
             "'self'",
+            # used by favicon
             'data:',
+            # used by What-If tool for image sprites.
+            'blob:',
             *_CSP_IMG_DOMAINS_WHITELIST
         ),
         "object-src 'none'",
