@@ -111,6 +111,11 @@ namespace tf_dashboard_common {
         type: Object,
         value: () => new tf_backend.Canceller(),
       },
+
+      _loadDataAsync: {
+        type: Number,
+        value: null,
+      },
     },
 
     observers: ['_dataToLoadChanged(isAttached, dataToLoad.*)'],
@@ -127,7 +132,10 @@ namespace tf_dashboard_common {
     reset() {
       // https://github.com/tensorflow/tensorboard/issues/1499
       // Cannot use the observer to observe `loadKey` changes directly.
-      this.cancelAsync(this._loadDataAsync);
+      if (this._loadDataAsync != null) {
+        this.cancelAsync(this._loadDataAsync);
+        this._loadDataAsync = null;
+      }
       if (this._canceller) this._canceller.cancelAll();
       if (this._dataLoadState) this._dataLoadState.clear();
       if (this.isAttached) this._loadData();
@@ -152,7 +160,10 @@ namespace tf_dashboard_common {
       // t=10: unmount
       // t=20: request for 'a' resolves but we do not change the loadState
       // because we do not want to set one if, instead, it was resetted at t=10.
-      this.cancelAsync(this._loadDataAsync);
+      if (this._loadDataAsync != null) {
+        this.cancelAsync(this._loadDataAsync);
+        this._loadDataAsync = null;
+      }
     },
 
     _loadDataIfActive() {
@@ -193,31 +204,43 @@ namespace tf_dashboard_common {
               );
             });
 
-          return Promise.all(promises).then(
-            this._canceller.cancellable((result) => {
-              // It was resetted. Do not notify of the data load.
-              if (!result.cancelled) {
-                const keysFetched = result.value;
-                const fetched = new Set(keysFetched);
-                const shouldNotify = this.dataToLoad.some((datum) =>
-                  fetched.has(this.getDataLoadName(datum))
-                );
+          return Promise.all(promises)
+            .then(
+              this._canceller.cancellable((result) => {
+                // It was resetted. Do not notify of the data load.
+                if (!result.cancelled) {
+                  const keysFetched = result.value;
+                  const fetched = new Set(keysFetched);
+                  const shouldNotify = this.dataToLoad.some((datum) =>
+                    fetched.has(this.getDataLoadName(datum))
+                  );
 
-                if (shouldNotify) {
-                  this.onLoadFinish();
+                  if (shouldNotify) {
+                    this.onLoadFinish();
+                  }
                 }
-              }
 
-              const isDataFetchPending = Array.from(
-                this._dataLoadState.values()
-              ).some((loadState) => loadState === LoadState.LOADING);
+                const isDataFetchPending = Array.from(
+                  this._dataLoadState.values()
+                ).some((loadState) => loadState === LoadState.LOADING);
 
-              if (!isDataFetchPending) {
-                // Read-only property have a special setter.
-                this._setDataLoading(false);
-              }
-            })
-          );
+                if (!isDataFetchPending) {
+                  // Read-only property have a special setter.
+                  this._setDataLoading(false);
+                }
+              }),
+              // TODO(stephanwlee): remove me when we can use  Promise.prototype.finally
+              // instead
+              () => {}
+            )
+            .then(
+              this._canceller.cancellable(({cancelled}) => {
+                if (cancelled) {
+                  return;
+                }
+                this._loadDataAsync = null;
+              })
+            );
         })
       );
     },
