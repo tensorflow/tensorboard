@@ -114,6 +114,14 @@ def tensorboard_python_workspace():
         sha256 = "2d9fbe67001d2e8f02692075257f3c11e1b0194bd838c8ce3f49b31fc6c3f033",
         strip_prefix = "mock-1.0.0",
         build_file = str(Label("//third_party:mock.BUILD")),
+        patches = [
+            # `mock==1.0.0` lacks some assertion methods present in
+            # later versions of `mock` (see comment above for why we pin
+            # to this version). Patch created by diffing the pinned
+            # `mock.py` with GitHub head and identifying all the bits
+            # that looked related to the methods in question.
+            "//third_party:mock_call_assertions.patch",
+        ],
     )
 
     http_archive(

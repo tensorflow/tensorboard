@@ -26,11 +26,9 @@ import grpc_testing
 
 try:
   # python version >= 3.3
-  from unittest import mock
+  from unittest import mock  # pylint: disable=g-import-not-at-top
 except ImportError:
-  # mock==1.0.0 backport lacks `assert_called_once` and friends
-  print("Test disabled in Python 2")
-  exit(0)
+  import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 import tensorflow as tf
 
