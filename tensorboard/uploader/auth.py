@@ -46,6 +46,26 @@ OPENID_CONNECT_SCOPES = (
 )
 
 
+# The client "secret" is public by design for installed apps. See
+# https://developers.google.com/identity/protocols/OAuth2?csw=1#installed
+OAUTH_CLIENT_CONFIG = b"""
+{
+  "installed": {
+    "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
+    "project_id": "hosted-tensorboard-prod",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr",
+    "redirect_uris": [
+      "urn:ietf:wg:oauth:2.0:oob",
+      "http://localhost"
+    ]
+  }
+}
+"""
+
+
 # Components of the relative path (within the user settings directory) at which
 # to store TensorBoard uploader credentials.
 TENSORBOARD_CREDENTIALS_FILEPATH_PARTS = [

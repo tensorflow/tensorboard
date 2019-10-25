@@ -198,7 +198,7 @@ def _run(flags):
   credentials = store.read_credentials()
   if not credentials:
     _prompt_for_user_ack(intent)
-    client_config = json.loads(dev_creds.DEV_OAUTH_CLIENT_CONFIG)
+    client_config = json.loads(auth.OAUTH_CLIENT_CONFIG)
     flow = auth.build_installed_app_flow(client_config)
     credentials = flow.run(force_console=flags.auth_force_console)
     sys.stderr.write('\n')  # Extra newline after auth flow messages.
