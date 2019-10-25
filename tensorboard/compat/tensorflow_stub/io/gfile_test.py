@@ -165,16 +165,26 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, 'model.ckpt')
-        ckpt_lines = (
+
+        # Note \r\n, which io.read will automatically replace with \n.
+        # That substitution desynchronizes character offsets (omitting \r) from
+        # the underlying byte offsets (counting \r).  Multibyte characters would
+        # similarly cause desynchronization.
+        raw_ckpt_lines = (
+            [u'\r\n'] + [u'line {}\r\n'.format(i) for i in range(10)] + [u' ']
+        )
+        expected_ckpt_lines = (    # without \r
             [u'\n'] + [u'line {}\n'.format(i) for i in range(10)] + [u' ']
         )
-        # Write out \n as newline even on Windows
+        # Write out newlines as given (i.e., \r\n) regardless of OS, so as to
+        # test translation on read.
         with io.open(ckpt_path, 'w', newline='') as f:
-            f.write(u''.join(ckpt_lines))
+            data = u''.join(raw_ckpt_lines)
+            f.write(data)
         with gfile.GFile(ckpt_path, 'r') as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
-            ckpt_read_lines = list(f)
-            self.assertEqual(ckpt_lines, ckpt_read_lines)
+            read_ckpt_lines = list(f)
+            self.assertEqual(expected_ckpt_lines, read_ckpt_lines)
 
     def testReadWithOffset(self):
         temp_dir = self.get_temp_dir()
