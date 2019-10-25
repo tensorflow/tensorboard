@@ -97,7 +97,7 @@ def _define_flags(parser):
   parser.add_argument(
       '--grpc_creds_type',
       type=str,
-      default='ssl_dev',
+      default='ssl',
       choices=('local', 'ssl', 'ssl_dev'),
       help='The type of credentials to use for the gRPC client')
 
