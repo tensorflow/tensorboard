@@ -28,8 +28,10 @@ import subprocess
 import sys
 
 
-# Remove files from this list as whitespace errors are fixed.
 exceptions = frozenset([
+    # End-of-line whitespace is semantic in patch files when a line
+    # contains a single space.
+    "third_party/mock_call_assertions.patch",
 ])
 
 
