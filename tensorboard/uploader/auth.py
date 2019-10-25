@@ -52,21 +52,6 @@ TENSORBOARD_CREDENTIALS_FILEPATH_PARTS = [
     "tensorboard", "credentials", "uploader-creds.json"]
 
 
-def application_default_credentials():
-  """Returns the active Application Default Credentials.
-
-  Returns:
-    google.auth.credentials.Credentials: the current credentials.
-
-  Raises:
-    google.auth.exceptions.DefaultCredentialsError:
-        If no credentials were found, or if the credentials found were invalid.
-  """
-  credentials, project_id = google.auth.default(scopes=OPENID_CONNECT_SCOPES)
-  del project_id  # unused
-  return credentials
-
-
 class CredentialsStore(object):
   """Private file store for a `google.oauth2.credentials.Credentials`."""
 

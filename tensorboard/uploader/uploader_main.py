@@ -102,13 +102,6 @@ def _define_flags(parser):
       help='The type of credentials to use for the gRPC client')
 
   parser.add_argument(
-      '--auth_type',
-      type=str,
-      default='user',
-      choices=('adc', 'user', 'none'),
-      help='The type of auth credentials to obtain and add to requests.')
-
-  parser.add_argument(
       '--auth_force_console',
       action='store_true',
       help='Set to true to force authentication flow to use the '
@@ -201,6 +194,15 @@ def _run(flags):
     sys.stderr.write('Logged out of uploader.\n')
     sys.stderr.flush()
     return
+  # TODO(b/141723268): maybe reconfirm Google Account prior to reuse.
+  credentials = store.read_credentials()
+  if not credentials:
+    _prompt_for_user_ack(intent)
+    client_config = json.loads(dev_creds.DEV_OAUTH_CLIENT_CONFIG)
+    flow = auth.build_installed_app_flow(client_config)
+    credentials = flow.run(force_console=flags.auth_force_console)
+    sys.stderr.write('\n')  # Extra newline after auth flow messages.
+    store.write_credentials(credentials)
 
   channel_options = None
   if flags.grpc_creds_type == 'local':
@@ -214,27 +216,13 @@ def _run(flags):
     msg = 'Invalid --grpc_creds_type %s' % flags.grpc_creds_type
     raise base_plugin.FlagsError(msg)
 
-  if flags.auth_type != 'none':
-    if flags.auth_type == 'user':
-      # TODO(b/141723268): determine if we should reconfirm the intended Google
-      #   Account used for uploading prior to reusing the stored credentials.
-      credentials = store.read_credentials()
-      if not credentials:
-        _prompt_for_user_ack(intent)
-        client_config = json.loads(dev_creds.DEV_OAUTH_CLIENT_CONFIG)
-        flow = auth.build_installed_app_flow(client_config)
-        credentials = flow.run(force_console=flags.auth_force_console)
-        sys.stderr.write('\n')  # Extra newline after auth flow messages.
-        store.write_credentials(credentials)
-    elif flags.auth_type == 'adc':
-      credentials = auth.application_default_credentials()
-    channel_creds = grpc.composite_channel_credentials(
-        channel_creds, auth.id_token_call_credentials(credentials))
+  composite_channel_creds = grpc.composite_channel_credentials(
+      channel_creds, auth.id_token_call_credentials(credentials))
 
   # TODO(@nfelt): In the `_UploadIntent` case, consider waiting until
   # logdir exists to open channel.
   channel = grpc.secure_channel(
-      flags.endpoint, channel_creds, options=channel_options)
+      flags.endpoint, composite_channel_creds, options=channel_options)
   with channel:
     intent.execute(channel)
 
