@@ -19,11 +19,11 @@ from __future__ import division
 from __future__ import print_function
 
 
-DEV_SSL_CERT = b"""
+DEV_SSL_CERT = u"""
 """
 
-DEV_SSL_CERT_KEY = b"""
+DEV_SSL_CERT_KEY = u"""
 """
 
-DEV_OAUTH_CLIENT_CONFIG = b"""
+DEV_OAUTH_CLIENT_CONFIG = u"""
 """
