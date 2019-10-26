@@ -19,12 +19,12 @@ pip install --upgrade pip
 pip install tensorboard_plugin_fairness_indicators
 pip install "tensorflow_model_analysis>=0.15.1"
 pip uninstall -y tensorboard tb-nightly
-pip install "tb-nightly>=2.1.0a20191024"
+pip install --upgrade tb-nightly
 ```
 
 ## Demo
 
-If you want to test out Fairness Indicators in TensorBoard, you can download sample TensorFlow Model Analysis evaluation results (eval_config.json, metrics and plots files) and a `demo.py` utility from Google Cloud Platform, [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/) in a directory. (Checkout [this](https://cloud.google.com/storage/docs/downloading-objects) documentation to download files from Google Cloud Platform). This evaluation data is based on the [Civil Comments dataset](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification), calculated using Tensorflow Model Analysis's [model_eval_lib](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py) library. It also contains a sample TensorBoard summary data file for reference. See the [TensorBoard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md) for more information on summary data files.
+If you want to test out Fairness Indicators in TensorBoard, you can download sample TensorFlow Model Analysis evaluation results (eval_config.json, metrics and plots files) and a `demo.py` utility from Google Cloud Platform, [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/). (Checkout [this](https://cloud.google.com/storage/docs/downloading-objects) documentation to download files from Google Cloud Platform). This evaluation data is based on the [Civil Comments dataset](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification), calculated using Tensorflow Model Analysis's [model_eval_lib](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py) library. It also contains a sample TensorBoard summary data file for reference. See the [TensorBoard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md) for more information on summary data files.
 
 The `demo.py` utility writes a TensorBoard summary data file, which will be read by TensorBoard to render the Fairness Indicators dashboard. Flags to be used with the `demo.py` utility:
 
@@ -35,11 +35,12 @@ Run the `demo.py` utility to write the summary results in the log directory:
 
 `python demo.py --logdir=<logdir>/demo --eval_result_output_dir=<eval_result_dir>`
 
-Run TensorBoard (Please run the TensorBoard from the same directory in which you have downloaded the evaluation results):
+Run TensorBoard:
+Note: For this demo, please run TensorBoard from the same directory where you have downloaded the evaluation results.
 
 `tensorboard --logdir=<logdir>`
 
-This will start a local instance (link will be provided once the local instance is started), open the link in your browser to view the Fairness Indicators dashboard.
+This will start a local instance. After the local instance is started, a link will be displayed to the terminal. Open the link in your browser to view the Fairness Indicators dashboard.
 
 ## Usage
 
