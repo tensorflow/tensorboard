@@ -36,6 +36,7 @@ Run the `demo.py` utility to write the summary results in the log directory:
 `python demo.py --logdir=<logdir>/demo --eval_result_output_dir=<eval_result_dir>`
 
 Run TensorBoard:
+
 Note: For this demo, please run TensorBoard from the same directory where you have downloaded the evaluation results.
 
 `tensorboard --logdir=<logdir>`
