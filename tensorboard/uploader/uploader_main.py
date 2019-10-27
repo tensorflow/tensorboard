@@ -51,7 +51,7 @@ Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/privacy>.
 
 This notice will not be shown again while you are logged into the uploader.
-To log out, rerun this command with the --auth_revoke flag.
+To log out, run `tensorboard dev auth revoke`.
 """
 
 
