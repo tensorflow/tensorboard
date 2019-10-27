@@ -19,16 +19,19 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
+import hashlib
 import threading
 
 from concurrent import futures
 import grpc
+import six
 
 from tensorboard.util import grpc_util
 from tensorboard.util import grpc_util_test_pb2
 from tensorboard.util import grpc_util_test_pb2_grpc
 from tensorboard.util import test_util
 from tensorboard import test as tb_test
+from tensorboard import version
 
 
 def make_request(nonce):
@@ -69,7 +72,7 @@ class TestGrpcServer(grpc_util_test_pb2_grpc.TestServiceServicer):
     thread.join()
 
 
-class GrpcUtilTest(tb_test.TestCase):
+class CallWithRetriesTest(tb_test.TestCase):
 
   def test_call_with_retries_succeeds(self):
     def handler(request, _):
@@ -123,6 +126,38 @@ class GrpcUtilTest(tb_test.TestCase):
     self.assertLen(attempt_times, 3)
     self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
     self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
+
+  def test_call_with_retries_includes_version_metadata(self):
+    def digest(s):
+      """Hashes a string into a 32-bit integer."""
+      return int(hashlib.sha256(s.encode("utf-8")).hexdigest(), 16) & 0xffffffff
+    def handler(request, context):
+      metadata = context.invocation_metadata()
+      client_version = grpc_util.extract_version(metadata)
+      return make_response(digest(client_version))
+    server = TestGrpcServer(handler)
+    with server.run() as client:
+      response = grpc_util.call_with_retries(client.TestRpc, make_request(0))
+    expected_nonce = digest(
+        grpc_util.extract_version(grpc_util.version_metadata()))
+    self.assertEqual(make_response(expected_nonce), response)
+
+
+class VersionMetadataTest(tb_test.TestCase):
+
+  def test_structure(self):
+    result = grpc_util.version_metadata()
+    self.assertIsInstance(result, tuple)
+    for kv in result:
+      self.assertIsInstance(kv, tuple)
+      self.assertLen(kv, 2)
+      (k, v) = kv
+      self.assertIsInstance(k, str)
+      self.assertIsInstance(v, six.string_types)
+
+  def test_roundtrip(self):
+    result = grpc_util.extract_version(grpc_util.version_metadata())
+    self.assertEqual(result, version.VERSION)
 
 
 if __name__ == "__main__":

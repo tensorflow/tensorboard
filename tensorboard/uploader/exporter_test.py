@@ -36,6 +36,7 @@ from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import test_util
+from tensorboard.util import grpc_util
 from tensorboard import test as tb_test
 from tensorboard.compat.proto import summary_pb2
 
@@ -62,13 +63,15 @@ class TensorBoardExporterTest(tb_test.TestCase):
         export_service_pb2.StreamExperimentsResponse(experiment_ids=["789"]),
     ])
 
-    def stream_experiments(request):
+    def stream_experiments(request, **kwargs):
       del request  # unused
+      self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
       yield export_service_pb2.StreamExperimentsResponse(
           experiment_ids=["123", "456"])
       yield export_service_pb2.StreamExperimentsResponse(experiment_ids=["789"])
 
-    def stream_experiment_data(request):
+    def stream_experiment_data(request, **kwargs):
+      self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
       for run in ("train", "test"):
         for tag in ("accuracy", "loss"):
           response = export_service_pb2.StreamExperimentDataResponse()
@@ -110,13 +113,13 @@ class TensorBoardExporterTest(tb_test.TestCase):
     expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
     expected_eids_request.limit = 2**63 - 1
     mock_api_client.StreamExperiments.assert_called_once_with(
-        expected_eids_request)
+        expected_eids_request, metadata=grpc_util.version_metadata())
 
     expected_data_request = export_service_pb2.StreamExperimentDataRequest()
     expected_data_request.experiment_id = "123"
     expected_data_request.read_timestamp.CopyFrom(start_time_pb)
     mock_api_client.StreamExperimentData.assert_called_once_with(
-        expected_data_request)
+        expected_data_request, metadata=grpc_util.version_metadata())
 
     # The next iteration should just request data for the next experiment.
     mock_api_client.StreamExperiments.reset_mock()
@@ -128,7 +131,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
     mock_api_client.StreamExperiments.assert_not_called()
     expected_data_request.experiment_id = "456"
     mock_api_client.StreamExperimentData.assert_called_once_with(
-        expected_data_request)
+        expected_data_request, metadata=grpc_util.version_metadata())
 
     # Again, request data for the next experiment; this experiment ID
     # was in the second response batch in the list of IDs.
@@ -141,7 +144,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
     mock_api_client.StreamExperiments.assert_not_called()
     expected_data_request.experiment_id = "789"
     mock_api_client.StreamExperimentData.assert_called_once_with(
-        expected_data_request)
+        expected_data_request, metadata=grpc_util.version_metadata())
 
     # The final continuation shouldn't need to send any RPCs.
     mock_api_client.StreamExperiments.reset_mock()
@@ -176,7 +179,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
   def test_rejects_dangerous_experiment_ids(self):
     mock_api_client = self._create_mock_api_client()
 
-    def stream_experiments(request):
+    def stream_experiments(request, **kwargs):
       del request  # unused
       yield export_service_pb2.StreamExperimentsResponse(
           experiment_ids=["../authorized_keys"])
@@ -212,7 +215,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
   def test_rejects_existing_file(self):
     mock_api_client = self._create_mock_api_client()
 
-    def stream_experiments(request):
+    def stream_experiments(request, **kwargs):
       del request  # unused
       yield export_service_pb2.StreamExperimentsResponse(experiment_ids=["123"])
 

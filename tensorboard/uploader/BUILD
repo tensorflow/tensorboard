@@ -18,6 +18,7 @@ py_library(
     deps = [
         ":util",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
+        "//tensorboard/util:grpc_util",
     ],
 )
 
@@ -32,6 +33,7 @@ py_test(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
+        "//tensorboard/util:grpc_util",
         "@org_pythonhosted_mock",
     ],
 )

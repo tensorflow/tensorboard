@@ -27,6 +27,7 @@ import time
 
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
+from tensorboard.util import grpc_util
 
 # Characters that are assumed to be safe in filenames. Note that the
 # server's experiment IDs are base64 encodings of 16-byte blobs, so they
@@ -120,7 +121,8 @@ class TensorBoardExporter(object):
     """Yields all of the calling user's experiment IDs, as strings."""
     request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
     util.set_timestamp(request.read_timestamp, read_time)
-    stream = self._api.StreamExperiments(request)
+    stream = self._api.StreamExperiments(
+        request, metadata=grpc_util.version_metadata())
     for response in stream:
       for experiment_id in response.experiment_ids:
         yield experiment_id
@@ -136,7 +138,9 @@ class TensorBoardExporter(object):
     # IDs). Any non-transient errors would be internal, and we have no
     # way to efficiently resume from transient errors because the server
     # does not support pagination.
-    for response in self._api.StreamExperimentData(request):
+    stream = self._api.StreamExperimentData(
+        request, metadata=grpc_util.version_metadata())
+    for response in stream:
       metadata = base64.b64encode(
           response.tag_metadata.SerializeToString()).decode("ascii")
       wall_times = [t.ToNanoseconds() / 1e9 for t in response.points.wall_times]
