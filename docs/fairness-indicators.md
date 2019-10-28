@@ -6,11 +6,11 @@ Fairness Indicators for TensorBoard enables easy computation of commonly-identif
 
 In particular, Fairness Indicators for TensorBoard allows you to evaluate and visualize model performance, sliced across defined groups of users. Feel confident about your results with confidence intervals and evaluations at multiple thresholds.
 
-Many existing tools for evaluating fairness concerns don’t work well on large scale datasets and models. At Google, it is important for us to have tools that can work on billion-user systems. Fairness Indicators will allow you to evaluate across any size of use case, in the Tensorboard environment or in [Colab](https://github.com/tensorflow/fairness-indicators).
+Many existing tools for evaluating fairness concerns don’t work well on large scale datasets and models. At Google, it is important for us to have tools that can work on billion-user systems. Fairness Indicators will allow you to evaluate across any size of use case, in the TensorBoard environment or in [Colab](https://github.com/tensorflow/fairness-indicators).
 
 ## Requirements
 
-To install Fairness Indicators for Tensorboard, run:
+To install Fairness Indicators for TensorBoard, run:
 
 ```
 python3 -m virtualenv ~/tensorboard_demo
