@@ -23,6 +23,7 @@ import errno
 import json
 import os
 
+import grpc
 import grpc_testing
 
 try:
@@ -198,6 +199,61 @@ class TensorBoardExporterTest(tb_test.TestCase):
     self.assertIn(repr(sorted([u".", u"/"])), msg)
     self.assertIn("../authorized_keys", msg)
     mock_api_client.StreamExperimentData.assert_not_called()
+
+  def test_fails_nicely_on_stream_experiment_data_timeout(self):
+    # Setup: Client where:
+    #   1. stream_experiments will say there is one experiment_id.
+    #   2. stream_experiment_data will raise a grpc CANCELLED, as per
+    #      a timeout.
+    mock_api_client = self._create_mock_api_client()
+    experiment_id="123"
+
+    def stream_experiments(request, **kwargs):
+      del request  # unused
+      yield export_service_pb2.StreamExperimentsResponse(
+          experiment_ids=[experiment_id])
+
+    def stream_experiment_data(request, **kwargs):
+      raise test_util.grpc_error(grpc.StatusCode.CANCELLED, "details string")
+
+    mock_api_client.StreamExperiments = stream_experiments
+    mock_api_client.StreamExperimentData = stream_experiment_data
+
+    outdir = os.path.join(self.get_temp_dir(), "outdir")
+    # Execute: exporter.export()
+    exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
+    generator = exporter.export()
+    # Expect: A nice exception of the right type and carrying the right
+    #   experiment_id.
+    with self.assertRaises(exporter_lib.GrpcTimeoutException) as cm:
+      next(generator)
+    self.assertEquals(cm.exception.experiment_id, experiment_id)
+
+  def test_stream_experiment_data_passes_through_unexpected_exception(self):
+    # Setup: Client where:
+    #   1. stream_experiments will say there is one experiment_id.
+    #   2. stream_experiment_data will throw an internal error.
+    mock_api_client = self._create_mock_api_client()
+    experiment_id="123"
+
+    def stream_experiments(request, **kwargs):
+      del request  # unused
+      yield export_service_pb2.StreamExperimentsResponse(
+          experiment_ids=[experiment_id])
+
+    def stream_experiment_data(request, **kwargs):
+      raise ValueError
+
+    mock_api_client.StreamExperiments = stream_experiments
+    mock_api_client.StreamExperimentData = stream_experiment_data
+
+    outdir = os.path.join(self.get_temp_dir(), "outdir")
+    # Execute: exporter.export()
+    exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
+    generator = exporter.export()
+    # Expect: Value error is passed through
+    with self.assertRaises(ValueError) as cm:
+      next(generator)
 
   def test_handles_outdir_with_no_slash(self):
     oldcwd = os.getcwd()
