@@ -122,7 +122,7 @@ class TensorBoardExporter(object):
         if e.code() == grpc.StatusCode.CANCELLED:
           raise GrpcTimeoutException(experiment_id)
         else:
-          raise(e)
+          raise
 
   def _request_experiment_ids(self, read_time):
     """Yields all of the calling user's experiment IDs, as strings."""

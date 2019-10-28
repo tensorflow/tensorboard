@@ -234,26 +234,28 @@ class TensorBoardExporterTest(tb_test.TestCase):
     #   1. stream_experiments will say there is one experiment_id.
     #   2. stream_experiment_data will throw an internal error.
     mock_api_client = self._create_mock_api_client()
-    experiment_id="123"
+    experiment_id = "123"
 
     def stream_experiments(request, **kwargs):
       del request  # unused
       yield export_service_pb2.StreamExperimentsResponse(
-          experiment_ids=[experiment_id])
+          experiment_ids = [experiment_id])
 
     def stream_experiment_data(request, **kwargs):
-      raise ValueError
+      del request  # unused
+      raise test_util.grpc_error(grpc.StatusCode.INTERNAL, "details string")
 
     mock_api_client.StreamExperiments = stream_experiments
     mock_api_client.StreamExperimentData = stream_experiment_data
 
     outdir = os.path.join(self.get_temp_dir(), "outdir")
-    # Execute: exporter.export()
+    # Execute: exporter.export().
     exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
     generator = exporter.export()
-    # Expect: Value error is passed through
-    with self.assertRaises(ValueError) as cm:
+    # Expect: The internal error is passed through.
+    with self.assertRaises(grpc.RpcError) as cm:
       next(generator)
+    self.assertEquals(cm.exception.details(), "details string")
 
   def test_handles_outdir_with_no_slash(self):
     oldcwd = os.getcwd()
