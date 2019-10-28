@@ -199,6 +199,25 @@ class TensorBoardExporterTest(tb_test.TestCase):
     self.assertIn("../authorized_keys", msg)
     mock_api_client.StreamExperimentData.assert_not_called()
 
+  def test_handles_outdir_with_no_slash(self):
+    oldcwd = os.getcwd()
+    try:
+      os.chdir(self.get_temp_dir())
+      mock_api_client = self._create_mock_api_client()
+      mock_api_client.StreamExperiments.return_value = iter([
+          export_service_pb2.StreamExperimentsResponse(experiment_ids=["123"]),
+      ])
+      mock_api_client.StreamExperimentData.return_value = iter([
+          export_service_pb2.StreamExperimentDataResponse()
+      ])
+
+      exporter = exporter_lib.TensorBoardExporter(mock_api_client, "outdir")
+      generator = exporter.export()
+      self.assertEqual(list(generator), ["123"])
+      self.assertTrue(os.path.isdir("outdir"))
+    finally:
+      os.chdir(oldcwd)
+
   def test_rejects_existing_directory(self):
     mock_api_client = self._create_mock_api_client()
     outdir = os.path.join(self.get_temp_dir(), "outdir")
