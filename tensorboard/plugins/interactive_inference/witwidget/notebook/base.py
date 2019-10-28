@@ -85,10 +85,9 @@ class WitWidgetBase(object):
     if 'compare_adjust_attribution' in copied_config:
       del copied_config['compare_adjust_attribution']
 
+    examples = copied_config.pop('examples')
     self.config = copied_config
-    self.set_examples(config['examples'])
-    del copied_config['examples']
-
+    self.set_examples(examples)
 
     # If using AI Platform for prediction, set the correct custom prediction
     # functions.
