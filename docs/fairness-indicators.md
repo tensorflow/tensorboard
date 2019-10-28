@@ -47,9 +47,9 @@ This will start a local instance. After the local instance is started, a link wi
 
 To use the Fairness Indicators with your own data and evaluations:
 
-1. Train a new model and evaluate using tensorflow_model_analysis.run_model_analysis or tensorflow_model_analysis.ExtractEvaluateAndWriteResult API in [model_eval_lib](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py). For code snippets on how to do this, see the Fairness Indicators colab [here](https://github.com/tensorflow/fairness-indicators).
+1. Train a new model and evaluate using `tensorflow_model_analysis.run_model_analysis` or `tensorflow_model_analysis.ExtractEvaluateAndWriteResult` API in [model_eval_lib](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py). For code snippets on how to do this, see the Fairness Indicators colab [here](https://github.com/tensorflow/fairness-indicators).
 
-2. Run the `demo.py` file (download [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/demo))
+2. Run the `demo.py` file (download [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/))
 
    - Set `--logdir=<logdir>/testing_tensorboard`
    - Set `--eval_result_output_dir` flag value to the directory containing your model’s evaluation result.
