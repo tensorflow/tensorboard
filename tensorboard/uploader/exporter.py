@@ -85,7 +85,8 @@ class TensorBoardExporter(object):
     self._api = reader_service_client
     self._outdir = output_directory
     parent_dir = os.path.dirname(self._outdir)
-    _mkdir_p(parent_dir)
+    if parent_dir:
+      _mkdir_p(parent_dir)
     try:
       os.mkdir(self._outdir)
     except OSError as e:
