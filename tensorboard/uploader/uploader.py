@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Uploads a TensorBoard logdir to a hosted service."""
+"""Uploads a TensorBoard logdir to TensorBoard.dev."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -62,7 +62,7 @@ logger = tb_logging.get_logger()
 
 
 class TensorBoardUploader(object):
-  """Uploads a TensorBoard logdir to a hosted service."""
+  """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
   def __init__(self, writer_client, logdir, rate_limiter=None):
     """Constructs a TensorBoardUploader.
