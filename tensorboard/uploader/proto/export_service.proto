@@ -57,7 +57,7 @@ message StreamExperimentDataRequest {
 // result only contains data for a single tag from a single run. For example if
 // there are five runs and each run had two tags, the RPC will return a stream
 // of at least ten `StreamExperimentDataResponse`s, each one having the
-// scalars for one tag. The values from a single tag may be spit among multiple
+// scalars for one tag. The values from a single tag may be slpit among multiple
 // responses.  Users need to aggregate information from entire stream to get
 // data for the entire experiment. Empty experiments will have zero stream
 // results. Empty runs that doesn't have any tags need not be supported by a
