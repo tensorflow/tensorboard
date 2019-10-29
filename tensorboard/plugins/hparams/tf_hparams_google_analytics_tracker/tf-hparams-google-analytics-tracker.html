@@ -15,20 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <!--
 All the internal analytics tracking in tf-hparams is done through this object.
 In open source, we do not track users, so the methods in this object are no-ops.
 -->
 <script>
-(function() {
-  'use strict'
+  (function() {
+    'use strict';
 
-  Polymer({
-    is: 'tf-hparams-google-analytics-tracker',
+    Polymer({
+      is: 'tf-hparams-google-analytics-tracker',
 
-    handleEvent: function(e) {},
-  });
-})();
+      handleEvent: function(e) {},
+    });
+  })();
 </script>

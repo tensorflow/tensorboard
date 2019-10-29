@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import functools
 import imghdr
 import math
+import mimetypes
 import os
 import threading
 
@@ -32,6 +34,7 @@ from google.protobuf import text_format
 
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
+from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 from tensorboard.util import tb_logging
@@ -43,7 +46,7 @@ _PLUGIN_PREFIX_ROUTE = 'projector'
 
 # FYI - the PROJECTOR_FILENAME is hardcoded in the visualize_embeddings
 # method in tf.contrib.tensorboard.plugins.projector module.
-# TODO(@dandelionmane): Fix duplication when we find a permanent home for the
+# TODO(@decentralion): Fix duplication when we find a permanent home for the
 # projector module.
 PROJECTOR_FILENAME = 'projector_config.pbtxt'
 _PLUGIN_NAME = 'org_tensorflow_tensorboard_projector'
@@ -259,7 +262,15 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         TENSOR_ROUTE: self._serve_tensor,
         METADATA_ROUTE: self._serve_metadata,
         BOOKMARKS_ROUTE: self._serve_bookmarks,
-        SPRITE_IMAGE_ROUTE: self._serve_sprite_image
+        SPRITE_IMAGE_ROUTE: self._serve_sprite_image,
+        '/index.js':
+            functools.partial(
+                self._serve_file,
+                os.path.join('tf_projector_plugin', 'index.js')),
+        '/projector_binary.html':
+            functools.partial(
+                self._serve_html,
+                os.path.join('tf_projector_plugin', 'projector_binary.html')),
     }
     return self._handlers
 
@@ -294,6 +305,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     self._thread_for_determining_is_active = new_thread
     new_thread.start()
     return False
+
+  def frontend_metadata(self):
+    return base_plugin.FrontendMetadata(
+        es_module_path='/index.js',
+        disable_reload=True,
+    )
 
   def _determine_is_active(self):
     """Determines whether the plugin is active.
@@ -405,9 +422,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         if ckpt_path:
           config.model_checkpoint_path = ckpt_path
 
-      # Sanity check for the checkpoint file.
+      # Sanity check for the checkpoint file existing.
       if (config.model_checkpoint_path and _using_tf() and
-          not tf.compat.v1.train.checkpoint_exists(config.model_checkpoint_path)):
+          not tf.io.gfile.glob(config.model_checkpoint_path + '*')):
         logger.warn('Checkpoint file "%s" not found',
                            config.model_checkpoint_path)
         continue
@@ -423,8 +440,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     reader = None
     if config.model_checkpoint_path and _using_tf():
       try:
-        reader = tf.compat.v1.pywrap_tensorflow.NewCheckpointReader(
-            config.model_checkpoint_path)
+        reader = tf.train.load_checkpoint(config.model_checkpoint_path)
       except Exception:  # pylint: disable=broad-except
         logger.warn('Failed reading "%s"', config.model_checkpoint_path)
     self.readers[run] = reader
@@ -464,6 +480,32 @@ class ProjectorPlugin(base_plugin.TBPlugin):
       assets_dir = os.path.join(self.run_paths[run], _PLUGINS_DIR, _PLUGIN_NAME)
       assets_path_pair = (run, os.path.abspath(assets_dir))
       run_path_pairs.append(assets_path_pair)
+
+  @wrappers.Request.application
+  def _serve_file(self, file_path, request):
+    """Returns a resource file."""
+    res_path = os.path.join(os.path.dirname(__file__), file_path)
+    with open(res_path, 'rb') as read_file:
+      mimetype = mimetypes.guess_type(file_path)[0]
+      return Respond(request, read_file.read(), content_type=mimetype)
+
+  @wrappers.Request.application
+  def _serve_html(self, file_path, request):
+    """Returns a resource file."""
+    res_path = os.path.join(os.path.dirname(__file__), file_path)
+    sha_path = '%s.scripts_sha256' % res_path
+    with open(sha_path, 'rb') as sha_file:
+      lines = sha_file.read().splitlines(False);
+      shasums = [hash.decode('utf8') for hash in lines]
+
+    with open(res_path, 'rb') as read_file:
+      mimetype = mimetypes.guess_type(file_path)[0]
+      return Respond(
+          request,
+          read_file.read(),
+          content_type='text/html',
+          csp_scripts_sha256s=shasums,
+      )
 
   @wrappers.Request.application
   def _serve_runs(self, request):

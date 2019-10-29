@@ -30,6 +30,7 @@ tf_web_library(
         "scatterPlotVisualizerPolylines.ts",
         "scatterPlotVisualizerSprites.ts",
         "styles.html",
+        "umap.d.ts",
         "util.ts",
         "vector.ts",
         "vz-projector.html",
@@ -64,6 +65,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:numericjs",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:threejs",
+        "//tensorboard/components/tf_imports:umap-js",
         "//tensorboard/components/tf_imports:weblas",
         "//tensorboard/components/tf_tensorboard:registry",
         "@org_polymer_iron_collapse",
@@ -110,16 +112,16 @@ tf_web_library(
 tf_web_library(
     name = "standalone_lib",
     srcs = [
-      "standalone.html",
-      "standalone_projector_config.json",
+        "standalone.html",
+        "standalone_projector_config.json",
     ],
     path = "/",
     deps = [
+        ":vz_projector",
+        "//tensorboard/components/tf_imports:polymer",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_tooltip",
-        "@org_polymer_webcomponentsjs",
-        ":vz_projector",
     ],
 )
 

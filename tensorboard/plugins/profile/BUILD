@@ -34,6 +34,16 @@ py_library(
     ],
 )
 
+py_library(
+    name = "profile_plugin_loader",
+    srcs = ["profile_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":profile_plugin",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
 py_test(
     name = "profile_plugin_test",
     srcs = ["profile_plugin_test.py"],
@@ -80,6 +90,7 @@ py_binary(
         "profile_demo.google_chart_demo.json",
         "profile_demo.memory_viewer.json",
         "profile_demo.op_profile.json",
+        "profile_demo.pod_viewer.json",
     ],
     srcs_version = "PY2AND3",
     deps = [

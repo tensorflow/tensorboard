@@ -40,20 +40,27 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 FAKE_INDEX_HTML = b'<!doctype html><title>fake-index</title>'
 
 
 class FakeFlags(object):
   def __init__(
       self,
-      inspect,
+      bind_all=False,
+      host=None,
+      inspect=False,
+      version_tb=False,
       logdir='',
+      logdir_spec='',
       event_file='',
       db='',
       path_prefix=''):
+    self.bind_all = bind_all
+    self.host = host
     self.inspect = inspect
+    self.version_tb = version_tb
     self.logdir = logdir
+    self.logdir_spec = logdir_spec
     self.event_file = event_file
     self.db = db
     self.path_prefix = path_prefix
@@ -80,6 +87,7 @@ class CorePluginTest(tf.test.TestCase):
 
   def testFlag(self):
     loader = core_plugin.CorePluginLoader()
+    loader.fix_flags(FakeFlags(version_tb=True))
     loader.fix_flags(FakeFlags(inspect=True, logdir='/tmp'))
     loader.fix_flags(FakeFlags(inspect=True, event_file='/tmp/event.out'))
     loader.fix_flags(FakeFlags(inspect=False, logdir='/tmp'))
@@ -103,9 +111,25 @@ class CorePluginTest(tf.test.TestCase):
     with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
       loader.fix_flags(FakeFlags(inspect=False, event_file='/tmp/event.out'))
 
-    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='hello/')
-    loader.fix_flags(flag)
-    self.assertEqual(flag.path_prefix, 'hello')
+  def testPathPrefix_stripsTrailingSlashes(self):
+    loader = core_plugin.CorePluginLoader()
+    for path_prefix in ('/hello', '/hello/', '/hello//', '/hello///'):
+      flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix=path_prefix)
+      loader.fix_flags(flag)
+      self.assertEqual(
+          flag.path_prefix,
+          '/hello',
+          'got %r (input %r)' % (flag.path_prefix, path_prefix),
+      )
+
+  def testPathPrefix_mustStartWithSlash(self):
+    loader = core_plugin.CorePluginLoader()
+    flag = FakeFlags(inspect=False, logdir='/tmp', path_prefix='noslash')
+    with self.assertRaises(base_plugin.FlagsError) as cm:
+      loader.fix_flags(flag)
+    msg = str(cm.exception)
+    self.assertIn('must start with slash', msg)
+    self.assertIn(repr('noslash'), msg)
 
   def testIndex_returnsActualHtml(self):
     """Test the format of the /data/runs endpoint."""
@@ -133,17 +157,6 @@ class CorePluginTest(tf.test.TestCase):
         self.logdir_based_server, '/data/environment')
     self.assertEqual(parsed_object['data_location'], self.logdir)
 
-  def testEnvironmentForModeForDbServer(self):
-    """Tests environment route that returns the mode for db based server."""
-    parsed_object = self._get_json(self.db_based_server, '/data/environment')
-    self.assertEqual(parsed_object['mode'], 'db')
-
-  def testEnvironmentForModeForLogServer(self):
-    """Tests environment route that returns the mode for logdir based server."""
-    parsed_object = self._get_json(
-        self.logdir_based_server, '/data/environment')
-    self.assertEqual(parsed_object['mode'], 'logdir')
-
   def testEnvironmentForWindowTitle(self):
     """Test that the environment route correctly returns the window title."""
     parsed_object_db = self._get_json(
@@ -159,6 +172,7 @@ class CorePluginTest(tf.test.TestCase):
     parsed_object = self._get_json(self.logdir_based_server, '/data/logdir')
     self.assertEqual(parsed_object, {'logdir': self.logdir})
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRuns(self):
     """Test the format of the /data/runs endpoint."""
     self._add_run('run1')
@@ -167,6 +181,7 @@ class CorePluginTest(tf.test.TestCase):
     run_json = self._get_json(self.logdir_based_server, '/data/runs')
     self.assertEqual(run_json, ['run1'])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperiments(self):
     """Test the format of the /data/experiments endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -180,6 +195,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testExperimentRuns(self):
     """Test the format of the /data/experiment_runs endpoint."""
     self._add_run('run1', experiment_name = 'exp1')
@@ -189,7 +205,7 @@ class CorePluginTest(tf.test.TestCase):
     [exp1, exp2] = self._get_json(self.db_based_server, '/data/experiments')
 
     exp1_runs = self._get_json(self.db_based_server,
-        '/data/experiment_runs?experiment=%s' % exp1.get('id'))
+        '/experiment/%s/data/experiment_runs' % exp1.get('id'))
     self.assertEqual(len(exp1_runs), 2);
     self.assertEqual(exp1_runs[0].get('name'), 'run1');
     self.assertEqual(exp1_runs[1].get('name'), 'run2');
@@ -199,7 +215,7 @@ class CorePluginTest(tf.test.TestCase):
     self.assertEqual(exp1_runs[1].get('tags')[0].get('name'), 'mytag');
 
     exp2_runs = self._get_json(self.db_based_server,
-        '/data/experiment_runs?experiment=%s' % exp2.get('id'))
+        '/experiment/%s/data/experiment_runs' % exp2.get('id'))
     self.assertEqual(len(exp2_runs), 1);
     self.assertEqual(exp2_runs[0].get('name'), 'run3');
 
@@ -208,7 +224,7 @@ class CorePluginTest(tf.test.TestCase):
     exp_json = self._get_json(self.logdir_based_server, '/data/experiments')
     self.assertEqual(exp_json, [])
 
-
+  @test_util.run_v1_only('Uses tf.contrib when adding runs.')
   def testRunsAppendOnly(self):
     """Test that new runs appear after old ones in /data/runs."""
     fake_wall_times = {
@@ -297,20 +313,14 @@ class CorePluginTest(tf.test.TestCase):
         multiplexer=self.multiplexer,
         window_title='title foo')
     self.logdir_based_plugin = core_plugin.CorePlugin(context)
-    app = application.TensorBoardWSGIApp(
-        self.logdir,
-        [self.logdir_based_plugin],
-        self.multiplexer,
-        0,
-        path_prefix='')
+    app = application.TensorBoardWSGI([self.logdir_based_plugin])
     self.logdir_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def _start_db_based_server(self):
-    db_module, db_connection_provider = application.get_database_info(
+    db_connection_provider = application.create_sqlite_connection_provider(
         self.db_uri)
     context = base_plugin.TBContext(
         assets_zip_provider=get_test_assets_zip_provider(),
-        db_module=db_module,
         db_connection_provider=db_connection_provider,
         db_uri=self.db_uri,
         window_title='title foo')

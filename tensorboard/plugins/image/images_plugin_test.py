@@ -86,17 +86,12 @@ class ImagesPluginTest(tf.test.TestCase):
         "foo": foo_directory,
         "bar": bar_directory,
     })
+    multiplexer.Reload()
     context = base_plugin.TBContext(
         logdir=self.log_dir, multiplexer=multiplexer)
     plugin = images_plugin.ImagesPlugin(context)
-    # Setting a reload interval of -1 disables reloading. We disable reloading
-    # because we seek to block tests from running til after one reload finishes.
-    # This setUp method thus manually reloads the multiplexer. TensorBoard would
-    # otherwise reload in a non-blocking thread.
-    wsgi_app = application.TensorBoardWSGIApp(
-        self.log_dir, [plugin], multiplexer, reload_interval=-1, path_prefix='')
+    wsgi_app = application.TensorBoardWSGI([plugin])
     self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
-    multiplexer.Reload()
     self.routes = plugin.get_plugin_apps()
 
   def tearDown(self):

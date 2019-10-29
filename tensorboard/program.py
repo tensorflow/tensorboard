@@ -34,15 +34,19 @@ from abc import abstractmethod
 import argparse
 import atexit
 from collections import defaultdict
-import datetime
 import errno
+import inspect
+import logging
 import os
 import signal
 import socket
 import sys
 import threading
-import inspect
+import time
 
+from absl import flags as absl_flags
+from absl.flags import argparse_flags
+import absl.logging
 import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -54,18 +58,16 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
+from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
-from tensorboard.util import util
 
-try:
-  from absl import flags as absl_flags
-  from absl.flags import argparse_flags
-except ImportError:
-  # Fall back to argparse with no absl flags integration.
-  absl_flags = None
-  argparse_flags = argparse
 
 logger = tb_logging.get_logger()
+
+# Default subcommand name. This is a user-facing CLI and should not change.
+_SERVE_SUBCOMMAND_NAME = 'serve'
+# Internal flag name used to store which subcommand was invoked.
+_SUBCOMMAND_FLAG = '__tensorboard_subcommand'
 
 
 def setup_environment():
@@ -75,7 +77,7 @@ def setup_environment():
   this function is a good idea, but it can't appropriately be called
   from library routines.
   """
-  util.setup_logging()
+  absl.logging.set_verbosity(absl.logging.WARNING)
 
   # The default is HTTP/1.0 for some strange reason. If we don't use
   # HTTP/1.1 then a new TCP socket and Python thread is created for
@@ -110,22 +112,23 @@ class TensorBoard(object):
     cache_key: As `manager.cache_key`; set by the configure() method.
   """
 
-  def __init__(self,
-               plugins=None,
-               assets_zip_provider=None,
-               server_class=None):
+  def __init__(
+      self,
+      plugins=None,
+      assets_zip_provider=None,
+      server_class=None,
+      subcommands=None,
+  ):
     """Creates new instance.
 
     Args:
-      plugins: A list of TensorBoard plugins to load, as TBLoader instances or
-        TBPlugin classes. If not specified, defaults to first-party plugins.
+      plugin: A list of TensorBoard plugins to load, as TBPlugin classes or
+        TBLoader instances or classes. If not specified, defaults to first-party
+        plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
-      server_class: An optional subclass of TensorBoardServer to use for serving
-        the TensorBoard WSGI app.
-
-    :type plugins: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
-    :type assets_zip_provider: () -> file
-    :type server_class: class
+      server_class: An optional factory for a `TensorBoardServer` to use
+        for serving the TensorBoard WSGI app. If provided, its callable
+        signature should match that of `TensorBoardServer.__init__`.
     """
     if plugins is None:
       from tensorboard import default
@@ -133,16 +136,18 @@ class TensorBoard(object):
     if assets_zip_provider is None:
       assets_zip_provider = get_default_assets_zip_provider()
     if server_class is None:
-      server_class = WerkzeugServer
-    def make_loader(plugin):
-      if isinstance(plugin, base_plugin.TBLoader):
-        return plugin
-      if issubclass(plugin, base_plugin.TBPlugin):
-        return base_plugin.BasicLoader(plugin)
-      raise ValueError("Not a TBLoader or TBPlugin subclass: %s" % plugin)
-    self.plugin_loaders = [make_loader(p) for p in plugins]
+      server_class = create_port_scanning_werkzeug_server
+    if subcommands is None:
+      subcommands = []
+    self.plugin_loaders = [application.make_plugin_loader(p) for p in plugins]
     self.assets_zip_provider = assets_zip_provider
     self.server_class = server_class
+    self.subcommands = {}
+    for subcommand in subcommands:
+      name = subcommand.name()
+      if name in self.subcommands or name == _SERVE_SUBCOMMAND_NAME:
+        raise ValueError("Duplicate subcommand name: %r" % name)
+      self.subcommands[name] = subcommand
     self.flags = None
 
   def configure(self, argv=('',), **kwargs):
@@ -166,21 +171,54 @@ class TensorBoard(object):
     Raises:
       ValueError: If flag values are invalid.
     """
-    parser = argparse_flags.ArgumentParser(
+
+    base_parser = argparse_flags.ArgumentParser(
         prog='tensorboard',
         description=('TensorBoard is a suite of web applications for '
                      'inspecting and understanding your TensorFlow runs '
                      'and graphs. https://github.com/tensorflow/tensorboard '))
+    subparsers = base_parser.add_subparsers(
+        help="TensorBoard subcommand (defaults to %r)" % _SERVE_SUBCOMMAND_NAME)
+
+    serve_subparser = subparsers.add_parser(
+        _SERVE_SUBCOMMAND_NAME,
+        help='start local TensorBoard server (default subcommand)')
+    serve_subparser.set_defaults(**{_SUBCOMMAND_FLAG: _SERVE_SUBCOMMAND_NAME})
+
+    if len(argv) < 2 or argv[1].startswith('-'):
+      # This invocation, if valid, must not use any subcommands: we
+      # don't permit flags before the subcommand name.
+      serve_parser = base_parser
+    else:
+      # This invocation, if valid, must use a subcommand: we don't take
+      # any positional arguments to `serve`.
+      serve_parser = serve_subparser
+
+    for (name, subcommand) in six.iteritems(self.subcommands):
+      subparser = subparsers.add_parser(
+          name, help=subcommand.help(), description=subcommand.description())
+      subparser.set_defaults(**{_SUBCOMMAND_FLAG: name})
+      subcommand.define_flags(subparser)
+
     for loader in self.plugin_loaders:
-      loader.define_flags(parser)
+      loader.define_flags(serve_parser)
+
     arg0 = argv[0] if argv else ''
-    flags = parser.parse_args(argv[1:])  # Strip binary name from argv.
+
+    with argparse_util.allow_missing_subcommand():
+      flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
+    if getattr(flags, _SUBCOMMAND_FLAG, None) is None:
+      # Manually assign default value rather than using `set_defaults`
+      # on the base parser to work around Python bug #9351 on old
+      # versions of `argparse`: <https://bugs.python.org/issue9351>
+      setattr(flags, _SUBCOMMAND_FLAG, _SERVE_SUBCOMMAND_NAME)
+
     self.cache_key = manager.cache_key(
         working_directory=os.getcwd(),
         arguments=argv[1:],
         configure_kwargs=kwargs,
     )
-    if absl_flags and arg0:
+    if arg0:
       # Only expose main module Abseil flags as TensorBoard native flags.
       # This is the same logic Abseil's ArgumentParser uses for determining
       # which Abseil flags to include in the short helpstring.
@@ -192,8 +230,9 @@ class TensorBoard(object):
       if not hasattr(flags, k):
         raise ValueError('Unknown TensorBoard flag: %s' % k)
       setattr(flags, k, v)
-    for loader in self.plugin_loaders:
-      loader.fix_flags(flags)
+    if getattr(flags, _SUBCOMMAND_FLAG) == _SERVE_SUBCOMMAND_NAME:
+      for loader in self.plugin_loaders:
+        loader.fix_flags(flags)
     self.flags = flags
     return [arg0]
 
@@ -215,16 +254,27 @@ class TensorBoard(object):
     :rtype: int
     """
     self._install_signal_handler(signal.SIGTERM, "SIGTERM")
-    if self.flags.inspect:
+    subcommand_name = getattr(self.flags, _SUBCOMMAND_FLAG)
+    if subcommand_name == _SERVE_SUBCOMMAND_NAME:
+      runner = self._run_serve_subcommand
+    else:
+      runner = self.subcommands[subcommand_name].run
+    return runner(self.flags) or 0
+
+  def _run_serve_subcommand(self, flags):
+    # TODO(#2801): Make `--version` a flag on only the base parser, not `serve`.
+    if flags.version_tb:
+      print(version.VERSION)
+      return 0
+    if flags.inspect:
+      # TODO(@wchargin): Convert `inspect` to a normal subcommand?
       logger.info('Not bringing up TensorBoard, but inspecting event files.')
-      event_file = os.path.expanduser(self.flags.event_file)
-      efi.inspect(self.flags.logdir, event_file, self.flags.tag)
+      event_file = os.path.expanduser(flags.event_file)
+      efi.inspect(flags.logdir, event_file, flags.tag)
       return 0
     try:
       server = self._make_server()
-      sys.stderr.write('TensorBoard %s at %s (Press CTRL+C to quit)\n' %
-                       (version.VERSION, server.get_url()))
-      sys.stderr.flush()
+      server.print_serving_message()
       self._register_info(server)
       server.serve_forever()
       return 0
@@ -262,11 +312,11 @@ class TensorBoard(object):
     server_url = urllib.parse.urlparse(server.get_url())
     info = manager.TensorBoardInfo(
         version=version.VERSION,
-        start_time=datetime.datetime.now(),
+        start_time=int(time.time()),
         port=server_url.port,
         pid=os.getpid(),
         path_prefix=self.flags.path_prefix,
-        logdir=self.flags.logdir,
+        logdir=self.flags.logdir or self.flags.logdir_spec,
         db=self.flags.db,
         cache_key=self.cache_key,
     )
@@ -306,9 +356,59 @@ class TensorBoard(object):
     return self.server_class(app, self.flags)
 
 
+@six.add_metaclass(ABCMeta)
+class TensorBoardSubcommand(object):
+  """Experimental private API for defining subcommands to tensorboard(1)."""
+
+  @abstractmethod
+  def name(self):
+    """Name of this subcommand, as specified on the command line.
+
+    This must be unique across all subcommands.
+
+    Returns:
+      A string.
+    """
+    pass
+
+  @abstractmethod
+  def define_flags(self, parser):
+    """Configure an argument parser for this subcommand.
+
+    Flags whose names start with two underscores (e.g., `__foo`) are
+    reserved for use by the runtime and must not be defined by
+    subcommands.
+
+    Args:
+      parser: An `argparse.ArgumentParser` scoped to this subcommand,
+        which this function should mutate.
+    """
+    pass
+
+  @abstractmethod
+  def run(self, flags):
+    """Execute this subcommand with user-provided flags.
+
+    Args:
+      flags: An `argparse.Namespace` object with all defined flags.
+
+    Returns:
+      An `int` exit code, or `None` as an alias for `0`.
+    """
+    pass
+
+  def help(self):
+    """Short, one-line help text to display on `tensorboard --help`."""
+    return None
+
+  def description(self):
+    """Description to display on `tensorboard SUBCOMMAND --help`."""
+    return None
+
+
+@six.add_metaclass(ABCMeta)
 class TensorBoardServer(object):
   """Class for customizing TensorBoard WSGI app serving."""
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def __init__(self, wsgi_app, flags):
@@ -330,6 +430,17 @@ class TensorBoardServer(object):
     """Returns a URL at which this server should be reachable."""
     raise NotImplementedError()
 
+  def print_serving_message(self):
+    """Prints a user-friendly message prior to server start.
+
+    This will be called just before `serve_forever`.
+    """
+    sys.stderr.write(
+        'TensorBoard %s at %s (Press CTRL+C to quit)\n'
+        % (version.VERSION, self.get_url())
+    )
+    sys.stderr.flush()
+
 
 class TensorBoardServerException(Exception):
   """Exception raised by TensorBoardServer for user-friendly errors.
@@ -341,15 +452,40 @@ class TensorBoardServerException(Exception):
     self.msg = msg
 
 
-class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
-  """Implementation of TensorBoardServer using the Werkzeug dev server."""
-  # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
-  daemon_threads = True
+class TensorBoardPortInUseError(TensorBoardServerException):
+  """Error raised when attempting to bind to a port that is in use.
 
-  def __init__(self, wsgi_app, flags):
-    self._flags = flags
-    host = flags.host
+  This should be raised when it is expected that binding to another
+  similar port would succeed. It is used as a signal to indicate that
+  automatic port searching should continue rather than abort.
+  """
+  pass
 
+
+def with_port_scanning(cls):
+  """Create a server factory that performs port scanning.
+
+  This function returns a callable whose signature matches the
+  specification of `TensorBoardServer.__init__`, using `cls` as an
+  underlying implementation. It passes through `flags` unchanged except
+  in the case that `flags.port is None`, in which case it repeatedly
+  instantiates the underlying server with new port suggestions.
+
+  Args:
+    cls: A valid implementation of `TensorBoardServer`. This class's
+      initializer should raise a `TensorBoardPortInUseError` upon
+      failing to bind to a port when it is expected that binding to
+      another nearby port might succeed.
+
+      The initializer for `cls` will only ever be invoked with `flags`
+      such that `flags.port is not None`.
+
+  Returns:
+    A function that implements the `__init__` contract of
+    `TensorBoardServer`.
+  """
+
+  def init(wsgi_app, flags):
     # base_port: what's the first port to which we should try to bind?
     # should_scan: if that fails, shall we try additional ports?
     # max_attempts: how many ports shall we try?
@@ -364,56 +500,69 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     max_attempts = 10 if should_scan else 1
     base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
-    # Without an explicit host, we default to serving on all interfaces,
-    # and will attempt to serve both IPv4 and IPv6 traffic through one
-    # socket.
-    self._auto_wildcard = not host
-
-    for (attempt_index, port) in (
-        enumerate(xrange(base_port, base_port + max_attempts))):
-      if self._auto_wildcard:
-        host = self._get_wildcard_address(port)
+    for port in xrange(base_port, base_port + max_attempts):
+      subflags = argparse.Namespace(**vars(flags))
+      subflags.port = port
       try:
-        # Yes, this invokes the super initializer potentially many
-        # times. This seems to work fine, and looking at the superclass
-        # chain (type(self).__mro__) it doesn't seem that anything
-        # _should_ go wrong (nor does any superclass provide a facility
-        # to do this natively).
-        #
-        # TODO(@wchargin): Refactor so that this is no longer necessary,
-        # probably by switching composing around a Werkzeug server
-        # rather than inheriting from it.
-        super(WerkzeugServer, self).__init__(host, port, wsgi_app)
-        break
-      except socket.error as e:
-        if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
+        return cls(wsgi_app=wsgi_app, flags=subflags)
+      except TensorBoardPortInUseError:
+        if not should_scan:
+          raise
+    # All attempts failed to bind.
+    raise TensorBoardServerException(
+        'TensorBoard could not bind to any port around %s '
+        '(tried %d times)'
+        % (base_port, max_attempts))
+
+  return init
+
+
+class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
+  """Implementation of TensorBoardServer using the Werkzeug dev server."""
+
+  # ThreadedWSGIServer handles this in werkzeug 0.12+ but we allow 0.11.x.
+  daemon_threads = True
+
+  def __init__(self, wsgi_app, flags):
+    self._flags = flags
+    host = flags.host
+    port = flags.port
+
+    self._auto_wildcard = flags.bind_all
+    if self._auto_wildcard:
+      # Serve on all interfaces, and attempt to serve both IPv4 and IPv6
+      # traffic through one socket.
+      host = self._get_wildcard_address(port)
+    elif host is None:
+      host = 'localhost'
+
+    self._host = host
+
+    self._fix_werkzeug_logging()
+    try:
+      super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+    except socket.error as e:
+      if hasattr(errno, 'EACCES') and e.errno == errno.EACCES:
+        raise TensorBoardServerException(
+            'TensorBoard must be run as superuser to bind to port %d' %
+            port)
+      elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
+        if port == 0:
           raise TensorBoardServerException(
-              'TensorBoard must be run as superuser to bind to port %d' %
+              'TensorBoard unable to find any open port')
+        else:
+          raise TensorBoardPortInUseError(
+              'TensorBoard could not bind to port %d, it was already in use' %
               port)
-        elif hasattr(errno, 'EADDRINUSE') and e.errno == errno.EADDRINUSE:
-          if attempt_index < max_attempts - 1:
-            continue
-          if port == 0:
-            raise TensorBoardServerException(
-                'TensorBoard unable to find any open port')
-          elif should_scan:
-            raise TensorBoardServerException(
-                'TensorBoard could not bind to any port around %s '
-                '(tried %d times)'
-                % (base_port, max_attempts))
-          else:
-            raise TensorBoardServerException(
-                'TensorBoard could not bind to port %d, it was already in use' %
-                port)
-        elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
-          raise TensorBoardServerException(
-              'TensorBoard could not bind to unavailable address %s' % host)
-        elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
-          raise TensorBoardServerException(
-              'Tensorboard could not bind to unsupported address family %s' %
-              host)
-        # Raise the raw exception if it wasn't identifiable as a user error.
-        raise
+      elif hasattr(errno, 'EADDRNOTAVAIL') and e.errno == errno.EADDRNOTAVAIL:
+        raise TensorBoardServerException(
+            'TensorBoard could not bind to unavailable address %s' % host)
+      elif hasattr(errno, 'EAFNOSUPPORT') and e.errno == errno.EAFNOSUPPORT:
+        raise TensorBoardServerException(
+            'Tensorboard could not bind to unsupported address family %s' %
+            host)
+      # Raise the raw exception if it wasn't identifiable as a user error.
+      raise
 
   def _get_wildcard_address(self, port):
     """Returns a wildcard address for the port in question.
@@ -485,8 +634,37 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     if self._auto_wildcard:
       display_host = socket.gethostname()
     else:
-      host = self._flags.host
+      host = self._host
       display_host = (
           '[%s]' % host if ':' in host and not host.startswith('[') else host)
-    return 'http://%s:%d%s' % (display_host, self.server_port,
-                               self._flags.path_prefix)
+    return 'http://%s:%d%s/' % (display_host, self.server_port,
+                               self._flags.path_prefix.rstrip('/'))
+
+  def print_serving_message(self):
+    if self._flags.host is None and not self._flags.bind_all:
+      sys.stderr.write(
+          'Serving TensorBoard on localhost; to expose to the network, '
+          'use a proxy or pass --bind_all\n'
+      )
+      sys.stderr.flush()
+    super(WerkzeugServer, self).print_serving_message()
+
+  def _fix_werkzeug_logging(self):
+    """Fix werkzeug logging setup so it inherits TensorBoard's log level.
+
+    This addresses a change in werkzeug 0.15.0+ [1] that causes it set its own
+    log level to INFO regardless of the root logger configuration. We instead
+    want werkzeug to inherit TensorBoard's root logger log level (set via absl
+    to WARNING by default).
+
+    [1]: https://github.com/pallets/werkzeug/commit/4cf77d25858ff46ac7e9d64ade054bf05b41ce12
+    """
+    # Log once at DEBUG to force werkzeug to initialize its singleton logger,
+    # which sets the logger level to INFO it if is unset, and then access that
+    # object via logging.getLogger('werkzeug') to durably revert the level to
+    # unset (and thus make messages logged to it inherit the root logger level).
+    self.log('debug', 'Fixing werkzeug logger to inherit TensorBoard log level')
+    logging.getLogger('werkzeug').setLevel(logging.NOTSET)
+
+
+create_port_scanning_werkzeug_server = with_port_scanning(WerkzeugServer)

@@ -18,16 +18,16 @@ limitations under the License.
 // which is required for any notebook extension.
 // Configure requirejs
 if (window.require) {
-    window.require.config({
-        map: {
-            "*" : {
-                "wit-widget": "nbextensions/wit-widget/index",
-            }
-        }
-    });
+  window.require.config({
+    map: {
+      '*': {
+        'wit-widget': 'nbextensions/wit-widget/index',
+      },
+    },
+  });
 }
 
 // Export the required load_ipython_extension
 module.exports = {
-    load_ipython_extension: function() {}
+  load_ipython_extension: function() {},
 };

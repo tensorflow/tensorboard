@@ -14,9 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../iron-behaviors/iron-control-state.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../iron-behaviors/iron-control-state.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <!--
   tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
@@ -32,7 +32,7 @@ limitations under the License.
           label-float="[[labelFloat]]"
           slot="dropdown-trigger"
         ></tf-dropdown-trigger>
-        <div class="dropdown-content">
+        <div slot="dropdown-content">
           conten goes here
         </div>
       </paper-menu-button>
@@ -51,93 +51,96 @@ limitations under the License.
     </div>
     <paper-ripple id="ripple" aria-hidden></paper-ripple>
     <style>
-    :host {
-      border-radius: 2px;
-      display: inline-block;
-      overflow: hidden;
-      padding: 4px;
+      :host {
+        border-radius: 2px;
+        display: inline-block;
+        overflow: hidden;
+        padding: 4px;
 
-      --tf-dropdown-trigger-secondary-color: var(--paper-grey-600);
-      --tf-dropdown-trigger-content-height: 24px;
-      --tf-dropdown-focus-color: var(--tb-orange-strong);
-    }
+        --tf-dropdown-trigger-secondary-color: var(--paper-grey-600);
+        --tf-dropdown-trigger-content-height: 24px;
+        --tf-dropdown-focus-color: var(--tb-orange-strong);
+      }
 
-    .content {
-      align-items: center;
-      display: flex;
-      justify-content: space-between;
-      line-height: var(--tf-dropdown-trigger-content-height);
-      position: relative;
+      .content {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        line-height: var(--tf-dropdown-trigger-content-height);
+        position: relative;
 
-      @apply --tf-dropdown-trigger-content;
-    }
+        @apply --tf-dropdown-trigger-content;
+      }
 
-    .label {
-      display: none;
-      color: var(--tf-dropdown-trigger-secondary-color);
-    }
+      .label {
+        display: none;
+        color: var(--tf-dropdown-trigger-secondary-color);
+      }
 
-    :host.label-floats .hidden-label {
-      display: unset;
-      line-height: calc(var(--tf-dropdown-trigger-content-height) * .833);
-      padding-right: var(--tf-dropdown-trigger-content-height);
-      visibility: hidden;
-    }
+      :host(.label-floats) .hidden-label {
+        display: unset;
+        line-height: calc(var(--tf-dropdown-trigger-content-height) * 0.833);
+        padding-right: var(--tf-dropdown-trigger-content-height);
+        visibility: hidden;
+      }
 
-    :host.label-floats .real-label {
-      bottom: 0;
-      left: 0;
-      position: absolute;
-      right: 0;
-      transform-origin: top left;
-      transition: transform .25s;
-    }
+      :host(.label-floats) .real-label {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        transform-origin: top left;
+        transition: transform 0.25s;
+      }
 
-    :host.label-shown .real-label {
-      display: unset;
-    }
+      :host(.label-shown) .real-label {
+        display: unset;
+      }
 
-    :host.label-floating .real-label {
-      transform: translateY(-75%) scale(.75);
-    }
+      :host(.label-floating) .real-label {
+        transform: translateY(-75%) scale(0.75);
+      }
 
-    iron-icon {
-      color: var(--tf-dropdown-trigger-secondary-color);
-      height: var(--tf-dropdown-trigger-content-height);
-      width: var(--tf-dropdown-trigger-content-height);
-    }
+      iron-icon {
+        color: var(--tf-dropdown-trigger-secondary-color);
+        height: var(--tf-dropdown-trigger-content-height);
+        width: var(--tf-dropdown-trigger-content-height);
+      }
 
-    :host[focused] .focused-line {
-      transform: none;
-      transition: transform .25s;
+      :host([focused]) .focused-line {
+        transform: none;
+        transition: transform 0.25s;
 
-      @apply --paper-transition-easing;
-    }
+        @apply --paper-transition-easing;
+      }
 
-    :host[focused].label-floating .real-label {
-      color: var(--tf-dropdown-focus-color);
-      transition: color .25s;
-    }
+      :host([focused].label-floating) .real-label {
+        color: var(--tf-dropdown-focus-color);
+        transition: color 0.25s;
+      }
 
-    .underline {
-      position: relative;
-    }
+      .underline {
+        position: relative;
+      }
 
-    .unfocused-line {
-      padding-top: 1px;
-      border-bottom: 1px solid var(--tf-dropdown-trigger-underline-color, var(--secondary-text-color));
-    }
+      .unfocused-line {
+        padding-top: 1px;
+        border-bottom: 1px solid
+          var(
+            --tf-dropdown-trigger-underline-color,
+            var(--secondary-text-color)
+          );
+      }
 
-    .focused-line {
-      border-bottom: 2px solid var(--tf-dropdown-focus-color);
-      left: 0;
-      position: absolute;
-      right: 0;
-      top: 0;
-      transform-origin: center;
-      transform: scale3d(0, 1, 1);
-    }
-
+      .focused-line {
+        border-bottom: 2px solid var(--tf-dropdown-focus-color);
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform-origin: center;
+        transform: scale3d(0, 1, 1);
+      }
     </style>
   </template>
   <script>
@@ -149,9 +152,7 @@ limitations under the License.
         tabindex: '0',
       },
 
-      behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-      ],
+      behaviors: [Polymer.PaperInkyFocusBehavior],
 
       properties: {
         label: String,
@@ -164,16 +165,15 @@ limitations under the License.
         name: String,
       },
 
-      observers: [
-        '_setHostClass(label, name, labelFloat)',
-      ],
+      observers: ['_setHostClass(label, name, labelFloat)'],
 
       _setHostClass() {
         this.toggleClass('label-floats', this.labelFloat);
         this.toggleClass('label-floating', this.name);
         this.toggleClass(
-            'label-shown',
-            Boolean(this.label) && (!this.name || this.labelFloat));
+          'label-shown',
+          Boolean(this.label) && (!this.name || this.labelFloat)
+        );
       },
 
       /**
@@ -187,4 +187,4 @@ limitations under the License.
       },
     });
   </script>
-</dom-module
+</dom-module>

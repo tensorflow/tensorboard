@@ -15,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-imports/plottable.html">
-<link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-imports/plottable.html" />
+<link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html" />
 
 <!--
 vz-bar-chart is an element for creating a Plottable ClusteredBar chart.
@@ -40,11 +40,11 @@ Polymer.dom(this.$container).appendChild($chart);
         <thead>
           <tr id="tooltip-table-header-row"></tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
     <div id="chartdiv"></div>
+    <style include="plottable-style"></style>
     <style>
       :host {
         -webkit-user-select: none;
@@ -98,7 +98,6 @@ Polymer.dom(this.$container).appendChild($chart);
         padding-right: 5px;
         text-align: left;
       }
-
     </style>
   </template>
   <script src="vz-bar-chart.js"></script>

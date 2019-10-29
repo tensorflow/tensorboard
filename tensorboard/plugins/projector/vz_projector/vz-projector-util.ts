@@ -13,25 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
-
-export type Spec = {
-  is: string; properties?: {
-    [key: string]:
-        (Function |
-         {
-           type: Function, value?: any;
-           readonly?: boolean;
-           notify?: boolean;
-           observer?: string;
-         })
+  export type Spec = {
+    is: string;
+    properties?: {
+      [key: string]:
+        | Function
+        | {
+            type: Function;
+            value?: any;
+            readonly?: boolean;
+            notify?: boolean;
+            observer?: string;
+          };
+    };
+    observers?: string[];
   };
-  observers?: string[];
-};
 
-export function PolymerElement(spec: Spec) {
-  return Polymer.Class(spec as any) as{new (): PolymerHTMLElement};
-}
+  export function PolymerElement(spec: Spec) {
+    return Polymer.Class(spec as any) as {new (): PolymerHTMLElement};
+  }
 
-export interface PolymerHTMLElement extends HTMLElement, polymer.Base {}
-
-}  // namespace vz_projector
+  export interface PolymerHTMLElement extends HTMLElement, polymer.Base {}
+} // namespace vz_projector

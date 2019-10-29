@@ -10,7 +10,6 @@ tf_web_library(
     srcs = [
         "categorizationUtils.ts",
         "tf-categorization-utils.html",
-        "tf-category-pane.html",
         "tf-tag-filterer.html",
     ],
     path = "/tf-categorization-utils",
@@ -18,7 +17,6 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_data_selector:type",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",

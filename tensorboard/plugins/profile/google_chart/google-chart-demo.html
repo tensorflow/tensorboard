@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="google-chart.html">
+<link rel="import" href="google-chart.html" />
 
 <dom-module id="google-chart-demo">
   <template>
@@ -29,24 +29,28 @@ limitations under the License.
       }
     </style>
     <div id="demo-body">
-      <p>Website traffic data by country from an external JSON resource where
-         the data is in raw DataTable format.</p>
-      <google-chart type="column"
-       options='{"title": "Visitors by Country", "legend": "none"}'
-       data="[[_data]]">
+      <p>
+        Website traffic data by country from an external JSON resource where the
+        data is in raw DataTable format.
+      </p>
+      <google-chart
+        type="column"
+        options='{"title": "Visitors by Country", "legend": "none"}'
+        data="[[_data]]"
+      >
       </google-chart>
     </div>
   </template>
 
   <script>
-  Polymer({
-    is: 'google-chart-demo',
-    properties: {
-      _data: {
-        type: Object,
-        observer: '_updateView',
+    Polymer({
+      is: 'google-chart-demo',
+      properties: {
+        _data: {
+          type: Object,
+          observer: '_updateView',
+        },
       },
-    },
-  });
+    });
   </script>
 </dom-module>

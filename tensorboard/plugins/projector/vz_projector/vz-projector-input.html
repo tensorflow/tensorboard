@@ -15,52 +15,57 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="bundle.html">
-<link rel="import" href="styles.html">
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-tooltip/paper-tooltip.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="bundle.html" />
+<link rel="import" href="styles.html" />
 
 <dom-module id="vz-projector-input">
-<template>
-<style include="vz-projector-styles"></style>
-<style>
-.info {
-  color: rgba(0, 0, 0, 0.5);
-  display: block;
-  font-size: 11px;
-}
+  <template>
+    <style include="vz-projector-styles"></style>
+    <style>
+      .info {
+        color: rgba(0, 0, 0, 0.5);
+        display: block;
+        font-size: 11px;
+      }
 
-.toggle {
-  font-size: 12px;
-  height: 21px;
-  margin: 0px;
-  min-width: 0px;
-  min-height: 0px;
-  padding: 0;
-  width: 17px;
-}
+      .toggle {
+        font-size: 12px;
+        height: 21px;
+        margin: 0px;
+        min-width: 0px;
+        min-height: 0px;
+        padding: 0;
+        width: 17px;
+      }
 
-.toggle[active] {
-  background-color: #880E4F;
-  color: white;
-}
-</style>
+      .toggle[active] {
+        background-color: #880e4f;
+        color: white;
+      }
+    </style>
 
-<paper-input label="[[label]]">
-  <div class="slash" prefix slot="prefix">/</div>
-  <div class="slash" suffix slot="suffix">/</div>
-  <div suffix slot="suffix">
-    <paper-button id="regex" toggles class="toggle">.*</paper-button>
-  </div>
-</paper-input>
-<paper-tooltip for="regex" position="bottom" animation-delay="0" fit-to-visible-bounds>
-  Enable/disable regex mode.
-</paper-tooltip>
-<span class="info">[[message]]</span>
+    <paper-input label="[[label]]">
+      <div class="slash" prefix slot="prefix">/</div>
+      <div class="slash" suffix slot="suffix">/</div>
+      <div suffix slot="suffix">
+        <paper-button id="regex" toggles class="toggle">.*</paper-button>
+      </div>
+    </paper-input>
+    <paper-tooltip
+      for="regex"
+      position="bottom"
+      animation-delay="0"
+      fit-to-visible-bounds
+    >
+      Enable/disable regex mode.
+    </paper-tooltip>
+    <span class="info">[[message]]</span>
 
-<!-- Closing global template -->
-</template>
-<script src="vz-projector-input.js"></script>
+    <!-- Closing global template -->
+  </template>
+  <script src="vz-projector-input.js"></script>
 </dom-module>

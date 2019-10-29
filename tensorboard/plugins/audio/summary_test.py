@@ -26,9 +26,6 @@ import numpy as np
 import six
 import tensorflow as tf
 
-# TODO(nickfelt): get encode_wav() exported in the public API.
-from tensorflow.python.ops import gen_audio_ops
-
 from tensorboard.compat import tf2
 from tensorboard.plugins.audio import metadata
 from tensorboard.plugins.audio import summary
@@ -45,6 +42,11 @@ try:
 except AttributeError:
   # TF 2.0 doesn't have this symbol because eager is the default.
   pass
+
+audio_ops = getattr(tf, 'audio', None)
+if audio_ops is None:
+  # Fallback for older versions of TF without tf.audio.
+  from tensorflow.python.ops import gen_audio_ops as audio_ops
 
 
 class SummaryBaseTest(object):
@@ -85,7 +87,7 @@ class SummaryBaseTest(object):
     audio = self._generate_audio(c=1)
     pb = self.audio('k888', audio, 44100)
     encoded = tensor_util.make_ndarray(pb.value[0].tensor)
-    decoded, sample_rate = gen_audio_ops.decode_wav(encoded.flat[0])
+    decoded, sample_rate = audio_ops.decode_wav(encoded.flat[0])
     # WAV roundtrip goes from float32 to int16 and back, so expect some
     # precision loss, but not more than 2 applications of rounding error from
     # mapping the range [-1.0, 1.0] to 2^16.
@@ -98,7 +100,7 @@ class SummaryBaseTest(object):
     self.assertEqual(1, len(pb.value))
     results = tensor_util.make_ndarray(pb.value[0].tensor)
     for i, (encoded, _) in enumerate(results):
-      decoded, _ = gen_audio_ops.decode_wav(encoded)
+      decoded, _ = audio_ops.decode_wav(encoded)
       self.assertEqual(audio[i].shape, decoded.shape)
 
   def test_dimensions(self):
@@ -149,8 +151,6 @@ class SummaryBaseTest(object):
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1PbTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
     return summary.pb(*args, **kwargs)
@@ -169,11 +169,9 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
   def setUp(self):
     super(SummaryV1OpTest, self).setUp()
-    if not hasattr(tf, 'contrib'):
-      self.skipTest('TF contrib ffmpeg API not available')
 
   def audio(self, *args, **kwargs):
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return tf.compat.v1.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     data = np.array(1, np.float32, ndmin=3)

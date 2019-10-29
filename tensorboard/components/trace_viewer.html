@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2017 The TensorFlow Authors. All Rights Reserved.
@@ -16,15 +16,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <html>
-<head>
-  <title>Trace Viewer</title>
-  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-  <link rel="import" href="tf-trace-viewer/tf-trace-viewer.html" jscomp-nocompile="true">
-  <style>body { margin: 0 }</style>
-</head>
-<body>
-  <tf-trace-viewer></tf-trace-viewer>
-</body>
+  <head>
+    <title>Trace Viewer</title>
+    <!-- TODO(tensorboard-team): below version of Polymer does not support
+      strictTemplatePolicy. We cannot use security.html!
+    -->
+    <!-- Note that trace_viewer_full is bundled with a Polymer (1.8.1)-->
+    <link
+      rel="import"
+      href="tf-trace-viewer/tf-trace-viewer.html"
+      jscomp-nocompile
+    />
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <tf-trace-viewer></tf-trace-viewer>
+  </body>
 </html>

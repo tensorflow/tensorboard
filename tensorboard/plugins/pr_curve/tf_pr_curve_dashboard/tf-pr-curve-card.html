@@ -15,13 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link
+  rel="import"
+  href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html"
+/>
 
 <!--
   Renders precision–recall curves.
@@ -67,13 +70,14 @@ limitations under the License.
     <div id="step-legend">
       <template is="dom-repeat" items="[[_runsWithStepAvailable]]" as="run">
         <div class="legend-row">
-          <div class="color-box"
-               style="background: [[_computeRunColor(run)]];">
-          </div>
+          <div
+            class="color-box"
+            style="background: [[_computeRunColor(run)]];"
+          ></div>
           [[run]] is at
           <span class="step-label-text">
-            step [[_computeCurrentStepForRun(_runToPrCurveEntry, run)]]
-          </span><br>
+            step [[_computeCurrentStepForRun(_runToPrCurveEntry, run)]] </span
+          ><br />
           <span class="wall-time-label-text">
             ([[_computeCurrentWallTimeForRun(_runToPrCurveEntry, run)]])
           </span>
@@ -89,14 +93,14 @@ limitations under the License.
         margin-right: 10px;
         margin-bottom: 25px;
       }
-      :host[_expanded] {
+      :host([_expanded]) {
         width: 100%;
       }
       tf-line-chart-data-loader {
         height: 300px;
         position: relative;
       }
-      :host[_expanded] tf-line-chart-data-loader {
+      :host([_expanded]) tf-line-chart-data-loader {
         height: 600px;
       }
       #buttons-row {
@@ -104,7 +108,7 @@ limitations under the License.
         flex-direction: row;
       }
       #buttons-row paper-icon-button {
-        color: #2196F3;
+        color: #2196f3;
         border-radius: 100%;
         width: 32px;
         height: 32px;
@@ -142,7 +146,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-pr-curve-card",
+      is: 'tf-pr-curve-card',
       properties: {
         runs: Array,
         tag: String,
@@ -157,7 +161,7 @@ limitations under the License.
         _expanded: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,  // for CSS
+          reflectToAttribute: true, // for CSS
         },
         // This maps run to the PR curve entry that contains the PR data to
         // plot. The entry is based on which step the user currently selects.
@@ -177,21 +181,21 @@ limitations under the License.
         // steps per run.
         _runsWithStepAvailable: {
           type: Array,
-          computed: "_computeRunsWithStepAvailable(runs, _runToPrCurveEntry)",
+          computed: '_computeRunsWithStepAvailable(runs, _runToPrCurveEntry)',
         },
         // An object whose keys are the list of runs that both are selected and
         // have data loaded. We use this mapping (which is really a set in
         // practice) to determine whether or not to clear a data series.
         _setOfRelevantRuns: {
           type: Object,
-          computed: "_computeSetOfRelevantRuns(_runsWithStepAvailable)",
+          computed: '_computeSetOfRelevantRuns(_runsWithStepAvailable)',
         },
         // This property is set after PR curve data from the backend is
         // received. We index into this object after determining which step to
         // draw PR curves for.
         _runToDataOverTime: Object,
         _colorScaleFunction: {
-          type: Object,  // function: string => string
+          type: Object, // function: string => string
           value: () => ({scale: tf_color_scale.runsColorScale}),
         },
         _canceller: {
@@ -205,14 +209,14 @@ limitations under the License.
         _xComponentsCreationMethod: {
           type: Object,
           readOnly: true,
-          value: () => (() => {
+          value: () => () => {
             const scale = new Plottable.Scales.Linear();
             return {
               scale: scale,
               axis: new Plottable.Axes.Numeric(scale, 'bottom'),
-              accessor: d => d.recall,
+              accessor: (d) => d.recall,
             };
-          }),
+          },
         },
         _yValueAccessor: {
           type: Object,
@@ -220,16 +224,17 @@ limitations under the License.
           // This function returns a function because polymer calls the outer
           // function to compute the value. We actually want the value of this
           // property to be the inner function.
-          value: () => (d => d.precision),
+          value: () => (d) => d.precision,
         },
         _tooltipColumns: {
           type: Array,
           readOnly: true,
           value: () => {
             const valueFormatter = vz_chart_helpers.multiscaleFormatter(
-                vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-            const formatValueOrNaN =
-                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+              vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION
+            );
+            const formatValueOrNaN = (x) =>
+              isNaN(x) ? 'NaN' : valueFormatter(x);
             return [
               {
                 title: 'Run',
@@ -262,7 +267,8 @@ limitations under the License.
               {
                 title: 'FN',
                 evaluate: (d) => d.datum.false_negatives,
-              }];
+              },
+            ];
           },
         },
         // These are all the fields we must obtain from PR curve data
@@ -277,7 +283,7 @@ limitations under the License.
             'true_positives',
             'false_positives',
             'true_negatives',
-            'false_negatives'
+            'false_negatives',
           ],
           readOnly: true,
         },
@@ -298,7 +304,8 @@ limitations under the License.
               const tag = this.tag;
               return tf_backend.addParams(
                 tf_backend.getRouter().pluginRoute('pr_curves', '/pr_curves'),
-                {tag, run});
+                {tag, run}
+              );
             };
           },
         },
@@ -319,8 +326,9 @@ limitations under the License.
           // The data maps a single run to a series of data. We merge that data
           // with the data already fetched.
           this.set(
-              '_runToDataOverTime',
-              Object.assign({}, this._runToDataOverTime, data));
+            '_runToDataOverTime',
+            Object.assign({}, this._runToDataOverTime, data)
+          );
         };
       },
       _computeRunColor(run) {
@@ -346,11 +354,16 @@ limitations under the License.
         this.$$('tf-line-chart-data-loader').reload();
       },
       _setChartData(
-          runToPrCurveEntry, previousRunToPrCurveEntry, setOfRelevantRuns) {
+        runToPrCurveEntry,
+        previousRunToPrCurveEntry,
+        setOfRelevantRuns
+      ) {
         _.forOwn(runToPrCurveEntry, (entry, run) => {
           const previousEntry = previousRunToPrCurveEntry[run];
-          if (previousEntry &&
-              runToPrCurveEntry[run].step === previousEntry.step) {
+          if (
+            previousEntry &&
+            runToPrCurveEntry[run].step === previousEntry.step
+          ) {
             // The PR curve for this run does not need to be updated.
             return;
           }
@@ -372,20 +385,22 @@ limitations under the License.
         // tooltips will not work because the tooltip will always be stuck on
         // one side of the chart.
         const fieldsToData = _.reduce(
-            this._seriesDataFields,
-            (result, field) => {
-              result[field] = entryForOneStep[field].slice().reverse();
-              return result;
-            },
-            {});
+          this._seriesDataFields,
+          (result, field) => {
+            result[field] = entryForOneStep[field].slice().reverse();
+            return result;
+          },
+          {}
+        );
 
         // The number of series data is equal to the number of entries in any of
         // the fields. We just use the first field to gauge the length.
         const seriesData = new Array(
-            fieldsToData[this._seriesDataFields[0]].length);
+          fieldsToData[this._seriesDataFields[0]].length
+        );
         // Create a list of data for visualization.
         for (let i = 0; i < seriesData.length; i++) {
-          seriesData[i] = _.mapValues(fieldsToData, values => values[i]);
+          seriesData[i] = _.mapValues(fieldsToData, (values) => values[i]);
         }
         this.$$('tf-line-chart-data-loader').setSeriesData(run, seriesData);
       },
@@ -401,7 +416,9 @@ limitations under the License.
           }
 
           runToEntry[run] = this._computeEntryClosestOrEqualToStepCap(
-              runToStepCap[run], entries);
+            runToStepCap[run],
+            entries
+          );
         });
 
         // Set the previous PR curve entry so we can later compare and only
@@ -412,16 +429,17 @@ limitations under the License.
       },
       _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
         const entryIndex = Math.min(
-            _.sortedIndex(entries.map(entry => entry.step), stepCap),
-            entries.length - 1);
+          _.sortedIndex(entries.map((entry) => entry.step), stepCap),
+          entries.length - 1
+        );
         return entries[entryIndex];
       },
       _computeRunsWithStepAvailable(runs, actualPrCurveEntryPerRun) {
-        return _.filter(runs, run => actualPrCurveEntryPerRun[run]).sort();
+        return _.filter(runs, (run) => actualPrCurveEntryPerRun[run]).sort();
       },
       _computeSetOfRelevantRuns(runsWithStepAvailable) {
         const setOfRelevantRuns = {};
-        _.forEach(runsWithStepAvailable, run => {
+        _.forEach(runsWithStepAvailable, (run) => {
           setOfRelevantRuns[run] = true;
         });
         return setOfRelevantRuns;

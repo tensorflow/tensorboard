@@ -28,7 +28,7 @@ tensorboard_webcomponent_library(
     destdir = "tf-color-scale",
     deps = [
         "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

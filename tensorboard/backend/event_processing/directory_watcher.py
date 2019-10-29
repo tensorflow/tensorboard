@@ -108,6 +108,10 @@ class DirectoryWatcher(object):
     if not self._loader:
       self._InitializeLoader()
 
+    # If it still doesn't exist, there is no data
+    if not self._loader:
+      return
+
     while True:
       # Yield all the new events in the path we're currently loading from.
       for event in self._loader.Load():
@@ -166,8 +170,6 @@ class DirectoryWatcher(object):
     path = self._GetNextPath()
     if path:
       self._SetPath(path)
-    else:
-      raise StopIteration
 
   def _SetPath(self, path):
     """Sets the current path to watch for new events.

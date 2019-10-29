@@ -22,7 +22,10 @@ notebook.
 
 ## I don’t want to read this document. Can I just play with a demo?
 
-Fine, here are some demos:
+Check out the large set of web and colab demos in the
+[demo section of the What-If Tool website](https://pair-code.github.io/what-if-tool/index.html#demos).
+
+To build the web demos yourself:
 * [Binary classifier for UCI Census dataset salary prediction](https://pair-code.github.io/what-if-tool/uci.html)
   * Dataset: [UCI Census](https://archive.ics.uci.edu/ml/datasets/census+income)
   * Task: Predict whether a person earns more or less than $50k based on their
@@ -57,10 +60,15 @@ You can use the What-If Tool to analyze a classification or regression
 that takes TensorFlow Example or SequenceExample protos
 (data points) as inputs directly in a jupyter or colab notebook.
 
-You can also use What-If-Tool with a custom prediction function that takes
+Additionally, the What-If Tool can analyze
+[AI Platform Prediction-hosted](https://cloud.google.com/ml-engine/) classification
+or regresssion models that take TensorFlow Example protos, SequenceExample protos,
+or raw JSON objects as inputs.
+
+You can also use What-If Tool with a custom prediction function that takes
 Tensorflow examples and produces predictions. In this mode, you can load any model
-(including non-TensorFlow models) as long as your custom function's input and output
-specifications are correct.
+(including non-TensorFlow models that don't use Example protos as inputs) as
+long as your custom function's input and output specifications are correct.
 
 If you want to train an ML model from a dataset and explore the dataset and
 model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
@@ -68,6 +76,10 @@ converts the data to tf.Example protos, trains a classifier, and then uses the
 What-If Tool to show the classifier performance on the data.
 
 ## What do I need to use it in TensorBoard?
+
+A walkthrough of using the tool in TensorBoard, including a pretrained model and
+test dataset, can be found on the
+[What-If Tool page on the TensorBoard website](https://www.tensorflow.org/tensorboard/r2/what_if_tool).
 
 To use the tool in TensorBoard, only the following information needs to be provided:
 
@@ -101,7 +113,7 @@ To use the tool in TensorBoard, only the following information needs to be provi
 * An indication if the model is a regression, binary classification or
   multi-class classification model.
 * An optional vocab file for the labels for a classification model. This file
-  maps the preidcted class indices returned from the model prediction into class
+  maps the predicted class indices returned from the model prediction into class
   labels. The text file contains one label per line, corresponding to the class
   indices returned by the model, starting with index 0.
     * If this file is provided, then the dashboard will show the predicted
@@ -130,10 +142,10 @@ values in a list of feature values for a given feature.
 
 In order to make use of the model understanding features of the tool, you can
 have columns in your dataset that contain the output from an ML model. If your
-file has a column named "probabilities" with a pipe-delimited ("|") list of
+file has a column named "predictions__probabilities" with a pipe-delimited ("|") list of
 probability scores (between 0 and 1), then the tool will treat those as the
 output scores of a classification model. If your file has a numeric column named
-"score" then the tool will treat those as the output of a regression model. In
+"predictions" then the tool will treat those as the output of a regression model. In
 this way, the tool can be used to analyze any dataset and the results of any
 model run offline against the dataset. Note that in this mode, the examples
 aren't editable as there is no way to get new inference results when an example
@@ -186,6 +198,10 @@ Here is a basic rundown of what it can do:
       * For categorical features, the distance is 0 if the values are the same,
         otherwise the distance is the probability that any two examples have
         the same value for that feature across all examples.
+  * In notebook mode, the tool also allows you to set a custom distance function
+    using set_custom_distance_fn in WitConfigBuilder, where that function is
+    used to compute closest counterfactuals instead. As in the case with
+    custom_predict_fn, the custom distance function can be any python function.
 
 * Edit a selected example in the browser and re-run inference and visualize the
   difference in the inference results.
@@ -255,11 +271,13 @@ The WitConfigBuilder object takes a list of tf.Example or tf.SequenceExample
 protos as a constructor argument. These protos will be shown in the tool and
 inferred in the specified model.
 
-The model to be used for inference by the tool can be specified one of three ways:
+The model to be used for inference by the tool can be specified in many ways:
 - As a TensorFlow [Estimator](https://www.tensorflow.org/guide/estimators)
   object that is provided through the `set_estimator_and_feature_spec` method.
   In this case the inference will be done inside the notebook using the
   provided estimator.
+- As a model hosted by [AI Platform Prediction](https://cloud.google.com/ml-engine/)
+  through the`set_ai_platform_model` method.
 - As a custom prediction function provided through `set_custom_predict_fn` method.
   In this case WIT will directly call the function for inference.
 - As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
@@ -281,6 +299,13 @@ pip install witwidget
 jupyter nbextension install --py --symlink --sys-prefix witwidget
 jupyter nbextension enable --py --sys-prefix witwidget
 ```
+Note that if you use TensorFlow with GPU support (tensorflow-gpu), then you
+should instead install the GPU-compatible version of witwidget:
+```sh
+pip install witwidget-gpu
+jupyter nbextension install --py --symlink --sys-prefix witwidget
+jupyter nbextension enable --py --sys-prefix witwidget
+```
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](./What_If_Tool_Notebook_Usage.ipynb).
@@ -291,6 +316,23 @@ containing:
 ```
 !pip install witwidget
 ```
+For TensorFlow GPU support, use the `witwidget-gpu` package instead of `witwidget`.
 
 Then, use it as seen at the bottom of the
 [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb).
+
+### How do I enable it for use in a JupyterLab or Cloud AI Platform notebook?
+Install and enable WIT for JupyterLab by running a cell containing:
+```
+!pip install witwidget
+!jupyter labextension install wit-widget
+!jupyter labextension install @jupyter-widgets/jupyterlab-manager
+```
+For TensorFlow GPU support, use the `witwidget-gpu` package instead of `witwidget`.
+Note that you may need to run `!sudo jupyter labextension ...` commands depending on your notebook setup.
+
+Use of WIT after installation is the same as with the other notebook installations.
+
+## How can I help develop it?
+
+Check out the [developement guide](./DEVELOPMENT.md).

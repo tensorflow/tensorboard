@@ -15,13 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-markdown-view/tf-markdown-view.html">
-<link rel="import" href="tf-card-heading-style.html">
-<link rel="import" href="util.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link
+  rel="import"
+  href="../paper-dialog-scrollable/paper-dialog-scrollable.html"
+/>
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html" />
+<link rel="import" href="tf-card-heading-style.html" />
+<link rel="import" href="util.html" />
 
 <!--
   A compact heading to appear above a single visualization, summarizing
@@ -55,7 +58,8 @@ limitations under the License.
                 itemprop="run"
                 class="heading-label heading-right run"
                 style="background: [[_runBackground]]; color: [[_runColor]]"
-              >[[run]]</span>
+                >[[run]]</span
+              >
             </span>
           </template>
         </div>
@@ -114,14 +118,14 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-card-heading",
+      is: 'tf-card-heading',
 
       properties: {
         displayName: {type: String, value: null},
         tag: {type: String, value: null},
         run: {type: String, value: null},
         description: {type: String, value: null},
-        color: {type: String, value: null},  // a CSS color (e.g., '#abcdef')
+        color: {type: String, value: null}, // a CSS color (e.g., '#abcdef')
 
         _runBackground: {
           type: String,

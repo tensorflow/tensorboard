@@ -17,6 +17,16 @@ py_library(
     ],
 )
 
+py_library(
+    name = "interactive_inference_plugin_loader",
+    srcs = ["interactive_inference_plugin_loader.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":interactive_inference_plugin",
+        "//tensorboard/plugins:base_plugin",
+    ],
+)
+
 py_test(
     name = "interactive_inference_plugin_test",
     size = "small",
@@ -29,6 +39,7 @@ py_test(
         "//tensorboard/plugins/interactive_inference/utils:platform_utils",
         "//tensorboard/plugins/interactive_inference/utils:test_utils",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )

@@ -13,30 +13,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
+  export class ExperimentsStore extends BaseStore {
+    private _experiments: Experiment[] = [];
 
-export class ExperimentsStore extends BaseStore {
-  private _experiments: Experiment[] = [];
+    load() {
+      const url = getRouter().experiments();
+      return this.requestManager.request(url).then((newExperiments) => {
+        if (!_.isEqual(this._experiments, newExperiments)) {
+          this._experiments = newExperiments;
+          this.emitChange();
+        }
+      });
+    }
 
-  load() {
-    const url = getRouter().experiments();
-    return this.requestManager.request(url).then(newExperiments => {
-      if (!_.isEqual(this._experiments, newExperiments)) {
-        this._experiments = newExperiments;
-        this.emitChange();
-      }
-    });
+    /**
+     * Get the current list of experiments. If no data is available, this will be
+     * an empty array (i.e., there is no distinction between "no experiment" and
+     * "no experiment yet").
+     */
+    getExperiments(): Experiment[] {
+      return this._experiments.slice();
+    }
   }
 
-  /**
-   * Get the current list of experiments. If no data is available, this will be
-   * an empty array (i.e., there is no distinction between "no experiment" and
-   * "no experiment yet").
-   */
-  getExperiments(): Experiment[] {
-    return this._experiments.slice();
-  }
-}
-
-export const experimentsStore = new ExperimentsStore();
-
-}  // namespace tf_backend
+  export const experimentsStore = new ExperimentsStore();
+} // namespace tf_backend

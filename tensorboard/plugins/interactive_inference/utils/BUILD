@@ -29,7 +29,9 @@ py_library(
     deps = [
         ":common_utils",
         ":platform_utils",
+        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_six",
         "@org_tensorflow_serving_api",
     ],
 )
@@ -53,6 +55,8 @@ py_test(
         ":test_utils",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
         "@org_tensorflow_serving_api",
     ],
 )

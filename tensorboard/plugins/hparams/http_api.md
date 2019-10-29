@@ -3,12 +3,12 @@ HParams backend supports calling requests with both HTTP POST and GET.
 Each method below has an associated 'request' protocol buffer and returns
 a 'response' protocol buffer. The 'request' is expected to be encoded in JSON
 format and the response will be returned encoded in JSON format. Encoding protos
-to JSON format is described 
+to JSON format is described
 [here](https://developers.google.com/protocol-buffers/docs/proto3#json)).
 
 For POST the request is expected to be passed in the request body. For GET the
-request is expected to be passed (properly escaped) in a URL query parameter 
-named 'request'. 
+request is expected to be passed (properly escaped) in a URL query parameter
+named 'request'.
 
 ### Notes:
 1. Per Tensorboard's conventions, each end-point has a "data/plugin/hparams"

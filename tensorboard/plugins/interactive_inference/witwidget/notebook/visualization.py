@@ -30,20 +30,26 @@ else:
 class WitConfigBuilder(object):
   """Configuration builder for WitWidget settings."""
 
-  def __init__(self, examples):
+  def __init__(self, examples, feature_names=None):
     """Constructs the WitConfigBuilder object.
 
     Args:
-      examples: A list of tf.Example or tf.SequenceExample proto objects.
-      These are the examples that will be displayed in WIT. If not model to
+      examples: A list of tf.Example or tf.SequenceExample proto objects, or
+      raw JSON objects. JSON is allowed only for AI Platform-hosted models (see
+      'set_ai_platform_model' and 'set_compare_ai_platform_model methods).
+      These are the examples that will be displayed in WIT. If no model to
       infer these examples with is specified through the methods on this class,
       then WIT will display the examples for exploration, but no model inference
       will be performed by the tool.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used for display purposes.
     """
     self.config = {}
-    self.set_examples(examples)
     self.set_model_type('classification')
     self.set_label_vocab([])
+    self.set_examples(examples, feature_names)
 
   def build(self):
     """Returns the configuration set through use of this builder object.
@@ -59,17 +65,29 @@ class WitConfigBuilder(object):
     if key in self.config:
       del self.config[key]
 
-  def set_examples(self, examples):
+  def set_examples(self, examples, feature_names=None):
     """Sets the examples to be displayed in WIT.
 
     Args:
-      examples: List of example protos.
+      examples: List of example protos or JSON objects.
+      feature_names: Optional, defaults to None. If examples are provided as
+      JSON lists of numbers (not as feature dictionaries), then this array
+      maps indices in the feature value lists to human-readable names of those
+      features, used just for display purposes.
 
     Returns:
       self, in order to enabled method chaining.
     """
     self.store('examples', examples)
-    if len(examples) > 0:
+    if feature_names:
+      self.store('feature_names', feature_names)
+    if len(examples) > 0 and not (
+      isinstance(examples[0], tf.train.Example) or
+      isinstance(examples[0], tf.train.SequenceExample)):
+      self._set_uses_json_input(True)
+      if isinstance(examples[0], list):
+        self._set_uses_json_list(True)
+    elif len(examples) > 0:
       self.store('are_sequence_examples',
                  isinstance(examples[0], tf.train.SequenceExample))
     return self
@@ -393,6 +411,30 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
+    Optionally, if attributions or other prediction-time information
+    can be returned by the model with each prediction, then this method
+    can return a dict with the key 'predictions' containing the predictions
+    result list described above, and with the key 'attributions' containing
+    a list of attributions for each example that was predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
+
+    This dict can contain any other keys, with their values being a list of
+    prediction-time strings or numbers for each example being predicted. These
+    values will be displayed in WIT as extra information for each example,
+    usable in the same ways by WIT as normal input features (such as for
+    creating plots and slicing performance data).
+
     Args:
       predict_fn: The custom python function which will be used for model
       inference.
@@ -425,6 +467,30 @@ class WitConfigBuilder(object):
       - For regression: A 1D list of numbers, with a regression score for each
         example being predicted.
 
+    Optionally, if attributions or other prediction-time information
+    can be returned by the model with each prediction, then this method
+    can return a dict with the key 'predictions' containing the predictions
+    result list described above, and with the key 'attributions' containing
+    a list of attributions for each example that was predicted.
+
+    For each example, the attributions list should contain a dict mapping
+    input feature names to attribution values for that feature on that example.
+    The attribution value can be one of these things:
+      - A single number representing the attribution for the entire feature
+      - A list of numbers representing the attribution to each value in the
+        feature for multivalent features - such as attributions to individual
+        pixels in an image or numbers in a list of numbers.
+      - A 2D list for sparse feature attribution. Index 0 contains a list of
+        feature values that there are attribution scores for. Index 1 contains
+        a list of attribution values for the corresponding feature values in
+        the first list.
+
+    This dict can contain any other keys, with their values being a list of
+    prediction-time strings or numbers for each example being predicted. These
+    values will be displayed in WIT as extra information for each example,
+    usable in the same ways by WIT as normal input features (such as for
+    creating plots and slicing performance data).
+
     Args:
       predict_fn: The custom python function which will be used for model
       inference.
@@ -440,4 +506,157 @@ class WitConfigBuilder(object):
     # If no model name has been set, give a default
     if not self.has_compare_model_name():
       self.set_compare_model_name('2')
+    return self
+
+  def set_custom_distance_fn(self, distance_fn):
+    """Sets a custom function for distance computation.
+
+    WIT can directly use a custom function for all distance computations within
+    the tool. In this case, the provided function should accept a query example
+    proto and a list of example protos to compute the distance against and
+    return a 1D list of numbers containing the distances.
+
+    Args:
+      distance_fn: The python function which will be used for distance
+      computation.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    if distance_fn is None:
+      self.delete('custom_distance_fn')
+    else:
+      self.store('custom_distance_fn', distance_fn)
+    return self
+
+  def set_ai_platform_model(
+    self, project, model, version=None, force_json_input=None,
+    adjust_prediction=None, adjust_example=None, adjust_attribution=None,
+    service_name='ml', service_version='v1'):
+    """Sets the model information for a model served by AI Platform.
+
+    AI Platform Prediction a Google Cloud serving platform.
+
+    Args:
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+      adjust_prediction: Optional. If not None then this function takes the
+      prediction output from the model for a single example and converts it to
+      the appopriate format - a regression score or a list of class scores. Only
+      necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
+      adjust_attribution: Optional. If not None and the model returns attribution
+      information, then this function takes the attribution information for an
+      example and converts it to the format expected by the tool, which is a
+      dictionary of input feature names to attribution scores. Usually necessary
+      if making use of adjust_example and the model returns attribution results.
+      service_name: Optional. Name of the AI Platform Prediction service. Defaults
+      to 'ml'.
+      service_version: Optional. Version of the AI Platform Prediction service. Defaults
+      to 'v1'.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_inference_address(project)
+    self.set_model_name(model)
+    self.store('use_aip', True)
+    self.store('aip_service_name', service_name)
+    self.store('aip_service_version', service_version)
+    if version is not None:
+      self.set_model_signature(version)
+    if force_json_input:
+      self.store('force_json_input', True)
+    if adjust_prediction:
+      self.store('adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('adjust_example', adjust_example)
+    if adjust_attribution:
+      self.store('adjust_attribution', adjust_attribution)
+    return self
+
+  def set_compare_ai_platform_model(
+    self, project, model, version=None, force_json_input=None,
+    adjust_prediction=None, adjust_example=None, adjust_attribution=None,
+    service_name='ml', service_version='v1'):
+    """Sets the model information for a second model served by AI Platform.
+
+    AI Platform Prediction a Google Cloud serving platform.
+
+    Args:
+      project: The name of the AI Platform Prediction project.
+      model: The name of the AI Platform Prediction model.
+      version: Optional, the version of the AI Platform Prediction model.
+      force_json_input: Optional. If True and examples are provided as
+      tf.Example protos, convert them to raw JSON objects before sending them
+      for inference to this model.
+      adjust_prediction: Optional. If not None then this function takes the
+      prediction output from the model for a single example and converts it to
+      the appopriate format - a regression score or a list of class scores. Only
+      necessary if the model doesn't already abide by this format.
+      adjust_example: Optional. If not None then this function takes an example
+      to run prediction on and converts it to the format expected by the model.
+      Necessary for example if the served model expects a single data value to
+      run inference on instead of a list or dict of values.
+      adjust_attribution: Optional. If not None and the model returns attribution
+      information, then this function takes the attribution information for an
+      example and converts it to the format expected by the tool, which is a
+      dictionary of input feature names to attribution scores. Usually necessary
+      if making use of adjust_example and the model returns attribution results.
+      service_name: Optional. Name of the AI Platform Prediction service. Defaults
+      to 'ml'.
+      service_version: Optional. Version of the AI Platform Prediction service. Defaults
+      to 'v1'.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.set_compare_inference_address(project)
+    self.set_compare_model_name(model)
+    self.store('compare_use_aip', True)
+    self.store('compare_aip_service_name', service_name)
+    self.store('compare_aip_service_version', service_version)
+    if version is not None:
+      self.set_compare_model_signature(version)
+    if force_json_input:
+      self.store('compare_force_json_input', True)
+    if adjust_prediction:
+      self.store('compare_adjust_prediction', adjust_prediction)
+    if adjust_example:
+      self.store('compare_adjust_example', adjust_example)
+    if adjust_attribution:
+      self.store('compare_adjust_attribution', adjust_attribution)
+    return self
+
+  def set_target_feature(self, target):
+    """Sets the name of the target feature in the provided examples.
+
+    If the provided examples contain a feature that represents the target
+    that the model is trying to predict, it can be specified by this method.
+    This is necessary for AI Platform models so that the target feature isn't
+    sent to the model for prediction, which can cause model inference errors.
+
+    Args:
+      target: The name of the feature in the examples that represents the value
+      that the model is trying to predict.
+
+    Returns:
+      self, in order to enabled method chaining.
+    """
+    self.store('target_feature', target)
+    return self
+
+  def _set_uses_json_input(self, is_json):
+    self.store('uses_json_input', is_json)
+    return self
+
+  def _set_uses_json_list(self, is_list):
+    self.store('uses_json_list', is_list)
     return self

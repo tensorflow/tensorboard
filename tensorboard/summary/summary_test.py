@@ -69,13 +69,14 @@ class SummaryExportsTest(SummaryExportsBaseTest, unittest.TestCase):
   allowed = frozenset(('v1', 'v2'))
   plugins = frozenset([
     'audio',
-    'custom_scalar',
     'histogram',
     'image',
-    'pr_curve',
     'scalar',
     'text',
   ])
+
+  def test_plugins_export_pb_functions(self):
+    self.skipTest('V2 summary API _pb functions are not finalized yet')
 
 
 class SummaryExportsV1Test(SummaryExportsBaseTest, unittest.TestCase):

@@ -18,12 +18,12 @@ tf_web_library(
         ":registry",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_data_selector",
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "@com_google_fonts_roboto",
         "@org_polymer_iron_icons",
         "@org_polymer_paper_button",
@@ -31,6 +31,7 @@ tf_web_library(
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_header_panel",
         "@org_polymer_paper_icon_button",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_tabs",
         "@org_polymer_paper_toolbar",
     ],
@@ -44,6 +45,19 @@ tf_web_library(
     ],
     path = "/tf-tensorboard",
     visibility = ["//visibility:public"],
+)
+
+tf_web_library(
+    name = "plugin_dialog",
+    srcs = [
+        "plugin-dialog.html",
+    ],
+    path = "/tf-tensorboard",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:polymer",
+    ],
 )
 
 tf_web_library(
@@ -62,9 +76,9 @@ tf_web_library(
         "//tensorboard/plugins/hparams/tf_hparams_dashboard",
         "//tensorboard/plugins/image/tf_image_dashboard",
         "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
+        "//tensorboard/plugins/mesh/tf_mesh_dashboard",
         "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
         "//tensorboard/plugins/profile/tf_profile_dashboard",
-        "//tensorboard/plugins/projector/vz_projector",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
     ],

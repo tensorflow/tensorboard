@@ -176,9 +176,15 @@ def write_summary(summary_pb):
   tf.compat.v1.enable_eager_execution()
   writer = tf.compat.v2.summary.create_file_writer(FLAGS.logdir)
   with writer.as_default():
-    event = tf.compat.v1.Event(summary=summary_pb)
-    tf.compat.v2.summary.import_event(
-        tf.constant(event.SerializeToString(), dtype=tf.string))
+    if hasattr(tf.compat.v2.summary.experimental, "write_raw_pb"):
+      tf.compat.v2.summary.experimental.write_raw_pb(
+          summary_pb.SerializeToString(), step=0)
+    else:
+      # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove the
+      #   fallback to import_event().
+      event = tf.compat.v1.Event(summary=summary_pb)
+      tf.compat.v2.summary.import_event(
+          tf.constant(event.SerializeToString(), dtype=tf.string))
     # The following may not be required since the context manager may
     # already flush on __exit__, but it doesn't hurt to do it here, as well.
     tf.compat.v2.summary.flush()

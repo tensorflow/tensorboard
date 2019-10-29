@@ -13,96 +13,96 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector.test {
+  describe('restoreUIFromBookmark', () => {
+    let projectionsPanel: ProjectionsPanel;
+    beforeEach(() => {
+      projectionsPanel = document.createElement(
+        ProjectionsPanel.prototype.is
+      ) as ProjectionsPanel;
 
-describe('restoreUIFromBookmark', () => {
-  let projectionsPanel: ProjectionsPanel;
-  beforeEach(() => {
-    projectionsPanel = document.createElement(ProjectionsPanel.prototype.is) as
-        ProjectionsPanel;
+      // Set up some of the UI so the elements are found in the production code.
+      const tsnePerplexityContainer = document.createElement('div');
+      tsnePerplexityContainer.className = 'tsne-perplexity';
+      const tsnePerplexity = document.createElement('span');
+      tsnePerplexityContainer.appendChild(tsnePerplexity);
+      projectionsPanel.appendChild(tsnePerplexityContainer);
 
-    // Set up some of the UI so the elements are found in the production code.
-    const tsnePerplexityContainer = document.createElement('div');
-    tsnePerplexityContainer.className = 'tsne-perplexity';
-    const tsnePerplexity = document.createElement('span');
-    tsnePerplexityContainer.appendChild(tsnePerplexity);
-    projectionsPanel.appendChild(tsnePerplexityContainer);
+      const tsneLearningRateContainer = document.createElement('div');
+      tsneLearningRateContainer.className = 'tsne-learning-rate';
+      const tsneLearningRate = document.createElement('span');
+      tsneLearningRateContainer.appendChild(tsneLearningRate);
+      projectionsPanel.appendChild(tsneLearningRateContainer);
+    });
 
-    const tsneLearningRateContainer = document.createElement('div');
-    tsneLearningRateContainer.className = 'tsne-learning-rate';
-    const tsneLearningRate = document.createElement('span');
-    tsneLearningRateContainer.appendChild(tsneLearningRate);
-    projectionsPanel.appendChild(tsneLearningRateContainer);
+    it('sets the pcaX/Y properties when setting 2D component values', () => {
+      spyOn(projectionsPanel, 'setZDropdownEnabled');
+
+      const s = new State();
+      s.pcaComponentDimensions = [0, 1];
+      projectionsPanel.restoreUIFromBookmark(s);
+
+      assert.equal(0, projectionsPanel.pcaX);
+      assert.equal(1, projectionsPanel.pcaY);
+
+      expect(projectionsPanel.setZDropdownEnabled).toHaveBeenCalledWith(false);
+    });
+
+    it('sets the pcaX/Y properties when setting 3D component values', () => {
+      spyOn(projectionsPanel, 'setZDropdownEnabled');
+
+      const s = new State();
+      s.pcaComponentDimensions = [0, 1, 2];
+      projectionsPanel.restoreUIFromBookmark(s);
+
+      assert.equal(0, projectionsPanel.pcaX);
+      assert.equal(1, projectionsPanel.pcaY);
+      assert.equal(2, projectionsPanel.pcaZ);
+
+      expect(projectionsPanel.setZDropdownEnabled).toHaveBeenCalledWith(true);
+    });
   });
 
-  it('sets the pcaX/Y properties when setting 2D component values', () => {
-    spyOn(projectionsPanel, 'setZDropdownEnabled');
+  describe('populateBookmarkFromUI', () => {
+    let projectionsPanel: ProjectionsPanel;
 
-    const s = new State();
-    s.pcaComponentDimensions = [0, 1];
-    projectionsPanel.restoreUIFromBookmark(s);
+    beforeEach(() => {
+      projectionsPanel = document.createElement(
+        ProjectionsPanel.prototype.is
+      ) as ProjectionsPanel;
 
-    assert.equal(0, projectionsPanel.pcaX);
-    assert.equal(1, projectionsPanel.pcaY);
+      // Set up some of the UI so the elements are found in the production code.
+      const tsnePerplexityContainer = document.createElement('div');
+      tsnePerplexityContainer.className = 'tsne-perplexity';
+      const tsnePerplexity = document.createElement('span');
+      tsnePerplexityContainer.appendChild(tsnePerplexity);
+      projectionsPanel.appendChild(tsnePerplexityContainer);
 
-    expect(projectionsPanel.setZDropdownEnabled).toHaveBeenCalledWith(false);
+      const tsneLearningRateContainer = document.createElement('div');
+      tsneLearningRateContainer.className = 'tsne-learning-rate';
+      const tsneLearningRate = document.createElement('span');
+      tsneLearningRateContainer.appendChild(tsneLearningRate);
+      projectionsPanel.appendChild(tsneLearningRateContainer);
+    });
+
+    it('gets the PCA component UI values from a 2D PCA projection', () => {
+      projectionsPanel.pcaX = 0;
+      projectionsPanel.pcaY = 1;
+      projectionsPanel.pcaIs3d = false;
+
+      const s = new State();
+      projectionsPanel.populateBookmarkFromUI(s);
+      assert.deepEqual([0, 1], s.pcaComponentDimensions);
+    });
+
+    it('gets the PCA component UI values from a 3D PCA projection', () => {
+      projectionsPanel.pcaX = 0;
+      projectionsPanel.pcaY = 1;
+      projectionsPanel.pcaZ = 2;
+      projectionsPanel.pcaIs3d = true;
+
+      const s = new State();
+      projectionsPanel.populateBookmarkFromUI(s);
+      assert.deepEqual([0, 1, 2], s.pcaComponentDimensions);
+    });
   });
-
-  it('sets the pcaX/Y properties when setting 3D component values', () => {
-    spyOn(projectionsPanel, 'setZDropdownEnabled');
-
-    const s = new State();
-    s.pcaComponentDimensions = [0, 1, 2];
-    projectionsPanel.restoreUIFromBookmark(s);
-
-    assert.equal(0, projectionsPanel.pcaX);
-    assert.equal(1, projectionsPanel.pcaY);
-    assert.equal(2, projectionsPanel.pcaZ);
-
-    expect(projectionsPanel.setZDropdownEnabled).toHaveBeenCalledWith(true);
-  });
-});
-
-describe('populateBookmarkFromUI', () => {
-  let projectionsPanel: ProjectionsPanel;
-
-  beforeEach(() => {
-    projectionsPanel = document.createElement(ProjectionsPanel.prototype.is) as
-        ProjectionsPanel;
-
-    // Set up some of the UI so the elements are found in the production code.
-    const tsnePerplexityContainer = document.createElement('div');
-    tsnePerplexityContainer.className = 'tsne-perplexity';
-    const tsnePerplexity = document.createElement('span');
-    tsnePerplexityContainer.appendChild(tsnePerplexity);
-    projectionsPanel.appendChild(tsnePerplexityContainer);
-
-    const tsneLearningRateContainer = document.createElement('div');
-    tsneLearningRateContainer.className = 'tsne-learning-rate';
-    const tsneLearningRate = document.createElement('span');
-    tsneLearningRateContainer.appendChild(tsneLearningRate);
-    projectionsPanel.appendChild(tsneLearningRateContainer);
-  });
-
-  it('gets the PCA component UI values from a 2D PCA projection', () => {
-    projectionsPanel.pcaX = 0;
-    projectionsPanel.pcaY = 1;
-    projectionsPanel.pcaIs3d = false;
-
-    const s = new State();
-    projectionsPanel.populateBookmarkFromUI(s);
-    assert.deepEqual([0, 1], s.pcaComponentDimensions);
-  });
-
-  it('gets the PCA component UI values from a 3D PCA projection', () => {
-    projectionsPanel.pcaX = 0;
-    projectionsPanel.pcaY = 1;
-    projectionsPanel.pcaZ = 2;
-    projectionsPanel.pcaIs3d = true;
-
-    const s = new State();
-    projectionsPanel.populateBookmarkFromUI(s);
-    assert.deepEqual([0, 1, 2], s.pcaComponentDimensions);
-  });
-});
-
-}  // namespace vz_projector.test
+} // namespace vz_projector.test

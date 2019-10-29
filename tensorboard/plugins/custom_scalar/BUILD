@@ -87,6 +87,28 @@ py_test(
     ],
 )
 
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+py_test(
+    name = "custom_scalars_plugin_notf_test",
+    size = "small",
+    srcs = ["custom_scalars_plugin_test.py"],
+    main = "custom_scalars_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":custom_scalars_plugin",
+        ":protos_all_py_pb2",
+        ":summary",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:test_util",
+    ],
+)
+
 tb_proto_library(
     name = "protos_all",
     srcs = ["layout.proto"],

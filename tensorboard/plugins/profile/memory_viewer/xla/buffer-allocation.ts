@@ -11,42 +11,42 @@ limitations under the License.
 ==============================================================================*/
 
 namespace memory_viewer_xla_ba {
-/**
- * HLO buffer allocation representation.
- * @final
- */
-export class BufferAllocation {
-  index: number;
-  size: number;
-  isThreadLocal: boolean;
-  assigned: memory_viewer_xla_baa.BufferAllocationAssigned[];
-  groupName: string;
+  /**
+   * HLO buffer allocation representation.
+   * @final
+   */
+  export class BufferAllocation {
+    index: number;
+    size: number;
+    isThreadLocal: boolean;
+    assigned: memory_viewer_xla_baa.BufferAllocationAssigned[];
+    groupName: string;
 
-  constructor(alloc) {
-    this.index = parseInt(alloc.index, 10);
-    this.size = parseInt(alloc.size, 10);
-    this.isThreadLocal = alloc.isThreadLocal || false;
-    this.assigned = alloc.assigned.map(
-        (assigned) => new memory_viewer_xla_baa.BufferAllocationAssigned(
-          assigned));
-    this.groupName = this.getGroupName(alloc);
-  }
+    constructor(alloc) {
+      this.index = parseInt(alloc.index, 10);
+      this.size = parseInt(alloc.size, 10);
+      this.isThreadLocal = alloc.isThreadLocal || false;
+      this.assigned = alloc.assigned.map(
+        (assigned) =>
+          new memory_viewer_xla_baa.BufferAllocationAssigned(assigned)
+      );
+      this.groupName = this.getGroupName(alloc);
+    }
 
-  getGroupName(alloc): string {
-    if (alloc.isEntryComputationParameter) {
-      return 'Parameter';
-    } else {
-      if (alloc.maybeLiveOut) {
-        return 'Output';
+    getGroupName(alloc): string {
+      if (alloc.isEntryComputationParameter) {
+        return 'Parameter';
       } else {
-        if (alloc.isThreadLocal) {
-          return 'Thread-local';
+        if (alloc.maybeLiveOut) {
+          return 'Output';
         } else {
-          return 'Temporary';
+          if (alloc.isThreadLocal) {
+            return 'Thread-local';
+          } else {
+            return 'Temporary';
+          }
         }
       }
     }
   }
-}
-
 } // namespace memory_viewer_xla_ba

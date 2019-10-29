@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-window.__webpack_public_path__ =
+window.__nbextension_path__ =
   document.querySelector('body').getAttribute('data-base-url') +
   'nbextensions/wit-widget/';
 

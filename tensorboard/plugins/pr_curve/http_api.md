@@ -52,7 +52,7 @@ Here is an example.
 Retrieves a JSON object mapping run name to a list of PR curve data entries (one
 entry per step). This route requires a `tag` GET parameter as well as at least
 one `run` GET parameter to specify both the tag and list of runs to retrieve
-data for. 
+data for.
 
 Each PR data entry contains the following properties.
 

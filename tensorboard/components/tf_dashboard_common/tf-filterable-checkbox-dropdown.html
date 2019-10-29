@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="./tf-dropdown-trigger.html">
-<link rel="import" href="./tf-filterable-checkbox-list.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="./tf-dropdown-trigger.html" />
+<link rel="import" href="./tf-filterable-checkbox-list.html" />
 
 <!--
 tf-filterable-checkbox-dropdown creates a dropdown whose content is a list of
@@ -53,7 +53,7 @@ Properties out:
         label-float="[[labelFloat]]"
         name="[[_getValueLabel(selectedItems, items)]]"
       ></tf-dropdown-trigger>
-      <div class="dropdown-content">
+      <div slot="dropdown-content">
         <tf-filterable-checkbox-list
           coloring="[[_coloring]]"
           items="[[items]]"
@@ -67,25 +67,25 @@ Properties out:
       </div>
     </paper-menu-button>
     <style>
-    :host {
-      padding: 8px;
-    }
+      :host {
+        padding: 8px;
+      }
 
-    tf-dropdown-trigger {
-      --tf-dropdown-trigger-content: {
-        font-size: 14px;
-      };
+      tf-dropdown-trigger {
+        --tf-dropdown-trigger-content: {
+          font-size: 14px;
+        }
 
-      @apply --tf-filterable-checkbox-dropdown-trigger;
-    }
+        @apply --tf-filterable-checkbox-dropdown-trigger;
+      }
 
-    paper-menu-button {
-      padding: 0;
-    }
+      paper-menu-button {
+        padding: 0;
+      }
 
-    .dropdown-content {
-      padding: 10px 0;
-    }
+      .dropdown-content {
+        padding: 10px 0;
+      }
     </style>
   </template>
   <script src="tf-filterable-checkbox-dropdown.js"></script>

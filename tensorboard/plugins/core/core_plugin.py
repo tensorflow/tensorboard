@@ -30,6 +30,7 @@ import six
 from werkzeug import utils
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tb_logging
@@ -41,6 +42,8 @@ logger = tb_logging.get_logger()
 # for more details.
 DEFAULT_PORT = 6006
 
+SHASUM_DIR = '_shasums'
+SHASUM_FILE_SUFFIX = '.scripts_sha256'
 
 class CorePlugin(base_plugin.TBPlugin):
   """Core plugin for TensorBoard.
@@ -57,12 +60,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._logdir = context.logdir
+    logdir_spec = context.flags.logdir_spec if context.flags else ''
+    self._logdir = context.logdir or logdir_spec
     self._db_uri = context.db_uri
     self._window_title = context.window_title
     self._multiplexer = context.multiplexer
     self._db_connection_provider = context.db_connection_provider
     self._assets_zip_provider = context.assets_zip_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def is_active(self):
     return True
@@ -83,14 +91,40 @@ class CorePlugin(base_plugin.TBPlugin):
         '/histograms': self._redirect_to_index,
         '/images': self._redirect_to_index,
     }
-    if self._assets_zip_provider:
-      with self._assets_zip_provider() as fp:
-        with zipfile.ZipFile(fp) as zip_:
-          for path in zip_.namelist():
-            gzipped_asset_bytes = _gzip(zip_.read(path))
-            apps['/' + path] = functools.partial(
+    apps.update(self.get_resource_apps())
+    return apps
+
+  def get_resource_apps(self):
+    apps = {}
+    if not self._assets_zip_provider:
+      return apps
+
+    with self._assets_zip_provider() as fp:
+      with zipfile.ZipFile(fp) as zip_:
+        for path in zip_.namelist():
+          # Do not serve the shasum data as static files.
+          if path.startswith(SHASUM_DIR):
+            continue
+
+          gzipped_asset_bytes = _gzip(zip_.read(path))
+
+          if os.path.splitext(path)[1] == '.html':
+            checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
+            # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
+            # the assets zip file.
+            if checksum_path in zip_.namelist():
+              lines = zip_.read(checksum_path).splitlines(False);
+              shasums = [hash.decode('utf8') for hash in lines]
+            else:
+              shasums = None
+
+            wsgi_app = functools.partial(
+                self._serve_html, shasums, gzipped_asset_bytes)
+          else:
+            wsgi_app = functools.partial(
                 self._serve_asset, path, gzipped_asset_bytes)
-      apps['/'] = apps['/index.html']
+          apps['/' + path] = wsgi_app
+    apps['/'] = apps['/index.html']
     return apps
 
   @wrappers.Request.application
@@ -109,6 +143,17 @@ class CorePlugin(base_plugin.TBPlugin):
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
 
   @wrappers.Request.application
+  def _serve_html(self, shasums, gzipped_asset_bytes, request):
+    """Serves a pre-gzipped static HTML with script shasums."""
+    return http_util.Respond(
+        request,
+        gzipped_asset_bytes,
+        'text/html',
+        content_encoding='gzip',
+        csp_scripts_sha256s=shasums,
+    )
+
+  @wrappers.Request.application
   def _serve_environment(self, request):
     """Serve a JSON object containing some base properties used by the frontend.
 
@@ -116,11 +161,15 @@ class CorePlugin(base_plugin.TBPlugin):
       database (depending on which mode TensorBoard is running in).
     * window_title is the title of the TensorBoard web page.
     """
+    if self._data_provider:
+      experiment = plugin_util.experiment_id(request.environ)
+      data_location = self._data_provider.data_location(experiment)
+    else:
+      data_location = self._logdir or self._db_uri
     return http_util.Respond(
         request,
         {
-            'data_location': self._logdir or self._db_uri,
-            'mode': 'db' if self._db_uri else 'logdir',
+            'data_location': data_location,
             'window_title': self._window_title,
         },
         'application/json')
@@ -149,7 +198,17 @@ class CorePlugin(base_plugin.TBPlugin):
     Sort order is by started time (aka first event time) with empty times sorted
     last, and then ties are broken by sorting on the run name.
     """
-    if self._db_connection_provider:
+    if self._data_provider:
+      experiment = plugin_util.experiment_id(request.environ)
+      runs = sorted(
+          self._data_provider.list_runs(experiment_id=experiment),
+          key=lambda run: (
+              run.start_time if run.start_time is not None else float('inf'),
+              run.run_name,
+          )
+      )
+      run_names = [run.run_name for run in runs]
+    elif self._db_connection_provider:
       db = self._db_connection_provider()
       cursor = db.execute('''
         SELECT
@@ -216,7 +275,7 @@ class CorePlugin(base_plugin.TBPlugin):
     """
     results = []
     if self._db_connection_provider:
-      exp_id = request.args.get('experiment')
+      exp_id = plugin_util.experiment_id(request.environ)
       runs_dict = collections.OrderedDict()
 
       db = self._db_connection_provider()
@@ -278,23 +337,47 @@ Directory where TensorBoard will look to find TensorFlow event files
 that it can display. TensorBoard will recursively walk the directory
 structure rooted at logdir, looking for .*tfevents.* files.
 
-You may also pass a comma separated list of log directories, and
-TensorBoard will watch each directory. You can also assign names to
-individual log directories by putting a colon between the name and the
-path, as in:
+A leading tilde will be expanded with the semantics of Python's
+os.expanduser function.
+''')
 
-`tensorboard --logdir=name1:/path/to/logs/1,name2:/path/to/logs/2`\
+    parser.add_argument(
+        '--logdir_spec',
+        metavar='PATH_SPEC',
+        type=str,
+        default='',
+        help='''\
+Like `--logdir`, but with special interpretation for commas and colons:
+commas separate multiple runs, where a colon specifies a new name for a
+run. For example:
+`tensorboard --logdir_spec=name1:/path/to/logs/1,name2:/path/to/logs/2`.
+
+This flag is discouraged and can usually be avoided. TensorBoard walks
+log directories recursively; for finer-grained control, prefer using a
+symlink tree. Some features may not work when using `--logdir_spec`
+instead of `--logdir`.
 ''')
 
     parser.add_argument(
         '--host',
         metavar='ADDR',
         type=str,
-        default='',
+        default=None,  # like localhost, but prints a note about `--bind_all`
         help='''\
-What host to listen to. Defaults to serving on all interfaces. Other
-commonly used values are 127.0.0.1 (localhost) and :: (for IPv6).\
+What host to listen to (default: localhost). To serve to the entire local
+network on both IPv4 and IPv6, see `--bind_all`, with which this option is
+mutually exclusive.
 ''')
+
+    parser.add_argument(
+        '--bind_all',
+        action='store_true',
+        help='''\
+Serve on all public interfaces. This will expose your TensorBoard instance to
+the network on both IPv4 and IPv6 (where available). Mutually exclusive with
+`--host`.
+''')
+
 
     parser.add_argument(
         '--port',
@@ -322,17 +405,6 @@ disappearance. (default: %(default)s)\
 ''')
 
     parser.add_argument(
-        '--reload_interval',
-        metavar='SECONDS',
-        type=float,
-        default=5.0,
-        help='''\
-How often the backend should load more data, in seconds. Set to 0 to
-load just once at startup and a negative number to never reload at all.
-Not relevant for DB read-only mode. (default: %(default)s)\
-''')
-
-    parser.add_argument(
         '--db',
         metavar='URI',
         type=str,
@@ -352,15 +424,6 @@ temporary unless --db is also passed to specify a DB path to use.\
 ''')
 
     parser.add_argument(
-        '--db_import_use_op',
-        action='store_true',
-        help='''\
-[experimental] in combination with --db_import, if passed, use TensorFlow's
-import_event() op for importing event data, otherwise use TensorBoard's own
-sqlite ingestion logic.\
-''')
-
-    parser.add_argument(
         '--inspect',
         action='store_true',
         help='''\
@@ -376,6 +439,14 @@ Example usage:
 
 See tensorboard/backend/event_processing/event_file_inspector.py for more info.\
 ''')
+
+    # This flag has a "_tb" suffix to avoid conflicting with an internal flag
+    # named --version.  Note that due to argparse auto-expansion of unambiguous
+    # flag prefixes, you can still invoke this as `tensorboard --version`.
+    parser.add_argument(
+        '--version_tb',
+        action='store_true',
+        help='Prints the version of Tensorboard')
 
     parser.add_argument(
         '--tag',
@@ -403,9 +474,9 @@ present and --logdir is not specified.\
 An optional, relative prefix to the path, e.g. "/path/to/tensorboard".
 resulting in the new base url being located at
 localhost:6006/path/to/tensorboard under default settings. A leading
-slash is required when specifying the path_prefix, however trailing
-slashes can be omitted. The path_prefix can be leveraged for path based
-routing of an elb when the website base_url is not available e.g.
+slash is required when specifying the path_prefix. A trailing slash is
+optional and has no effect. The path_prefix can be leveraged for path
+based routing of an ELB when the website base_url is not available e.g.
 "example.site.com/path/to/tensorboard/".\
 ''')
 
@@ -428,6 +499,17 @@ relevant for db read-only mode. Each thread reloads one run at a time.
 ''')
 
     parser.add_argument(
+        '--reload_interval',
+        metavar='SECONDS',
+        type=float,
+        default=5.0,
+        help='''\
+How often the backend should load more data, in seconds. Set to 0 to
+load just once at startup and a negative number to never reload at all.
+Not relevant for DB read-only mode. (default: %(default)s)\
+''')
+
+    parser.add_argument(
         '--reload_task',
         metavar='TYPE',
         type=str,
@@ -439,6 +521,51 @@ The default "auto" option will conditionally use threads for legacy reloading
 and a child process for DB import reloading. The "process" option is only
 useful with DB import mode. The "blocking" option will block startup until
 reload finishes, and requires --load_interval=0. (default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile',
+        metavar='BOOL',
+        # Custom str-to-bool converter since regular bool() doesn't work.
+        type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
+        choices=[True, False],
+        default=False,
+        help='''\
+[experimental] If true, this enables experimental support for continuously
+polling multiple event files in each run directory for newly appended data
+(rather than only polling the last event file). Event files will only be
+polled as long as their most recently read data is newer than the threshold
+defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
+of running out of memory if the logdir contains many active event files.
+(default: %(default)s)\
+''')
+
+    parser.add_argument(
+        '--reload_multifile_inactive_secs',
+        metavar='SECONDS',
+        type=int,
+        default=4000,
+        help='''\
+[experimental] Configures the age threshold in seconds at which an event file
+that has no event wall time more recent than that will be considered an
+inactive file and no longer polled (to limit resource usage). If set to -1,
+no maximum age will be enforced, but beware of running out of memory and
+heavier filesystem read traffic. If set to 0, this reverts to the older
+last-file-only polling strategy (akin to --reload_multifile=false).
+(default: %(default)s - intended to ensure an event file remains active if
+it receives new data at least once per hour)\
+''')
+
+    parser.add_argument(
+        '--generic_data',
+        metavar='TYPE',
+        type=str,
+        default='auto',
+        choices=['false', 'auto', 'true'],
+        help='''\
+[experimental] Whether to use generic data provider infrastructure. The
+"auto" option enables this only for dashboards that are considered
+stable under the new codepaths. (default: %(default)s)\
 ''')
 
     parser.add_argument(
@@ -459,20 +586,31 @@ flag.\
   def fix_flags(self, flags):
     """Fixes standard TensorBoard CLI flags to parser."""
     FlagsError = base_plugin.FlagsError
-    if flags.inspect:
+    if flags.version_tb:
+      pass
+    elif flags.inspect:
+      if flags.logdir_spec:
+        raise FlagsError('--logdir_spec is not supported with --inspect.')
       if flags.logdir and flags.event_file:
         raise FlagsError(
             'Must specify either --logdir or --event_file, but not both.')
       if not (flags.logdir or flags.event_file):
         raise FlagsError('Must specify either --logdir or --event_file.')
-    elif not flags.db and not flags.logdir:
+    elif flags.logdir and flags.logdir_spec:
+      raise FlagsError(
+          'May not specify both --logdir and --logdir_spec')
+    elif not flags.db and not flags.logdir and not flags.logdir_spec:
       raise FlagsError('A logdir or db must be specified. '
                        'For example `tensorboard --logdir mylogdir` '
                        'or `tensorboard --db sqlite:~/.tensorboard.db`. '
                        'Run `tensorboard --helpfull` for details and examples.')
+    elif flags.host is not None and flags.bind_all:
+      raise FlagsError('Must not specify both --host and --bind_all.')
 
-    if flags.path_prefix.endswith('/'):
-      flags.path_prefix = flags.path_prefix[:-1]
+    flags.path_prefix = flags.path_prefix.rstrip('/')
+    if flags.path_prefix and not flags.path_prefix.startswith('/'):
+      raise FlagsError(
+          'Path prefix must start with slash, but got: %r.' % flags.path_prefix)
 
   def load(self, context):
     """Creates CorePlugin instance."""

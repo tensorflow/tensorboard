@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2017 The TensorFlow Authors. All Rights Reserved.
@@ -15,9 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-<link rel="import" href="../tf-graph-debugger-data-card.html">
-<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../tf-imports/polymer.html" />
+<link rel="import" href="../tf-graph-debugger-data-card.html" />
+<link rel="import" href="../../iron-demo-helpers/demo-snippet.html" />
 <title>TF Graph Info Demo</title>
 <style>
   #demo-container {
@@ -28,7 +28,7 @@ limitations under the License.
 </style>
 <demo-snippet>
   <template>
-    <div id='demo-container'>
+    <div id="demo-container">
       <!-- This simple demo starts up a page with a health pill legend. -->
       <tf-graph-debugger-data-card></tf-graph-debugger-data-card>
     </div>

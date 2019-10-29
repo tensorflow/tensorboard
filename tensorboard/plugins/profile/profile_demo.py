@@ -89,6 +89,9 @@ def dump_data(logdir):
           'tensorboard/plugins/profile/profile_demo.memory_viewer.json',
           os.path.join(run_dir, 'memory_viewer.json'))
       shutil.copyfile(
+          'tensorboard/plugins/profile/profile_demo.pod_viewer.json',
+          os.path.join(run_dir, 'pod_viewer.json'))
+      shutil.copyfile(
           'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
           os.path.join(run_dir, 'google_chart_demo.json'))
 

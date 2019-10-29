@@ -13,48 +13,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
+  /**
+   * A query parameter value can either be a string or a list of strings.
+   * A string `"foo"` is encoded as `key=foo`; a list `["foo", "bar"]` is
+   * encoded as `key=foo&key=bar`.
+   */
+  export type QueryValue = string | string[];
 
-/**
- * A query parameter value can either be a string or a list of strings.
- * A string `"foo"` is encoded as `key=foo`; a list `["foo", "bar"]` is
- * encoded as `key=foo&key=bar`.
- */
-export type QueryValue = string | string[];
+  export type QueryParams = {[key: string]: QueryValue};
 
-export type QueryParams = {[key: string]: QueryValue};
-
-/**
- * Add query parameters to a URL. Values will be URL-encoded. The URL
- * may or may not already have query parameters. For convenience,
- * parameters whose value is `undefined` will be dropped.
- *
- * For example, the following expressions are equivalent:
- *
- *     addParams("http://foo", {a: "1", b: ["2", "3+4"], c: "5"})
- *     addParams("http://foo?a=1", {b: ["2", "3+4"], c: "5", d: undefined})
- *     "http://foo?a=1&b=2&b=3%2B4&c=5"
- *
- * @deprecated If used with `router.pluginRoute`, please use the queryParams
- * argument.
- */
-export function addParams(baseURL: string, params: QueryParams): string {
-  const keys = Object.keys(params).sort().filter(k => params[k] !== undefined);
-  if (!keys.length) {
-    return baseURL;  // no need to change '/foo' to '/foo?'
+  /**
+   * Add query parameters to a URL. Values will be URL-encoded. The URL
+   * may or may not already have query parameters. For convenience,
+   * parameters whose value is `undefined` will be dropped.
+   *
+   * For example, the following expressions are equivalent:
+   *
+   *     addParams("http://foo", {a: "1", b: ["2", "3+4"], c: "5"})
+   *     addParams("http://foo?a=1", {b: ["2", "3+4"], c: "5", d: undefined})
+   *     "http://foo?a=1&b=2&b=3%2B4&c=5"
+   *
+   * @deprecated If used with `router.pluginRoute`, please use the queryParams
+   * argument.
+   */
+  export function addParams(baseURL: string, params: QueryParams): string {
+    const keys = Object.keys(params)
+      .sort()
+      .filter((k) => params[k] !== undefined);
+    if (!keys.length) {
+      return baseURL; // no need to change '/foo' to '/foo?'
+    }
+    const delimiter = baseURL.indexOf('?') !== -1 ? '&' : '?';
+    const parts = [].concat(
+      ...keys.map((key) => {
+        const rawValue = params[key];
+        const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+        return values.map((value) => `${key}=${_encodeURIComponent(value)}`);
+      })
+    );
+    const query = parts.join('&');
+    return baseURL + delimiter + query;
   }
-  const delimiter = baseURL.indexOf('?') !== -1 ? '&' : '?';
-  const parts = [].concat(...keys.map(key => {
-    const rawValue = params[key];
-    const values = Array.isArray(rawValue) ? rawValue : [rawValue];
-    return values.map(value => `${key}=${_encodeURIComponent(value)}`);
-  }));
-  const query = parts.join('&');
-  return baseURL + delimiter + query;
-}
 
-function _encodeURIComponent(x: string): string {
-  // Replace parentheses for consistency with Python's urllib.urlencode.
-  return encodeURIComponent(x).replace(/\(/g, '%28').replace(/\)/g, '%29');
-}
-
-}  // namespace tf_backend
+  function _encodeURIComponent(x: string): string {
+    // Replace parentheses for consistency with Python's urllib.urlencode.
+    return encodeURIComponent(x)
+      .replace(/\(/g, '%28')
+      .replace(/\)/g, '%29');
+  }
+} // namespace tf_backend

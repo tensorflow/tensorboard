@@ -27,6 +27,7 @@ import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.image import metadata
 from tensorboard.plugins.image import summary
 
@@ -161,7 +162,7 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     args = list(args)
     # Force first argument to tf.uint8 since the V1 version requires this.
     args[1] = tf.cast(tf.constant(args[1]), tf.uint8)
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     data = np.array(1, np.uint8, ndmin=4)

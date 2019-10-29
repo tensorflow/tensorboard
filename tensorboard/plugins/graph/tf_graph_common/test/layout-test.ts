@@ -16,8 +16,9 @@ limitations under the License.
 describe('layout', () => {
   let assert = chai.assert;
 
-  it('dagre exists', () => { assert.isTrue(dagre != null); });
+  it('dagre exists', () => {
+    assert.isTrue(dagre != null);
+  });
 
   // TODO: write tests.
-
 });

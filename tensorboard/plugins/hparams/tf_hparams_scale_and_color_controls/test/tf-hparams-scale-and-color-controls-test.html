@@ -15,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <meta charset="utf-8" />
+    <link rel="import" href="../../tf-imports/polymer.html" />
     <script src="../../web-component-tester/browser.js"></script>
-    <link rel="import" href="../tf-hparams-scale-and-color-controls.html">
+    <link rel="import" href="../tf-hparams-scale-and-color-controls.html" />
   </head>
   <body>
     <test-fixture id="f">
@@ -32,349 +32,357 @@ limitations under the License.
     </test-fixture>
     <script>
       chai.config.truncateThreshold = 0;
-      suite("<tf-hparams-scale-and-color-controls>-tests", function() {
+      suite('<tf-hparams-scale-and-color-controls>-tests', function() {
         var element;
 
         setup(function() {
-          element = fixture("f");
-          element.set("schema", {
-            "hparamInfos": [
-              {
-                "domainDiscrete": [
-                  270,
-                  320,
-                  370,
-                  420,
-                  470
-                ],
-                "description": "",
-                "displayName": "Initial Temperature",
-                "type": "DATA_TYPE_FLOAT64",
-                "name": "initial_temperature"
-              },
-              {
-                "domainDiscrete": [
-                  270,
-                  320,
-                  370,
-                  420,
-                  470
-                ],
-                "description": "",
-                "displayName": "Ambient Temperature",
-                "type": "DATA_TYPE_FLOAT64",
-                "name": "ambient_temperature"
-              },
-              {
-                "domainDiscrete": [
-                  "water",
-                  "air"
-                ],
-                "description": "",
-                "displayName": "Material",
-                "type": "DATA_TYPE_STRING",
-                "name": "material"
-              }
-            ],
-            "metricInfos": [
-              {
-                "displayName": "Current Temp.",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "current"
-                }
-              },
-              {
-                "displayName": "Difference To Ambient Temp.",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "difference_to_ambient"
-                }
-              },
-              {
-                "displayName": "Delta T",
-                "datasetType": "DATASET_UNKNOWN",
-                "description": "",
-                "name": {
-                  "group": "",
-                  "tag": "delta"
-                }
-              }
-            ]
-          });
-          element.set("sessionGroups", [
+          element = fixture('f');
+          const configuration = {
+            visibleSchema: {
+              hparamInfos: [
+                {
+                  domainDiscrete: [270, 320, 370, 420, 470],
+                  description: '',
+                  displayName: 'Initial Temperature',
+                  type: 'DATA_TYPE_FLOAT64',
+                  name: 'initial_temperature',
+                },
+                {
+                  domainDiscrete: [270, 320, 370, 420, 470],
+                  description: '',
+                  displayName: 'Ambient Temperature',
+                  type: 'DATA_TYPE_FLOAT64',
+                  name: 'ambient_temperature',
+                },
+                {
+                  domainDiscrete: ['water', 'air'],
+                  description: '',
+                  displayName: 'Material',
+                  type: 'DATA_TYPE_STRING',
+                  name: 'material',
+                },
+              ],
+              metricInfos: [
+                {
+                  displayName: 'Current Temp.',
+                  datasetType: 'DATASET_UNKNOWN',
+                  description: '',
+                  name: {
+                    group: '',
+                    tag: 'current',
+                  },
+                },
+                {
+                  displayName: 'Difference To Ambient Temp.',
+                  datasetType: 'DATASET_UNKNOWN',
+                  description: '',
+                  name: {
+                    group: '',
+                    tag: 'difference_to_ambient',
+                  },
+                },
+                {
+                  displayName: 'Delta T',
+                  datasetType: 'DATASET_UNKNOWN',
+                  description: '',
+                  name: {
+                    group: '',
+                    tag: 'delta',
+                  },
+                },
+              ],
+            },
+          };
+          configuration.schema = {
+            hparamColumns: configuration.visibleSchema.hparamInfos.map(
+              (hparam) => ({hparamInfo: hparam})
+            ),
+            metricColumns: configuration.visibleSchema.metricInfos.map(
+              (metric) => ({metricInfo: metric})
+            ),
+          };
+          element.set('configuration', configuration);
+          element.set('sessionGroups', [
             {
-              "sessions": [],
-              "monitorUrl": "",
-              "name": "01f1573a8797f787c27002d25196ab3d",
-              "hparams": {
-                "ambient_temperature": 320.0,
-                "material": "water",
-                "initial_temperature": 470.0
+              sessions: [],
+              monitorUrl: '',
+              name: '01f1573a8797f787c27002d25196ab3d',
+              hparams: {
+                ambient_temperature: 320.0,
+                material: 'water',
+                initial_temperature: 470.0,
               },
-              "metricValues": [
+              metricValues: [
                 {
-                  "value": 454.7442626953125,
-                  "name": {
-                    "group": "",
-                    "tag": "current"
+                  value: 454.7442626953125,
+                  name: {
+                    group: '',
+                    tag: 'current',
                   },
-                  "wallTimeSecs": 1531199518.120638,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199518.120638,
+                  trainingStep: 99,
                 },
                 {
-                  "value": 134.7442626953125,
-                  "name": {
-                    "group": "",
-                    "tag": "difference_to_ambient"
+                  value: 134.7442626953125,
+                  name: {
+                    group: '',
+                    tag: 'difference_to_ambient',
                   },
-                  "wallTimeSecs": 1531199518.120638,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199518.120638,
+                  trainingStep: 99,
                 },
                 {
-                  "value": -0.18814003467559814,
-                  "name": {
-                    "group": "",
-                    "tag": "delta"
+                  value: -0.18814003467559814,
+                  name: {
+                    group: '',
+                    tag: 'delta',
                   },
-                  "wallTimeSecs": 1531199518.120638,
-                  "trainingStep": 99
-                }
-              ]
+                  wallTimeSecs: 1531199518.120638,
+                  trainingStep: 99,
+                },
+              ],
             },
             {
-              "sessions": [],
-              "monitorUrl": "",
-              "name": "1642127edd1c4653872d126804902f46",
-              "hparams": {
-                "ambient_temperature": 270.0,
-                "material": "water",
-                "initial_temperature": 420.0
+              sessions: [],
+              monitorUrl: '',
+              name: '1642127edd1c4653872d126804902f46',
+              hparams: {
+                ambient_temperature: 270.0,
+                material: 'water',
+                initial_temperature: 420.0,
               },
-              "metricValues": [
+              metricValues: [
                 {
-                  "value": 404.7442626953125,
-                  "name": {
-                    "group": "",
-                    "tag": "current"
+                  value: 404.7442626953125,
+                  name: {
+                    group: '',
+                    tag: 'current',
                   },
-                  "wallTimeSecs": 1531199514.2617297,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199514.2617297,
+                  trainingStep: 99,
                 },
                 {
-                  "value": 134.7442626953125,
-                  "name": {
-                    "group": "",
-                    "tag": "difference_to_ambient"
+                  value: 134.7442626953125,
+                  name: {
+                    group: '',
+                    tag: 'difference_to_ambient',
                   },
-                  "wallTimeSecs": 1531199514.2617297,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199514.2617297,
+                  trainingStep: 99,
                 },
                 {
-                  "value": -0.18814003467559814,
-                  "name": {
-                    "group": "",
-                    "tag": "delta"
+                  value: -0.18814003467559814,
+                  name: {
+                    group: '',
+                    tag: 'delta',
                   },
-                  "wallTimeSecs": 1531199514.2617297,
-                  "trainingStep": 99
-                }
-              ]
+                  wallTimeSecs: 1531199514.2617297,
+                  trainingStep: 99,
+                },
+              ],
             },
             {
-              "sessions": [],
-              "monitorUrl": "",
-              "name": "236c88155ea3dd1c4f4fc6cd37f7a7c0",
-              "hparams": {
-                "ambient_temperature": 420.0,
-                "material": "water",
-                "initial_temperature": 470.0
+              sessions: [],
+              monitorUrl: '',
+              name: '236c88155ea3dd1c4f4fc6cd37f7a7c0',
+              hparams: {
+                ambient_temperature: 420.0,
+                material: 'water',
+                initial_temperature: 470.0,
               },
-              "metricValues": [
+              metricValues: [
                 {
-                  "value": 464.1745910644531,
-                  "name": {
-                    "group": "",
-                    "tag": "current"
+                  value: 464.1745910644531,
+                  name: {
+                    group: '',
+                    tag: 'current',
                   },
-                  "wallTimeSecs": 1531199519.732843,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199519.732843,
+                  trainingStep: 99,
                 },
                 {
-                  "value": 44.174591064453125,
-                  "name": {
-                    "group": "",
-                    "tag": "difference_to_ambient"
+                  value: 44.174591064453125,
+                  name: {
+                    group: '',
+                    tag: 'difference_to_ambient',
                   },
-                  "wallTimeSecs": 1531199519.732843,
-                  "trainingStep": 99
+                  wallTimeSecs: 1531199519.732843,
+                  trainingStep: 99,
                 },
                 {
-                  "value": +0.09757035970687866,
-                  "name": {
-                    "group": "",
-                    "tag": "delta"
+                  value: +0.09757035970687866,
+                  name: {
+                    group: '',
+                    tag: 'delta',
                   },
-                  "wallTimeSecs": 1531199519.732843,
-                  "trainingStep": 99
-                }
-              ]
-            }]);
+                  wallTimeSecs: 1531199519.732843,
+                  trainingStep: 99,
+                },
+              ],
+            },
+          ]);
         });
 
-        teardown(function() {
-        });
+        teardown(function() {});
 
-        test("element has correct shadow DOM", function(done) {
+        test('element has correct shadow DOM', function(done) {
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
-          flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
-            assert.deepEqual(
-                column_titles,
-                ["Initial Temperature",
-                 "Ambient Temperature",
-                 "Current Temp.",
-                 "Difference To Ambient Temp.",
-                 "Delta T"]);
+          flush(() => {
+            const columnTitles = getColumnTitles();
+            assert.deepEqual(columnTitles, [
+              'Initial Temperature',
+              'Ambient Temperature',
+              'Current Temp.',
+              'Difference To Ambient Temp.',
+              'Delta T',
+            ]);
             done();
           });
         });
 
-        test("removal of last metric updates shadow DOM", function(done) {
-          element.pop("schema.metricInfos"); // remove 'Delta T'
-          flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
-            assert.deepEqual(
-                column_titles,
-                ["Initial Temperature",
-                 "Ambient Temperature",
-                 "Current Temp.",
-                 "Difference To Ambient Temp."
-                ]);
+        test('removal of last metric updates shadow DOM', function(done) {
+          // remove 'Delta T'
+          element.pop('configuration.visibleSchema.metricInfos');
+          flush(() => {
+            const columnTitles = getColumnTitles();
+            assert.deepEqual(columnTitles, [
+              'Initial Temperature',
+              'Ambient Temperature',
+              'Current Temp.',
+              'Difference To Ambient Temp.',
+            ]);
             done();
           });
         });
 
-        test("removal of first metric updates shadow DOM", function(done) {
-          element.shift("schema.metricInfos"); // remove 'Current Temp'
+        test('removal of first metric updates shadow DOM', function(done) {
+          // remove 'Current Temp'
+          element.shift('configuration.visibleSchema.metricInfos');
           // Flush is required here since Polymer updates the DOM
           // asynchronously.
-          flush(()=>{
-            const shadowRoot = Polymer.dom(element.root);
-            const column_titles = Polymer.dom(shadowRoot)
-                  .querySelectorAll(".column-title")
-                  .map(n=>n.textContent)
-                  .map(s=>s.replace(/^\s*/,"").replace(/\s*$/,""));
-            assert.deepEqual(
-                column_titles,
-                ["Initial Temperature",
-                 "Ambient Temperature",
-                 "Difference To Ambient Temp.",
-                 "Delta T",
-                ]);
+          flush(() => {
+            const columnTitles = getColumnTitles();
+            assert.deepEqual(columnTitles, [
+              'Initial Temperature',
+              'Ambient Temperature',
+              'Difference To Ambient Temp.',
+              'Delta T',
+            ]);
             done();
           });
         });
 
-        test("Selecting color-by-index updates options", function() {
-          assert.equal(element.options.colorByColumnIndex, 3 /* Current Temp */)
-          element.$.colorByListBox.set("selected", 0);
+        test('Selecting color-by-index updates options', function() {
+          assert.equal(
+            element.options.colorByColumnIndex,
+            3 /* Current Temp */
+          );
+          element.$.colorByListBox.set('selected', 0);
           assert.equal(element.options.colorByColumnIndex, 0);
         });
 
-        test("Selecting a scale updates options", function() {
-          const radioGroups = Polymer.dom(element.root)
-                .querySelectorAll(".scale-radio-group");
-          assert.equal(element.options.columns[0].scale, "LINEAR");
+        test('Selecting a scale updates options', function() {
+          const radioGroups = Polymer.dom(element.root).querySelectorAll(
+            '.scale-radio-group'
+          );
+          assert.equal(element.options.columns[0].scale, 'LINEAR');
           // "Initial Temperature" column
-          radioGroups[0].set("selected", "LOG");
+          radioGroups[0].set('selected', 'LOG');
           // "Delta T" column.
-          radioGroups[4].set("selected", "QUANTILE");
-          assert.equal(element.options.columns[0].scale, "LOG");
+          radioGroups[4].set('selected', 'QUANTILE');
+          assert.equal(element.options.columns[0].scale, 'LOG');
           // Material is a non-numeric column which does not have radio group.
-          assert.equal(element.options.columns[2].scale, "NON_NUMERIC");
-          assert.equal(element.options.columns[5].scale, "QUANTILE");
+          assert.equal(element.options.columns[2].scale, 'NON_NUMERIC');
+          assert.equal(element.options.columns[5].scale, 'QUANTILE');
         });
 
-        test("colorByColumnIndex has the right default", function() {
+        test('colorByColumnIndex has the right default', function() {
           // Hparams: ["Initial Temp", "Ambient Temp", "Material" (non-numeric)]
           // Metrics: ["Current Temp", "Difference To Ambient Temp.", "Delta T"]
-          assert.equal(element._defaultColorByColumnIndex(),
-                       3 /* Current Temp */);
+          assert.equal(
+            element._defaultColorByColumnIndex(),
+            3 /* Current Temp */
+          );
           // Hparams: ["Ambient Temp", "Material" (non-numeric)]
           // Metrics: ["Current Temp", "Difference To Ambient Temp.", "Delta T"]
-          element.splice("schema.hparamInfos", 0, 1);
-          assert.equal(element._defaultColorByColumnIndex(),
-                       2 /* Current Temp */);
+          element.splice('configuration.visibleSchema.hparamInfos', 0, 1);
+          assert.equal(
+            element._defaultColorByColumnIndex(),
+            2 /* Current Temp */
+          );
           // Hparams: ["Ambient Temp", "Material" (non-numeric)]
           // Metrics: []
-          element.set("schema.metricInfos", []);
-          assert.equal(element._defaultColorByColumnIndex(),
-                             0 /* Ambient Temperature */);
+          element.set('configuration.visibleSchema.metricInfos', []);
+          assert.equal(
+            element._defaultColorByColumnIndex(),
+            0 /* Ambient Temperature */
+          );
           // Hparams: ["Material" (non-numeric)]
           // Metrics: []
-          element.splice("schema.hparamInfos", 0, 1);
+          element.splice('configuration.visibleSchema.hparamInfos', 0, 1);
           assert.isUndefined(element._defaultColorByColumnIndex());
           // Hparams: []
           // Metrics: []
           assert.isUndefined(element._defaultColorByColumnIndex());
         });
 
-        test("logScaleIsDisabledAndEnabledCorrectly", function(done) {
+        test('logScaleIsDisabledAndEnabledCorrectly', function(done) {
           // The 'delta_t' metric has both positive and negative values
           // in the session groups, so it should have its log-scale disabled.
           // The 'difference_to_ambient_temp" metric has only negative values
           // so its log scale should be enabled.
-          flush(()=>{
+          flush(() => {
             assert.equal(
-                true,
-                Polymer.dom(element.root).querySelector(
-                    "[id='logScaleButton_Delta T'").disabled);
+              true,
+              Polymer.dom(element.root).querySelector(
+                "[id='logScaleButton_Delta T'"
+              ).disabled
+            );
             assert.equal(
-                false,
-                Polymer.dom(element.root).querySelector(
-                    "[id='logScaleButton_Difference To Ambient Temp.']")
-                  .disabled);
+              false,
+              Polymer.dom(element.root).querySelector(
+                "[id='logScaleButton_Difference To Ambient Temp.']"
+              ).disabled
+            );
             done();
           });
         });
 
-        test("disablingLogScaleChangesSelection", function(done) {
+        test('disablingLogScaleChangesSelection', function(done) {
           // The 'delta_t' metric has both positive and negative values
           // in the session groups, so it should have its log-scale disabled.
           // The other columns should be enabled.
-          const radioGroups = Polymer.dom(element.root)
-                .querySelectorAll(".scale-radio-group");
-          radioGroups[3 /* difference to ambient temp */]
-              .set("selected", "LOG");
-          radioGroups[2 /* current */]
-              .set("selected", "LOG");
+          const radioGroups = Polymer.dom(element.root).querySelectorAll(
+            '.scale-radio-group'
+          );
+          radioGroups[3 /* difference to ambient temp */].set(
+            'selected',
+            'LOG'
+          );
+          radioGroups[2 /* current */].set('selected', 'LOG');
           // Make the difference to ambient temp have both positive and negative
           // values.
-          element.set("sessionGroups.2.metricValues.1.value", -100);
-          element.set("sessionGroups.1.metricValues.1.value", 100);
-          flush(()=>{
-            assert.equal("LINEAR",
-                         radioGroups[3 /* difference to ambient temp */]
-                         .selected);
-            assert.equal("LOG",
-                         radioGroups[2 /* current */].selected);
+          element.set('sessionGroups.2.metricValues.1.value', -100);
+          element.set('sessionGroups.1.metricValues.1.value', 100);
+          flush(() => {
+            assert.equal(
+              'LINEAR',
+              radioGroups[3 /* difference to ambient temp */].selected
+            );
+            assert.equal('LOG', radioGroups[2 /* current */].selected);
             done();
           });
         });
+
+        function getColumnTitles() {
+          const columnTitlesNodes = Array.from(
+            element.root.querySelectorAll('.column-title')
+          );
+          return columnTitlesNodes
+            .map((n) => n.textContent)
+            .map((s) => s.replace(/^\s*/, '').replace(/\s*$/, ''));
+        }
       });
     </script>
   </body>

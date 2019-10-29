@@ -27,11 +27,11 @@ tensorboard_webcomponent_library(
     srcs = [":tf_hparams_parallel_coords_view"],
     destdir = "tf-hparams-parallel-coords-view",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_plot:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_scale_and_color_controls:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_details:legacy",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

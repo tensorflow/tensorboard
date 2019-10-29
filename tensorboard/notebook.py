@@ -20,9 +20,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import cgi
 import datetime
+import errno
+import json
+import random
 import shlex
 import sys
+import textwrap
+import time
 
 from tensorboard import manager
 
@@ -74,12 +80,24 @@ def _get_context():
 
 
 def load_ipython_extension(ipython):
-  """IPython API entry point.
+  """Deprecated: use `%load_ext tensorboard` instead.
 
-  Only intended to be called by the IPython runtime.
+  Raises:
+    RuntimeError: Always.
+  """
+  raise RuntimeError(
+      "Use '%load_ext tensorboard' instead of '%load_ext tensorboard.notebook'."
+  )
 
-  See:
-    https://ipython.readthedocs.io/en/stable/config/extensions/index.html
+
+def _load_ipython_extension(ipython):
+  """Load the TensorBoard notebook extension.
+
+  Intended to be called from `%load_ext tensorboard`. Do not invoke this
+  directly.
+
+  Args:
+    ipython: An `IPython.InteractiveShell` instance.
   """
   _register_magics(ipython)
 
@@ -178,6 +196,28 @@ def start(args_string):
     )
     print_or_update(message)
 
+  elif isinstance(start_result, manager.StartExecFailed):
+    the_tensorboard_binary = (
+        "%r (set by the `TENSORBOARD_BINARY` environment variable)"
+            % (start_result.explicit_binary,)
+        if start_result.explicit_binary is not None
+        else "`tensorboard`"
+    )
+    if start_result.os_error.errno == errno.ENOENT:
+      message = (
+          "ERROR: Could not find %s. Please ensure that your PATH contains "
+          "an executable `tensorboard` program, or explicitly specify the path "
+          "to a TensorBoard binary by setting the `TENSORBOARD_BINARY` "
+          "environment variable."
+          % (the_tensorboard_binary,)
+      )
+    else:
+      message = (
+          "ERROR: Failed to start %s: %s"
+          % (the_tensorboard_binary, start_result.os_error)
+      )
+    print_or_update(textwrap.fill(message))
+
   elif isinstance(start_result, manager.StartTimedOut):
     message = (
         "ERROR: Timed out waiting for TensorBoard to start. "
@@ -204,9 +244,8 @@ def _time_delta_from_info(info):
     A human-readable string describing the time since the server
     described by `info` started: e.g., "2 days, 0:48:58".
   """
-  now = datetime.datetime.now()
-  then = info.start_time
-  return str(now.replace(microsecond=0) - then.replace(microsecond=0))
+  delta_seconds = int(time.time()) - info.start_time
+  return str(datetime.timedelta(seconds=delta_seconds))
 
 
 def display(port=None, height=None):
@@ -300,70 +339,55 @@ def _display_colab(port, height, display_handle):
   """
   import IPython.display
   shell = """
-    <div id="root"></div>
-    <script>
-      (function() {
-        window.TENSORBOARD_ENV = window.TENSORBOARD_ENV || {};
-        window.TENSORBOARD_ENV["IN_COLAB"] = true;
-        document.querySelector("base").href = "https://localhost:%PORT%";
-        function fixUpTensorboard(root) {
-          const tftb = root.querySelector("tf-tensorboard");
-          // Disable the fragment manipulation behavior in Colab. Not
-          // only is the behavior not useful (as the iframe's location
-          // is not visible to the user), it causes TensorBoard's usage
-          // of `window.replace` to navigate away from the page and to
-          // the `localhost:<port>` URL specified by the base URI, which
-          // in turn causes the frame to (likely) crash.
-          tftb.removeAttribute("use-hash");
-        }
-        function executeAllScripts(root) {
-          // When `script` elements are inserted into the DOM by
-          // assigning to an element's `innerHTML`, the scripts are not
-          // executed. Thus, we manually re-insert these scripts so that
-          // TensorBoard can initialize itself.
-          for (const script of root.querySelectorAll("script")) {
-            const newScript = document.createElement("script");
-            newScript.type = script.type;
-            newScript.textContent = script.textContent;
-            root.appendChild(newScript);
-            script.remove();
-          }
-        }
-        function setHeight(root, height) {
-          // We set the height dynamically after the TensorBoard UI has
-          // been initialized. This avoids an intermediate state in
-          // which the container plus the UI become taller than the
-          // final width and cause the Colab output frame to be
-          // permanently resized, eventually leading to an empty
-          // vertical gap below the TensorBoard UI. It's not clear
-          // exactly what causes this problematic intermediate state,
-          // but setting the height late seems to fix it.
-          root.style.height = `${height}px`;
-        }
-        const root = document.getElementById("root");
-        fetch(".")
-          .then((x) => x.text())
-          .then((html) => void (root.innerHTML = html))
-          .then(() => fixUpTensorboard(root))
-          .then(() => executeAllScripts(root))
-          .then(() => setHeight(root, %HEIGHT%));
-      })();
-    </script>
-  """.replace("%PORT%", "%d" % port).replace("%HEIGHT%", "%d" % height)
-  html = IPython.display.HTML(shell)
+  (async () => {
+      const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.setAttribute('width', '100%');
+      iframe.setAttribute('height', '%HEIGHT%');
+      iframe.setAttribute('frameborder', 0);
+      document.body.appendChild(iframe);
+  })();
+  """
+  replacements = [
+      ("%PORT%", "%d" % port),
+      ("%HEIGHT%", "%d" % height),
+  ]
+  for (k, v) in replacements:
+    shell = shell.replace(k, v)
+  script = IPython.display.Javascript(shell)
+
   if display_handle:
-    display_handle.update(html)
+    display_handle.update(script)
   else:
-    IPython.display.display(html)
+    IPython.display.display(script)
 
 
 def _display_ipython(port, height, display_handle):
   import IPython.display
-  iframe = IPython.display.IFrame(
-      src="http://localhost:%d" % port,
-      height=height,
-      width="100%",
-  )
+
+  frame_id = "tensorboard-frame-{:08x}".format(random.getrandbits(64))
+  shell = """
+      <iframe id="%HTML_ID%" width="100%" height="%HEIGHT%" frameborder="0">
+      </iframe>
+      <script>
+        (function() {
+          const frame = document.getElementById(%JSON_ID%);
+          const url = new URL("/", window.location);
+          url.port = %PORT%;
+          frame.src = url;
+        })();
+      </script>
+  """
+  replacements = [
+      ("%HTML_ID%", cgi.escape(frame_id, quote=True)),
+      ("%JSON_ID%", json.dumps(frame_id)),
+      ("%PORT%", "%d" % port),
+      ("%HEIGHT%", "%d" % height),
+  ]
+  for (k, v) in replacements:
+    shell = shell.replace(k, v)
+  iframe = IPython.display.HTML(shell)
   if display_handle:
     display_handle.update(iframe)
   else:

@@ -27,12 +27,24 @@ limitations under the License.
      3. <tf-hparams-parallel-coords-view>
        The container element for the above 2 elements.
 -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls.html">
-<link rel="import" href="../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html">
-<link rel="import" href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html">
-<link rel="import" href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html">
-<link rel="import" href="../tf-imports/vaadin-split-layout.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link
+  rel="import"
+  href="../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls.html"
+/>
+<link
+  rel="import"
+  href="../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html"
+/>
+<link
+  rel="import"
+  href="../tf-hparams-session-group-details/tf-hparams-session-group-details.html"
+/>
+<link
+  rel="import"
+  href="../tf-hparams-session-group-values/tf-hparams-session-group-values.html"
+/>
+<link rel="import" href="../tf-imports/vaadin-split-layout.html" />
 
 <dom-module id="tf-hparams-parallel-coords-view">
   <template>
@@ -45,28 +57,30 @@ limitations under the License.
         <tf-hparams-scale-and-color-controls
           id="controls"
           class="section"
-          schema="[[schema]]"
+          configuration="[[configuration]]"
           session-groups="[[sessionGroups]]"
-          options="{{_options}}">
+          options="{{_options}}"
+        >
         </tf-hparams-scale-and-color-controls>
         <vaadin-split-layout vertical>
           <!-- The actual parallel coordinates plot -->
           <tf-hparams-parallel-coords-plot
             id="plot"
             class="section"
-            schema="[[schema]]"
             session-groups="[[sessionGroups]]"
             selected-session-group="{{_selectedGroup}}"
             closest-session-group="{{_closestGroup}}"
-            options="[[_options]]">
+            options="[[_options]]"
+          >
           </tf-hparams-parallel-coords-plot>
           <vaadin-split-layout vertical>
             <tf-hparams-session-group-values
               id="values"
               class="section"
-              schema="[[schema]]"
+              visible-schema="[[configuration.visibleSchema]]"
               session-group="[[_closestOrSelected(
-                             _closestGroup, _selectedGroup)]]">
+                             _closestGroup, _selectedGroup)]]"
+            >
             </tf-hparams-session-group-values>
             <tf-hparams-session-group-details
               id="details"
@@ -74,58 +88,59 @@ limitations under the License.
               backend="[[backend]]"
               experiment-name="[[experimentName]]"
               session-group="[[_selectedGroup]]"
-              schema="[[schema]]">
+              visible-schema="[[configuration.visibleSchema]]"
+            >
             </tf-hparams-session-group-details>
           </vaadin-split-layout>
         </vaadin-split-layout>
       </vaadin-split-layout>
     </div>
-  </template>
 
-  <style>
-    .pane {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-    .section {
-      margin: 10px;
-    }
-    #controls {
-      flex-grow: 0;
-      flex-shrink: 0;
-      flex-basis: auto;
-      height: auto;
-      overflow-y:auto;
-      max-height: fit-content;
-    }
-    #plot {
-      flex-grow: 1;
-      flex-shrink: 1;
-      flex-basis: auto;
-      height: 100%;
-      overflow-y:auto;
-    }
-    #values {
-      flex-grow: 0;
-      flex-shrink: 0;
-      flex-basis: auto;
-      height: 95px;
-      overflow-y:auto;
-      max-height: fit-content;
-    }
-    #details {
-      flex-grow: 0;
-      flex-shrink: 1;
-      flex-basis: auto;
-      height: auto;
-      overflow-y: auto;
-      max-height: fit-content;
-    }
-    vaadin-split-layout {
-      height: 100%;
-    }
-  </style>
+    <style>
+      .pane {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .section {
+        margin: 10px;
+      }
+      #controls {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        height: auto;
+        overflow-y: auto;
+        max-height: fit-content;
+      }
+      #plot {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: auto;
+        height: 100%;
+        overflow-y: auto;
+      }
+      #values {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        height: 95px;
+        overflow-y: auto;
+        max-height: fit-content;
+      }
+      #details {
+        flex-grow: 0;
+        flex-shrink: 1;
+        flex-basis: auto;
+        height: auto;
+        overflow-y: auto;
+        max-height: fit-content;
+      }
+      vaadin-split-layout {
+        height: 100%;
+      }
+    </style>
+  </template>
 
   <script>
     'use strict';
@@ -138,7 +153,7 @@ limitations under the License.
         // See the property description in tf-hparams-query-pane.html
         experimentName: String,
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
+        configuration: Object,
         // See the property description in tf-hparams-query-pane.html
         sessionGroups: Array,
       },
@@ -148,7 +163,7 @@ limitations under the License.
           return closestSessionGroup;
         }
         return selectedSessionGroup;
-      }
+      },
     });
   </script>
 </dom-module>

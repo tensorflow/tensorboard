@@ -15,11 +15,11 @@ You may obtain a copy of the License at
     limitations under the License.
 -->
 
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="tf-op-table.html">
-<link rel="import" href="tf-op-details.html">
-<link rel="import" href="utils.html">
+<link rel="import" href="../paper-slider/paper-slider.html" />
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html" />
+<link rel="import" href="tf-op-table.html" />
+<link rel="import" href="tf-op-details.html" />
+<link rel="import" href="utils.html" />
 
 <!--
   tf-op-profile is a view within the tf-profile-dashboard.
@@ -31,143 +31,200 @@ You may obtain a copy of the License at
 <dom-module id="tf-op-profile">
   <template>
     <style>
-:host {
-  display: block;
-  margin-right: 1.5em;
-}
-#control {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  overflow:auto;
-  text-transform:uppercase;
-  padding: 0.5em;
-  vertical-align: bottom;
-  text-align: bottom;
-}
-.controlRowLeft {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  line-height: 50px;
-  text-align: bottom;
-  justify-content: flex-start;
-}
-.controlRowRight{
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  line-height: 50px;
-  text-align: bottom;
-  justify-content: flex-end;
-}
-paper-slider {
-  --paper-slider-input: {width: 100px}
-  --paper-slider-height: 3px;
-}
-#description {
-  margin-bottom: 2em;
-  width: 600px;
-}
+      :host {
+        display: block;
+        margin-right: 1.5em;
+      }
+      #control {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        overflow: auto;
+        text-transform: uppercase;
+        padding: 0.5em;
+        vertical-align: bottom;
+        text-align: bottom;
+      }
+      .controlRowLeft {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        line-height: 50px;
+        text-align: bottom;
+        justify-content: flex-start;
+      }
+      .controlRowRight {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        line-height: 50px;
+        text-align: bottom;
+        justify-content: flex-end;
+      }
+      paper-slider {
+        --paper-slider-input: {
+          width: 100px;
+        }
+        --paper-slider-height: 3px;
+      }
+      #description {
+        margin-bottom: 2em;
+        width: 600px;
+      }
+      [hidden] {
+        display: none;
+      }
     </style>
     <div class="tf-op-profile">
-      <h4>Overall TPU FLOPS utilization is
-        <span style$="color:[[_textColor(_root)]]">
-          [[_utilizationPercent(_root)]]</span>
-      </h4>
+      <h3>
+        Overall TPU FLOPS utilization is
+        <span style$="color:[[_flopsColor(_root)]]">
+          [[_utilizationPercent(_root)]]</span
+        >
+        , memory bandwidth utilization is
+        <span style$="color:[[_bwColor(_root)]]">
+          [[_memoryUtilizationPercent(_root)]]</span
+        >
+      </h3>
       <div id="description">
-        <p>Modifying your model's architecture, data dimensions, and improving
-        the efficiency of CPU operations may help reach the TPU's FLOPS
-        potential.
+        <p>
+          Modifying your model's architecture, data dimensions, and improving
+          the efficiency of CPU operations may help reach the TPU's FLOPS
+          potential.
         </p>
-        <p>"Idle" represents the portion of the total execution time on device
-        that is idle.</p>
+        <p>
+          "Idle" represents the portion of the total execution time on device
+          that is idle. Wasted time is defined by
+          <code
+            >RuntimeFraction * (1 - max(FlopsUtilization,
+            MemoryUtilization))</code
+          >.
+        </p>
       </div>
       <div id="control">
-        <span class="controlRowLeft" hidden="[[!_hasTwoProfiles]]">By Program
-          <paper-toggle-button checked={{isByCategory}}>
-          </paper-toggle-button>By Category</span>
+        <span class="controlRowLeft" hidden$="[[!_hasTwoProfiles]]"
+          >By Program
+          <paper-toggle-button checked="{{isByCategory}}"> </paper-toggle-button
+          >By Category</span
+        >
         <!--
           paper-slider sets how many child nodes to show for each category.
-          If paper-toggle-button is checked, then only children in top 90th
-          percentile of time spent are listed.
+          If P90 paper-toggle-button is checked, then only children in top 90th
+          percentile of time spent are listed. If byWaste paper-toggle-button is
+          checked, then the children by be sorted by wasted time, that is
+          defined by the following equation:
+          RuntimeFraction * (1 - max(FlopsUtilization, MemoryUtilization)).
         -->
-        <span class="controlRowLeft">Show top
-          <paper-slider min="10" max="100" snaps step="10"
-              value="{{childrenCount}}" editable>
-          </paper-slider>ops</span>
-        <span class="controlRowRight">off&nbsp;
-          <paper-toggle-button checked={{showP90}}>
-          </paper-toggle-button>Top 90%</span>
+        <span class="controlRowLeft"
+          >Show top
+          <paper-slider
+            min="10"
+            max="100"
+            snaps
+            step="10"
+            value="{{childrenCount}}"
+            editable
+          >
+          </paper-slider
+          >ops</span
+        >
+        <span class="controlRowRight"
+          >&nbsp;
+          <paper-toggle-button checked="{{byWaste}}"> </paper-toggle-button>Sort
+          by wasted time</span
+        >
+        <span class="controlRowRight"
+          >off&nbsp;
+          <paper-toggle-button checked="{{showP90}}"> </paper-toggle-button>Top
+          90%</span
+        >
       </div>
-      <tf-op-table root-node="[[_root]]" active={{active}}
-                   show-p90="{{showP90}}" children-count="{{childrenCount}}">
+      <tf-op-table
+        root-node="[[_root]]"
+        active="{{active}}"
+        by-waste="{{byWaste}}"
+        show-p90="{{showP90}}"
+        children-count="{{childrenCount}}"
+      >
       </tf-op-table>
     </div>
   </template>
 
   <script>
-Polymer({
-  is: 'tf-op-profile',
-  properties: {
-    _data: {
-      type: Object,
-      notify: true,
-    },
-    _root: {
-      type: Object,
-      notify: true,
-    },
-    active: {
-      type: Object,
-      notify: true,
-      value: null,
-    },
-    _hasTwoProfiles: {
-      type: Boolean,
-      computed: '_checkProfiles(_data)',
-      notify: true,
-    },
-    isByCategory: {
-      type: Boolean,
-      value: false,
-      notify: true,
-    },
-    showP90: {
-      type: Boolean,
-      value: false,
-      notify: true,
-    },
-    childrenCount: {
-      type: Number,
-      value: 10,
-      notify: true,
-    },
-  },
-  observers: [
-    '_getRoot(_data, isByCategory)',
-  ],
-  _load: function(run) {
-    this._data = run;
-  },
-  _getRoot: function(data, isByCategory) {
-    if (!this._hasTwoProfiles) {
-      this._root = data['byCategory'] || data['byProgram'];
-    } else if (isByCategory) {
-      this._root = data['byCategory'];
-    } else {
-      this._root = data['byProgram'];
-    }
-  },
-  // Returns true if we have both byProgram and byCategory.
-  _checkProfiles: function(data) {
-    return data['byProgram'] != null && data['byCategory'] != null;
-  },
-  _utilizationPercent: function(node) {
-      return tf_op_profile.percent(tf_op_profile.utilization(node)); },
-  _hasFlops: function(node) { return node.metrics.flops > 0; },
-  _textColor: function(node) {
-      return tf_op_profile.flameColor(tf_op_profile.utilization(node), 0.7); },
-});
+    Polymer({
+      is: 'tf-op-profile',
+      properties: {
+        _data: {
+          type: Object,
+          notify: true,
+        },
+        _root: {
+          type: Object,
+          notify: true,
+        },
+        active: {
+          type: Object,
+          notify: true,
+          value: null,
+        },
+        _hasTwoProfiles: {
+          type: Boolean,
+          computed: '_checkProfiles(_data)',
+          notify: true,
+        },
+        isByCategory: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+        showP90: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+        byWaste: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+        childrenCount: {
+          type: Number,
+          value: 10,
+          notify: true,
+        },
+      },
+      observers: ['_getRoot(_data, isByCategory)'],
+      _load: function(run) {
+        this._data = run;
+      },
+      _getRoot: function(data, isByCategory) {
+        if (!this._hasTwoProfiles) {
+          this._root = data['byCategory'] || data['byProgram'];
+        } else if (isByCategory) {
+          this._root = data['byCategory'];
+        } else {
+          this._root = data['byProgram'];
+        }
+      },
+      // Returns true if we have both byProgram and byCategory.
+      _checkProfiles: function(data) {
+        return data['byProgram'] != null && data['byCategory'] != null;
+      },
+      _utilizationPercent: function(node) {
+        return tf_op_profile.percent(tf_op_profile.utilization(node));
+      },
+      _memoryUtilizationPercent: function(node) {
+        return tf_op_profile.percent(tf_op_profile.memoryUtilization(node));
+      },
+      _hasFlops: function(node) {
+        return node.metrics.flops > 0;
+      },
+      _flopsColor: function(node) {
+        return tf_op_profile.flopsColor(tf_op_profile.utilization(node));
+      },
+      _bwColor: function(node) {
+        return tf_op_profile.bwColor(tf_op_profile.memoryUtilization(node));
+      },
+    });
   </script>
 </dom-module>

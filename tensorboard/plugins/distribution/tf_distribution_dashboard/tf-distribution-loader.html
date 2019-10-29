@@ -15,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html">
-<link rel="import" href="../vz-distribution-chart/vz-distribution-chart.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html" />
+<link rel="import" href="../vz-distribution-chart/vz-distribution-chart.html" />
 
 <!--
   tf-distribution-loader loads an individual distribution from the
@@ -61,7 +61,7 @@ limitations under the License.
         margin-right: 10px;
         margin-bottom: 15px;
       }
-      :host[_expanded] {
+      :host([_expanded]) {
         width: 700px;
         height: 500px;
       }
@@ -72,7 +72,7 @@ limitations under the License.
       }
 
       paper-icon-button {
-        color: #2196F3;
+        color: #2196f3;
         border-radius: 100%;
         width: 32px;
         height: 32px;
@@ -88,9 +88,8 @@ limitations under the License.
     </style>
   </template>
   <script>
-
     Polymer({
-      is: "tf-distribution-loader",
+      is: 'tf-distribution-loader',
       properties: {
         run: String,
         tag: String,
@@ -111,15 +110,16 @@ limitations under the License.
           value: () => ({tag, run}) => {
             const router = tf_backend.getRouter();
             return tf_backend.addParams(
-                router.pluginRoute('distributions', '/distributions'),
-                {tag, run});
+              router.pluginRoute('distributions', '/distributions'),
+              {tag, run}
+            );
           },
         },
         loadDataCallback: {
           type: Function,
           value: function() {
             return (_, datum, backendData) => {
-              const data = backendData.map(datum => {
+              const data = backendData.map((datum) => {
                 // `vz-distribution-chart` wants each datum as an array with
                 // extra `wall_time` and `step` properties.
                 const [wall_time, step, bins] = datum;
@@ -145,7 +145,7 @@ limitations under the License.
         _expanded: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,  // for CSS
+          reflectToAttribute: true, // for CSS
         },
 
         requestManager: Object,

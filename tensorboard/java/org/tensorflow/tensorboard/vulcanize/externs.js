@@ -22,6 +22,7 @@
 /** @type {!Object} */ var dagre;
 /** @type {!Object} */ var numeric;
 /** @type {!Object} */ var weblas;
+/** @type {!Object} */ var UMAP;
 /** @type {!Object} */ var graphlib;
 /** @type {!Object} */ var Plottable;
 /** @type {!Object} */ var GroupEffect;
@@ -30,8 +31,10 @@
 /** @type {!Object} */ var define;
 /** @type {!Object} */ var global;
 /** @type {!Object} */ var tf;
+/** @type {!Object} */ var mobilenet;
 /** @type {!Function|undefined} */ var ga;
 /** @type {!Function|undefined} */ var KeyframeEffect;
+/** @type {!Object} */ var tensor_widget;
 
 /**
  * Some weird webcomponents-lite.js thing.

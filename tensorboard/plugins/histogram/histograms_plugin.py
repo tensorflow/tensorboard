@@ -124,6 +124,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
     return result
 
+  def frontend_metadata(self):
+    return base_plugin.FrontendMetadata(element_name='tf-histogram-dashboard')
+
   def histograms_impl(self, tag, run, downsample_to=None):
     """Result of the form `(body, mime_type)`, or `ValueError`.
 

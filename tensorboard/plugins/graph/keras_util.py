@@ -156,7 +156,7 @@ def _update_dicts(name_scope,
   elif is_parent_functional_model and not is_functional_model:
     # Sequential model can take only one input. Make sure inbound to the
     # model is linked to the first layer in the Sequential model.
-    prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0])
+    prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0][0])
   elif not is_parent_functional_model and prev_node_name and is_functional_model:
     assert len(input_layers) == 1, (
         'Cannot have multi-input Functional model when parent model '

@@ -13,86 +13,85 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
+  // tslint:disable-next-line
+  export let LegendPolymer = PolymerElement({
+    is: 'vz-projector-legend',
+    properties: {renderInfo: {type: Object, observer: '_renderInfoChanged'}},
+  });
 
-// tslint:disable-next-line
-export let LegendPolymer = PolymerElement({
-  is: 'vz-projector-legend',
-  properties: {renderInfo: {type: Object, observer: '_renderInfoChanged'}}
-});
-
-export interface ColorLegendRenderInfo {
-  // To be used for categorical map.
-  items: ColorLegendItem[];
-  // To be used for gradient map.
-  thresholds: ColorLegendThreshold[];
-}
-
-/** An item in the categorical color legend. */
-export interface ColorLegendItem {
-  color: string;
-  label: string;
-  count: number;
-}
-
-/** An item in the gradient color legend. */
-export interface ColorLegendThreshold {
-  color: string;
-  value: number;
-}
-
-export class Legend extends LegendPolymer {
-  renderInfo: ColorLegendRenderInfo;
-
-  _renderInfoChanged() {
-    if (this.renderInfo == null) {
-      return;
-    }
-    if (this.renderInfo.thresholds) {
-      // <linearGradient> is under dom-if so we should wait for it to be
-      // inserted in the dom tree using async().
-      this.async(() => this.setupLinearGradient());
-    }
+  export interface ColorLegendRenderInfo {
+    // To be used for categorical map.
+    items: ColorLegendItem[];
+    // To be used for gradient map.
+    thresholds: ColorLegendThreshold[];
   }
 
-  _getLastThreshold(): number {
-    if (this.renderInfo == null || this.renderInfo.thresholds == null) {
-      return;
+  /** An item in the categorical color legend. */
+  export interface ColorLegendItem {
+    color: string;
+    label: string;
+    count: number;
+  }
+
+  /** An item in the gradient color legend. */
+  export interface ColorLegendThreshold {
+    color: string;
+    value: number;
+  }
+
+  export class Legend extends LegendPolymer {
+    renderInfo: ColorLegendRenderInfo;
+
+    _renderInfoChanged() {
+      if (this.renderInfo == null) {
+        return;
+      }
+      if (this.renderInfo.thresholds) {
+        // <linearGradient> is under dom-if so we should wait for it to be
+        // inserted in the dom tree using async().
+        this.async(() => this.setupLinearGradient());
+      }
     }
-    return this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1]
+
+    _getLastThreshold(): number {
+      if (this.renderInfo == null || this.renderInfo.thresholds == null) {
+        return;
+      }
+      return this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1]
         .value;
-  }
+    }
 
-  private getOffset(value: number): string {
-    const min = this.renderInfo.thresholds[0].value;
-    const max =
-        this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1].value;
-    return (100 * (value - min) / (max - min)).toFixed(2) + '%';
-  }
+    private getOffset(value: number): string {
+      const min = this.renderInfo.thresholds[0].value;
+      const max = this.renderInfo.thresholds[
+        this.renderInfo.thresholds.length - 1
+      ].value;
+      return ((100 * (value - min)) / (max - min)).toFixed(2) + '%';
+    }
 
-  private setupLinearGradient() {
-    const linearGradient =
-        this.querySelector('#gradient') as SVGLinearGradientElement;
+    private setupLinearGradient() {
+      const linearGradient = this.$$('#gradient') as SVGLinearGradientElement;
 
-    const width =
-        (this.querySelector('svg.gradient') as SVGElement).clientWidth;
+      const width = (this.$$('svg.gradient') as SVGElement).clientWidth;
 
-    // Set the svg <rect> to be the width of its <svg> parent.
-    (this.querySelector('svg.gradient rect') as SVGRectElement).style.width =
+      // Set the svg <rect> to be the width of its <svg> parent.
+      (this.$$('svg.gradient rect') as SVGRectElement).style.width =
         width + 'px';
 
-    // Remove all <stop> children from before.
-    linearGradient.innerHTML = '';
+      // Remove all <stop> children from before.
+      linearGradient.innerHTML = '';
 
-    // Add a <stop> child in <linearGradient> for each gradient threshold.
-    this.renderInfo.thresholds.forEach(t => {
-      const stopElement =
-          document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-      stopElement.setAttribute('offset', this.getOffset(t.value));
-      stopElement.setAttribute('stop-color', t.color);
-    });
+      // Add a <stop> child in <linearGradient> for each gradient threshold.
+      this.renderInfo.thresholds.forEach((t) => {
+        const stopElement = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'stop'
+        );
+        stopElement.setAttribute('offset', this.getOffset(t.value));
+        stopElement.setAttribute('stop-color', t.color);
+      });
+    }
   }
-}
 
-document.registerElement(Legend.prototype.is, Legend);
-
-}  // namespace vz_projector
+  customElements.define(Legend.prototype.is, Legend);
+} // namespace vz_projector

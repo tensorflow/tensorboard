@@ -13,7 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector.test {
-
-export const assert = chai.assert;
-
-}  // namespace vz_projector.test
+  export const assert = chai.assert;
+} // namespace vz_projector.test

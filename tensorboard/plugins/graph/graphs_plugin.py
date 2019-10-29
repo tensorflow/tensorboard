@@ -30,11 +30,10 @@ from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graph_util
 from tensorboard.plugins.graph import keras_util
+from tensorboard.plugins.graph import metadata
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
-
-_PLUGIN_PREFIX_ROUTE = 'graphs'
 
 # The Summary API is implemented in TensorFlow because it uses TensorFlow internal APIs.
 # As a result, this SummaryMetadata is a bit unconventional and uses non-public
@@ -50,7 +49,7 @@ _PLUGIN_NAME_KERAS_MODEL = 'graph_keras_model'
 class GraphsPlugin(base_plugin.TBPlugin):
   """Graphs Plugin for TensorBoard."""
 
-  plugin_name = _PLUGIN_PREFIX_ROUTE
+  plugin_name = metadata.PLUGIN_NAME
 
   def __init__(self, context):
     """Instantiates GraphsPlugin via TensorBoard core.
@@ -70,6 +69,13 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def is_active(self):
     """The graphs plugin is active iff any run has a graph."""
     return bool(self._multiplexer and self.info_impl())
+
+  def frontend_metadata(self):
+    return base_plugin.FrontendMetadata(
+        element_name='tf-graph-dashboard',
+        # TODO(@chihuahua): Reconcile this setting with Health Pills.
+        disable_reload=True,
+    )
 
   def info_impl(self):
     """Returns a dict of all runs and tags and their data availabilities."""

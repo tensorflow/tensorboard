@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import abc
 import os
+import six
 import subprocess
 import time
 
@@ -87,10 +88,9 @@ class VideoWriter(object):
     self.output_index = 0
 
 
+@six.add_metaclass(abc.ABCMeta)
 class VideoOutput(object):
   """Base class for video outputs supported by VideoWriter."""
-
-  __metaclass__ = abc.ABCMeta
 
   # Would add @abc.abstractmethod in python 3.3+
   @classmethod

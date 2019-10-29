@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import shutil
 
+import six
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -28,30 +28,54 @@ from google.protobuf import text_format
 from tensorboard.plugins import projector
 from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
-
+def create_dummy_config():
+  return projector.ProjectorConfig(
+      model_checkpoint_path='test',
+      embeddings = [
+          projector.EmbeddingInfo(
+              tensor_name='tensor1',
+              metadata_path='metadata1',
+          ),
+      ],
+  )
 
 class ProjectorApiTest(tf.test.TestCase):
 
-  def testVisualizeEmbeddings(self):
-    # Create a dummy configuration.
-    config = projector.ProjectorConfig()
-    config.model_checkpoint_path = 'test'
-    emb1 = config.embeddings.add()
-    emb1.tensor_name = 'tensor1'
-    emb1.metadata_path = 'metadata1'
-
-    # Call the API method to save the configuration to a temporary dir.
-    temp_dir = self.get_temp_dir()
-    self.addCleanup(shutil.rmtree, temp_dir)
-    with test_util.FileWriterCache.get(temp_dir) as writer:
-      projector.visualize_embeddings(writer, config)
+  def test_visualize_embeddings_with_logdir(self):
+    logdir = self.get_temp_dir()
+    config = create_dummy_config()
+    projector.visualize_embeddings(logdir, config)
 
     # Read the configurations from disk and make sure it matches the original.
-    with tf.io.gfile.GFile(os.path.join(temp_dir, 'projector_config.pbtxt')) as f:
+    with tf.io.gfile.GFile(os.path.join(logdir, 'projector_config.pbtxt')) as f:
       config2 = projector.ProjectorConfig()
       text_format.Parse(f.read(), config2)
-      self.assertEqual(config, config2)
+
+    self.assertEqual(config, config2)
+
+  def test_visualize_embeddings_with_file_writer(self):
+    if tf.__version__ == "stub":
+      self.skipTest("Requires TensorFlow for FileWriter")
+    logdir = self.get_temp_dir()
+    config = create_dummy_config()
+
+    with tf.compat.v1.Graph().as_default():
+      with test_util.FileWriterCache.get(logdir) as writer:
+        projector.visualize_embeddings(writer, config)
+
+    # Read the configurations from disk and make sure it matches the original.
+    with tf.io.gfile.GFile(os.path.join(logdir, 'projector_config.pbtxt')) as f:
+      config2 = projector.ProjectorConfig()
+      text_format.Parse(f.read(), config2)
+
+    self.assertEqual(config, config2)
+
+  def test_visualize_embeddings_no_logdir(self):
+    with six.assertRaisesRegex(
+        self,
+        ValueError,
+        "Expected logdir to be a path, but got None"):
+      projector.visualize_embeddings(None, create_dummy_config())
 
 
 if __name__ == '__main__':

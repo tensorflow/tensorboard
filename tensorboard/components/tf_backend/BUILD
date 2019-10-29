@@ -17,13 +17,13 @@ tf_web_library(
         "router.ts",
         "runsStore.ts",
         "tf-backend.html",
+        "tf-backend-polymer.ts",
         "urlPathHelpers.ts",
     ],
     path = "/tf-backend",
     visibility = ["//visibility:public"],
     deps = [
         ":type",
-        "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
@@ -45,8 +45,8 @@ tensorboard_webcomponent_library(
     srcs = [":tf_backend"],
     destdir = "tf-backend",
     deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_sorting:legacy",
-        "//third_party/javascript/polymer/v1/polymer:lib",
     ],
 )

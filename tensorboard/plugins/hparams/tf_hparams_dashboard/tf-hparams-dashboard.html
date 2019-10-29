@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-hparams-main/tf-hparams-main.html">
-<link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-hparams-main/tf-hparams-main.html" />
+<link rel="import" href="../tf-hparams-backend/tf-hparams-backend.html" />
+<link rel="import" href="../tf-tensorboard/plugin-dialog.html" />
 
 <dom-module id="tf-hparams-dashboard">
   <template>
@@ -26,35 +28,39 @@ limitations under the License.
     <tf-hparams-main
       id="hparams-main"
       backend="[[_backend]]"
-      experiment-name="">
+      experiment-name=""
+    >
     </tf-hparams-main>
   </template>
   <script>
     'use strict';
-    Polymer({
-      is: 'tf-hparams-dashboard',
-      properties: {
-        _backend: {
-          type: Object,
-          value: () => {
-            return new tf.hparams.Backend(
-                /* apiUrl= */ tf_backend.getRouter().pluginRoute(
-                    /* pluginName= */ 'hparams',
-                    /* route= */ ''),
-                new tf_backend.RequestManager())
-          }
-        }
-      },
+    (function() {
+      const PLUGIN_NAME = 'hparams';
 
-      // This is called by the tensorboard web framework to refresh the plugin.
-      reload() {
-        this.$["hparams-main"].reload();
-      }
-    });
-    // Register the plugin main element with Tensorboard.
-    tf_tensorboard.registerDashboard({
-      plugin: 'hparams',
-      elementName: 'tf-hparams-dashboard'
-    });
+      Polymer({
+        is: 'tf-hparams-dashboard',
+        properties: {
+          _backend: {
+            type: Object,
+            value: () => {
+              return new tf.hparams.Backend(
+                /* apiUrl= */ tf_backend
+                  .getRouter()
+                  .pluginRoute(/* pluginName= */ PLUGIN_NAME, /* route= */ ''),
+                new tf_backend.RequestManager(),
+                /* Use GETs if we're running in colab (due to b/126387106).
+                   Otherwise use POSTs. */
+                /* useHttpGet= */ !!(window.TENSORBOARD_ENV || {}).IN_COLAB
+              );
+            },
+          },
+        },
+
+        // This is called by the tensorboard web framework to refresh the plugin.
+        reload() {
+          this.$['hparams-main'].reload();
+        },
+      });
+    })();
   </script>
 </dom-module>

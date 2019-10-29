@@ -19,12 +19,13 @@ from __future__ import print_function
 import textwrap
 
 import six
-import tensorflow as tf
 
 from tensorboard import plugin_util
+from tensorboard import test as tb_test
+from tensorboard.backend import experiment_id
 
 
-class MarkdownToSafeHTMLTest(tf.test.TestCase):
+class MarkdownToSafeHTMLTest(tb_test.TestCase):
 
   def _test(self, markdown_string, expected):
     actual = plugin_util.markdown_to_safe_html(markdown_string)
@@ -123,5 +124,19 @@ class MarkdownToSafeHTMLTest(tf.test.TestCase):
                '<p>un_der_score</p>')
 
 
+class ExperimentIdTest(tb_test.TestCase):
+  """Tests for `plugin_util.experiment_id`."""
+
+  def test_default(self):
+    # This shouldn't happen; the `ExperimentIdMiddleware` always set an
+    # experiment ID. In case something goes wrong, degrade gracefully.
+    environ = {}
+    self.assertEqual(plugin_util.experiment_id(environ), "")
+
+  def test_present(self):
+    environ = {experiment_id.WSGI_ENVIRON_KEY: "123"}
+    self.assertEqual(plugin_util.experiment_id(environ), "123")
+
+
 if __name__ == '__main__':
-  tf.test.main()
+  tb_test.main()

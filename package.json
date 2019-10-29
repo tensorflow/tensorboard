@@ -1,0 +1,66 @@
+{
+  "name": "tensorboard",
+  "version": "0.0.0-unused",
+  "description": "TensorFlow's visualization toolkit",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "postinstall": "ngc -p angular-metadata.tsconfig.json",
+    "build": "bazel build //...",
+    "test": "ibazel test //...",
+    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts}",
+    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts}"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tensorflow/tensorboard.git"
+  },
+  "keywords": [
+    "ml",
+    "visualization"
+  ],
+  "author": "TensorFlow authors",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/tensorflow/tensorboard/issues"
+  },
+  "homepage": "https://github.com/tensorflow/tensorboard#readme",
+  "devDependencies": {
+    "@angular/bazel": "^8.1.2",
+    "@angular/cli": "^8.1.2",
+    "@angular/compiler": "^8.1.2",
+    "@angular/compiler-cli": "^8.1.2",
+    "@bazel/bazel": "^0.23.2",
+    "@bazel/hide-bazel-files": "^0.34.0",
+    "@bazel/ibazel": "^0.10.3",
+    "@bazel/jasmine": "^0.32.2",
+    "@bazel/typescript": "^0.34.0",
+    "@types/chai": "^4.1.7",
+    "@types/jasmine": "^3.3.16",
+    "@types/node": "^12.6.8",
+    "@types/sinon": "^7.0.13",
+    "chai": "^4.2.0",
+    "prettier": "1.18.2",
+    "sinon": "^7.4.2",
+    "typescript": "~3.4.5"
+  },
+  "dependencies": {
+    "@angular/animations": "^8.2.2",
+    "@angular/cdk": "^8.1.3",
+    "@angular/common": "^8.1.2",
+    "@angular/core": "^8.1.2",
+    "@angular/forms": "^8.2.11",
+    "@angular/http": "^7.2.15",
+    "@angular/material": "^8.1.3",
+    "@angular/platform-browser": "^8.1.3",
+    "@angular/platform-browser-dynamic": "^8.2.2",
+    "@angular/router": "^8.1.2",
+    "@bazel/karma": "^0.36.1",
+    "@ngrx/effects": "^8.2.0",
+    "@ngrx/store": "^8.2.0",
+    "rxjs": "^6.5.2",
+    "zone.js": "^0.9.1"
+  }
+}

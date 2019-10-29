@@ -13,58 +13,54 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_card_heading {
-
-/**
- * Formats timestamp for the card header.
- * @param {Date} date
- * @return {string}
- */
-export function formatDate(date) {
-  if (!date) {
-    return '';
-  }
-  // Turn things like "GMT-0700 (PDT)" into just "PDT".
-  return date.toString().replace(/GMT-\d+ \(([^)]+)\)/, '$1');
-}
-
-/**
- * Returns CSS color that will contrast against background.
- * @param {?string} background RGB hex color code, e.g. #eee, #eeeeee.
- * @return {string}
- */
-export function pickTextColor(background) {
-  const rgb = convertHexToRgb(background);
-  if (!rgb) {
-    return 'inherit';
-  }
-  // See: http://www.w3.org/TR/AERT#color-contrast
-  const brightness = Math.round((rgb[0] * 299 +
-                                 rgb[1] * 587 +
-                                 rgb[2] * 114) / 1000);
-  return brightness > 125 ? 'inherit' : '#eee';
-}
-
-/**
- * Turns a hex string into an RGB array.
- * @param {?string} color RGB hex color code, e.g. #eee, #eeeeee.
- * @return {Array<number>}
- */
-function convertHexToRgb(color) {
-  if (!color) {
-    return null;
-  }
-  let m = color.match(/^#([0-9a-f]{1,2})([0-9a-f]{1,2})([0-9a-f]{1,2})$/);
-  if (!m) {
-    return null;
-  }
-  if (color.length == 4) {
-    for (var i = 1; i <= 3; i++) {
-      m[i] = m[i] + m[i];
+  /**
+   * Formats timestamp for the card header.
+   * @param {Date} date
+   * @return {string}
+   */
+  export function formatDate(date) {
+    if (!date) {
+      return '';
     }
+    // Turn things like "GMT-0700 (PDT)" into just "PDT".
+    return date.toString().replace(/GMT-\d+ \(([^)]+)\)/, '$1');
   }
-  return [parseInt(m[1], 16),
-          parseInt(m[2], 16),
-          parseInt(m[3], 16)];
-}
 
-}  // namespace tf_card_heading
+  /**
+   * Returns CSS color that will contrast against background.
+   * @param {?string} background RGB hex color code, e.g. #eee, #eeeeee.
+   * @return {string}
+   */
+  export function pickTextColor(background) {
+    const rgb = convertHexToRgb(background);
+    if (!rgb) {
+      return 'inherit';
+    }
+    // See: http://www.w3.org/TR/AERT#color-contrast
+    const brightness = Math.round(
+      (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+    );
+    return brightness > 125 ? 'inherit' : '#eee';
+  }
+
+  /**
+   * Turns a hex string into an RGB array.
+   * @param {?string} color RGB hex color code, e.g. #eee, #eeeeee.
+   * @return {Array<number>}
+   */
+  function convertHexToRgb(color) {
+    if (!color) {
+      return null;
+    }
+    let m = color.match(/^#([0-9a-f]{1,2})([0-9a-f]{1,2})([0-9a-f]{1,2})$/);
+    if (!m) {
+      return null;
+    }
+    if (color.length == 4) {
+      for (var i = 1; i <= 3; i++) {
+        m[i] = m[i] + m[i];
+      }
+    }
+    return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  }
+} // namespace tf_card_heading

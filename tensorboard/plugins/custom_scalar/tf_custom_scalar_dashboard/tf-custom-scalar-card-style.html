@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
 
 <dom-module id="tf-custom-scalar-card-style">
   <template>
@@ -27,11 +27,11 @@ limitations under the License.
         vertical-align: text-top;
       }
 
-      :host[_expanded] {
+      :host([_expanded]) {
         width: 100%;
       }
 
-      :host[_expanded] #tf-line-chart-data-loader-container {
+      :host([_expanded]) #tf-line-chart-data-loader-container {
         height: 400px;
       }
 
@@ -51,7 +51,7 @@ limitations under the License.
       }
 
       paper-icon-button {
-        color: #2196F3;
+        color: #2196f3;
         border-radius: 100%;
         width: 32px;
         height: 32px;

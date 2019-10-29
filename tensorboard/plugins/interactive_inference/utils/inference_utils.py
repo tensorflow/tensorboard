@@ -14,15 +14,19 @@
 # ==============================================================================
 """Shared utils among inference plugins."""
 
+from __future__ import division
+from __future__ import print_function
 import collections
 import copy
 import json
 import math
+
+from absl import logging
 import numpy as np
 import tensorflow as tf
 from google.protobuf import json_format
+from six import binary_type, string_types, integer_types
 from six import iteritems
-from six import string_types
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 from tensorboard.plugins.interactive_inference.utils import common_utils
@@ -121,7 +125,8 @@ class OriginalFeatureList(object):
   def __init__(self, feature_name, original_value, feature_type):
     """Inits OriginalFeatureList."""
     self.feature_name = feature_name
-    self.original_value = original_value
+    self.original_value = [
+      ensure_not_binary(value) for value in original_value]
     self.feature_type = feature_type
 
     # Derived attributes.
@@ -155,19 +160,20 @@ class MutantFeatureValue(object):
           'unexpected type: {}'.format(type(original_feature)))
     self.original_feature = original_feature
 
-    if index is not None and not isinstance(index, int):
+    if index is not None and not isinstance(index, integer_types):
       raise ValueError(
           'index should be None or int, but had unexpected type: {}'.format(
               type(index)))
     self.index = index
-    self.mutant_value = mutant_value
+    self.mutant_value = (mutant_value.encode()
+        if isinstance(mutant_value, string_types) else mutant_value)
 
 
 class ServingBundle(object):
   """Light-weight class for holding info to make the inference request.
 
   Attributes:
-    inference_address: A local address or blade address to send inference
+    inference_address: An address (such as "hostname:port") to send inference
       requests to.
     model_name: The Servo model name.
     model_type: One of ['classification', 'regression'].
@@ -220,6 +226,16 @@ class ServingBundle(object):
     self.estimator = estimator
     self.feature_spec = feature_spec
     self.custom_predict_fn = custom_predict_fn
+
+
+def ensure_not_binary(value):
+  """Return non-binary version of value."""
+  try:
+    return value.decode() if isinstance(value, binary_type) else value
+  except UnicodeDecodeError:
+    # If the value cannot be decoded as a string (such as an encoded image),
+    # then just return the value.
+    return value
 
 
 def proto_value_for_feature(example, feature_name):
@@ -477,7 +493,8 @@ def mutant_charts_for_feature(example_protos, feature_name, serving_bundles,
 
     charts = []
     for serving_bundle in serving_bundles:
-      inference_result_proto = run_inference(mutant_examples, serving_bundle)
+      (inference_result_proto, _) = run_inference(
+        mutant_examples, serving_bundle)
       charts.append(make_json_formatted_for_single_chart(
         mutant_features, inference_result_proto, index_to_mutate))
     return charts
@@ -558,9 +575,10 @@ def make_json_formatted_for_single_chart(mutant_features,
           key += ' (index %d)' % index_to_mutate
         if not key in series:
           series[key] = {}
-        if not mutant_feature.mutant_value in series[key]:
-          series[key][mutant_feature.mutant_value] = []
-        series[key][mutant_feature.mutant_value].append(
+        mutant_val = ensure_not_binary(mutant_feature.mutant_value)
+        if not mutant_val in series[key]:
+          series[key][mutant_val] = []
+        series[key][mutant_val].append(
           classification_class.score)
 
     # Post-process points to have separate list for each class
@@ -584,9 +602,10 @@ def make_json_formatted_for_single_chart(mutant_features,
       # results. So, modding by len(mutant_features) allows us to correctly
       # lookup the mutant value for each inference.
       mutant_feature = mutant_features[idx % len(mutant_features)]
-      if not mutant_feature.mutant_value in points:
-        points[mutant_feature.mutant_value] = []
-      points[mutant_feature.mutant_value].append(regression.value)
+      mutant_val = ensure_not_binary(mutant_feature.mutant_value)
+      if not mutant_val in points:
+        points[mutant_val] = []
+      points[mutant_val].append(regression.value)
     key = 'value'
     if (index_to_mutate != 0):
       key += ' (index %d)' % index_to_mutate
@@ -610,11 +629,12 @@ def get_example_features(example):
 
 def run_inference_for_inference_results(examples, serving_bundle):
   """Calls servo and wraps the inference results."""
-  inference_result_proto = run_inference(examples, serving_bundle)
+  (inference_result_proto, extra_results) = run_inference(
+    examples, serving_bundle)
   inferences = wrap_inference_results(inference_result_proto)
   infer_json = json_format.MessageToJson(
     inferences, including_default_value_fields=True)
-  return json.loads(infer_json)
+  return json.loads(infer_json), extra_results
 
 def get_eligible_features(examples, num_mutants):
   """Returns a list of JSON objects for each feature in the examples.
@@ -646,6 +666,59 @@ def get_eligible_features(examples, num_mutants):
     features_list.append(v)
   return features_list
 
+def sort_eligible_features(features_list, chart_data):
+  """Returns a sorted list of objects representing each feature.
+
+  The list is sorted by interestingness in terms of the resulting change in
+  inference values across feature values, for partial dependence plots.
+
+  Args:
+    features_list: A list of eligible features in the format of the return
+        from the get_eligible_features function.
+    chart_data: A dict of feature names to chart data, formatted as the
+        output from the mutant_charts_for_feature function.
+
+  Returns:
+    A sorted list of the inputted features_list, with the addition of
+    an 'interestingness' key with a calculated number for feature feature.
+    The list is sorted with the feature with highest interestingness first.
+  """
+  sorted_features_list = copy.deepcopy(features_list)
+  for feature in sorted_features_list:
+    name = feature['name']
+    charts = chart_data[name]
+    max_measure = 0
+    is_numeric = charts['chartType'] == 'numeric'
+    for models in charts['data']:
+      for chart in models:
+        for series in chart.values():
+          if is_numeric:
+            # For numeric features, interestingness is the total Y distance
+            # traveled across the line chart.
+            measure = 0
+            for i in range(len(series) - 1):
+              measure += abs(series[i]['scalar'] - series[i + 1]['scalar'])
+          else:
+            # For categorical features, interestingness is the difference
+            # between the min and max Y values in the chart, as interestingness
+            # for categorical charts shouldn't depend on the order of items
+            # being charted.
+            min_y = float("inf")
+            max_y = float("-inf")
+            for i in range(len(series)):
+              val = series[i]['scalar']
+              if val < min_y:
+                min_y = val
+              if val > max_y:
+                max_y = val
+            measure = max_y - min_y
+          if measure > max_measure:
+            max_measure = measure
+    feature['interestingness'] = max_measure
+
+  return sorted(
+      sorted_features_list, key=lambda x: x['interestingness'], reverse=True)
+
 def get_label_vocab(vocab_path):
   """Returns a list of label strings loaded from the provided path."""
   if vocab_path:
@@ -653,7 +726,7 @@ def get_label_vocab(vocab_path):
       with tf.io.gfile.GFile(vocab_path, 'r') as f:
         return [line.rstrip('\n') for line in f]
     except tf.errors.NotFoundError as err:
-      tf.logging.error('error reading vocab file: %s', err)
+      logging.error('error reading vocab file: %s', err)
   return []
 
 def create_sprite_image(examples):
@@ -691,9 +764,9 @@ def create_sprite_image(examples):
     with tf.compat.v1.Session():
       keys_to_features = {
           image_feature_name:
-              tf.FixedLenFeature((), tf.string, default_value=''),
+              tf.io.FixedLenFeature((), tf.string, default_value=''),
       }
-      parsed = tf.parse_example(examples, keys_to_features)
+      parsed = tf.io.parse_example(examples, keys_to_features)
       images = tf.zeros([1, 1, 1, 1], tf.float32)
       i = tf.constant(0)
       thumbnail_dims = (sprite_thumbnail_dim_px,
@@ -735,14 +808,16 @@ def run_inference(examples, serving_bundle):
       make the inference request.
 
   Returns:
-    A ClassificationResponse or RegressionResponse proto.
+    A tuple with the first entry being the ClassificationResponse or
+    RegressionResponse proto and the second entry being a dictionary of extra
+    data for each example, such as attributions, or None if no data exists.
   """
   batch_size = 64
   if serving_bundle.estimator and serving_bundle.feature_spec:
     # If provided an estimator and feature spec then run inference locally.
     preds = serving_bundle.estimator.predict(
       lambda: tf.data.Dataset.from_tensor_slices(
-        tf.parse_example([ex.SerializeToString() for ex in examples],
+        tf.io.parse_example([ex.SerializeToString() for ex in examples],
         serving_bundle.feature_spec)).batch(batch_size))
 
     if serving_bundle.use_predict:
@@ -755,11 +830,22 @@ def run_inference(examples, serving_bundle):
     values = []
     for pred in preds:
       values.append(pred[preds_key])
-    return common_utils.convert_prediction_values(values, serving_bundle)
+    return (common_utils.convert_prediction_values(values, serving_bundle),
+            None)
   elif serving_bundle.custom_predict_fn:
     # If custom_predict_fn is provided, pass examples directly for local
     # inference.
     values = serving_bundle.custom_predict_fn(examples)
-    return common_utils.convert_prediction_values(values, serving_bundle)
+    extra_results = None
+    # If the custom prediction function returned a dict, then parse out the
+    # prediction scores. If it is just a list, then the results are the
+    # prediction results without attributions or other data.
+    if isinstance(values, dict):
+      preds = values.pop('predictions')
+      extra_results = values
+    else:
+      preds = values
+    return (common_utils.convert_prediction_values(preds, serving_bundle),
+            extra_results)
   else:
-    return platform_utils.call_servo(examples, serving_bundle)
+    return (platform_utils.call_servo(examples, serving_bundle), None)

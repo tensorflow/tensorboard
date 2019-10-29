@@ -14,11 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="tf-interactive-inference-dashboard.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-interactive-inference-dashboard.html" />
 <script src="tf.min.js"></script>
-<dom-module id='tf-interactive-inference-image-demo'>
+<script src="mobilenet.js"></script>
+
+<dom-module id="tf-interactive-inference-image-demo">
   <template>
     <style>
       :host {
@@ -35,49 +36,83 @@ limitations under the License.
       }
     </style>
     <canvas id="spritecanvas"></canvas>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]" model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard
+      id="dash"
+      local="true"
+      label-vocab="[[labelVocab]]"
+    >
     </tf-interactive-inference-dashboard>
   </template>
   <script>
     Polymer({
-      is: "tf-interactive-inference-image-demo",
+      is: 'tf-interactive-inference-image-demo',
       properties: {
         model: Object,
         data: Array,
         indicesToInfer: {type: Object, value: () => ({})},
         means: Object,
         categories: Object,
-        labelVocab: {type: Array, value: ["Not smiling", "Smiling"]},
+        labelVocab: {type: Array, value: ['Not smiling', 'Smiling']},
         numLoadedImages: Number,
         images: Array,
+        distanceEmbs: Array,
+        distanceEmbsTensor: Object,
+        distanceModel: Object,
       },
       ready: async function() {
+        this.$.dash.modelName = 'demo';
+        this.$.dash.inferenceAddress = 'demo';
         this.$.dash.updateNumberOfModels();
-        this.model = await tf.loadModel(tf.io.browserHTTPRequest(
-          'data/images/model.json', {credentials: 'include'}));
-        const DATA_PATH = "data/images/smile_examples.json";
-        const RESULTS_PATH = "data/images/smile_examples_inference.json";
-        const testData = d3.json(DATA_PATH).then(data => {
+        this.model = await tf.loadLayersModel(
+          tf.io.browserHTTPRequest('data/images/model.json', {
+            credentials: 'include',
+          })
+        );
+        // Load mobilenet for custom distance computation.
+        this.distanceModel = await mobilenet.load();
+        const DISTANCE_EMBS_PATH = 'data/images/distance_embeddings.json';
+        const DATA_PATH = 'data/images/smile_examples.json';
+        const RESULTS_PATH = 'data/images/smile_examples_inference.json';
+        const testData = d3.json(DATA_PATH).then((data) => {
           this.data = data;
           this.updateSprite();
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
           this.$.dash.updateExampleContents(
-            this.data.map(item => JSON.stringify(item)), true);
-          this.$.dash.addEventListener('update-example', e => {
+            this.data.map((item) => JSON.stringify(item)),
+            true
+          );
+          this.$.dash.addEventListener('update-example', async (e) => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
+            // Update distance embedding of example
+            const ex = this.data[e.detail.index];
+            const exTensor = await this.convertExToTensor(ex);
+            const predTensor = await this.distanceModel.infer(exTensor, true);
+            const predNorm = predTensor.div(tf.norm(predTensor));
+            // Normalize embedding
+            const pred = await predNorm.array();
+            this.distanceEmbs[e.detail.index] = pred[0];
+            this.updateDistanceEmbsTensor();
+            exTensor.dispose();
+            predNorm.dispose();
+            predTensor.dispose();
             this.indicesToInfer[e.detail.index] = true;
             this.updateSprite();
           });
-          this.$.dash.addEventListener('duplicate-example', e => {
+          this.$.dash.addEventListener('duplicate-example', (e) => {
             this.data.push(
-              JSON.parse(JSON.stringify(this.data[e.detail.index])));
+              JSON.parse(JSON.stringify(this.data[e.detail.index]))
+            );
+            this.distanceEmbs.push(this.distanceEmbs[e.detail.index]);
+            this.updateDistanceEmbsTensor();
             this.indicesToInfer[this.data.length - 1] = true;
             this.updateSprite();
           });
-          this.$.dash.addEventListener('delete-example', e => {
+          this.$.dash.addEventListener('delete-example', (e) => {
             this.data.splice(e.detail.index, 1);
+            this.distanceEmbs.splice(e.detail.index, 1);
+            this.updateDistanceEmbsTensor();
             const newIndicesToInfer = {};
             const oldIndicesToInfer = Object.keys(this.indicesToInfer);
             for (let i = 0; i < oldIndicesToInfer.length; i++) {
@@ -91,21 +126,27 @@ limitations under the License.
             this.indicesToInfer = newIndicesToInfer;
             this.updateSprite();
           });
-          this.$.dash.addEventListener('infer-examples', async e => {
+          this.$.dash.addEventListener('infer-examples', async (e) => {
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
             inferences.results = [
-              {classificationResult: {classifications: []}}];
+              {classificationResult: {classifications: []}},
+            ];
             if (indices.length == 250) {
-              const testData = d3.json(RESULTS_PATH).then(inferences => {
+              d3.json(RESULTS_PATH).then((inferences) => {
                 setTimeout(() => {
                   // for compatibility with inferences.json
                   inferences.results = [inferences.results];
                   this.$.dash.inferences = inferences;
                   this.indicesToInfer = {};
-                  this.$.dash.selectedLabelFeature = "Smiling"
+                  this.$.dash.selectedLabelFeature = 'Smiling';
                 }, 1000);
+              });
+              // Load precomputed embeddings from json for fast startup
+              d3.json(DISTANCE_EMBS_PATH).then((distanceEmbs) => {
+                this.distanceEmbs = distanceEmbs;
+                this.updateDistanceEmbsTensor();
               });
             } else {
               const tensorArr = [];
@@ -122,45 +163,74 @@ limitations under the License.
               const predValues = await res.data();
               input.dispose();
               tensors.dispose();
-              tensorArr.forEach(tensor => tensor.dispose());
+              tensorArr.forEach((tensor) => tensor.dispose());
               res.dispose();
               const PRED_SIZE = 2;
               for (let i = 0; i < indices.length; i++) {
-                inferences.results[0].classificationResult.classifications[i] =
-                  {classes: [{label: '0', score: predValues[i * PRED_SIZE]},
-                  {label: '1', score: predValues[i * PRED_SIZE + 1]}]};
+                inferences.results[0].classificationResult.classifications[
+                  i
+                ] = {
+                  classes: [
+                    {label: '0', score: predValues[i * PRED_SIZE]},
+                    {label: '1', score: predValues[i * PRED_SIZE + 1]},
+                  ],
+                };
               }
               this.$.dash.inferences = inferences;
               this.indicesToInfer = {};
             }
           });
-          this.$.dash.addEventListener('get-eligible-features', e => {
+          this.$.dash.addEventListener('get-eligible-features', (e) => {
             this.$.dash.partialDepPlotEligibleFeatures = [];
           });
+          this.$.dash.addEventListener('compute-custom-distance', async (e) => {
+            // Compute cosine similarity between selected example and all other
+            // examples. Return negative cosine similarity as the distance.
+            const ind = tf.tensor1d([+e.detail.index], 'int32');
+            const exEmb = this.distanceEmbsTensor.gather(ind);
+            const distancesTensor = tf.neg(
+              tf.dot(this.distanceEmbsTensor, tf.transpose(exEmb)).flatten()
+            );
+            const distances = await distancesTensor.data();
+            ind.dispose();
+            exEmb.dispose();
+            distancesTensor.dispose();
+            const callbackObj = {
+              exInd: e.detail.index,
+              distances: distances,
+              params: e.detail.params.callbackParams,
+              funId: e.detail.callback,
+            };
+            this.$.dash.invokeCustomDistanceCallback(callbackObj);
+          });
+          this.$.dash.customDistanceFunctionSet = true;
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
           });
         });
       },
       convertExToTensor: async function(ex) {
-        const load = ex => new Promise(resolve => {
-          const encodedImg =
-            ex.features.feature['image/encoded'].bytesList.value[0];
-          const src = 'data:image/png;base64,' + encodedImg;
-          const img = new Image();
-          img.src = src;
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
-            let tensor = tf.fromPixels(canvas).toFloat();
-            if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
-              tensor = tf.image.resizeBilinear(tensor, [78, 64]);
-            }
-            resolve(tensor);
-          };
-        });
+        const load = (ex) =>
+          new Promise((resolve) => {
+            const encodedImg =
+              ex.features.feature['image/encoded'].bytesList.value[0];
+            const src = 'data:image/png;base64,' + encodedImg;
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              canvas
+                .getContext('2d')
+                .drawImage(img, 0, 0, img.width, img.height);
+              let tensor = tf.browser.fromPixels(canvas).toFloat();
+              if (tensor.shape[0] != 78 || tensor.shape[1] != 64) {
+                tensor = tf.image.resizeBilinear(tensor, [78, 64]);
+              }
+              resolve(tensor);
+            };
+          });
 
         const t = await load(ex);
         return t;
@@ -183,6 +253,21 @@ limitations under the License.
         }
       },
 
+      updateDistanceEmbsTensor: function() {
+        if (
+          this.distanceEmbsTensor &&
+          Object.keys(this.distanceEmbsTensor).length != 0
+        ) {
+          this.distanceEmbsTensor.dispose();
+        }
+        const distanceEmbsTensor = tf.tensor2d(this.distanceEmbs);
+        this.distanceEmbsTensor = distanceEmbsTensor.reshape([
+          this.distanceEmbs.length,
+          1024,
+        ]);
+        distanceEmbsTensor.dispose();
+      },
+
       imageLoaded: function() {
         const canvas = this.$.spritecanvas;
         const THUMBNAIL_SIZE = 32;
@@ -191,16 +276,20 @@ limitations under the License.
           return;
         }
         const thumbnailsPerSide = Math.ceil(Math.sqrt(this.images.length));
-        console.log(thumbnailsPerSide);
         canvas.width = thumbnailsPerSide * THUMBNAIL_SIZE;
         canvas.height = thumbnailsPerSide * THUMBNAIL_SIZE;
 
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         for (let i = 0; i < this.images.length; i++) {
           const startX = (i % thumbnailsPerSide) * THUMBNAIL_SIZE;
           const startY = Math.floor(i / thumbnailsPerSide) * THUMBNAIL_SIZE;
-          ctx.drawImage(this.images[i], startX, startY, THUMBNAIL_SIZE,
-                        THUMBNAIL_SIZE);
+          ctx.drawImage(
+            this.images[i],
+            startX,
+            startY,
+            THUMBNAIL_SIZE,
+            THUMBNAIL_SIZE
+          );
         }
         this.$.dash.localAtlasUrl = canvas.toDataURL();
         this.$.dash.updateSprite();

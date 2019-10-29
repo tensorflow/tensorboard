@@ -37,20 +37,28 @@ os.environ['GCS_READ_CACHE_DISABLED'] = '1'
 
 import sys
 
-# Import TensorFlow here to fail immediately if it's not present, even though we
-# don't actually use it yet, which results in a clearer error.
-import tensorflow as tf  # pylint: disable=unused-import
-
 from tensorboard import default
 from tensorboard import program
+from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
+from tensorboard.uploader import uploader_main
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 def run_main():
   """Initializes flags and calls main()."""
   program.setup_environment()
-  tensorboard = program.TensorBoard(default.get_plugins(),
-                                    program.get_default_assets_zip_provider())
+
+  if getattr(tf, '__version__', 'stub') == 'stub':
+    print("TensorFlow installation not found - running with reduced feature set.",
+          file=sys.stderr)
+
+  tensorboard = program.TensorBoard(
+      default.get_plugins() + default.get_dynamic_plugins(),
+      program.get_default_assets_zip_provider(),
+      subcommands=[uploader_main.UploaderSubcommand()])
   try:
     from absl import app
     # Import this to check that app.run() will accept the flags_parser argument.

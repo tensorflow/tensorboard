@@ -1,0 +1,53 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TensorWidget Demo</title>
+
+    <link rel="stylesheet" type="text/css" href="../tensor-widget.css" />
+    <link rel="stylesheet" type="text/css" href="demo.css" />
+  </head>
+
+  <body>
+    <h1>TensorWidget Demo</h1>
+    <p>
+      TensorWidget version:
+      <span id="tensor-widget-version"></span>
+    </p>
+
+    <div id="tensor0" class="tensor"></div>
+    <div id="tensor1" class="tensor"></div>
+    <div id="tensor2" class="tensor"></div>
+    <div id="tensor3" class="tensor"></div>
+    <div id="tensor4" class="tensor"></div>
+    <div id="tensor5" class="tensor"></div>
+    <div id="tensor6" class="tensor"></div>
+    <div id="tensor7" class="tensor"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/1.2.9/tf.min.js"></script>
+    <script src="bundle.js"></script>
+    <script>
+      const DEMO_MODULE_PATH =
+        'org_tensorflow_tensorboard/tensorboard/components/tensor_widget/demo/demo';
+      require([DEMO_MODULE_PATH]);
+    </script>
+  </body>
+</html>

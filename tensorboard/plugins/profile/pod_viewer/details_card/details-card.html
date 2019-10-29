@@ -1,0 +1,112 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================
+-->
+
+<!--
+  details-card is a card that highlights detailed information of a selection.
+-->
+
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
+<link rel="import" href="pod-viewer-common.html" />
+
+<dom-module id="details-card">
+  <template>
+    <style>
+      paper-card {
+        max-height: 50vh;
+        overflow-y: auto;
+        --paper-card-header-color: white;
+        --paper-card-header: {
+          background-color: rgb(178, 34, 34);
+        }
+        width: 100%;
+      }
+
+      .card-content > div {
+        margin-bottom: 1em;
+        top: -5px;
+      }
+
+      .value {
+        font-weight: normal;
+        text-align: right;
+      }
+
+      .info {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .code-style {
+        font-size: 14px;
+        font-weight: normal;
+      }
+    </style>
+    <paper-card id="card" heading="[[_name]]" hidden="[[!_name]]" elevation="2">
+      <template is="dom-repeat" items="[[nodes]]" as="node">
+        <div class="card-content info">
+          <div hidden="[[_isStep(node)]]">
+            <p>
+              Data Transferred:
+              <span class="value">[[_sizeMiB(node.dataSize)]] MiB</span>
+            </p>
+            <p>
+              Latency:
+              <span class="value">[[_format(node.durationUs)]] µs</span>
+            </p>
+            <p>
+              BW:
+              <span class="value">
+                [[_bandwidth(node.dataSize, node.durationUs)]] GiB/s</span
+              >
+            </p>
+          </div>
+          <div hidden="[[!_isChannel(node)]]">
+            <p>
+              Send Delay:
+              <span class="value">[[_format(node.sendDelayUs)]] µs</span>
+            </p>
+            <p>Hlo Names:</p>
+            <code class="code-style">
+              <template is="dom-repeat" items="[[node.hloNames]]">
+                "[[item]]"
+              </template>
+            </code>
+          </div>
+          <div hidden="[[!_hasReplicaGroups(node)]]">
+            <p>Replica Groups</p>
+            <code class="code-style">
+              <template is="dom-repeat" items="[[node.replicaGroups]]">
+                {[[item.replicaIds]]}<br />
+              </template>
+            </code>
+          </div>
+          <div hidden="[[!_isStep(node)]]">
+            <template is="dom-repeat" items="[[stepBreakdownLayers]]">
+              <p>
+                [[item.label]]:
+                <span class="value">
+                  [[_getStepBreakdownValue(node, item.key)]] µs
+                  [[_getStepBreakdownPct(node, item.key)]]</span
+                >
+              </p>
+            </template>
+          </div>
+        </div>
+      </template>
+    </paper-card>
+  </template>
+  <script src="details-card.js"></script>
+</dom-module>

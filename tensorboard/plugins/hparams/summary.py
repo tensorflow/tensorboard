@@ -184,7 +184,8 @@ def _summary(tag, hparams_plugin_data):
     hparams_plugin_data: The HParamsPluginData message to use.
   """
   summary = tf.compat.v1.Summary()
-  summary.value.add(
-      tag=tag,
-      metadata=metadata.create_summary_metadata(hparams_plugin_data))
+  tb_metadata = metadata.create_summary_metadata(hparams_plugin_data)
+  raw_metadata = tb_metadata.SerializeToString()
+  tf_metadata = tf.compat.v1.SummaryMetadata.FromString(raw_metadata)
+  summary.value.add(tag=tag, metadata=tf_metadata)
   return summary

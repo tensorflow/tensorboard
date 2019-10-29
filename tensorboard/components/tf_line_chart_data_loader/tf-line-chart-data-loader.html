@@ -15,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html">
-<link rel="import" href="../vz-line-chart2/vz-line-chart2.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/data-loader-behavior.html" />
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html" />
 
 <!--
   A component that fetches data from the TensorBoard server and renders it into
@@ -31,6 +31,7 @@ limitations under the License.
     <div id="chart-and-spinner-container">
       <vz-line-chart2
         id="chart"
+        data-loading$="[[dataLoading]]"
         color-scale="[[colorScale]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
@@ -39,7 +40,6 @@ limitations under the License.
         on-chart-attached="_onChartAttached"
         smoothing-enabled="[[smoothingEnabled]]"
         smoothing-weight="[[smoothingWeight]]"
-        style="[[_computeLineChartStyle(dataLoading)]]"
         symbol-function="[[symbolFunction]]"
         tooltip-columns="[[tooltipColumns]]"
         tooltip-position="[[tooltipPosition]]"
@@ -62,9 +62,9 @@ limitations under the License.
         flex-direction: column;
       }
 
-      :host[_maybe-rendered-in-bad-state] vz-line-chart {
+      :host([_maybe-rendered-in-bad-state]) vz-line-chart {
         visibility: hidden;
-      };
+      }
 
       #chart-and-spinner-container {
         display: flex;
@@ -85,189 +85,186 @@ limitations under the License.
         top: 0;
       }
 
-      vz-line-chart {
+      vz-line-chart2 {
         -webkit-user-select: none;
         -moz-user-select: none;
+      }
+
+      vz-line-chart2[data-loading] {
+        opacity: 0.3;
       }
     </style>
   </template>
   <script src="../vz-line-chart2/line-chart-exporter.js"></script>
   <script>
     (function() {
+      // The chart can sometimes get in a bad state, when it redraws while
+      // it is display: none due to the user having switched to a different
+      // page. This code implements a cascading queue to redraw the bad charts
+      // one-by-one once they are active again.
+      // We use a cascading queue becuase we don't want to block the UI / make the
+      // ripples very slow while everything synchronously redraws.
+      const redrawQueue = [];
+      const cascadingRedraw = (function() {
+        let redrawRaf = 0;
+        return _.throttle(function internalRedraw() {
+          if (redrawQueue.length == 0) return;
+          const x = redrawQueue.shift();
+          if (x.active) {
+            x.redraw();
+            x._maybeRenderedInBadState = false;
+          }
+          window.cancelAnimationFrame(redrawRaf);
+          window.requestAnimationFrame(internalRedraw);
+        }, 100);
+      })();
 
-    // The chart can sometimes get in a bad state, when it redraws while
-    // it is display: none due to the user having switched to a different
-    // page. This code implements a cascading queue to redraw the bad charts
-    // one-by-one once they are active again.
-    // We use a cascading queue becuase we don't want to block the UI / make the
-    // ripples very slow while everything synchronously redraws.
-    const redrawQueue = [];
-    const cascadingRedraw = (function() {
-      let redrawRaf = 0;
-      return _.throttle(function internalRedraw() {
-        if (redrawQueue.length == 0) return;
-        const x = redrawQueue.shift();
-        if (x.active) {
-          x.redraw();
-          x._maybeRenderedInBadState = false;
-        }
-        window.cancelAnimationFrame(redrawRaf);
-        window.requestAnimationFrame(internalRedraw);
-      }, 100);
-    })();
+      Polymer({
+        is: 'tf-line-chart-data-loader',
+        properties: {
+          active: {
+            type: Boolean,
+            observer: '_fixBadStateWhenActive',
+          },
 
-    Polymer({
-      is: 'tf-line-chart-data-loader',
-      properties: {
-        active: {
-          type: Boolean,
-          observer: '_fixBadStateWhenActive',
+          dataSeries: Array,
+
+          requestManager: Object,
+
+          logScaleActive: {
+            type: Boolean,
+            observer: '_logScaleChanged',
+          },
+
+          xComponentsCreationMethod: Object,
+          xType: String,
+          yValueAccessor: Object,
+          fillArea: Object,
+
+          smoothingEnabled: Boolean,
+          smoothingWeight: Number,
+
+          tooltipColumns: Array,
+          tooltipSortingMethod: String,
+          tooltipPosition: String,
+
+          ignoreYOutliers: Boolean,
+
+          defaultXRange: Array,
+          defaultYRange: Array,
+
+          symbolFunction: Object,
+
+          /**
+           * An object with a scale method that maps from name of a data series to
+           * a color.
+           */
+          colorScale: {
+            type: Object,
+            value: () => ({scale: tf_color_scale.runsColorScale}),
+          },
+
+          _resetDomainOnNextLoad: {
+            type: Boolean,
+            value: true,
+          },
+
+          _maybeRenderedInBadState: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true,
+          },
         },
 
-        dataSeries: Array,
+        behaviors: [tf_dashboard_common.DataLoaderBehavior],
 
-        requestManager: Object,
+        observers: [
+          '_dataSeriesChanged(dataSeries.*)',
+          '_loadKeyChanged(loadKey)',
+        ],
 
-        logScaleActive: {
-          type: Boolean,
-          observer: '_logScaleChanged',
+        onLoadFinish() {
+          if (this.dataToLoad.length > 0 && this._resetDomainOnNextLoad) {
+            // (Don't unset _resetDomainOnNextLoad when we didn't
+            // load any runs: this has the effect that if all our
+            // runs are deselected, then we toggle them all on, we
+            // properly size the domain once all the data is loaded
+            // instead of just when we're first rendered.)
+            this._resetDomainOnNextLoad = false;
+            this.$.chart.resetDomain();
+          }
+
+          this.redraw();
         },
 
-        xComponentsCreationMethod: Object,
-        xType: String,
-        yValueAccessor: Object,
-        fillArea: Object,
-
-        smoothingEnabled: Boolean,
-        smoothingWeight: Number,
-
-        tooltipColumns: Array,
-        tooltipSortingMethod: String,
-        tooltipPosition: String,
-
-        ignoreYOutliers: Boolean,
-
-        defaultXRange: Array,
-        defaultYRange: Array,
-
-        symbolFunction: Object,
-
-        /**
-         * An object with a scale method that maps from name of a data series to
-         * a color.
-         */
-        colorScale: {
-          type: Object,
-          value: () => ({scale: tf_color_scale.runsColorScale}),
+        detached() {
+          cancelAnimationFrame(this._redrawRaf);
         },
 
-        _resetDomainOnNextLoad: {
-          type: Boolean,
-          value: true,
+        exportAsSvgString() {
+          const exporter = this.$.chart.getExporter();
+          return exporter.exportAsString();
         },
 
-        _maybeRenderedInBadState: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
+        resetDomain() {
+          const chart = this.$.chart;
+          chart.resetDomain();
         },
-      },
 
-      behaviors: [tf_dashboard_common.DataLoaderBehavior],
+        setSeriesData(name, data) {
+          this.$.chart.setSeriesData(name, data);
+        },
 
-      observers: [
-        '_dataSeriesChanged(dataSeries.*)',
-        '_loadKeyChanged(loadKey)',
-      ],
+        setSeriesMetadata(name, metadata) {
+          this.$.chart.setSeriesMetadata(name, metadata);
+        },
 
-      onLoadFinish() {
-        if (this.dataToLoad.length > 0 && this._resetDomainOnNextLoad) {
-          // (Don't unset _resetDomainOnNextLoad when we didn't
-          // load any runs: this has the effect that if all our
-          // runs are deselected, then we toggle them all on, we
-          // properly size the domain once all the data is loaded
-          // instead of just when we're first rendered.)
-          this._resetDomainOnNextLoad = false;
-          this.$.chart.resetDomain();
-        }
+        redraw() {
+          cancelAnimationFrame(this._redrawRaf);
+          this._redrawRaf = window.requestAnimationFrame(() => {
+            if (this.active) {
+              this.$.chart.redraw();
+            } else {
+              // If we reached a point where we should render while the page
+              // is not active, we've gotten into a bad state.
+              this._maybeRenderedInBadState = true;
+            }
+          });
+        },
 
-        this.redraw();
-      },
+        _loadKeyChanged(_) {
+          this.reset();
+          this._resetDomainOnNextLoad = true;
+        },
 
-      detached() {
-        cancelAnimationFrame(this._redrawRaf);
-      },
+        _dataSeriesChanged(_) {
+          // Setting visible series redraws the chart.
+          this.$.chart.setVisibleSeries(this.dataSeries);
+        },
 
-      exportAsSvgString() {
-        const exporter = this.$.chart.getExporter();
-        return exporter.exportAsString();
-      },
+        _logScaleChanged(logScaleActive) {
+          const chart = this.$.chart;
+          chart.yScaleType = logScaleActive ? 'log' : 'linear';
+          this.redraw();
+        },
 
-      resetDomain() {
-        const chart = this.$.chart;
-        chart.resetDomain();
-      },
+        _fixBadStateWhenActive() {
+          // When the chart enters a potentially bad state (because it should
+          // redraw, but the page is not currently active), we set the
+          // _maybeRenderedInBadState flag. Whenever the chart becomes active,
+          // we test this and schedule a redraw of the bad charts.
+          if (this.active && this._maybeRenderedInBadState) {
+            redrawQueue.push(this);
+            cascadingRedraw();
+          }
+        },
 
-      setSeriesData(name, data) {
-        this.$.chart.setSeriesData(name, data);
-      },
-
-      setSeriesMetadata(name, metadata) {
-        this.$.chart.setSeriesMetadata(name, metadata);
-      },
-
-      redraw() {
-        cancelAnimationFrame(this._redrawRaf);
-        this._redrawRaf = window.requestAnimationFrame(() => {
-          if (this.active) {
-            this.$.chart.redraw();
-          } else {
-            // If we reached a point where we should render while the page
-            // is not active, we've gotten into a bad state.
+        _onChartAttached() {
+          if (!this.active) {
             this._maybeRenderedInBadState = true;
           }
-        });
-      },
-
-      _loadKeyChanged(_) {
-        this.reset();
-        this._resetDomainOnNextLoad = true;
-      },
-
-      _dataSeriesChanged(_) {
-        // Setting visible series redraws the chart.
-        this.$.chart.setVisibleSeries(this.dataSeries);
-      },
-
-      _logScaleChanged(logScaleActive) {
-        const chart = this.$.chart;
-        chart.yScaleType = logScaleActive ? 'log' : 'linear';
-        this.redraw();
-      },
-
-      _computeLineChartStyle(loading) {
-        return loading ? 'opacity: 0.3;' : '';
-      },
-
-      _fixBadStateWhenActive() {
-        // When the chart enters a potentially bad state (because it should
-        // redraw, but the page is not currently active), we set the
-        // _maybeRenderedInBadState flag. Whenever the chart becomes active,
-        // we test this and schedule a redraw of the bad charts.
-        if (this.active && this._maybeRenderedInBadState) {
-          redrawQueue.push(this);
-          cascadingRedraw();
-        }
-      },
-
-      _onChartAttached() {
-        if (!this.active) {
-          this._maybeRenderedInBadState = true;
-        }
-      },
-
-    });
-
+        },
+      });
     })();
   </script>
 </dom-module>

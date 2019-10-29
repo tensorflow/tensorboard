@@ -7,10 +7,10 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_debugger_dashboard",
     srcs = [
+        "health-pills.html",
         "health-pills.ts",
         "selection-tree-node.ts",
         "tensor-shape-helper.ts",
-        "health-pills.html",
         "tf-debugger-continue-dialog.html",
         "tf-debugger-dashboard.html",
         "tf-debugger-initial-dialog.html",
@@ -26,6 +26,7 @@ tf_web_library(
     path = "/tf-debugger-dashboard",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components/tensor_widget",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
         "//tensorboard/components/tf_categorization_utils",
@@ -37,7 +38,7 @@ tf_web_library(
         "//tensorboard/components/tf_runs_selector",
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard:registry",
-        "//tensorboard/components/vz_line_chart",
+        "//tensorboard/components/vz_line_chart2",
         "//tensorboard/plugins/graph/tf_graph",
         "//tensorboard/plugins/graph/tf_graph_loader",
         "//tensorboard/plugins/histogram/vz_histogram_timeseries",
@@ -49,7 +50,7 @@ tf_web_library(
         "@org_polymer_paper_icon_button",
         "@org_polymer_paper_input",
         "@org_polymer_paper_item",
-        "@org_polymer_paper_menu",
+        "@org_polymer_paper_listbox",
         "@org_polymer_paper_progress",
         "@org_polymer_paper_slider",
         "@org_polymer_paper_spinner",

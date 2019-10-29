@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2016 The TensorFlow Authors. All Rights Reserved.
@@ -15,9 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-<link rel="import" href="../tf-graph-controls.html">
-<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../tf-imports/polymer.html" />
+<link rel="import" href="../tf-graph-controls.html" />
+<link rel="import" href="../../iron-demo-helpers/demo-snippet.html" />
 <title>TF Graph Controls Demo</title>
 <style>
   #demo-container {
@@ -32,13 +32,13 @@ limitations under the License.
     <dom-module id="tf-graph-controls-demo">
       <template>
         <tf-graph-controls
-            id="controls"
-            color-by="structure"
+          id="controls"
+          color-by="structure"
         ></tf-graph-controls>
       </template>
       <script>
         Polymer({
-          is: "tf-graph-controls-demo",
+          is: 'tf-graph-controls-demo',
         });
       </script>
     </dom-module>

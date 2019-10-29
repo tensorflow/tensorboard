@@ -410,7 +410,7 @@ module tf.graph.op {
       if (opDevice.toLowerCase().search('gpu:') != -1) {
         return true;
       }
-      return (opDevice.toLowerCase().search('tpu') == -1);
+      return opDevice.toLowerCase().search('tpu') == -1;
     }
     opValid(opNode: OpNode): boolean {
       // Function library nodes are generally for internal use.
@@ -435,7 +435,8 @@ module tf.graph.op {
 
   export function checkOpsForCompatibility(
     graph: SlimGraph,
-    provider: CompatibilityProvider) {
+    provider: CompatibilityProvider
+  ) {
     if (provider === null) {
       throw new Error('Compatibility provider required, but got: ' + provider);
     }
@@ -450,4 +451,4 @@ module tf.graph.op {
       });
     });
   }
-}  // close module tf.graph.op
+} // close module tf.graph.op

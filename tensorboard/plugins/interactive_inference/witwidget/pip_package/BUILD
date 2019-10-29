@@ -25,4 +25,4 @@ sh_binary(
         "local",
         "manual",
     ],
-) 
+)

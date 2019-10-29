@@ -27,6 +27,7 @@ import six
 import tensorflow as tf
 from werkzeug import wrappers
 
+from tensorflow.python.eager import profiler_client
 from tensorboard.backend import http_util
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.plugins import base_plugin
@@ -43,6 +44,7 @@ PLUGIN_NAME = 'profile'
 DATA_ROUTE = '/data'
 TOOLS_ROUTE = '/tools'
 HOSTS_ROUTE = '/hosts'
+CAPTURE_ROUTE = '/capture_profile'
 
 # Available profiling tools -> file name of the tool data.
 _FILE_NAME = 'TOOL_FILE_NAME'
@@ -53,6 +55,7 @@ TOOLS = {
     'input_pipeline_analyzer': 'input_pipeline.json',
     'overview_page': 'overview_page.json',
     'memory_viewer': 'memory_viewer.json',
+    'pod_viewer': 'pod_viewer.json',
     'google_chart_demo': 'google_chart_demo.json',
 }
 
@@ -61,6 +64,7 @@ _RAW_DATA_TOOLS = frozenset(['input_pipeline_analyzer',
                              'op_profile',
                              'overview_page',
                              'memory_viewer',
+                             'pod_viewer',
                              'google_chart_demo',])
 
 def process_raw_trace(raw_trace):
@@ -69,25 +73,14 @@ def process_raw_trace(raw_trace):
   trace.ParseFromString(raw_trace)
   return ''.join(trace_events_json.TraceEventsJsonStream(trace))
 
-
-class ProfilePluginLoader(base_plugin.TBLoader):
-  """Loader for Profile Plugin."""
-
-  def define_flags(self, parser):
-    group = parser.add_argument_group('profile plugin')
-    group.add_argument(
-        '--master_tpu_unsecure_channel',
-        metavar='ADDR',
-        type=str,
-        default='',
-        help='''\
-IP address of "master tpu", used for getting streaming trace data
-through tpu profiler analysis grpc. The grpc channel is not secured.\
-''')
-
-  def load(self, context):
-    return ProfilePlugin(context)
-
+def get_worker_list(cluster_resolver):
+  """Parses TPU workers list from the cluster resolver."""
+  cluster_spec = cluster_resolver.cluster_spec()
+  task_indices = cluster_spec.task_indices('worker')
+  worker_list = [
+      cluster_spec.task_address('worker', i).split(':')[0] for i in task_indices
+  ]
+  return ','.join(worker_list)
 
 class ProfilePlugin(base_plugin.TBPlugin):
   """Profile Plugin for TensorBoard."""
@@ -142,6 +135,14 @@ class ProfilePlugin(base_plugin.TBPlugin):
         new_thread.start()
     return self._is_active
 
+  def frontend_metadata(self):
+    # TODO(#2338): Keep this in sync with the `registerDashboard` call
+    # on the frontend until that call is removed.
+    return base_plugin.FrontendMetadata(
+        element_name='tf-profile-dashboard',
+        disable_reload=True,
+    )
+
   def start_grpc_stub_if_necessary(self):
     # We will enable streaming trace viewer on two conditions:
     # 1. user specify the flags master_tpu_unsecure_channel to the ip address of
@@ -150,7 +151,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
     if self.master_tpu_unsecure_channel and self.logdir.startswith('gs://'):
       if self.stub is None:
         import grpc
-        from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2_grpc # pylint: disable=line-too-long
+        from tensorflow.python.tpu.profiler import profiler_analysis_pb2_grpc # pylint: disable=line-too-long
         # Workaround the grpc's 4MB message limitation.
         gigabyte = 1024 * 1024 * 1024
         options = [('grpc.max_message_length', gigabyte),
@@ -158,8 +159,7 @@ class ProfilePlugin(base_plugin.TBPlugin):
                    ('grpc.max_receive_message_length', gigabyte)]
         tpu_profiler_port = self.master_tpu_unsecure_channel + ':8466'
         channel = grpc.insecure_channel(tpu_profiler_port, options)
-        self.stub = tpu_profiler_analysis_pb2_grpc.TPUProfileAnalysisStub(
-            channel)
+        self.stub = profiler_analysis_pb2_grpc.ProfileAnalysisStub(channel)
 
   def _run_dir(self, run):
     """Helper that maps a frontend run name to a profile "run" directory.
@@ -385,10 +385,10 @@ class ProfilePlugin(base_plugin.TBPlugin):
 
     self.start_grpc_stub_if_necessary()
     if tool == 'trace_viewer@' and self.stub is not None:
-      from tensorflow.contrib.tpu.profiler import tpu_profiler_analysis_pb2
-      grpc_request = tpu_profiler_analysis_pb2.ProfileSessionDataRequest()
-      grpc_request.repository_root = run_dir
-      grpc_request.session_id = profile_run[:-1]
+      from tensorflow.core.profiler import profiler_analysis_pb2
+      grpc_request = profiler_analysis_pb2.ProfileSessionDataRequest()
+      grpc_request.repository_root = os.path.dirname(run_dir)
+      grpc_request.session_id = profile_run
       grpc_request.tool_name = 'trace_viewer'
       # Remove the trailing dot if present
       grpc_request.host_name = host.rstrip('.')
@@ -432,9 +432,49 @@ class ProfilePlugin(base_plugin.TBPlugin):
       return http_util.Respond(request, '404 Not Found', 'text/plain', code=404)
     return http_util.Respond(request, data, 'application/json')
 
+  @wrappers.Request.application
+  def capture_route(self, request):
+    service_addr = request.args.get('service_addr')
+    duration = int(request.args.get('duration', '1000'))
+    is_tpu_name = request.args.get('is_tpu_name') == 'true'
+    worker_list = request.args.get('worker_list')
+    include_dataset_ops = request.args.get('include_dataset_ops') == 'true'
+    num_tracing_attempts = int(request.args.get('num_retry', '0')) + 1
+
+    if is_tpu_name:
+      try:
+        tpu_cluster_resolver = (
+            tf.distribute.cluster_resolver.TPUClusterResolver(service_addr))
+        master_grpc_addr = tpu_cluster_resolver.get_master()
+      except (ImportError, RuntimeError) as err:
+        return http_util.Respond(request, {'error': err.message},
+                                 'application/json', code=200)
+      except (ValueError, TypeError):
+        return http_util.Respond(request,
+            {'error': 'no TPUs with the specified names exist.'},
+             'application/json', code=200)
+      if not worker_list:
+        worker_list = get_worker_list(tpu_cluster_resolver)
+      # TPU cluster resolver always returns port 8470. Replace it with 8466
+      # on which profiler service is running.
+      master_ip = master_grpc_addr.replace('grpc://', '').replace(':8470', '')
+      service_addr = master_ip + ':8466'
+      # Set the master TPU for streaming trace viewer.
+      self.master_tpu_unsecure_channel = master_ip
+    try:
+      profiler_client.start_tracing(service_addr, self.logdir, duration,
+          worker_list, include_dataset_ops, num_tracing_attempts)
+      return http_util.Respond(
+          request, {'result': 'Capture profile successfully. Please refresh.'},
+          'application/json')
+    except tf.errors.UnavailableError:
+      return http_util.Respond(request, {'error': 'empty trace result.'},
+                                         'application/json', code=200)
+
   def get_plugin_apps(self):
     return {
         TOOLS_ROUTE: self.tools_route,
         HOSTS_ROUTE: self.hosts_route,
         DATA_ROUTE: self.data_route,
+        CAPTURE_ROUTE: self.capture_route,
     }

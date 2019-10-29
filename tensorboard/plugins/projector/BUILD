@@ -22,6 +22,9 @@ py_library(
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
+    data = [
+        "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
+    ],
 )
 
 py_library(
@@ -32,7 +35,7 @@ py_library(
     deps = [
         ":projector_plugin",
         ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -46,6 +49,7 @@ py_test(
         ":projector",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -59,8 +63,29 @@ py_test(
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+# TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
+py_test(
+    name = "projector_plugin_notf_test",
+    size = "small",
+    srcs = ["projector_plugin_test.py"],
+    main = "projector_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":projector_plugin",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",

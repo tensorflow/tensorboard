@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="tf-interactive-inference-dashboard.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-interactive-inference-dashboard.html" />
 <script src="tf.min.js"></script>
-<dom-module id='tf-interactive-inference-demo'>
+<dom-module id="tf-interactive-inference-demo">
   <template>
     <style>
       :host {
@@ -30,43 +29,56 @@ limitations under the License.
         width: 100%;
       }
     </style>
-    <tf-interactive-inference-dashboard id="dash" local="true" label-vocab="[[labelVocab]]" model-name="demo" inference-address="demo">
+    <tf-interactive-inference-dashboard
+      id="dash"
+      local="true"
+      label-vocab="[[labelVocab]]"
+    >
     </tf-interactive-inference-dashboard>
   </template>
   <script>
     Polymer({
-      is: "tf-interactive-inference-demo",
+      is: 'tf-interactive-inference-demo',
       properties: {
         model: Object,
         data: Array,
         indicesToInfer: {type: Object, value: () => ({})},
-        labelVocab: {type: Array,
-                     value: ['Iris-setosa', 'Iris-versicolor',
-                             'Iris-virginica']},
+        labelVocab: {
+          type: Array,
+          value: ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'],
+        },
       },
       ready: async function() {
+        this.$.dash.modelName = 'demo';
+        this.$.dash.inferenceAddress = 'demo';
         this.$.dash.multiClass = true;
         this.$.dash.updateNumberOfModels();
-        this.model = await tf.loadModel(tf.io.browserHTTPRequest(
-          'data/iris/model.json', {credentials: 'include'}));
-        const DATA_PATH = "data/iris/iris.json";
-        const testData = d3.json(DATA_PATH).then(data => {
+        this.model = await tf.loadLayersModel(
+          tf.io.browserHTTPRequest('data/iris/model.json', {
+            credentials: 'include',
+          })
+        );
+        const DATA_PATH = 'data/iris/iris.json';
+        const testData = d3.json(DATA_PATH).then((data) => {
           this.data = data;
           for (let i = 0; i < this.data.length; i++) {
             this.indicesToInfer[i] = true;
           }
           this.$.dash.updateExampleContents(
-            this.data.map(item => JSON.stringify(item)), false);
-          this.$.dash.addEventListener('update-example', e => {
+            this.data.map((item) => JSON.stringify(item)),
+            false
+          );
+          this.$.dash.addEventListener('update-example', (e) => {
             this.data[e.detail.index] = JSON.parse(e.detail.example);
             this.indicesToInfer[e.detail.index] = true;
           });
-          this.$.dash.addEventListener('duplicate-example', e => {
+          this.$.dash.addEventListener('duplicate-example', (e) => {
             this.data.push(
-              JSON.parse(JSON.stringify(this.data[e.detail.index])));
+              JSON.parse(JSON.stringify(this.data[e.detail.index]))
+            );
             this.indicesToInfer[this.data.length - 1] = true;
           });
-          this.$.dash.addEventListener('delete-example', e => {
+          this.$.dash.addEventListener('delete-example', (e) => {
             this.data.splice(e.detail.index, 1);
             const newIndicesToInfer = {};
             const oldIndicesToInfer = Object.keys(this.indicesToInfer);
@@ -80,147 +92,225 @@ limitations under the License.
             }
             this.indicesToInfer = newIndicesToInfer;
           });
-          this.$.dash.addEventListener('infer-examples', async e => {
+          this.$.dash.addEventListener('infer-examples', async (e) => {
             const inferences = {};
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
             inferences.results = [
-              {classificationResult: {classifications: []}}];
-            const tensorArr = indices.map(
-              idx => this.convertExToTensor(this.data[idx]));
+              {classificationResult: {classifications: []}},
+            ];
+            const tensorArr = indices.map((idx) =>
+              this.convertExToTensor(this.data[idx])
+            );
             const tensors = tf.concat(tensorArr);
             const input = tensors.reshape([indices.length, 4]);
             const res = this.model.predict(input, {batchSize: 128});
             const predValues = await res.data();
             input.dispose();
             tensors.dispose();
-            tensorArr.forEach(tensor => tensor.dispose());
+            tensorArr.forEach((tensor) => tensor.dispose());
             res.dispose();
             const PRED_SIZE = 3;
             for (let i = 0; i < indices.length; i++) {
-              inferences.results[0].classificationResult.classifications[i] =
-                {classes: [{label: '0', score: predValues[i * PRED_SIZE]},
-                          {label: '1', score: predValues[i * PRED_SIZE + 1]},
-                           {label: '2', score: predValues[i * PRED_SIZE + 2]}]};
+              inferences.results[0].classificationResult.classifications[i] = {
+                classes: [
+                  {label: '0', score: predValues[i * PRED_SIZE]},
+                  {label: '1', score: predValues[i * PRED_SIZE + 1]},
+                  {label: '2', score: predValues[i * PRED_SIZE + 2]},
+                ],
+              };
             }
             this.$.dash.inferences = inferences;
             this.indicesToInfer = {};
           });
-          this.$.dash.addEventListener('get-eligible-features', e => {
+          this.$.dash.addEventListener('get-eligible-features', (e) => {
             this.$.dash.partialDepPlotEligibleFeatures = [
-              {"observedMax": 7.9, "name": "sepal-length", "observedMin": 4.3},
-              {"observedMax": 4.4, "name": "sepal-width", "observedMin": 2.0},
-              {"observedMax": 6.9, "name": "petal-length", "observedMin": 1.0},
-              {"observedMax": 2.5, "name": "petal-width", "observedMin": 0.1}];
+              {observedMax: 7.9, name: 'sepal-length', observedMin: 4.3},
+              {observedMax: 4.4, name: 'sepal-width', observedMin: 2.0},
+              {observedMax: 6.9, name: 'petal-length', observedMin: 1.0},
+              {observedMax: 2.5, name: 'petal-width', observedMin: 0.1},
+            ];
           });
-          this.$.dash.addEventListener('infer-mutants', async e => {
+          this.$.dash.addEventListener('infer-mutants', async (e) => {
             const method = async () => {
-              const examples = [];
-              const featureMapping = {
-                'sepal-length': 0,
-                'sepal-width': 1,
-                'petal-length': 2,
-                'petal-width': 3,
-              };
-              const xMin = +e.detail.x_min;
-              const xMax = +e.detail.x_max;
-              const isNum = !this.$.dash.partialDepPlotEligibleFeatures[
-                featureMapping[e.detail.feature_name]].samples;
-              const numTrials = isNum ? 10 :
-                this.$.dash.partialDepPlotEligibleFeatures[
-                  featureMapping[e.detail.feature_name]].samples.length;
-              const exampleIndices = e.detail.example_index == -1 ?
-                [...Array(this.data.length).keys()] : [e.detail.example_index];
-              for (let i = 0; i < numTrials; i++) {
-                for (let idx = 0; idx < exampleIndices.length; idx++) {
-                  const ex =
-                    JSON.parse(JSON.stringify(this.data[exampleIndices[idx]]));
-                  if (isNum) {
-                    ex.features.feature[
-                      e.detail.feature_name].floatList.value[0] =
-                      xMin + i * (1 / (numTrials - 1) *(xMax - xMin));
-                  } else {
-                    ex.features.feature[
-                      e.detail.feature_name].bytesList.value[0] =
-                      btoa(this.$.dash.partialDepPlotEligibleFeatures[
-                        featureMapping[e.detail.feature_name]].samples[i]);
-                  }
-                  examples.push(ex);
+              const data = await this.createPdPlotData(
+                e.detail.feature_name,
+                e.detail.example_index,
+                +e.detail.x_min,
+                +e.detail.x_max
+              );
+              let isNum = false;
+              for (let entry of this.$.dash.partialDepPlotEligibleFeatures) {
+                if (entry.name == e.detail.feature_name && !entry.samples) {
+                  isNum = true;
+                  break;
                 }
-              }
-              const PRED_SIZE = 3;
-              const BATCH_SIZE = 128
-              const results = [[], [], []];
-              const predValuesList = [];
-              for (let i = 0; i < examples.length; i += BATCH_SIZE) {
-                let tlist = [];
-                for (let idx = i;
-                     idx < Math.min(i + BATCH_SIZE, examples.length);
-                     idx++) {
-                  tlist.push(this.convertExToTensor(examples[idx]));
-                }
-                const tconcat = tf.concat(tlist);
-                tlist.forEach(tensor => tensor.dispose());
-                const input = tconcat.reshape([tlist.length, 4]);
-                const res = this.model.predict(input, {batchSize: BATCH_SIZE});
-                const vals = await res.data();
-                predValuesList.push(vals);
-                input.dispose();
-                res.dispose();
-                tconcat.dispose();
-              }
-              const predSize = predValuesList.reduce((a, b) => a + b.length, 0);
-              const predValues = new Float32Array(predSize);
-              let curIdx = 0;
-              for (let i = 0; i < predValuesList.length; i++) {
-                predValues.set(predValuesList[i], curIdx);
-                curIdx += predValuesList[i].length;
-              }
-              for (let trialIdx = 0; trialIdx < numTrials; trialIdx++) {
-                const startingPredIdx =
-                  trialIdx * exampleIndices.length * PRED_SIZE;
-                const scores = [[], [], []];
-                for (let exampleIdx = 0; exampleIdx < exampleIndices.length;
-                    exampleIdx++) {
-                  scores[0].push(
-                    predValues[startingPredIdx + (exampleIdx * PRED_SIZE)]);
-                  scores[1].push(
-                    predValues[startingPredIdx + (exampleIdx * PRED_SIZE) + 1]);
-                  scores[2].push(
-                    predValues[startingPredIdx + (exampleIdx * PRED_SIZE) + 2]);
-                }
-                const score = [
-                  scores[0].reduce(
-                    (prev, cur) => prev + cur, 0) / scores[0].length,
-                  scores[1].reduce(
-                    (prev, cur) => prev + cur, 0) / scores[1].length,
-                  scores[2].reduce(
-                    (prev, cur) => prev + cur, 0) / scores[2].length,
-                ];
-                const ex = examples[trialIdx * exampleIndices.length];
-                const step = isNum ? ex.features.feature[
-                  e.detail.feature_name].floatList.value[0]
-                      : [atob(ex.features.feature[
-                          e.detail.feature_name].bytesList.value[0])];
-                results[0].push({step: step, scalar: score[0]});
-                results[1].push({step: step, scalar: score[1]});
-                results[2].push({step: step, scalar: score[2]});
               }
               this.$.dash.makeChartForFeature(
                 isNum ? 'numeric' : 'categorical',
                 e.detail.feature_name,
-                [[{'0': results[0], '1': results[1], '2': results[2]}]]);
+                data
+              );
             };
             setTimeout(method, 50);
-          })
+          });
+          this.$.dash.addEventListener('sort-eligible-features', async (e) => {
+            const method = async () => {
+              const chartData = {};
+              const list = this.$.dash.partialDepPlotEligibleFeatures;
+              for (let feat of list) {
+                chartData[feat.name] = await this.createPdPlotData(
+                  feat.name,
+                  e.detail.example_index,
+                  +feat.observedMin,
+                  +feat.observedMax
+                );
+              }
+              for (let feat of list) {
+                const charts = chartData[feat.name];
+                let maxMeasure = 0;
+                const isNum = feat.samples == null;
+                for (let models of charts) {
+                  for (let chart of models) {
+                    for (let key in chart) {
+                      const series = chart[key];
+                      let measure = 0;
+                      if (isNum) {
+                        for (let i = 0; i < series.length - 1; i++) {
+                          measure += Math.abs(
+                            series[i].scalar - series[i + 1].scalar
+                          );
+                        }
+                      } else {
+                        let minY = Infinity;
+                        let maxY = -Infinity;
+                        for (let i = 0; i < series.length; i++) {
+                          const val = series[i].scalar;
+                          if (val < minY) {
+                            minY = val;
+                          }
+                          if (val > maxY) {
+                            maxY = val;
+                          }
+                        }
+                        measure = maxY - minY;
+                      }
+                      if (measure > maxMeasure) {
+                        maxMeasure = measure;
+                      }
+                    }
+                  }
+                }
+                feat.interestingness = maxMeasure;
+              }
+              this.$.dash.partialDepPlotEligibleFeatures = [];
+              list.sort((a, b) => b.interestingness - a.interestingness);
+              this.$.dash.partialDepPlotEligibleFeatures = list;
+            };
+            setTimeout(method, 50);
+          });
           requestAnimationFrame(() => {
             this.$.dash.inferClicked_();
-            this.$.dash.selectedLabelFeature = "class";
+            this.$.dash.selectedLabelFeature = 'class';
           });
         });
       },
+      createPdPlotData: async function(featureName, exampleIndex, xMin, xMax) {
+        const examples = [];
+        let feat = null;
+        for (let entry of this.$.dash.partialDepPlotEligibleFeatures) {
+          if (entry.name == featureName) {
+            feat = entry;
+            break;
+          }
+        }
+        const isNum = !feat.samples;
+        const numTrials = isNum ? 10 : feat.samples.length;
+        const exampleIndices =
+          exampleIndex == -1
+            ? [...Array(this.data.length).keys()]
+            : [exampleIndex];
+        for (let i = 0; i < numTrials; i++) {
+          for (let idx = 0; idx < exampleIndices.length; idx++) {
+            const ex = JSON.parse(
+              JSON.stringify(this.data[exampleIndices[idx]])
+            );
+            if (isNum) {
+              ex.features.feature[featureName].floatList.value[0] =
+                xMin + i * ((1 / (numTrials - 1)) * (xMax - xMin));
+            } else {
+              ex.features.feature[featureName].bytesList.value[0] = btoa(
+                feat.samples[i]
+              );
+            }
+            examples.push(ex);
+          }
+        }
+        const PRED_SIZE = 3;
+        const BATCH_SIZE = 128;
+        const results = [[], [], []];
+        const predValuesList = [];
+        for (let i = 0; i < examples.length; i += BATCH_SIZE) {
+          let tlist = [];
+          for (
+            let idx = i;
+            idx < Math.min(i + BATCH_SIZE, examples.length);
+            idx++
+          ) {
+            tlist.push(this.convertExToTensor(examples[idx]));
+          }
+          const tconcat = tf.concat(tlist);
+          tlist.forEach((tensor) => tensor.dispose());
+          const input = tconcat.reshape([tlist.length, 4]);
+          const res = this.model.predict(input, {batchSize: BATCH_SIZE});
+          const vals = await res.data();
+          predValuesList.push(vals);
+          input.dispose();
+          res.dispose();
+          tconcat.dispose();
+        }
+        const predSize = predValuesList.reduce((a, b) => a + b.length, 0);
+        const predValues = new Float32Array(predSize);
+        let curIdx = 0;
+        for (let i = 0; i < predValuesList.length; i++) {
+          predValues.set(predValuesList[i], curIdx);
+          curIdx += predValuesList[i].length;
+        }
+        for (let trialIdx = 0; trialIdx < numTrials; trialIdx++) {
+          const startingPredIdx = trialIdx * exampleIndices.length * PRED_SIZE;
+          const scores = [[], [], []];
+          for (
+            let exampleIdx = 0;
+            exampleIdx < exampleIndices.length;
+            exampleIdx++
+          ) {
+            scores[0].push(
+              predValues[startingPredIdx + exampleIdx * PRED_SIZE]
+            );
+            scores[1].push(
+              predValues[startingPredIdx + exampleIdx * PRED_SIZE + 1]
+            );
+            scores[2].push(
+              predValues[startingPredIdx + exampleIdx * PRED_SIZE + 2]
+            );
+          }
+          const score = [
+            scores[0].reduce((prev, cur) => prev + cur, 0) / scores[0].length,
+            scores[1].reduce((prev, cur) => prev + cur, 0) / scores[1].length,
+            scores[2].reduce((prev, cur) => prev + cur, 0) / scores[2].length,
+          ];
+          const ex = examples[trialIdx * exampleIndices.length];
+          const step = isNum
+            ? ex.features.feature[featureName].floatList.value[0]
+            : [atob(ex.features.feature[featureName].bytesList.value[0])];
+          results[0].push({step: step, scalar: score[0]});
+          results[1].push({step: step, scalar: score[1]});
+          results[2].push({step: step, scalar: score[2]});
+        }
+        return [[{'0': results[0], '1': results[1], '2': results[2]}]];
+      },
       convertExToTensor: function(ex) {
-        const vals = []
+        const vals = [];
 
         vals.push(this.getValueListForFeature(ex, 'sepal-length'));
         vals.push(this.getValueListForFeature(ex, 'sepal-width'));

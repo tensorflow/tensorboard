@@ -12,7 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests the debug_graphs_helper module."""
+"""Tests the debug_graphs_helper module.
+
+[1]: Below graph creates different ops
+  a = tf.Variable([1.0], name='a')
+  b = tf.Variable([2.0], name='b')
+  _ = tf.add(a, b, name='c')
+
+In v1:
+  a, a/Assign, a/initial_value, a/read,
+  b, b/Assign, b/initial_value, b/read,
+  c
+In v2:
+  a, a/Assign, a/Initializer/initial_value,
+  a/IsInitialized/VarIsInitializedOp, a/Read/ReadVariableOp
+  b, b/Assign, b/Initializer/initial_value,
+  b/IsInitialized/VarIsInitializedOp, b/Read/ReadVariableOp,
+  c, c/ReadVariableOp,  c/ReadVariableOp_1,
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,13 +37,15 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
+# See discussion on issue #1996 for private module import justification.
+from tensorflow.python import tf2 as tensorflow_python_tf2
 from tensorflow.python.debug.lib import grpc_debug_test_server
 
 from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.util import tb_logging
+from tensorboard.util import test_util
 
-tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
@@ -90,15 +109,11 @@ class ExtractGatedGrpcDebugOpsTest(tf.test.TestCase):
       gated_debug_ops = [
           (item[0], item[2], item[3]) for item in gated_debug_ops]
 
-      # TODO(#1705): TF 2.0 breaks below.
       self.assertIn(('a', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('a/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('b', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('b/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('c', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('c/read', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('d', 0, 'DebugIdentity'), gated_debug_ops)
-      self.assertIn(('d/read', 0, 'DebugIdentity'), gated_debug_ops)
+
       self.assertIn(('x', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('y', 0, 'DebugIdentity'), gated_debug_ops)
       self.assertIn(('z', 0, 'DebugIdentity'), gated_debug_ops)
@@ -153,9 +168,14 @@ class BaseExpandedNodeNameTest(tf.test.TestCase):
       self.assertEqual(
           'bar/b/read',
           graph_wrapper.maybe_base_expanded_node_name('bar/b/read'))
-      # TODO(#1705): TF 2.0 tf.add creates nested nodes.
-      self.assertEqual(
-          'baz/c', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
+
+      if tensorflow_python_tf2.enabled():
+        # NOTE(#1705): TF 2.0 tf.add creates nested nodes.
+        self.assertEqual(
+            'baz/c/(c)', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
+      else:
+        self.assertEqual(
+            'baz/c', graph_wrapper.maybe_base_expanded_node_name('baz/c'))
 
 
 if __name__ == '__main__':

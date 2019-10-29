@@ -13,52 +13,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_storage {
-
-// TODO(stephanwlee): Combine this with tf_backend.ListenKey and put it in a
-// sensible place.
-// A unique reference to a listener for an easier dereferencing.
-export class ListenKey {
-  public readonly listener: Function;
-  constructor(listener: Function) {
-    this.listener = listener;
+  // TODO(stephanwlee): Combine this with tf_backend.ListenKey and put it in a
+  // sensible place.
+  // A unique reference to a listener for an easier dereferencing.
+  export class ListenKey {
+    public readonly listener: Function;
+    constructor(listener: Function) {
+      this.listener = listener;
+    }
   }
-}
 
-const hashListeners = new Set<ListenKey>();
-const storageListeners = new Set<ListenKey>();
+  const hashListeners = new Set<ListenKey>();
+  const storageListeners = new Set<ListenKey>();
 
-window.addEventListener('hashchange', () => {
-  hashListeners.forEach(listenKey => listenKey.listener());
-});
+  window.addEventListener('hashchange', () => {
+    hashListeners.forEach((listenKey) => listenKey.listener());
+  });
 
-// [1]: The event only triggers when another tab edits the storage. Changing a
-// value in current browser tab will NOT trigger below event.
-window.addEventListener('storage', () => {
-  storageListeners.forEach(listenKey => listenKey.listener());
-});
+  // [1]: The event only triggers when another tab edits the storage. Changing a
+  // value in current browser tab will NOT trigger below event.
+  window.addEventListener('storage', () => {
+    storageListeners.forEach((listenKey) => listenKey.listener());
+  });
 
-export function addHashListener(fn: Function): ListenKey {
-  const key = new ListenKey(fn);
-  hashListeners.add(key);
-  return key;
-}
+  export function addHashListener(fn: Function): ListenKey {
+    const key = new ListenKey(fn);
+    hashListeners.add(key);
+    return key;
+  }
 
-export function addStorageListener(fn: Function): ListenKey {
-  const key = new ListenKey(fn);
-  storageListeners.add(key);
-  return key;
-}
+  export function addStorageListener(fn: Function): ListenKey {
+    const key = new ListenKey(fn);
+    storageListeners.add(key);
+    return key;
+  }
 
-export function fireStorageChanged() {
-  storageListeners.forEach(listenKey => listenKey.listener());
-}
+  export function fireStorageChanged() {
+    storageListeners.forEach((listenKey) => listenKey.listener());
+  }
 
-export function removeHashListenerByKey(key: ListenKey) {
-  hashListeners.delete(key);
-}
+  export function removeHashListenerByKey(key: ListenKey) {
+    hashListeners.delete(key);
+  }
 
-export function removeStorageListenerByKey(key: ListenKey) {
-  storageListeners.delete(key);
-}
-
-}  // namespace tf_storage
+  export function removeStorageListenerByKey(key: ListenKey) {
+    storageListeners.delete(key);
+  }
+} // namespace tf_storage

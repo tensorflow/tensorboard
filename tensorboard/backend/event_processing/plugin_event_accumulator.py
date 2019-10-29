@@ -23,6 +23,7 @@ import threading
 import six
 
 from tensorboard import data_compat
+from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
@@ -41,11 +42,6 @@ logger = tb_logging.get_logger()
 namedtuple = collections.namedtuple
 
 TensorEvent = namedtuple('TensorEvent', ['wall_time', 'step', 'tensor_proto'])
-
-## Different types of summary events handled by the event_accumulator
-SUMMARY_TYPES = {
-    'tensor': '_ProcessTensor',
-}
 
 ## The tagTypes below are just arbitrary strings chosen to pass the type
 ## information of the tag from the backend to the frontend
@@ -105,7 +101,8 @@ class EventAccumulator(object):
                path,
                size_guidance=None,
                tensor_size_guidance=None,
-               purge_orphaned_data=True):
+               purge_orphaned_data=True,
+               event_file_active_filter=None):
     """Construct the `EventAccumulator`.
 
     Args:
@@ -125,6 +122,9 @@ class EventAccumulator(object):
         `size_guidance[event_accumulator.TENSORS]`. Defaults to `{}`.
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
+      event_file_active_filter: Optional predicate for determining whether an
+        event file latest load timestamp should be considered active. If passed,
+        this will enable multifile directory loading.
     """
     size_guidance = dict(size_guidance or DEFAULT_SIZE_GUIDANCE)
     sizes = {}
@@ -156,7 +156,7 @@ class EventAccumulator(object):
     self._plugin_tag_locks = collections.defaultdict(threading.Lock)
 
     self.path = path
-    self._generator = _GeneratorFromPath(path)
+    self._generator = _GeneratorFromPath(path, event_file_active_filter)
     self._generator_mutex = threading.Lock()
 
     self.purge_orphaned_data = purge_orphaned_data
@@ -345,15 +345,14 @@ class EventAccumulator(object):
                   ('This summary with tag %r is oddly not associated with a '
                    'plugin.'), tag)
 
-        for summary_type, summary_func in SUMMARY_TYPES.items():
-          if value.HasField(summary_type):
-            datum = getattr(value, summary_type)
-            tag = value.tag
-            if summary_type == 'tensor' and not tag:
-              # This tensor summary was created using the old method that used
-              # plugin assets. We must still continue to support it.
-              tag = value.node_name
-            getattr(self, summary_func)(tag, event.wall_time, event.step, datum)
+        if value.HasField('tensor'):
+          datum = value.tensor
+          tag = value.tag
+          if not tag:
+            # This tensor summary was created using the old method that used
+            # plugin assets. We must still continue to support it.
+            tag = value.node_name
+          self._ProcessTensor(tag, event.wall_time, event.step, datum)
 
   def Tags(self):
     """Return all tags found in the value stream.
@@ -568,12 +567,18 @@ def _GetPurgeMessage(most_recent_step, most_recent_wall_time, event_step,
                   event_step, event_wall_time)
 
 
-def _GeneratorFromPath(path):
+def _GeneratorFromPath(path, event_file_active_filter=None):
   """Create an event generator for file or directory at given path string."""
   if not path:
     raise ValueError('path must be a valid string')
   if io_wrapper.IsTensorFlowEventsFile(path):
     return event_file_loader.EventFileLoader(path)
+  elif event_file_active_filter:
+    return directory_loader.DirectoryLoader(
+      path,
+      event_file_loader.TimestampedEventFileLoader,
+      path_filter=io_wrapper.IsTensorFlowEventsFile,
+      active_filter=event_file_active_filter)
   else:
     return directory_watcher.DirectoryWatcher(
         path,

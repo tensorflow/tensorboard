@@ -25,6 +25,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.util import test_util
 
 
 def _AddEvents(path):
@@ -89,8 +90,10 @@ class _FakeAccumulator(object):
 def _GetFakeAccumulator(path,
                         size_guidance=None,
                         tensor_size_guidance=None,
-                        purge_orphaned_data=None):
+                        purge_orphaned_data=None,
+                        event_file_active_filter=None):
   del size_guidance, tensor_size_guidance, purge_orphaned_data  # Unused.
+  del event_file_active_filter  # unused
   return _FakeAccumulator(path)
 
 
@@ -366,10 +369,36 @@ class EventMultiplexerTest(tf.test.TestCase):
 
 class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
 
+  def testMultifileReload(self):
+    multiplexer = event_multiplexer.EventMultiplexer(
+        event_file_active_filter=lambda timestamp: True)
+    logdir = self.get_temp_dir()
+    run_name = 'run1'
+    run_path = os.path.join(logdir, run_name)
+    # Create two separate event files, using filename suffix to ensure a
+    # deterministic sort order, and then simulate a write to file A, then
+    # to file B, then another write to file A (with reloads after each).
+    with test_util.FileWriter(run_path, filename_suffix='.a') as writer_a:
+      writer_a.add_test_summary('a1', step=1)
+      writer_a.flush()
+      multiplexer.AddRunsFromDirectory(logdir)
+      multiplexer.Reload()
+      with test_util.FileWriter(run_path, filename_suffix='.b') as writer_b:
+        writer_b.add_test_summary('b', step=1)
+      multiplexer.Reload()
+      writer_a.add_test_summary('a2', step=2)
+      writer_a.flush()
+      multiplexer.Reload()
+    # Both event files should be treated as active, so we should load the newly
+    # written data to the first file even though it's no longer the latest one.
+    self.assertEqual(1, len(multiplexer.Tensors(run_name, 'a1')))
+    self.assertEqual(1, len(multiplexer.Tensors(run_name, 'b')))
+    self.assertEqual(1, len(multiplexer.Tensors(run_name, 'a2')))
+
   def testDeletingDirectoryRemovesRun(self):
     x = event_multiplexer.EventMultiplexer()
     tmpdir = self.get_temp_dir()
-    self.add3RunsToMultiplexer(tmpdir, x)
+    self._add3RunsToMultiplexer(tmpdir, x)
     x.Reload()
 
     # Delete the directory, then reload.
@@ -377,7 +406,7 @@ class EventMultiplexerWithRealAccumulatorTest(tf.test.TestCase):
     x.Reload()
     self.assertNotIn('run2', x.Runs().keys())
 
-  def add3RunsToMultiplexer(self, logdir, multiplexer):
+  def _add3RunsToMultiplexer(self, logdir, multiplexer):
     """Creates and adds 3 runs to the multiplexer."""
     run1_dir = os.path.join(logdir, 'run1')
     run2_dir = os.path.join(logdir, 'run2')

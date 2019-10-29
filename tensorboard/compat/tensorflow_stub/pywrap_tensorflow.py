@@ -164,82 +164,70 @@ def crc32c(data):
 
 
 class PyRecordReader_New:
-    def __init__(
-      self,
-      filename=None,
-      start_offset=0,
-      compression_type=None,
-      status=None
-    ):
-        self.event_strs = []
+    def __init__(self, filename=None, start_offset=0, compression_type=None,
+                 status=None):
+        if filename is None:
+            raise errors.NotFoundError(
+                None, None, 'No filename provided, cannot read Events')
+        if not gfile.exists(filename):
+            raise errors.NotFoundError(
+                None, None,
+                '{} does not point to valid Events file'.format(filename))
+        if start_offset:
+            raise errors.UnimplementedError(
+                None, None, 'start offset not supported by compat reader')
+        if compression_type:
+            # TODO: Handle gzip and zlib compressed files
+            raise errors.UnimplementedError(
+                None, None, 'compression not supported by compat reader')
         self.filename = filename
         self.start_offset = start_offset
         self.compression_type = compression_type
         self.status = status
-        self.done_reading = False
-        self.index = -1
-
-    def read(self):
-        if self.filename is None:
-            raise errors.NotFoundError(
-                None, None, 'No filename provided, cannot read Events')
-        if not gfile.exists(self.filename):
-            raise errors.NotFoundError(
-                None, None,
-                '{} does not point to valid Events file'.format(self.filename))
-
-        # TODO: Handle gzip and zlib compressed files
-        with gfile.GFile(self.filename, 'rb') as f:
-            f.read(self.start_offset)
-
-            while True:
-                # Read the header
-                header_str = f.read(8)
-                if len(header_str) != 8:
-                    break  # Hit EOF so exit
-                header = struct.unpack('Q', header_str)
-
-                # Read the crc32, which is 4 bytes, and check it against
-                # the crc32 of the header
-                crc_header_str = f.read(4)
-                crc_header = struct.unpack('I', crc_header_str)
-                header_crc_calc = masked_crc32c(header_str)
-                if header_crc_calc != crc_header[0]:
-                    raise errors.DataLossError(
-                        None, None,
-                        '{} failed header crc32 check'.format(self.filename)
-                    )
-
-                # The length of the header tells us how many bytes the Event
-                # string takes
-                header_len = int(header[0])
-                event_str = f.read(header_len)
-
-                event_crc_calc = masked_crc32c(event_str)
-
-                # The next 4 bytes contain the crc32 of the Event string,
-                # which we check for integrity. Sometimes, the last Event
-                # has no crc32, in which case we skip.
-                crc_event_str = f.read(4)
-                if crc_event_str:
-                    crc_event = struct.unpack('I', crc_event_str)
-                    if event_crc_calc != crc_event[0]:
-                        raise errors.DataLossError(
-                            None, None,
-                            '{} failed event crc32 check'.format(self.filename)
-                        )
-                self.event_strs += [event_str]
-
-        self.done_reading = True
+        self.curr_event = None
+        self.file_handle = gfile.GFile(self.filename, 'rb')
 
     def GetNext(self):
-        if not self.done_reading:
-            self.read()
-
-        if self.index >= len(self.event_strs) - 1:
+        # Read the header
+        self.curr_event = None
+        header_str = self.file_handle.read(8)
+        if len(header_str) != 8:
+            # Hit EOF so raise and exit
             raise errors.OutOfRangeError(None, None, 'No more events to read')
-        else:
-            self.index += 1
+        header = struct.unpack('Q', header_str)
+
+        # Read the crc32, which is 4 bytes, and check it against
+        # the crc32 of the header
+        crc_header_str = self.file_handle.read(4)
+        crc_header = struct.unpack('I', crc_header_str)
+        header_crc_calc = masked_crc32c(header_str)
+        if header_crc_calc != crc_header[0]:
+            raise errors.DataLossError(
+                None, None,
+                '{} failed header crc32 check'.format(self.filename)
+            )
+
+        # The length of the header tells us how many bytes the Event
+        # string takes
+        header_len = int(header[0])
+        event_str = self.file_handle.read(header_len)
+
+        event_crc_calc = masked_crc32c(event_str)
+
+        # The next 4 bytes contain the crc32 of the Event string,
+        # which we check for integrity. Sometimes, the last Event
+        # has no crc32, in which case we skip.
+        crc_event_str = self.file_handle.read(4)
+        if crc_event_str:
+            crc_event = struct.unpack('I', crc_event_str)
+            if event_crc_calc != crc_event[0]:
+                raise errors.DataLossError(
+                    None, None,
+                    '{} failed event crc32 check'.format(self.filename)
+                )
+
+        # Set the current event to be read later by record() call
+        self.curr_event = event_str
 
     def record(self):
-        return self.event_strs[self.index]
+        return self.curr_event

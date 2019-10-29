@@ -27,91 +27,113 @@ You may obtain a copy of the License at
     (5) Recommendation for next steps
 -->
 
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
-<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../vz-line-chart2/vz-line-chart2.html" />
+<link rel="import" href="../paper-card/paper-card.html" />
 
 <dom-module id="overview-page">
   <template>
     <style>
-     paper-card {
-       margin: 5px;
-       --paper-card-header-color: #F5F5F5;
-       --paper-card-header: background-color: #4285F4;
-     }
-     .flex-horizontal {
-       @apply --layout-horizontal;
-     }
-     .steptime-average {
-       font-weight: bold;
-       font-style: italic;
-       color: var(--summary-color, green);
-     }
-     .table-style {
-       table-layout: auto;
-       width: 95%;
-     }
-     .top-ops-table {
-       width: 100%;
-     }
-     vz-line-chart.step-graph {
-       width: 860px;
-       height: 200px;
-     }
-     .x-axis-title {
-       width: 80%;
-       text-align: center;
-       text-transform: capitalize;
-     }
-     .y-axis-title {
-       width: 10px;
-       writing-mode: bt-rl;
-       transform: rotate(270deg);
-       text-align: center;
-       white-space: nowrap;
-       text-transform: capitalize;
-     }
-     div.bottleneck-statement {
-       color: var(--summary-color, green);
-       font-weight: bolder;
-       font-style: italic;
-     }
-     div.errorMessage {
-       color: red;
-       font-size: 0.5cm;
-       font-weight: bolder;
-       margin-top: 0.5cm;
-       margin-bottom: 0.5cm;
-     }
-     div.bottleneckTips {
-       color: #000000;
-     }
-     div.bottleneckTips a{
-       color: #ff33cc;
-       text-decoration: underline;
-     }
-     div.documentationTips {
-       color: #666699;
-     }
-     div.documentationTips a{
-       color: #33cc00;
-       text-decoration: underline;
-     }
+      paper-card {
+        margin: 5px;
+        --paper-card-header-color: #f5f5f5;
+        --paper-card-header: {
+          background-color: #4285f4;
+        }
+      }
+      .flex-horizontal {
+        @apply --layout-horizontal;
+      }
+      .steptime-average {
+        font-weight: bold;
+        font-style: italic;
+        color: var(--summary-color, green);
+      }
+      .table-style {
+        table-layout: auto;
+        width: 95%;
+      }
+      .top-ops-table {
+        width: 100%;
+      }
+      vz-line-chart2.step-graph {
+        width: 860px;
+        height: 200px;
+      }
+      .x-axis-title {
+        width: 80%;
+        text-align: center;
+        text-transform: capitalize;
+      }
+      .y-axis-title {
+        width: 10px;
+        writing-mode: bt-rl;
+        transform: rotate(270deg);
+        text-align: center;
+        white-space: nowrap;
+        text-transform: capitalize;
+      }
+      div.bottleneck-statement {
+        color: var(--summary-color, green);
+        font-weight: bolder;
+        font-style: italic;
+      }
+      div.errorMessage {
+        color: red;
+        font-size: 0.5cm;
+        font-weight: bolder;
+        margin-top: 0.5cm;
+        margin-bottom: 0.5cm;
+      }
+      div.bottleneckTips {
+        color: #000000;
+      }
+      div.bottleneckTips a {
+        color: #ff33cc;
+        text-decoration: underline;
+      }
+      div.documentationTips {
+        color: #666699;
+      }
+      div.documentationTips a {
+        color: #33cc00;
+        text-decoration: underline;
+      }
     </style>
-    <div class="errorMessage" hidden=[[!_error_message]]>
+    <div class="errorMessage" hidden="[[!_error_message]]">
       <span>[[_error_message]]</span>
     </div>
-    <div hidden=[[_error_message]]>
+    <div hidden="[[_error_message]]">
       <div class="container flex-horizontal">
         <paper-card heading="Performance Summary">
           <div class="card-content">
-            <p><b>Average step time</b> (lower is better): <b><span class="steptime-average" >[[_steptime_ms_average]] ms</span> </b> <i style="opacity:0.7">(standard deviation = <span>[[_steptime_ms_stddev]]</span> ms)</i></p>
-            <ul hidden$=[[!_infeed_ms_average]]>
+            <p>
+              <b>Average step time</b> (lower is better):
+              <b
+                ><span class="steptime-average"
+                  >[[_steptime_ms_average]] ms</span
+                >
+              </b>
+              <i style="opacity:0.7"
+                >(standard deviation =
+                <span>[[_steptime_ms_stddev]]</span> ms)</i
+              >
+            </p>
+            <ul hidden$="[[!_infeed_ms_average]]">
               <li>Average infeed: <span>[[_infeed_ms_average]]</span> ms</li>
               <li>Average compute: <span>[[_compute_ms_average]]</span> ms</li>
             </ul>
-            <p><b>Host idle time</b> (lower is better): <span>[[_host_idle_time_percent]]</span></p>
-            <p><b>TPU idle time</b> (lower is better): <span>[[_device_idle_time_percent]]</p>
-            <p><b>Utilization of TPU Matrix Units</b> (higher is better): <span>[[_mxu_utilization_percent]]</span></p>
+            <p>
+              <b>Host idle time</b> (lower is better):
+              <span>[[_host_idle_time_percent]]</span>
+            </p>
+            <p>
+              <b>TPU idle time</b> (lower is better):
+              <span>[[_device_idle_time_percent]]</span>
+            </p>
+            <p>
+              <b>Utilization of TPU Matrix Units</b> (higher is better):
+              <span>[[_mxu_utilization_percent]]</span>
+            </p>
           </div>
         </paper-card>
         <paper-card heading="Step-time Graph">
@@ -120,8 +142,8 @@ You may obtain a copy of the License at
               <tr>
                 <td><div class="y-axis-title">milliseconds</div></td>
                 <td>
-                  <vz-line-chart class="step-graph" id="device_step_chart">
-                  </vz-line-chart>
+                  <vz-line-chart2 class="step-graph" id="device_step_chart">
+                  </vz-line-chart2>
                   <div><p class="x-axis-title">training step number</p></div>
                 </td>
               </tr>
@@ -141,8 +163,7 @@ You may obtain a copy of the License at
                 <th>Operation</th>
                 <th>GFlops/sec</th>
               </thread>
-              <tbody id="top_ops_table_content">
-              </tbody>
+              <tbody id="top_ops_table_content"></tbody>
             </table>
           </div>
         </paper-card>
@@ -151,294 +172,325 @@ You may obtain a copy of the License at
         <paper-card heading="Run Environment">
           <div class="card-content">
             <p><b>Number of Hosts used</b>: <span>[[_host_count]]</span></p>
-            <p><b>TPU type</b>: Cloud TPU</span></p>
+            <p><b>TPU type</b>: Cloud TPU</p>
             <p><b>Number of TPU cores</b>: <span> [[_tpu_core_count]]</span></p>
           </div>
         </paper-card>
         <paper-card heading="Recommendation for Next Steps">
           <div class="card-content">
-            <div class="bottleneck-statement"> <span>[[_statement]]</span></div>
+            <div class="bottleneck-statement"><span>[[_statement]]</span></div>
             <div id="host_side_tips"></div>
             <div id="device_side_tips"></div>
             <div id="documentation_tips"></div>
           </div>
         </paper-card>
-     </div>
+      </div>
     </div>
   </template>
 
   <script>
-   Polymer({
-     is: 'overview-page',
-     properties: {
-       _data: {
-         type: Object,
-         observer: '_updateView',
-       },
-       _show_top_ops_table: {
-         type: Boolean,
-         value: false,
-       },
-       _show_step_time_graph: {
-         type: Boolean,
-         computed: '_shouldShowStepTimeGraph(_data, _active)',
-       },
-       _top_ops_button_text: {
-         type: String,
-         computed: '_getTopOpsButtonText(_show_top_ops_table)',
-       },
-       _generalAnalysisJson: {
-         type: String,
-       },
-       _inputAnalysisJson: {
-         type: String,
-       },
-       _runEnvironmentJson: {
-         type: String,
-       },
-       _recommendationJson: {
-         type: String,
-       },
-       _active: {
-         type: Boolean,
-         value: false,
-         observer: '_onActiveChanged',
-       },
-       _host_idle_time_percent: { type: String },
-       _device_idle_time_percent: { type: String },
-       _mxu_utilization_percent: { type: String },
-       _steptime_ms_average: { type: String },
-       _steptime_ms_stddev: { type: String },
-       _infeed_ms_average: { type: String, value: '' },
-       _compute_ms_average: { type: String, value: '' },
-       _top_ops_heading: { type: String },
-       _error_message: { type: String },
-       _host_count: { type: String },
-       _tpu_type: { type: String },
-       _tpu_core_count: { type: String },
-       _batch_size: { type: String },
-       _change_list: { type: String },
-       _build_time: { type: String },
-       _build_target: { type: String },
-       _statement: { type: String },
-     },
-     observers: [
-       '_showSummary(_inputAnalysisJson, _generalAnalysisJson)',
-       '_showRunEnvironment(_runEnvironmentJson)',
-       '_showDeviceStepChart(_inputAnalysisJson)',
-       '_showTopOpsTable(_generalAnalysisJson)',
-       '_showRecommendation(_recommendationJson)',
-     ],
+    Polymer({
+      is: 'overview-page',
+      properties: {
+        _data: {
+          type: Object,
+          observer: '_updateView',
+        },
+        _show_top_ops_table: {
+          type: Boolean,
+          value: false,
+        },
+        _show_step_time_graph: {
+          type: Boolean,
+          computed: '_shouldShowStepTimeGraph(_data, _active)',
+        },
+        _top_ops_button_text: {
+          type: String,
+          computed: '_getTopOpsButtonText(_show_top_ops_table)',
+        },
+        _generalAnalysisJson: {
+          type: String,
+        },
+        _inputAnalysisJson: {
+          type: String,
+        },
+        _runEnvironmentJson: {
+          type: String,
+        },
+        _recommendationJson: {
+          type: String,
+        },
+        _active: {
+          type: Boolean,
+          value: false,
+          observer: '_onActiveChanged',
+        },
+        _host_idle_time_percent: {type: String},
+        _device_idle_time_percent: {type: String},
+        _mxu_utilization_percent: {type: String},
+        _steptime_ms_average: {type: String},
+        _steptime_ms_stddev: {type: String},
+        _infeed_ms_average: {type: String, value: ''},
+        _compute_ms_average: {type: String, value: ''},
+        _top_ops_heading: {type: String},
+        _error_message: {type: String},
+        _host_count: {type: String},
+        _tpu_type: {type: String},
+        _tpu_core_count: {type: String},
+        _batch_size: {type: String},
+        _change_list: {type: String},
+        _build_time: {type: String},
+        _build_target: {type: String},
+        _statement: {type: String},
+      },
+      observers: [
+        '_showSummary(_inputAnalysisJson, _generalAnalysisJson)',
+        '_showRunEnvironment(_runEnvironmentJson)',
+        '_showDeviceStepChart(_inputAnalysisJson)',
+        '_showTopOpsTable(_generalAnalysisJson)',
+        '_showRecommendation(_recommendationJson)',
+      ],
 
-     /* Toggles _show_top_ops_table */
-     onClickTopOps: function(e) {
-       this._show_top_ops_table =  !this._show_top_ops_table;
-     },
+      /* Toggles _show_top_ops_table */
+      onClickTopOps: function(e) {
+        this._show_top_ops_table = !this._show_top_ops_table;
+      },
 
-     /* Gets the current text of the "show-top-ops" button */
-     _getTopOpsButtonText: function(show_top_ops_table) {
-       return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
-     },
+      /* Gets the current text of the "show-top-ops" button */
+      _getTopOpsButtonText: function(show_top_ops_table) {
+        return (show_top_ops_table ? 'Hide' : 'Show') + ' table';
+      },
 
-     /* Updates view according to new data */
-     _updateView: function() {
-       if (!this._data || !this._active) {
-         return;
-       }
-       this._generalAnalysisJson = this._data[0];
-       this._inputAnalysisJson = this._data[1];
-       this._runEnvironmentJson = this._data[2];
-       const recommendationJson = this._data[3];
-       this._recommendationJson = recommendationJson;
-       this._statement = recommendationJson.p['statement'];
-       if (this._statement.includes('HIGHLY')) {
-         this.customStyle['--summary-color'] = 'red';
-       } else if (this._statement.includes('MODERATE')) {
-         this.customStyle['--summary-color'] = 'orange';
-       } else {
-         this.customStyle['--summary-color'] = 'green';
-       }
-       this.updateStyles();
-     },
+      /* Updates view according to new data */
+      _updateView: function() {
+        if (!this._data || !this._active) {
+          return;
+        }
+        this._generalAnalysisJson = this._data[0];
+        this._inputAnalysisJson = this._data[1];
+        this._runEnvironmentJson = this._data[2];
+        const recommendationJson = this._data[3];
+        this._recommendationJson = recommendationJson;
+        this._statement = recommendationJson.p['statement'];
+        let color = 'green';
+        if (this._statement.includes('HIGHLY')) {
+          color = 'red';
+        } else if (this._statement.includes('MODERATE')) {
+          color = 'orange';
+        }
+        this.updateStyles({
+          '--summary-color': color,
+        });
+      },
 
-     /* Displays performance summary for the profile run */
-     _showSummary : function(inputAnalysisJson, generalAnalysisJson) {
-       if (!inputAnalysisJson || !generalAnalysisJson) {
-         return;
-       }
-       this._host_idle_time_percent =
-           generalAnalysisJson.p['host_idle_time_percent'];
-       this._device_idle_time_percent =
-           generalAnalysisJson.p['device_idle_time_percent'];
-       this._mxu_utilization_percent =
-           generalAnalysisJson.p['mxu_utilization_percent'];
-       this._steptime_ms_average =
-           inputAnalysisJson.p['steptime_ms_average'];
-       this._steptime_ms_stddev =
-           inputAnalysisJson.p['steptime_ms_standard_deviation'];
-       this._compute_ms_average =
-           inputAnalysisJson.p['compute_ms_average'];
-       this._infeed_ms_average =
-           inputAnalysisJson.p['infeed_ms_average'];
-     },
-     /* Displays run time information */
-     _showRunEnvironment : function(runEnvironmentJson) {
-       if (!runEnvironmentJson) {
-         return;
-       }
-       this._error_message = runEnvironmentJson.p['error_message'];
-       this._host_count = runEnvironmentJson.p['host_count'];
-       this._tpu_type = runEnvironmentJson.p['tpu_type'];
-       this._tpu_core_count = runEnvironmentJson.p['tpu_core_count'];
-       this._batch_size = runEnvironmentJson.p['batch_size'];
-       this._change_list = runEnvironmentJson.p['change_list'];
-       this._build_time = runEnvironmentJson.p['build_time'];
-       this._build_target = runEnvironmentJson.p['build_target'];
-     },
+      /* Displays performance summary for the profile run */
+      _showSummary: function(inputAnalysisJson, generalAnalysisJson) {
+        if (!inputAnalysisJson || !generalAnalysisJson) {
+          return;
+        }
+        this._host_idle_time_percent =
+          generalAnalysisJson.p['host_idle_time_percent'];
+        this._device_idle_time_percent =
+          generalAnalysisJson.p['device_idle_time_percent'];
+        this._mxu_utilization_percent =
+          generalAnalysisJson.p['mxu_utilization_percent'];
+        this._steptime_ms_average = inputAnalysisJson.p['steptime_ms_average'];
+        this._steptime_ms_stddev =
+          inputAnalysisJson.p['steptime_ms_standard_deviation'];
+        this._compute_ms_average = inputAnalysisJson.p['compute_ms_average'];
+        this._infeed_ms_average = inputAnalysisJson.p['infeed_ms_average'];
+      },
+      /* Displays run time information */
+      _showRunEnvironment: function(runEnvironmentJson) {
+        if (!runEnvironmentJson) {
+          return;
+        }
+        this._error_message = runEnvironmentJson.p['error_message'];
+        this._host_count = runEnvironmentJson.p['host_count'];
+        this._tpu_type = runEnvironmentJson.p['tpu_type'];
+        this._tpu_core_count = runEnvironmentJson.p['tpu_core_count'];
+        this._batch_size = runEnvironmentJson.p['batch_size'];
+        this._change_list = runEnvironmentJson.p['change_list'];
+        this._build_time = runEnvironmentJson.p['build_time'];
+        this._build_target = runEnvironmentJson.p['build_target'];
+      },
 
-     /* Plots a graph of step time (in ms) against step number */
-     _showDeviceStepChart : function(deviceJson) {
-       if (!this._show_step_time_graph) {
-         return;
-       }
-       var computeTimeSeries = [];
-       var stepTimeSeries = [];
-       var maxStepTime = 0;
-       var step = -1;
-       deviceJson.rows.forEach(function(row, index) {
-         step = step > 0 ? ++step : Number(row.c[0].v);
-         computeTimeSeries.push({"scalar": row.c[1].v,
-                                 "step": step,
-                                 "tpu_step": Number(row.c[0].v),
-                                 "low_watermark": 0})
-         stepTimeSeries.push({"scalar": row.c[1].v + row.c[2].v,
-                              "step": step,
-                              "low_watermark": row.c[1].v})
-         maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v)
-       })
-       var chart = this.$$('#device_step_chart');
-       if (chart) {
-         chart.setVisibleSeries(['compute-time',
-             'step-time = input-time + compute-time']);
-         chart.setSeriesData('compute-time', computeTimeSeries);
-         chart.setSeriesData('step-time = input-time + compute-time',
-                              stepTimeSeries);
-         chart.defaultYRange = [0, maxStepTime * 1.1]
-         chart.smoothingEnabled = false;
-         chart.tooltipColumns = [
-           { title: 'Name', evaluate: (d) => d.dataset.metadata().name },
-           { title: 'Time(ms)', evaluate: (d) => (d.datum.scalar).toFixed(2) },
-           { title: 'Step', evaluate: (d) => d.datum.step }];
-         chart.fillArea = {
-           higherAccessor: (d) => d.scalar,
-           lowerAccessor: (d) => d.low_watermark,
-         };
-         chart.xAxisFormatter = d3.format('d');
-       }
-     },
+      /* Plots a graph of step time (in ms) against step number */
+      _showDeviceStepChart: function(deviceJson) {
+        if (!this._show_step_time_graph) {
+          return;
+        }
+        var computeTimeSeries = [];
+        var stepTimeSeries = [];
+        var maxStepTime = 0;
+        var step = -1;
+        deviceJson.rows.forEach(function(row, index) {
+          step = step > 0 ? ++step : Number(row.c[0].v);
+          computeTimeSeries.push({
+            scalar: row.c[1].v,
+            step: step,
+            tpu_step: Number(row.c[0].v),
+            low_watermark: 0,
+          });
+          stepTimeSeries.push({
+            scalar: row.c[1].v + row.c[2].v,
+            step: step,
+            low_watermark: row.c[1].v,
+          });
+          maxStepTime = Math.max(maxStepTime, row.c[1].v + row.c[2].v);
+        });
+        var chart = this.$$('#device_step_chart');
+        if (chart) {
+          chart.setVisibleSeries([
+            'compute-time',
+            'step-time = input-time + compute-time',
+          ]);
+          chart.setSeriesData('compute-time', computeTimeSeries);
+          chart.setSeriesData(
+            'step-time = input-time + compute-time',
+            stepTimeSeries
+          );
+          chart.defaultYRange = [0, maxStepTime * 1.1];
+          chart.smoothingEnabled = false;
+          chart.tooltipColumns = [
+            {title: 'Name', evaluate: (d) => d.dataset.metadata().name},
+            {title: 'Time(ms)', evaluate: (d) => d.datum.scalar.toFixed(2)},
+            {title: 'Step', evaluate: (d) => d.datum.step},
+          ];
+          chart.fillArea = {
+            higherAccessor: (d) => d.scalar,
+            lowerAccessor: (d) => d.low_watermark,
+          };
+          chart.xAxisFormatter = d3.format('d');
+        }
+      },
 
-     /* Draws a table of TensorFlow Op statistics */
-     _showTopOpsTable: function(opsTableJson) {
-       if (!opsTableJson || !opsTableJson.rows ||
-           !opsTableJson.rows.length || !this._active) {
-         return;
-       }
-       var numRows = 0;
-       var opsTableBody = this.$$('#top_ops_table_content');
-       if (!opsTableBody) { return; }
-       opsTableBody.innerHTML = '';
-       opsTableJson.rows.forEach(function(rowJson, index) {
-         var row = document.createElement('tr');
-         Polymer.dom(opsTableBody).appendChild(row);
-         var cellTexts = [];
-         cellTexts.push((rowJson.c[0].v*100).toFixed(2)+'%');
-         cellTexts.push((rowJson.c[1].v*100).toFixed(2)+'%');
-         cellTexts.push(rowJson.c[2].v);
-         cellTexts.push(rowJson.c[3].v);
-         cellTexts.push((rowJson.c[4].v).toFixed(2));
-         cellTexts.forEach(function(cellText, index) {
-           var td = document.createElement('td');
-           Polymer.dom(row).appendChild(td);
-           Polymer.dom(td).appendChild(document.createTextNode(cellText));
-         });
-         numRows += 1;
-       })
-       this._top_ops_heading = 'Top ' + numRows +
-                              ' TensorFlow operations executed on TPU';
-       this._show_top_ops_table = false;
-     },
+      /* Draws a table of TensorFlow Op statistics */
+      _showTopOpsTable: function(opsTableJson) {
+        if (
+          !opsTableJson ||
+          !opsTableJson.rows ||
+          !opsTableJson.rows.length ||
+          !this._active
+        ) {
+          return;
+        }
+        var numRows = 0;
+        var opsTableBody = this.$$('#top_ops_table_content');
+        if (!opsTableBody) {
+          return;
+        }
+        opsTableBody.innerHTML = '';
+        opsTableJson.rows.forEach(function(rowJson, index) {
+          var row = document.createElement('tr');
+          Polymer.dom(opsTableBody).appendChild(row);
+          var cellTexts = [];
+          cellTexts.push((rowJson.c[0].v * 100).toFixed(2) + '%');
+          cellTexts.push((rowJson.c[1].v * 100).toFixed(2) + '%');
+          cellTexts.push(rowJson.c[2].v);
+          cellTexts.push(rowJson.c[3].v);
+          cellTexts.push(rowJson.c[4].v.toFixed(2));
+          cellTexts.forEach(function(cellText, index) {
+            var td = document.createElement('td');
+            Polymer.dom(row).appendChild(td);
+            Polymer.dom(td).appendChild(document.createTextNode(cellText));
+          });
+          numRows += 1;
+        });
+        this._top_ops_heading =
+          'Top ' + numRows + ' TensorFlow operations executed on TPU';
+        this._show_top_ops_table = false;
+      },
 
-     /* Generates the HTML for a recommendation link */
-     _generateRecommendationHtml: function(tipsTableJson,
-                                           cssClassName,
-                                           wantedTipType,
-                                           titleString) {
-       var content = '<p>&nbsp;</p>';
-       content += '<div class="' + cssClassName + '">';
-       content += '<b>' + titleString + ':</b>';
-       tipsTableJson.rows.forEach(function(rowJson, index) {
-         var tipType = rowJson.c[0].v;
-         if (tipType == wantedTipType) {
-           var link = rowJson.c[1].v;
-           content += '<li>' + link + '</li>';
-         }
-       });
-       content += '</div>';
-       return content;
-     },
+      /* Generates the HTML for a recommendation link */
+      _generateRecommendationHtml: function(
+        tipsTableJson,
+        cssClassName,
+        wantedTipType,
+        titleString
+      ) {
+        var content = '<p>&nbsp;</p>';
+        content += '<div class="' + cssClassName + '">';
+        content += '<b>' + titleString + ':</b>';
+        tipsTableJson.rows.forEach(function(rowJson, index) {
+          var tipType = rowJson.c[0].v;
+          if (tipType == wantedTipType) {
+            var link = rowJson.c[1].v;
+            content += '<li>' + link + '</li>';
+          }
+        });
+        content += '</div>';
+        return content;
+      },
 
-     /* Shows the recommendation section */
-     _showRecommendation: function(recommendationJson) {
-       if(!recommendationJson || !this._active) return;
-       var bottleneck =  recommendationJson.p['bottleneck'];
-       var hostTipsBody = this.$$('#host_side_tips');
-       var deviceTipsBody = this.$$('#device_side_tips');
-       if (!hostTipsBody || !deviceTipsBody) { return; };
+      /* Shows the recommendation section */
+      _showRecommendation: function(recommendationJson) {
+        if (!recommendationJson || !this._active) return;
+        var bottleneck = recommendationJson.p['bottleneck'];
+        var hostTipsBody = this.$$('#host_side_tips');
+        var deviceTipsBody = this.$$('#device_side_tips');
+        if (!hostTipsBody || !deviceTipsBody) {
+          return;
+        }
 
-       if (bottleneck == 'device') {
-         hostTipsBody.innerHTML = '';
-         deviceTipsBody.innerHTML =
-             this._generateRecommendationHtml(
-                 recommendationJson, 'bottleneckTips', 'device',
-                     'Next tools to use for reducing the TPU time');
-       } else if (bottleneck == 'host') {
-         hostTipsBody.innerHTML = this._generateRecommendationHtml(
-             recommendationJson, 'bottleneckTips', 'host',
-                 'Next tools to use for reducing the input time');
-         deviceTipsBody.innerHTML = '';
-       } else {
-         hostTipsBody.innerHTML = this._generateRecommendationHtml(
-             recommendationJson, 'bottleneckTips', 'host',
-                 'Next tools to use for reducing the input time');
-         deviceTipsBody.innerHTML = this._generateRecommendationHtml(
-             recommendationJson, 'bottleneckTips', 'device',
-                 'Next tools to use for reducing the TPU time');
-       }
-       var documentationTipsBody = this.$$('#documentation_tips');
-       if (documentationTipsBody) {
-         documentationTipsBody.innerHTML = this._generateRecommendationHtml(
-             recommendationJson, 'documentationTips', 'doc',
-                 'Other useful resources');
-       }
-     },
-     _onActiveChanged: function(active) {
-       if (!active) {
+        if (bottleneck == 'device') {
+          hostTipsBody.innerHTML = '';
+          deviceTipsBody.innerHTML = this._generateRecommendationHtml(
+            recommendationJson,
+            'bottleneckTips',
+            'device',
+            'Next tools to use for reducing the TPU time'
+          );
+        } else if (bottleneck == 'host') {
+          hostTipsBody.innerHTML = this._generateRecommendationHtml(
+            recommendationJson,
+            'bottleneckTips',
+            'host',
+            'Next tools to use for reducing the input time'
+          );
+          deviceTipsBody.innerHTML = '';
+        } else {
+          hostTipsBody.innerHTML = this._generateRecommendationHtml(
+            recommendationJson,
+            'bottleneckTips',
+            'host',
+            'Next tools to use for reducing the input time'
+          );
+          deviceTipsBody.innerHTML = this._generateRecommendationHtml(
+            recommendationJson,
+            'bottleneckTips',
+            'device',
+            'Next tools to use for reducing the TPU time'
+          );
+        }
+        var documentationTipsBody = this.$$('#documentation_tips');
+        if (documentationTipsBody) {
+          documentationTipsBody.innerHTML = this._generateRecommendationHtml(
+            recommendationJson,
+            'documentationTips',
+            'doc',
+            'Other useful resources'
+          );
+        }
+      },
+      _onActiveChanged: function(active) {
+        if (!active) {
           this._show_step_time_graph = false;
           this._show_top_ops_table = false;
           return;
-       }
-       this._updateView();
-     },
-     _shouldShowStepTimeGraph: function(data, active) {
-      return active && data && data[1] && data[1].rows && data[1].rows.length;
-     },
-     attached: function() {
-       this._active = true;
-       this._updateView();
-     },
-     detached: function() {
-       this._active = false;
-     },
-   });
+        }
+        this._updateView();
+      },
+      _shouldShowStepTimeGraph: function(data, active) {
+        return active && data && data[1] && data[1].rows && data[1].rows.length;
+      },
+      attached: function() {
+        this._active = true;
+        this._updateView();
+      },
+      detached: function() {
+        this._active = false;
+      },
+    });
   </script>
 </dom-module>

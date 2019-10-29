@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <!--
-Essentially looks like a single one row in table-view that can't be expanded.
+Essentially looks like a single one row in table-view that cannot be expanded.
 Useful to show a selected session group in one of the visualizations.
 
 TODO(erez): Rename this to tf-hparams-session-group-details and rename
@@ -24,25 +24,30 @@ the older tf-hparams-session-group-details to
 tf-hparams-session-group-metric-plots
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
-<link rel="import" href="../tf-hparams-table-view/tf-hparams-table-view.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
+<link rel="import" href="../tf-hparams-table-view/tf-hparams-table-view.html" />
 
 <dom-module id="tf-hparams-session-group-values">
   <template>
-    <!-- If sessionGroup or schema are not populated, do not display
+    <!-- If sessionGroup or visibleSchema are not populated, do not display
          anything.
       -->
-    <template is="dom-if"
-              if="[[_propertiesArePopulated(schema, sessionGroup)]]">
+    <template
+      is="dom-if"
+      if="[[_propertiesArePopulated(visibleSchema, sessionGroup)]]"
+    >
       <!-- Display one row without a "show-metrics" column -->
       <tf-hparams-table-view
-        schema="[[schema]]"
-        session-groups="[[_singletonSessionGroups(sessionGroup)]]">
+        visible-schema="[[visibleSchema]]"
+        session-groups="[[_singletonSessionGroups(sessionGroup)]]"
+      >
       </tf-hparams-table-view>
     </template>
-    <template is="dom-if"
-              if="[[!_propertiesArePopulated(schema, sessionGroup)]]">
+    <template
+      is="dom-if"
+      if="[[!_propertiesArePopulated(visibleSchema, sessionGroup)]]"
+    >
       <div>
         Click or hover over a session group to display its values here.
       </div>
@@ -65,23 +70,27 @@ tf-hparams-session-group-metric-plots
         // protocol buffer.
         sessionGroup: {
           type: Object,
-          value: null
+          value: null,
         },
-        // The schema defining the columns to use. Only the values of columns
-        // in the schema will be displayed. See tf-hparams-query-pane for
-        // the definition of this object.
-        schema: {
+        // The visibleSchema defining the columns to use.
+        // Only the values of columns in the visibleSchema will be displayed.
+        // See tf-hparams-query-pane for the definition of this object.
+        visibleSchema: {
           type: Object,
-          value: null
-        }
+          value: null,
+        },
       },
 
-      _propertiesArePopulated: function(schema, sessionGroup) {
-        return schema !== undefined && schema !== null
-            && sessionGroup !== undefined && sessionGroup !== null;
+      _propertiesArePopulated: function(visibleSchema, sessionGroup) {
+        return (
+          visibleSchema !== undefined &&
+          visibleSchema !== null &&
+          sessionGroup !== undefined &&
+          sessionGroup !== null
+        );
       },
 
-      _singletonSessionGroups : function(sessionGroup) {
+      _singletonSessionGroups: function(sessionGroup) {
         if (sessionGroup === null || sessionGroup === undefined) {
           return [];
         }

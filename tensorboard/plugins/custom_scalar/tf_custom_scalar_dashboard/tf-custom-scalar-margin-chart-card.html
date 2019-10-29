@@ -15,248 +15,263 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-collapse/iron-collapse.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="tf-custom-scalar-card-style.html">
-<link rel="import" href="tf-custom-scalar-helpers.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html" />
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link
+  rel="import"
+  href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html"
+/>
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="tf-custom-scalar-card-style.html" />
+<link rel="import" href="tf-custom-scalar-helpers.html" />
 
 <!--
   A card that handles loading data (at the right times), rendering a scalar
   chart, and providing UI affordances (such as buttons) for scalar data.
 -->
 <dom-module id="tf-custom-scalar-margin-chart-card">
-<template>
-  <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
-  <div id="tf-line-chart-data-loader-container">
-    <tf-line-chart-data-loader
-      id="loader"
-      active="[[active]]"
-      color-scale="[[_colorScale]]"
-      data-series="[[_seriesNames]]"
-      get-data-load-url="[[_dataUrl]]"
-      fill-area="[[_fillArea]]"
-      ignore-y-outliers="[[ignoreYOutliers]]"
-      load-key="[[_tagFilter]]"
-      data-to-load="[[runs]]"
-      log-scale-active="[[_logScaleActive]]"
-      load-data-callback="[[_createProcessDataFunction(marginChartSeries)]]"
-      request-manager="[[requestManager]]"
-      symbol-function="[[_createSymbolFunction()]]"
-      tooltip-columns="[[_tooltipColumns]]"
-      tooltip-sorting-method="[[tooltipSortingMethod]]"
-      x-type="[[xType]]"
-    >
-    </tf-line-chart-data-loader>
-  </div>
-  <div id="buttons">
-    <paper-icon-button
-      selected$="[[_expanded]]"
-      icon="fullscreen"
-      on-tap="_toggleExpanded"
-    ></paper-icon-button>
-    <paper-icon-button
-      selected$="[[_logScaleActive]]"
-      icon="line-weight"
-      on-tap="_toggleLogScale"
-      title="Toggle y-axis log scale"
-    ></paper-icon-button>
-    <paper-icon-button
-      icon="settings-overscan"
-      on-tap="_resetDomain"
-      title="Fit domain to data"
-    ></paper-icon-button>
-    <span style="flex-grow: 1"></span>
-    <template is="dom-if" if="[[showDownloadLinks]]">
-      <div class="download-links">
-        <paper-dropdown-menu
-          no-label-float="true"
-          label="series to download"
-          selected-item-label="{{_dataSeriesNameToDownload}}"
-        >
-          <paper-menu class="dropdown-content" slot="dropdown-content">
-            <template is="dom-repeat" items="[[_seriesNames]]" as="dataSeriesName">
-              <paper-item no-label-float=true>[[dataSeriesName]]</paper-item>
-            </template>
-          </paper-menu>
-        </paper-dropdown-menu>
-        <a
-          download="[[_dataSeriesNameToDownload]].csv"
-          href="[[_csvUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
-        >CSV</a> <a
-          download="[[_dataSeriesNameToDownload]].json"
-          href="[[_jsonUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
-        >JSON</a>
-      </div>
-    </template>
-  </div>
-
-  <!-- here -->
-  <template is="dom-if" if="[[_missingTags.length]]">
-    <div class="collapsible-list-title">
+  <template>
+    <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
+    <div id="tf-line-chart-data-loader-container">
+      <tf-line-chart-data-loader
+        id="loader"
+        active="[[active]]"
+        color-scale="[[_colorScale]]"
+        data-series="[[_seriesNames]]"
+        get-data-load-url="[[_dataUrl]]"
+        fill-area="[[_fillArea]]"
+        ignore-y-outliers="[[ignoreYOutliers]]"
+        load-key="[[_tagFilter]]"
+        data-to-load="[[runs]]"
+        log-scale-active="[[_logScaleActive]]"
+        load-data-callback="[[_createProcessDataFunction(marginChartSeries)]]"
+        request-manager="[[requestManager]]"
+        symbol-function="[[_createSymbolFunction()]]"
+        tooltip-columns="[[_tooltipColumns]]"
+        tooltip-sorting-method="[[tooltipSortingMethod]]"
+        x-type="[[xType]]"
+      >
+      </tf-line-chart-data-loader>
+    </div>
+    <div id="buttons">
       <paper-icon-button
+        selected$="[[_expanded]]"
+        icon="fullscreen"
+        on-tap="_toggleExpanded"
+      ></paper-icon-button>
+      <paper-icon-button
+        selected$="[[_logScaleActive]]"
+        icon="line-weight"
+        on-tap="_toggleLogScale"
+        title="Toggle y-axis log scale"
+      ></paper-icon-button>
+      <paper-icon-button
+        icon="settings-overscan"
+        on-tap="_resetDomain"
+        title="Fit domain to data"
+      ></paper-icon-button>
+      <span style="flex-grow: 1"></span>
+      <template is="dom-if" if="[[showDownloadLinks]]">
+        <div class="download-links">
+          <paper-dropdown-menu
+            no-label-float="true"
+            label="series to download"
+            selected-item-label="{{_dataSeriesNameToDownload}}"
+          >
+            <paper-listbox class="dropdown-content" slot="dropdown-content">
+              <template
+                is="dom-repeat"
+                items="[[_seriesNames]]"
+                as="dataSeriesName"
+              >
+                <paper-item no-label-float="true"
+                  >[[dataSeriesName]]</paper-item
+                >
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <a
+            download="[[_dataSeriesNameToDownload]].csv"
+            href="[[_csvUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+            >CSV</a
+          >
+          <a
+            download="[[_dataSeriesNameToDownload]].json"
+            href="[[_jsonUrl(_nameToDataSeries, _dataSeriesNameToDownload)]]"
+            >JSON</a
+          >
+        </div>
+      </template>
+    </div>
+
+    <!-- here -->
+    <template is="dom-if" if="[[_missingTags.length]]">
+      <div class="collapsible-list-title">
+        <paper-icon-button
           icon="[[_getToggleCollapsibleIcon(_missingTagsCollapsibleOpened)]]"
           on-click="_toggleMissingTagsCollapsibleOpen"
-          class="toggle-collapsible-button">
-      </paper-icon-button>
-      <span class="collapsible-title-text">
-        <iron-icon icon="icons:error"></iron-icon> Missing Tags
-      </span>
-    </div>
-    <iron-collapse opened="[[_missingTagsCollapsibleOpened]]">
+          class="toggle-collapsible-button"
+        >
+        </paper-icon-button>
+        <span class="collapsible-title-text">
+          <iron-icon icon="icons:error"></iron-icon> Missing Tags
+        </span>
+      </div>
+      <iron-collapse opened="[[_missingTagsCollapsibleOpened]]">
+        <div class="error-content">
+          <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+          <template is="dom-repeat" items="[[_missingTags]]" as="missingEntry">
+            <div class="missing-tags-for-run-container">
+              Run "[[missingEntry.run]]" lacks data for tags
+              <ul>
+                <template
+                  is="dom-repeat"
+                  items="[[missingEntry.tags]]"
+                  as="tag"
+                >
+                  <li>[[tag]]</li>
+                </template>
+              </ul>
+            </div>
+          </template>
+        </div>
+      </iron-collapse>
+    </template>
+
+    <template is="dom-if" if="[[_tagFilterInvalid]]">
       <div class="error-content">
         <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-        <template is="dom-repeat"
-                  items="[[_missingTags]]"
-                  as="missingEntry">
-          <div class="missing-tags-for-run-container">
-            Run "[[missingEntry.run]]" lacks data for tags
-            <ul>
-              <template is="dom-repeat" items="[[missingEntry.tags]]" as="tag">
-                <li>[[tag]]</li>
-              </template>
-            </ul>
-          </div>
-        </template>
+        This regular expresion is invalid:<br />
+        <span class="invalid-regex">[[_tagFilter]]</span>
       </div>
-    </iron-collapse>
-  </template>
+    </template>
 
-  <template is="dom-if" if="[[_tagFilterInvalid]]">
-    <div class="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-      This regular expresion is invalid:<br>
-      <span class="invalid-regex">[[_tagFilter]]</span>
-    </div>
-  </template>
+    <template is="dom-if" if="[[_stepsMismatch]]">
+      <div class="error-content">
+        <iron-icon class="error-icon" icon="icons:error"></iron-icon>
+        The steps for value, lower, and upper tags do not match:
+        <ul>
+          <li>
+            <span class="tag-name">[[_stepsMismatch.seriesObject.value]]</span>:
+            [[_separateWithCommas(_stepsMismatch.valueSteps)]]
+          </li>
+          <li>
+            <span class="tag-name">[[_stepsMismatch.seriesObject.lower]]</span>:
+            [[_separateWithCommas(_stepsMismatch.lowerSteps)]]
+          </li>
+          <li>
+            <span class="tag-name">[[_stepsMismatch.seriesObject.upper]]</span>:
+            [[_separateWithCommas(_stepsMismatch.upperSteps)]]
+          </li>
+        </ul>
+      </div>
+    </template>
 
-  <template is="dom-if" if="[[_stepsMismatch]]">
-    <div class="error-content">
-      <iron-icon class="error-icon" icon="icons:error"></iron-icon>
-      The steps for value, lower, and upper tags do not match:
-      <ul>
-        <li>
-          <span class="tag-name">[[_stepsMismatch.seriesObject.value]]</span>:
-          [[_separateWithCommas(_stepsMismatch.valueSteps)]]
-        </li>
-        <li>
-          <span class="tag-name">[[_stepsMismatch.seriesObject.lower]]</span>:
-          [[_separateWithCommas(_stepsMismatch.lowerSteps)]]
-        </li>
-        <li>
-          <span class="tag-name">[[_stepsMismatch.seriesObject.upper]]</span>:
-          [[_separateWithCommas(_stepsMismatch.upperSteps)]]
-        </li>
-      </ul>
-    </div>
-  </template>
+    <div id="matches-container">
+      <div class="collapsible-list-title">
+        <template is="dom-if" if="[[_seriesNames.length]]">
+          <paper-icon-button
+            icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
+            on-click="_toggleMatchesOpen"
+            class="toggle-matches-button"
+          >
+          </paper-icon-button>
+        </template>
 
-  <div id="matches-container">
-    <div class="collapsible-list-title">
+        <span class="collapsible-title-text">
+          Matches ([[_seriesNames.length]])
+        </span>
+      </div>
       <template is="dom-if" if="[[_seriesNames.length]]">
-        <paper-icon-button
-          icon="[[_getToggleCollapsibleIcon(_matchesListOpened)]]"
-          on-click="_toggleMatchesOpen"
-          class="toggle-matches-button">
-        </paper-icon-button>
-      </template>
-
-      <span class="collapsible-title-text">
-        Matches ([[_seriesNames.length]])
-      </span>
-    </div>
-    <template is="dom-if" if="[[_seriesNames.length]]">
-      <iron-collapse opened="[[_matchesListOpened]]">
-        <div id="matches-list">
-          <template is="dom-repeat"
-                    items="[[_seriesNames]]"
-                    as="seriesName">
-              <div class="match-list-entry"
-                   style="color: [[_determineColor(_colorScale, seriesName)]];">
+        <iron-collapse opened="[[_matchesListOpened]]">
+          <div id="matches-list">
+            <template is="dom-repeat" items="[[_seriesNames]]" as="seriesName">
+              <div
+                class="match-list-entry"
+                style="color: [[_determineColor(_colorScale, seriesName)]];"
+              >
                 <span class="match-entry-symbol">
                   [[_determineSymbol(_nameToDataSeries, seriesName)]]
                 </span>
                 [[seriesName]]
               </div>
-          </template>
-        </div>
-      </iron-collapse>
-    </template>
-  </div>
+            </template>
+          </div>
+        </iron-collapse>
+      </template>
+    </div>
 
-  </div>
-  <style include="tf-custom-scalar-card-style"></style>
-  <style>
-    .error-content {
-      background: #f00;
-      border-radius: 5px;
-      color: #fff;
-      margin: 10px 0 0 0;
-      padding: 10px;
-    }
+    <style include="tf-custom-scalar-card-style"></style>
+    <style>
+      .error-content {
+        background: #f00;
+        border-radius: 5px;
+        color: #fff;
+        margin: 10px 0 0 0;
+        padding: 10px;
+      }
 
-    .error-icon {
-      display: block;
-      fill: #fff;
-      margin: 0 auto 5px auto;
-    }
+      .error-icon {
+        display: block;
+        fill: #fff;
+        margin: 0 auto 5px auto;
+      }
 
-    .invalid-regex {
-      font-weight: bold;
-    }
+      .invalid-regex {
+        font-weight: bold;
+      }
 
-    .error-content ul {
-      margin: 1px 0 0 0;
-      padding: 0 0 0 19px;
-    }
+      .error-content ul {
+        margin: 1px 0 0 0;
+        padding: 0 0 0 19px;
+      }
 
-    .tag-name {
-      font-weight: bold;
-    }
+      .tag-name {
+        font-weight: bold;
+      }
 
-    .collapsible-list-title {
-      margin: 10px 0 5px 0;
-    }
+      .collapsible-list-title {
+        margin: 10px 0 5px 0;
+      }
 
-    .collapsible-title-text {
-      vertical-align: middle;
-    }
+      .collapsible-title-text {
+        vertical-align: middle;
+      }
 
-    #matches-list {
-      max-height: 200px;
-      overflow-y: auto;
-    }
+      #matches-list {
+        max-height: 200px;
+        overflow-y: auto;
+      }
 
-    .match-list-entry {
-      margin: 0 0 5px 0;
-    }
+      .match-list-entry {
+        margin: 0 0 5px 0;
+      }
 
-    .match-entry-symbol {
-      font-family: arial, sans-serif;
-      display: inline-block;
-      width: 10px;
-    }
+      .match-entry-symbol {
+        font-family: arial, sans-serif;
+        display: inline-block;
+        width: 10px;
+      }
 
-    .missing-tags-for-run-container {
-      margin: 8px 0 0 0;
-    }
-  </style>
-</template>
-<script>
-  Polymer({
+      .missing-tags-for-run-container {
+        margin: 8px 0 0 0;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
       is: 'tf-custom-scalar-margin-chart-card',
       properties: {
-        runs: Array,  // of String
+        runs: Array, // of String
 
         /**
          * This property must take on values from the XType enum defined within
@@ -283,7 +298,9 @@ limitations under the License.
         // We use a special color scale that wraps the run-based one.
         _colorScale: {
           type: Object,
-          value: new tf_custom_scalar_dashboard.DataSeriesColorScale({scale: tf_color_scale.runsColorScale}),
+          value: new tf_custom_scalar_dashboard.DataSeriesColorScale({
+            scale: tf_color_scale.runsColorScale,
+          }),
           readOnly: true,
         },
 
@@ -316,7 +333,7 @@ limitations under the License.
         _expanded: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,  // for CSS
+          reflectToAttribute: true, // for CSS
         },
         _logScaleActive: Boolean,
         _dataUrl: {
@@ -325,8 +342,11 @@ limitations under the License.
             return (run) => {
               const tag = this._tagFilter;
               return tf_backend.addParams(
-                  tf_backend.getRouter().pluginRoute(
-                      'custom_scalars', '/scalars'), {tag, run});
+                tf_backend
+                  .getRouter()
+                  .pluginRoute('custom_scalars', '/scalars'),
+                {tag, run}
+              );
             };
           },
         },
@@ -350,17 +370,18 @@ limitations under the License.
           type: Object,
           readOnly: true,
           value: {
-              lowerAccessor: d => d.lower,
-              higherAccessor: d => d.upper,
+            lowerAccessor: (d) => d.lower,
+            higherAccessor: (d) => d.upper,
           },
         },
         _tooltipColumns: {
           type: Array,
           value: function() {
             const valueFormatter = vz_chart_helpers.multiscaleFormatter(
-                vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION);
-            const formatValueOrNaN =
-                (x) => isNaN(x) ? 'NaN' : valueFormatter(x);
+              vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION
+            );
+            const formatValueOrNaN = (x) =>
+              isNaN(x) ? 'NaN' : valueFormatter(x);
 
             return [
               {
@@ -385,16 +406,18 @@ limitations under the License.
               },
               {
                 title: 'Time',
-                evaluate: (d) => vz_chart_helpers.timeFormatter(
-                    d.datum.wall_time),
+                evaluate: (d) =>
+                  vz_chart_helpers.timeFormatter(d.datum.wall_time),
               },
               {
                 title: 'Relative',
-                evaluate: (d) => vz_chart_helpers.relativeFormatter(
-                    vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)),
+                evaluate: (d) =>
+                  vz_chart_helpers.relativeFormatter(
+                    vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)
+                  ),
               },
             ];
-          }
+          },
         },
         /**
          * A list of objects encapsulating missing tags. Each object within this
@@ -451,27 +474,36 @@ limitations under the License.
       },
       _csvUrl(_nameToDataSeries, dataSeriesName) {
         if (!dataSeriesName) return '';
-        const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
+        const baseUrl = this._downloadDataUrl(
+          _nameToDataSeries,
+          dataSeriesName
+        );
         return tf_backend.addParams(baseUrl, {format: 'csv'});
       },
       _jsonUrl(_nameToDataSeries, dataSeriesName) {
         if (!dataSeriesName) return '';
-        const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
+        const baseUrl = this._downloadDataUrl(
+          _nameToDataSeries,
+          dataSeriesName
+        );
         return tf_backend.addParams(baseUrl, {format: 'json'});
       },
       _downloadDataUrl(_nameToDataSeries, dataSeriesName) {
         const dataSeries = _nameToDataSeries[dataSeriesName];
         const getVars = {
-            tag: dataSeries.getTag(),
-            run: dataSeries.getRun(),
+          tag: dataSeries.getTag(),
+          run: dataSeries.getRun(),
         };
         return tf_backend.addParams(
-              tf_backend.getRouter().pluginRoute(
-                  'custom_scalars', '/download_data'), getVars);
+          tf_backend
+            .getRouter()
+            .pluginRoute('custom_scalars', '/download_data'),
+          getVars
+        );
       },
       _createProcessDataFunction(marginChartSeries) {
         // This function is called when data is received from the backend.
-        return ((scalarChart, run, data) => {
+        return (scalarChart, run, data) => {
           if (!data.regex_valid) {
             // The regular expression is constructed from frontend logic that
             // pieces together different tags. Hence, this case should never be
@@ -484,7 +516,7 @@ limitations under the License.
           // Incorporate these newly loaded values.
           const newMapping = _.clone(this._nameToDataSeries);
           const tagsNotFound = [];
-          _.forEach(marginChartSeries, tagsObject => {
+          _.forEach(marginChartSeries, (tagsObject) => {
             let tagNotFound = false;
             const scalarEvents = data.tag_to_events[tagsObject.value];
             const lowerBounds = data.tag_to_events[tagsObject.lower];
@@ -513,19 +545,20 @@ limitations under the License.
 
             // Make sure that steps for all the lists correspond with each
             // other. Otherwise, display an error message.
-            const obtainStep = datum => datum[1];
+            const obtainStep = (datum) => datum[1];
             const stepsMismatch = this._findStepMismatch(
-                tagsObject,
-                scalarEvents.map(obtainStep),
-                lowerBounds.map(obtainStep),
-                upperBounds.map(obtainStep));
+              tagsObject,
+              scalarEvents.map(obtainStep),
+              lowerBounds.map(obtainStep),
+              upperBounds.map(obtainStep)
+            );
             if (stepsMismatch) {
               this.set('_stepsMismatch', stepsMismatch);
               return;
             }
 
             // Create data points that the line chart can parse.
-            const obtainNumber = datum => datum[2];
+            const obtainNumber = (datum) => datum[2];
             const dataPoints = scalarEvents.map((datum, i) => ({
               wall_time: new Date(datum[0] * 1000),
               step: obtainStep(datum),
@@ -536,9 +569,10 @@ limitations under the License.
 
             // Compute the series name, which is based on both the run and the
             // tag of the value.
-            const seriesName =
-                tf_custom_scalar_dashboard.generateDataSeriesName(
-                    run, tagsObject.value);
+            const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
+              run,
+              tagsObject.value
+            );
             const series = newMapping[seriesName];
 
             if (series) {
@@ -546,7 +580,11 @@ limitations under the License.
               series.setData(dataPoints);
             } else {
               const series = this._createNewDataSeries(
-                  run, tagsObject.value, seriesName, dataPoints);
+                run,
+                tagsObject.value,
+                seriesName,
+                dataPoints
+              );
               newMapping[seriesName] = series;
             }
           });
@@ -572,11 +610,13 @@ limitations under the License.
             // Remove the previous entry if it exists.
             this.splice('_missingTags', entryIndex, 1);
           }
-        });
+        };
       },
       _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
-        if (_.isEqual(lowerSteps, valueSteps) &&
-            _.isEqual(upperSteps, valueSteps)) {
+        if (
+          _.isEqual(lowerSteps, valueSteps) &&
+          _.isEqual(upperSteps, valueSteps)
+        ) {
           // There is no mismatch.
           return null;
         }
@@ -593,31 +633,40 @@ limitations under the License.
         this._runToNextAvailableSymbolIndex[run] |= 0;
 
         // Every data series within a run has a unique symbol.
-        const lineChartSymbol = vz_chart_helpers.SYMBOLS_LIST[
-            this._runToNextAvailableSymbolIndex[run]];
+        const lineChartSymbol =
+          vz_chart_helpers.SYMBOLS_LIST[
+            this._runToNextAvailableSymbolIndex[run]
+          ];
 
         // Create a series with this name.
         const series = new tf_custom_scalar_dashboard.DataSeries(
-            run, tag, seriesName, dataPoints, lineChartSymbol);
+          run,
+          tag,
+          seriesName,
+          dataPoints,
+          lineChartSymbol
+        );
 
         // Loop back to the beginning if we are out of symbols.
         const numSymbols = vz_chart_helpers.SYMBOLS_LIST.length;
         this._runToNextAvailableSymbolIndex[run] =
-            (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
+          (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
         return series;
       },
       _updateChart(_nameToDataSeries) {
         // Add new data series.
-        _.forOwn(_nameToDataSeries, dataSeries => {
+        _.forOwn(_nameToDataSeries, (dataSeries) => {
           this.$.loader.setSeriesData(
-              dataSeries.getName(), dataSeries.getData());
+            dataSeries.getName(),
+            dataSeries.getData()
+          );
         });
       },
       _computeSeriesNames() {
         const runLookup = new Set(this.runs);
         return Object.entries(this._nameToDataSeries)
-            .filter(([_, series]) => runLookup.has(series.run))
-            .map(([name]) => name);
+          .filter(([_, series]) => runLookup.has(series.run))
+          .map(([name]) => name);
       },
       _determineColor(colorScale, seriesName) {
         return colorScale.scale(seriesName);
@@ -626,18 +675,23 @@ limitations under the License.
         this.set('_nameToDataSeries', {});
       },
       _createSymbolFunction() {
-        return seriesName =>
-            this._nameToDataSeries[seriesName].getSymbol().method();
+        return (seriesName) =>
+          this._nameToDataSeries[seriesName].getSymbol().method();
       },
       _determineSymbol(_nameToDataSeries, seriesName) {
         return _nameToDataSeries[seriesName].getSymbol().character;
       },
       _computeTagFilter(marginChartSeries) {
         const tags = _.flatten(
-            marginChartSeries.map(
-                series => [series.value, series.lower, series.upper]));
+          marginChartSeries.map((series) => [
+            series.value,
+            series.lower,
+            series.upper,
+          ])
+        );
         const escapedTags = tags.map(
-            r => '(' + this._escapeRegexCharacters(r) + ')');
+          (r) => '(' + this._escapeRegexCharacters(r) + ')'
+        );
         // Combine the different regexes into a single regex.
         return escapedTags.join('|');
       },
@@ -660,9 +714,10 @@ limitations under the License.
       },
       _toggleMissingTagsCollapsibleOpen() {
         this.set(
-            '_missingTagsCollapsibleOpened',
-            !this._missingTagsCollapsibleOpened);
+          '_missingTagsCollapsibleOpened',
+          !this._missingTagsCollapsibleOpened
+        );
       },
-  });
-</script>
+    });
+  </script>
 </dom-module>

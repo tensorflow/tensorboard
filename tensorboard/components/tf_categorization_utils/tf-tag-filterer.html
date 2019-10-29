@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-storage/tf-storage.html">
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-storage/tf-storage.html" />
 
 <!--
 Regex search input UI at tops of dashboards.
@@ -27,22 +27,24 @@ Regex search input UI at tops of dashboards.
 -->
 <dom-module id="tf-tag-filterer">
   <template>
-    <paper-input no-label-float
-                 label="Filter tags (regular expressions supported)"
-                 value="{{_tagFilter}}"
-                 class="search-input">
+    <paper-input
+      no-label-float
+      label="Filter tags (regular expressions supported)"
+      value="{{_tagFilter}}"
+      class="search-input"
+    >
       <iron-icon prefix icon="search" slot="prefix"></iron-icon>
     </paper-input>
+    <style>
+      :host {
+        display: block;
+        margin: 10px 5px 10px 10px;
+      }
+    </style>
   </template>
-  <style>
-    :host {
-      display: block;
-      margin: 10px 5px 10px 10px;
-    }
-  </style>
   <script>
     Polymer({
-      is: "tf-tag-filterer",
+      is: 'tf-tag-filterer',
       properties: {
         /** Value of the search box. */
         tagFilter: {

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <!-- Displays a simple confusion matrix. -->
 <dom-module id="tf-confusion-matrix">
@@ -26,7 +26,8 @@ limitations under the License.
       td {
         text-align: right;
       }
-      th, td {
+      th,
+      td {
         font-size: 14px;
         padding: 3px;
         font-weight: normal;
@@ -40,12 +41,12 @@ limitations under the License.
         font-size: 10px;
       }
       .total-label {
-        color: #5F6368;
+        color: #5f6368;
         font-size: 10px;
         text-align: left;
       }
       .total-cell {
-        color: #5F6368;
+        color: #5f6368;
       }
       .actual-label {
         text-align: right;
@@ -69,7 +70,7 @@ limitations under the License.
 
   <script>
     Polymer({
-      is: "tf-confusion-matrix",
+      is: 'tf-confusion-matrix',
       properties: {
         /**
          * Counts is a dictionary of dictionaries of numbers, representing
@@ -82,7 +83,17 @@ limitations under the License.
          * contains 1 true negative, 2 false positives, 3 true positives and
          * 4 false negatives.
          */
-        counts: {type: Object, observer: 'drawMatrix'},
+        counts: Object,
+
+        /**
+         * Array where entries are all cell labels to be used in the
+         * confusion matrix. If empty, then the cell labels are extracted
+         * from the provided counts dictionary. This is used for when a
+         * confusion matrix should have more rows/columns that just the
+         * information from counts, such as in a multiclass problem where
+         * the counts do not contain information from all possible classes.
+         */
+        allItems: {type: Array, value: () => []},
 
         // Label appears in top-right corner of confusion matrix.
         label: String,
@@ -95,34 +106,43 @@ limitations under the License.
         },
       },
 
+      observers: ['drawMatrix(counts, allItems)'],
+
       ready: function() {
         // Allows d3-created elements in this Polymer element to be styled by
         // the css rules above.
         this.scopeSubtree(this.$.holder, true);
       },
 
-      drawMatrix: function(counts) {
+      drawMatrix: function(counts, allItems) {
         this.$.holder.innerHTML = '';
         if (!counts) {
           return;
         }
 
-        // Get all labels from the counts dict.
-        let allLabels = {};
-        const outerLabelList = Object.keys(counts);
-        for (let i = 0; i < outerLabelList.length; i++) {
-          allLabels[outerLabelList[i]] = true;
-          const innerLabelList = Object.keys(counts[outerLabelList[i]]);
-          for (let j = 0; j < innerLabelList.length; j++) {
-            allLabels[innerLabelList[j]] = true;
+        // Get all labels from the provided list, or counts dict.
+        let labelsList = allItems;
+        if (labelsList == null || labelsList.length == 0) {
+          const labelsSet = new Set();
+          const outerLabelList = Object.keys(counts);
+          for (let i = 0; i < outerLabelList.length; i++) {
+            labelsSet.add(outerLabelList[i]);
+            const innerLabelList = Object.keys(counts[outerLabelList[i]]);
+            for (let j = 0; j < innerLabelList.length; j++) {
+              labelsSet.add(innerLabelList[j]);
+            }
           }
+          labelsList = Array.from(labelsSet.values());
         }
-        let labelsList = Object.keys(allLabels).sort();
+        labelsList = labelsList.sort();
 
         // For binary classification confusion matrices, we want the 'Yes'
         // column/row to appear before 'No', so we reverse this labels list.
-        if (labelsList.length == 2 && labelsList[0] == 'No'
-            && labelsList[1] == 'Yes') {
+        if (
+          labelsList.length == 2 &&
+          labelsList[0] == 'No' &&
+          labelsList[1] == 'Yes'
+        ) {
           labelsList = labelsList.reverse();
         }
 
@@ -154,7 +174,7 @@ limitations under the License.
         for (let i = 0; i < countMatrix.length; i++) {
           const rowTotal = countMatrix[i].reduce((a, b) => a + b, 0);
           paddedCounts.push([0].concat(countMatrix[i]).concat([rowTotal]));
-          for (let j = 0; j  < countMatrix.length; j++) {
+          for (let j = 0; j < countMatrix.length; j++) {
             columnTotals[j] += countMatrix[i][j];
             total += countMatrix[i][j];
           }
@@ -168,35 +188,39 @@ limitations under the License.
         const tfoot = table.append('tfoot');
 
         // Set the header data.
-        thead.append('tr')
+        thead
+          .append('tr')
           .selectAll('th')
-          .data(indices).enter()
+          .data(indices)
+          .enter()
           .append('th')
-            .text(column => {
-              if (column == 0) {
-                return this.label;
-              } else if (column <= countMatrix.length) {
-                return 'Predicted ' + labelsList[column - 1];
-              } else {
-                return 'Total';
-              }
-            })
-            .attr('class', column => {
-              if (column == 0) {
-                return 'n-label';
-              } else if (column <= countMatrix.length) {
-                return 'pred-label';
-              } else {
-                return 'total-label';
-              }
-            });
+          .text((column) => {
+            if (column == 0) {
+              return this.label;
+            } else if (column <= countMatrix.length) {
+              return 'Predicted ' + labelsList[column - 1];
+            } else {
+              return 'Total';
+            }
+          })
+          .attr('class', (column) => {
+            if (column == 0) {
+              return 'n-label';
+            } else if (column <= countMatrix.length) {
+              return 'pred-label';
+            } else {
+              return 'total-label';
+            }
+          });
 
         // Set the confusion matrix rows.
-        const rows = tbody.selectAll('tr')
+        const rows = tbody
+          .selectAll('tr')
           .data(paddedCounts)
           .enter()
           .append('tr');
-        const cells = rows.selectAll('td')
+        const cells = rows
+          .selectAll('td')
           .data((row, j) => {
             return row.map((entry, i) => {
               if (i == 0) {
@@ -207,7 +231,8 @@ limitations under the License.
             });
           })
           .enter()
-          .append('td').attr('class', (d, i) => {
+          .append('td')
+          .attr('class', (d, i) => {
             if (i == 0) {
               return 'actual-label';
             } else if (i <= countMatrix.length) {
@@ -215,7 +240,8 @@ limitations under the License.
             } else {
               return 'total-cell';
             }
-          }).style('background', (d, i) => {
+          })
+          .style('background', (d, i) => {
             if (i == 0 || i > countMatrix.length) {
               return '#FFFFFF';
             } else {
@@ -225,22 +251,30 @@ limitations under the License.
             }
           });
         const cellDivs = cells.append('div').classed('flex', true);
-        cellDivs.append('div').classed('parenthetical', (d, i) => !!i)
-            .text(d =>
-              'row' in d ? '(' + d.value + ')' : '');
-        cellDivs.append('div').text(
-          (d, i) => i > 0 ? d3.format(",.1%")(d.value / total) : d.value);
+        cellDivs
+          .append('div')
+          .classed('parenthetical', (d, i) => !!i)
+          .text((d) => ('row' in d ? '(' + d.value + ')' : ''));
+        cellDivs
+          .append('div')
+          .text((d, i) =>
+            i > 0 ? d3.format(',.1%')(d.value / total) : d.value
+          );
 
         // Set the footer row.
-        const footCells = tfoot.append('tr')
+        const footCells = tfoot
+          .append('tr')
           .selectAll('td')
-          .data(indices).enter()
+          .data(indices)
+          .enter()
           .append('td');
         footCells.classed('total-label', (d, i) => i == 0);
         footCells.classed('total-cell', (d, i) => i != 0);
         const footCellDivs = footCells.append('div').classed('flex', true);
-        footCellDivs.append('div').classed('parenthetical', (d, i) => !!i).text(
-          column => {
+        footCellDivs
+          .append('div')
+          .classed('parenthetical', (d, i) => !!i)
+          .text((column) => {
             if (column == 0) {
               return 'Total';
             } else if (column <= countMatrix.length) {
@@ -249,11 +283,11 @@ limitations under the License.
               return '';
             }
           });
-        footCellDivs.append('div').text(column => {
+        footCellDivs.append('div').text((column) => {
           if (column == 0) {
             return '';
           } else if (column <= countMatrix.length) {
-            return d3.format(",.1%")(columnTotals[column - 1] / total);
+            return d3.format(',.1%')(columnTotals[column - 1] / total);
           } else {
             return '';
           }
@@ -267,6 +301,5 @@ limitations under the License.
         return Array.apply(null, {length: tableDim}).map(Number.call, Number);
       },
     });
-
   </script>
 </dom-module>

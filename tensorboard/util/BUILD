@@ -1,8 +1,27 @@
 package(default_visibility = ["//tensorboard:internal"])
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])  # Needed for internal repo.
+
+py_library(
+    name = "argparse_util",
+    srcs = ["argparse_util.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "argparse_util_test",
+    size = "small",
+    srcs = ["argparse_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":argparse_util",
+        "//tensorboard:test",
+    ],
+)
 
 py_library(
     name = "encoder",
@@ -12,7 +31,6 @@ py_library(
         ":op_evaluator",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
     ],
 )
 
@@ -27,6 +45,43 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
+)
+
+py_library(
+    name = "grpc_util",
+    srcs = ["grpc_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard:version",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "grpc_util_test",
+    size = "small",
+    srcs = ["grpc_util_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":grpc_util",
+        ":grpc_util_test_proto_py_pb2",
+        ":grpc_util_test_proto_py_pb2_grpc",
+        ":test_util",
+        "//tensorboard:expect_futures_installed",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard:test",
+        "//tensorboard:version",
+        "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
+    ],
+)
+
+tb_proto_library(
+    name = "grpc_util_test_proto",
+    has_services = True,
+    srcs = ["grpc_util_test.proto"],
+    testonly = True,
 )
 
 py_library(
@@ -50,32 +105,6 @@ py_test(
 )
 
 py_library(
-    name = "util",
-    srcs = ["util.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":tb_logging",
-        "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:tf_contrib_ffmpeg",
-        "//tensorboard/compat:tensorflow",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "util_test",
-    size = "small",
-    srcs = ["util_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":test_util",
-        ":util",
-        "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
     name = "platform_util",
     srcs = ["platform_util.py"],
     srcs_version = "PY2AND3",
@@ -86,9 +115,10 @@ py_test(
     size = "small",
     srcs = ["platform_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":platform_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
     ],
 )
 
@@ -115,8 +145,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":tb_logging",
-        ":util",
-        "//tensorboard:db",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",

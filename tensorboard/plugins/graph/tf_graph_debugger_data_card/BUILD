@@ -28,15 +28,11 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-debugger-data-card",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//third_party/javascript/polymer/v1/iron-collapse:lib",
-        "//third_party/javascript/polymer/v1/iron-list:lib",
-        "//third_party/javascript/polymer/v1/paper-icon-button:lib",
-        "//third_party/javascript/polymer/v1/paper-item:lib",
-        "//third_party/javascript/polymer/v1/paper-material:paper-material-html",
-        "//third_party/javascript/polymer/v1/paper-slider:lib",
-        "//third_party/javascript/polymer/v1/paper-spinner:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//third_party/javascript/polymer/v2/paper-material:lib",
+        "//third_party/javascript/polymer/v2/paper-slider:lib",
+        "//third_party/javascript/polymer/v2/paper-spinner:lib",
+        "//third_party/javascript/polymer/v2/paper-toggle-button:lib",
     ],
 )
-

@@ -13,135 +13,135 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_line_chart2 {
-
-enum NodeName {
-  GROUP = 'G',
-  DIV = 'DIV',
-  SVG = 'SVG',
-  TEXT = 'TEXT',
-}
-
-export class PlottableExporter {
-  private root: Element;
-  private uniqueId: number = 0;
-
-  constructor(rootEl: Element) {
-    this.root = rootEl;
+  enum NodeName {
+    GROUP = 'G',
+    DIV = 'DIV',
+    SVG = 'SVG',
+    TEXT = 'TEXT',
   }
 
-  public exportAsString(): string {
-    const convertedNodes = this.convert(this.root);
-    if (!convertedNodes) return '';
-    const svg = this.createRootSvg();
-    svg.appendChild(convertedNodes);
-    return svg.outerHTML;
-  }
+  export class PlottableExporter {
+    private root: Element;
+    private uniqueId: number = 0;
 
-  private createUniqueId(prefix: string): string {
-    return `${prefix}_${this.uniqueId++}`;
-  }
+    constructor(rootEl: Element) {
+      this.root = rootEl;
+    }
 
-  private getSize(): DOMRect | ClientRect {
-    return this.root.getBoundingClientRect();
-  }
+    public exportAsString(): string {
+      const convertedNodes = this.convert(this.root);
+      if (!convertedNodes) return '';
+      const svg = this.createRootSvg();
+      svg.appendChild(convertedNodes);
+      return svg.outerHTML;
+    }
 
-  private createRootSvg(): Element {
-    const svg = document.createElement('svg');
-    const rect = this.getSize();
+    private createUniqueId(prefix: string): string {
+      return `${prefix}_${this.uniqueId++}`;
+    }
 
-    // case on `viewBox` is sensitive.
-    svg.setAttributeNS('svg', 'viewBox', `0 0 ${rect.width} ${rect.height}`);
-    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    return svg;
-  }
+    private getSize(): DOMRect | ClientRect {
+      return this.root.getBoundingClientRect();
+    }
 
-  private convert(node: Node): Node | null {
-    let newNode = null;
-    const nodeName = node.nodeName.toUpperCase();
-    if (node.nodeType == Node.ELEMENT_NODE &&
-        (nodeName == NodeName.DIV || nodeName == NodeName.SVG)) {
-      newNode = document.createElement(NodeName.GROUP);
-      const style = window.getComputedStyle(node as Element);
-      const left = parseInt(style.left, 10);
-      const top = parseInt(style.top, 10);
-      if (left || top) {
-        const clipId = this.createUniqueId('clip');
-        newNode.setAttribute('transform', `translate(${left}, ${top})`);
-        newNode.setAttribute('clip-path', `url(#${clipId})`);
-        const width = parseInt(style.width, 10);
-        const height = parseInt(style.height, 10);
-        const rect = document.createElement('rect');
-        rect.setAttribute('width', String(width));
-        rect.setAttribute('height', String(height));
-        const clipPath = document.createElementNS('svg', 'clipPath');
-        clipPath.id = clipId;
-        clipPath.appendChild(rect);
-        newNode.appendChild(clipPath);
+    private createRootSvg(): Element {
+      const svg = document.createElement('svg');
+      const rect = this.getSize();
+
+      // case on `viewBox` is sensitive.
+      svg.setAttributeNS('svg', 'viewBox', `0 0 ${rect.width} ${rect.height}`);
+      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      return svg;
+    }
+
+    private convert(node: Node): Node | null {
+      let newNode = null;
+      const nodeName = node.nodeName.toUpperCase();
+      if (
+        node.nodeType == Node.ELEMENT_NODE &&
+        (nodeName == NodeName.DIV || nodeName == NodeName.SVG)
+      ) {
+        newNode = document.createElement(NodeName.GROUP);
+        const style = window.getComputedStyle(node as Element);
+        const left = parseInt(style.left, 10);
+        const top = parseInt(style.top, 10);
+        if (left || top) {
+          const clipId = this.createUniqueId('clip');
+          newNode.setAttribute('transform', `translate(${left}, ${top})`);
+          newNode.setAttribute('clip-path', `url(#${clipId})`);
+          const width = parseInt(style.width, 10);
+          const height = parseInt(style.height, 10);
+          const rect = document.createElement('rect');
+          rect.setAttribute('width', String(width));
+          rect.setAttribute('height', String(height));
+          const clipPath = document.createElementNS('svg', 'clipPath');
+          clipPath.id = clipId;
+          clipPath.appendChild(rect);
+          newNode.appendChild(clipPath);
+        }
+      } else {
+        newNode = node.cloneNode();
       }
-    } else {
-      newNode = node.cloneNode();
-    }
-    Array.from(node.childNodes)
-        .map(node => this.convert(node))
+      Array.from(node.childNodes)
+        .map((node) => this.convert(node))
         .filter(Boolean)
-        .forEach(el => newNode.appendChild(el));
+        .forEach((el) => newNode.appendChild(el));
 
-    // Remove empty grouping. They add too much noise.
-    const shouldOmit = (
-          newNode.nodeName.toUpperCase() == NodeName.GROUP &&
-          !newNode.hasChildNodes()
-        ) || this.shouldOmitNode(node);
+      // Remove empty grouping. They add too much noise.
+      const shouldOmit =
+        (newNode.nodeName.toUpperCase() == NodeName.GROUP &&
+          !newNode.hasChildNodes()) ||
+        this.shouldOmitNode(node);
 
-    if (shouldOmit) return null;
-    return this.stripClass(this.transferStyle(node, newNode));
-  }
-
-  private stripClass(node: Node): Node {
-    if (node.nodeType == Node.ELEMENT_NODE) {
-      (node as Element).removeAttribute('class');
-    }
-    return node;
-  }
-
-  private transferStyle(origNode: Node, node: Node): Node {
-    if (node.nodeType != Node.ELEMENT_NODE) return node;
-    const el = node as HTMLElement;
-    const nodeName = node.nodeName.toUpperCase();
-    const style = window.getComputedStyle(origNode as HTMLElement);
-
-    if (nodeName == NodeName.TEXT) {
-      Object.assign(el.style, {
-        fontFamily: style.fontFamily,
-        fontSize: style.fontSize,
-        fontWeight: style.fontWeight,
-      });
+      if (shouldOmit) return null;
+      return this.stripClass(this.transferStyle(node, newNode));
     }
 
-    if (nodeName != NodeName.GROUP) {
-      el.setAttribute('fill', style.fill);
-      el.setAttribute('stroke', style.stroke);
-      el.setAttribute('stroke-width', style.strokeWidth);
+    private stripClass(node: Node): Node {
+      if (node.nodeType == Node.ELEMENT_NODE) {
+        (node as Element).removeAttribute('class');
+      }
+      return node;
     }
 
-    if (style.opacity != '1') el.setAttribute('opacity', style.opacity);
+    private transferStyle(origNode: Node, node: Node): Node {
+      if (node.nodeType != Node.ELEMENT_NODE) return node;
+      const el = node as HTMLElement;
+      const nodeName = node.nodeName.toUpperCase();
+      const style = window.getComputedStyle(origNode as HTMLElement);
 
-    return node;
-  }
+      if (nodeName == NodeName.TEXT) {
+        Object.assign(el.style, {
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+        });
+      }
 
-  protected shouldOmitNode(node: Node): boolean {
-    return false;
-  }
-}
+      if (nodeName != NodeName.GROUP) {
+        el.setAttribute('fill', style.fill);
+        el.setAttribute('stroke', style.stroke);
+        el.setAttribute('stroke-width', style.strokeWidth);
+      }
 
-export class LineChartExporter extends PlottableExporter {
-  shouldOmitNode(node: Node): boolean {
-    // Scatter plot is useful for tooltip. Tooltip is meaningless in the
-    // exported svg.
-    if (node.nodeType == Node.ELEMENT_NODE) {
-      return (node as Element).classList.contains('scatter-plot');
+      if (style.opacity != '1') el.setAttribute('opacity', style.opacity);
+
+      return node;
     }
-    return false;
-  }
-}
 
+    protected shouldOmitNode(node: Node): boolean {
+      return false;
+    }
+  }
+
+  export class LineChartExporter extends PlottableExporter {
+    shouldOmitNode(node: Node): boolean {
+      // Scatter plot is useful for tooltip. Tooltip is meaningless in the
+      // exported svg.
+      if (node.nodeType == Node.ELEMENT_NODE) {
+        return (node as Element).classList.contains('scatter-plot');
+      }
+      return false;
+    }
+  }
 }

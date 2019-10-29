@@ -13,172 +13,185 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace vz_projector {
+  const MAX_LABELS_ON_SCREEN = 10000;
+  const LABEL_STROKE_WIDTH = 3;
+  const LABEL_FILL_WIDTH = 6;
 
-const MAX_LABELS_ON_SCREEN = 10000;
-const LABEL_STROKE_WIDTH = 3;
-const LABEL_FILL_WIDTH = 6;
+  /**
+   * Creates and maintains a 2d canvas on top of the GL canvas. All labels, when
+   * active, are rendered to the 2d canvas as part of the visible render pass.
+   */
+  export class ScatterPlotVisualizerCanvasLabels
+    implements ScatterPlotVisualizer {
+    private worldSpacePointPositions: Float32Array;
+    private gc: CanvasRenderingContext2D;
+    private canvas: HTMLCanvasElement;
+    private labelsActive: boolean = true;
 
-/**
- * Creates and maintains a 2d canvas on top of the GL canvas. All labels, when
- * active, are rendered to the 2d canvas as part of the visible render pass.
- */
-export class ScatterPlotVisualizerCanvasLabels implements
-    ScatterPlotVisualizer {
-  private worldSpacePointPositions: Float32Array;
-  private gc: CanvasRenderingContext2D;
-  private canvas: HTMLCanvasElement;
-  private labelsActive: boolean = true;
+    constructor(container: HTMLElement) {
+      this.canvas = document.createElement('canvas');
+      container.appendChild(this.canvas);
 
-  constructor(container: HTMLElement) {
-    this.canvas = document.createElement('canvas');
-    container.appendChild(this.canvas);
-
-    this.gc = this.canvas.getContext('2d');
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.left = '0';
-    this.canvas.style.top = '0';
-    this.canvas.style.pointerEvents = 'none';
-  }
-
-  private removeAllLabels() {
-    const pixelWidth = this.canvas.width * window.devicePixelRatio;
-    const pixelHeight = this.canvas.height * window.devicePixelRatio;
-    this.gc.clearRect(0, 0, pixelWidth, pixelHeight);
-  }
-
-  /** Render all of the non-overlapping visible labels to the canvas. */
-  private makeLabels(rc: RenderContext) {
-    if ((rc.labels == null) || (rc.labels.pointIndices.length === 0)) {
-      return;
-    }
-    if (this.worldSpacePointPositions == null) {
-      return;
+      this.gc = this.canvas.getContext('2d');
+      this.canvas.style.position = 'absolute';
+      this.canvas.style.left = '0';
+      this.canvas.style.top = '0';
+      this.canvas.style.pointerEvents = 'none';
     }
 
-    const lrc = rc.labels;
-    const sceneIs3D: boolean = (rc.cameraType === CameraType.Perspective);
-    const labelHeight = parseInt(this.gc.font, 10);
-    const dpr = window.devicePixelRatio;
-
-    let grid: CollisionGrid;
-    {
-      const pixw = this.canvas.width * dpr;
-      const pixh = this.canvas.height * dpr;
-      const bb: BoundingBox = {loX: 0, hiX: pixw, loY: 0, hiY: pixh};
-      grid = new CollisionGrid(bb, pixw / 25, pixh / 50);
+    private removeAllLabels() {
+      const pixelWidth = this.canvas.width * window.devicePixelRatio;
+      const pixelHeight = this.canvas.height * window.devicePixelRatio;
+      this.gc.clearRect(0, 0, pixelWidth, pixelHeight);
     }
 
-    let opacityMap =
-        d3.scalePow()
-            .exponent(Math.E)
-            .domain([rc.farthestCameraSpacePointZ, rc.nearestCameraSpacePointZ])
-            .range([0.1, 1]);
+    /** Render all of the non-overlapping visible labels to the canvas. */
+    private makeLabels(rc: RenderContext) {
+      if (rc.labels == null || rc.labels.pointIndices.length === 0) {
+        return;
+      }
+      if (this.worldSpacePointPositions == null) {
+        return;
+      }
 
-    const camPos = rc.camera.position;
-    const camToTarget = camPos.clone().sub(rc.cameraTarget);
-    let camToPoint = new THREE.Vector3();
+      const lrc = rc.labels;
+      const sceneIs3D: boolean = rc.cameraType === CameraType.Perspective;
+      const labelHeight = parseInt(this.gc.font, 10);
+      const dpr = window.devicePixelRatio;
 
-    this.gc.textBaseline = 'middle';
-    this.gc.miterLimit = 2;
-
-    // Have extra space between neighboring labels. Don't pack too tightly.
-    const labelMargin = 2;
-    // Shift the label to the right of the point circle.
-    const xShift = 4;
-
-    const n = Math.min(MAX_LABELS_ON_SCREEN, lrc.pointIndices.length);
-    for (let i = 0; i < n; ++i) {
-      let point: THREE.Vector3;
+      let grid: CollisionGrid;
       {
-        const pi = lrc.pointIndices[i];
-        point = util.vector3FromPackedArray(this.worldSpacePointPositions, pi);
+        const pixw = this.canvas.width * dpr;
+        const pixh = this.canvas.height * dpr;
+        const bb: BoundingBox = {loX: 0, hiX: pixw, loY: 0, hiY: pixh};
+        grid = new CollisionGrid(bb, pixw / 25, pixh / 50);
       }
 
-      // discard points that are behind the camera
-      camToPoint.copy(camPos).sub(point);
-      if (camToTarget.dot(camToPoint) < 0) {
-        continue;
-      }
+      let opacityMap = d3
+        .scalePow()
+        .exponent(Math.E)
+        .domain([rc.farthestCameraSpacePointZ, rc.nearestCameraSpacePointZ])
+        .range([0.1, 1]);
 
-      let [x, y] = util.vector3DToScreenCoords(
-          rc.camera, rc.screenWidth, rc.screenHeight, point);
-      x += xShift;
+      const camPos = rc.camera.position;
+      const camToTarget = camPos.clone().sub(rc.cameraTarget);
+      let camToPoint = new THREE.Vector3();
 
-      // Computing the width of the font is expensive,
-      // so we assume width of 1 at first. Then, if the label doesn't
-      // conflict with other labels, we measure the actual width.
-      const textBoundingBox: BoundingBox = {
-        loX: x - labelMargin,
-        hiX: x + 1 + labelMargin,
-        loY: y - labelHeight / 2 - labelMargin,
-        hiY: y + labelHeight / 2 + labelMargin
-      };
+      this.gc.textBaseline = 'middle';
+      this.gc.miterLimit = 2;
 
-      if (grid.insert(textBoundingBox, true)) {
-        const text = lrc.labelStrings[i];
-        const fontSize = lrc.defaultFontSize * lrc.scaleFactors[i] * dpr;
-        this.gc.font = fontSize + 'px roboto';
+      // Have extra space between neighboring labels. Don't pack too tightly.
+      const labelMargin = 2;
+      // Shift the label to the right of the point circle.
+      const xShift = 4;
 
-        // Now, check with properly computed width.
-        textBoundingBox.hiX += this.gc.measureText(text).width - 1;
-        if (grid.insert(textBoundingBox)) {
-          let opacity = 1;
-          if (sceneIs3D && (lrc.useSceneOpacityFlags[i] === 1)) {
-            opacity = opacityMap(camToPoint.length());
+      const n = Math.min(MAX_LABELS_ON_SCREEN, lrc.pointIndices.length);
+      for (let i = 0; i < n; ++i) {
+        let point: THREE.Vector3;
+        {
+          const pi = lrc.pointIndices[i];
+          point = util.vector3FromPackedArray(
+            this.worldSpacePointPositions,
+            pi
+          );
+        }
+
+        // discard points that are behind the camera
+        camToPoint.copy(camPos).sub(point);
+        if (camToTarget.dot(camToPoint) < 0) {
+          continue;
+        }
+
+        let [x, y] = util.vector3DToScreenCoords(
+          rc.camera,
+          rc.screenWidth,
+          rc.screenHeight,
+          point
+        );
+        x += xShift;
+
+        // Computing the width of the font is expensive,
+        // so we assume width of 1 at first. Then, if the label doesn't
+        // conflict with other labels, we measure the actual width.
+        const textBoundingBox: BoundingBox = {
+          loX: x - labelMargin,
+          hiX: x + 1 + labelMargin,
+          loY: y - labelHeight / 2 - labelMargin,
+          hiY: y + labelHeight / 2 + labelMargin,
+        };
+
+        if (grid.insert(textBoundingBox, true)) {
+          const text = lrc.labelStrings[i];
+          const fontSize = lrc.defaultFontSize * lrc.scaleFactors[i] * dpr;
+          this.gc.font = fontSize + 'px roboto';
+
+          // Now, check with properly computed width.
+          textBoundingBox.hiX += this.gc.measureText(text).width - 1;
+          if (grid.insert(textBoundingBox)) {
+            let opacity = 1;
+            if (sceneIs3D && lrc.useSceneOpacityFlags[i] === 1) {
+              opacity = opacityMap(camToPoint.length());
+            }
+            this.gc.fillStyle = this.styleStringFromPackedRgba(
+              lrc.fillColors,
+              i,
+              opacity
+            );
+            this.gc.strokeStyle = this.styleStringFromPackedRgba(
+              lrc.strokeColors,
+              i,
+              opacity
+            );
+            this.gc.lineWidth = LABEL_STROKE_WIDTH;
+            this.gc.strokeText(text, x, y);
+            this.gc.lineWidth = LABEL_FILL_WIDTH;
+            this.gc.fillText(text, x, y);
           }
-          this.gc.fillStyle =
-              this.styleStringFromPackedRgba(lrc.fillColors, i, opacity);
-          this.gc.strokeStyle =
-              this.styleStringFromPackedRgba(lrc.strokeColors, i, opacity);
-          this.gc.lineWidth = LABEL_STROKE_WIDTH;
-          this.gc.strokeText(text, x, y);
-          this.gc.lineWidth = LABEL_FILL_WIDTH;
-          this.gc.fillText(text, x, y);
         }
       }
     }
-  }
 
-  private styleStringFromPackedRgba(
-      packedRgbaArray: Uint8Array, colorIndex: number,
-      opacity: number): string {
-    const offset = colorIndex * 3;
-    const r = packedRgbaArray[offset];
-    const g = packedRgbaArray[offset + 1];
-    const b = packedRgbaArray[offset + 2];
-    return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
-  }
-
-  onResize(newWidth: number, newHeight: number) {
-    let dpr = window.devicePixelRatio;
-    this.canvas.width = newWidth * dpr;
-    this.canvas.height = newHeight * dpr;
-    this.canvas.style.width = newWidth + 'px';
-    this.canvas.style.height = newHeight + 'px';
-  }
-
-  dispose() {
-    this.removeAllLabels();
-    this.canvas = null;
-    this.gc = null;
-  }
-
-  onPointPositionsChanged(newPositions: Float32Array) {
-    this.worldSpacePointPositions = newPositions;
-    this.removeAllLabels();
-  }
-
-  onRender(rc: RenderContext) {
-    if (!this.labelsActive) {
-      return;
+    private styleStringFromPackedRgba(
+      packedRgbaArray: Uint8Array,
+      colorIndex: number,
+      opacity: number
+    ): string {
+      const offset = colorIndex * 3;
+      const r = packedRgbaArray[offset];
+      const g = packedRgbaArray[offset + 1];
+      const b = packedRgbaArray[offset + 2];
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
     }
 
-    this.removeAllLabels();
-    this.makeLabels(rc);
+    onResize(newWidth: number, newHeight: number) {
+      let dpr = window.devicePixelRatio;
+      this.canvas.width = newWidth * dpr;
+      this.canvas.height = newHeight * dpr;
+      this.canvas.style.width = newWidth + 'px';
+      this.canvas.style.height = newHeight + 'px';
+    }
+
+    dispose() {
+      this.removeAllLabels();
+      this.canvas = null;
+      this.gc = null;
+    }
+
+    onPointPositionsChanged(newPositions: Float32Array) {
+      this.worldSpacePointPositions = newPositions;
+      this.removeAllLabels();
+    }
+
+    onRender(rc: RenderContext) {
+      if (!this.labelsActive) {
+        return;
+      }
+
+      this.removeAllLabels();
+      this.makeLabels(rc);
+    }
+
+    setScene(scene: THREE.Scene) {}
+    onPickingRender(renderContext: RenderContext) {}
   }
-
-  setScene(scene: THREE.Scene) {}
-  onPickingRender(renderContext: RenderContext) {}
-}
-
-}  // namespace vz_projector
+} // namespace vz_projector

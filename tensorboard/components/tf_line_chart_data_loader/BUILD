@@ -32,9 +32,9 @@ tensorboard_webcomponent_library(
         "//tensorboard/components/tf_backend:legacy",
         "//tensorboard/components/tf_color_scale:legacy",
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/vz_line_chart2:legacy",
-        "//third_party/javascript/polymer/v1/paper-spinner:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//third_party/javascript/polymer/v2/paper-spinner:lib",
     ],
 )

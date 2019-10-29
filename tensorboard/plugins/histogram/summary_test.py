@@ -26,6 +26,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard.compat import tf2
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary
 from tensorboard.util import tensor_util
@@ -138,7 +139,7 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     # Map new name to the old name.
     if 'buckets' in kwargs:
       kwargs['bucket_count'] = kwargs.pop('buckets')
-    return tf.Summary.FromString(summary.op(*args, **kwargs).numpy())
+    return summary_pb2.Summary.FromString(summary.op(*args, **kwargs).numpy())
 
   def test_tag(self):
     self.assertEqual('a/histogram_summary',

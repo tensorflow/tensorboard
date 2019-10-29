@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2018 The TensorFlow Authors. All Rights Reserved.
@@ -15,15 +15,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>vz-example-viewer demo</title>
-<link rel="import" href="vz-example-viewer.html">
-<link rel="import" jscomp-suppress href="../iron-demo-helpers/demo-snippet.html">
-<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="vz-example-viewer.html" />
+<link
+  rel="import"
+  jscomp-suppress
+  href="../iron-demo-helpers/demo-snippet.html"
+/>
 <style type="text/css">
   body {
-    font-family: "Roboto";
+    font-family: 'Roboto';
   }
 
   vz-example-viewer {
@@ -43,33 +47,52 @@ limitations under the License.
       const encodedStr = btoa('hello');
       const encodedStr2 = btoa('bye');
       const json = {
-        'features': {
-          'feature': {
-            'bytes': {'bytesList': {'value': [encodedStr]}},
-            'ints': {'int64List': {'value': ['10', '20']}},
-            'float': {'floatList': {'value': ['3.14']}}
-          }
-        }
+        features: {
+          feature: {
+            bytes: {bytesList: {value: [encodedStr]}},
+            ints: {int64List: {value: ['10', '20']}},
+            float: {floatList: {value: ['3.14']}},
+          },
+        },
       };
       elem.json = json;
-      elem.saliency = {'ints': [.5, .2], 'bytes': 0, 'float': [-.4]};
-      elem.addEventListener('example-change', event => {
-        document.querySelector('#changed').innerHTML = event.detail.example.toString();
-        document.querySelector('#jsonchanged').innerHTML = JSON.stringify(elem.json);
+      elem.saliency = {ints: [0.5, 0.2], bytes: 0, float: [-0.4]};
+      elem.addEventListener('example-change', (event) => {
+        document.querySelector(
+          '#changed'
+        ).innerHTML = event.detail.example.toString();
+        document.querySelector('#jsonchanged').innerHTML = JSON.stringify(
+          elem.json
+        );
       });
       const seqjson = {
-        'context': {
-          'feature': {
-            'context': {'int64List': {'value': ['10', '20']}},
-          }
+        context: {
+          feature: {
+            context: {int64List: {value: ['10', '20']}},
+          },
         },
-        'featureLists': {
-          'featureList': {
-            'bytes': {'feature': [{'bytesList': {'value': [encodedStr]}}, {'bytesList': {'value': [encodedStr2]}}]},
-            'ints': {'feature':  [{'int64List': {'value': ['10', '20']}}, {'int64List': {'value': ['100', '200']}}]},
-            'float': {'feature': [{'floatList': {'value': ['3.14']}}, {'floatList': {'value': ['3.15']}}]}
-          }
-        }
+        featureLists: {
+          featureList: {
+            bytes: {
+              feature: [
+                {bytesList: {value: [encodedStr]}},
+                {bytesList: {value: [encodedStr2]}},
+              ],
+            },
+            ints: {
+              feature: [
+                {int64List: {value: ['10', '20']}},
+                {int64List: {value: ['100', '200']}},
+              ],
+            },
+            float: {
+              feature: [
+                {floatList: {value: ['3.14']}},
+                {floatList: {value: ['3.15']}},
+              ],
+            },
+          },
+        },
       };
       seq.json = seqjson;
     </script>

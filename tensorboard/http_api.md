@@ -33,14 +33,65 @@ Example response:
 
 The `logdir` argument is the path of the directory that contains events files.
 
+## `data/plugin_entry.html`
+
+Returns a document for configuring iframe loaded plugin. It takes a plugin name
+as a query parameter `name`.
+
+Abridged response:
+
+    <script type="module">import("./index.js").then((m) => void m.render());
+
 ## `data/plugins_listing`
 
-Returns a dict mapping from plugin name to a boolean indicating whether
-the plugin is active. A plugin might be inactive, for instance, if it
-lacks relevant data. Every plugin has a key. This route allows the
-frontend to hide or deprioritize inactive plugins so that the user can
-focus on the plugins that have data. Note that inactive plugins may
-still be rendered if the user explicitly requests this.
+Returns a dict mapping from plugin name to an object that describes a
+plugin, with the following keys:
+
+  - `disable_reload`: Boolean. Whether to disable the reload button and
+    auto-reload timer.
+  - `enabled`: Boolean. Indicates whether the plugin is active. A plugin
+    might be inactive, for instance, if it lacks relevant data.
+  - `loading_mechanism`: One of:
+      - `{type: "NONE"}`: Indicates that the plugin is bundled into the
+        TensorBoard binary and registered with the `registry.ts`
+        interface.
+      - `{type: "CUSTOM_ELEMENT", element_name: string}`: Indicates that
+        the plugin’s entry point is a custom element with the given
+        element name (e.g., `tf-widgets-dashboard`).
+      - `{type: "IFRAME", module_path: string}`: Indicates that the
+        plugin can be loaded by dynamically importing the provided
+        module path, which is a URL that begins with a slash. This
+        functionality is experimental and subject to change.
+  - `tab_name`: String, or `null`. Name to show in the navbar. Defaults
+    to the plugin name.
+  - `remove_dom`: Boolean. Whether to remove the plugin DOM when
+    switching to a different plugin, to trigger the Polymer 'detached'
+    event.
+
+Example response:
+
+    {
+      "scalars": {
+        "disable_reload": false,
+        "enabled": true,
+        "loading_mechanism": {
+          "element_name": "tf-scalars-dashboard",
+          "type": "CUSTOM_ELEMENT"
+        },
+        "remove_dom": false,
+        "tab_name": "scalars"
+      },
+      "my_shiny_plugin": {
+        "disable_reload": true,
+        "enabled": false,
+        "loading_mechanism": {
+          "module_path": "/data/plugin/my_shiny_plugin/main.js",
+          "type": "IFRAME"
+        },
+        "remove_dom": true,
+        "tab_name": "magic"
+      },
+    }
 
 ## `data/runs`
 
@@ -108,14 +159,15 @@ Example response:
 
 ## `data/environment`
 
-Returns environment in which the TensorBoard app is running. Possible values of
-the `mode` are: `db` and `logdir`.
+Returns environment in which the TensorBoard app is running.
+
+The `data_location` is a user-readable string describing the source from which
+TensorBoard is reading data, such as a directory on disk or a SQLite database.
 
 Example response:
 
     {
       "window_title": "Custom Name",
-      "mode": "db",
       "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
     }
 

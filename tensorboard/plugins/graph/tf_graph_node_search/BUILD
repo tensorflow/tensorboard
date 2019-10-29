@@ -9,6 +9,7 @@ tf_web_library(
     name = "tf_graph_node_search",
     srcs = ["tf-graph-node-search.html"],
     path = "/tf-graph-node-search",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
@@ -24,8 +25,9 @@ tensorboard_webcomponent_library(
     destdir = "tf-graph-node-search",
     deps = [
         "//tensorboard/components/tf_dashboard_common:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
         "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//third_party/javascript/polymer/v1/paper-input:lib",
-        "//third_party/javascript/polymer/v1/paper-styles:lib",
+        "//third_party/javascript/polymer/v2/paper-input:lib",
+        "//third_party/javascript/polymer/v2/paper-styles:lib",
     ],
 )

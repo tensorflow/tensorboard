@@ -15,15 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="tensorboard-color.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
+<link rel="import" href="../paper-styles/paper-styles.html" />
+<link rel="import" href="tensorboard-color.html" />
 
 <dom-module id="dashboard-style">
   <template>
     <style include="iron-flex"></style>
     <style>
-      .sidebar {
+      :host {
+        --sidebar-vertical-padding: 15px;
+        --sidebar-left-padding: 30px;
+      }
+
+      [slot='sidebar'] {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -35,8 +40,13 @@ limitations under the License.
       }
 
       tf-runs-selector {
-        flex-shrink: 1;
         flex-grow: 1;
+        flex-shrink: 1;
+        left: var(--sidebar-left-padding);
+        max-height: calc(100% - var(--sidebar-vertical-padding) * 2);
+        overflow: hidden;
+        position: absolute;
+        right: 0;
       }
 
       .search-input {
@@ -44,8 +54,10 @@ limitations under the License.
       }
 
       .sidebar-section {
-        border-top: solid 1px rgba(0, 0, 0, .12);
-        padding: 15px 0 15px 30px;
+        border-top: solid 1px rgba(0, 0, 0, 0.12);
+        padding: var(--sidebar-vertical-padding) 0
+          var(--sidebar-vertical-padding) var(--sidebar-left-padding);
+        position: relative;
       }
 
       .sidebar-section:first-of-type {

@@ -15,12 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/plottable.html">
-<link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/plottable.html" />
+<link rel="import" href="../vz-chart-helpers/vz-chart-helpers.html" />
 
 <dom-module id="vz-distribution-chart">
   <template>
+    <style include="plottable-style"></style>
     <div id="chartdiv"></div>
     <style>
       :host {
@@ -38,7 +39,6 @@ limitations under the License.
         flex-grow: 1;
         flex-shrink: 1;
       }
-
     </style>
   </template>
   <script src="vz-distribution-chart.js"></script>

@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/lodash.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
 
 <!--
   Offers a UI for summarizing and displaying tensor data.
@@ -66,7 +66,7 @@ limitations under the License.
         box-shadow: 3px 3px #ddd;
       }
       .active-session-run {
-        background-color: #FFFFE0;
+        background-color: #ffffe0;
         font-weight: bold;
       }
       .sole-active-session-run {
@@ -85,190 +85,196 @@ limitations under the License.
     </style>
   </template>
   <script>
+    Polymer({
+      is: 'tf-session-runs-view',
+      properties: {
+        // latestSessionRun is an object with the following fields:
+        // {
+        //   feeds:   // String[], names of the feed tensors.
+        //   fetches:  // String[], names of the fetched tensors.
+        //   targets:  // String[], names of the target ops.
+        // }
+        latestSessionRun: Object,
+        sessionRunKeyToDeviceNames: Object,
 
-  Polymer({
-    is: "tf-session-runs-view",
-    properties: {
-      // latestSessionRun is an object with the following fields:
-      // {
-      //   feeds:   // String[], names of the feed tensors.
-      //   fetches:  // String[], names of the fetched tensors.
-      //   targets:  // String[], names of the target ops.
-      // }
-      latestSessionRun: Object,
-      sessionRunKeyToDeviceNames: Object,
+        // A flag indicating whether the debugger plugin is currently focused
+        // on the beginning of a Session.run(), i.e., without any specific tensor
+        // breakpoint being active.
+        soleActive: Boolean,
 
-      // A flag indicating whether the debugger plugin is currently focused
-      // on the beginning of a Session.run(), i.e., without any specific tensor
-      // breakpoint being active.
-      soleActive: Boolean,
+        // A function called when a node or tensor in the list is clicked.
+        nodeOrTensorClicked: Function,
 
-      // A function called when a node or tensor in the list is clicked.
-      nodeOrTensorClicked: Function,
-
-      // A map from session.run key to count of how many the session.run's
-      // execution has started.
-      _runKey2Count: {
-        type: Object,
-        value: {},
+        // A map from session.run key to count of how many the session.run's
+        // execution has started.
+        _runKey2Count: {
+          type: Object,
+          value: {},
+        },
+        // A map from session.run key to the number of devices involved in the
+        // session.run.
+        _runKey2NumDevices: {
+          type: Object,
+          value: {},
+        },
+        // Stores the current active session run object.
+        _activeRunKey: String,
       },
-      // A map from session.run key to the number of devices involved in the
-      // session.run.
-      _runKey2NumDevices: {
-        type: Object,
-        value: {},
+      observers: [
+        'renderLatest(latestSessionRun)',
+        'setSoleActiveStatus(soleActive)',
+      ],
+
+      renderLatest(latestSessionRun) {
+        const runKey = JSON.stringify(latestSessionRun);
+        if (this._runKey2Count[runKey] === undefined) {
+          this._runKey2Count[runKey] = 1;
+        } else {
+          this._runKey2Count[runKey] += 1;
+        }
+        if (this._runKey2NumDevices[runKey] === undefined) {
+          this._runKey2NumDevices[runKey] = 0;
+        }
+        this._activeRunKey = runKey;
+        this._renderSessionRunTable();
       },
-      // Stores the current active session run object.
-      _activeRunKey: String,
-    },
-    observers: [
-      "renderLatest(latestSessionRun)",
-      "setSoleActiveStatus(soleActive)",
-    ],
 
-    renderLatest(latestSessionRun) {
-      const runKey = JSON.stringify(latestSessionRun);
-      if (this._runKey2Count[runKey] === undefined) {
-        this._runKey2Count[runKey] = 1;
-      } else {
-        this._runKey2Count[runKey] += 1;
-      }
-      if (this._runKey2NumDevices[runKey] === undefined) {
-        this._runKey2NumDevices[runKey] = 0;
-      }
-      this._activeRunKey = runKey;
-      this._renderSessionRunTable();
-    },
+      updateNumDevices(numDevices) {
+        if (this._activeRunKey == null) {
+          return;
+        }
+        this._runKey2NumDevices[this._activeRunKey] = numDevices;
+        this._renderSessionRunTable();
+      },
 
-    updateNumDevices(numDevices) {
-      if (this._activeRunKey == null) {
-        return;
-      }
-      this._runKey2NumDevices[this._activeRunKey] = numDevices;
-      this._renderSessionRunTable();
-    },
+      setSoleActiveStatus(soleActive) {
+        this._renderSessionRunTable();
+      },
 
-    setSoleActiveStatus(soleActive) {
-      this._renderSessionRunTable();
-    },
-
-    _renderSessionRunTable() {
-      this._clearTable();
-      // TODO(cais): Support sorting.
-      this._renderHeader();
-      let activeRow;
-      for (const runKey in this._runKey2Count) {
-        if (this._runKey2Count.hasOwnProperty(runKey)) {
-          const sessionRun = JSON.parse(runKey);
-          const count = this._runKey2Count[runKey];
-          const isActive = this._activeRunKey === runKey;
-          const numDevices = this._runKey2NumDevices[runKey];
-          const row = this._renderRow(sessionRun, numDevices, count, isActive, this.soleActive);
-          if (row) {
-            activeRow = row;
+      _renderSessionRunTable() {
+        this._clearTable();
+        // TODO(cais): Support sorting.
+        this._renderHeader();
+        let activeRow;
+        for (const runKey in this._runKey2Count) {
+          if (this._runKey2Count.hasOwnProperty(runKey)) {
+            const sessionRun = JSON.parse(runKey);
+            const count = this._runKey2Count[runKey];
+            const isActive = this._activeRunKey === runKey;
+            const numDevices = this._runKey2NumDevices[runKey];
+            const row = this._renderRow(
+              sessionRun,
+              numDevices,
+              count,
+              isActive,
+              this.soleActive
+            );
+            if (row) {
+              activeRow = row;
+            }
           }
         }
-      }
 
-      if (activeRow) {
-        Polymer.dom(this.$$('#session-runs-table')).parentNode.parentNode.scrollTop =
-            activeRow.offsetTop;
-      }
-    },
-
-    _clearTable() {
-      const table = this.$$('#session-runs-table');
-      while (table.firstChild) {
-        table.removeChild(table.firstChild);
-      }
-    },
-
-    _renderHeader() {
-      const headerRow = document.createElement('tr');
-      const feedsCell = document.createElement('th');
-      feedsCell.textContent = 'Feeds';
-      const fetchesCell = document.createElement('th');
-      fetchesCell.textContent = 'Fetches';
-      const targetsCell = document.createElement('th');
-      targetsCell.textContent = 'Targets';
-      const numDevicesCell = document.createElement('th');
-      numDevicesCell.textContent = '#(Devices)';
-      const countCell = document.createElement('th');
-      countCell.textContent = 'Count';
-
-      headerRow.appendChild(feedsCell);
-      headerRow.appendChild(fetchesCell);
-      headerRow.appendChild(targetsCell);
-      headerRow.appendChild(numDevicesCell);
-      headerRow.appendChild(countCell);
-
-      Polymer.dom(this.$$('#session-runs-table')).appendChild(headerRow);
-    },
-
-    // Render a row in the session runs table for a session.run().
-    //
-    // Args:
-    //   sessionRun: An object containing information about the session.run(),
-    //     including the feeds, fetches and targets.
-    //   numDevices: Number of devices the session.run() utilizes.
-    //   count: Cumulative count for how many times the session.run() has been
-    //     executed so far.
-    //   isActive: Whether the session.run is currently active.
-    //   soleActive: Whether the session.run is currently the sole active
-    //     session.run.
-    //
-    // Returns:
-    //   If the session.run is currently active, the DOM element for the row.
-    //   Else, no value is returned.
-    _renderRow(sessionRun, numDevices, count, isActive, soleActive) {
-      const sessionRunRow = document.createElement('tr');
-
-      // TOOD(cais): All feeds, and fetches and targets should be made into
-      // clickable links, which when clicked, will focus on the corresponding
-      // node in the Graph View and/or highlight corresponding tensors in the
-      // Tensor Summary View and the Tensor Value View.
-      const feedsCell = this._renderGraphElements(sessionRun.feeds);
-      const fetchesCell = this._renderGraphElements(sessionRun.fetches);
-      const targetsCell = this._renderGraphElements(sessionRun.targets);
-      const numDevicesCell = document.createElement('td');
-      numDevicesCell.textContent = numDevices;
-      const countCell = document.createElement('td');
-      countCell.textContent = count;
-
-      sessionRunRow.appendChild(feedsCell);
-      sessionRunRow.appendChild(fetchesCell);
-      sessionRunRow.appendChild(targetsCell);
-      sessionRunRow.appendChild(numDevicesCell);
-      sessionRunRow.appendChild(countCell);
-
-      if (isActive) {
-        if (soleActive) {
-          sessionRunRow.setAttribute('class', 'sole-active-session-run');
-        } else {
-          sessionRunRow.setAttribute('class', 'active-session-run');
+        if (activeRow) {
+          Polymer.dom(
+            this.$$('#session-runs-table')
+          ).parentNode.parentNode.scrollTop = activeRow.offsetTop;
         }
-      }
+      },
 
-      Polymer.dom(this.$$('#session-runs-table')).appendChild(sessionRunRow);
+      _clearTable() {
+        const table = this.$$('#session-runs-table');
+        while (table.firstChild) {
+          table.removeChild(table.firstChild);
+        }
+      },
 
-      if (isActive) {
-        return sessionRunRow;
-      }
-    },
+      _renderHeader() {
+        const headerRow = document.createElement('tr');
+        const feedsCell = document.createElement('th');
+        feedsCell.textContent = 'Feeds';
+        const fetchesCell = document.createElement('th');
+        fetchesCell.textContent = 'Fetches';
+        const targetsCell = document.createElement('th');
+        targetsCell.textContent = 'Targets';
+        const numDevicesCell = document.createElement('th');
+        numDevicesCell.textContent = '#(Devices)';
+        const countCell = document.createElement('th');
+        countCell.textContent = 'Count';
 
-    _renderGraphElements(graphElements) {
-      const container = document.createElement('td');
-      _.forEach(graphElements, element => {
-        const elementDiv = document.createElement('div');
-        elementDiv.textContent = element;
-        elementDiv.setAttribute('class', 'node-or-tensor-element');
-        elementDiv.addEventListener('click', () => {
-          this.nodeOrTensorClicked(element);
+        headerRow.appendChild(feedsCell);
+        headerRow.appendChild(fetchesCell);
+        headerRow.appendChild(targetsCell);
+        headerRow.appendChild(numDevicesCell);
+        headerRow.appendChild(countCell);
+
+        Polymer.dom(this.$$('#session-runs-table')).appendChild(headerRow);
+      },
+
+      // Render a row in the session runs table for a session.run().
+      //
+      // Args:
+      //   sessionRun: An object containing information about the session.run(),
+      //     including the feeds, fetches and targets.
+      //   numDevices: Number of devices the session.run() utilizes.
+      //   count: Cumulative count for how many times the session.run() has been
+      //     executed so far.
+      //   isActive: Whether the session.run is currently active.
+      //   soleActive: Whether the session.run is currently the sole active
+      //     session.run.
+      //
+      // Returns:
+      //   If the session.run is currently active, the DOM element for the row.
+      //   Else, no value is returned.
+      _renderRow(sessionRun, numDevices, count, isActive, soleActive) {
+        const sessionRunRow = document.createElement('tr');
+
+        // TOOD(cais): All feeds, and fetches and targets should be made into
+        // clickable links, which when clicked, will focus on the corresponding
+        // node in the Graph View and/or highlight corresponding tensors in the
+        // Tensor Summary View and the Tensor Value View.
+        const feedsCell = this._renderGraphElements(sessionRun.feeds);
+        const fetchesCell = this._renderGraphElements(sessionRun.fetches);
+        const targetsCell = this._renderGraphElements(sessionRun.targets);
+        const numDevicesCell = document.createElement('td');
+        numDevicesCell.textContent = numDevices;
+        const countCell = document.createElement('td');
+        countCell.textContent = count;
+
+        sessionRunRow.appendChild(feedsCell);
+        sessionRunRow.appendChild(fetchesCell);
+        sessionRunRow.appendChild(targetsCell);
+        sessionRunRow.appendChild(numDevicesCell);
+        sessionRunRow.appendChild(countCell);
+
+        if (isActive) {
+          if (soleActive) {
+            sessionRunRow.setAttribute('class', 'sole-active-session-run');
+          } else {
+            sessionRunRow.setAttribute('class', 'active-session-run');
+          }
+        }
+
+        Polymer.dom(this.$$('#session-runs-table')).appendChild(sessionRunRow);
+
+        if (isActive) {
+          return sessionRunRow;
+        }
+      },
+
+      _renderGraphElements(graphElements) {
+        const container = document.createElement('td');
+        _.forEach(graphElements, (element) => {
+          const elementDiv = document.createElement('div');
+          elementDiv.textContent = element;
+          elementDiv.setAttribute('class', 'node-or-tensor-element');
+          elementDiv.addEventListener('click', () => {
+            this.nodeOrTensorClicked(element);
+          });
+          container.appendChild(elementDiv);
         });
-        container.appendChild(elementDiv);
-      });
-      return container;
-    }
-  });
+        return container;
+      },
+    });
   </script>
 </dom-module>

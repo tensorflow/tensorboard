@@ -1,0 +1,593 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../iron-collapse/iron-collapse.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="tf-dom-repeat.html" />
+<link rel="import" href="tf-paginated-view-store.html" />
+
+<!--
+  tf-category-paginated-view takes a category and renders subset of its items
+  using template passed.
+
+  This component renders a toggleable card (like accordion) that renders,
+  depending on global pagination setting, discrete "pages" of items. When there
+  are multiple pages, this component renders pagination controls.
+
+  Example usage:
+
+      <tf-category-paginated-view category="[[category]]" as="meow">
+        <template>
+          <div>[[meow.nyan]]</div>
+        </template>
+      </tf-category-paginated-view>
+-->
+<dom-module id="tf-category-paginated-view">
+  <template>
+    <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">
+      <button class="heading" on-tap="_togglePane" open-button$="[[opened]]">
+        <span class="name">
+          <template is="dom-if" if="[[_isSearchResults]]">
+            <template is="dom-if" if="[[_isCompositeSearch(category)]]">
+              <span>Tags matching multiple experiments</span>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span
+                  >&nbsp;<strong>(malformed regular expression)</strong></span
+                >
+              </template>
+            </template>
+            <template is="dom-if" if="[[!_isCompositeSearch(category)]]">
+              <span class="light">Tags matching /</span>
+              <span class="category-name" title$="[[category.name]]"
+                >[[category.name]]</span
+              >
+              <span class="light">/</span>
+              <template is="dom-if" if="[[_isUniversalSearchQuery]]">
+                <span> (all tags)</span>
+              </template>
+              <template is="dom-if" if="[[_isInvalidSearchResults]]">
+                <span> <strong>(malformed regular expression)</strong></span>
+              </template>
+            </template>
+          </template>
+          <template is="dom-if" if="[[!_isSearchResults]]">
+            <span class="category-name" title$="[[category.name]]"
+              >[[category.name]]</span
+            >
+          </template>
+        </span>
+        <span class="count">
+          <template is="dom-if" if="[[_hasMultiple]]">
+            <span>[[_count]]</span>
+          </template>
+          <iron-icon icon="expand-more" class="expand-arrow"></iron-icon>
+        </span>
+      </button>
+      <!-- TODO(stephanwlee): investigate further. For some reason,
+        transitionend that the iron-collapse relies on sometimes does not
+        trigger when rendering a chart with a spinner. A toy example cannot
+        reproduce this bug. -->
+      <iron-collapse opened="[[opened]]" no-animation>
+        <div class="content">
+          <span id="top-of-container"></span>
+          <template is="dom-if" if="[[_multiplePagesExist]]">
+            <div class="big-page-buttons" style="margin-bottom: 10px;">
+              <paper-button
+                on-tap="_performPreviousPage"
+                disabled$="[[!_hasPreviousPage]]"
+                >Previous page</paper-button
+              >
+              <paper-button
+                on-tap="_performNextPage"
+                disabled$="[[!_hasNextPage]]"
+                >Next page</paper-button
+              >
+            </div>
+          </template>
+
+          <div id="items">
+            <slot name="items"></slot>
+          </div>
+          <template is="dom-if" if="[[_multiplePagesExist]]">
+            <div id="controls-container">
+              <div style="display: inline-block; padding: 0 5px">
+                Page
+                <paper-input
+                  id="page-input"
+                  type="number"
+                  no-label-float
+                  min="1"
+                  max="[[_pageCount]]"
+                  value="[[_pageInputValue]]"
+                  style="display: inline-block; width: [[_inputWidth]];"
+                  on-input="_handlePageInputEvent"
+                  on-change="_handlePageChangeEvent"
+                  on-focus="_handlePageFocusEvent"
+                  on-blur="_handlePageBlurEvent"
+                ></paper-input>
+                of [[_pageCount]]
+              </div>
+            </div>
+
+            <div class="big-page-buttons" style="margin-top: 10px;">
+              <paper-button
+                on-tap="_performPreviousPage"
+                disabled$="[[!_hasPreviousPage]]"
+                >Previous page</paper-button
+              >
+              <paper-button
+                on-tap="_performNextPage"
+                disabled$="[[!_hasNextPage]]"
+                >Next page</paper-button
+              >
+            </div>
+          </template>
+        </div>
+      </iron-collapse>
+    </template>
+    <style>
+      :host {
+        display: block;
+        margin: 0 5px 1px 10px;
+      }
+
+      :host(:first-of-type) {
+        margin-top: 10px;
+      }
+
+      :host(:last-of-type) {
+        margin-bottom: 20px;
+      }
+
+      .heading {
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .heading::-moz-focus-inner {
+        padding: 10px 15px;
+      }
+
+      [open-button] {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
+
+      [open-button] .expand-arrow {
+        transform: rotateZ(180deg);
+      }
+
+      .name {
+        display: inline-flex;
+        overflow: hidden;
+      }
+
+      .light {
+        color: var(--paper-grey-500);
+      }
+
+      .category-name {
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 2px 0;
+      }
+
+      .count {
+        margin: 0 5px;
+        font-size: 12px;
+        color: var(--paper-grey-500);
+        display: flex;
+        align-items: center;
+        flex: none;
+      }
+
+      .heading::-moz-focus-inner {
+        padding: 10px 15px;
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        border-top: none;
+        border: 1px solid #dedede;
+        padding: 15px;
+      }
+
+      .light {
+        color: var(--paper-grey-500);
+      }
+
+      #controls-container {
+        justify-content: center;
+        display: flex;
+        flex-direction: row;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 100%;
+      }
+
+      #controls-container paper-button {
+        display: inline-block;
+      }
+
+      .big-page-buttons {
+        display: flex;
+      }
+
+      .big-page-buttons paper-button {
+        background-color: var(--tb-ui-light-accent);
+        color: var(--tb-ui-dark-accent);
+        display: inline-block;
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 1;
+        font-size: 13px;
+      }
+
+      .big-page-buttons paper-button[disabled] {
+        background: none;
+      }
+
+      slot {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'tf-category-paginated-view',
+      properties: {
+        /**
+         * The category object represented by this pane. Should be of
+         * type Category<any> (from categorizationUtils.ts).
+         */
+        category: Object,
+
+        initialOpened: Boolean,
+
+        /**
+         * Allows opening and closing the pane, which is open by default.
+         */
+        opened: {
+          type: Boolean,
+          notify: true,
+          readOnly: true,
+        },
+
+        _contentActive: {
+          type: Boolean,
+          computed: '_computeContentActive(opened)',
+        },
+
+        disablePagination: {
+          type: Boolean,
+          value: false,
+        },
+
+        _count: {
+          type: Number,
+          computed: '_computeCount(category.items.*)',
+        },
+        _hasMultiple: {
+          type: Boolean,
+          computed: '_computeHasMultiple(_count)',
+        },
+        _paneRendered: {
+          type: Boolean,
+          computed: '_computePaneRendered(category)',
+          observer: '_onPaneRenderedChanged',
+        },
+        _itemsRendered: {
+          type: Boolean,
+          computed: '_computeItemsRendered(opened, _paneRendered)',
+        },
+        _isSearchResults: {
+          type: Boolean,
+          computed: '_computeIsSearchResults(category.metadata.type)',
+        },
+        _isInvalidSearchResults: {
+          type: Boolean,
+          computed: '_computeIsInvalidSearchResults(category.metadata)',
+        },
+        _isUniversalSearchQuery: {
+          type: Boolean,
+          computed: '_computeIsUniversalSearchQuery(category.metadata)',
+        },
+
+        /**
+         * Callback that returns a stable string key for an item
+         */
+        getCategoryItemKey: {
+          type: Function,
+          value: () => (item, index) => JSON.stringify(item),
+          observer: '_getCategoryItemKeyChanged',
+        },
+
+        /**
+         * The maximum number of items to include on each page.
+         */
+        _limit: {
+          type: Number,
+          value: 12, // reasonably small and has lots of factors
+          observer: '_limitChanged',
+        },
+
+        // At any time we'll mark one particular item('s index) as
+        // "active," and we'll always render the page containing that
+        // item. Clicking the next/previous page buttons will adjust this
+        // index by `_limit`.
+        //
+        // We track an active index instead of an active page so that any
+        // changes to the `_limit` will keep roughly the same set of items
+        // displayed. (Cf.: in a browser, when you zoom to adjust the text
+        // size, your reading position stays in about the same place.)
+        // (This decision incurs hardly any additional complexity, which
+        // is good because otherwise it wouldn't really be worth it.)
+        //
+        // Range invariant: let `count = items.length`. If `count > 0`
+        // then `0 <= _activeIndex && _activeIndex < count`; otherwise,
+        // if `count === 0` then `_activeIndex === 0`.
+        _activeIndex: {
+          type: Number,
+          value: 0,
+        },
+
+        _currentPage: {
+          type: Number, // 1-indexed
+          computed: '_computeCurrentPage(_limit, _activeIndex)',
+        },
+        _pageCount: {
+          type: Number,
+          computed: '_computePageCount(category.items.*, _limit)',
+        },
+        _multiplePagesExist: {
+          type: Boolean,
+          computed: '_computeMultiplePagesExist(_pageCount, disablePagination)',
+        },
+        _hasPreviousPage: {
+          type: Boolean,
+          computed: '_computeHasPreviousPage(_currentPage)',
+        },
+        _hasNextPage: {
+          type: Boolean,
+          computed: '_computeHasNextPage(_currentPage, _pageCount)',
+        },
+        _inputWidth: {
+          type: String,
+          computed: '_computeInputWidth(_pageCount)',
+        },
+
+        _pageInputValue: {
+          type: String, // value displayed in the input field at any time
+          computed:
+            '_computePageInputValue(_pageInputFocused, _pageInputRawValue, _currentPage)',
+          observer: '_updatePageInputValue',
+        },
+        _pageInputRawValue: {
+          type: String, // updated live as the user types
+          value: '',
+        },
+        _pageInputFocused: {
+          type: Boolean,
+          value: false,
+        },
+      },
+
+      observers: [
+        '_clampActiveIndex(category.items.*)',
+        '_updateRenderedItems(_itemsRendered, category.items.*, _limit, _activeIndex, _pageCount, disablePagination)',
+      ],
+
+      behaviors: [tf_dom_repeat.TfDomRepeatBehavior],
+
+      _computeCount() {
+        return this.category.items.length;
+      },
+
+      _computeHasMultiple() {
+        return this._count > 1;
+      },
+
+      _togglePane() {
+        this._setOpened(!this.opened);
+      },
+
+      _computeContentActive() {
+        return this.opened;
+      },
+
+      _onPaneRenderedChanged(newRendered, oldRendered) {
+        if (newRendered && newRendered !== oldRendered) {
+          // Force dom-if render without waiting for one rAF.
+          this.$.ifRendered.render();
+        }
+      },
+
+      _computePaneRendered(category) {
+        // Show a category unless it's a search results category where
+        // there wasn't actually a search query.
+        return !(
+          category.metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          category.name === ''
+        );
+      },
+
+      _computeItemsRendered() {
+        return this._paneRendered && this.opened;
+      },
+
+      _computeIsSearchResults(type) {
+        return type === tf_categorization_utils.CategoryType.SEARCH_RESULTS;
+      },
+
+      _computeIsInvalidSearchResults(metadata) {
+        return (
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          !metadata.validRegex
+        );
+      },
+
+      _computeIsUniversalSearchQuery(metadata) {
+        return (
+          metadata.type ===
+            tf_categorization_utils.CategoryType.SEARCH_RESULTS &&
+          metadata.universalRegex
+        );
+      },
+
+      _isCompositeSearch() {
+        const {type, compositeSearch} = this.category.metadata;
+        return (
+          compositeSearch &&
+          type === tf_categorization_utils.CategoryType.SEARCH_RESULTS
+        );
+      },
+
+      ready() {
+        this._setOpened(this.initialOpened == null ? true : this.initialOpened);
+        this._limitListener = () => {
+          this.set('_limit', tf_paginated_view.getLimit());
+        };
+        tf_paginated_view.addLimitListener(this._limitListener);
+        this._limitListener();
+      },
+
+      detached() {
+        tf_paginated_view.removeLimitListener(this._limitListener);
+      },
+
+      _updateRenderedItems(
+        itemsRendered,
+        _,
+        limit,
+        activeIndex,
+        pageCount,
+        disablePagination
+      ) {
+        if (!itemsRendered) return;
+        const activePageIndex = Math.floor(activeIndex / limit);
+        const items = this.category.items || [];
+        const domItems = disablePagination
+          ? items
+          : items.slice(activePageIndex * limit, (activePageIndex + 1) * limit);
+        this.updateDom(domItems, this.getCategoryItemKey);
+      },
+
+      _limitChanged(limit) {
+        this.setCacheSize(limit * 2);
+      },
+
+      _getCategoryItemKeyChanged() {
+        this.setGetItemKey(this.getCategoryItemKey);
+      },
+
+      _computeCurrentPage(limit, activeIndex) {
+        return Math.floor(activeIndex / limit) + 1;
+      },
+      _computePageCount(_, limit) {
+        return this.category
+          ? Math.ceil(this.category.items.length / limit)
+          : 0;
+      },
+      _computeMultiplePagesExist(pageCount, disablePagination) {
+        return !disablePagination && pageCount > 1;
+      },
+      _computeHasPreviousPage(currentPage) {
+        return currentPage > 1;
+      },
+      _computeHasNextPage(currentPage, pageCount) {
+        return currentPage < pageCount;
+      },
+      _computeInputWidth(pageCount) {
+        // Add 20px for the +/- arrows added by browsers.
+        return `calc(${pageCount.toString().length}em + 20px)`;
+      },
+
+      /**
+       * Update _activeIndex, maintaining its range invariant.
+       */
+      _setActiveIndex(index) {
+        const maxIndex = (this.category.items || []).length - 1;
+        if (index > maxIndex) {
+          index = maxIndex;
+        }
+        if (index < 0) {
+          index = 0;
+        }
+        this.set('_activeIndex', index);
+      },
+
+      _clampActiveIndex(items) {
+        this._setActiveIndex(this._activeIndex);
+      },
+      _performPreviousPage() {
+        this._setActiveIndex(this._activeIndex - this._limit);
+      },
+      _performNextPage() {
+        this._setActiveIndex(this._activeIndex + this._limit);
+      },
+      _computePageInputValue(focused, rawValue, currentPage) {
+        return focused ? rawValue : currentPage.toString();
+      },
+      _handlePageInputEvent(e) {
+        this.set('_pageInputRawValue', e.target.value);
+        const oneIndexedPage = e.target.valueAsNumber;
+        if (isNaN(oneIndexedPage)) return;
+        const page = Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
+        this._setActiveIndex(this._limit * page);
+      },
+      _handlePageChangeEvent() {
+        // Occurs on Enter, etc. Commit the true state.
+        this.set('_pageInputRawValue', this._currentPage.toString());
+      },
+      _handlePageFocusEvent() {
+        // Discard any old (or uninitialized) state before we grant focus.
+        this.set('_pageInputRawValue', this._pageInputValue);
+        this.set('_pageInputFocused', true);
+      },
+      _handlePageBlurEvent() {
+        this.set('_pageInputFocused', false);
+      },
+      _updatePageInputValue(newValue) {
+        // Force two-way binding.
+        const pageInput = this.$$('#page-input input');
+        if (pageInput) {
+          pageInput.value = newValue;
+        }
+      },
+    });
+  </script>
+</dom-module>

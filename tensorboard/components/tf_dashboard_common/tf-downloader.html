@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../paper-item/paper-item.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <dom-module id="tf-downloader">
   <template>
@@ -27,20 +27,22 @@ limitations under the License.
       label="run to download"
       selected-item-label="{{_run}}"
     >
-      <paper-menu class="dropdown-content" slot="dropdown-content">
+      <paper-listbox slot="dropdown-content">
         <template is="dom-repeat" items="[[runs]]">
-          <paper-item no-label-float=true>[[item]]</paper-item>
+          <paper-item no-label-float="true">[[item]]</paper-item>
         </template>
-      </paper-menu>
+      </paper-listbox>
     </paper-dropdown-menu>
-    <a
-      download="[[_csvName(tag, _run)]]"
-      href="[[_csvUrl(tag, _run, urlFn)]]"
-    >CSV</a><!--
-    --><a
-      download="[[_jsonName(tag, _run)]]"
-      href="[[_jsonUrl(tag, _run, urlFn)]]"
-    >JSON</a>
+    <template is="dom-if" if="[[_run]]">
+      <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]"
+        >CSV</a
+      ><!--
+      --><a
+        download="[[_jsonName(tag, _run)]]"
+        href="[[_jsonUrl(tag, _run, urlFn)]]"
+        >JSON</a
+      >
+    </template>
     <style>
       :host {
         display: flex;
@@ -67,10 +69,13 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: "tf-downloader",
+      is: 'tf-downloader',
       properties: {
-        _run: String,
-        runs: Array,  // Array<string>
+        _run: {
+          type: String,
+          value: '',
+        },
+        runs: Array, // Array<string>
         tag: String,
         // Clients pass `urlFn: (tag: string, run: string) => string`,
         // which should generate a URL to download data for a given
@@ -80,15 +85,19 @@ limitations under the License.
         urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
-        return tf_backend.addParams(urlFn(tag, run), {format: "csv"});
+        if (!run) return '';
+        return tf_backend.addParams(urlFn(tag, run), {format: 'csv'});
       },
       _jsonUrl(tag, run, urlFn) {
+        if (!run) return '';
         return urlFn(tag, run);
       },
       _csvName(tag, run) {
+        if (!run) return '';
         return `run-${run}-tag-${tag}.csv`;
       },
       _jsonName(tag, run) {
+        if (!run) return '';
         return `run-${run}-tag-${tag}.json`;
       },
     });

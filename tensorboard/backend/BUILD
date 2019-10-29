@@ -25,9 +25,10 @@ py_test(
     size = "small",
     srcs = ["http_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":http_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -48,9 +49,10 @@ py_test(
     size = "small",
     srcs = ["json_util_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":json_util",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
     ],
 )
 
@@ -60,9 +62,13 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":empty_path_redirect",
+        ":experiment_id",
         ":http_util",
-        "//tensorboard:db",
+        ":path_prefix",
+        "//tensorboard:errors",
         "//tensorboard:expect_sqlite3_installed",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -82,11 +88,74 @@ py_test(
     size = "small",
     srcs = ["application_test.py"],
     srcs_version = "PY2AND3",
+    tags = ["support_notf"],
     deps = [
         ":application",
-        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:errors",
+        "//tensorboard:plugin_util",
+        "//tensorboard:test",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "empty_path_redirect",
+    srcs = ["empty_path_redirect.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "empty_path_redirect_test",
+    size = "small",
+    srcs = ["empty_path_redirect_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":empty_path_redirect",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "experiment_id",
+    srcs = ["experiment_id.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "experiment_id_test",
+    srcs = ["experiment_id_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":experiment_id",
+        "//tensorboard:test",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "path_prefix",
+    srcs = ["path_prefix.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:errors",
+    ],
+)
+
+py_test(
+    name = "path_prefix_test",
+    size = "small",
+    srcs = ["path_prefix_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":path_prefix",
+        "//tensorboard:errors",
+        "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
 )

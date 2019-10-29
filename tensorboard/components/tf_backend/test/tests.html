@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2016 The TensorFlow Authors. All Rights Reserved.
@@ -17,20 +17,19 @@ limitations under the License.
 -->
 
 <html>
-<head>
-  <meta charset="utf-8">
-  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
-  <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../tf-backend.html">
-</head>
-<body>
-  <test-fixture id="testElementFixture">
-    <template>
-      <test-element id="test"></test-element>
-    </template>
-  </test-fixture>
-  <script src="backendTests.js"></script>
-  <script src="requestManagerTests.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../../tf-imports/polymer.html" />
+    <link rel="import" href="../tf-backend.html" />
+  </head>
+  <body>
+    <test-fixture id="testElementFixture">
+      <template>
+        <test-element id="test"></test-element>
+      </template>
+    </test-fixture>
+    <script src="backendTests.js"></script>
+    <script src="requestManagerTests.js"></script>
+  </body>
 </html>

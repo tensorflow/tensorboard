@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-
 /* tslint:disable:no-namespace */
 module tf.graph.test.util {
   /**
@@ -27,5 +26,4 @@ module tf.graph.test.util {
     }
     return buf;
   }
-
-}  // module
+} // module

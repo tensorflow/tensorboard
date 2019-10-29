@@ -84,16 +84,14 @@ class _TensorFlowWavEncoder(op_evaluator.PersistentOpEvaluator):
 
   def initialize_graph(self):
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-    import tensorflow  # for contrib
     import tensorflow.compat.v1 as tf
     self._audio_placeholder = tf.placeholder(
         dtype=tf.float32, name='image_to_encode')
     self._samples_per_second_placeholder = tf.placeholder(
         dtype=tf.int32, name='samples_per_second')
-    self._encode_op = tensorflow.contrib.ffmpeg.encode_audio(
+    self._encode_op = tf.audio.encode_wav(
         self._audio_placeholder,
-        file_format='wav',
-        samples_per_second=self._samples_per_second_placeholder)
+        sample_rate=self._samples_per_second_placeholder)
 
   def run(self, audio, samples_per_second):  # pylint: disable=arguments-differ
     if not isinstance(audio, np.ndarray):

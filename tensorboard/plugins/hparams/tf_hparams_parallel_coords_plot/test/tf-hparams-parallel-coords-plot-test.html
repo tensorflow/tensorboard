@@ -15,21 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <meta charset="utf-8" />
+    <link rel="import" href="../../tf-imports/polymer.html" />
     <script src="../../web-component-tester/browser.js"></script>
-    <link rel="import" href="../../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html">
-    <link rel="import" href="../../tf-hparams-parallel-coords-plot/utils.html">
-    <link rel="import" href="../../tf-imports/d3.html">
+    <link
+      rel="import"
+      href="../../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html"
+    />
+    <link
+      rel="import"
+      href="../../tf-hparams-parallel-coords-plot/utils.html"
+    />
+    <link rel="import" href="../../tf-imports/d3.html" />
   </head>
   <body>
     <test-fixture id="f">
       <template>
-        <tf-hparams-parallel-coords-plot>
-        </tf-hparams-parallel-coords-plot>
+        <tf-hparams-parallel-coords-plot> </tf-hparams-parallel-coords-plot>
       </template>
     </test-fixture>
     <script>
@@ -38,158 +43,227 @@ limitations under the License.
          Tensorboard.
       */
       chai.config.truncateThreshold = 0;
-      suite("<tf-hparams-parallel-coords-plot>-tests", function() {
+      suite('<tf-hparams-parallel-coords-plot>-tests', function() {
         var element;
 
         setup(function() {
-          element = fixture("f");
+          element = fixture('f');
         });
 
         const epsilon = 1e-5;
-        teardown(function() {
-        });
+        teardown(function() {});
 
-        test("pointScaleInverseImage", function() {
+        test('pointScaleInverseImage', function() {
           const pointScaleInverseImage =
-                tf.hparams.parallel_coords_plot.pointScaleInverseImage
-          const scale=d3.scalePoint()
-                .domain(["a", "b", "c"])
-                .range([0,300])
-                .padding(0.5);
+            tf.hparams.parallel_coords_plot.pointScaleInverseImage;
+          const scale = d3
+            .scalePoint()
+            .domain(['a', 'b', 'c'])
+            .range([0, 300])
+            .padding(0.5);
           // "a" --> 50
           // "b" --> 150
           // "c" --> 250
-          const a="a";
-          const b="b";
-          const c="c";
+          const a = 'a';
+          const b = 'b';
+          const c = 'c';
           assert.deepEqual(pointScaleInverseImage(scale, 0, 49), []);
           assert.deepEqual(pointScaleInverseImage(scale, 0, 50), [a]);
           assert.deepEqual(pointScaleInverseImage(scale, 0, 100), [a]);
           assert.deepEqual(pointScaleInverseImage(scale, 51, 100), []);
-          assert.deepEqual(pointScaleInverseImage(scale, 50, 150), [a,b]);
-          assert.deepEqual(pointScaleInverseImage(scale, 50, 249), [a,b]);
-          assert.deepEqual(pointScaleInverseImage(scale, 50, 250),
-                            [a,b,c]);
-          assert.deepEqual(pointScaleInverseImage(scale, 0, 300), [a,b,c]);
+          assert.deepEqual(pointScaleInverseImage(scale, 50, 150), [a, b]);
+          assert.deepEqual(pointScaleInverseImage(scale, 50, 249), [a, b]);
+          assert.deepEqual(pointScaleInverseImage(scale, 50, 250), [a, b, c]);
+          assert.deepEqual(pointScaleInverseImage(scale, 0, 300), [a, b, c]);
         });
 
-        test("continuousScaleInverseImage", function() {
+        test('continuousScaleInverseImage', function() {
           const continuousScaleInverseImage =
-                tf.hparams.parallel_coords_plot.continuousScaleInverseImage
-          let scale=d3.scaleLinear()
-                .domain([-150, 300])
-                .range([0,300]);
+            tf.hparams.parallel_coords_plot.continuousScaleInverseImage;
+          let scale = d3
+            .scaleLinear()
+            .domain([-150, 300])
+            .range([0, 300]);
           // scale(x)=2/3*x+100
           // x=3/2*scale(x)-150
           assertVectorsApproxEqual(
-              continuousScaleInverseImage(scale, 0, 100),
-              [-150, 0],
-              epsilon,
+            continuousScaleInverseImage(scale, 0, 100),
+            [-150, 0],
+            epsilon
           );
           assertVectorsApproxEqual(
-              continuousScaleInverseImage(scale, -31, 245),
-              [-196.5, 217.5],
-              epsilon);
-          scale=d3.scaleLog()
-              .domain([1, 150])
-              .range([300, 1]);
+            continuousScaleInverseImage(scale, -31, 245),
+            [-196.5, 217.5],
+            epsilon
+          );
+          scale = d3
+            .scaleLog()
+            .domain([1, 150])
+            .range([300, 1]);
 
           assertVectorsApproxEqual(
-              continuousScaleInverseImage(scale, 10, 50),
-              [65.98941782, 129.0001408],
-              epsilon);
+            continuousScaleInverseImage(scale, 10, 50),
+            [65.98941782, 129.0001408],
+            epsilon
+          );
         });
 
-        test("quantileScaleInverseImage", function() {
+        test('quantileScaleInverseImage', function() {
           const quantileScaleInverseImage =
-                tf.hparams.parallel_coords_plot.quantileScaleInverseImage
-          const scale=d3.scaleQuantile()
-                .domain(d3.range(1, 111, 1))   // 1,2,3,...,110
-                .range(d3.range(1,102,10)); // 1,11,21,...,101
-              // Range has 11 values so we have 10 thresholds:
-              // x0 < x1 < ... < x9 partitioning the real line into
+            tf.hparams.parallel_coords_plot.quantileScaleInverseImage;
+          const scale = d3
+            .scaleQuantile()
+            .domain(d3.range(1, 111, 1)) // 1,2,3,...,110
+            .range(d3.range(1, 102, 10)); // 1,11,21,...,101
+          // Range has 11 values so we have 10 thresholds:
+          // x0 < x1 < ... < x9 partitioning the real line into
           // 11 intervals--each mapped to a single output value.
           const x = scale.quantiles();
           assertVectorsApproxEqual(
-              quantileScaleInverseImage(scale, 0, 5), [1,x[0]], epsilon);
+            quantileScaleInverseImage(scale, 0, 5),
+            [1, x[0]],
+            epsilon
+          );
           assertVectorsApproxEqual(
-              quantileScaleInverseImage(scale, 95, 101), [x[9], 111],
-              epsilon);
+            quantileScaleInverseImage(scale, 95, 101),
+            [x[9], 111],
+            epsilon
+          );
           assertVectorsApproxEqual(
-              quantileScaleInverseImage(scale, 0, 25), [1, x[2]], epsilon);
+            quantileScaleInverseImage(scale, 0, 25),
+            [1, x[2]],
+            epsilon
+          );
           // Test empty result.
           assertVectorsApproxEqual(
-              quantileScaleInverseImage(scale, 5, 7), [0, 0], epsilon);
+            quantileScaleInverseImage(scale, 5, 7),
+            [0, 0],
+            epsilon
+          );
         });
 
-        test("findClosestPath", function() {
+        test('findClosestPath', function() {
           const findClosestPath =
-                tf.hparams.parallel_coords_plot.findClosestPath;
+            tf.hparams.parallel_coords_plot.findClosestPath;
           axesPos = [0, 50, 100, 150, 200];
           paths = [
-            {controlPoints: [[0,0], [50,0], [100,10], [150,11], [200,10]]},
-            {controlPoints: [[0,11], [50,99], [100,10], [150,14], [200,20]]},
-            {controlPoints: [[0,26], [50,25], [100,70], [150,67], [200,30]]},
-            {controlPoints: [[0,67], [50,33], [100,20], [150,67], [200,40]]},
-            {controlPoints: [[0,83], [50,17], [100,80], [150,23], [200,50]]},
+            {controlPoints: [[0, 0], [50, 0], [100, 10], [150, 11], [200, 10]]},
+            {
+              controlPoints: [
+                [0, 11],
+                [50, 99],
+                [100, 10],
+                [150, 14],
+                [200, 20],
+              ],
+            },
+            {
+              controlPoints: [
+                [0, 26],
+                [50, 25],
+                [100, 70],
+                [150, 67],
+                [200, 30],
+              ],
+            },
+            {
+              controlPoints: [
+                [0, 67],
+                [50, 33],
+                [100, 20],
+                [150, 67],
+                [200, 40],
+              ],
+            },
+            {
+              controlPoints: [
+                [0, 83],
+                [50, 17],
+                [100, 80],
+                [150, 23],
+                [200, 50],
+              ],
+            },
           ];
           assert.strictEqual(
-              findClosestPath(paths, axesPos, [1,1], 100),
-              paths[0]);
+            findClosestPath(paths, axesPos, [1, 1], 100),
+            paths[0]
+          );
           assert.strictEqual(
-              findClosestPath(paths, axesPos, [1,8], 100),
-              paths[1]);
+            findClosestPath(paths, axesPos, [1, 8], 100),
+            paths[1]
+          );
           assert.strictEqual(
-              findClosestPath(paths, axesPos, [25,55], 100),
-              paths[1]);
+            findClosestPath(paths, axesPos, [25, 55], 100),
+            paths[1]
+          );
           assert.strictEqual(
-              findClosestPath(paths, axesPos, [75,20], 100),
-              paths[3]);
+            findClosestPath(paths, axesPos, [75, 20], 100),
+            paths[3]
+          );
           assert.strictEqual(
-              findClosestPath(paths, axesPos, [125,53], 100),
-              paths[4]);
+            findClosestPath(paths, axesPos, [125, 53], 100),
+            paths[4]
+          );
 
           // Over threshold
-          assert.isNull(findClosestPath(paths, axesPos, [1,1], 0.5))
+          assert.isNull(findClosestPath(paths, axesPos, [1, 1], 0.5));
 
           // Outside axes area.
-          assert.isNull(findClosestPath(paths, axesPos, [0,1], 100));
-          assert.isNull(findClosestPath(paths, axesPos, [-50,1], 100));
-          assert.isNull(findClosestPath(paths, axesPos, [200,1], 100));
-          assert.isNull(findClosestPath(paths, axesPos, [250,1], 100));
+          assert.isNull(findClosestPath(paths, axesPos, [0, 1], 100));
+          assert.isNull(findClosestPath(paths, axesPos, [-50, 1], 100));
+          assert.isNull(findClosestPath(paths, axesPos, [200, 1], 100));
+          assert.isNull(findClosestPath(paths, axesPos, [250, 1], 100));
         });
 
-        test("createAxisScale", function() {
+        test('createAxisScale', function() {
           const testCases = [
-            { name: "LINEAR scale test",
-              scaleType: "LINEAR",
+            {
+              name: 'LINEAR scale test',
+              scaleType: 'LINEAR',
               domainValues: [1, 6, 4, 3, 5, 2],
               axisHeight: 100,
               // y = 120-20*x
-              rangeValues: [100, 0, 40, 60, 20, 80]},
-            { name: "LOG scale test. Positive domain",
-              scaleType: "LOG",
+              rangeValues: [100, 0, 40, 60, 20, 80],
+            },
+            {
+              name: 'LOG scale test. Positive domain',
+              scaleType: 'LOG',
               domainValues: [1, 10, 100, 1000, 1500, 100000],
               axisHeight: 100,
               // y = 100-20*log10(x)
-              rangeValues: [100, 80, 60, 40, 100-20*Math.log10(1500), 0]},
-            { name: "LOG scale test. Negative domain",
-              scaleType: "LOG",
+              rangeValues: [100, 80, 60, 40, 100 - 20 * Math.log10(1500), 0],
+            },
+            {
+              name: 'LOG scale test. Negative domain',
+              scaleType: 'LOG',
               // y = 20*log10(x)
               domainValues: [-1, -10, -100, -1000, -1500, -100000],
               axisHeight: 100,
-              rangeValues: [0, 20, 40, 60, 20*Math.log10(1500), 100]},
-            { name: "LOG scale test. Mixed domain. Expecting a linear scale.",
-              scaleType: "LOG",
+              rangeValues: [0, 20, 40, 60, 20 * Math.log10(1500), 100],
+            },
+            {
+              name: 'LOG scale test. Mixed domain. Expecting a linear scale.',
+              scaleType: 'LOG',
               domainValues: [-1, -10, -100, -1000, 99000],
               axisHeight: 100,
               // y = 99-x/1000
-              rangeValues: [99+1/1000, 99+10/1000, 99+100/1000, 100, 0]},
-            { name: "QUANTILE scale test",
-              scaleType: "QUANTILE",
+              rangeValues: [
+                99 + 1 / 1000,
+                99 + 10 / 1000,
+                99 + 100 / 1000,
+                100,
+                0,
+              ],
+            },
+            {
+              name: 'QUANTILE scale test',
+              scaleType: 'QUANTILE',
               domainValues: d3.range(100),
               axisHeight: 190,
-              rangeValues: Array(5).fill(190).concat(
+              rangeValues: Array(5)
+                .fill(190)
+                .concat(
                   Array(5).fill(180),
                   Array(5).fill(170),
                   Array(5).fill(160),
@@ -208,48 +282,84 @@ limitations under the License.
                   Array(5).fill(30),
                   Array(5).fill(20),
                   Array(5).fill(10),
-                  Array(5).fill(0))},
-            { name: "NON_NUMERIC scale test",
-              scaleType: "NON_NUMERIC",
-              domainValues: ["oranges", "strawberries", "grapes"],
+                  Array(5).fill(0)
+                ),
+            },
+            {
+              name: 'NON_NUMERIC scale test',
+              scaleType: 'NON_NUMERIC',
+              domainValues: ['oranges', 'strawberries', 'grapes'],
               axisHeight: 100,
               // We expect the values to be sorted by 'createScale'
               // So we should map: ["grapes", "oranges", "strawberries"]
               // to [100, 0] with a padding factor of 0.1:
-              rangeValues: [1.1*100/2.2, 0.1*100/2.2, 2.1*100/2.2] }
+              rangeValues: [
+                (1.1 * 100) / 2.2,
+                (0.1 * 100) / 2.2,
+                (2.1 * 100) / 2.2,
+              ],
+            },
           ];
           const createAxisScale =
-                tf.hparams.parallel_coords_plot.createAxisScale;
-          testCases.forEach(tc=>{
-            const scale = createAxisScale(tc.domainValues.slice(),
-                                          tc.axisHeight,
-                                          tc.scaleType);
-            const actualYVals = tc.domainValues.map(x=>scale(x));
-            assertVectorsApproxEqual(actualYVals, tc.rangeValues, 1e-10,
-                                     tc.name);
+            tf.hparams.parallel_coords_plot.createAxisScale;
+          testCases.forEach((tc) => {
+            const scale = createAxisScale(
+              tc.domainValues.slice(),
+              tc.axisHeight,
+              tc.scaleType
+            );
+            const actualYVals = tc.domainValues.map((x) => scale(x));
+            assertVectorsApproxEqual(
+              actualYVals,
+              tc.rangeValues,
+              1e-10,
+              tc.name
+            );
           });
         });
 
-        test("createScale_throws", function() {
+        test('createScale_throws', function() {
           const createAxisScale =
-                tf.hparams.parallel_coords_plot.createAxisScale;
+            tf.hparams.parallel_coords_plot.createAxisScale;
           assert.throws(
-              ()=>createAxisScale([1,2,3], 100, "not-a-scale-type"),
-              /Unknown scale/);
+            () => createAxisScale([1, 2, 3], 100, 'not-a-scale-type'),
+            /Unknown scale/
+          );
         });
 
         function assertVectorsApproxEqual(actual, expected, delta, msg) {
           if (msg === undefined) {
-            msg = "";
+            msg = '';
           }
-          assert.equal(actual.length, expected.length,
-                       msg + "\n" + "actual: " + actual.toString() + "\n" +
-                       "expected: " + expected.toString() + "\n");
+          assert.equal(
+            actual.length,
+            expected.length,
+            msg +
+              '\n' +
+              'actual: ' +
+              actual.toString() +
+              '\n' +
+              'expected: ' +
+              expected.toString() +
+              '\n'
+          );
           for (let i = 0; i < actual.length; ++i) {
-            assert.closeTo(actual[i], expected[i], delta,
-                           msg + "\n" + "i: " + i + "\n" +
-                           "actual: " + actual.toString() + "\n" +
-                           "expected: " + expected.toString() + "\n");
+            assert.closeTo(
+              actual[i],
+              expected[i],
+              delta,
+              msg +
+                '\n' +
+                'i: ' +
+                i +
+                '\n' +
+                'actual: ' +
+                actual.toString() +
+                '\n' +
+                'expected: ' +
+                expected.toString() +
+                '\n'
+            );
           }
         }
       });

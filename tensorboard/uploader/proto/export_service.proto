@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+import "google/protobuf/timestamp.proto";
+import "tensorboard/compat/proto/summary.proto";
+
+// Service for exporting data from TensorBoard.dev.
+service TensorBoardExporterService {
+  // Stream the experiment_id of all the experiments owned by the caller.
+  rpc StreamExperiments(StreamExperimentsRequest)
+      returns (stream StreamExperimentsResponse) {}
+  // Stream scalars for all the runs and tags in an experiment.
+  rpc StreamExperimentData(StreamExperimentDataRequest)
+      returns (stream StreamExperimentDataResponse) {}
+}
+
+// Request to stream the experiment_id of all the experiments owned by the
+// caller from TensorBoard.dev.
+message StreamExperimentsRequest {
+  // Timestamp to get a consistent snapshot of the data in the database.
+  // This is useful when making multiple read RPCs and needing the data to be
+  // consistent across the read calls.
+  google.protobuf.Timestamp read_timestamp = 1;
+  // User ID defaults to the caller, but may be set to a different user for
+  // internal Takeout processes operating on behalf of a user.
+  string user_id = 2;
+  // Limits the number of experiment IDs returned. This is useful to check if
+  // user might have any data by setting limit=1. Also useful to preview the
+  // list of experiments.
+  int64 limit = 3;
+  // TODO(@karthikv2k): Support pagination.
+}
+
+// Streams experiment IDs returned from TensorBoard.dev.
+message StreamExperimentsResponse {
+  // List of experiment IDs for the experiments owned by the user. The entire
+  // list of experiments owned by the user is streamed in batches and each batch
+  // contains a list of experiment IDs. A consumer of this stream needs to
+  // concatenate all these lists to get the full response. The order of
+  // experiment IDs in the stream is not defined.
+  repeated string experiment_ids = 1;
+}
+
+// Request to stream scalars from all the runs and tags in an experiment.
+message StreamExperimentDataRequest {
+  // The permanent ID of the experiment whose data need to be streamed.
+  string experiment_id = 1;
+  // Timestamp to get a consistent snapshot of the data in the database.
+  // This is useful when making multiple read RPCs and needing the data to be
+  // consistent across the read calls. Should be the same as the read timestamp
+  // used for the corresponding `StreamExperimentsRequest` for consistency.
+  google.protobuf.Timestamp read_timestamp = 2;
+}
+
+// Streams scalars from all the runs and tags in an experiment. Each stream
+// result contains data for a single tag from a single run. For example if there
+// are five runs and each run had two tags, the RPC will return a stream of ten
+// `StreamExperimentDataResponse`s, each one having all the scalars for one tag.
+// Users need to aggregate information from entire stream to get data for the
+// entire experiment. Empty experiments will have zero stream results. Empty
+// runs that doesn't have any tags need not be supported by TensorBoard.dev.
+message StreamExperimentDataResponse {
+  // Name of the tag whose data is contained in this response.
+  string tag_name = 1;
+  // Name of the run that contains the tag `tag_name`.
+  string run_name = 2;
+  // The metadata of the tag `tag_name`.
+  .tensorboard.SummaryMetadata tag_metadata = 3;
+  // Data to store for the tag `tag_name.
+  ScalarPoints points = 4;
+
+  // Data for the scalars are stored in a columnar fashion to optimize it for
+  // exporting the data into textual formats like JSON.
+  // The data for the ith scalar is { steps[i], wall_times[i], values[i] }.
+  // The data here is sorted by step values in ascending order.
+  message ScalarPoints {
+    // Step index within the run.
+    repeated int64 steps = 1;
+    // Timestamp of the creation of this point.
+    repeated google.protobuf.Timestamp wall_times = 2;
+    // Value of the point at this step / timestamp.
+    repeated double values = 3;
+  }
+}

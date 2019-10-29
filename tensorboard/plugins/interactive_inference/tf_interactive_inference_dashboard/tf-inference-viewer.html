@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icons/iron-icons.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
 
 <!-- Displays the results of inferences in the what-if tool side panel. -->
 <dom-module id="tf-inference-viewer">
@@ -33,15 +33,15 @@ limitations under the License.
       }
       .row {
         display: flex;
-        color: #3C4043;
+        color: #3c4043;
         font-size: 12px;
       }
       .header {
-        color: #80868B;
+        color: #80868b;
         font-size: 12px;
         padding: 4px 0;
-        border-bottom: solid 1px #DADCE0;
-        border-top: solid 1px #DADCE0;
+        border-bottom: solid 1px #dadce0;
+        border-top: solid 1px #dadce0;
       }
       .dark-row-one {
         background: #cbf0f8;
@@ -57,7 +57,7 @@ limitations under the License.
         margin-right: 5px;
       }
       .marker.mark-one {
-        background: #007B83;
+        background: #007b83;
         padding-left: 1px;
       }
       .marker.mark-two {
@@ -110,12 +110,27 @@ limitations under the License.
       <div class="delta">Delta</div>
     </div>
     <div class="runs-holder">
-      <template is="dom-repeat" items="[[inferences]]" as="modelsInference" index-as="runindex">
+      <template
+        is="dom-repeat"
+        items="[[inferences]]"
+        as="modelsInference"
+        index-as="runindex"
+      >
         <div class="rows-for-run">
-          <template is="dom-repeat" items="[[modelsInference]]" as="inference" index-as="modelindex">
-            <template is="dom-repeat" items="[[getInferenceList(inference, maxEntriesPerRun)]]">
+          <template
+            is="dom-repeat"
+            items="[[modelsInference]]"
+            as="inference"
+            index-as="modelindex"
+          >
+            <template
+              is="dom-repeat"
+              items="[[getInferenceList(inference, maxEntriesPerRun)]]"
+            >
               <div class$="[[getRowClass(runindex, inferences, modelindex)]]">
-                <div class$="[[getMarkerClass(runindex, inferences, modelindex)]]"></div>
+                <div
+                  class$="[[getMarkerClass(runindex, inferences, modelindex)]]"
+                ></div>
                 <div class="run text">[[getRunNumber(runindex)]]</div>
                 <div class$="[[getModelClass(inferences)]]">
                   <div>[[getModelName(modelNames, modelindex)]]</div>
@@ -125,13 +140,18 @@ limitations under the License.
                 </div>
                 <div class="score text">[[getPrintableScore(item.score)]]</div>
                 <div class="arrow">
-                  <iron-icon icon="[[getIcon(runindex, index, modelindex)]]"
-                             class$="[[getIconClass(runindex, index, modelindex)]]">
+                  <iron-icon
+                    icon="[[getIcon(runindex, index, modelindex)]]"
+                    class$="[[getIconClass(runindex, index, modelindex)]]"
+                  >
                   </iron-icon>
                 </div>
-                <div class="delta text">[[getPrintableDelta(runindex, index, modelindex)]]</div>
+                <div class="delta text">
+                  [[getPrintableDelta(runindex, index, modelindex)]]
+                </div>
               </div>
             </template>
+          </template>
         </div>
       </template>
     </div>
@@ -139,7 +159,7 @@ limitations under the License.
 
   <script>
     Polymer({
-      is: "tf-inference-viewer",
+      is: 'tf-inference-viewer',
       properties: {
         inferences: Array,
         // Possible modelType values currently 'regression and 'classification'.
@@ -168,12 +188,14 @@ limitations under the License.
       },
 
       getModelClass: function(inferences) {
-        return (inferences && inferences[0].length > 1) ? 'multi-model text'
+        return inferences && inferences[0].length > 1
+          ? 'multi-model text'
           : 'one-model';
       },
 
       getModelHeaderClass: function(inferences) {
-        return (inferences && inferences[0].length > 1) ? 'multi-model'
+        return inferences && inferences[0].length > 1
+          ? 'multi-model'
           : 'one-model';
       },
 
@@ -181,30 +203,49 @@ limitations under the License.
         return modelType == 'classification' ? 'Score' : 'Value';
       },
 
-      getIconClass: function(runIndex, labelIndex, modelIndex ) {
-        return this.getIconDecision(runIndex, labelIndex, modelIndex, 'green',
-          'red');
+      getIconClass: function(runIndex, labelIndex, modelIndex) {
+        return this.getIconDecision(
+          runIndex,
+          labelIndex,
+          modelIndex,
+          'green',
+          'red'
+        );
       },
 
       getIcon: function(runIndex, labelIndex, modelIndex) {
         return this.getIconDecision(
-          runIndex, labelIndex, modelIndex, 'icons:arrow-upward',
-          'icons:arrow-downward');
+          runIndex,
+          labelIndex,
+          modelIndex,
+          'icons:arrow-upward',
+          'icons:arrow-downward'
+        );
       },
 
       /**
        * Returns upVal or downVal depending on if value from latest inference
        * is higher or lower than from previous inference.
        */
-      getIconDecision: function(runIndex, labelIndex, modelIndex, upVal, downVal) {
+      getIconDecision: function(
+        runIndex,
+        labelIndex,
+        modelIndex,
+        upVal,
+        downVal
+      ) {
         // No up or down on first run.
         if (runIndex == 0) {
           return '';
         }
         const inferenceIndex = runIndex;
-        const label = this.inferences[inferenceIndex][modelIndex][labelIndex].label;
-        const score = this.inferences[inferenceIndex][modelIndex][labelIndex].score;
-        const previousInference = this.inferences[inferenceIndex - 1][modelIndex];
+        const label = this.inferences[inferenceIndex][modelIndex][labelIndex]
+          .label;
+        const score = this.inferences[inferenceIndex][modelIndex][labelIndex]
+          .score;
+        const previousInference = this.inferences[inferenceIndex - 1][
+          modelIndex
+        ];
         for (let i = 0; i < previousInference.length; i++) {
           if (previousInference[i].label == label) {
             if (previousInference[i].score > score) {
@@ -228,14 +269,20 @@ limitations under the License.
       },
 
       getMarkerClass: function(index, inferences, modelIndex) {
-        return 'marker' + (index == (inferences.length - 1) ?
-          (modelIndex == 0 ? ' mark-one' : ' mark-two') : '');
+        return (
+          'marker' +
+          (inferences != null && index == inferences.length - 1
+            ? modelIndex == 0
+              ? ' mark-one'
+              : ' mark-two'
+            : '')
+        );
       },
 
       getRowClass: function(index, inferences, modelIndex) {
         let str = 'row ';
-        if (index == (inferences.length - 1)) {
-          str += (modelIndex == 0 ? 'dark-row-one' : 'dark-row-two');
+        if (inferences != null && index == inferences.length - 1) {
+          str += modelIndex == 0 ? 'dark-row-one' : 'dark-row-two';
         } else {
           str += 'white-row';
         }
@@ -255,9 +302,13 @@ limitations under the License.
           return '';
         }
         const inferenceIndex = runIndex;
-        const label = this.inferences[inferenceIndex][modelIndex][labelIndex].label;
-        const score = this.inferences[inferenceIndex][modelIndex][labelIndex].score;
-        const previousInference = this.inferences[inferenceIndex - 1][modelIndex];
+        const label = this.inferences[inferenceIndex][modelIndex][labelIndex]
+          .label;
+        const score = this.inferences[inferenceIndex][modelIndex][labelIndex]
+          .score;
+        const previousInference = this.inferences[inferenceIndex - 1][
+          modelIndex
+        ];
         for (let i = 0; i < previousInference.length; i++) {
           if (previousInference[i].label == label) {
             return (score - previousInference[i].score).toFixed(6);
@@ -270,6 +321,5 @@ limitations under the License.
         return inferenceList.slice(0, maxEntries);
       },
     });
-
   </script>
 </dom-module>

@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+import "tensorboard/uploader/proto/scalar.proto";
+import "tensorboard/compat/proto/summary.proto";
+
+// Service for writing data to TensorBoard.dev.
+service TensorBoardWriterService {
+  // Request for a new location to write TensorBoard readable events.
+  rpc CreateExperiment(CreateExperimentRequest)
+      returns (CreateExperimentResponse) {}
+  // Request that an experiment be deleted, along with all tags and scalars
+  // that it contains. This call may only be made by the original owner of the
+  // experiment.
+  rpc DeleteExperiment(DeleteExperimentRequest)
+      returns (DeleteExperimentResponse) {}
+  // Request that unreachable data be purged. Used only for testing;
+  // disabled in production.
+  rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
+  // Request additional data be stored in TensorBoard.dev.
+  rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
+  // Request that the calling user and all their data be permanently deleted.
+  // Used for testing purposes.
+  rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
+}
+
+// This is currently empty on purpose.  No information is necessary
+// to request a URL, except. authorization of course, which doesn't
+// come within the proto.
+message CreateExperimentRequest {
+  // This is empty on purpose.
+}
+
+// Carries all information necessary to:
+//  1. Inform the user where to navigate to see their TensorBoard.
+//  2. Subsequently load (Scalars, Tensors, etc.) to the specified location.
+message CreateExperimentResponse {
+  // Service-wide unique identifier of an uploaded log dir.
+  // eg: "1r9d0kQkh2laODSZcQXWP"
+  string experiment_id = 1;
+  // Url the user should navigate to to see their TensorBoard
+  // eg: "https://example.com/public/1r9d0kQkh2laODSZcQXWP"
+  string url = 2;
+}
+
+message DeleteExperimentRequest {
+  // Service-wide unique identifier of an uploaded log dir.
+  // eg: "1r9d0kQkh2laODSZcQXWP"
+  string experiment_id = 1;
+}
+
+message DeleteExperimentResponse {
+  // This is empty on purpose.
+}
+
+// Only used for testing; corresponding RPC is disabled in prod.
+message PurgeDataRequest {
+  // Maximum number of entities of a given kind to purge at once (e.g.,
+  // maximum number of tags to purge). Required; must be positive.
+  int32 batch_limit = 1;
+}
+
+// Only used for testing; corresponding RPC is disabled in prod.
+message PurgeDataResponse {
+  // Stats about how many elements where purged. Compare to the batch
+  // limit specified in the request to estimate whether the backlog has
+  // any more items.
+  PurgeStats purge_stats = 1;
+}
+
+// Details about what actions were taken as a result of a purge request.
+// These values are upper bounds; they may exceed the true values.
+message PurgeStats {
+  // Number of tags deleted as a result of this request.
+  int32 tags = 1;
+  // Number of experiments marked as purged as a result of this request.
+  int32 experiments = 2;
+  // Number of users deleted as a result of this request.
+  int32 users = 3;
+}
+
+// Carries all that is needed to add additional run data to the hosted service.
+message WriteScalarRequest {
+  // All the data to store for one Run.  This data will be stored under the
+  // corresponding run in the hosted storage. WriteScalarRequest is merged into
+  // the data store for the keyed run. The tags and included scalars will be
+  // the union of the data sent across all WriteScalarRequests. Metadata by
+  // default uses a 'first write wins' approach.
+  message Run {
+    // The name of this run.  For example "/some/path/mnist_experiments/run1/"
+    string name = 1;
+    // Data to store for this Run/Tag combination.
+    repeated Tag tags = 2;
+  }
+
+  // All the data to store for one Tag of one Run.  This data will be stored
+  // under the corresponding run/tag in the hosted storage. A tag corresponds to
+  // a single time series.
+  message Tag {
+    // The name of this tag.  For example "loss"
+    string name = 1;
+    // Data to store for this Run/Tag combination.
+    repeated ScalarPoint points = 2;
+    // The metadata of this tag.
+    .tensorboard.SummaryMetadata metadata = 3;
+  }
+
+  // Which experiment to write to - corresponding to one hosted TensorBoard URL.
+  // The requester must have authorization to write to this location.
+  string experiment_id = 1;
+  // Data to append to the existing storage at the experiment_id.
+  repeated Run runs = 2;
+}
+
+// Everything the caller needs to know about how the writing went.
+// (Currently empty)
+message WriteScalarResponse {
+  // This is empty on purpose.
+}
+
+// Requests that the calling user and all their data be permanently deleted.
+message DeleteOwnUserRequest {
+  // This is empty on purpose.
+}
+
+// Everything the caller needs to know about how the deletion went.
+message DeleteOwnUserResponse {
+  // This is empty on purpose.
+}

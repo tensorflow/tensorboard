@@ -68,6 +68,11 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     """
     return self._histograms_plugin.is_active()
 
+  def frontend_metadata(self):
+    return base_plugin.FrontendMetadata(
+        element_name='tf-distribution-dashboard',
+    )
+
   def distributions_impl(self, tag, run):
     """Result of the form `(body, mime_type)`, or `ValueError`."""
     (histograms, mime_type) = self._histograms_plugin.histograms_impl(

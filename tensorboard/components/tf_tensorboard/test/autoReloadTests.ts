@@ -13,78 +13,92 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_tensorboard {
+  declare function fixture(id: string): void;
 
-declare function fixture(id: string): void;
-
-window.HTMLImports.whenReady(() => {
-  Polymer({
-    is: 'autoreload-test-element',
-    behaviors: [AutoReloadBehavior],
-  });
-
-  describe('autoReload-behavior', function() {
-    let testElement;
-    const ls = window.localStorage;
-    const key = AUTORELOAD_LOCALSTORAGE_KEY;
-    let clock;
-    let callCount: number;
-
-    beforeEach(function() {
-      ls.setItem(key, 'false');  // start it turned off so we can mutate fns
-      testElement = fixture('autoReloadFixture');
-      callCount = 0;
-      testElement.reload = function() { callCount++; };
+  window.HTMLImports.whenReady(() => {
+    Polymer({
+      is: 'autoreload-test-element',
+      behaviors: [AutoReloadBehavior],
     });
 
-    before(function() { clock = sinon.useFakeTimers(); });
+    describe('autoReload-behavior', function() {
+      let testElement;
+      const ls = window.localStorage;
+      const key = AUTORELOAD_LOCALSTORAGE_KEY;
+      let clock;
+      let callCount: number;
 
-    after(function() { clock.restore(); });
+      beforeEach(function() {
+        ls.setItem(key, 'false'); // start it turned off so we can mutate fns
+        testElement = fixture('autoReloadFixture');
+        callCount = 0;
+        testElement.reload = function() {
+          callCount++;
+        };
+      });
 
-    it('reads and writes autoReload state from localStorage', function() {
-      ls.removeItem(key);
-      testElement = fixture('autoReloadFixture');
-      chai.assert.isTrue(
-          testElement.autoReloadEnabled, 'autoReload defaults to true');
-      chai.assert.equal(ls.getItem(key), 'true', 'autoReload setting saved');
-      testElement = fixture('autoReloadFixture');
-      chai.assert.isTrue(
-          testElement.autoReloadEnabled, 'read true from localStorage');
-      testElement.autoReloadEnabled = false;
-      chai.assert.equal(ls.getItem(key), 'false', 'autoReload setting saved');
-      testElement = fixture('autoReloadFixture');
-      chai.assert.isFalse(
-          testElement.autoReloadEnabled, 'read false setting properly');
-      testElement.autoReloadEnabled = true;
-      chai.assert.equal(ls.getItem(key), 'true', 'saved true setting');
-    });
+      before(function() {
+        clock = sinon.useFakeTimers();
+      });
 
-    it('reloads every interval secs when autoReloading', function() {
-      testElement.autoReloadIntervalSecs = 1;
-      testElement.autoReloadEnabled = true;
-      clock.tick(1000);
-      chai.assert.equal(callCount, 1, 'ticking clock triggered call');
-      clock.tick(20 * 1000);
-      chai.assert.equal(callCount, 21, 'ticking clock 20s triggered 20 calls');
-    });
+      after(function() {
+        clock.restore();
+      });
 
-    it('can cancel pending autoReload', function() {
-      testElement.autoReloadIntervalSecs = 10;
-      testElement.autoReloadEnabled = true;
-      clock.tick(5 * 1000);
-      testElement.autoReloadEnabled = false;
-      clock.tick(20 * 1000);
-      chai.assert.equal(callCount, 0, 'callCount is 0');
-    });
+      it('reads and writes autoReload state from localStorage', function() {
+        ls.removeItem(key);
+        testElement = fixture('autoReloadFixture');
+        chai.assert.isTrue(
+          testElement.autoReloadEnabled,
+          'autoReload defaults to true'
+        );
+        chai.assert.equal(ls.getItem(key), 'true', 'autoReload setting saved');
+        testElement = fixture('autoReloadFixture');
+        chai.assert.isTrue(
+          testElement.autoReloadEnabled,
+          'read true from localStorage'
+        );
+        testElement.autoReloadEnabled = false;
+        chai.assert.equal(ls.getItem(key), 'false', 'autoReload setting saved');
+        testElement = fixture('autoReloadFixture');
+        chai.assert.isFalse(
+          testElement.autoReloadEnabled,
+          'read false setting properly'
+        );
+        testElement.autoReloadEnabled = true;
+        chai.assert.equal(ls.getItem(key), 'true', 'saved true setting');
+      });
 
-    it('throws an error in absence of reload method', function() {
-      testElement.reload = undefined;
-      testElement.autoReloadIntervalSecs = 1;
-      testElement.autoReloadEnabled = true;
-      chai.assert.throws(function() {
-        clock.tick(5000);
+      it('reloads every interval secs when autoReloading', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+        clock.tick(1000);
+        chai.assert.equal(callCount, 1, 'ticking clock triggered call');
+        clock.tick(20 * 1000);
+        chai.assert.equal(
+          callCount,
+          21,
+          'ticking clock 20s triggered 20 calls'
+        );
+      });
+
+      it('can cancel pending autoReload', function() {
+        testElement.autoReloadIntervalSecs = 10;
+        testElement.autoReloadEnabled = true;
+        clock.tick(5 * 1000);
+        testElement.autoReloadEnabled = false;
+        clock.tick(20 * 1000);
+        chai.assert.equal(callCount, 0, 'callCount is 0');
+      });
+
+      it('throws an error in absence of reload method', function() {
+        testElement.reload = undefined;
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+        chai.assert.throws(function() {
+          clock.tick(5000);
+        });
       });
     });
   });
-});
-
-}  // namespace tf_tensorboard
+} // namespace tf_tensorboard

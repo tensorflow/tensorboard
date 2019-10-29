@@ -1,0 +1,36 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="polymer-externs.html" />
+
+<script src="../web-animations-js/web-animations-next-lite.min.js"></script>
+<!-- NOTE: Instruct Vulcanize to add the source without using JSCompiler.
+Without this, because of [1], JSCompiler omits the source from the output
+JavaScript blob completely.
+[1]: https://github.com/webcomponents/webcomponentsjs/blob/v1.3.3/webcomponents-lite.js#L2
+-->
+<script
+  jscomp-nocompile
+  src="../webcomponentsjs/webcomponents-lite.js"
+></script>
+<!-- [2]: HACK: Polymer2 (not 3) makes use of `super` in static methods which
+gets wrongly replaced by Closure compiler. This causes Polymer critical libs to
+misbehave and breaks application badly.
+This import let Vulcanization skip future polymer/polymer.html statement and
+allow us to use the hack only in one place.
+Please see https://github.com/google/closure-compiler/issues/3240. -->
+<link jscomp-nocompile rel="import" href="../polymer/polymer.html" />

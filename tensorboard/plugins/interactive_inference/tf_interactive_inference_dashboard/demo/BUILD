@@ -15,9 +15,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
 
@@ -40,9 +39,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
 
@@ -62,12 +60,12 @@ tf_web_library(
         "image_index.html",
         "tf-interactive-inference-image-demo.html",
         "@org_tensorflow_tfjs//:tf.min.js",
+        "@org_tensorflow_tfjs_mobilenet//:mobilenet.js",
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
 
@@ -90,9 +88,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
 
@@ -105,7 +102,6 @@ tensorboard_html_binary(
     deps = [":irisdemo"],
 )
 
-
 tf_web_library(
     name = "agedemo",
     testonly = True,
@@ -116,9 +112,8 @@ tf_web_library(
     ] + glob(["data/**"]),
     path = "/tf-interactive-inference-dashboard",
     deps = [
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:webcomponentsjs",
+        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
     ],
 )
 

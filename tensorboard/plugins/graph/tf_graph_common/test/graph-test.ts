@@ -13,14 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 module tf.graph {
+  describe('graph', () => {
+    let assert = chai.assert;
 
-describe('graph', () => {
-  let assert = chai.assert;
+    it('graphlib exists', () => {
+      assert.isTrue(graphlib != null);
+    });
 
-  it('graphlib exists', () => { assert.isTrue(graphlib != null); });
-
-  it('simple graph contruction', () => {
-    let pbtxt = tf.graph.test.util.stringToArrayBuffer(`
+    it('simple graph contruction', () => {
+      let pbtxt = tf.graph.test.util.stringToArrayBuffer(`
       node {
         name: "Q"
         op: "Input"
@@ -35,7 +36,7 @@ describe('graph', () => {
         input: "Q:2"
         input: "W"
       }`);
-    let statsPbtxt = tf.graph.test.util.stringToArrayBuffer(`step_stats {
+      let statsPbtxt = tf.graph.test.util.stringToArrayBuffer(`step_stats {
       dev_stats {
         device: "cpu"
         node_stats {
@@ -51,18 +52,23 @@ describe('graph', () => {
       }
     }`);
 
-    let buildParams: tf.graph.BuildParams = {
-      enableEmbedding: true,
-      inEmbeddingTypes: ['Const'],
-      outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
-      refEdges: {}
-    };
-    let dummyTracker =
-        tf.graph.util.getTracker({set: () => { return; }, progress: 0});
-    let slimGraph: SlimGraph;
-    return tf.graph.parser.parseGraphPbTxt(pbtxt)
-        .then(nodes => tf.graph.build(nodes, buildParams, dummyTracker))
-        .then((graph: SlimGraph) => slimGraph = graph)
+      let buildParams: tf.graph.BuildParams = {
+        enableEmbedding: true,
+        inEmbeddingTypes: ['Const'],
+        outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
+        refEdges: {},
+      };
+      let dummyTracker = tf.graph.util.getTracker({
+        set: () => {
+          return;
+        },
+        progress: 0,
+      });
+      let slimGraph: SlimGraph;
+      return tf.graph.parser
+        .parseGraphPbTxt(pbtxt)
+        .then((nodes) => tf.graph.build(nodes, buildParams, dummyTracker))
+        .then((graph: SlimGraph) => (slimGraph = graph))
         .then(() => {
           assert.isTrue(slimGraph.nodes['X'] != null);
           assert.isTrue(slimGraph.nodes['W'] != null);
@@ -77,30 +83,37 @@ describe('graph', () => {
           assert.equal(secondInputOfX.outputTensorKey, '0');
         })
         .then(() => tf.graph.parser.parseStatsPbTxt(statsPbtxt))
-        .then(stepStats => {
+        .then((stepStats) => {
           tf.graph.joinStatsInfoWithGraph(slimGraph, stepStats);
           assert.equal(slimGraph.nodes['Q'].stats.getTotalMicros(), 6);
         });
+    });
+
+    it('health pill numbers round correctly', () => {
+      // Integers are rounded to the ones place.
+      assert.equal(tf.graph.scene.humanizeHealthPillStat(42.0, true), '42');
+
+      // Numbers with magnitude >= 1 are rounded to the tenths place.
+      assert.equal(tf.graph.scene.humanizeHealthPillStat(1, false), '1.0');
+      assert.equal(tf.graph.scene.humanizeHealthPillStat(42.42, false), '42.4');
+      assert.equal(
+        tf.graph.scene.humanizeHealthPillStat(-42.42, false),
+        '-42.4'
+      );
+
+      // Numbers with magnitude < 1 are written in scientific notation rounded to
+      // the tenths place.
+      assert.equal(tf.graph.scene.humanizeHealthPillStat(0, false), '0.0e+0');
+      assert.equal(
+        tf.graph.scene.humanizeHealthPillStat(0.42, false),
+        '4.2e-1'
+      );
+      assert.equal(
+        tf.graph.scene.humanizeHealthPillStat(-0.042, false),
+        '-4.2e-2'
+      );
+    });
+
+    // TODO: write tests.
   });
-
-  it('health pill numbers round correctly', () => {
-    // Integers are rounded to the ones place.
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(42.0, true), '42');
-
-    // Numbers with magnitude >= 1 are rounded to the tenths place.
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(1, false), '1.0');
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(42.42, false), '42.4');
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(-42.42, false), '-42.4');
-
-    // Numbers with magnitude < 1 are written in scientific notation rounded to
-    // the tenths place.
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(0, false), '0.0e+0');
-    assert.equal(tf.graph.scene.humanizeHealthPillStat(0.42, false), '4.2e-1');
-    assert.equal(
-        tf.graph.scene.humanizeHealthPillStat(-0.042, false), '-4.2e-2');
-  });
-
-  // TODO: write tests.
-});
-
-}  // module tf.graph
+} // module tf.graph

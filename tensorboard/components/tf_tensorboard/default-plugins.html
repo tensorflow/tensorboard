@@ -18,25 +18,33 @@ limitations under the License.
 <!--
   Load dashboards into UI for all first-party TensorBoard plugins.
 
-  Each dashboard calls the registerDashboard() function to tell
-  <tf-tensorboard> that it exists, so it can be loaded dynamically via
-  document.createElement().
-
-  Ordering matters. The order in which these lines appear determines the
-  ordering of tabs in TensorBoard's GUI.
+  Each dashboard registers itself onto the global CustomElementRegistry,
+  and is later instantiated dynamically with `document.createElement`.
 -->
-<link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
-<link rel="import" href="../tf-custom-scalar-dashboard/tf-custom-scalar-dashboard.html">
-<link rel="import" href="../tf-image-dashboard/tf-image-dashboard.html">
-<link rel="import" href="../tf-audio-dashboard/tf-audio-dashboard.html">
-<link rel="import" href="../tf-debugger-dashboard/tf-debugger-dashboard.html">
-<link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html">
-<link rel="import" href="../tf-distribution-dashboard/tf-distribution-dashboard.html">
-<link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
-<link rel="import" href="../vz-projector/vz-projector-dashboard.html">
-<link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html">
-<link rel="import" href="../tf-pr-curve-dashboard/tf-pr-curve-dashboard.html">
-<link rel="import" href="../tf-profile-dashboard/tf-profile-dashboard.html">
-<link rel="import" href="../tf-beholder-dashboard/tf-beholder-dashboard.html">
-<link rel="import" href="../tf-interactive-inference-dashboard/tf-interactive-inference-dashboard.html">
-<link rel="import" href="../tf-hparams-dashboard/tf-hparams-dashboard.html">
+<link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html" />
+<link
+  rel="import"
+  href="../tf-custom-scalar-dashboard/tf-custom-scalar-dashboard.html"
+/>
+<link rel="import" href="../tf-image-dashboard/tf-image-dashboard.html" />
+<link rel="import" href="../tf-audio-dashboard/tf-audio-dashboard.html" />
+<link rel="import" href="../tf-debugger-dashboard/tf-debugger-dashboard.html" />
+<link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html" />
+<link
+  rel="import"
+  href="../tf-distribution-dashboard/tf-distribution-dashboard.html"
+/>
+<link
+  rel="import"
+  href="../tf-histogram-dashboard/tf-histogram-dashboard.html"
+/>
+<link rel="import" href="../tf-text-dashboard/tf-text-dashboard.html" />
+<link rel="import" href="../tf-pr-curve-dashboard/tf-pr-curve-dashboard.html" />
+<link rel="import" href="../tf-profile-dashboard/tf-profile-dashboard.html" />
+<link rel="import" href="../tf-beholder-dashboard/tf-beholder-dashboard.html" />
+<link
+  rel="import"
+  href="../tf-interactive-inference-dashboard/tf-interactive-inference-dashboard.html"
+/>
+<link rel="import" href="../tf-hparams-dashboard/tf-hparams-dashboard.html" />
+<link rel="import" href="../tf-mesh-dashboard/tf-mesh-dashboard.html" />

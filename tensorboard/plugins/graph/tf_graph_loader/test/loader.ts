@@ -21,5 +21,4 @@ suite('graph loader', () => {
   });
 
   // TODO: write tests.
-
 });

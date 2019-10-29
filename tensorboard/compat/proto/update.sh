@@ -36,6 +36,8 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/python/framework|tensorboard/compat/proto|g;' \
   -e 's|package tensorflow.tfprof;|package tensorboard;|g;' \
   -e 's|package tensorflow;|package tensorboard;|g;' \
+  -e 's|tensorflow\.DataType|tensorboard.DataType|g;' \
+  -e 's|tensorflow\.TensorShapeProto|tensorboard.TensorShapeProto|g;' \
   {} +
 
 echo "Protos in tensorboard/compat/proto/ updated! You can now add and commit them."

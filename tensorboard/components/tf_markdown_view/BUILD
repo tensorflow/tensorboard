@@ -22,7 +22,7 @@ tensorboard_webcomponent_library(
     visibility = ["//visibility:public"],
     destdir = "tf-markdown-view",
     deps = [
-        "//third_party/javascript/polymer/v1/paper-styles:lib",
-        "//third_party/javascript/polymer/v1/polymer:lib",
+        "//tensorboard/components/tf_imports:polymer_lib",
+        "//third_party/javascript/polymer/v2/paper-styles:lib",
     ],
 )

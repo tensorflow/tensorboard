@@ -21,6 +21,7 @@ from __future__ import print_function
 import inspect
 
 from tensorboard.compat import tf
+from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
@@ -37,8 +38,8 @@ class RawEventFileLoader(object):
       raise ValueError('A file path is required')
     file_path = platform_util.readahead_file_path(file_path)
     logger.debug('Opening a record reader pointing at %s', file_path)
-    with tf.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = tf.compat.v1.pywrap_tensorflow.PyRecordReader_New(
+    with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
+      self._reader = _pywrap_tensorflow.PyRecordReader_New(
           tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
     # Store it for logging purposes.
     self._file_path = file_path
@@ -64,7 +65,7 @@ class RawEventFileLoader(object):
     while True:
       try:
         if legacy_get_next:
-          with tf.errors.raise_exception_on_not_ok_status() as status:
+          with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
             self._reader.GetNext(status)
         else:
           self._reader.GetNext()
@@ -92,3 +93,20 @@ class EventFileLoader(RawEventFileLoader):
     """
     for record in super(EventFileLoader, self).Load():
       yield event_pb2.Event.FromString(record)
+
+
+class TimestampedEventFileLoader(EventFileLoader):
+  """An iterator that yields (UNIX timestamp float, Event proto) pairs."""
+
+  def Load(self):
+    """Loads all new events and their wall time values from disk.
+
+    Calling Load multiple times in a row will not 'drop' events as long as the
+    return value is not iterated over.
+
+    Yields:
+      Pairs of (UNIX timestamp float, Event proto) for all events in the file
+      that have not been yielded yet.
+    """
+    for event in super(TimestampedEventFileLoader, self).Load():
+      yield (event.wall_time, event)

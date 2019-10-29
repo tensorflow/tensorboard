@@ -28,7 +28,7 @@ declare module graphlib {
      * B = bottom, L = left, and R = right.
      */
     rankdir?: string;
-    type?: string|number;
+    type?: string | number;
     /** Number of pixels between each rank in the layout. */
     ranksep?: number;
     /** Number of pixels that separate nodes horizontally in the layout. */
@@ -83,4 +83,4 @@ declare module graphlib {
 /**
  * Declaring dagre var used for dagre layout.
  */
-declare var dagre: {layout(graph: graphlib.Graph<any, any>): void;};
+declare var dagre: {layout(graph: graphlib.Graph<any, any>): void};

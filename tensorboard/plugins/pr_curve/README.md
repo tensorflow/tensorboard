@@ -16,6 +16,7 @@ plugins, these methods are documented in the `summary` module of the plugin
 directory.
 
 ### `pr_curve_streaming_op`
+
 Perhaps the most prevalent way of collecting data during TensorFlow runs is via
 the `pr_curve_streaming_op` method. This streaming op accumulates true/false
 positive and true/false negative counts across batches.
@@ -95,7 +96,7 @@ to 1) that increase from left to right.
 
 As shown below, one effective use case is writing the output of the
 `tf.contrib.metrics.precision_recall_at_equal_thresholds` streaming metric to
-disk. The run and space time of this metric scales linearly with the size of the
+disk. The run time and space of this metric scales linearly with the size of the
 predictions tensor (unlike `pr_curve_streaming_op`, which scales quadratically).
 Hence, for instance, use cases that assign a prediction per pixel in a big image
 may prefer using `precision_recall_at_equal_thresholds`.
@@ -164,15 +165,15 @@ This method directly returns a `tf.Summary` proto.
 from tensorboard import summary as summary_lib
 
 summary_proto = summary_lib.pr_curve_raw_data_pb(
-    name='foo'
-    true_positive_counts=[75, 64, 21, 5, 0]
-    false_positive_counts=[150, 105, 18, 0, 0]
-    true_negative_counts=[0, 45, 132, 150, 150]
-    false_negative_counts=[0, 11, 54, 70, 75]
-    precision=[0.3333333, 0.3786982, 0.5384616, 1.0, 0.0]
-    recall=[1.0, 0.8533334, 0.28, 0.0666667, 0.0]
-    num_thresholds=5
-    display_name='some raw values'
+    name='foo',
+    true_positive_counts=[75, 64, 21, 5, 0],
+    false_positive_counts=[150, 105, 18, 0, 0],
+    true_negative_counts=[0, 45, 132, 150, 150],
+    false_negative_counts=[0, 11, 54, 70, 75],
+    precision=[0.3333333, 0.3786982, 0.5384616, 1.0, 0.0],
+    recall=[1.0, 0.8533334, 0.28, 0.0666667, 0.0],
+    num_thresholds=5,
+    display_name='some raw values',
     description='We passed raw values into a summary op.')
 ```
 
@@ -214,9 +215,10 @@ This method directly returns a `tf.Summary` proto.
 
 ```python
 from tensorboard import summary as summary_lib
+import numpy as np
 
-labels = [False, True, True, False, True]
-predictions = [0.2, 0.4, 0.5, 0.6, 0.8]
+labels = np.array([False, True, True, False, True])
+predictions = np.array([0.2, 0.4, 0.5, 0.6, 0.8])
 summary_proto = summary_lib.pr_curve_pb(
     name='foo',
     predictions=predictions,

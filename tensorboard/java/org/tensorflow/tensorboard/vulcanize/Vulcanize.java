@@ -30,6 +30,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import com.google.javascript.jscomp.BasicErrorManager;
 import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
@@ -49,8 +51,9 @@ import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
 import io.bazel.rules.closure.webfiles.BuildInfo.WebfilesSource;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -79,6 +82,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -92,7 +96,10 @@ public final class Vulcanize {
   private static final ImmutableSet<String> EXTRA_JSDOC_TAGS =
       ImmutableSet.of("attribute", "hero", "group", "required");
 
-  private static final Pattern WEBPATH_PATTERN = Pattern.compile("//~~WEBPATH~~([^\n]+)");
+  private static final Pattern SCRIPT_DELIMITER_PATTERN =
+      Pattern.compile("//# sourceURL=build:/([^\n]+)");
+
+  private static final String SCRIPT_DELIMITER = "//# sourceURL=build:/%name%";
 
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
@@ -100,14 +107,13 @@ public final class Vulcanize {
   private static final Set<String> legalese = new HashSet<>();
   private static final List<String> licenses = new ArrayList<>();
   private static final List<Webpath> stack = new ArrayList<>();
-  private static final List<SourceFile> externs = new ArrayList<>();
+  private static final Map<String, SourceFile> externs = new LinkedHashMap<>();
   private static final List<SourceFile> sourcesFromJsLibraries = new ArrayList<>();
   private static final Map<Webpath, String> sourcesFromScriptTags = new LinkedHashMap<>();
   private static final Map<Webpath, Node> sourceTags = new LinkedHashMap<>();
   private static final Multimap<Webpath, String> suppressions = HashMultimap.create();
   private static CompilationLevel compilationLevel;
   private static Webpath outputPath;
-  private static Node firstCompiledScript;
   private static Node firstScript;
   private static Node licenseComment;
   private static int insideDemoSnippet;
@@ -121,24 +127,25 @@ public final class Vulcanize {
 
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws FileNotFoundException, IOException {
     compilationLevel = CompilationLevel.fromString(args[0]);
     wantsCompile = args[1].equals("true");
     testOnly = args[2].equals("true");
     Webpath inputPath = Webpath.get(args[3]);
     outputPath = Webpath.get(args[4]);
     Path output = Paths.get(args[5]);
-    if (!args[6].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[6])), UTF_8);
+    Path shasumOutput = Paths.get(args[6]);
+    if (!args[7].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[7])), UTF_8);
       Arrays.asList(ignoreFile.split("\n")).forEach(
           (str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 7; i < args.length; i++) {
+    for (int i = 8; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
         if (code.contains("@externs")) {
-          externs.add(sourceFile);
+          externs.put(args[i], sourceFile);
         } else {
           sourcesFromJsLibraries.add(sourceFile);
         }
@@ -157,6 +164,7 @@ public final class Vulcanize {
     transform(document);
     if (wantsCompile) {
       compile();
+      combineScriptElements(document);
     } else if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
@@ -171,12 +179,15 @@ public final class Vulcanize {
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
     }
+
     Files.write(
         output,
         Html5Printer.stringify(document).getBytes(UTF_8),
         StandardOpenOption.WRITE,
         StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING);
+
+    writeShasum(document, shasumOutput);
   }
 
   private static void transform(Node root) throws IOException {
@@ -248,7 +259,7 @@ public final class Vulcanize {
           break;
         }
       }
-      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent() && !ignoreFile) {
+      if (!ignoreFile) {
         if (isExternalCssNode(node)
             && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
@@ -277,10 +288,10 @@ public final class Vulcanize {
         if (licenseComment == null) {
           licenseComment = node;
         } else {
-          node = replaceNode(node, new TextNode("", node.baseUri()));
+          node = removeNode(node);
         }
       } else {
-        node = replaceNode(node, new TextNode("", node.baseUri()));
+        node = removeNode(node);
       }
     }
     return node;
@@ -305,7 +316,7 @@ public final class Vulcanize {
       }
       return replaceNode(node, subdocument);
     } else {
-      return replaceNode(node, new TextNode("", node.baseUri()));
+      return removeNode(node);
     }
   }
 
@@ -321,7 +332,14 @@ public final class Vulcanize {
       script = INLINE_SOURCE_MAP_PATTERN.matcher(script).replaceAll("");
     }
     boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
-    if (node.attr("src").endsWith(".min.js")
+
+    if (node.hasAttr("jscomp-externs")) {
+      String filePath = getWebfile(path).toString();
+      SourceFile sourceFile = SourceFile.fromCode(filePath, script);
+      externs.put(filePath, sourceFile);
+      // Remove script tag of extern since it is not needed at the run time.
+      return replaceNode(node, new TextNode("", node.baseUri()));
+    } else if (node.attr("src").endsWith(".min.js")
         || getAttrTransitive(node, "jscomp-nocompile").isPresent()
         || wantsMinify) {
       if (wantsMinify) {
@@ -333,16 +351,8 @@ public final class Vulcanize {
               .removeAttr("src")
               .removeAttr("jscomp-minify")
               .removeAttr("jscomp-nocompile");
-      if (firstCompiledScript != null) {
-        firstCompiledScript.before(newScript);
-        return replaceNode(node, new TextNode("", node.baseUri()));
-      } else {
-        return replaceNode(node, newScript);
-      }
+      return replaceNode(node, newScript);
     } else {
-      if (firstCompiledScript == null) {
-        firstCompiledScript = node;
-      }
       sourcesFromScriptTags.put(path, script);
       sourceTags.put(path, node);
       Optional<String> suppress = getAttrTransitive(node, "jscomp-suppress");
@@ -405,6 +415,10 @@ public final class Vulcanize {
     return newNode;
   }
 
+  private static Node removeNode(Node node) {
+    return replaceNode(node, new TextNode("", node.baseUri()));
+  }
+
   private static Path getWebfile(Webpath path) {
     return verifyNotNull(webfiles.get(path), "Bad ref: %s -> %s", me(), path);
   }
@@ -421,15 +435,20 @@ public final class Vulcanize {
     // Nice options.
     options.setColorizeErrorOutput(true);
     options.setContinueAfterErrors(true);
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2017);
-    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
+    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2018);
+    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT_2015);
     options.setGenerateExports(true);
     options.setStrictModeInput(false);
     options.setExtraAnnotationNames(EXTRA_JSDOC_TAGS);
 
+    // Strict mode gets in the way of concatenating all script tags as script
+    // tags assume different modes. Disable global strict imposed by JSComp.
+    // A function can still have a "use strict" inside.
+    options.setEmitUseStrict(false);
+
     // So we can chop JS binary back up into the original script tags.
     options.setPrintInputDelimiter(true);
-    options.setInputDelimiter("//~~WEBPATH~~%name%");
+    options.setInputDelimiter(SCRIPT_DELIMITER);
 
     // Optimizations that are too advanced for us right now.
     options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
@@ -437,6 +456,9 @@ public final class Vulcanize {
     options.setRemoveUnusedPrototypeProperties(false);
     options.setRemoveUnusedPrototypePropertiesInExterns(false);
     options.setRemoveUnusedClassProperties(false);
+    // Prevent Polymer bound method (invisible to JSComp) to be over-optimized.
+    options.setInlineFunctions(CompilerOptions.Reach.NONE);
+    options.setDevirtualizeMethods(false);
 
     // Dependency management.
     options.setClosurePass(true);
@@ -450,10 +472,10 @@ public final class Vulcanize {
     // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
     // we could ensure that the input order to the compiler is correct and all inputs are used, and
     // turn off both sorting and pruning.
-    options.getDependencyOptions().setDependencySorting(true);
+    options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
 
     // Polymer pass.
-    options.setPolymerVersion(1);
+    options.setPolymerVersion(2);
 
     // Debug flags.
     if (testOnly) {
@@ -468,7 +490,7 @@ public final class Vulcanize {
         new WarningsGuard() {
           @Override
           public CheckLevel level(JSError error) {
-            if (error.sourceName == null) {
+            if (error.getSourceName() == null) {
               return null;
             }
             if (error.getDefaultLevel() == CheckLevel.WARNING
@@ -478,23 +500,30 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getDefaultLevel() == CheckLevel.WARNING
-                && (error.sourceName.startsWith("/iron-")
-                    || error.sourceName.startsWith("/neon-")
-                    || error.sourceName.startsWith("/paper-"))) {
+                && (error.getSourceName().startsWith("/iron-")
+                    || error.getSourceName().startsWith("/neon-")
+                    || error.getSourceName().startsWith("/paper-"))) {
               // Suppress warnings in the Polymer standard libraries.
               return CheckLevel.OFF;
             }
-            if (error.sourceName.startsWith("javascript/externs")
-                || error.sourceName.contains("com_google_javascript_closure_compiler_externs")) {
+            if (error.getSourceName().startsWith("javascript/externs")
+                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
               return CheckLevel.OFF;
             }
-            if (IGNORE_PATHS_PATTERN.matcher(error.sourceName).matches()) {
+            if (error.getSourceName().endsWith("externs/webcomponents-externs.js")) {
+              // TODO(stephanwlee): Figure out why above externs cause variable
+              // declare issue. Seems to do with usage of `let` in Polymer 2.x
+              // branch.
+              // Ref: #2425.
+              return CheckLevel.WARNING;
+            }
+            if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.sourceName.startsWith("/tf-") || error.sourceName.startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
               return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
             }
@@ -502,7 +531,7 @@ public final class Vulcanize {
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
               return CheckLevel.OFF; // TODO(@jart): What is wrong with this thing?
             }
-            Collection<String> codes = suppressions.get(Webpath.get(error.sourceName));
+            Collection<String> codes = suppressions.get(Webpath.get(error.getSourceName()));
             if (codes.contains("*") || codes.contains(error.getType().key)) {
               return CheckLevel.OFF;
             }
@@ -521,19 +550,20 @@ public final class Vulcanize {
       sauce.add(SourceFile.fromCode(source.getKey().toString(), source.getValue()));
     }
 
+    List<SourceFile> externsList = new ArrayList<>(externs.values());
+
     // Compile everything into a single script.
     Compiler compiler = new Compiler();
     compiler.disableThreads();
-    Result result = compiler.compile(externs, sauce, options);
+    Result result = compiler.compile(externsList, sauce, options);
     if (!result.success) {
       System.exit(1);
     }
     String jsBlob = compiler.toSource();
-
     // Split apart the JS blob and put it back in the original <script> locations.
     Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
     tags.addAll(sourceTags.entrySet());
-    Matcher matcher = WEBPATH_PATTERN.matcher(jsBlob);
+    Matcher matcher = SCRIPT_DELIMITER_PATTERN.matcher(jsBlob);
     verify(matcher.find(), "Nothing found in compiled JS blob!");
     Webpath path = Webpath.get(matcher.group(1));
     int start = 0;
@@ -552,7 +582,7 @@ public final class Vulcanize {
     // We perform this check by looking for a concomitant .d.ts webfile which is generated by the
     // TypeScript compiler. Ideally we would use SourceExcerptProvider to determine the original
     // source name, but WarningsGuard objects do not appear to have access to that.
-    String path = error.sourceName;
+    String path = error.getSourceName();
     if (!path.endsWith(".js")) {
       return false;
     }
@@ -673,6 +703,7 @@ public final class Vulcanize {
         || uri.contains("//")
         || uri.startsWith("data:")
         || uri.startsWith("javascript:")
+        || uri.startsWith("mailto:")
         // The following are intended to filter out URLs with Polymer variables.
         || (uri.contains("[[") && uri.contains("]]"))
         || (uri.contains("{{") && uri.contains("}}"));
@@ -687,6 +718,97 @@ public final class Vulcanize {
       }
     }
     return ImmutableMultimap.copyOf(builder);
+  }
+
+  // Combine content of script tags into a group. To guarantee the correctness, it only groups
+  // content of `src`-less scripts between `src`-full scripts. The last combination gets inserted at the
+  // end of the document.
+  // e.g.,
+  //   <script>A</script>
+  //   <script>B</script>
+  //   <script src="srcful1"></script>
+  //   <script src="srcful2"></script>
+  //   <script>C</script>
+  //   <script>D</script>
+  //   <script src="srcful3"></script>
+  //   <script>E</script>
+  // gets compiled as
+  //   <script>A,B</script>
+  //   <script src="srcful1"></script>
+  //   <script src="srcful2"></script>
+  //   <script>C,D</script>
+  //   <script src="srcful3"></script>
+  //   <script>E</script>
+  private static void combineScriptElements(Document document) {
+    Elements scripts = document.getElementsByTag("script");
+    StringBuilder sourcesBuilder = new StringBuilder();
+
+    for (Element script : scripts) {
+      if (!script.attr("src").isEmpty()) {
+        if (sourcesBuilder.length() == 0) {
+          continue;
+        }
+        Element scriptTag = new Element(Tag.valueOf("script"), "")
+            .appendChild(new DataNode(sourcesBuilder.toString(), ""));
+        script.before(scriptTag);
+        sourcesBuilder = new StringBuilder();
+      } else {
+        sourcesBuilder.append(script.html()).append("\n");
+        script.remove();
+      }
+    }
+
+    // jsoup parser creates body elements for each HTML files. Since document.body() returns the
+    // first instance and we want to insert the script element at the end of the document, we
+    // manually grab the last one.
+    Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
+
+    Element scriptTag = new Element(Tag.valueOf("script"), "")
+        .appendChild(new DataNode(sourcesBuilder.toString(), ""));
+    lastBody.appendChild(scriptTag);
+  }
+
+  private static ArrayList<String> computeScriptShasum(Document document) throws FileNotFoundException, IOException {
+    ArrayList<String> hashes = new ArrayList<>();
+    for (Element script : document.getElementsByTag("script")) {
+      String src = script.attr("src");
+      String sourceContent;
+      if (src.isEmpty()) {
+        sourceContent = script.html();
+      } else {
+        // script element that remains are the ones with src that is absolute or annotated with
+        // `jscomp-ignore`. They must resolve from the root because those srcs are rootified.
+        Webpath webpathSrc = Webpath.get(src);
+        Webpath webpath = Webpath.get("/").resolve(Webpath.get(src)).normalize();
+        if (isAbsolutePath(webpathSrc)) {
+          System.err.println(
+              "WARNING: "
+                  + webpathSrc
+                  + " refers to a remote resource. Please add it to CSP manually. Detail: "
+                  + script.outerHtml());
+          continue;
+        } else if (!webfiles.containsKey(webpath)) {
+          throw new FileNotFoundException(
+              "Expected webfiles for " + webpath + " to exist. Related: " + script.outerHtml());
+        }
+        sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
+      }
+      String hash = BaseEncoding.base64().encode(
+          Hashing.sha256().hashString(sourceContent, UTF_8).asBytes());
+      hashes.add(hash);
+    }
+    return hashes;
+  }
+
+  // Writes sha256 of script tags in base64 in the document.
+  private static void writeShasum(Document document, Path output) throws FileNotFoundException, IOException {
+    String hashes = Joiner.on("\n").join(computeScriptShasum(document));
+    Files.write(
+        output,
+        hashes.getBytes(UTF_8),
+        StandardOpenOption.WRITE,
+        StandardOpenOption.CREATE,
+        StandardOpenOption.TRUNCATE_EXISTING);
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {

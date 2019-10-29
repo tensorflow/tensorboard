@@ -26,7 +26,6 @@ import re
 import tempfile
 
 import six
-import tensorflow as tf
 
 try:
   # python version >= 3.3
@@ -35,6 +34,7 @@ except ImportError:
   import mock  # pylint: disable=g-import-not-at-top,unused-import
 
 from tensorboard import manager
+from tensorboard import test as tb_test
 from tensorboard import version
 from tensorboard.util import tb_logging
 
@@ -50,7 +50,7 @@ def _make_info(i=0):
   """
   return manager.TensorBoardInfo(
       version=version.VERSION,
-      start_time=datetime.datetime.fromtimestamp(1548973541 + i),
+      start_time=1548973541 + i,
       port=6060 + i,
       pid=76540 + i,
       path_prefix="/foo",
@@ -60,7 +60,7 @@ def _make_info(i=0):
   )
 
 
-class TensorBoardInfoTest(tf.test.TestCase):
+class TensorBoardInfoTest(tb_test.TestCase):
   """Unit tests for TensorBoardInfo typechecking and serialization."""
 
   def test_roundtrip_serialization(self):
@@ -71,11 +71,12 @@ class TensorBoardInfoTest(tf.test.TestCase):
     self.assertEqual(also_info, info)
 
   def test_serialization_rejects_bad_types(self):
-    info = _make_info()._replace(start_time=1549061116)  # not a datetime
+    bad_time = datetime.datetime.fromtimestamp(1549061116)  # not an int
+    info = _make_info()._replace(start_time=bad_time)
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*datetime.*, but found: 1549061116"):
+        "expected 'start_time' of type.*int.*, but found: datetime\."):
       manager._info_to_string(info)
 
   def test_serialization_rejects_wrong_version(self):
@@ -110,30 +111,24 @@ class TensorBoardInfoTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "incompatible version:"):
+        re.escape("missing keys: ['version']")):
       manager._info_from_string(bad_input)
 
-  def test_deserialization_rejects_bad_version(self):
+  def test_deserialization_accepts_future_version(self):
     info = _make_info()
     json_value = json.loads(manager._info_to_string(info))
-    json_value["version"] = "not likely"
-    bad_input = json.dumps(json_value)
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        "incompatible version:.*not likely"):
-      manager._info_from_string(bad_input)
+    json_value["version"] = "99.99.99a20991232"
+    input_ = json.dumps(json_value)
+    result = manager._info_from_string(input_)
+    self.assertEqual(result.version, "99.99.99a20991232")
 
-  def test_deserialization_rejects_extra_keys(self):
+  def test_deserialization_ignores_extra_keys(self):
     info = _make_info()
     json_value = json.loads(manager._info_to_string(info))
     json_value["unlikely"] = "story"
     bad_input = json.dumps(json_value)
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        "bad keys on TensorBoardInfo"):
-      manager._info_from_string(bad_input)
+    result = manager._info_from_string(bad_input)
+    self.assertIsInstance(result, manager.TensorBoardInfo)
 
   def test_deserialization_rejects_missing_keys(self):
     info = _make_info()
@@ -143,7 +138,7 @@ class TensorBoardInfoTest(tf.test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "bad keys on TensorBoardInfo"):
+        re.escape("missing keys: ['start_time']")):
       manager._info_from_string(bad_input)
 
   def test_deserialization_rejects_bad_types(self):
@@ -167,7 +162,7 @@ class TensorBoardInfoTest(tf.test.TestCase):
     self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
-class CacheKeyTest(tf.test.TestCase):
+class CacheKeyTest(tb_test.TestCase):
   """Unit tests for `manager.cache_key`."""
 
   def test_result_is_str(self):
@@ -253,7 +248,7 @@ class CacheKeyTest(tf.test.TestCase):
     self.assertEqual(with_list, with_tuple)
 
 
-class TensorBoardInfoIoTest(tf.test.TestCase):
+class TensorBoardInfoIoTest(tb_test.TestCase):
   """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
   def setUp(self):
@@ -267,6 +262,24 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
   def _list_info_dir(self):
     return os.listdir(self.info_dir)
 
+  def assertMode(self, path, expected):
+    """Assert that the permission bits of a file are as expected.
+
+    Args:
+      path: File to stat.
+      expected: `int`; a subset of 0o777.
+
+    Raises:
+      AssertionError: If the permissions bits of `path` do not match
+        `expected`.
+    """
+    stat_result = os.stat(path)
+    format_mode = lambda m: "0o%03o" % m
+    self.assertEqual(
+        format_mode(stat_result.st_mode & 0o777),
+        format_mode(expected),
+    )
+
   def test_fails_if_info_dir_name_is_taken_by_a_regular_file(self):
     os.rmdir(self.info_dir)
     with open(self.info_dir, "w") as outfile:
@@ -274,6 +287,43 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
     with self.assertRaises(OSError) as cm:
       manager._get_info_dir()
     self.assertEqual(cm.exception.errno, errno.EEXIST, cm.exception)
+
+  @mock.patch("os.getpid", lambda: 76540)
+  def test_directory_world_accessible(self):
+    """Test that the TensorBoardInfo directory is world-accessible.
+
+    Regression test for issue #2010:
+    <https://github.com/tensorflow/tensorboard/issues/2010>
+    """
+    if os.name == "nt":
+      self.skipTest("Windows does not use POSIX-style permissions.")
+    os.rmdir(self.info_dir)
+    # The default umask is typically 0o022, in which case this test is
+    # nontrivial. In the unlikely case that the umask is 0o000, we'll
+    # still be covered by the "restrictive umask" test case below.
+    manager.write_info_file(_make_info())
+    self.assertMode(self.info_dir, 0o777)
+    self.assertEqual(self._list_info_dir(), ["pid-76540.info"])
+
+  @mock.patch("os.getpid", lambda: 76540)
+  def test_writing_file_with_restrictive_umask(self):
+    if os.name == "nt":
+      self.skipTest("Windows does not use POSIX-style permissions.")
+    os.rmdir(self.info_dir)
+    # Even if umask prevents owner-access, our I/O should still work.
+    old_umask = os.umask(0o777)
+    try:
+      # Sanity-check that, without special accommodation, this would
+      # create inaccessible directories...
+      sanity_dir = os.path.join(self.get_temp_dir(), "canary")
+      os.mkdir(sanity_dir)
+      self.assertMode(sanity_dir, 0o000)
+
+      manager.write_info_file(_make_info())
+      self.assertMode(self.info_dir, 0o777)
+      self.assertEqual(self._list_info_dir(), ["pid-76540.info"])
+    finally:
+      self.assertEqual(oct(os.umask(old_umask)), oct(0o777))
 
   @mock.patch("os.getpid", lambda: 76540)
   def test_write_remove_info_file(self):
@@ -291,11 +341,12 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
   def test_write_info_file_rejects_bad_types(self):
     # The particulars of validation are tested more thoroughly in
     # `TensorBoardInfoTest` above.
-    info = _make_info()._replace(start_time=1549061116)
+    bad_time = datetime.datetime.fromtimestamp(1549061116)
+    info = _make_info()._replace(start_time=bad_time)
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*datetime.*, but found: 1549061116"):
+        "expected 'start_time' of type.*int.*, but found: datetime\."):
       manager.write_info_file(info)
     self.assertEqual(self._list_info_dir(), [])
 
@@ -344,10 +395,10 @@ class TensorBoardInfoIoTest(tf.test.TestCase):
     with open(os.path.join(self.info_dir, "pid-9012.info"), "w") as outfile:
       outfile.write('if a tbinfo has st_mode==0, does it make a sound?\n')
     os.chmod(os.path.join(self.info_dir, "pid-9012.info"), 0o000)
-    with mock.patch.object(tb_logging.get_logger(), "warning") as fn:
+    with mock.patch.object(tb_logging.get_logger(), "debug") as fn:
       self.assertEqual(manager.get_all(), [])
     self.assertEqual(fn.call_count, 2)  # 2 invalid, 1 unreadable (silent)
 
 
 if __name__ == "__main__":
-  tf.test.main()
+  tb_test.main()

@@ -15,17 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading.html">
-<link rel="import" href="../tf-card-heading/tf-card-heading-style.html">
-<link rel="import" href="../tf-card-heading/util.html">
-<link rel="import" href="../tf-color-scale/tf-color-scale.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-markdown-view/tf-markdown-view.html">
+<link rel="import" href="../paper-slider/paper-slider.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading-style.html" />
+<link rel="import" href="../tf-card-heading/util.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-dashboard-common/tensorboard-color.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html" />
 
 <!--
 tf-audio-loader loads an individual audio clip from the TensorBoard
@@ -62,13 +62,13 @@ backend.
       <template is="dom-if" if="[[_hasMultipleSteps]]">
         <div class="heading-row">
           <paper-slider
-              id="steps"
-              immediate-value="{{_stepIndex}}"
-              max="[[_maxStepIndex]]"
-              max-markers="[[_maxStepIndex]]"
-              snaps
-              step="1"
-              value="{{_stepIndex}}"
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_maxStepIndex]]"
+            max-markers="[[_maxStepIndex]]"
+            snaps
+            step="1"
+            value="{{_stepIndex}}"
           ></paper-slider>
         </div>
       </template>
@@ -81,8 +81,7 @@ backend.
       ></audio>
       <tf-markdown-view html="[[_currentDatum.label]]"></tf-markdown-view>
     </template>
-    <div id="main-audio-container">
-    </div>
+    <div id="main-audio-container"></div>
 
     <style include="tf-card-heading-style">
       :host {
@@ -100,7 +99,7 @@ backend.
         margin: 0 0 0 -15px;
         width: 100%;
         box-sizing: border-box;
-        padding: 0 5px;  /* so the slider knob doesn't butt out */
+        padding: 0 5px; /* so the slider knob doesn't butt out */
         margin-top: 5px;
         --paper-slider-active-color: var(--step-slider-knob-color);
         --paper-slider-knob-color: var(--step-slider-knob-color);
@@ -112,15 +111,15 @@ backend.
     </style>
   </template>
   <script>
-    "use strict";
+    'use strict';
 
     Polymer({
-      is: "tf-audio-loader",
+      is: 'tf-audio-loader',
       properties: {
         run: String,
         tag: String,
         sample: Number,
-        totalSamples: Number,  // how many samples in this run--tag combination?
+        totalSamples: Number, // how many samples in this run--tag combination?
         /** @type {{description: string, displayName: string}} */
         tagMetadata: Object,
 
@@ -149,27 +148,27 @@ backend.
         _stepIndex: Number,
         _hasAtLeastOneStep: {
           type: Boolean,
-          computed: "_computeHasAtLeastOneStep(_steps)",
+          computed: '_computeHasAtLeastOneStep(_steps)',
         },
         _hasMultipleSteps: {
           type: Boolean,
-          computed: "_computeHasMultipleSteps(_steps)",
+          computed: '_computeHasMultipleSteps(_steps)',
         },
         _currentDatum: {
-          type: Object,  // {wall_time, step, label, url}
-          computed: "_computeCurrentDatum(_steps, _stepIndex)",
+          type: Object, // {wall_time, step, label, url}
+          computed: '_computeCurrentDatum(_steps, _stepIndex)',
         },
         _maxStepIndex: {
           type: Number,
-          computed: "_computeMaxStepIndex(_steps)",
+          computed: '_computeMaxStepIndex(_steps)',
         },
         _sampleText: {
           type: String,
-          computed: "_computeSampleText(sample)",
+          computed: '_computeSampleText(sample)',
         },
         _hasMultipleSamples: {
           type: Boolean,
-          computed: "_computeHasMultipleSamples(totalSamples)",
+          computed: '_computeHasMultipleSamples(totalSamples)',
         },
       },
       observers: ['reload(run, tag)'],
@@ -205,19 +204,23 @@ backend.
         }
         this._metadataCanceller.cancelAll();
         const router = tf_backend.getRouter();
-        const url = router.pluginRoute('audio', '/audio', new URLSearchParams({
+        const url = router.pluginRoute(
+          'audio',
+          '/audio',
+          new URLSearchParams({
             tag: this.tag,
             run: this.run,
             sample: this.sample,
-        }));
-        const updateSteps = this._metadataCanceller.cancellable(result => {
+          })
+        );
+        const updateSteps = this._metadataCanceller.cancellable((result) => {
           if (result.cancelled) {
             return;
           }
           const data = result.value;
           const steps = data.map(this._createStepDatum.bind(this));
-          this.set("_steps", steps);
-          this.set("_stepIndex", steps.length - 1);
+          this.set('_steps', steps);
+          this.set('_stepIndex', steps.length - 1);
         });
         this.requestManager.request(url).then(updateSteps);
       },
@@ -227,14 +230,14 @@ backend.
         // the browser to reload the audio when the URL changes. The
         // backend doesn't care about the value.
         searchParam.append('ts', audioMetadata.wall_time);
-        const url = tf_backend.getRouter().pluginRoute(
-            'audio',
-            '/individualAudio',
-            searchParam
-        );
+        const url = tf_backend
+          .getRouter()
+          .pluginRoute('audio', '/individualAudio', searchParam);
 
         return {
-          wall_time: tf_card_heading.formatDate(new Date(audioMetadata.wall_time * 1000)),
+          wall_time: tf_card_heading.formatDate(
+            new Date(audioMetadata.wall_time * 1000)
+          ),
           step: audioMetadata.step,
           label: audioMetadata.label,
           contentType: audioMetadata.contentType,

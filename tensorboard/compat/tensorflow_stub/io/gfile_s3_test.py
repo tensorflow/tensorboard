@@ -92,6 +92,20 @@ class GFileTest(unittest.TestCase):
         six.assertCountEqual(self, expected_files, gotten_files)
 
     @mock_s3
+    def testMakeDirs(self):
+        temp_dir = self._CreateDeepS3Structure()
+        new_dir = self._PathJoin(temp_dir, 'newdir', 'subdir', 'subsubdir')
+        gfile.makedirs(new_dir)
+        self.assertTrue(gfile.isdir(new_dir))
+
+    @mock_s3
+    def testMakeDirsAlreadyExists(self):
+        temp_dir = self._CreateDeepS3Structure()
+        new_dir = self._PathJoin(temp_dir, 'bar', 'baz')
+        with self.assertRaises(errors.AlreadyExistsError):
+            gfile.makedirs(new_dir)
+
+    @mock_s3
     def testWalk(self):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
@@ -194,9 +208,85 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
 
-    def _PathJoin(self, top_directory, sub_path):
+    @mock_s3
+    def testWrite(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testOverwrite(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(u'original')
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteMultiple(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'w') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteEmpty(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = u''
+        with gfile.GFile(ckpt_path, 'w') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'r') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteBinary(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model.ckpt')
+        ckpt_content = b'asdfasdfasdffoobarbuzz'
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            f.write(ckpt_content)
+        with gfile.GFile(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    @mock_s3
+    def testWriteMultipleBinary(self):
+        temp_dir = self._CreateDeepS3Structure()
+        ckpt_path = os.path.join(temp_dir, 'model2.ckpt')
+        ckpt_content = b'asdfasdfasdffoobarbuzz' * 5
+        with gfile.GFile(ckpt_path, 'wb') as f:
+            for i in range(0, len(ckpt_content), 3):
+                f.write(ckpt_content[i:i + 3])
+                # Test periodic flushing of the file
+                if i % 9 == 0:
+                    f.flush()
+        with gfile.GFile(ckpt_path, 'rb') as f:
+            ckpt_read = f.read()
+            self.assertEqual(ckpt_content, ckpt_read)
+
+    def _PathJoin(self, *args):
         """Join directory and path with slash and not local separator"""
-        return top_directory + "/" + sub_path
+        return "/".join(args)
 
     def _CreateDeepS3Structure(self, top_directory='top_dir', ckpt_content='',
                                region_name='us-east-1', bucket_name='test'):
@@ -264,7 +354,7 @@ class GFileTest(unittest.TestCase):
         for file_name in file_names:
             # Add an end slash
             path = top_directory + '/' + file_name
-            if file_name is 'model.ckpt':
+            if file_name == 'model.ckpt':
                 content = ckpt_content
             else:
                 content = ''

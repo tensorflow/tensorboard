@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 Copyright 2017 The TensorFlow Authors. All Rights Reserved.
@@ -15,46 +15,52 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../tf-paginated-view2.html">
+<link rel="import" href="../../tf-imports/polymer.html" />
+<link
+  rel="import"
+  href="../../tf-categorization-utils/tf-categorization-utils.html"
+/>
+<link rel="import" href="../tf-category-paginated-view.html" />
 <script src="../../web-component-tester/browser.js"></script>
-<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
 
 <body>
-<dom-module id="testable-wrapper">
-<template>
-  <tf-paginated-view2
-    id="paginedView"
-    _limit="[[_limit]]"
-    get-item-key="[[getItemKey]]"
-    items="[[items]]"
-  >
+  <dom-module id="testable-wrapper">
     <template>
-      <span id$="[[item.id]]" number$="[[randomNumber]]">
-        [[item.content]]
-      </span>
+      <tf-category-paginated-view
+        id="view"
+        _limit="[[_limit]]"
+        category="[[category]]"
+      >
+        <template>
+          <span
+            id$="[[item.id]]"
+            number$="[[randomNumber]]"
+            active$="[[active]]"
+          >
+            [[item.content]]
+          </span>
+        </template>
+      </tf-category-paginated-view>
     </template>
-  </tf-paginated-view2>
-</template>
-<script>
-  Polymer({
-    is: 'testable-wrapper',
-    properties: {
-      randomNumber: {
-        type: Number,
-        value: 0,
-      },
-      _limit: Number,
-      getItemKey: Function,
-      items: Array,
-    },
-  })
-</script>
-</dom-module>
-<test-fixture id="paginatedViewFixture">
-  <template>
-    <testable-wrapper></testable-wrapper>
-  </template>
-</test-fixture>
+    <script>
+      Polymer({
+        is: 'testable-wrapper',
+        properties: {
+          randomNumber: {
+            type: Number,
+            value: 0,
+          },
+          _limit: Number,
+          category: Object,
+        },
+      });
+    </script>
+  </dom-module>
+  <test-fixture id="paginatedViewFixture">
+    <template>
+      <testable-wrapper></testable-wrapper>
+    </template>
+  </test-fixture>
 
-<script src="paginatedViewTests.js"></script>
+  <script src="categoryPaginatedViewTests.js"></script>
+</body>

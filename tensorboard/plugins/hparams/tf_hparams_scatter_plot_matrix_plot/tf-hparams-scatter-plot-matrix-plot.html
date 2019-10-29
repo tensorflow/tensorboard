@@ -24,16 +24,15 @@ TODO(erez): The logic for computing the number of ticks so that tick labels
 do not overlap is ignored, for some reason, when we set compile=True in
 the vulcanization build step. Figure out why.
 -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../tf-imports/d3.html">
-<link rel="import" href="../tf-imports/lodash.html">
-<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html">
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/d3.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+<link rel="import" href="../tf-hparams-utils/tf-hparams-utils.html" />
 
 <dom-module id="tf-hparams-scatter-plot-matrix-plot">
   <template>
     <div id="container">
-      <svg id="svg">
-      </svg>
+      <svg id="svg"></svg>
     </div>
 
     <style>
@@ -48,17 +47,16 @@ the vulcanization build step. Figure out why.
          to override the inline style that sets the regular style of a marker.
       */
       .closest-marker {
-        r: 6  !important;
+        r: 6 !important;
       }
 
       /* The currently selected data point marker. We use !important to
          override the inline style that sets the regular style of a marker. */
       .selected-marker {
-        r: 6       !important;
+        r: 6 !important;
         fill: #0f0 !important;
       }
     </style>
-
   </template>
 
   <script>
@@ -68,7 +66,7 @@ the vulcanization build step. Figure out why.
       properties: {
         // Public properties
         // See the property description in tf-hparams-query-pane.html
-        schema: Object,
+        visibleSchema: Object,
         // See the property description in tf-hparams-query-pane.html
         sessionGroups: Array,
         // See the description in tf-hparams-scale-and-color-controls.html
@@ -80,7 +78,7 @@ the vulcanization build step. Figure out why.
           type: Object,
           value: null,
           readOnly: true,
-          notify: true
+          notify: true,
         },
         // The session group represented by the marker "closest" to the mouse
         // pointer. If the closest session group distance is larger than a
@@ -90,19 +88,19 @@ the vulcanization build step. Figure out why.
           type: Object,
           value: null,
           readOnly: true,
-          notify: true
+          notify: true,
         },
 
         // The <div> element with id "container".
         _container: {
           type: Object,
-          value: null
+          value: null,
         },
 
         // A D3 selection containing just the root <svg> element.
         _svg: {
           type: Object,
-          value: null
+          value: null,
         },
 
         width: {
@@ -137,13 +135,13 @@ the vulcanization build step. Figure out why.
 
       observers: [
         '_sessionGroupsChanged(sessionGroups.*)',
-        '_schemaChanged(schema.*)',
+        '_visibleSchemaChanged(visibleSchema.*)',
         '_redraw(options.*)',
       ],
 
       ready() {
-        this._container = this.$["container"];
-        this._svg = d3.select(this.$["svg"]);
+        this._container = this.$['container'];
+        this._svg = d3.select(this.$['svg']);
         this._redraw();
       },
 
@@ -153,15 +151,16 @@ the vulcanization build step. Figure out why.
           // array has a sessionGroup with the same name as the one that was
           // selected before, select it.
           this._setSelectedSessionGroup(
-              tf.hparams.utils.sessionGroupWithName(
-                  this.sessionGroups,
-                  this.selectedSessionGroup.name)
-                || null);
+            tf.hparams.utils.sessionGroupWithName(
+              this.sessionGroups,
+              this.selectedSessionGroup.name
+            ) || null
+          );
         }
         this._redraw();
       },
 
-      _schemaChanged() {
+      _visibleSchemaChanged() {
         this._brushedCellIndex = null;
         this._brushSelection = null;
         this._redraw();
@@ -169,31 +168,36 @@ the vulcanization build step. Figure out why.
 
       // Redraws the plot.
       _redraw() {
-        this.debounce("_redraw", ()=>{
-          const utils = tf.hparams.utils;
+        this.debounce(
+          '_redraw',
+          () => {
+            const utils = tf.hparams.utils;
 
-          const PLOT_MIN_WIDTH = 1200;
-          const PLOT_MIN_HEIGHT = 0.4*PLOT_MIN_WIDTH;
-          const CELL_MIN_WIDTH = 150;
-          const CELL_MIN_HEIGHT = 0.75*CELL_MIN_WIDTH;
-          this.width = Math.max(CELL_MIN_WIDTH * utils.numColumns(this.schema),
-                                PLOT_MIN_WIDTH);
-          this.height = Math.max(
-              CELL_MIN_HEIGHT * utils.numMetrics(this.schema),
-              PLOT_MIN_HEIGHT);
+            const PLOT_MIN_WIDTH = 1200;
+            const PLOT_MIN_HEIGHT = 0.4 * PLOT_MIN_WIDTH;
+            const CELL_MIN_WIDTH = 150;
+            const CELL_MIN_HEIGHT = 0.75 * CELL_MIN_WIDTH;
+            this.width = Math.max(
+              CELL_MIN_WIDTH * utils.numVisibleColumns(this.visibleSchema),
+              PLOT_MIN_WIDTH
+            );
+            this.height = Math.max(
+              CELL_MIN_HEIGHT * utils.numVisibleMetrics(this.visibleSchema),
+              PLOT_MIN_HEIGHT
+            );
 
-          this._container.style.width = this.width + "px";
-          this._container.style.height = this.height + "px";
-          this._svg
-              .attr("width", this.width)
-              .attr("height", this.height)
+            this._container.style.width = this.width + 'px';
+            this._container.style.height = this.height + 'px';
+            this._svg.attr('width', this.width).attr('height', this.height);
 
-          // Delete all elements in the svg subtree
-          this._svg.selectAll("g").remove()
+            // Delete all elements in the svg subtree
+            this._svg.selectAll('g').remove();
 
-          // Draw.
-          this._draw();
-        }, 100);
+            // Draw.
+            this._draw();
+          },
+          100
+        );
       },
 
       // Creates the DOM elements comprising the scatter-plot-matrix plot and
@@ -202,20 +206,22 @@ the vulcanization build step. Figure out why.
         const utils = tf.hparams.utils;
         const _this = this;
 
-        if (!this.sessionGroups
-            || this.sessionGroups.length == 0
-            || !this.schema
-            || this.schema.metricInfos.length == 0) {
+        if (
+          !this.sessionGroups ||
+          this.sessionGroups.length == 0 ||
+          !this.visibleSchema ||
+          this.visibleSchema.metricInfos.length == 0
+        ) {
           // If there's no metrics or session groups. There's nothing to draw.
           return;
         }
 
-        // An array containing the schema-columns (hparams followed by metrics)
-        // indices. These index the columns of the scatter plot matrix.
-        const cols = d3.range(utils.numColumns(_this.schema));
+        // An array containing the visibleSchema-columns (hparams followed by
+        // metrics) indices. These index the columns of the scatter plot matrix.
+        const cols = d3.range(utils.numVisibleColumns(_this.visibleSchema));
         // An array containing the metric indices. These index the rows of the
         // scatter plot matrix.
-        const metrics = d3.range(utils.numMetrics(_this.schema));
+        const metrics = d3.range(utils.numVisibleMetrics(_this.visibleSchema));
 
         // The margin in pixels from the left to leave for the y-axis text
         // (tick values and x-axis label).
@@ -229,16 +235,16 @@ the vulcanization build step. Figure out why.
 
         // cellX(col), cellY(metric) are the svg coordinates of the upper
         // left corner of the boundary of the cell indexed by (col, metric).
-        const cellX = d3.scaleBand()
-              .domain(cols)
-              .range([yAxisTextMargin + frameMargin,
-                      this.width - 1 - frameMargin])
-              .paddingInner(0.1);
-        const cellY = d3.scaleBand()
-              .domain(metrics)
-              .range([this.height - 1 - frameMargin - xAxisTextMargin,
-                      frameMargin])
-              .paddingInner(0.1);
+        const cellX = d3
+          .scaleBand()
+          .domain(cols)
+          .range([yAxisTextMargin + frameMargin, this.width - 1 - frameMargin])
+          .paddingInner(0.1);
+        const cellY = d3
+          .scaleBand()
+          .domain(metrics)
+          .range([this.height - 1 - frameMargin - xAxisTextMargin, frameMargin])
+          .paddingInner(0.1);
         const cellWidth = cellX.bandwidth();
         const cellHeight = cellY.bandwidth();
 
@@ -247,154 +253,177 @@ the vulcanization build step. Figure out why.
         // (colValue, metricValue) in the cell indexed by (col, metric).
         // The coordinates are relative to the cell boundary's upper
         // left corner.
-        const xCoords = cols.map(c=>_this._cellScale(c, [0, cellWidth - 1]));
-        const yCoords = metrics.map(m=>_this._cellScale(
-            m + utils.numHParams(_this.schema), [cellHeight - 1, 0]));
+        const xCoords = cols.map((c) =>
+          _this._cellScale(c, [0, cellWidth - 1])
+        );
+        const yCoords = metrics.map((m) =>
+          _this._cellScale(m + utils.numVisibleHParams(_this.visibleSchema), [
+            cellHeight - 1,
+            0,
+          ])
+        );
 
         // ---------------------------------------------------------------------
         // Draw axes.
         // ---------------------------------------------------------------------
         // X-Axes and labels.
         const xAxesG = this._svg
-            .selectAll(".x-axis")
-              .data(cols)
-            .enter()
-            .append("g")
-              .classed("x-axis", true)
-              .attr("transform",
-                    col=>utils.translateStr(cellX(col), 0));
+          .selectAll('.x-axis')
+          .data(cols)
+          .enter()
+          .append('g')
+          .classed('x-axis', true)
+          .attr('transform', (col) => utils.translateStr(cellX(col), 0));
         function xAxisClipPathId(col) {
-          return "x-axis-clip-path-" + col;
+          return 'x-axis-clip-path-' + col;
         }
         function xLabelClipPathId(col) {
-          return "x-label-clip-path-" + col;
+          return 'x-label-clip-path-' + col;
         }
         xAxesG
-            .append("clipPath")
-              .attr("id", xAxisClipPathId)
-            .append("rect")
-              .attr("x", -frameMargin)
-              .attr("y", 0)
-              .attr("width", cellWidth + 2*frameMargin)
-              .attr("height", _this.height - xAxisTextMargin / 2);
+          .append('clipPath')
+          .attr('id', xAxisClipPathId)
+          .append('rect')
+          .attr('x', -frameMargin)
+          .attr('y', 0)
+          .attr('width', cellWidth + 2 * frameMargin)
+          .attr('height', _this.height - xAxisTextMargin / 2);
         xAxesG
-            .append("clipPath")
-              .attr("id", xLabelClipPathId)
-            .append("rect")
-              .attr("x", 0)
-              .attr("y", _this.height - xAxisTextMargin / 2)
-              .attr("width", cellWidth)
-            .attr("height", xAxisTextMargin / 2);
+          .append('clipPath')
+          .attr('id', xLabelClipPathId)
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', _this.height - xAxisTextMargin / 2)
+          .attr('width', cellWidth)
+          .attr('height', xAxisTextMargin / 2);
         xAxesG
-            .append("g")
-              .attr("clip-path",
-                    col=>("url(#" + xAxisClipPathId(col) +")"))
-              .each(function(col) {
-                d3.select(this).call(
-                    drawAxis,
-                    d3.axisBottom(xCoords[col])
-                      .tickSize(_this.height - xAxisTextMargin),
-                    cellWidth,
-                    /* minLabelSize */ 40,
-                    _this.options.columns[col].scale)
-              });
+          .append('g')
+          .attr('clip-path', (col) => 'url(#' + xAxisClipPathId(col) + ')')
+          .each(function(col) {
+            d3.select(this).call(
+              drawAxis,
+              d3
+                .axisBottom(xCoords[col])
+                .tickSize(_this.height - xAxisTextMargin),
+              cellWidth,
+              /* minLabelSize */ 40,
+              _this.options.columns[col].scale
+            );
+          });
         // Draw a label for each axis.
         xAxesG
-            .append("g")
-              .classed("x-axis-label", true)
-              .attr("clip-path", col=>("url(#" + xLabelClipPathId(col) +")"))
-            .append("text")
-              .attr("text-anchor", "middle")
-              .attr("x", cellWidth / 2)
-              .attr("y", _this.height - 1 - xAxisTextMargin / 4)
-              .text(col=>utils.schemaColumnName(_this.schema, col))
-            .append("title")   // Show full name as a tooltip.
-              .text(col=>utils.schemaColumnName(_this.schema, col));
+          .append('g')
+          .classed('x-axis-label', true)
+          .attr('clip-path', (col) => 'url(#' + xLabelClipPathId(col) + ')')
+          .append('text')
+          .attr('text-anchor', 'middle')
+          .attr('x', cellWidth / 2)
+          .attr('y', _this.height - 1 - xAxisTextMargin / 4)
+          .text((col) =>
+            utils.schemaVisibleColumnName(_this.visibleSchema, col)
+          )
+          .append('title') // Show full name as a tooltip.
+          .text((col) =>
+            utils.schemaVisibleColumnName(_this.visibleSchema, col)
+          );
 
         // Y-Axes and labels.
         const yAxesG = this._svg
-            .selectAll(".y-axis")
-              .data(metrics)
-            .enter()
-            .append("g")
-              .classed("y-axis", true)
-              .attr("transform",
-                    metric=>utils.translateStr(
-                        _this.width - 1, cellY(metric)));
+          .selectAll('.y-axis')
+          .data(metrics)
+          .enter()
+          .append('g')
+          .classed('y-axis', true)
+          .attr('transform', (metric) =>
+            utils.translateStr(_this.width - 1, cellY(metric))
+          );
         function yAxisClipPathId(metric) {
-          return "y-axis-clip-path-" + metric;
+          return 'y-axis-clip-path-' + metric;
         }
         function yLabelClipPathId(metric) {
-          return "y-label-clip-path-" + metric;
+          return 'y-label-clip-path-' + metric;
         }
         yAxesG
-            .append("clipPath")
-              .attr("id", yAxisClipPathId)
-            .append("rect")
-              .attr("x", -(_this.width - yAxisTextMargin / 2 - 1))
-              .attr("y", -frameMargin)
-              .attr("width", _this.width - yAxisTextMargin / 2)
-              .attr("height", cellHeight + 2*frameMargin);
+          .append('clipPath')
+          .attr('id', yAxisClipPathId)
+          .append('rect')
+          .attr('x', -(_this.width - yAxisTextMargin / 2 - 1))
+          .attr('y', -frameMargin)
+          .attr('width', _this.width - yAxisTextMargin / 2)
+          .attr('height', cellHeight + 2 * frameMargin);
         yAxesG
-            .append("clipPath")
-              .attr("id", yLabelClipPathId)
-            .append("rect")
-              .attr("x", -(_this.width - 1))
-              .attr("y", 0)
-              .attr("width", yAxisTextMargin / 2)
-              .attr("height", cellHeight);
+          .append('clipPath')
+          .attr('id', yLabelClipPathId)
+          .append('rect')
+          .attr('x', -(_this.width - 1))
+          .attr('y', 0)
+          .attr('width', yAxisTextMargin / 2)
+          .attr('height', cellHeight);
         yAxesG
-            .append("g")
-              .attr("clip-path",
-                    metric=>("url(#" + yAxisClipPathId(metric) +")"))
-              .each(function(metric) {
-                d3.select(this).call(
-                    drawAxis,
-                    d3.axisLeft(yCoords[metric])
-                      .tickSize(_this.width - yAxisTextMargin),
-                    cellHeight,
-                    /* minLabelSize */ 20,
-                    _this.options.columns[
-                      metric + utils.numHParams(_this.schema)].scale);
-              });
+          .append('g')
+          .attr(
+            'clip-path',
+            (metric) => 'url(#' + yAxisClipPathId(metric) + ')'
+          )
+          .each(function(metric) {
+            d3.select(this).call(
+              drawAxis,
+              d3
+                .axisLeft(yCoords[metric])
+                .tickSize(_this.width - yAxisTextMargin),
+              cellHeight,
+              /* minLabelSize */ 20,
+              _this.options.columns[
+                metric + utils.numVisibleHParams(_this.visibleSchema)
+              ].scale
+            );
+          });
         // Append a label for each axis.
         yAxesG
-            .append("g")
-              .classed("y-axis-label", true)
-            .  attr("clip-path",
-                    metric=>("url(#" + yLabelClipPathId(metric) +")"))
-            .append("text")
-              .attr("text-anchor", "middle")
-              .attr("x", -(_this.width - yAxisTextMargin / 4 - 1))
-              .attr("y", cellHeight / 2)
-              .attr("transform", utils.rotateStr(
-                  90, -(_this.width - yAxisTextMargin / 4 - 1),
-                  cellHeight / 2))
-              .text(metric=>
-                    utils.metricName(_this.schema.metricInfos[metric]))
-            .append("title")   // Show full name as a tooltip.
-              .text(metric=>
-                    utils.metricName(_this.schema.metricInfos[metric]));
+          .append('g')
+          .classed('y-axis-label', true)
+          .attr(
+            'clip-path',
+            (metric) => 'url(#' + yLabelClipPathId(metric) + ')'
+          )
+          .append('text')
+          .attr('text-anchor', 'middle')
+          .attr('x', -(_this.width - yAxisTextMargin / 4 - 1))
+          .attr('y', cellHeight / 2)
+          .attr(
+            'transform',
+            utils.rotateStr(
+              90,
+              -(_this.width - yAxisTextMargin / 4 - 1),
+              cellHeight / 2
+            )
+          )
+          .text((metric) =>
+            utils.metricName(_this.visibleSchema.metricInfos[metric])
+          )
+          .append('title') // Show full name as a tooltip.
+          .text((metric) =>
+            utils.metricName(_this.visibleSchema.metricInfos[metric])
+          );
 
         function drawAxis(g, axisGen, axisLength, minLabelSize, scaleType) {
           // We compute the number of ticks to display based on the estimate
           // of the minimum size to allow for a label.
           const numTicks = Math.floor(axisLength / minLabelSize);
           const scale = axisGen.scale();
-          if (scaleType === "QUANTILE") {
+          if (scaleType === 'QUANTILE') {
             // The default tickValues of a quantile scale is just the scale
             // domain, which produces overlapping labels if the number of
             // elements in the domain is greater than the number of
             // quantiles.
             let quantiles = scale.quantiles();
-            const step = Math.ceil(quantiles.length/numTicks);
-            quantiles =
-                d3.range(0, quantiles.length, step).map(i=>quantiles[i]);
-            axisGen
-                .tickValues(quantiles)
-                .tickFormat(d3.format("-.2g"));
+            const step = Math.ceil(quantiles.length / numTicks);
+            quantiles = d3
+              .range(0, quantiles.length, step)
+              .map((i) => quantiles[i]);
+            axisGen.tickValues(quantiles).tickFormat(d3.format('-.2g'));
           }
-          if (scaleType === "LINEAR" || scaleType === "LOG") {
+          if (scaleType === 'LINEAR' || scaleType === 'LOG') {
             // The following is equivalent to: axisGen.ticks(numTicks). We
             // use the form below, since otherwise the closure compiler
             // erroneously drops the parameter 'numTicks' from the call. It does
@@ -405,55 +434,54 @@ the vulcanization build step. Figure out why.
           }
           g.call(axisGen);
           // Remove the actual axis line, and grey out the tick lines.
-          g.selectAll(".domain").remove()
-          g.selectAll(".tick line").attr("stroke", "#ddd")
+          g.selectAll('.domain').remove();
+          g.selectAll('.tick line').attr('stroke', '#ddd');
         }
 
         // ---------------------------------------------------------------------
         // Draw cell frames.
         // ---------------------------------------------------------------------
         const cells = this._svg
-              .selectAll(".cell")
-                .data(d3.cross(cols, metrics))
-              .enter()
-              .append("g")
-                .classed("cell", true)
-                .attr("transform",
-                      ([col, metric])=>utils.translateStr(
-                          cellX(col), cellY(metric)));
+          .selectAll('.cell')
+          .data(d3.cross(cols, metrics))
+          .enter()
+          .append('g')
+          .classed('cell', true)
+          .attr('transform', ([col, metric]) =>
+            utils.translateStr(cellX(col), cellY(metric))
+          );
         const frames = cells
-              .append("g")
-                .classed("frame", true)
-              .append("rect")
-                .attr("x", -frameMargin)
-                .attr("y", -frameMargin)
-                .attr("width", cellWidth+2*frameMargin)
-                .attr("height", cellHeight+2*frameMargin)
-                .attr("stroke", "#000")
-                .attr("fill", "none")
-                .attr("shape-rendering", "crispEdges");
+          .append('g')
+          .classed('frame', true)
+          .append('rect')
+          .attr('x', -frameMargin)
+          .attr('y', -frameMargin)
+          .attr('width', cellWidth + 2 * frameMargin)
+          .attr('height', cellHeight + 2 * frameMargin)
+          .attr('stroke', '#000')
+          .attr('fill', 'none')
+          .attr('shape-rendering', 'crispEdges');
 
         // ---------------------------------------------------------------------
         // Draw data point markers.
         // ---------------------------------------------------------------------
         let colorScale = null;
         if (_this.options.colorByColumnIndex !== undefined) {
-          colorScale = d3.scaleLinear()
-              .domain(
-                  this._colExtent(this.options.colorByColumnIndex))
-              .range([this.options.minColor, this.options.maxColor])
-              .interpolate(d3.interpolateLab);
+          colorScale = d3
+            .scaleLinear()
+            .domain(this._colExtent(this.options.colorByColumnIndex))
+            .range([this.options.minColor, this.options.maxColor])
+            .interpolate(d3.interpolateLab);
         }
         // A function mapping a sessionGroup to its marker's color.
         const markerColorFn =
-              _this.options.colorByColumnIndex === undefined
-              /* Use default color if no color-by column is selected. */
-              ? () => "red"
-              : ({sessionGroup}) => (
+          _this.options.colorByColumnIndex === undefined
+            ? /* Use default color if no color-by column is selected. */
+              () => 'red'
+            : ({sessionGroup}) =>
                 colorScale(
-                    this._colValue(sessionGroup,
-                                   _this.options.colorByColumnIndex))
-              );
+                  this._colValue(sessionGroup, _this.options.colorByColumnIndex)
+                );
         // Returns the x coordinate for the marker representing sessionGroup
         // in a cell in the scatter plot matrix column indexed by 'col'.
         function markerX(sessionGroup, col) {
@@ -462,8 +490,7 @@ the vulcanization build step. Figure out why.
         // Returns the y coordinate for the marker representing sessionGroup
         // in a cell in the scatter plot matrix row indexed by 'metric'.
         function markerY(sessionGroup, metric) {
-          return yCoords[metric](
-              _this._metricValue(sessionGroup, metric));
+          return yCoords[metric](_this._metricValue(sessionGroup, metric));
         }
         // A function that gets a selection of <g> elements--each should be
         // a child node of a cell <g> element (a memeber of the 'cells'
@@ -480,56 +507,59 @@ the vulcanization build step. Figure out why.
         // array of marker HTML elements representing that sessionGroup.
         function addMarkers(cellsGSelection, fill) {
           const markers = cellsGSelection
-              .selectAll(".data-marker")
-                .data(([col, metric])=>(
-                    // Filter out session groups that don't have a metric-value
-                    // or a column-value for the current cell.
-                    _this.sessionGroups
-                      .filter(sessionGroup=>(
-                          _this._colValue(sessionGroup, col) !== undefined &&
-                            _this._metricValue(sessionGroup, metric) !==
-                            undefined))
-                      .map(sessionGroup=>({
-                        col: col,
-                        metric: metric,
-                        sessionGroup: sessionGroup,
-                        x: markerX(sessionGroup, col),
-                        y: markerY(sessionGroup, metric),
-                        // This will be populated by the code below with
-                        // a Set of all the markers representing this session
-                        // group.
-                        sessionGroupMarkers: null,
-                    }))))
-              .enter()
-              .append("circle")
-                .classed("data-marker", true)
-                .attr("cx", ({x})=>x)
-                .attr("cy", ({y})=>y)
-                .attr("r", 2)
-                .attr("fill", fill);
+            .selectAll('.data-marker')
+            .data(([col, metric]) =>
+              // Filter out session groups that don't have a metric-value
+              // or a column-value for the current cell.
+              _this.sessionGroups
+                .filter(
+                  (sessionGroup) =>
+                    _this._colValue(sessionGroup, col) !== undefined &&
+                    _this._metricValue(sessionGroup, metric) !== undefined
+                )
+                .map((sessionGroup) => ({
+                  col: col,
+                  metric: metric,
+                  sessionGroup: sessionGroup,
+                  x: markerX(sessionGroup, col),
+                  y: markerY(sessionGroup, metric),
+                  // This will be populated by the code below with
+                  // a Set of all the markers representing this session
+                  // group.
+                  sessionGroupMarkers: null,
+                }))
+            )
+            .enter()
+            .append('circle')
+            .classed('data-marker', true)
+            .attr('cx', ({x}) => x)
+            .attr('cy', ({y}) => y)
+            .attr('r', 2)
+            .attr('fill', fill);
           const sessionGroupMarkersMap = new Map();
-          _this.sessionGroups.forEach(sessionGroup => {
+          _this.sessionGroups.forEach((sessionGroup) => {
             sessionGroupMarkersMap.set(sessionGroup, []);
           });
           markers.each(function(d) {
             sessionGroupMarkersMap.get(d.sessionGroup).push(this);
           });
-          markers.each(d=>{
+          markers.each((d) => {
             const sessionGroupMarkers = sessionGroupMarkersMap.get(
-                d.sessionGroup);
-            d.sessionGroupMarkers=new Set(sessionGroupMarkers);
+              d.sessionGroup
+            );
+            d.sessionGroupMarkers = new Set(sessionGroupMarkers);
           });
-          const cellMarkers = cols.map(
-              col=>metrics.map(
-                  metric=>markers.filter(d=>(d.col == col &&
-                                             d.metric == metric))
-              )
+          const cellMarkers = cols.map((col) =>
+            metrics.map((metric) =>
+              markers.filter((d) => d.col == col && d.metric == metric)
+            )
           );
           return [markers, cellMarkers, sessionGroupMarkersMap];
         }
         const [markers, cellMarkers, sessionGroupMarkersMap] = addMarkers(
-            cells.append("g"),
-            /* fill */ markerColorFn);
+          cells.append('g'),
+          /* fill */ markerColorFn
+        );
 
         // ---------------------------------------------------------------------
         // Create a brush for each cell. Brushing a cell makes "visible" only
@@ -544,25 +574,28 @@ the vulcanization build step. Figure out why.
         // (col, metric). Each quad tree datum is the corresponding marker's
         // element.
         function createCellQuadTree(col, metric) {
-          const data=[];
-          cellMarkers[col][metric].each(function() { data.push(this); });
-          return d3.quadtree()
-              .x(elem=>d3.select(elem).datum().x)
-              .y(elem=>d3.select(elem).datum().y)
-              .addAll(data);
+          const data = [];
+          cellMarkers[col][metric].each(function() {
+            data.push(this);
+          });
+          return d3
+            .quadtree()
+            .x((elem) => d3.select(elem).datum().x)
+            .y((elem) => d3.select(elem).datum().y)
+            .addAll(data);
         }
-        const quadTrees = cols.map(
-            col=>metrics.map(
-                metric=>createCellQuadTree(col, metric)));
+        const quadTrees = cols.map((col) =>
+          metrics.map((metric) => createCellQuadTree(col, metric))
+        );
 
         // A d3-selection of the cell in 'cells' that has the active
         // brush selection, or null if the brush is not active.
         let brushedCellG = null;
         if (isBrushActive()) {
-          brushedCellG = cells.filter(
-              cellIndex=>_.isEqual(cellIndex, _this._brushedCellIndex));
-          console.assert(brushedCellG.size() == 1,
-                         brushedCellG);
+          brushedCellG = cells.filter((cellIndex) =>
+            _.isEqual(cellIndex, _this._brushedCellIndex)
+          );
+          console.assert(brushedCellG.size() == 1, brushedCellG);
         }
 
         // The set of markers (in all cells) that are visible. We keep this
@@ -578,19 +611,29 @@ the vulcanization build step. Figure out why.
           let newVisibleMarkers = new Set(markers.nodes());
           if (!isBrushSelectionEmpty()) {
             newVisibleMarkers = findMarkersInSelection(
-                _this._brushedCellIndex, _this._brushSelection);
+              _this._brushedCellIndex,
+              _this._brushSelection
+            );
           }
           // Highlight the new visible markers.
-          d3.selectAll(Array.from(
-              utils.filterSet(newVisibleMarkers,
-                              elem=>(!visibleMarkers.has(elem)))))
-              .attr("fill", markerColorFn);
+          d3.selectAll(
+            Array.from(
+              utils.filterSet(
+                newVisibleMarkers,
+                (elem) => !visibleMarkers.has(elem)
+              )
+            )
+          ).attr('fill', markerColorFn);
 
           // Gray-out the no-longer visible markers.
-          d3.selectAll(Array.from(
-              utils.filterSet(visibleMarkers,
-                              elem=>(!newVisibleMarkers.has(elem)))))
-              .attr("fill", "#ddd");
+          d3.selectAll(
+            Array.from(
+              utils.filterSet(
+                visibleMarkers,
+                (elem) => !newVisibleMarkers.has(elem)
+              )
+            )
+          ).attr('fill', '#ddd');
           visibleMarkers = newVisibleMarkers;
         }
 
@@ -603,49 +646,58 @@ the vulcanization build step. Figure out why.
           const [col, metric] = cellIndex;
           const result = new Set();
           utils.quadTreeVisitPointsInRect(
-              quadTrees[col][metric],
-              selection[0][0], selection[0][1],
-              selection[1][0], selection[1][1],
-              (elem)=>{
-                const data = d3.select(elem).datum();
-                  data.sessionGroupMarkers.forEach(sg_elem=>{
-                    result.add(sg_elem);
-                  });
+            quadTrees[col][metric],
+            selection[0][0],
+            selection[0][1],
+            selection[1][0],
+            selection[1][1],
+            (elem) => {
+              const data = d3.select(elem).datum();
+              data.sessionGroupMarkers.forEach((sg_elem) => {
+                result.add(sg_elem);
               });
+            }
+          );
           return result;
         }
 
-        const brush = d3.brush()
-              .extent([[-frameMargin + 1, -frameMargin + 1],
-                       [cellWidth - 1 + frameMargin - 1,
-                        cellHeight - 1 + frameMargin - 1]])
-              .on("start", function ([col, metric]) {
-                if (isBrushActive() && brushedCellG.node() != this) {
-                  // The brush is active in a different cell.
-                  // Clear the selection first.
-                  // This will recursively call the 'start', 'brush', and
-                  // 'end' event listeners for the cell with the selection
-                  // and will update the markers. The 'if' above
-                  // prevents infinite recursion.
-                  brush.move(brushedCellG, null);
-                }
-                brushChanged(this);
-              })
-              .on("brush", function([col, metric]) {
-                brushChanged(this);
-              })
-              .on("end", function([col, metric]) {
-                brushChanged(this);
-              });
+        const brush = d3
+          .brush()
+          .extent([
+            [-frameMargin + 1, -frameMargin + 1],
+            [cellWidth - 1 + frameMargin - 1, cellHeight - 1 + frameMargin - 1],
+          ])
+          .on('start', function() {
+            if (isBrushActive() && brushedCellG.node() != this) {
+              // The brush is active in a different cell.
+              // Clear the selection first.
+              // This will recursively call the 'start', 'brush', and
+              // 'end' event listeners for the cell with the selection
+              // and will update the markers. The 'if' above
+              // prevents infinite recursion.
+              brush.move(brushedCellG, null);
+            }
+            brushChanged(this);
+          })
+          .on('brush', function() {
+            brushChanged(this);
+          })
+          .on('end', function() {
+            brushChanged(this);
+          });
 
         // Updates the internal state in response to a brush event in
         // the cell whose <g> element (in 'cells') is given by cellGNode
         function brushChanged(cellGNode) {
-          const brushSelection = d3.brushSelection(cellGNode);
-          if ((!isBrushActive() && brushSelection === null) ||
-              (isBrushActive() &&
-               cellGNode === brushedCellG.node() &&
-               _.isEqual(brushSelection, _this._brushSelection))) {
+          // For some reason the closure compiler drops the argument when we
+          // write the call below as 'd3.brushSelection(cellGNode)'.
+          const brushSelection = d3['brushSelection'](cellGNode);
+          if (
+            (!isBrushActive() && brushSelection === null) ||
+            (isBrushActive() &&
+              cellGNode === brushedCellG.node() &&
+              _.isEqual(brushSelection, _this._brushSelection))
+          ) {
             // Nothing to do if selection hasn't changed.
             return;
           }
@@ -661,14 +713,17 @@ the vulcanization build step. Figure out why.
         }
 
         function isBrushActive() {
-          return (_this._brushedCellIndex !== null &&
-                  _this._brushSelection !== null);
+          return (
+            _this._brushedCellIndex !== null && _this._brushSelection !== null
+          );
         }
 
         function isBrushSelectionEmpty() {
-          return !isBrushActive() ||
-              _this._brushSelection[0][0] === _this._brushSelection[1][0] ||
-              _this._brushSelection[0][1] === _this._brushSelection[1][1];
+          return (
+            !isBrushActive() ||
+            _this._brushSelection[0][0] === _this._brushSelection[1][0] ||
+            _this._brushSelection[0][1] === _this._brushSelection[1][1]
+          );
         }
 
         // Render the brush elements on each cell.
@@ -679,7 +734,6 @@ the vulcanization build step. Figure out why.
           // the 'redraw()'.
           brush.move(brushedCellG, _this._brushSelection);
         }
-
 
         // ---------------------------------------------------------------------
         // Add event listeners for highlighting the session group whose markers
@@ -699,64 +753,66 @@ the vulcanization build step. Figure out why.
         // session group is selected.
         let selectedMarkers = null;
         if (this.selectedSessionGroup !== null) {
-          selectedMarkers =
-              d3.selectAll(
-                  sessionGroupMarkersMap.get(this.selectedSessionGroup))
-                .classed("selected-marker", true);
+          selectedMarkers = d3
+            .selectAll(sessionGroupMarkersMap.get(this.selectedSessionGroup))
+            .classed('selected-marker', true);
         }
         cells
-            .on("click",
-                function () {
-                  const newSelectedMarkers =
-                      (closestMarkers === selectedMarkers)
-                        ? null
-                        : closestMarkers;
-                  if (newSelectedMarkers === selectedMarkers) {
-                    return;
-                  }
-                  if (selectedMarkers !== null) {
-                    selectedMarkers.classed("selected-marker", false);
-                  }
-                  selectedMarkers = newSelectedMarkers;
-                  if (selectedMarkers !== null) {
-                    selectedMarkers.classed("selected-marker", true);
-                  }
-                  const newSessionGroup = (selectedMarkers === null)
-                        ? null
-                        // All elements in selectedMarkers should have the same
-                        // sessionGroup.
-                        : selectedMarkers.datum().sessionGroup;
-                  _this._setSelectedSessionGroup(newSessionGroup);
-                })
-            .on("mousemove mouseenter", function([col, metric]) {
-              const [x, y] = d3.mouse(this);
-              const newClosestMarkers = findClosestMarkers(col, metric, x, y,
-                                                           /* threshold */ 20);
-              if (closestMarkers === newClosestMarkers) {
-                return;
-              }
-              if (closestMarkers !== null) {
-                closestMarkers.classed("closest-marker", false);
-              }
-              closestMarkers = newClosestMarkers;
-              if (closestMarkers !== null) {
-                closestMarkers.classed("closest-marker", true);
-                // All elements in closestMarkers should have the same
-                // sessionGroup.
-                _this._setClosestSessionGroup(
-                    closestMarkers.datum().sessionGroup);
-              }
-              else {
-                _this._setClosestSessionGroup(null);
-              }
-            })
-            .on("mouseleave", function([col, metric]) {
-              if (closestMarkers !== null) {
-                closestMarkers.classed("closest-marker", false);
-                closestMarkers = null;
-                _this._setClosestSessionGroup(null);
-              }
-            });
+          .on('click', function() {
+            const newSelectedMarkers =
+              closestMarkers === selectedMarkers ? null : closestMarkers;
+            if (newSelectedMarkers === selectedMarkers) {
+              return;
+            }
+            if (selectedMarkers !== null) {
+              selectedMarkers.classed('selected-marker', false);
+            }
+            selectedMarkers = newSelectedMarkers;
+            if (selectedMarkers !== null) {
+              selectedMarkers.classed('selected-marker', true);
+            }
+            const newSessionGroup =
+              selectedMarkers === null
+                ? null
+                : // All elements in selectedMarkers should have the same
+                  // sessionGroup.
+                  selectedMarkers.datum().sessionGroup;
+            _this._setSelectedSessionGroup(newSessionGroup);
+          })
+          .on('mousemove mouseenter', function([col, metric]) {
+            const [x, y] = d3.mouse(this);
+            const newClosestMarkers = findClosestMarkers(
+              col,
+              metric,
+              x,
+              y,
+              /* threshold */ 20
+            );
+            if (closestMarkers === newClosestMarkers) {
+              return;
+            }
+            if (closestMarkers !== null) {
+              closestMarkers.classed('closest-marker', false);
+            }
+            closestMarkers = newClosestMarkers;
+            if (closestMarkers !== null) {
+              closestMarkers.classed('closest-marker', true);
+              // All elements in closestMarkers should have the same
+              // sessionGroup.
+              _this._setClosestSessionGroup(
+                closestMarkers.datum().sessionGroup
+              );
+            } else {
+              _this._setClosestSessionGroup(null);
+            }
+          })
+          .on('mouseleave', function([col, metric]) {
+            if (closestMarkers !== null) {
+              closestMarkers.classed('closest-marker', false);
+              closestMarkers = null;
+              _this._setClosestSessionGroup(null);
+            }
+          });
 
         // Finds a closest visible marker in the [col,metric] cell to the point
         // with cell-relative coordinates (x,y). If that point's distance
@@ -767,14 +823,18 @@ the vulcanization build step. Figure out why.
           let minDist = Infinity;
           let minSessionGroup = null;
           utils.quadTreeVisitPointsInDisk(
-              quadTrees[metric][col], x, y, threshold,
-              (elem, distanceToCenter)=>{
-                if (visibleMarkers.has(elem) && distanceToCenter < minDist) {
-                  const data = d3.select(elem).datum();
-                  minDist = distanceToCenter;
-                  minSessionGroup = data.sessionGroup
-                }
-              });
+            quadTrees[metric][col],
+            x,
+            y,
+            threshold,
+            (elem, distanceToCenter) => {
+              if (visibleMarkers.has(elem) && distanceToCenter < minDist) {
+                const data = d3.select(elem).datum();
+                minDist = distanceToCenter;
+                minSessionGroup = data.sessionGroup;
+              }
+            }
+          );
           if (minSessionGroup === null) {
             return null;
           }
@@ -788,25 +848,26 @@ the vulcanization build step. Figure out why.
         // stamped; since we're injecting our own elements here, we add this
         // class to each element so that the style rules defined above will
         // apply.
-        this._svg.selectAll("*")
-            .classed("tf-hparams-scatter-plot-matrix-plot", true);
+        this._svg
+          .selectAll('*')
+          .classed('tf-hparams-scatter-plot-matrix-plot', true);
       },
 
       // Returns a d3 scale mapping either a metric or an hparam value
       // to the cell's coordinate system. 'range' should be an interval in the
       // cell's coordinate system representing the range of the scale. The
       // metric or hparam to be mapped should be specified as the
-      // schema-column indexed by colIndex.
+      // visibleSchema-column indexed by colIndex.
       _cellScale(colIndex, range) {
         const extent = this._colExtent(colIndex);
-        const linearScale = d3.scaleLinear()
-              .domain(extent)
-              .range(range);
-        if (this.options.columns[colIndex].scale === "LINEAR") {
+        const linearScale = d3
+          .scaleLinear()
+          .domain(extent)
+          .range(range);
+        if (this.options.columns[colIndex].scale === 'LINEAR') {
           return linearScale;
-        }
-        else if (this.options.columns[colIndex].scale === "LOG") {
-          if (extent[0]<=0 && extent[1]>=0) {
+        } else if (this.options.columns[colIndex].scale === 'LOG') {
+          if (extent[0] <= 0 && extent[1] >= 0) {
             // We can't have a log scale for data whose extent contains 0.
             // Use a linear scale instead.
             // TODO(erez): Create a symlog scale similar to Matplotlib's
@@ -815,11 +876,11 @@ the vulcanization build step. Figure out why.
             // and b/111755540
             return linearScale;
           }
-          return d3.scaleLog()
-              .domain(extent)
-              .range(range);
-        }
-        else if (this.options.columns[colIndex].scale === "QUANTILE") {
+          return d3
+            .scaleLog()
+            .domain(extent)
+            .range(range);
+        } else if (this.options.columns[colIndex].scale === 'QUANTILE') {
           // Compute 20-quantiles:
           const step = (range[1] - range[0]) / 19;
           // Compute the scale's range to be:
@@ -827,44 +888,59 @@ the vulcanization build step. Figure out why.
           // d3.range(range[0], range[1]+step, step) has numerical
           // issues and may produce an extra member, so we use a
           // different procedure:
-          const scaleRange = d3.range(20).map(i=>range[0]+step*i);
-          return d3.scaleQuantile()
-              .domain(_.uniq(this.sessionGroups.map(
-                  sg=>this._colValue(sg, colIndex))))
-              .range(scaleRange);
-        }
-        else if (this.options.columns[colIndex].scale === "NON_NUMERIC") {
-          return d3.scalePoint()
-              .domain(
-                  // We sort the session groups to make the order
-                  // stable across 'ListSessionGroups' RPCs
-                  _.uniq(
-                      this.sessionGroups
-                        .map(sg=>this._colValue(sg, colIndex))
-                        .sort()
-                  )
+          const scaleRange = d3.range(20).map((i) => range[0] + step * i);
+          return d3
+            .scaleQuantile()
+            .domain(
+              _.uniq(
+                this.sessionGroups.map((sg) => this._colValue(sg, colIndex))
               )
-              .range(range)
-              .padding(0.1);
+            )
+            .range(scaleRange);
+        } else if (this.options.columns[colIndex].scale === 'NON_NUMERIC') {
+          return d3
+            .scalePoint()
+            .domain(
+              // We sort the session groups to make the order
+              // stable across 'ListSessionGroups' RPCs
+              _.uniq(
+                this.sessionGroups
+                  .map((sg) => this._colValue(sg, colIndex))
+                  .sort()
+              )
+            )
+            .range(range)
+            .padding(0.1);
         } else {
-          throw ("Unknown scale for column: " + colIndex
-                 + ". options: " + this.options);
+          throw 'Unknown scale for column: ' +
+            colIndex +
+            '. options: ' +
+            this.options;
         }
       },
 
       _colValue(sessionGroup, colIndex) {
-        return tf.hparams.utils.columnValueByIndex(
-            this.schema, sessionGroup, colIndex);
+        return tf.hparams.utils.columnValueByVisibleIndex(
+          this.visibleSchema,
+          sessionGroup,
+          colIndex
+        );
       },
 
       _metricValue(sessionGroup, metricIndex) {
-        return tf.hparams.utils.metricValueByIndex(
-            this.schema, sessionGroup, metricIndex);
+        return tf.hparams.utils.metricValueByVisibleIndex(
+          this.visibleSchema,
+          sessionGroup,
+          metricIndex
+        );
       },
 
       _colExtent(colIndex) {
-        return tf.hparams.utils.numericColumnExtent(
-            this.schema, this.sessionGroups, colIndex);
+        return tf.hparams.utils.visibleNumericColumnExtent(
+          this.visibleSchema,
+          this.sessionGroups,
+          colIndex
+        );
       },
     });
   </script>

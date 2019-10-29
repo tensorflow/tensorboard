@@ -13,30 +13,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
+  export class RunsStore extends BaseStore {
+    private _runs: string[] = [];
 
-export class RunsStore extends BaseStore {
-  private _runs: string[] = [];
+    load() {
+      const url = tf_backend.getRouter().runs();
+      return this.requestManager.request(url).then((newRuns) => {
+        if (!_.isEqual(this._runs, newRuns)) {
+          this._runs = newRuns;
+          this.emitChange();
+        }
+      });
+    }
 
-  load() {
-    const url = getRouter().runs();
-    return this.requestManager.request(url).then(newRuns => {
-      if (!_.isEqual(this._runs, newRuns)) {
-        this._runs = newRuns;
-        this.emitChange();
-      }
-    });
+    /**
+     * Get the current list of runs. If no data is available, this will be
+     * an empty array (i.e., there is no distinction between "no runs" and
+     * "no runs yet").
+     */
+    getRuns(): string[] {
+      return this._runs.slice();
+    }
   }
 
-  /**
-   * Get the current list of runs. If no data is available, this will be
-   * an empty array (i.e., there is no distinction between "no runs" and
-   * "no runs yet").
-   */
-  getRuns(): string[] {
-    return this._runs.slice();
-  }
-}
-
-export const runsStore = new RunsStore();
-
-}  // namespace tf_backend
+  export const runsStore = new RunsStore();
+} // namespace tf_backend
