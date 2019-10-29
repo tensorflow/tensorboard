@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Main program for the TensorBoard hosted service uploader."""
+"""Main program for the TensorBoard.dev uploader."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -48,7 +48,8 @@ _FLAGS = None
 _MESSAGE_TOS = u"""\
 Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/terms> and Privacy Policy
-<https://policies.google.com/privacy>.
+<https://policies.google.com/privacy>, and TensorBoard.dev's Terms of Service
+<https://tensorboard.dev/policy/terms.html>.
 
 This notice will not be shown again while you are logged into the uploader.
 To log out, run `tensorboard dev auth revoke`.
@@ -108,7 +109,7 @@ def _define_flags(parser):
       '--console rather than a browser redirect to localhost.')
 
   upload = subparsers.add_parser(
-      'upload', help='upload an experiment to a hosted service')
+      'upload', help='upload an experiment to TensorBoard.dev')
   upload.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_UPLOAD})
   upload.add_argument(
       '--logdir',
@@ -170,7 +171,7 @@ def _parse_flags(argv=('',)):
   """
   parser = argparse_flags.ArgumentParser(
       prog='uploader',
-      description=('Upload your TensorBoard experiments to a hosted service'))
+      description=('Upload your TensorBoard experiments to TensorBoard.dev'))
   _define_flags(parser)
   arg0 = argv[0] if argv else ''
   global _FLAGS
@@ -274,9 +275,14 @@ class _DeleteExperimentIntent(_Intent):
   """The user intends to delete an experiment."""
 
   _MESSAGE_TEMPLATE = textwrap.dedent(u"""\
-      This will delete the experiment with the following ID:
+      This will delete the experiment on https://tensorboard.dev with the
+      following experiment ID:
 
       {experiment_id}
+
+      You have chosen to delete an experiment. All experiments uploaded
+      to TensorBoard.dev are publicly visible. Do not upload sensitive
+      data.
   """)
 
   def __init__(self, experiment_id):
@@ -310,9 +316,13 @@ class _UploadIntent(_Intent):
   """The user intends to upload an experiment from the given logdir."""
 
   _MESSAGE_TEMPLATE = textwrap.dedent(u"""\
-      This will upload your TensorBoard logs from the following directory:
+      This will upload your TensorBoard logs to https://tensorboard.dev/ from
+      the following directory:
 
       {logdir}
+
+      This TensorBoard will be visible to everyone. Do not upload sensitive
+      data.
   """)
 
   def __init__(self, logdir):
@@ -346,10 +356,14 @@ class _ExportIntent(_Intent):
   """The user intends to download all their experiment data."""
 
   _MESSAGE_TEMPLATE = textwrap.dedent(u"""\
-      This will download all your experiment data and save it to the
-      following directory:
+      This will download all your experiment data from https://tensorboard.dev
+      and save it to the following directory:
 
       {output_dir}
+
+      Downloading your experiment data does not delete it from the
+      service. All experiments uploaded to TensorBoard.dev are publicly
+      visible. Do not upload sensitive data.
   """)
 
   def __init__(self, output_dir):
@@ -447,7 +461,7 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
     return _run(flags)
 
   def help(self):
-    return 'upload data to a hosted service'
+    return 'upload data to TensorBoard.dev'
 
 
 if __name__ == '__main__':

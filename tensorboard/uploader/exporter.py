@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Downloads experiment data from a hosted Tensorboard service."""
+"""Downloads experiment data from TensorBoard.dev."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,7 +42,7 @@ _MAX_INT64 = 2**63 - 1
 
 
 class TensorBoardExporter(object):
-  """Exports all of the user's experiment data from a hosted service.
+  """Exports all of the user's experiment data from TensorBoard.dev.
 
   Data is exported into a directory, with one file per experiment. Each
   experiment file is a sequence of time series, represented as a stream

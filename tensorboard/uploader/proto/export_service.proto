@@ -5,7 +5,7 @@ package tensorboard.service;
 import "google/protobuf/timestamp.proto";
 import "tensorboard/compat/proto/summary.proto";
 
-// Service for exporting data from a hosted service.
+// Service for exporting data from TensorBoard.dev.
 service TensorBoardExporterService {
   // Stream the experiment_id of all the experiments owned by the caller.
   rpc StreamExperiments(StreamExperimentsRequest)
@@ -16,7 +16,7 @@ service TensorBoardExporterService {
 }
 
 // Request to stream the experiment_id of all the experiments owned by the
-// caller from a hosted service.
+// caller from TensorBoard.dev.
 message StreamExperimentsRequest {
   // Timestamp to get a consistent snapshot of the data in the database.
   // This is useful when making multiple read RPCs and needing the data to be
@@ -32,7 +32,7 @@ message StreamExperimentsRequest {
   // TODO(@karthikv2k): Support pagination.
 }
 
-// Streams experiment IDs returned from a hosted service.
+// Streams experiment IDs returned from TensorBoard.dev.
 message StreamExperimentsResponse {
   // List of experiment IDs for the experiments owned by the user. The entire
   // list of experiments owned by the user is streamed in batches and each batch
