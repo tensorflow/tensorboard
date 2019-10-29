@@ -381,9 +381,15 @@ class _ExportIntent(_Intent):
       msg = 'Output directory already exists: %r' % outdir
       raise base_plugin.FlagsError(msg)
     num_experiments = 0
-    for experiment_id in exporter.export():
-      num_experiments += 1
-      print('Downloaded experiment %s' % experiment_id)
+    try:
+      for experiment_id in exporter.export():
+        num_experiments += 1
+        print('Downloaded experiment %s' % experiment_id)
+    except exporter_lib.GrpcTimeoutException as e:
+      print(
+        '\nUploader has failed because of a timeout error.  Please reach '
+        'out via e-mail to tensorboard.dev-support@google.com to get help '
+        'completing your export of experiment %s.' % e.experiment_id)
     print('Done. Downloaded %d experiments to: %s' % (num_experiments, outdir))
 
 
