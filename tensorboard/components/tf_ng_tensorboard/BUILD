@@ -77,6 +77,7 @@ ng_module(
     srcs = [
         "app.component.ts",
         "app.module.ts",
+        "mat_icon.module.ts",
         "reducers.ts",
     ],
     assets = [
