@@ -84,12 +84,14 @@ To use the Fairness Indicators with your own data and evaluations:
     For code snippets on how to do this, see the Fairness Indicators colab
     [here](https://github.com/tensorflow/fairness-indicators).
 
-2.  Run the `demo.py` file (download
-    [here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/))
+2.  Write Fairness Indicators Summary using `tensorboard_plugin_fairness_indicators.summary_v2` API.
 
-    -   Set `--logdir=<logdir>/testing_tensorboard`
-    -   Set `--eval_result_output_dir` flag value to the directory containing
-        your model’s evaluation result.
+    ```
+    writer = tf.summary.create_file_writer(<logdir>)
+    with writer.as_default():
+        summary_v2.FairnessIndicators(<eval_result_dir>, step=1)
+    writer.close()
+    ```
 
 3.  Run TensorBoard
 
