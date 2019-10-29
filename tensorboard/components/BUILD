@@ -80,7 +80,6 @@ tf_web_library(
         ":ng_polymer_lib_binary",
         "//tensorboard/components/tf_ng_tensorboard",
         "//tensorboard/components/tf_ng_tensorboard:material_theme",
-        "//tensorboard/components/tf_ng_tensorboard:svg_bundle",
     ],
 )
 
