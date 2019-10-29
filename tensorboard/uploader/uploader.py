@@ -56,7 +56,7 @@ _MAX_VARINT64_LENGTH_BYTES = 10
 # Deadline Exceeded errors in the RPC server.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_MAX_REQUEST_LENGTH_BYTES = 1024 * 1024
+_MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 
 logger = tb_logging.get_logger()
 
