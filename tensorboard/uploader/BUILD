@@ -1,5 +1,5 @@
 # Description:
-# Uploader for a hosted TensorBoard service
+# Uploader for TensorBoard.dev
 
 package(default_visibility = ["//tensorboard:internal"])
 
