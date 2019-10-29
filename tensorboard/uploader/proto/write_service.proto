@@ -5,7 +5,7 @@ package tensorboard.service;
 import "tensorboard/uploader/proto/scalar.proto";
 import "tensorboard/compat/proto/summary.proto";
 
-// Service for writing data to a hosted service.
+// Service for writing data to TensorBoard.dev.
 service TensorBoardWriterService {
   // Request for a new location to write TensorBoard readable events.
   rpc CreateExperiment(CreateExperimentRequest)
@@ -18,7 +18,7 @@ service TensorBoardWriterService {
   // Request that unreachable data be purged. Used only for testing;
   // disabled in production.
   rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
-  // Request additional data be stored in a hosted service.
+  // Request additional data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
