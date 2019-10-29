@@ -27,6 +27,8 @@ upper_tabs:
         path: /tensorboard/what_if_tool
       - title: "Profiling tool"
         path: /tensorboard/tensorboard_profiling_keras
+      - title: "Fairness Indicators"
+        path: /tensorboard/fairness_indicators
       - title: "TensorBoard in notebooks"
         path: /tensorboard/tensorboard_in_notebooks
       - heading: "Versions"
