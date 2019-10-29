@@ -239,7 +239,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
     def stream_experiments(request, **kwargs):
       del request  # unused
       yield export_service_pb2.StreamExperimentsResponse(
-          experiment_ids = [experiment_id])
+          experiment_ids=[experiment_id])
 
     def stream_experiment_data(request, **kwargs):
       del request  # unused
