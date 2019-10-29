@@ -92,7 +92,7 @@ def _define_flags(parser):
   parser.add_argument(
       '--endpoint',
       type=str,
-      default='localhost:10000',
+      default='api.tensorboard.dev:443',
       help='URL for the API server accepting write requests.')
 
   parser.add_argument(
