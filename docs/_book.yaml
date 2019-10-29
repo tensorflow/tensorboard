@@ -25,6 +25,8 @@ upper_tabs:
         path: /tensorboard/hyperparameter_tuning_with_hparams
       - title: "What-If tool"
         path: /tensorboard/what_if_tool
+      - title: "Fairness Indicators"
+        path: /tensorboard/fairness-indicators
       - title: "Profiling tool"
         path: /tensorboard/tensorboard_profiling_keras
       - title: "TensorBoard in notebooks"
