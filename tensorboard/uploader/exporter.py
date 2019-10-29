@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import base64
 import errno
+import grpc
 import json
 import os
 import string
@@ -39,7 +40,6 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2**63 - 1
-
 
 class TensorBoardExporter(object):
   """Exports all of the user's experiment data from TensorBoard.dev.
@@ -110,13 +110,19 @@ class TensorBoardExporter(object):
       read_time = time.time()
     for experiment_id in self._request_experiment_ids(read_time):
       filepath = _scalars_filepath(self._outdir, experiment_id)
-      with _open_excl(filepath) as outfile:
-        data = self._request_scalar_data(experiment_id, read_time)
-        for block in data:
-          json.dump(block, outfile, sort_keys=True)
-          outfile.write("\n")
-          outfile.flush()
-      yield experiment_id
+      try:
+        with _open_excl(filepath) as outfile:
+          data = self._request_scalar_data(experiment_id, read_time)
+          for block in data:
+            json.dump(block, outfile, sort_keys=True)
+            outfile.write("\n")
+            outfile.flush()
+        yield experiment_id
+      except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.CANCELLED:
+          raise GrpcTimeoutException(experiment_id)
+        else:
+          raise
 
   def _request_experiment_ids(self, read_time):
     """Yields all of the calling user's experiment IDs, as strings."""
@@ -165,6 +171,10 @@ class OutputFileExistsError(ValueError):
   # Like Python 3's `__builtins__.FileExistsError`.
   pass
 
+class GrpcTimeoutException(Exception):
+  def __init__(self, experiment_id):
+    super(GrpcTimeoutException, self).__init__(experiment_id)
+    self.experiment_id = experiment_id
 
 def _scalars_filepath(base_dir, experiment_id):
   """Gets file path in which to store scalars for the given experiment."""
