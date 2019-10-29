@@ -49,7 +49,7 @@ _MESSAGE_TOS = u"""\
 Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/terms> and Privacy Policy
 <https://policies.google.com/privacy>, and TensorBoard.dev's Terms of Service
-<https://tensorboard.dev/policy/terms>.
+<https://tensorboard.dev/policy/terms.html>.
 
 This notice will not be shown again while you are logged into the uploader.
 To log out, run `tensorboard dev auth revoke`.
