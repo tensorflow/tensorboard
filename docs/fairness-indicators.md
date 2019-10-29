@@ -36,21 +36,31 @@ pip install --upgrade tb-nightly
 If you want to test out Fairness Indicators in TensorBoard, you can download
 sample TensorFlow Model Analysis evaluation results (eval_config.json, metrics
 and plots files) and a `demo.py` utility from Google Cloud Platform,
-[here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/).
-(Checkout [this](https://cloud.google.com/storage/docs/downloading-objects)
-documentation to download files from Google Cloud Platform). This evaluation
-data is based on the
+[here](https://console.cloud.google.com/storage/browser/tensorboard_plugin_fairness_indicators/)
+using following command.
+```
+pip install gsutil
+gsutil cp -r gs://tensorboard_plugin_fairness_indicators/ .
+```
+
+Navigate to directory containing downloaded files.
+```
+cd tensorboard_plugin_fairness_indicators
+```
+
+This evaluation data is based on the
 [Civil Comments dataset](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification),
 calculated using Tensorflow Model Analysis's
 [model_eval_lib](https://github.com/tensorflow/model-analysis/blob/master/tensorflow_model_analysis/api/model_eval_lib.py)
 library. It also contains a sample TensorBoard summary data file for reference.
-See the
-[TensorBoard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md)
-for more information on summary data files.
+
 
 The `demo.py` utility writes a TensorBoard summary data file, which will be read
-by TensorBoard to render the Fairness Indicators dashboard. Flags to be used
-with the `demo.py` utility:
+by TensorBoard to render the Fairness Indicators dashboard. (See the
+[TensorBoard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md)
+for more information on summary data files.)
+
+Flags to be used with the `demo.py` utility:
 
 -   `--logdir`: Directory where TensorBoard will write the summary
 -   `--eval_result_output_dir`: Directory containing evaluation results
@@ -63,8 +73,8 @@ Run the `demo.py` utility to write the summary results in the log directory:
 
 Run TensorBoard:
 
-Note: For this demo, please run TensorBoard from the same directory where you
-have downloaded the evaluation results.
+Note: For this demo, please run TensorBoard from the same directory containing
+all the downloaded files.
 
 `tensorboard --logdir=<logdir>`
 
