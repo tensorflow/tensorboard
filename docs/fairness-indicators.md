@@ -85,7 +85,7 @@ Fairness Indicators dashboard.
 ### Demo Colab
 
 [Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb](https://github.com/tensorflow/fairness-indicators/blob/master/examples/Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb)
-demonstrates an end-to-end demo to train and evaluate a model and visualize fairness evaluation
+contains an end-to-end demo to train and evaluate a model and visualize fairness evaluation
 results in TensorBoard.
 
 ## Usage
