@@ -82,6 +82,12 @@ This will start a local instance. After the local instance is started, a link
 will be displayed to the terminal. Open the link in your browser to view the
 Fairness Indicators dashboard.
 
+### Demo Colab
+
+[Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb](https://github.com/tensorflow/fairness-indicators/blob/master/examples/Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb)
+demonstrates an end-to-end demo to train and evaluate a model and visualize fairness evaluation
+results in TensorBoard.
+
 ## Usage
 
 To use the Fairness Indicators with your own data and evaluations:
