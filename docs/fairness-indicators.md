@@ -57,9 +57,9 @@ library. It also contains a sample TensorBoard summary data file for reference.
 
 
 The `demo.py` utility writes a TensorBoard summary data file, which will be read
-by TensorBoard to render the Fairness Indicators dashboard. (See the
+by TensorBoard to render the Fairness Indicators dashboard (See the
 [TensorBoard tutorial](https://github.com/tensorflow/tensorboard/blob/master/README.md)
-for more information on summary data files.)
+for more information on summary data files).
 
 Flags to be used with the `demo.py` utility:
 
