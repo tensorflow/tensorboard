@@ -1,7 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library", "tf_svg_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -85,7 +85,6 @@ ng_module(
     ],
     deps = [
         ":config",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_icon",
         "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
         "//tensorboard/components/tf_ng_tensorboard/core",
         "//tensorboard/components/tf_ng_tensorboard/header",
@@ -109,12 +108,4 @@ tf_ng_web_test_suite(
         "//tensorboard/components/tf_ng_tensorboard/reloader:test_lib",
         "//tensorboard/components/tf_ng_tensorboard/settings:test_lib",
     ],
-)
-
-tf_svg_bundle(
-    name = "svg_bundle",
-    srcs = [
-        "@com_google_material_design_icon//:ic_settings_24px.svg"
-    ],
-    output_name = "icon_bundle.svg",
 )

@@ -12,10 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {BrowserModule, DomSanitizer} from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from '@angular/core';
-import {MatIconModule, MatIconRegistry} from '@angular/material/icon';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
@@ -28,8 +27,6 @@ import {ROOT_REDUCERS, metaReducers} from './reducers';
 import {HeaderModule} from './header/header.module';
 import {ReloaderModule} from './reloader/reloader.module';
 
-const SVG_PATH = './icon_bundle.svg';
-
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -39,7 +36,6 @@ const SVG_PATH = './icon_bundle.svg';
     HeaderModule,
     PluginsModule,
     ReloaderModule,
-    MatIconModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       metaReducers,
       runtimeChecks: {
@@ -52,15 +48,4 @@ const SVG_PATH = './icon_bundle.svg';
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {
-  constructor(
-    private domSanitizer: DomSanitizer,
-    iconRegistry: MatIconRegistry
-  ) {
-    iconRegistry.addSvgIconSet(this.getIconUrl());
-  }
-
-  private getIconUrl() {
-    return this.domSanitizer.bypassSecurityTrustResourceUrl(SVG_PATH);
-  }
-}
+export class AppModule {}
