@@ -27,6 +27,7 @@ python3 -m virtualenv ~/tensorboard_demo
 source ~/tensorboard_demo/bin/activate
 pip install --upgrade pip
 pip install tensorboard_plugin_fairness_indicators
+pip install "tensorflow_model_analysis>=0.15.4"
 pip uninstall -y tensorboard
 pip install --upgrade tb-nightly
 ```
@@ -68,15 +69,14 @@ Flags to be used with the `demo.py` utility:
 
 Run the `demo.py` utility to write the summary results in the log directory:
 
-`python demo.py --logdir=<logdir>/demo
---eval_result_output_dir=<eval_result_dir>`
+`python demo.py --logdir=. --eval_result_output_dir=.`
 
 Run TensorBoard:
 
 Note: For this demo, please run TensorBoard from the same directory containing
 all the downloaded files.
 
-`tensorboard --logdir=<logdir>`
+`tensorboard --logdir=.`
 
 This will start a local instance. After the local instance is started, a link
 will be displayed to the terminal. Open the link in your browser to view the
