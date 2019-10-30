@@ -263,10 +263,7 @@ tf_web_library(
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index",
-            "//tensorboard/components/tf_ng_tensorboard:svg_bundle",
-        ],
+        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
         "//conditions:default": [],
     }),
     path = "/",

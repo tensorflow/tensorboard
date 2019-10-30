@@ -17,6 +17,7 @@ py_library(
     srcs = ["exporter.py"],
     deps = [
         ":util",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
     ],
@@ -28,6 +29,7 @@ py_test(
     deps = [
         ":exporter_lib",
         ":test_util",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",

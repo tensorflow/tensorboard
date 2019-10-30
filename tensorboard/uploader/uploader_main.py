@@ -49,7 +49,7 @@ _MESSAGE_TOS = u"""\
 Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/terms> and Privacy Policy
 <https://policies.google.com/privacy>, and TensorBoard.dev's Terms of Service
-<https://tensorboard.dev/policy/terms.html>.
+<https://tensorboard.dev/policy/terms/>.
 
 This notice will not be shown again while you are logged into the uploader.
 To log out, run `tensorboard dev auth revoke`.
@@ -92,7 +92,7 @@ def _define_flags(parser):
   parser.add_argument(
       '--endpoint',
       type=str,
-      default='localhost:10000',
+      default='api.tensorboard.dev:443',
       help='URL for the API server accepting write requests.')
 
   parser.add_argument(
@@ -381,9 +381,15 @@ class _ExportIntent(_Intent):
       msg = 'Output directory already exists: %r' % outdir
       raise base_plugin.FlagsError(msg)
     num_experiments = 0
-    for experiment_id in exporter.export():
-      num_experiments += 1
-      print('Downloaded experiment %s' % experiment_id)
+    try:
+      for experiment_id in exporter.export():
+        num_experiments += 1
+        print('Downloaded experiment %s' % experiment_id)
+    except exporter_lib.GrpcTimeoutException as e:
+      print(
+        '\nUploader has failed because of a timeout error.  Please reach '
+        'out via e-mail to tensorboard.dev-support@google.com to get help '
+        'completing your export of experiment %s.' % e.experiment_id)
     print('Done. Downloaded %d experiments to: %s' % (num_experiments, outdir))
 
 
