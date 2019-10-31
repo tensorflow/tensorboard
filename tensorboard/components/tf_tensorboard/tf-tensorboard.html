@@ -744,7 +744,9 @@ limitations under the License.
         const pluginString = selectedDashboard || '';
         tf_storage.setString(tf_storage.TAB, pluginString);
         // Record this dashboard selection as a page view.
-        ga('set', 'page', '/' + pluginString);
+        let pathname = window.location.pathname;
+        pathname += pathname.endsWith('/') ? pluginString : '/' + pluginString;
+        ga('set', 'page', pathname);
         ga('send', 'pageview');
       },
 

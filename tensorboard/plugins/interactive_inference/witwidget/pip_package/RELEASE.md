@@ -1,5 +1,10 @@
 # What-If Tool witwidget package releases
 
+## Release 1.4.5
+
+### Notable Bug Fixes
+- #2846 - Fix an issue with setting examples in Jupyter notebooks.
+
 ## Release 1.4.4
 
 ### Notable Bug Fixes
