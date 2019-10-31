@@ -532,7 +532,8 @@ class WitConfigBuilder(object):
   def set_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
     adjust_prediction=None, adjust_example=None, adjust_attribution=None,
-    service_name='ml', service_version='v1'):
+    service_name='ml', service_version='v1', get_explanations=True,
+    batch_size=500, api_key=None):
     """Sets the model information for a model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -570,6 +571,7 @@ class WitConfigBuilder(object):
     self.store('use_aip', True)
     self.store('aip_service_name', service_name)
     self.store('aip_service_version', service_version)
+    self.store('aip_batch_size', batch_size)
     if version is not None:
       self.set_model_signature(version)
     if force_json_input:
@@ -580,12 +582,19 @@ class WitConfigBuilder(object):
       self.store('adjust_example', adjust_example)
     if adjust_attribution:
       self.store('adjust_attribution', adjust_attribution)
+    if get_explanations:
+      self.store('get_explanations', get_explanations)
+    if get_explanations:
+      self.store('get_explanations', get_explanations)
+    if api_key:
+      self.store('aip_api_key', api_key)
     return self
 
   def set_compare_ai_platform_model(
     self, project, model, version=None, force_json_input=None,
     adjust_prediction=None, adjust_example=None, adjust_attribution=None,
-    service_name='ml', service_version='v1'):
+    service_name='ml', service_version='v1', get_explanations=True,
+    batch_size=500, api_key=None):
     """Sets the model information for a second model served by AI Platform.
 
     AI Platform Prediction a Google Cloud serving platform.
@@ -623,6 +632,7 @@ class WitConfigBuilder(object):
     self.store('compare_use_aip', True)
     self.store('compare_aip_service_name', service_name)
     self.store('compare_aip_service_version', service_version)
+    self.store('compare_aip_batch_size', batch_size)
     if version is not None:
       self.set_compare_model_signature(version)
     if force_json_input:
@@ -633,6 +643,10 @@ class WitConfigBuilder(object):
       self.store('compare_adjust_example', adjust_example)
     if adjust_attribution:
       self.store('compare_adjust_attribution', adjust_attribution)
+    if get_explanations:
+      self.store('compare_get_explanations', get_explanations)
+    if api_key:
+      self.store('compare_aip_api_key', api_key)
     return self
 
   def set_target_feature(self, target):

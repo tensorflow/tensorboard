@@ -17,6 +17,7 @@ import json
 import googleapiclient.discovery
 import os
 import logging
+import multiprocessing
 import tensorflow as tf
 from IPython import display
 from google.protobuf import json_format
@@ -31,6 +32,8 @@ NUM_EXAMPLES_FOR_MUTANT_ANALYSIS = 50
 
 # Custom user agent for tracking number of calls to Cloud AI Platform.
 USER_AGENT_FOR_CAIP_TRACKING = 'WhatIfTool'
+
+POOL_SIZE = 10
 
 class WitWidgetBase(object):
   """WIT widget base class for common code between Jupyter and Colab."""
@@ -88,6 +91,7 @@ class WitWidgetBase(object):
     examples = copied_config.pop('examples')
     self.config = copied_config
     self.set_examples(examples)
+    self.running_mutant_infer = False
 
     # If using AI Platform for prediction, set the correct custom prediction
     # functions.
@@ -233,8 +237,11 @@ class WitWidgetBase(object):
       info['x_min'], info['x_max'],
       scan_examples, 10,
       info['feature_index_pattern'])
-    return inference_utils.mutant_charts_for_feature(
+    self.running_mutant_infer = True
+    charts = inference_utils.mutant_charts_for_feature(
       examples, feature_name, serving_bundles, viz_params)
+    self.running_mutant_infer = False
+    return charts
 
   def get_eligible_features_impl(self):
     """Returns information about features eligible for mutant inference."""
@@ -356,62 +363,122 @@ class WitWidgetBase(object):
 
   def _predict_aip_model(self, examples):
     return self._predict_aip_impl(
-      examples, self.config.get('inference_address'),
-      self.config.get('model_name'), self.config.get('model_signature'),
-      self.config.get('force_json_input'), self.adjust_example_fn,
-      self.adjust_prediction_fn, self.adjust_attribution_fn,
-      self.config.get('aip_service_name'), self.config.get('aip_service_version'))
+      examples,
+      self.config.get('inference_address'),
+      self.config.get('model_name'),
+      self.config.get('model_signature'),
+      self.config.get('force_json_input'),
+      self.adjust_example_fn,
+      self.adjust_prediction_fn,
+      self.adjust_attribution_fn,
+      self.config.get('aip_service_name'),
+      self.config.get('aip_service_version'),
+      self.config.get('get_explanations'),
+      self.config.get('aip_batch_size'),
+      self.config.get('aip_api_key'))
 
   def _predict_aip_compare_model(self, examples):
     return self._predict_aip_impl(
-      examples, self.config.get('inference_address_2'),
-      self.config.get('model_name_2'), self.config.get('model_signature_2'),
+      examples,
+      self.config.get('inference_address_2'),
+      self.config.get('model_name_2'),
+      self.config.get('model_signature_2'),
       self.config.get('compare_force_json_input'),
       self.compare_adjust_example_fn,
       self.compare_adjust_prediction_fn,
       self.compare_adjust_attribution_fn,
       self.config.get('compare_aip_service_name'),
-      self.config.get('compare_aip_service_version'))
+      self.config.get('compare_aip_service_version'),
+      self.config.get('compare_get_explanations'),
+      self.config.get('compare_aip_batch_size'),
+      self.config.get('compare_aip_api_key'))
 
   def _predict_aip_impl(self, examples, project, model, version, force_json,
                         adjust_example, adjust_prediction, adjust_attribution,
-                        service_name, service_version):
+                        service_name, service_version, get_explanations,
+                        batch_size, api_key):
     """Custom prediction function for running inference through AI Platform."""
 
     # Set up environment for GCP call for specified project.
     os.environ['GOOGLE_CLOUD_PROJECT'] = project
 
-    service = googleapiclient.discovery.build(
-      service_name, service_version, cache_discovery=False)
-    name = 'projects/{}/models/{}'.format(project, model)
-    if version is not None:
-      name += '/versions/{}'.format(version)
+    should_explain = get_explanations and not self.running_mutant_infer
 
-    # Properly package the examples to send for prediction.
-    if self.config.get('uses_json_input') or force_json:
-      examples_for_predict = self._json_from_tf_examples(examples)
-    else:
-      examples_for_predict = [{'b64': base64.b64encode(
-        example.SerializeToString()).decode('utf-8') }
-        for example in examples]
+    def chunks(l, n):
+      """Yield successive n-sized chunks from l."""
+      for i in range(0, len(l), n):
+          yield l[i:i + n]
+    if batch_size is None:
+      batch_size = len(examples)
+    batched_examples = list(chunks(examples, batch_size))
 
-    # If there is a user-specified input example adjustment to make, make it.
-    if adjust_example:
-      examples_for_predict = [
-        adjust_example(ex) for ex in examples_for_predict]
+    def predict(exs):
+      # Properly package the examples to send for prediction.
+      discovery_url = None
+      if api_key is not None:
+        discovery_url = (
+          'https://%s.googleapis.com/$discovery/rest?key=%s&version=%s'
+          % (service_name, api_key, 'v1'))
+        service = googleapiclient.discovery.build(
+          service_name, service_version, cache_discovery=False,
+          developerKey=api_key, discoveryServiceUrl=discovery_url)
+      else:
+        service = googleapiclient.discovery.build(
+          service_name, service_version, cache_discovery=False)
+      
+      name = 'projects/{}/models/{}'.format(project, model)
+      if version is not None:
+        name += '/versions/{}'.format(version)
 
-    # Send request, including custom user-agent for tracking.
-    request_builder = service.projects().predict(
-        name=name,
-        body={'instances': examples_for_predict}
-    )
-    user_agent = request_builder.headers.get('user-agent')
-    request_builder.headers['user-agent'] = (
-      USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
-    response = request_builder.execute()
+      if self.config.get('uses_json_input') or force_json:
+        examples_for_predict = self._json_from_tf_examples(exs)
+      else:
+        examples_for_predict = [{'b64': base64.b64encode(
+          example.SerializeToString()).decode('utf-8') }
+          for example in exs]
 
-    if 'error' in response:
-      raise RuntimeError(response['error'])
+      # If there is a user-specified input example adjustment to make, make it.
+      if adjust_example:
+        examples_for_predict = [
+          adjust_example(ex) for ex in examples_for_predict]
+
+      # Send request, including custom user-agent for tracking.
+      request_builder = service.projects().predict(
+          name=name,
+          body={'instances': examples_for_predict}
+      )
+      user_agent = request_builder.headers.get('user-agent')
+      request_builder.headers['user-agent'] = (
+        USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+      try:
+        response = request_builder.execute()
+      except Exception as e:
+        response = {'error': str(e)}
+      
+      if should_explain:
+        try:
+          request_builder = service.projects().explain(
+            name=name,
+            body={'instances': examples_for_predict}
+          )
+          request_builder.headers['user-agent'] = (
+            USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+          explain_response = request_builder.execute()
+          for i, explain in enumerate(explain_response):
+            response[i].update(explain)
+        except Exception as e:
+          print("no explain")
+          pass
+      return response
+    
+    pool = multiprocessing.pool.ThreadPool(processes=POOL_SIZE)
+    responses = pool.map(predict, batched_examples)
+    pool.close()
+    pool.join()
+
+    for response in responses:
+      if 'error' in response:
+        raise RuntimeError(response['error'])
 
     # Get the key to extract the prediction results from.
     results_key = self.config.get('predict_output_tensor')
@@ -422,30 +489,48 @@ class WitWidgetBase(object):
         results_key = 'outputs'
 
     # Parse the results from the response and return them.
-    results = []
-    attributions = (response['attributions']
-      if 'attributions' in response else None)
+    all_predictions = []
+    all_attributions = None
+    print('responses')
+    print(responses)
+    for response in responses:
+      attributions = (response['attributions']
+        if (should_explain and 'attributions' in response)
+        else None)
 
-    # If an attribution adjustment function was provided, use it to adjust
-    # the attributions.
-    if attributions is not None and adjust_attribution is not None:
-      attributions = [adjust_attribution(attr) for attr in attributions]
+      # If an attribution adjustment function was provided, use it to adjust
+      # the attributions.
+      if attributions is not None:
+        print('attributions')
+        print(attributions)
+        if all_attributions is None:
+          all_attributions =  []
+        parsed_attributions = [attr[0]['attributions'] for attr in attributions]
+        print('parsed attributions')
+        print(parsed_attributions)
+        if adjust_attribution is not None:
+          parsed_attributions = [
+            adjust_attribution(attr) for attr in parsed_attributions]
 
-    for pred in response['predictions']:
-      # If the prediction contains a key to fetch the prediction, use it.
-      if isinstance(pred, dict):
-        pred = pred[results_key]
-      # If the model is regression and the response is a list, extract the
-      # score by taking the first element.
-      if (self.config.get('model_type') == 'regression' and
-          isinstance(pred, list)):
-        pred = pred[0]
-      # If an prediction adjustment function was provided, use it to adjust
-      # the prediction.
-      if adjust_prediction:
-        pred = adjust_prediction(pred)
-      results.append(pred)
-    return {'predictions': results, 'attributions': attributions}
+        for i, attr in enumerate(parsed_attributions):
+          attr.update({'baseline_score': attributions[i][0]['baseline_score']}) 
+        all_attributions.extend(parsed_attributions)
+
+      for pred in response['predictions']:
+        # If the prediction contains a key to fetch the prediction, use it.
+        if isinstance(pred, dict):
+          pred = pred[results_key]
+        # If the model is regression and the response is a list, extract the
+        # score by taking the first element.
+        if (self.config.get('model_type') == 'regression' and
+            isinstance(pred, list)):
+          pred = pred[0]
+        # If an prediction adjustment function was provided, use it to adjust
+        # the prediction.
+        if adjust_prediction:
+          pred = adjust_prediction(pred)
+        all_predictions.append(pred)
+    return {'predictions': all_predictions, 'attributions': all_attributions}
 
   def create_selection_callback(self, examples, max_examples):
     """Returns an example selection callback for use with TFMA.
