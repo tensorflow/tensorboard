@@ -90,7 +90,13 @@ class MultiplexerDataProvider(provider.DataProvider):
             max_step = event.step
           if max_wall_time is None or max_wall_time < event.wall_time:
             max_wall_time = event.wall_time
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+
+        try:
+          summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        except KeyError:
+          logger.warn('Unable to find run: %r tag: %r', run, tag)
+          continue
+
         result_for_run[tag] = provider.ScalarTimeSeries(
             max_step=max_step,
             max_wall_time=max_wall_time,

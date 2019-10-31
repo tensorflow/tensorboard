@@ -30,7 +30,10 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
 from tensorboard.compat import tf
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 _IMGHDR_TO_MIMETYPE = {
     'bmp': 'image/bmp',
@@ -136,10 +139,15 @@ class ImagesPlugin(base_plugin.TBPlugin):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for tag in tag_to_content:
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        tensor_events = self._multiplexer.Tensors(run, tag)
+        try:
+          summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+          tensor_events = self._multiplexer.Tensors(run, tag)
+        except KeyError:
+          logger.warn('Unable to find run: %r tag: %r', run, tag)
+          continue
+
         samples = max([len(event.tensor_proto.string_val[2:])  # width, height
-                       for event in tensor_events] + [0])
+                      for event in tensor_events] + [0])
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
                                 summary_metadata.summary_description),

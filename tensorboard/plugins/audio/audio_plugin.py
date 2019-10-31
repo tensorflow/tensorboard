@@ -28,7 +28,10 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import metadata
 from tensorboard.util import tensor_util
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 _DEFAULT_MIME_TYPE = 'application/octet-stream'
 _MIME_TYPES = {
@@ -96,15 +99,19 @@ class AudioPlugin(base_plugin.TBPlugin):
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
       for tag in tag_to_content:
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        tensor_events = self._multiplexer.Tensors(run, tag)
+        try:
+          summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+          tensor_events = self._multiplexer.Tensors(run, tag)
+        except KeyError:
+          logger.warn('Unable to find run: %r tag: %r', run, tag)
+          continue
+
         samples = max([self._number_of_samples(event.tensor_proto)
                        for event in tensor_events] + [0])
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
                                 summary_metadata.summary_description),
                             'samples': samples}
-
     return result
 
   def _number_of_samples(self, tensor_proto):

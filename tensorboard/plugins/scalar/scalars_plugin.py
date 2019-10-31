@@ -38,7 +38,10 @@ from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 class OutputFormat(object):
   """An enum used to list the valid output formats for API calls."""
@@ -144,7 +147,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     for (run, tag_to_content) in six.iteritems(mapping):
       for (tag, content) in six.iteritems(tag_to_content):
         content = metadata.parse_plugin_metadata(content)
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        try:
+          summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        except KeyError:
+          logger.warn('Unable to find run: %r tag: %r', run, tag)
+          continue
+
         result[run][tag] = {'displayName': summary_metadata.display_name,
                             'description': plugin_util.markdown_to_safe_html(
                                 summary_metadata.summary_description)}
