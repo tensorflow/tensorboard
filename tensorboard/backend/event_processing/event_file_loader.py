@@ -91,8 +91,14 @@ class EventFileLoader(RawEventFileLoader):
     Yields:
       All events in the file that have not been yielded yet.
     """
-    for record in super(EventFileLoader, self).Load():
-      yield event_pb2.Event.FromString(record)
+
+    try:
+      for record in super(EventFileLoader, self).Load():
+        yield event_pb2.Event.FromString(record)
+    except tf.errors.OpError:
+      if not tf.io.gfile.exists(self._file_path):
+        raise FileDeletedError(
+            'File %s has been permanently deleted' % self._file_path)
 
 
 class TimestampedEventFileLoader(EventFileLoader):
@@ -110,3 +116,13 @@ class TimestampedEventFileLoader(EventFileLoader):
     """
     for event in super(TimestampedEventFileLoader, self).Load():
       yield (event.wall_time, event)
+
+
+class FileDeletedError(Exception):
+  """Thrown by Load() when the file is *permanently* gone.
+
+  We distinguish this from temporary errors so that other code can decide to
+  drop all of our data only when a file has been intentionally deleted,
+  as opposed to due to transient filesystem errors.
+  """
+  pass

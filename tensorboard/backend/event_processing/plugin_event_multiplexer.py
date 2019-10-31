@@ -24,6 +24,7 @@ import threading
 import six
 from six.moves import queue, xrange  # pylint: disable=redefined-builtin
 
+from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import io_wrapper
@@ -155,7 +156,14 @@ class EventMultiplexer(object):
         self._paths[name] = path
     if accumulator:
       if self._reload_called:
-        accumulator.Reload()
+
+        try:
+          accumulator.Reload()
+        except (event_file_loader.FileDeletedError, directory_watcher.DirectoryDeletedError) as e:
+          logger.warn('Unable to reload accumulator %r: %s', name, e)
+          with self._accumulators_mutex:
+            del self._accumulators[name]
+
     return self
 
   def AddRunsFromDirectory(self, path, name=None):
@@ -190,7 +198,9 @@ class EventMultiplexer(object):
       logger.info('Adding run from directory %s', subdir)
       rpath = os.path.relpath(subdir, path)
       subname = os.path.join(name, rpath) if name else rpath
+
       self.AddRun(subdir, name=subname)
+
     logger.info('Done with AddRunsFromDirectory: %s', path)
     return self
 
@@ -224,7 +234,8 @@ class EventMultiplexer(object):
           accumulator.Reload()
         except (OSError, IOError) as e:
           logger.error('Unable to reload accumulator %r: %s', name, e)
-        except directory_watcher.DirectoryDeletedError:
+        except (event_file_loader.FileDeletedError, directory_watcher.DirectoryDeletedError) as e:
+          logger.warn('Unable to reload accumulator %r: %s', name, e)
           with names_to_delete_mutex:
             names_to_delete.add(name)
         finally:
