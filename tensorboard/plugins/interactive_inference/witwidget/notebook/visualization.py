@@ -562,6 +562,13 @@ class WitConfigBuilder(object):
       to 'ml'.
       service_version: Optional. Version of the AI Platform Prediction service. Defaults
       to 'v1'.
+      get_explanations: Optional. If a model is deployed with explanations,
+      then this specifies if explainations will be calculated and displayed.
+      Defaults to True.
+      batch_size: Optional. Sets the individual batch size to send for
+      prediction. Defaults to 500.
+      api_key. Optional. A generated API key to send with the requests to AI
+      Platform.
 
     Returns:
       self, in order to enabled method chaining.
@@ -623,6 +630,13 @@ class WitConfigBuilder(object):
       to 'ml'.
       service_version: Optional. Version of the AI Platform Prediction service. Defaults
       to 'v1'.
+      get_explanations: Optional. If a model is deployed with explanations,
+      then this specifies if explainations will be calculated and displayed.
+      Defaults to True.
+      batch_size: Optional. Sets the individual batch size to send for
+      prediction. Defaults to 500.
+      api_key. Optional. A generated API key to send with the requests to AI
+      Platform.
 
     Returns:
       self, in order to enabled method chaining.
