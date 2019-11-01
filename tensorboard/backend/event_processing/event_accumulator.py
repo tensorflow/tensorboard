@@ -294,7 +294,7 @@ class EventAccumulator(object):
       KeyError: if the plugin name is not found.
 
     Returns:
-      A dict mapping tag names to bytestrings of plugin-specific content-- by 
+      A dict mapping tag names to bytestrings of plugin-specific content-- by
       convention, in the form of binary serialized protos.
     """
     if plugin_name not in self._plugin_to_tag_to_content:
