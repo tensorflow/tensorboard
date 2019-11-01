@@ -53,6 +53,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard:version",
         "//tensorboard/util:tb_logging",
     ],
 )
@@ -70,7 +71,9 @@ py_test(
         "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:test",
+        "//tensorboard:version",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 

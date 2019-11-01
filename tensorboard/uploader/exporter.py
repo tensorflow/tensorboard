@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Downloads experiment data from a hosted Tensorboard service."""
+"""Downloads experiment data from TensorBoard.dev."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import base64
 import errno
+import grpc
 import json
 import os
 import string
@@ -27,6 +28,7 @@ import time
 
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
+from tensorboard.util import grpc_util
 
 # Characters that are assumed to be safe in filenames. Note that the
 # server's experiment IDs are base64 encodings of 16-byte blobs, so they
@@ -39,9 +41,8 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2**63 - 1
 
-
 class TensorBoardExporter(object):
-  """Exports all of the user's experiment data from a hosted service.
+  """Exports all of the user's experiment data from TensorBoard.dev.
 
   Data is exported into a directory, with one file per experiment. Each
   experiment file is a sequence of time series, represented as a stream
@@ -84,7 +85,8 @@ class TensorBoardExporter(object):
     self._api = reader_service_client
     self._outdir = output_directory
     parent_dir = os.path.dirname(self._outdir)
-    _mkdir_p(parent_dir)
+    if parent_dir:
+      _mkdir_p(parent_dir)
     try:
       os.mkdir(self._outdir)
     except OSError as e:
@@ -108,19 +110,26 @@ class TensorBoardExporter(object):
       read_time = time.time()
     for experiment_id in self._request_experiment_ids(read_time):
       filepath = _scalars_filepath(self._outdir, experiment_id)
-      with _open_excl(filepath) as outfile:
-        data = self._request_scalar_data(experiment_id, read_time)
-        for block in data:
-          json.dump(block, outfile, sort_keys=True)
-          outfile.write("\n")
-          outfile.flush()
-      yield experiment_id
+      try:
+        with _open_excl(filepath) as outfile:
+          data = self._request_scalar_data(experiment_id, read_time)
+          for block in data:
+            json.dump(block, outfile, sort_keys=True)
+            outfile.write("\n")
+            outfile.flush()
+        yield experiment_id
+      except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.CANCELLED:
+          raise GrpcTimeoutException(experiment_id)
+        else:
+          raise
 
   def _request_experiment_ids(self, read_time):
     """Yields all of the calling user's experiment IDs, as strings."""
     request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
     util.set_timestamp(request.read_timestamp, read_time)
-    stream = self._api.StreamExperiments(request)
+    stream = self._api.StreamExperiments(
+        request, metadata=grpc_util.version_metadata())
     for response in stream:
       for experiment_id in response.experiment_ids:
         yield experiment_id
@@ -136,7 +145,9 @@ class TensorBoardExporter(object):
     # IDs). Any non-transient errors would be internal, and we have no
     # way to efficiently resume from transient errors because the server
     # does not support pagination.
-    for response in self._api.StreamExperimentData(request):
+    stream = self._api.StreamExperimentData(
+        request, metadata=grpc_util.version_metadata())
+    for response in stream:
       metadata = base64.b64encode(
           response.tag_metadata.SerializeToString()).decode("ascii")
       wall_times = [t.ToNanoseconds() / 1e9 for t in response.points.wall_times]
@@ -160,6 +171,10 @@ class OutputFileExistsError(ValueError):
   # Like Python 3's `__builtins__.FileExistsError`.
   pass
 
+class GrpcTimeoutException(Exception):
+  def __init__(self, experiment_id):
+    super(GrpcTimeoutException, self).__init__(experiment_id)
+    self.experiment_id = experiment_id
 
 def _scalars_filepath(base_dir, experiment_id):
   """Gets file path in which to store scalars for the given experiment."""
