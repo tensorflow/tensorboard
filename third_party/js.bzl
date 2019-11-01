@@ -529,3 +529,15 @@ def tensorboard_js_workspace():
           ],
       },
   )
+
+  filegroup_external(
+      name = "com_google_material_design_icon",
+      licenses = ["notice"],  # Apache 2.0
+      sha256_urls = {
+          "d0872fb94037822164c8cea43a2ebeafdd1b664ff0fdc9387f0e1e1a7ee74628": [
+              "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
+              "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg"
+          ],
+      },
+  )
+
