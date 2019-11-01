@@ -24,7 +24,7 @@ import {coreLoaded} from './core/core.actions';
   template: `
     <app-header></app-header>
     <plugins class="plugins"></plugins>
-    <reloader-interop></reloader-interop>
+    <reloader></reloader>
     <storage-interop></storage-interop>
   `,
   styleUrls: ['./app.component.css'],

@@ -44,7 +44,7 @@ export class StorageComponent {
         distinctUntilChanged()
       )
       .subscribe((pageSize) => {
-        this.service.setPaginationLimit(pageSize);
+        this.service.notifyPaginationLimitChanged(pageSize);
       });
   }
 

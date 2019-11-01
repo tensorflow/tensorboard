@@ -19,18 +19,18 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {ReloaderComponent} from './reloader.component';
 
-import {reload} from '../../core/core.actions';
+import {reload} from '../core/core.actions';
 import {
   State,
   CoreState,
   getReloadEnabled,
   getReloadPeriodInMs,
-} from '../../core/core.reducers';
+} from '../core/core.reducers';
 import {
   createPluginMetadata,
   createState,
   createCoreState,
-} from '../../core/testing';
+} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 

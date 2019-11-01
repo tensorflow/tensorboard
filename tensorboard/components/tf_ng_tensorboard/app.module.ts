@@ -25,8 +25,8 @@ import {PluginsModule} from './plugins/plugins.module';
 import {ROOT_REDUCERS, metaReducers} from './reducers';
 
 import {HeaderModule} from './header/header.module';
-import {ReloaderModule} from './polymer_interop/reloader/reloader.module';
 import {StorageModule} from './polymer_interop/storage/storage.module';
+import {ReloaderModule} from './reloader/reloader.module';
 
 @NgModule({
   declarations: [AppComponent],

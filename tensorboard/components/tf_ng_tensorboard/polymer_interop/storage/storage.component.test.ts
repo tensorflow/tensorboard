@@ -53,7 +53,10 @@ describe('storage.component', () => {
   });
 
   it('sets pagination limit via service when pageSize changes', () => {
-    const setPaginationSpy = spyOn(polymerInterop, 'setPaginationLimit');
+    const setPaginationSpy = spyOn(
+      polymerInterop,
+      'notifyPaginationLimitChanged'
+    );
     const fixture = TestBed.createComponent(StorageComponent);
     fixture.detectChanges();
 

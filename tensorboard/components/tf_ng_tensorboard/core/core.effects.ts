@@ -55,8 +55,8 @@ export class CoreEffects {
       mergeMap(() => {
         return zip(
           this.fetchPluginsListing(),
-          this.interop.fetchRuns(),
-          this.interop.fetchEnvironments()
+          this.fetchRuns(),
+          this.fetchEnvironments()
         ).pipe(
           map(([plugins]) => {
             return pluginsListingLoaded({plugins});
@@ -73,7 +73,15 @@ export class CoreEffects {
     private http: HttpClient
   ) {}
 
-  fetchPluginsListing() {
+  private fetchPluginsListing() {
     return this.http.get<PluginsListing>('data/plugins_listing');
+  }
+
+  private fetchRuns() {
+    return this.interop.fetchRuns();
+  }
+
+  private fetchEnvironments() {
+    return this.interop.fetchEnvironments();
   }
 }

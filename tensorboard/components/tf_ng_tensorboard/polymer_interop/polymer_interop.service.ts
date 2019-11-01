@@ -34,11 +34,7 @@ export class PolymerInteropService {
     return from(this.tfBackend.environmentStore.refresh());
   }
 
-  getPaginationLimit(): number {
-    return this.tfPaginatedViewStorage.getLimit();
-  }
-
-  setPaginationLimit(limit: number) {
+  notifyPaginationLimitChanged(limit: number) {
     return this.tfPaginatedViewStorage.setLimit(limit);
   }
 }

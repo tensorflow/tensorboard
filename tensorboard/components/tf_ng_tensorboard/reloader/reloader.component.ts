@@ -21,13 +21,13 @@ import {
   State,
   getReloadEnabled,
   getReloadPeriodInMs,
-} from '../../core/core.reducers';
-import {reload} from '../../core/core.actions';
+} from '../core/core.reducers';
+import {reload} from '../core/core.actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'reloader-interop',
+  selector: 'reloader',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
