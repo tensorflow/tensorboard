@@ -405,15 +405,8 @@ class WitWidgetBase(object):
 
     should_explain = get_explanations and not self.running_mutant_infer
 
-    def chunks(l, n):
-      """Yield successive n-sized chunks from l."""
-      for i in range(0, len(l), n):
-          yield l[i:i + n]
-    if batch_size is None:
-      batch_size = len(examples)
-    batched_examples = list(chunks(examples, batch_size))
-
     def predict(exs):
+      """Run prediction on a list of examples and return results."""
       # Properly package the examples to send for prediction.
       discovery_url = None
       if api_key is not None:
@@ -460,6 +453,7 @@ class WitWidgetBase(object):
       except Exception as e:
         response = {'error': str(e)}
       
+      # Get the attributions and baseline score if explaination is enabled.
       if should_explain:
         try:
           request_builder = service.projects().explain(
@@ -483,6 +477,16 @@ class WitWidgetBase(object):
           pass
       return response
     
+    def chunks(l, n):
+      """Yield successive n-sized chunks from l."""
+      for i in range(0, len(l), n):
+          yield l[i:i + n]
+    
+    # Run prediction in batches in threads.
+    if batch_size is None:
+      batch_size = len(examples)
+    batched_examples = list(chunks(examples, batch_size))
+
     pool = multiprocessing.pool.ThreadPool(processes=POOL_SIZE)
     responses = pool.map(predict, batched_examples)
     pool.close()
@@ -500,7 +504,7 @@ class WitWidgetBase(object):
       else:
         results_key = 'outputs'
 
-    # Parse the results from the response and return them.
+    # Parse the results from the responses and return them.
     all_predictions = []
     all_baseline_scores = []
     all_attributions = []
