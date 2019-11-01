@@ -22,6 +22,7 @@ import tensorflow as tf
 from IPython import display
 from google.protobuf import json_format
 from numbers import Number
+from oauth2client.client import GoogleCredentials
 from six import ensure_str
 from six import integer_types
 from tensorboard.plugins.interactive_inference.utils import inference_utils
@@ -417,11 +418,13 @@ class WitWidgetBase(object):
       discovery_url = None
       if api_key is not None:
         discovery_url = (
-          'https://%s.googleapis.com/$discovery/rest?key=%s&version=%s'
+          'https://%s.googleapis.com/$discovery/rest?labels=GOOGLE_INTERNAL&key=%s&version=%s'
           % (service_name, api_key, 'v1'))
+        credentials = GoogleCredentials.get_application_default()
         service = googleapiclient.discovery.build(
           service_name, service_version, cache_discovery=False,
-          developerKey=api_key, discoveryServiceUrl=discovery_url)
+          developerKey=api_key, discoveryServiceUrl=discovery_url,
+          credentials=credentials)
       else:
         service = googleapiclient.discovery.build(
           service_name, service_version, cache_discovery=False)
@@ -464,10 +467,13 @@ class WitWidgetBase(object):
           request_builder.headers['user-agent'] = (
             USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
           explain_response = request_builder.execute()
-          for i, explain in enumerate(explain_response):
-            response[i].update(explain)
+          explanations = [explain['attributions_by_label'][0]['attributions'] for explain in explain_response['explanations']]
+          for i, explain in enumerate(explanations):
+            explain.update({'baseline_score': explain_response['explanations'][i]['attributions_by_label'][0]['baseline_score']})
+          response.update({'attributions': explanations})
         except Exception as e:
           print("no explain")
+          print(str(e))
           pass
       return response
     
@@ -491,8 +497,6 @@ class WitWidgetBase(object):
     # Parse the results from the response and return them.
     all_predictions = []
     all_attributions = None
-    print('responses')
-    print(responses)
     for response in responses:
       attributions = (response['attributions']
         if (should_explain and 'attributions' in response)
@@ -501,20 +505,12 @@ class WitWidgetBase(object):
       # If an attribution adjustment function was provided, use it to adjust
       # the attributions.
       if attributions is not None:
-        print('attributions')
-        print(attributions)
         if all_attributions is None:
           all_attributions =  []
-        parsed_attributions = [attr[0]['attributions'] for attr in attributions]
-        print('parsed attributions')
-        print(parsed_attributions)
         if adjust_attribution is not None:
-          parsed_attributions = [
-            adjust_attribution(attr) for attr in parsed_attributions]
-
-        for i, attr in enumerate(parsed_attributions):
-          attr.update({'baseline_score': attributions[i][0]['baseline_score']}) 
-        all_attributions.extend(parsed_attributions)
+          attributions = [
+            adjust_attribution(attr) for attr in attributions]
+        all_attributions.extend(attributions)
 
       for pred in response['predictions']:
         # If the prediction contains a key to fetch the prediction, use it.
