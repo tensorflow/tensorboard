@@ -418,7 +418,8 @@ class WitWidgetBase(object):
       discovery_url = None
       if api_key is not None:
         discovery_url = (
-          'https://%s.googleapis.com/$discovery/rest?labels=GOOGLE_INTERNAL&key=%s&version=%s'
+          ('https://%s.googleapis.com/$discovery/rest'
+           '?labels=GOOGLE_INTERNAL&key=%s&version=%s')
           % (service_name, api_key, 'v1'))
         credentials = GoogleCredentials.get_application_default()
         service = googleapiclient.discovery.build(
@@ -452,7 +453,8 @@ class WitWidgetBase(object):
       )
       user_agent = request_builder.headers.get('user-agent')
       request_builder.headers['user-agent'] = (
-        USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+        USER_AGENT_FOR_CAIP_TRACKING +
+        ('-' + user_agent if user_agent else ''))
       try:
         response = request_builder.execute()
       except Exception as e:
@@ -465,15 +467,19 @@ class WitWidgetBase(object):
             body={'instances': examples_for_predict}
           )
           request_builder.headers['user-agent'] = (
-            USER_AGENT_FOR_CAIP_TRACKING + ('-' + user_agent if user_agent else ''))
+            USER_AGENT_FOR_CAIP_TRACKING +
+            ('-' + user_agent if user_agent else ''))
           explain_response = request_builder.execute()
-          explanations = [explain['attributions_by_label'][0]['attributions'] for explain in explain_response['explanations']]
+          explanations = ([explain['attributions_by_label'][0]['attributions']
+              for explain in explain_response['explanations']])
+          baseline_scores = []
           for i, explain in enumerate(explanations):
-            explain.update({'baseline_score': explain_response['explanations'][i]['attributions_by_label'][0]['baseline_score']})
-          response.update({'attributions': explanations})
+            baseline_scores.append(
+              explain_response['explanations'][i][
+                'attributions_by_label'][0]['baseline_score'])
+          response.update(
+            {'explanations': explanations, 'baseline_scores': baseline_scores})
         except Exception as e:
-          print("no explain")
-          print(str(e))
           pass
       return response
     
@@ -496,21 +502,21 @@ class WitWidgetBase(object):
 
     # Parse the results from the response and return them.
     all_predictions = []
-    all_attributions = None
-    for response in responses:
-      attributions = (response['attributions']
-        if (should_explain and 'attributions' in response)
-        else None)
+    all_baseline_scores = []
+    all_attributions = []
 
-      # If an attribution adjustment function was provided, use it to adjust
-      # the attributions.
-      if attributions is not None:
-        if all_attributions is None:
-          all_attributions =  []
+    for response in responses:
+      if 'explanations' in response:
+        # If an attribution adjustment function was provided, use it to adjust
+        # the attributions.
         if adjust_attribution is not None:
-          attributions = [
-            adjust_attribution(attr) for attr in attributions]
-        all_attributions.extend(attributions)
+          all_attributions.extend([
+            adjust_attribution(attr) for attr in response['explanations']])
+        else:
+          all_attributions.extend(response['explanations'])
+
+      if 'baseline_scores' in response:
+        all_baseline_scores.extend(response['baseline_scores'])
 
       for pred in response['predictions']:
         # If the prediction contains a key to fetch the prediction, use it.
@@ -526,7 +532,13 @@ class WitWidgetBase(object):
         if adjust_prediction:
           pred = adjust_prediction(pred)
         all_predictions.append(pred)
-    return {'predictions': all_predictions, 'attributions': all_attributions}
+
+    results = {'predictions': all_predictions}
+    if all_attributions:
+      results.update({'attributions': all_attributions})
+    if all_baseline_scores:
+      results.update({'baseline_score': all_baseline_scores})
+    return results
 
   def create_selection_callback(self, examples, max_examples):
     """Returns an example selection callback for use with TFMA.
