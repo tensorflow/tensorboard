@@ -35,15 +35,9 @@ from tensorboard.uploader.proto import server_info_pb2
 class FetchServerInfoTest(tb_test.TestCase):
   """Tests for `fetch_server_info`."""
 
-  def _localhost(self):
-    if socket.has_ipv6:
-      return (socket.AF_INET6, "::1")
-    else:
-      return (socket.AF_INET, "127.0.0.1")
-
   def _start_server(self, app):
     """Starts a server and returns its origin ("http://localhost:PORT")."""
-    (_, localhost) = self._localhost()
+    (_, localhost) = _localhost()
     server_class = _Ipv6CompatibleWsgiServer
     server = simple_server.make_server(localhost, 0, app, server_class)
     executor = futures.ThreadPoolExecutor()
@@ -79,7 +73,7 @@ class FetchServerInfoTest(tb_test.TestCase):
     self.assertEqual(result, expected_result)
 
   def test_econnrefused(self):
-    (family, localhost) = self._localhost()
+    (family, localhost) = _localhost()
     s = socket.socket(family)
     s.bind((localhost, 0))
     self.addCleanup(s.close)
@@ -141,9 +135,18 @@ class CreateServerInfoTest(tb_test.TestCase):
     self.assertEqual(actual_url, expected_url)
 
 
+def _localhost():
+  """Gets family and nodename for a loopback address."""
+  s = socket
+  infos = s.getaddrinfo(None, 0, s.AF_UNSPEC, s.SOCK_STREAM, 0, s.AI_ADDRCONFIG)
+  print(infos)  # for debugging
+  (family, _, _, _, address) = infos[0]
+  nodename = address[0]
+  return (family, nodename)
+
+
 class _Ipv6CompatibleWsgiServer(simple_server.WSGIServer):
-  if socket.has_ipv6:
-    address_family = socket.AF_INET6
+  address_family = _localhost()[0]
 
 
 if __name__ == "__main__":
