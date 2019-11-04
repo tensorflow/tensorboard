@@ -11,5 +11,8 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "types": []
-  }
+  },
+  "exclude": [
+    "bazel-*"
+  ]
 }
