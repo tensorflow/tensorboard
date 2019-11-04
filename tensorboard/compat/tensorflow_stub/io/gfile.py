@@ -454,9 +454,6 @@ class GFile(object):
         self.buff_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
-    # def size(self):
-    #  return self.fs.stat(self.filename).length
-
     def read(self, n=None):
         """Reads contents of file to a string.
 
@@ -557,23 +554,6 @@ class GFile(object):
 
     def next(self):
         return self.__next__()
-
-    # def readline(self):
-    #   try:
-    #     return self.__next__()
-    #   except StopIteration:
-    #     return None
-
-    # def readlines(self):
-    #   """Returns all lines from the file in a list."""
-    #   # self._preread_check()
-    #   lines = []
-    #   while True:
-    #     s = self.readline()
-    #     if not s:
-    #       break
-    #     lines.append(s)
-    #   return lines
 
     def flush(self):
         if self.closed:
