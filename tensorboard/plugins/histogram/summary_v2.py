@@ -80,6 +80,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
       return tf.summary.write(
           tag=tag, tensor=tensor, step=step, metadata=histogram_metadata)
 
+  # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
+  # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
   if isinstance(tf.distribute.get_strategy(),
                 tf.distribute.experimental.TPUStrategy):
     return tf.compat.v1.tpu.outside_compilation(
