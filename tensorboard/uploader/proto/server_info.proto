@@ -50,8 +50,8 @@ message ApiServer {
 message ExperimentUrlFormat {
   // Template string for experiment URLs. All occurrences of the value of the
   // `placeholder` field in this template string should be replaced with an
-  // experiment ID. For example, if `placeholder` is "{{EXPERIMENT_ID}}"`, then
-  // `template` might be "https://tensorboard.dev/experiment/{{EXPERIMENT_ID}}".
+  // experiment ID. For example, if `placeholder` is "{{EXPERIMENT_ID}}", then
+  // `template` may be "https://tensorboard.dev/experiment/{{EXPERIMENT_ID}}/".
   string template = 1;
   // Placeholder string that should be replaced with an actual experiment ID.
   // (See docs for `template` field.)

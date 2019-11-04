@@ -139,7 +139,6 @@ def _localhost():
   """Gets family and nodename for a loopback address."""
   s = socket
   infos = s.getaddrinfo(None, 0, s.AF_UNSPEC, s.SOCK_STREAM, 0, s.AI_ADDRCONFIG)
-  print(infos)  # for debugging
   (family, _, _, _, address) = infos[0]
   nodename = address[0]
   return (family, nodename)
