@@ -86,7 +86,10 @@ def get_plugins():
 
   This list can be passed to the `tensorboard.program.TensorBoard` API.
 
-  :rtype: list[Union[base_plugin.TBLoader, Type[base_plugin.TBPlugin]]]
+  Returns:
+    The list of default plugins.
+
+  :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
   """
 
   return _PLUGINS[:]
@@ -101,7 +104,9 @@ def get_dynamic_plugins():
   This list can be passed to the `tensorboard.program.TensorBoard` API.
 
   Returns:
-    list of base_plugin.TBLoader or base_plugin.TBPlugin.
+    The list of dynamic plugins.
+
+  :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
 
   [1]: https://packaging.python.org/specifications/entry-points/
   """
