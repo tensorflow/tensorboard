@@ -422,7 +422,7 @@ class WitWidgetBase(object):
       else:
         service = googleapiclient.discovery.build(
           service_name, service_version, cache_discovery=False)
-      
+
       name = 'projects/{}/models/{}'.format(project, model)
       if version is not None:
         name += '/versions/{}'.format(version)
@@ -452,7 +452,7 @@ class WitWidgetBase(object):
         response = request_builder.execute()
       except Exception as e:
         response = {'error': str(e)}
-      
+
       # Get the attributions and baseline score if explaination is enabled.
       if should_explain:
         try:
@@ -476,12 +476,12 @@ class WitWidgetBase(object):
         except Exception as e:
           pass
       return response
-    
+
     def chunks(l, n):
       """Yield successive n-sized chunks from l."""
       for i in range(0, len(l), n):
           yield l[i:i + n]
-    
+
     # Run prediction in batches in threads.
     if batch_size is None:
       batch_size = len(examples)
