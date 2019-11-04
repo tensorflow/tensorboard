@@ -82,6 +82,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
 
   # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
   # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
+  # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this special
+  # handling once dynamic shapes are supported on TPU's.
   if isinstance(tf.distribute.get_strategy(),
                 tf.distribute.experimental.TPUStrategy):
     return tf.compat.v1.tpu.outside_compilation(
