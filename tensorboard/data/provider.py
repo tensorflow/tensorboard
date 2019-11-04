@@ -479,17 +479,17 @@ class BlobReference(object):
       URLs should not expose secret information.
     blob_key: A string containing an key uniquely identifying a blob, which
       may be dereferenced via `provider.read_blob(blob_key)`.
-      
+
       These keys must be constructed such that they can be included directly in
       a URL, with no further encoding. Concretely, this means that they consist
-      exclusively of "unreserved characters" per RFC 3986, namely 
+      exclusively of "unreserved characters" per RFC 3986, namely
       [a-zA-Z0-9._~-]. These keys are case-sensitive; it may be wise for
       implementations to normalize case to reduce confusion. The empty string
       is not a valid key.
 
       As with URLs above, blob keys must not contain information that should be
       kept secret. Privacy-sensitive applications should use random keys
-      (e.g. UUIDs), or encrypt keys containing secret fields. 
+      (e.g. UUIDs), or encrypt keys containing secret fields.
   """
 
   __slots__ = ("_url", "_blob_key")
@@ -501,7 +501,7 @@ class BlobReference(object):
   @property
   def url(self):
     """Provide the direct-access URL for this blob, if available.
-    
+
     Note that this method is *not* expected to construct a URL to the
     data-loading endpoint provided by TensorBoard. If this method returns
     None, then the caller should proceed to use `blob_key()` to build the URL,
