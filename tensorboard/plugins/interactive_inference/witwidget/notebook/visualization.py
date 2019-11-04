@@ -591,8 +591,6 @@ class WitConfigBuilder(object):
       self.store('adjust_attribution', adjust_attribution)
     if get_explanations:
       self.store('get_explanations', get_explanations)
-    if get_explanations:
-      self.store('get_explanations', get_explanations)
     if api_key:
       self.store('aip_api_key', api_key)
     return self
