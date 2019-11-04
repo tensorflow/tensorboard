@@ -1795,6 +1795,7 @@ limitations under the License.
                             </tf-inference-viewer>
                           </template>
                         </div>
+                        <div id="inferenceEvolution"></div>
                       </iron-collapse>
                     </div>
                   </div>
@@ -3684,6 +3685,7 @@ limitations under the License.
           /** @type {?Object} */
           selectedExampleAndInference: {
             type: Object,
+            observer: 'plotInferenceEvolution',
           },
           // The closest counterfatual example to the currently selected item,
           // if one is found through the counterfactual button.
@@ -6347,6 +6349,7 @@ limitations under the License.
           this.loadingBarHidden_ = true;
           this.updateInferences_(true);
           requestAnimationFrame(() => this.updateInferenceStats_(true));
+          this.plotInferenceEvolution();
         },
 
         refreshInferencesNoRegen_: function() {
@@ -7348,6 +7351,45 @@ limitations under the License.
           }
         },
 
+        plotInferenceEvolution: function() {
+          const container = Polymer.dom(this.$$('#inferenceEvolution'));
+          while (container.firstChild) {
+            container.removeChild(container.firstChild);
+          }
+          const example = this.selectedExampleAndInference;
+          if (
+            !example ||
+            !example.inferences ||
+            example.inferences.length < 2
+          ) {
+            return;
+          }
+          const inferences = example.inferences;
+          const data = [];
+          for (let i = 0; i < inferences.length; i++) {
+            const inference = inferences[i];
+            for (let modelInd = 0; modelInd < inference.length; modelInd++) {
+              const modelInference = inference[modelInd];
+              for (
+                let labelInd = 0;
+                labelInd < modelInference.length;
+                labelInd++
+              ) {
+                const value = modelInference[labelInd].score;
+                if (!data[modelInd]) {
+                  data[modelInd] = {};
+                }
+                if (!data[modelInd][labelInd]) {
+                  data[modelInd][labelInd] = [{}];
+                }
+                data[modelInd][labelInd].push({step: i, scalar: value});
+              }
+            }
+          }
+          const chart = this.makeLineChart('Run', data, true);
+          container.appendChild(chart);
+        },
+
         getExamples_: function() {
           var url = this.makeUrl_('/data/plugin/whatif/examples_from_path', {
             examples_path: this.examplesPath,
@@ -7563,7 +7605,7 @@ limitations under the License.
           }
 
           if (chartType == 'numeric') {
-            chart = this.makeLineChart(featureName, dataToChart);
+            chart = this.makeLineChart(featureName, dataToChart, false);
           } else if (chartType == 'categorical') {
             chart = this.makeBarChart(featureName, dataToChart);
           } else {
@@ -7753,7 +7795,7 @@ limitations under the License.
           }
         },
 
-        makeLineChart: function(featureName, data) {
+        makeLineChart: function(featureName, data, isInferEvolution) {
           // numerical data:
           // {"0" (model id):
           //     {"1" (label): [{"step": 19.0, "scalar": 0.09157766401767},
@@ -7792,7 +7834,7 @@ limitations under the License.
               },
             },
             {
-              title: 'Feature value',
+              title: featureName,
               evaluate: (d) => formatValueOrNaN(d.datum.step),
             },
             {
@@ -7814,6 +7856,7 @@ limitations under the License.
             });
           }
           chart.tooltipColumns = toolTipColumns;
+          chart.tooltipPosition = 'auto';
 
           const allSeries = [];
           let colorIndex = 0;
@@ -7851,7 +7894,10 @@ limitations under the License.
                 colorScale.push(this.pdPlotColors[colorIndex].brighter());
               }
             }
-            if (this.isBinaryClassification_(this.modelType, this.multiClass)) {
+            if (
+              this.isBinaryClassification_(this.modelType, this.multiClass) &&
+              !isInferEvolution
+            ) {
               const label = this.formatChartKey(
                 'classification threshold',
                 modelInd,
