@@ -7365,13 +7365,17 @@ limitations under the License.
             return;
           }
           const inferences = example.inferences;
+          const isBinary = this.isBinaryClassification_(
+            this.modelType,
+            this.multiClass
+          );
           const data = [];
           for (let i = 0; i < inferences.length; i++) {
             const inference = inferences[i];
             for (let modelInd = 0; modelInd < inference.length; modelInd++) {
               const modelInference = inference[modelInd];
               for (
-                let labelInd = 0;
+                let labelInd = isBinary ? 1 : 0;
                 labelInd < modelInference.length;
                 labelInd++
               ) {
