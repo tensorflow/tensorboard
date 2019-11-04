@@ -1,5 +1,5 @@
 # Description:
-# Uploader for a hosted TensorBoard service
+# Uploader for TensorBoard.dev
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -17,7 +17,9 @@ py_library(
     srcs = ["exporter.py"],
     deps = [
         ":util",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
+        "//tensorboard/util:grpc_util",
     ],
 )
 
@@ -27,11 +29,13 @@ py_test(
     deps = [
         ":exporter_lib",
         ":test_util",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
+        "//tensorboard/util:grpc_util",
         "@org_pythonhosted_mock",
     ],
 )

@@ -23,6 +23,7 @@ import time
 
 import grpc
 
+from tensorboard import version
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -45,6 +46,9 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset([
     grpc.StatusCode.RESOURCE_EXHAUSTED,
     grpc.StatusCode.UNAVAILABLE,
 ])
+
+# gRPC metadata key whose value contains the client version.
+_VERSION_METADATA_KEY = "tensorboard-version"
 
 
 def call_with_retries(api_method, request, clock=None):
@@ -78,7 +82,10 @@ def call_with_retries(api_method, request, clock=None):
   while True:
     num_attempts += 1
     try:
-      return api_method(request, timeout=_GRPC_DEFAULT_TIMEOUT_SECS)
+      return api_method(
+          request,
+          timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
+          metadata=version_metadata())
     except grpc.RpcError as e:
       logger.info("RPC call %s got error %s", rpc_name, e)
       if e.code() not in _GRPC_RETRYABLE_STATUS_CODES:
@@ -92,3 +99,28 @@ def call_with_retries(api_method, request, clock=None):
         "RPC call %s attempted %d times, retrying in %.1f seconds",
         rpc_name, num_attempts, backoff_secs)
     clock.sleep(backoff_secs)
+
+
+def version_metadata():
+  """Creates gRPC invocation metadata encoding the TensorBoard version.
+
+  Usage: `stub.MyRpc(request, metadata=version_metadata())`.
+
+  Returns:
+    A tuple of key-value pairs (themselves 2-tuples) to be passed as the
+    `metadata` kwarg to gRPC stub API methods.
+  """
+  return ((_VERSION_METADATA_KEY, version.VERSION),)
+
+
+def extract_version(metadata):
+  """Extracts version from invocation metadata.
+
+  The argument should be the result of a prior call to `metadata` or the
+  result of combining such a result with other metadata.
+
+  Returns:
+    The TensorBoard version listed in this metadata, or `None` if none
+    is listed.
+  """
+  return dict(metadata).get(_VERSION_METADATA_KEY)
