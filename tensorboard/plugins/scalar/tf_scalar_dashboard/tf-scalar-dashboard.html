@@ -153,6 +153,7 @@ limitations under the License.
             <tf-category-paginated-view
               category="[[category]]"
               initial-opened="[[_shouldOpen(index)]]"
+              get-category-item-key="[[_getCategoryItemKey]]"
             >
               <template>
                 <tf-scalar-card
@@ -263,6 +264,13 @@ limitations under the License.
         _categories: {
           type: Array,
           value: () => [],
+        },
+
+        // Items show multiple runs, so exclude runs from category item keys for
+        // efficient template reuse.
+        _getCategoryItemKey: {
+          type: Function,
+          value: () => (item) => item.tag,
         },
 
         _requestManager: {

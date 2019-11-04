@@ -49,7 +49,12 @@ import {
   BaseTensorNumericSummary,
   BooleanOrNumericTensorNumericSummary,
 } from './health-pill-types';
-import {ColorMap, GrayscaleColorMap} from './colormap';
+import {
+  ColorMap,
+  ColorMapConfig,
+  GrayscaleColorMap,
+  JetColorMap,
+} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
@@ -63,6 +68,14 @@ enum ValueRenderMode {
 /**
  * Implementation of TensorWidget.
  */
+
+/** Color-map look-up table. */
+const colorMaps: {
+  [colorMapName: string]: new (config: ColorMapConfig) => ColorMap;
+} = {
+  Grayscale: GrayscaleColorMap,
+  Jet: JetColorMap,
+};
 
 /** An implementation of TensorWidget single-tensor view. */
 export class TensorWidgetImpl implements TensorWidget {
@@ -109,12 +122,19 @@ export class TensorWidgetImpl implements TensorWidget {
   // Value render mode.
   protected valueRenderMode: ValueRenderMode;
 
+  // Name of color map (takes effect on IMAGE value render mode only).
+  protected colorMapName: string = 'Grayscale';
+  protected colorMap: ColorMap | null = null;
+
   // Whether indices should be rendered on ruler ticks on the top and left.
   // Determined dynamically based on the current size of the ticks.
   protected showIndicesOnTicks: boolean = false;
 
   // Size of each cell used to display the tensor value under the 'image' mode.
   protected imageCellSize = 16;
+  protected readonly minImageCellSize = 4;
+  protected readonly maxImageCellSize = 40;
+  protected readonly zoomStepRatio = 1.2;
 
   protected numericSummary: BaseTensorNumericSummary | null = null;
 
@@ -291,20 +311,29 @@ export class TensorWidgetImpl implements TensorWidget {
           }
         },
       } as ChoiceMenuItemConfig);
-      const zoomStepRatio = 1.2;
+
       this.menuConfig.items.push({
-        caption: 'Zoom in (Image mode only)',
-        callback: (event) => {
-          this.imageCellSize *= zoomStepRatio;
+        caption: 'Select color map...',
+        options: Object.keys(colorMaps),
+        defaultSelection: 0,
+        callback: (currentMode: number) => {
+          this.colorMapName = Object.keys(colorMaps)[currentMode];
           this.renderValues();
+        },
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
+      } as ChoiceMenuItemConfig);
+
+      this.menuConfig.items.push({
+        caption: 'Zoom in (Image mode)',
+        callback: () => {
+          this.zoomInOneStepAndRenderValues();
         },
         isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
       this.menuConfig.items.push({
-        caption: 'Zoom out (Image mode only)',
-        callback: (event) => {
-          this.imageCellSize /= zoomStepRatio;
-          this.renderValues();
+        caption: 'Zoom out (Image mode)',
+        callback: () => {
+          this.zoomOutOneStepAndRenderValues();
         },
         isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
       } as SingleActionMenuItemConfig);
@@ -313,6 +342,20 @@ export class TensorWidgetImpl implements TensorWidget {
       this.menu = new Menu(this.menuConfig, this
         .headerSection as HTMLDivElement);
       this.renderMenuThumb();
+    }
+  }
+
+  private zoomInOneStepAndRenderValues() {
+    if (this.imageCellSize * this.zoomStepRatio <= this.maxImageCellSize) {
+      this.imageCellSize *= this.zoomStepRatio;
+      this.renderValues();
+    }
+  }
+
+  private zoomOutOneStepAndRenderValues() {
+    if (this.imageCellSize / this.zoomStepRatio >= this.minImageCellSize) {
+      this.imageCellSize /= this.zoomStepRatio;
+      this.renderValues();
     }
   }
 
@@ -360,6 +403,28 @@ export class TensorWidgetImpl implements TensorWidget {
       this.rootElement.appendChild(this.valueSection);
 
       this.valueSection.addEventListener('wheel', async (event) => {
+        let zoomKeyPressed = false;
+        if (
+          this.options.wheelZoomKey == null ||
+          this.options.wheelZoomKey === 'ctrl'
+        ) {
+          zoomKeyPressed = event.ctrlKey;
+        } else if (this.options.wheelZoomKey === 'alt') {
+          zoomKeyPressed = event.altKey;
+        } else if (this.options.wheelZoomKey === 'shift') {
+          zoomKeyPressed = event.shiftKey;
+        }
+        if (zoomKeyPressed && this.valueRenderMode === ValueRenderMode.IMAGE) {
+          event.stopPropagation();
+          event.preventDefault();
+          if (event.deltaY > 0) {
+            this.zoomOutOneStepAndRenderValues();
+          } else {
+            this.zoomInOneStepAndRenderValues();
+          }
+          return;
+        }
+
         if (this.selection == null) {
           return;
         }
@@ -788,7 +853,16 @@ export class TensorWidgetImpl implements TensorWidget {
             'missing minimum or maximum values in numeric summary'
         );
       }
-      colorMap = new GrayscaleColorMap(minimum as number, maximum as number);
+      const colorMapConfig: ColorMapConfig = {
+        min: minimum as number,
+        max: maximum as number,
+      };
+      if (this.colorMapName in colorMaps) {
+        this.colorMap = new colorMaps[this.colorMapName](colorMapConfig);
+      } else {
+        // Color-map name is not found. Use the default: Grayscale colormap.
+        this.colorMap = new GrayscaleColorMap(colorMapConfig);
+      }
     }
 
     for (let i = 0; i < numRows; ++i) {
@@ -800,7 +874,7 @@ export class TensorWidgetImpl implements TensorWidget {
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
           if (valueRenderMode === ValueRenderMode.IMAGE) {
-            const [red, green, blue] = (colorMap as ColorMap).getRGB(
+            const [red, green, blue] = (this.colorMap as ColorMap).getRGB(
               value as number
             );
             valueDiv.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
@@ -988,6 +1062,18 @@ export class TensorWidgetImpl implements TensorWidget {
     this.valueTooltip.style.top = `${top}px`;
     this.valueTooltip.style.left = `${left}px`;
     this.valueTooltip.style.display = 'block';
+
+    // If the current render mode is IMAGE, show the color bar and
+    // indicate the position of the current element along the color-bar scale.
+    if (
+      this.valueRenderMode == ValueRenderMode.IMAGE &&
+      this.colorMap != null
+    ) {
+      const colorBarCanvas = document.createElement('canvas');
+      colorBarCanvas.classList.add('tensor-widget-value-tooltip-colorbar');
+      this.valueTooltip.appendChild(colorBarCanvas);
+      this.colorMap.render(colorBarCanvas, parseFloat(detailedValueString));
+    }
   }
 
   private hideValueTooltip() {

@@ -28,6 +28,7 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/uploader:uploader_main_lib",
         "//tensorboard/util:tb_logging",
     ],
 )
@@ -151,6 +152,7 @@ py_library(
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/util:argparse_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -170,6 +172,7 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -259,15 +262,15 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
+        "//conditions:default": [],
+    }),
     path = "/",
     deps = [
         ":html_assets_shasums",
         "@com_google_fonts_roboto",
-    ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/components:ng_tensorboard"],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 tf_web_library(
@@ -275,7 +278,12 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html.scripts_sha256",
         "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": [
+            "//tensorboard/components:ng_index.html.scripts_sha256",
+        ],
+        "//conditions:default": [],
+    }),
     path = "/_shasums",
 )
 
@@ -292,6 +300,22 @@ py_library(
     # This is a dummy rule used as a futures dependency in open-source.
     # We expect futures to already be installed on the system, e.g. via
     # `pip install futures`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_grpc_installed",
+    # This is a dummy rule used as a grpc dependency in open-source.
+    # We expect grpc to already be installed on the system, e.g. via
+    # `pip install grpcio`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_grpc_testing_installed",
+    # This is a dummy rule used as a grpc_testing dependency in open-source.
+    # We expect grpc_testing to already be installed on the system, e.g. via
+    # `pip install grpcio_testing`
     visibility = ["//visibility:public"],
 )
 
@@ -328,6 +352,14 @@ py_library(
 )
 
 py_library(
+    name = "expect_absl_flags_argparse_flags_installed",
+    # This is a dummy rule used as a absl-py dependency in open-source.
+    # We expect absl-py to already be installed on the system, e.g. via
+    # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
     name = "expect_absl_logging_installed",
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
@@ -340,6 +372,22 @@ py_library(
     # This is a dummy rule used as a absl-py dependency in open-source.
     # We expect absl-py to already be installed on the system, e.g. via
     # `pip install absl-py`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_google_auth_installed",
+    # This is a dummy rule used as a google_auth dependency in open-source.
+    # We expect google_auth to already be installed on the system, e.g., via
+    # `pip install google-auth`.
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_google_auth_oauthlib_installed",
+    # This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
+    # We expect google_auth_oauthlib to already be installed on the system, e.g., via
+    # `pip install google-auth-oauthlib`.
     visibility = ["//visibility:public"],
 )
 

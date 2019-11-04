@@ -37,6 +37,33 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/checkbox dependency.
+tf_ts_library(
+    name = "expect_angular_material_checkbox",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/button dependency.
+tf_ts_library(
+    name = "expect_angular_material_button",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/dialog dependency.
+tf_ts_library(
+    name = "expect_angular_material_dialog",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/toolbar dependency.
 tf_ts_library(
     name = "expect_angular_material_toolbar",
@@ -49,6 +76,24 @@ tf_ts_library(
 # This is a dummy rule used as a @angular/material/select dependency.
 tf_ts_library(
     name = "expect_angular_material_select",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/icon dependency.
+tf_ts_library(
+    name = "expect_angular_material_icon",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/input dependency.
+tf_ts_library(
+    name = "expect_angular_material_input",
     srcs = [],
     deps = [
         "@npm//@angular/material",

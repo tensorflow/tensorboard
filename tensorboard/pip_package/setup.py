@@ -26,7 +26,9 @@ REQUIRED_PACKAGES = [
     'absl-py >= 0.4',
     # futures is a backport of the python 3.2+ concurrent.futures module
     'futures >= 3.1.1; python_version < "3"',
-    'grpcio >= 1.6.3',
+    'grpcio >= 1.24.3',
+    'google-auth >= 1.6.3, < 2',
+    'google-auth-oauthlib >= 0.4.1, < 0.5',
     'markdown >= 2.6.8',
     'numpy >= 1.12.0',
     'protobuf >= 3.6.0',
@@ -73,6 +75,7 @@ setup(
         'tensorboard.plugins.projector': [
             'tf_projector_plugin/index.js',
             'tf_projector_plugin/projector_binary.html',
+            'tf_projector_plugin/projector_binary.html.scripts_sha256',
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
