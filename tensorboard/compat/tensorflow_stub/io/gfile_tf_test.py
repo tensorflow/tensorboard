@@ -158,11 +158,11 @@ class FileIoTest(tb_test.TestCase):
   def testWalkInOrder(self):
     dir_path = os.path.join(self._base_dir, "test_dir")
     self._setupWalkDirectories(dir_path)
-    # Now test the walk (in_order = True)
+    # Now test the walk (topdown = True)
     all_dirs = []
     all_subdirs = []
     all_files = []
-    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, in_order=True):
+    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=True):
       all_dirs.append(w_dir)
       all_subdirs.append(w_subdirs)
       all_files.append(w_files)
@@ -185,11 +185,11 @@ class FileIoTest(tb_test.TestCase):
   def testWalkPostOrder(self):
     dir_path = os.path.join(self._base_dir, "test_dir")
     self._setupWalkDirectories(dir_path)
-    # Now test the walk (in_order = False)
+    # Now test the walk (topdown = False)
     all_dirs = []
     all_subdirs = []
     all_files = []
-    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, in_order=False):
+    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=False):
       all_dirs.append(w_dir)
       all_subdirs.append(w_subdirs)
       all_files.append(w_files)
@@ -215,7 +215,7 @@ class FileIoTest(tb_test.TestCase):
     all_dirs = []
     all_subdirs = []
     all_files = []
-    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, in_order=False):
+    for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=False):
       all_dirs.append(w_dir)
       all_subdirs.append(w_subdirs)
       all_files.append(w_files)

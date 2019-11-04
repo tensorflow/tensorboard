@@ -721,24 +721,7 @@ def file_exists(filename):
   return get_filesystem(filename).exists(filename)
 
 
-def walk(top, in_order=True):
-  """Recursive directory tree generator for directories.
-
-  Args:
-    top: string, a Directory name
-    in_order: bool, Traverse in order if True, post order if False.  Errors that
-      happen while listing directories are ignored.
-
-  Yields:
-    Each yield is a 3-tuple:  the pathname of a directory, followed by lists of
-    all its subdirectories and leaf files. That is, each yield looks like:
-    `(dirname, [subdirname, subdirname, ...], [filename, filename, ...])`.
-    Each item is a string.
-  """
-  return walk_v2(top, in_order)
-
-
-def walk_v2(top, topdown=True, onerror=None):
+def walk(top, topdown=True, onerror=None):
     """Recursive directory tree generator for directories.
 
     Args:
@@ -781,7 +764,7 @@ def walk_v2(top, topdown=True, onerror=None):
 
     for subdir in subdirs:
         joined_subdir = fs.join(top, compat.as_str_any(subdir))
-        for subitem in walk_v2(joined_subdir, topdown, onerror=onerror):
+        for subitem in walk(joined_subdir, topdown, onerror=onerror):
             yield subitem
 
     if not topdown:
