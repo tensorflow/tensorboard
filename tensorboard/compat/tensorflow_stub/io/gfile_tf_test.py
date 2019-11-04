@@ -52,20 +52,20 @@ class FileIoTest(tb_test.TestCase):
 
   def testFileDoesntExist(self):
     file_path = os.path.join(self._base_dir, "temp_file")
-    self.assertFalse(gfile.file_exists(file_path))
+    self.assertFalse(gfile.exists(file_path))
     with self.assertRaises(errors.NotFoundError):
-      _ = gfile.read_file_to_string(file_path)
+      _ = gfile._read_file_to_string(file_path)
 
   def testWriteToString(self):
     file_path = os.path.join(self._base_dir, "temp_file")
-    gfile.write_string_to_file(file_path, "testing")
-    self.assertTrue(gfile.file_exists(file_path))
-    file_contents = gfile.read_file_to_string(file_path)
+    gfile._write_string_to_file(file_path, "testing")
+    self.assertTrue(gfile.exists(file_path))
+    file_contents = gfile._read_file_to_string(file_path)
     self.assertEqual("testing", file_contents)
 
   def testReadBinaryMode(self):
     file_path = os.path.join(self._base_dir, "temp_file")
-    gfile.write_string_to_file(file_path, "testing")
+    gfile._write_string_to_file(file_path, "testing")
     with gfile.GFile(file_path, mode="rb") as f:
       self.assertEqual(b"testing", f.read())
 
@@ -91,7 +91,7 @@ class FileIoTest(tb_test.TestCase):
     with gfile.GFile(file_path, mode="w") as f:
       f.write("line1\n")
       f.write("line2")
-    file_contents = gfile.read_file_to_string(file_path)
+    file_contents = gfile._read_file_to_string(file_path)
     self.assertEqual("line1\nline2", file_contents)
 
   def testFileWriteBadMode(self):
@@ -102,20 +102,20 @@ class FileIoTest(tb_test.TestCase):
   def testFileReadBadMode(self):
     file_path = os.path.join(self._base_dir, "temp_file")
     gfile.GFile(file_path, mode="w").write("testing")
-    self.assertTrue(gfile.file_exists(file_path))
+    self.assertTrue(gfile.exists(file_path))
     with self.assertRaises(errors.PermissionDeniedError):
       gfile.GFile(file_path, mode="w").read()
 
   def testIsDirectory(self):
     dir_path = os.path.join(self._base_dir, "test_dir")
     # Failure for a non-existing dir.
-    self.assertFalse(gfile.is_directory(dir_path))
+    self.assertFalse(gfile.isdir(dir_path))
     gfile.makedirs(dir_path)
-    self.assertTrue(gfile.is_directory(dir_path))
+    self.assertTrue(gfile.isdir(dir_path))
     file_path = os.path.join(dir_path, "test_file")
     gfile.GFile(file_path, mode="w").write("test")
     # False for a file.
-    self.assertFalse(gfile.is_directory(file_path))
+    self.assertFalse(gfile.isdir(file_path))
     # Test that the value returned from `stat()` has `is_directory` set.
     # file_statistics = gfile.stat(dir_path)
     # self.assertTrue(file_statistics.is_directory)
@@ -131,13 +131,13 @@ class FileIoTest(tb_test.TestCase):
     gfile.makedirs(subdir_path)
     subdir_file_path = os.path.join(subdir_path, "file4.txt")
     gfile.GFile(subdir_file_path, mode="w").write("testing")
-    dir_list = gfile.list_directory(dir_path)
+    dir_list = gfile.listdir(dir_path)
     self.assertItemsEqual(files + ["sub_dir"], dir_list)
 
   def testListDirectoryFailure(self):
     dir_path = os.path.join(self._base_dir, "test_dir")
     with self.assertRaises(errors.NotFoundError):
-      gfile.list_directory(dir_path)
+      gfile.listdir(dir_path)
 
   def _setupWalkDirectories(self, dir_path):
     # Creating a file structure as follows
@@ -235,7 +235,7 @@ class FileIoTest(tb_test.TestCase):
     with gfile.GFile(file_path, mode="w") as f:
       f.write("testing1\ntesting2\ntesting3\n\ntesting5")
     with gfile.GFile(file_path, mode="r") as f:
-      self.assertEqual(36, f.size())
+      self.assertEqual(36, gfile.stat(file_path).length)
       self.assertEqual("testing1\n", f.read(9))
       self.assertEqual("testing2\n", f.read(9))
       self.assertEqual("t", f.read(1))
@@ -253,19 +253,9 @@ class FileIoTest(tb_test.TestCase):
         actual_data.append(line)
       self.assertSequenceEqual(actual_data, data)
 
-  def testReadlines(self):
-    file_path = os.path.join(self._base_dir, "temp_file")
-    data = ["testing1\n", "testing2\n", "testing3\n", "\n", "testing5"]
-    with gfile.GFile(file_path, mode="w") as f:
-      f.write("".join(data))
-      f.flush()
-    with gfile.GFile(file_path, mode="r") as f:
-      lines = f.readlines()
-    self.assertSequenceEqual(lines, data)
-
   def testUTF8StringPath(self):
     file_path = os.path.join(self._base_dir, "UTF8测试_file")
-    gfile.write_string_to_file(file_path, "testing")
+    gfile._write_string_to_file(file_path, "testing")
     with gfile.GFile(file_path, mode="rb") as f:
       self.assertEqual(b"testing", f.read())
 
@@ -283,8 +273,8 @@ class FileIoTest(tb_test.TestCase):
 
   def testUTF8StringPathExists(self):
     file_path = os.path.join(self._base_dir, "UTF8测试_file_exist")
-    gfile.write_string_to_file(file_path, "testing")
-    v = gfile.file_exists(file_path)
+    gfile._write_string_to_file(file_path, "testing")
+    v = gfile.exists(file_path)
     self.assertEqual(v, True)
 
 

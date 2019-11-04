@@ -454,8 +454,8 @@ class GFile(object):
         self.buff_offset += read_size
         return self.buff[old_buff_offset:old_buff_offset + read_size]
 
-    def size(self):
-      return self.fs.stat(self.filename).length
+    # def size(self):
+    #  return self.fs.stat(self.filename).length
 
     def read(self, n=None):
         """Reads contents of file to a string.
@@ -558,22 +558,22 @@ class GFile(object):
     def next(self):
         return self.__next__()
 
-    def readline(self):
-      try:
-        return self.__next__()
-      except StopIteration:
-        return None
+    # def readline(self):
+    #   try:
+    #     return self.__next__()
+    #   except StopIteration:
+    #     return None
 
-    def readlines(self):
-      """Returns all lines from the file in a list."""
-      # self._preread_check()
-      lines = []
-      while True:
-        s = self.readline()
-        if not s:
-          break
-        lines.append(s)
-      return lines
+    # def readlines(self):
+    #   """Returns all lines from the file in a list."""
+    #   # self._preread_check()
+    #   lines = []
+    #   while True:
+    #     s = self.readline()
+    #     if not s:
+    #       break
+    #     lines.append(s)
+    #   return lines
 
     def flush(self):
         if self.closed:
@@ -630,19 +630,8 @@ def glob(filename):
     """
     return get_filesystem(filename).glob(filename)
 
+
 def isdir(dirname):
-    """Returns whether the path is a directory or not.
-
-    Args:
-      dirname: string, path to a potential directory
-
-    Returns:
-      True, if the path is a directory; False otherwise
-    """
-    return is_directory(dirname)
-
-
-def is_directory(dirname):
     """Returns whether the path is a directory or not.
 
     Args:
@@ -655,24 +644,6 @@ def is_directory(dirname):
 
 
 def listdir(dirname):
-    """Returns a list of entries contained within a directory.
-
-    The list is in arbitrary order. It does not contain the special entries "."
-    and "..".
-
-    Args:
-      dirname: string, path to a directory
-
-    Returns:
-      [filename1, filename2, ... filenameN] as strings
-
-    Raises:
-      errors.NotFoundError if directory doesn't exist
-    """
-    return list_directory(dirname)
-
-
-def list_directory(dirname):
     """Returns a list of entries contained within a directory.
 
     The list is in arbitrary order. It does not contain the special entries "."
@@ -705,22 +676,6 @@ def makedirs(path):
     return get_filesystem(path).makedirs(path)
 
 
-def file_exists(filename):
-  """Determines whether a path exists or not.
-
-  Args:
-    filename: string, a path
-
-  Returns:
-    True if the path exists, whether it's a file or a directory.
-    False if the path does not exist and there are no filesystem errors.
-
-  Raises:
-    errors.OpError: Propagates any errors reported by the FileSystem API.
-  """
-  return get_filesystem(filename).exists(filename)
-
-
 def walk(top, topdown=True, onerror=None):
     """Recursive directory tree generator for directories.
 
@@ -741,7 +696,7 @@ def walk(top, topdown=True, onerror=None):
     top = compat.as_str_any(top)
     fs = get_filesystem(top)
     try:
-        listing = list_directory(top)
+        listing = listdir(top)
     except errors.NotFoundError as err:
         if onerror:
             onerror(err)
@@ -752,7 +707,7 @@ def walk(top, topdown=True, onerror=None):
     subdirs = []
     for item in listing:
         full_path = fs.join(top, compat.as_str_any(item))
-        if is_directory(full_path):
+        if isdir(full_path):
             subdirs.append(item)
         else:
             files.append(item)
@@ -785,8 +740,8 @@ def stat(filename):
     """
     return get_filesystem(filename).stat(filename)
 
-
-def write_string_to_file(filename, file_content):
+# Used for tests only
+def _write_string_to_file(filename, file_content):
   """Writes a string to a given file.
 
   Args:
@@ -799,8 +754,8 @@ def write_string_to_file(filename, file_content):
   with GFile(filename, mode="w") as f:
     f.write(file_content)
 
-
-def read_file_to_string(filename, binary_mode=False):
+# Used for tests only
+def _read_file_to_string(filename, binary_mode=False):
   """Reads the entire contents of a file to a string.
 
   Args:
