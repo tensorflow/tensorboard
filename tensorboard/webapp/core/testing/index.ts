@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PluginMetadata, LoadingMechanismType, LoadState} from '../../types/api';
-import {CoreState, State, CORE_FEATURE_KEY} from '../store/core.reducers';
+import {CoreState, State, CORE_FEATURE_KEY} from '../store';
 
 export function createPluginMetadata(displayName: string): PluginMetadata {
   return {

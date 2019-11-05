@@ -15,7 +15,7 @@ limitations under the License.
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 
-import * as actions from '../actions/core.actions';
+import * as actions from '../actions';
 import {reducers} from './core.reducers';
 import {createPluginMetadata, createCoreState} from '../testing';
 import {LoadState} from '../../types/api';

@@ -25,15 +25,8 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsDialogComponent} from './dialog.component';
 
-import {
-  State,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/store/core.reducers';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-} from '../core/actions/core.actions';
+import {State} from '../core/store';
+import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 import {createCoreState, createState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';

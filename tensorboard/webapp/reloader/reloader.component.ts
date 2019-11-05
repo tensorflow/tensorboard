@@ -17,12 +17,8 @@ import {Store, select} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {
-  State,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/store/core.reducers';
-import {reload} from '../core/actions/core.actions';
+import {State, getReloadEnabled, getReloadPeriodInMs} from '../core/store';
+import {reload} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

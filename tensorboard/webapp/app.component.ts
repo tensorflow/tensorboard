@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {Component, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {State} from './core/store/core.reducers';
-import {coreLoaded} from './core/actions/core.actions';
+import {State} from './core/store';
+import {coreLoaded} from './core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

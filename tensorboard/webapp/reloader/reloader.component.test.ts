@@ -18,13 +18,13 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {ReloaderComponent} from './reloader.component';
 
-import {reload} from '../core/actions/core.actions';
+import {reload} from '../core/actions';
 import {
   State,
   CoreState,
   getReloadEnabled,
   getReloadPeriodInMs,
-} from '../core/store/core.reducers';
+} from '../core/store';
 import {
   createPluginMetadata,
   createState,

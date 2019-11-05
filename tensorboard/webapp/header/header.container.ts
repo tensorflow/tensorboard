@@ -15,16 +15,13 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 
-import {State, getActivePlugin, getPlugins} from '../core/store/core.reducers';
-import {changePlugin} from '../core/actions/core.actions';
+import {State, getActivePlugin, getPlugins} from '../core/store';
+import {changePlugin} from '../core/actions';
 
-import {PluginMetadata, PluginId} from '../types/api';
+import {PluginId} from '../types/api';
+import {UiPluginMetadata} from './types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-export interface UiPluginMetadata extends PluginMetadata {
-  id: PluginId;
-}
 
 const getUiPlugins = createSelector(
   getPlugins,

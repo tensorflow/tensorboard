@@ -25,8 +25,8 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {HeaderComponent} from './header.component';
 import {HeaderContainer} from './header.container';
 
-import {changePlugin} from '../core/actions/core.actions';
-import {State} from '../core/store/core.reducers';
+import {changePlugin} from '../core/actions';
+import {State} from '../core/store';
 import {
   createPluginMetadata,
   createState,

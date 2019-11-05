@@ -22,7 +22,7 @@ import {
   getActivePlugin,
   getPluginsListLoaded,
   LoadState,
-} from '../core/store/core.reducers'; // TODO(soergel) index.ts
+} from '../core/store';
 import {
   PluginMetadata,
   LoadingMechanismType,

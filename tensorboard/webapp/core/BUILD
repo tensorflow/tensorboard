@@ -8,9 +8,12 @@ ng_module(
     name = "core",
     srcs = [
         "actions/core.actions.ts",
+        "actions/index.ts",
         "effects/core.effects.ts",
+        "effects/index.ts",
         "core.module.ts",
         "store/core.reducers.ts",
+        "store/index.ts",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",

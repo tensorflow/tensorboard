@@ -16,8 +16,8 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {CORE_FEATURE_KEY, reducers} from './store/core.reducers';
-import {CoreEffects} from './effects/core.effects';
+import {CORE_FEATURE_KEY, reducers} from './store';
+import {CoreEffects} from './effects';
 import {ClientModule} from '../client/client.module';
 
 @NgModule({

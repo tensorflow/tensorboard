@@ -24,7 +24,7 @@ import {
   PluginsListing,
   LoadState as DataLoadState,
 } from '../../types/api';
-import * as actions from '../actions/core.actions';
+import * as actions from '../actions';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-/*
 import {TestBed} from '@angular/core/testing';
 import {
   HttpClientTestingModule,
@@ -25,8 +24,8 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
-import * as coreActions from '../actions/core.actions';
-import {State} from '../store/core.reducers';
+import * as coreActions from '../actions';
+import {State} from '../store';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
@@ -175,4 +174,3 @@ describe('core.effects', () => {
     });
   });
 });
-*/

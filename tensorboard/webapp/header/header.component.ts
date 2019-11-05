@@ -17,7 +17,7 @@ import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatSelectChange} from '@angular/material/select';
 
 import {PluginId} from '../types/api';
-import {UiPluginMetadata} from './header.container'; // TODO(soergel): circular?
+import {UiPluginMetadata} from './types';
 
 @Component({
   selector: 'app-header-component',
