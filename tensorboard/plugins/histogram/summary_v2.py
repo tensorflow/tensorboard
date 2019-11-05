@@ -78,7 +78,6 @@ def histogram(name, data, step=None, buckets=None, description=None):
   def histogram_summary(data, buckets, histogram_metadata, step):
     with summary_scope(
         name, 'histogram_summary', values=[data, buckets, step]) as (tag, _):
-      
       # To ensure that histogram bucketing logic is only executed when summaries
       # are written, we pass callable to `tensor` parameter.
       get_tensor_fn = functools.partial(_buckets, data, buckets)
