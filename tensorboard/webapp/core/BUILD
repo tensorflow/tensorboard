@@ -15,6 +15,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/client",
         "@npm//@angular/common",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
