@@ -91,7 +91,6 @@ def audio(name,
       tf.summary.summary_scope)
   with summary_scope(
       name, 'audio_summary', values=inputs) as (tag, _):
-                    
     def _encode_audio_data():
       tf.debugging.assert_rank(data, 3)
       tf.debugging.assert_non_negative(max_outputs)
