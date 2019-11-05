@@ -6,11 +6,10 @@
     "lib": ["dom", "es2018"],
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "noResolve": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-  },
-  "exclude": [
-    "bazel-*"
-  ]
+    "types": []
+  }
 }
