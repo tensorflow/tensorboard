@@ -24,17 +24,18 @@ import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
 import * as coreActions from '../actions';
+import {State} from '../store';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
 import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
-import { TBServerDataSource } from '../../webapp_data_source/tb_server.data_source';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server.data_source';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
-  let store: MockStore<{}>;
+  let store: MockStore<State>;
   let fetchRuns: jasmine.Spy;
   let fetchEnvironments: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;

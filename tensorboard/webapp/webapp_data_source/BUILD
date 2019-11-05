@@ -4,7 +4,7 @@ load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 
 ng_module(
-    name = "core_service",
+    name = "webapp_data_source",
     srcs = [
         "tb_server.data_source.module.ts",
         "tb_server.data_source.ts",

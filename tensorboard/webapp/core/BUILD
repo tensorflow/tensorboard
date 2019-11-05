@@ -20,7 +20,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/types",
-        "//tensorboard/webapp/core_service",
+        "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/common",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
@@ -39,7 +39,7 @@ tf_ts_library(
         ":core",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/core_service",
+        "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",

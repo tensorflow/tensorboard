@@ -16,7 +16,7 @@ limitations under the License.
 // It is an abstraction leak to incorporate the API types directly into our
 // state.  However, it's OK for now, in that it's expedient and avoids keeping
 // redundant copies in sync.  If the state shape and the API types need to
-// diverge in he future, that's straightforward: we'll leave types/api in place,
+// diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
 import {
   PluginId,

@@ -19,11 +19,11 @@ import {EffectsModule} from '@ngrx/effects';
 import {reducers} from './store';
 import {CoreEffects} from './effects';
 import {CORE_FEATURE_KEY} from './store/core.types';
-import {TBServerDataSource} from '../webapp_data_source/tb_server.data_source';
+import {TBServerDataSourceModule} from '../webapp_data_source/tb_server.data_source.module';
 
 @NgModule({
   imports: [
-    TBServerDataSource,
+    TBServerDataSourceModule,
     StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
     EffectsModule.forFeature([CoreEffects]),
   ],

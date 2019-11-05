@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {coreLoaded} from './core/actions';
+import {State} from './core/store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -24,7 +25,7 @@ import {coreLoaded} from './core/actions';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  constructor(private readonly store: Store<{}>) {}
+  constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
     this.store.dispatch(coreLoaded());

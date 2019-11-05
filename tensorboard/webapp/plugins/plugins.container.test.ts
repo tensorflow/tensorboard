@@ -23,10 +23,10 @@ import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {CoreState} from '../core/store/core.types';
+import {CoreState, State} from '../core/store/core.types';
 
 describe('plugins.component', () => {
-  let store: MockStore<{}>;
+  let store: MockStore<State>;
   const INITIAL_CORE_STATE: Partial<CoreState> = {
     plugins: {
       bar: {
