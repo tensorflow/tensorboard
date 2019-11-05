@@ -26,7 +26,6 @@ import {HeaderComponent} from './header.component';
 import {HeaderContainer} from './header.container';
 
 import {changePlugin} from '../core/actions';
-import {State} from '../core/store';
 import {
   createPluginMetadata,
   createState,
@@ -37,7 +36,7 @@ import {PluginId} from '../types/api';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('header test', () => {
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

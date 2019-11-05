@@ -32,11 +32,12 @@ import {
   pluginsListingLoaded,
   pluginsListingFailed,
 } from '../actions';
-import {State, getPluginsListLoaded} from '../store';
+import {getPluginsListLoaded} from '../store';
 import {LoadState} from '../../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
+import {State} from '../store/core.types';
 
 @Injectable()
 export class CoreEffects {

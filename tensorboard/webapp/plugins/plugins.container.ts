@@ -16,13 +16,7 @@ import {Component, ElementRef, ViewChild, OnInit} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 import {filter, distinctUntilChanged} from 'rxjs/operators';
 
-import {
-  State,
-  getPlugins,
-  getActivePlugin,
-  getPluginsListLoaded,
-  LoadState,
-} from '../core/store';
+import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
 import {
   PluginMetadata,
   LoadingMechanismType,
@@ -31,6 +25,7 @@ import {
 } from '../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {LoadState, State} from '../core/store/core.types';
 
 interface UiPluginMetadata extends PluginMetadata {
   id: string;

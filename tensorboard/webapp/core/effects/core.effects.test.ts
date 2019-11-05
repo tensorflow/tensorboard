@@ -25,7 +25,6 @@ import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
 import * as coreActions from '../actions';
-import {State} from '../store';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
@@ -36,7 +35,7 @@ describe('core.effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
   let fetchRuns: jasmine.Spy;
   let fetchEnvironments: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;

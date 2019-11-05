@@ -16,7 +16,7 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 
 import * as actions from '../actions';
-import {reducers} from './core.reducers';
+import {reducer} from './core.reducers';
 import {createPluginMetadata, createCoreState} from '../testing';
 import {LoadState} from '../../types/api';
 
@@ -32,7 +32,7 @@ describe('core reducer', () => {
     it('sets activePlugin to the one in action payload', () => {
       const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+      const nextState = reducer(state, actions.changePlugin({plugin: 'bar'}));
 
       expect(nextState).to.have.property('activePlugin', 'bar');
     });
@@ -43,7 +43,7 @@ describe('core reducer', () => {
         plugins: createPluginsListing(),
       });
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+      const nextState = reducer(state, actions.changePlugin({plugin: 'bar'}));
 
       expect(nextState).to.have.deep.property(
         'plugins',
@@ -72,7 +72,7 @@ describe('core reducer', () => {
             state: LoadState.NOT_LOADED,
           },
         });
-        const nextState = reducers(state, action);
+        const nextState = reducer(state, action);
 
         expect(nextState)
           .to.have.property('pluginsListLoaded')
@@ -86,7 +86,7 @@ describe('core reducer', () => {
             state: LoadState.NOT_LOADED,
           },
         });
-        const nextState = reducers(state, action);
+        const nextState = reducer(state, action);
 
         expect(nextState)
           .to.have.property('pluginsListLoaded')
@@ -111,7 +111,7 @@ describe('core reducer', () => {
 
     it('sets plugins with the payload', () => {
       const state = createCoreState({activePlugin: 'foo', plugins: {}});
-      const nextState = reducers(
+      const nextState = reducer(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
@@ -131,7 +131,7 @@ describe('core reducer', () => {
           lastLoadedTimeInMs: null,
         },
       });
-      const nextState = reducers(
+      const nextState = reducer(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
@@ -145,7 +145,7 @@ describe('core reducer', () => {
     it('sets activePlugin to the first plugin (by key order) when not defined', () => {
       const state = createCoreState({activePlugin: null, plugins: {}});
 
-      const nextState = reducers(
+      const nextState = reducer(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
@@ -156,7 +156,7 @@ describe('core reducer', () => {
     it('does not change activePlugin when already defined', () => {
       const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
-      const nextState = reducers(
+      const nextState = reducer(
         state,
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
@@ -169,11 +169,11 @@ describe('core reducer', () => {
     it('toggles reloadEnabled', () => {
       const state1 = createCoreState({reloadEnabled: false});
 
-      const state2 = reducers(state1, actions.toggleReloadEnabled());
+      const state2 = reducer(state1, actions.toggleReloadEnabled());
 
       expect(state2).to.have.property('reloadEnabled', true);
 
-      const state3 = reducers(state2, actions.toggleReloadEnabled());
+      const state3 = reducer(state2, actions.toggleReloadEnabled());
 
       expect(state3).to.have.property('reloadEnabled', false);
     });
@@ -183,7 +183,7 @@ describe('core reducer', () => {
     it('sets the reloadPeriodInMs', () => {
       const state = createCoreState({reloadPeriodInMs: 1});
 
-      const nextState = reducers(
+      const nextState = reducer(
         state,
         actions.changeReloadPeriod({periodInMs: 1000})
       );
@@ -194,13 +194,13 @@ describe('core reducer', () => {
     it('ignores the action when periodInMs is non-positive', () => {
       const baseState = createCoreState({reloadPeriodInMs: 1});
 
-      const state1 = reducers(
+      const state1 = reducer(
         baseState,
         actions.changeReloadPeriod({periodInMs: 0})
       );
       expect(state1).to.have.property('reloadPeriodInMs', 1);
 
-      const state2 = reducers(
+      const state2 = reducer(
         baseState,
         actions.changeReloadPeriod({periodInMs: -1000})
       );

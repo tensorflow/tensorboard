@@ -13,6 +13,8 @@ ng_module(
         "effects/index.ts",
         "core.module.ts",
         "store/core.reducers.ts",
+        "store/core.selectors.ts",
+        "store/core.types.ts",
         "store/index.ts",
     ],
     deps = [

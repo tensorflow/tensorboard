@@ -19,22 +19,12 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {ReloaderComponent} from './reloader.component';
 
 import {reload} from '../core/actions';
-import {
-  State,
-  CoreState,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/store';
-import {
-  createPluginMetadata,
-  createState,
-  createCoreState,
-} from '../core/testing';
+import {createState, createCoreState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('reloader.component', () => {
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {

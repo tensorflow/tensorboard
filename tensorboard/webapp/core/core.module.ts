@@ -16,14 +16,15 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {CORE_FEATURE_KEY, reducers} from './store';
+import {reducer} from './store';
 import {CoreEffects} from './effects';
 import {ClientModule} from '../client/client.module';
+import {CORE_FEATURE_KEY} from './store/core.types';
 
 @NgModule({
   imports: [
     ClientModule,
-    StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
+    StoreModule.forFeature(CORE_FEATURE_KEY, reducer),
     EffectsModule.forFeature([CoreEffects]),
   ],
 })

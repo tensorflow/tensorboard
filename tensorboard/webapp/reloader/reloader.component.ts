@@ -17,7 +17,7 @@ import {Store, select} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {State, getReloadEnabled, getReloadPeriodInMs} from '../core/store';
+import {getReloadEnabled, getReloadPeriodInMs} from '../core/store';
 import {reload} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -32,9 +32,9 @@ export class ReloaderComponent {
   private readonly reloadPeriodInMs$ = this.store.pipe(
     select(getReloadPeriodInMs)
   );
-  private reloadTimerId: number | null = null;
+  private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private store: Store<State>) {}
+  constructor(private store: Store<{}>) {}
 
   ngOnInit() {
     combineLatest(

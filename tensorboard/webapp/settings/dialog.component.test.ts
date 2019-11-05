@@ -25,14 +25,13 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsDialogComponent} from './dialog.component';
 
-import {State} from '../core/store';
 import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 import {createCoreState, createState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('settings dialog test', () => {
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {

@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 
-import {State, getActivePlugin, getPlugins} from '../core/store';
+import {getActivePlugin, getPlugins} from '../core/store';
 import {changePlugin} from '../core/actions';
 
 import {PluginId} from '../types/api';
@@ -52,7 +52,7 @@ export class HeaderContainer {
   readonly plugins$ = this.store.pipe(select(getUiPlugins));
   readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<{}>) {}
 
   onPluginSelectionChange(pluginId: PluginId) {
     this.store.dispatch(changePlugin({plugin: pluginId}));
