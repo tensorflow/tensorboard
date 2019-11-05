@@ -7,7 +7,7 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "tf_ng_tensorboard",
+    name = "webapp",
     srcs = [
         ":tf_ng_tensorboard_binary.js",
     ],
@@ -36,8 +36,8 @@ tf_js_binary(
     }),
     deps = [
         ":ng_main",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_tabs",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_material_toolbar",
+        "//tensorboard/webapp/angular:expect_angular_material_tabs",
+        "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/material",
@@ -85,11 +85,11 @@ ng_module(
     ],
     deps = [
         ":config",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_platform_browser_animations",
-        "//tensorboard/components/tf_ng_tensorboard/core",
-        "//tensorboard/components/tf_ng_tensorboard/header",
-        "//tensorboard/components/tf_ng_tensorboard/plugins",
-        "//tensorboard/components/tf_ng_tensorboard/reloader",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/header",
+        "//tensorboard/webapp/plugins",
+        "//tensorboard/webapp/reloader",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
@@ -102,10 +102,10 @@ ng_module(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/core:core_effects_test_lib",
-        "//tensorboard/components/tf_ng_tensorboard/header:test_lib",
-        "//tensorboard/components/tf_ng_tensorboard/plugins:plugins_component_test_lib",
-        "//tensorboard/components/tf_ng_tensorboard/reloader:test_lib",
-        "//tensorboard/components/tf_ng_tensorboard/settings:test_lib",
+        "//tensorboard/webapp/core:core_effects_test_lib",
+        "//tensorboard/webapp/header:test_lib",
+        "//tensorboard/webapp/plugins:plugins_component_test_lib",
+        "//tensorboard/webapp/reloader:test_lib",
+        "//tensorboard/webapp/settings:test_lib",
     ],
 )
