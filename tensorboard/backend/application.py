@@ -190,8 +190,7 @@ def TensorBoardWSGIApp(
 
   Args:
     flags: An argparse.Namespace containing TensorBoard CLI flags.
-    plugins: A list of plugins, which can be provided as TBPlugin subclasses
-        or TBLoader instances or subclasses.
+    plugins: A list of plugin loader instances.
     assets_zip_provider: See TBContext documentation for more information.
     data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
         be `None` if `flags.generic_data` is set to `"false"` in which case
@@ -202,6 +201,8 @@ def TensorBoardWSGIApp(
 
   Returns:
     A WSGI application that implements the TensorBoard backend.
+
+  :type plugins: list[base_plugin.TBLoader]
   """
   db_uri = None
   db_connection_provider = None
@@ -721,6 +722,11 @@ def make_plugin_loader(plugin_spec):
 
   Returns:
     A TBLoader for the given plugin.
+
+  :type plugin_spec:
+    Type[base_plugin.TBPlugin] | Type[base_plugin.TBLoader] |
+    base_plugin.TBLoader
+  :rtype: base_plugin.TBLoader
   """
   if isinstance(plugin_spec, base_plugin.TBLoader):
     return plugin_spec

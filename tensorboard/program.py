@@ -122,13 +122,19 @@ class TensorBoard(object):
     """Creates new instance.
 
     Args:
-      plugin: A list of TensorBoard plugins to load, as TBPlugin classes or
+      plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
         TBLoader instances or classes. If not specified, defaults to first-party
         plugins.
       assets_zip_provider: Delegates to TBContext or uses default if None.
       server_class: An optional factory for a `TensorBoardServer` to use
         for serving the TensorBoard WSGI app. If provided, its callable
         signature should match that of `TensorBoardServer.__init__`.
+
+    :type plugins:
+      list[
+        base_plugin.TBLoader | Type[base_plugin.TBLoader] |
+        Type[base_plugin.TBPlugin]
+      ]
     """
     if plugins is None:
       from tensorboard import default
