@@ -91,19 +91,25 @@ def audio(name,
       tf.summary.summary_scope)
   with summary_scope(
       name, 'audio_summary', values=inputs) as (tag, _):
-    tf.debugging.assert_rank(data, 3)
-    tf.debugging.assert_non_negative(max_outputs)
-    limited_audio = data[:max_outputs]
-    encode_fn = functools.partial(audio_ops.encode_wav,
-                                  sample_rate=sample_rate)
-    encoded_audio = tf.map_fn(encode_fn, limited_audio,
-                              dtype=tf.string,
-                              name='encode_each_audio')
-    # Workaround for map_fn returning float dtype for an empty elems input.
-    encoded_audio = tf.cond(
-        tf.shape(input=encoded_audio)[0] > 0,
-        lambda: encoded_audio, lambda: tf.constant([], tf.string))
-    limited_labels = tf.tile([''], tf.shape(input=limited_audio)[:1])
-    tensor = tf.transpose(a=tf.stack([encoded_audio, limited_labels]))
+                    
+    def _encode_audio_data():
+      tf.debugging.assert_rank(data, 3)
+      tf.debugging.assert_non_negative(max_outputs)
+      limited_audio = data[:max_outputs]
+      encode_fn = functools.partial(audio_ops.encode_wav,
+                                    sample_rate=sample_rate)
+      encoded_audio = tf.map_fn(encode_fn, limited_audio,
+                                dtype=tf.string,
+                                name='encode_each_audio')
+      # Workaround for map_fn returning float dtype for an empty elems input.
+      encoded_audio = tf.cond(
+          tf.shape(input=encoded_audio)[0] > 0,
+          lambda: encoded_audio, lambda: tf.constant([], tf.string))
+      limited_labels = tf.tile([''], tf.shape(input=limited_audio)[:1])
+      return tf.transpose(a=tf.stack([encoded_audio, limited_labels]))
+
+    # To ensure that audio encoding logic is only executed when summaries
+    # are written, we pass callable to `tensor` parameter.
     return tf.summary.write(
-        tag=tag, tensor=tensor, step=step, metadata=summary_metadata)
+        tag=tag, tensor=_encode_audio_data, step=step,
+        metadata=summary_metadata)
