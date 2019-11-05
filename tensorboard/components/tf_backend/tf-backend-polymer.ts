@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
   // HACK: this Polymer component allows stores to be accessible from
-  // tf-ng-tensorboard by exposing otherwise mangled smybols.
+  // tb-webapp by exposing otherwise mangled smybols.
   Polymer({
     is: 'tf-backend',
     _template: null, // strictTemplatePolicy requires a template (even a null one).
