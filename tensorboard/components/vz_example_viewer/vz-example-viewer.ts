@@ -382,12 +382,13 @@ namespace vz_example_viewer {
             } else if (b.name in saliency && !(a.name in saliency)) {
               return 1;
             } else {
-              const diff = sortOrder == 'attribution' ?
-                saliencyTotals[b.name] - saliencyTotals[a.name] :
-                (sortOrder == 'reverse-attribution' ?
-                  saliencyTotals[a.name] - saliencyTotals[b.name] :
-                  Math.abs(saliencyTotals[b.name]) -
-                    Math.abs(saliencyTotals[a.name]))
+              const diff =
+                sortOrder == 'attribution'
+                  ? saliencyTotals[b.name] - saliencyTotals[a.name]
+                  : sortOrder == 'reverse-attribution'
+                  ? saliencyTotals[a.name] - saliencyTotals[b.name]
+                  : Math.abs(saliencyTotals[b.name]) -
+                    Math.abs(saliencyTotals[a.name]);
               if (diff != 0) {
                 return diff;
               }
