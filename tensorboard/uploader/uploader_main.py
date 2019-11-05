@@ -358,7 +358,7 @@ class _UploadIntent(_Intent):
     uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
     experiment_id = uploader.create_experiment()
     url_format = server_info.url_format
-    url = url_format.template.replace(url_format.placeholder, experiment_id)
+    url = url_format.template.replace(url_format.id_placeholder, experiment_id)
     print("Upload started and will continue reading any new data as it's added")
     print("to the logdir. To stop uploading, press Ctrl-C.")
     print("View your TensorBoard live at: %s" % url)
