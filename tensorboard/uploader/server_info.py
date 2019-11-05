@@ -90,7 +90,7 @@ def create_server_info(frontend_origin, api_endpoint):
   while placeholder in frontend_origin:
     placeholder = "{%s}" % placeholder
   url_format.template = "%s/experiment/%s/" % (frontend_origin, placeholder)
-  url_format.placeholder = placeholder
+  url_format.id_placeholder = placeholder
   return result
 
 
