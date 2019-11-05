@@ -29,6 +29,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
+
 import numpy as np
 
 from tensorboard.compat import tf2 as tf
@@ -76,9 +78,12 @@ def histogram(name, data, step=None, buckets=None, description=None):
   def histogram_summary(data, buckets, histogram_metadata, step):
     with summary_scope(
         name, 'histogram_summary', values=[data, buckets, step]) as (tag, _):
-      tensor = _buckets(data, bucket_count=buckets)
+      
+      # To ensure that histogram bucketing logic is only executed when summaries
+      # are written, we pass callable to `tensor` parameter.
+      get_tensor_fn = functools.partial(_buckets, data, buckets)
       return tf.summary.write(
-          tag=tag, tensor=tensor, step=step, metadata=histogram_metadata)
+          tag=tag, tensor=get_tensor_fn, step=step, metadata=summary_metadata)
 
   # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
   # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
