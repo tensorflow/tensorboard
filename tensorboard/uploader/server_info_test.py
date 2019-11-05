@@ -38,7 +38,7 @@ class FetchServerInfoTest(tb_test.TestCase):
   def _start_server(self, app):
     """Starts a server and returns its origin ("http://localhost:PORT")."""
     (_, localhost) = _localhost()
-    server_class = _Ipv6CompatibleWsgiServer
+    server_class = _make_ipv6_compatible_wsgi_server()
     server = simple_server.make_server(localhost, 0, app, server_class)
     executor = futures.ThreadPoolExecutor()
     future = executor.submit(server.serve_forever, poll_interval=0.01)
@@ -57,7 +57,7 @@ class FetchServerInfoTest(tb_test.TestCase):
     expected_result.compatibility.details = "all clear"
     expected_result.api_server.endpoint = "api.example.com:443"
     expected_result.url_format.template = "http://localhost:8080/{{eid}}"
-    expected_result.url_format.placeholder = "{{eid}}"
+    expected_result.url_format.id_placeholder = "{{eid}}"
 
     @wrappers.BaseRequest.application
     def app(request):
@@ -130,7 +130,7 @@ class CreateServerInfoTest(tb_test.TestCase):
     self.assertEqual(result.api_server, expected_api_server)
 
     url_format = result.url_format
-    actual_url = url_format.template.replace(url_format.placeholder, "123")
+    actual_url = url_format.template.replace(url_format.id_placeholder, "123")
     expected_url = "http://localhost:8080/experiment/123/"
     self.assertEqual(actual_url, expected_url)
 
@@ -144,8 +144,12 @@ def _localhost():
   return (family, nodename)
 
 
-class _Ipv6CompatibleWsgiServer(simple_server.WSGIServer):
+def _make_ipv6_compatible_wsgi_server():
+  """Creates a `WSGIServer` subclass that works on IPv6-only machines."""
   address_family = _localhost()[0]
+  attrs = {"address_family": address_family}
+  bases = (simple_server.WSGIServer, object)  # `object` needed for py2
+  return type("_Ipv6CompatibleWsgiServer", bases, attrs)
 
 
 if __name__ == "__main__":

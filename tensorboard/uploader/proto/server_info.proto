@@ -31,7 +31,7 @@ enum CompatibilityVerdict {
   // soon be unsupported, or if the server is experiencing transient issues.
   VERDICT_WARN = 2;
   // The client should cease further communication with the server and abort
-  // operation.
+  // operation after printing the accompanying `details` message.
   VERDICT_ERROR = 3;
 }
 
@@ -43,17 +43,19 @@ message Compatibility {
 }
 
 message ApiServer {
-  // Address of a gRPC server. For example: "dns:///api.tensorboard.dev:443".
+  // gRPC server URI: <https://github.com/grpc/grpc/blob/master/doc/naming.md>.
+  // For example: "api.tensorboard.dev:443".
   string endpoint = 1;
 }
 
 message ExperimentUrlFormat {
   // Template string for experiment URLs. All occurrences of the value of the
-  // `placeholder` field in this template string should be replaced with an
-  // experiment ID. For example, if `placeholder` is "{{EXPERIMENT_ID}}", then
-  // `template` may be "https://tensorboard.dev/experiment/{{EXPERIMENT_ID}}/".
+  // `id_placeholder` field in this template string should be replaced with an
+  // experiment ID. For example, if `id_placeholder` is "{{EID}}", then
+  // `template` might be "https://tensorboard.dev/experiment/{{EID}}/".
+  // Should be absolute.
   string template = 1;
   // Placeholder string that should be replaced with an actual experiment ID.
   // (See docs for `template` field.)
-  string placeholder = 2;
+  string id_placeholder = 2;
 }
