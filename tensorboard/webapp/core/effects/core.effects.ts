@@ -24,7 +24,6 @@ import {
   filter,
   tap,
 } from 'rxjs/operators';
-import {CoreService} from '../../core_service/core.service';
 import {
   coreLoaded,
   reload,
@@ -38,6 +37,7 @@ import {LoadState} from '../../types/api';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
 import {State} from '../store/core.types';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server.data_source';
 
 @Injectable()
 export class CoreEffects {
@@ -54,9 +54,9 @@ export class CoreEffects {
       tap(() => this.store.dispatch(pluginsListingRequested())),
       mergeMap(() => {
         return zip(
-          this.coreService.fetchPluginsListing(),
-          this.coreService.fetchRuns(),
-          this.coreService.fetchEnvironments()
+          this.webappDataSource.fetchPluginsListing(),
+          this.webappDataSource.fetchRuns(),
+          this.webappDataSource.fetchEnvironments()
         ).pipe(
           map(([plugins]) => {
             return pluginsListingLoaded({plugins});
@@ -69,6 +69,6 @@ export class CoreEffects {
   constructor(
     private actions$: Actions,
     private store: Store<State>,
-    private coreService: CoreService
+    private webappDataSource: TBServerDataSource
   ) {}
 }

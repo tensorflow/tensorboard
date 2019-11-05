@@ -6,8 +6,8 @@ load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 ng_module(
     name = "core_service",
     srcs = [
-        "core.service.module.ts",
-        "core.service.ts",
+        "tb_server.data_source.module.ts",
+        "tb_server.data_source.ts",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",

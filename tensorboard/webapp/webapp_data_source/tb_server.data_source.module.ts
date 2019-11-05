@@ -12,30 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {NgModule} from '@angular/core';
+import {HttpClientModule} from '@angular/common/http';
+import {TBServerDataSource} from './tb_server.data_source';
 
-import {from} from 'rxjs';
-
-import {PluginsListing} from '../types/api';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Injectable()
-export class CoreService {
-  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
-
-  constructor(private http: HttpClient) {}
-
-  fetchPluginsListing() {
-    return this.http.get<PluginsListing>('data/plugins_listing');
-  }
-
-  fetchRuns() {
-    return from(this.tfBackend.runsStore.refresh());
-  }
-
-  fetchEnvironments() {
-    return from(this.tfBackend.environmentStore.refresh());
-  }
-}
+@NgModule({
+  imports: [HttpClientModule],
+  providers: [TBServerDataSource],
+})
+export class TBServerDataSourceModule {}

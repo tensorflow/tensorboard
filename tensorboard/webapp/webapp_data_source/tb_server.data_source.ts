@@ -22,7 +22,8 @@ import {PluginsListing} from '../types/api';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
-export class CoreService {
+// TODO(soergel): implements WebappDataSource
+export class TBServerDataSource {
   private tfStorage = document.createElement('tf-storage') as any;
   private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
 

@@ -28,7 +28,7 @@ import * as coreActions from '../actions';
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
 import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
-import {CoreService} from '../../core_service/core.service';
+import { TBServerDataSource } from '../../webapp_data_source/tb_server.data_source';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
@@ -55,7 +55,7 @@ describe('core.effects', () => {
       providers: [
         provideMockActions(action),
         CoreEffects,
-        CoreService,
+        TBServerDataSource,
         provideMockStore({initialState}),
       ],
     }).compileComponents();
@@ -64,7 +64,7 @@ describe('core.effects', () => {
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const coreService = TestBed.get(CoreService);
+    const coreService = TestBed.get(TBServerDataSource);
     fetchRuns = spyOn(coreService, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));

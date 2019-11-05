@@ -18,12 +18,12 @@ import {EffectsModule} from '@ngrx/effects';
 
 import {reducers} from './store';
 import {CoreEffects} from './effects';
-import {CoreServiceModule} from '../core_service/core.service.module';
 import {CORE_FEATURE_KEY} from './store/core.types';
+import {TBServerDataSource} from '../webapp_data_source/tb_server.data_source';
 
 @NgModule({
   imports: [
-    CoreServiceModule,
+    TBServerDataSource,
     StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
     EffectsModule.forFeature([CoreEffects]),
   ],
