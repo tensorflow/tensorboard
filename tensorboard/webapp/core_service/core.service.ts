@@ -12,21 +12,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {Store} from '@ngrx/store';
-import {coreLoaded} from './core/actions';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+
+import {from} from 'rxjs';
+
+import {PluginsListing} from '../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-@Component({
-  selector: 'tb-webapp',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-})
-export class AppComponent implements OnInit {
-  constructor(private readonly store: Store<{}>) {}
+@Injectable()
+export class CoreService {
+  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
 
-  ngOnInit() {
-    this.store.dispatch(coreLoaded());
+  constructor(private http: HttpClient) {}
+
+  fetchPluginsListing() {
+    return this.http.get<PluginsListing>('data/plugins_listing');
+  }
+
+  fetchRuns() {
+    return from(this.tfBackend.runsStore.refresh());
+  }
+
+  fetchEnvironments() {
+    return from(this.tfBackend.environmentStore.refresh());
   }
 }

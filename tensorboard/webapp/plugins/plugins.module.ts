@@ -14,12 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 
-import {PluginsComponent} from './plugins.component';
+import {PluginsContainer} from './plugins.container';
 import {CoreModule} from '../core/core.module';
 
 @NgModule({
-  declarations: [PluginsComponent],
-  exports: [PluginsComponent],
+  declarations: [PluginsContainer],
+  exports: [PluginsContainer],
   imports: [CoreModule],
 })
 export class PluginsModule {}

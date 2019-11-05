@@ -23,19 +23,18 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
-import * as coreActions from './core.actions';
-import {CoreService} from './core.service';
-import {State, getPluginsListLoaded, LoadState} from './core.reducers';
+import * as coreActions from '../actions';
 
-import {createPluginMetadata, createState, createCoreState} from './testing';
+import {createPluginMetadata, createState, createCoreState} from '../testing';
 
-import {PluginsListing, LoadState as DataLoadState} from '../types/api';
+import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
+import {CoreService} from '../../core_service/core.service';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
   let fetchRuns: jasmine.Spy;
   let fetchEnvironments: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;

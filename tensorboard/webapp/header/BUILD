@@ -8,13 +8,14 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "header",
     srcs = [
-        "components/header.component.ts",
-        "containers/header.component.ts",
+        "header.container.ts",
+        "header.component.ts",
         "header.module.ts",
+        "types.ts",
     ],
     assets = [
-        "components/header.component.css",
-        "components/header.component.html",
+        "header.component.css",
+        "header.component.html",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_select",

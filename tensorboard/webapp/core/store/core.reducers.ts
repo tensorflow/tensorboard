@@ -12,44 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  Action,
-  createSelector,
-  createReducer,
-  on,
-  createFeatureSelector,
-} from '@ngrx/store';
-import {
-  PluginId,
-  PluginsListing,
-  LoadState as DataLoadState,
-} from '../types/api';
-import * as actions from './core.actions';
+import {Action, createReducer, on} from '@ngrx/store';
+import {LoadState as DataLoadState} from '../../types/api';
+import * as actions from '../actions';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-export const CORE_FEATURE_KEY = 'core';
-
-export interface LoadState {
-  state: DataLoadState;
-  // Time since epoch.
-  lastLoadedTimeInMs: number | null;
-}
-
-export interface CoreState {
-  activePlugin: PluginId | null;
-  plugins: PluginsListing;
-  pluginsListLoaded: LoadState;
-  reloadPeriodInMs: number;
-  reloadEnabled: boolean;
-}
-
-export interface State {
-  [CORE_FEATURE_KEY]?: CoreState;
-}
+import {CoreState, State, CORE_FEATURE_KEY, LoadState} from './core.types';
 
 const initialState: CoreState = {
   activePlugin: null,
@@ -136,40 +107,3 @@ const reducer = createReducer(
 export function reducers(state: CoreState, action: Action) {
   return reducer(state, action);
 }
-
-const selectCoreState = createFeatureSelector<State, CoreState>(
-  CORE_FEATURE_KEY
-);
-
-export const getPluginsListLoaded = createSelector(
-  selectCoreState,
-  (state: CoreState): LoadState => state.pluginsListLoaded
-);
-
-export const getActivePlugin = createSelector(
-  selectCoreState,
-  (state: CoreState): PluginId | null => {
-    return state.activePlugin;
-  }
-);
-
-export const getPlugins = createSelector(
-  selectCoreState,
-  (state: CoreState): PluginsListing => {
-    return state.plugins;
-  }
-);
-
-export const getReloadEnabled = createSelector(
-  selectCoreState,
-  (state: CoreState): boolean => {
-    return state.reloadEnabled;
-  }
-);
-
-export const getReloadPeriodInMs = createSelector(
-  selectCoreState,
-  (state: CoreState): number => {
-    return state.reloadPeriodInMs;
-  }
-);

@@ -13,20 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {CORE_FEATURE_KEY, reducers} from './core.reducers';
-import {CoreService} from './core.service';
-import {CoreEffects} from './core.effects';
+import {reducers} from './store';
+import {CoreEffects} from './effects';
+import {CoreServiceModule} from '../core_service/core.service.module';
+import {CORE_FEATURE_KEY} from './store/core.types';
 
 @NgModule({
   imports: [
-    HttpClientModule,
+    CoreServiceModule,
     StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
     EffectsModule.forFeature([CoreEffects]),
   ],
-  providers: [CoreService],
 })
 export class CoreModule {}

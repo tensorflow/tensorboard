@@ -19,12 +19,8 @@ import {Store, select, createSelector} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {takeUntil, debounceTime, filter} from 'rxjs/operators';
 
-import {
-  State,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/core.reducers';
-import {toggleReloadEnabled, changeReloadPeriod} from '../core/core.actions';
+import {getReloadEnabled, getReloadPeriodInMs} from '../core/store';
+import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -77,7 +73,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy {
   ]);
   private ngUnsubscribe = new Subject();
 
-  constructor(private store: Store<State>) {}
+  constructor(private store: Store<{}>) {}
 
   ngOnInit() {
     this.reloadPeriodInSec$

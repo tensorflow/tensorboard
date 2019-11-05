@@ -17,16 +17,16 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {PluginsComponent} from './plugins.component';
+import {PluginsContainer} from './plugins.container';
 
 import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
-import {State, CoreState, CORE_FEATURE_KEY} from '../core/core.reducers';
 import {createState, createCoreState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {CoreState} from '../core/store/core.types';
 
 describe('plugins.component', () => {
-  let store: MockStore<State>;
+  let store: MockStore<{}>;
   const INITIAL_CORE_STATE: Partial<CoreState> = {
     plugins: {
       bar: {
@@ -61,8 +61,8 @@ describe('plugins.component', () => {
       })
     );
     await TestBed.configureTestingModule({
-      providers: [provideMockStore({initialState}), PluginsComponent],
-      declarations: [PluginsComponent],
+      providers: [provideMockStore({initialState}), PluginsContainer],
+      declarations: [PluginsContainer],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -80,13 +80,13 @@ describe('plugins.component', () => {
     }
 
     it('creates no plugin when there is no activePlugin', () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
       const el = fixture.debugElement.query(By.css('.plugins'));
       expect(el.nativeElement.childElementCount).toBe(0);
     });
 
     it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
       setActivePlugin('bar');
@@ -102,7 +102,7 @@ describe('plugins.component', () => {
     });
 
     it('creates an element for IFRAME type of plugin', async () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
       setActivePlugin('foo');
@@ -121,7 +121,7 @@ describe('plugins.component', () => {
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
       setActivePlugin('foo');
@@ -149,7 +149,7 @@ describe('plugins.component', () => {
     });
 
     it('does not create same instance of plugin', async () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
       setActivePlugin('foo');
@@ -195,7 +195,7 @@ describe('plugins.component', () => {
     }
 
     it('invokes reload method on the dashboard DOM', () => {
-      const fixture = TestBed.createComponent(PluginsComponent);
+      const fixture = TestBed.createComponent(PluginsContainer);
 
       setLastLoadedTime(null, LoadState.NOT_LOADED);
       fixture.detectChanges();

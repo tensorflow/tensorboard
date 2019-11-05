@@ -24,19 +24,20 @@ import {
   filter,
   tap,
 } from 'rxjs/operators';
-import {CoreService} from './core.service';
+import {CoreService} from '../../core_service/core.service';
 import {
   coreLoaded,
   reload,
   pluginsListingRequested,
   pluginsListingLoaded,
   pluginsListingFailed,
-} from './core.actions';
-import {State, getPluginsListLoaded} from './core.reducers';
-import {LoadState} from '../types/api';
+} from '../actions';
+import {getPluginsListLoaded} from '../store';
+import {LoadState} from '../../types/api';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
+import {State} from '../store/core.types';
 
 @Injectable()
 export class CoreEffects {
