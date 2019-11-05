@@ -7,7 +7,7 @@ tf_ts_library(
     testonly = True,
     srcs = ["index.ts"],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/core",
-        "//tensorboard/components/tf_ng_tensorboard/types",
+        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/types",
     ],
 )

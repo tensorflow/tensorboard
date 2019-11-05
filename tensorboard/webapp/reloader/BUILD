@@ -10,7 +10,7 @@ ng_module(
         "reloader.module.ts",
     ],
     deps = [
-        "//tensorboard/components/tf_ng_tensorboard/core",
+        "//tensorboard/webapp/core",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -26,9 +26,9 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":reloader",
-        "//tensorboard/components/tf_ng_tensorboard/angular:expect_angular_core_testing",
-        "//tensorboard/components/tf_ng_tensorboard/core",
-        "//tensorboard/components/tf_ng_tensorboard/core/testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
