@@ -11,6 +11,7 @@ ng_module(
         "header.container.ts",
         "header.component.ts",
         "header.module.ts",
+        "types.ts",
     ],
     assets = [
         "header.component.css",

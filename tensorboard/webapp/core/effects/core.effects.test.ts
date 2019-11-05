@@ -30,6 +30,7 @@ import {State} from '../store';
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
 import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
+import {ClientService} from '../../client/client.service';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
@@ -56,7 +57,7 @@ describe('core.effects', () => {
       providers: [
         provideMockActions(action),
         CoreEffects,
-        CoreService,
+        ClientService,
         provideMockStore({initialState}),
       ],
     }).compileComponents();
@@ -65,7 +66,7 @@ describe('core.effects', () => {
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const coreService = TestBed.get(CoreService);
+    const coreService = TestBed.get(ClientService);
     fetchRuns = spyOn(coreService, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));
