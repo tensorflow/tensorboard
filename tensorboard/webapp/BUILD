@@ -13,13 +13,13 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "app",
     srcs = [
-        "app.component.ts",
+        "app.container.ts",
         "app.module.ts",
         "reducers.ts",
     ],
     assets = [
-        "app.component.css",
-        "app.component.html",
+        "app.container.css",
+        "app.container.html",
     ],
     deps = [
         ":config",

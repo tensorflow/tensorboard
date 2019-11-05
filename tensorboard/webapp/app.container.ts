@@ -21,10 +21,10 @@ import {State} from './core/store';
 
 @Component({
   selector: 'tb-webapp',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  templateUrl: './app.container.html',
+  styleUrls: ['./app.container.css'],
 })
-export class AppComponent implements OnInit {
+export class AppContainer implements OnInit {
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
