@@ -1,7 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 
 ng_module(
     name = "webapp_data_source",
@@ -12,6 +11,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/types",
+        "@npm//@angular/core",
         "@npm//@angular/common",
         "@npm//rxjs",
     ],

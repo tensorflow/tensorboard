@@ -21,11 +21,11 @@ import {PluginsContainer} from './plugins.container';
 
 import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
 import {CoreState} from '../core/store/core.types';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('plugins.component', () => {
   let store: MockStore<State>;
