@@ -15,13 +15,12 @@ limitations under the License.
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {PluginId, PluginsListing} from '../../types/api';
+import {CoreState, State, CORE_FEATURE_KEY, LoadState} from './core.types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
-
-import {CoreState, State, CORE_FEATURE_KEY, LoadState} from './core.types';
 
 const selectCoreState = createFeatureSelector<State, CoreState>(
   CORE_FEATURE_KEY

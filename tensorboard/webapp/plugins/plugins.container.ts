@@ -23,9 +23,9 @@ import {
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
 } from '../types/api';
+import {LoadState, State} from '../core/store/core.types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {LoadState, State} from '../core/store/core.types';
 
 interface UiPluginMetadata extends PluginMetadata {
   id: string;

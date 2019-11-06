@@ -15,12 +15,11 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 import {LoadState as DataLoadState} from '../../types/api';
 import * as actions from '../actions';
+import {CoreState} from './core.types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
-
-import {CoreState} from './core.types';
 
 const initialState: CoreState = {
   activePlugin: null,
