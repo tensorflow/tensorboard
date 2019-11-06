@@ -20,7 +20,7 @@ import * as actions from '../actions';
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-import {CoreState, State, CORE_FEATURE_KEY, LoadState} from './core.types';
+import {CoreState} from './core.types';
 
 const initialState: CoreState = {
   activePlugin: null,

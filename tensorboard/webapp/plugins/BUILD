@@ -13,6 +13,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -31,6 +32,7 @@ tf_ts_library(
         ":plugins",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",

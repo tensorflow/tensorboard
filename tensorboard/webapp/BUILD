@@ -15,7 +15,7 @@ ng_module(
     srcs = [
         "app.container.ts",
         "app.module.ts",
-        "reducers.ts",
+        "reducer_config.ts",
     ],
     assets = [
         "app.container.css",
@@ -131,7 +131,10 @@ tensorboard_html_binary(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
-        "//tensorboard/webapp/core:core_effects_test_lib",
+        "//tensorboard/webapp/core/effects:core_effects_test_lib",
+        # TODO(soergel): make this test work
+        # This test was not included here previously, and it fails.
+        # "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
