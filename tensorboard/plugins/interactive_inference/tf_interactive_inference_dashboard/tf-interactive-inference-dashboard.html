@@ -7375,18 +7375,23 @@ limitations under the License.
             for (let modelInd = 0; modelInd < inference.length; modelInd++) {
               const modelInference = inference[modelInd];
               for (
-                let labelInd = isBinary ? 1 : 0;
+                let labelInd = 0;
                 labelInd < modelInference.length;
                 labelInd++
               ) {
+                const label = modelInference[labelInd].label;
+                // Only consider positive label for binary case
+                if (isBinary && label !== '1') {
+                  continue;
+                }
                 const value = modelInference[labelInd].score;
                 if (!data[modelInd]) {
                   data[modelInd] = {};
                 }
-                if (!data[modelInd][labelInd]) {
-                  data[modelInd][labelInd] = [{}];
+                if (!data[modelInd][label]) {
+                  data[modelInd][label] = [{}];
                 }
-                data[modelInd][labelInd].push({step: i, scalar: value});
+                data[modelInd][label].push({step: i, scalar: value});
               }
             }
           }
