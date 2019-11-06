@@ -65,11 +65,11 @@ describe('core.effects', () => {
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const coreService = TestBed.get(TBServerDataSource);
-    fetchRuns = spyOn(coreService, 'fetchRuns')
+    const dataSource = TestBed.get(TBServerDataSource);
+    fetchRuns = spyOn(dataSource, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));
-    fetchEnvironments = spyOn(coreService, 'fetchEnvironments')
+    fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
       .withArgs()
       .and.returnValue(of(null));
   });
