@@ -2,7 +2,7 @@
 
 ## Overview
 
-You know (and, we hope, love!) TensorBoard’s core features! However, in every TensorBoard user’s life, there comes a time when you want some cool new visualization that just…doesn’t exist yet. That’s what the TensorBoard plugin system is for.
+You know (and, we hope, love!) TensorBoard’s core features! However, in every TensorBoard user’s life, there comes a time when you want some cool new visualization that just doesn’t exist yet. That’s what the plugin system is for.
 
 This document will explain high level concepts using the example plugin and provide guidelines on plugin authorship. To get started with an example, jump to the [Getting Started](#getting-started) section.
 
@@ -16,23 +16,23 @@ The backend and frontend operate within a plugin lifecycle:
 
   - **1) Plugin setup**: When a user starts `tensorboard --logdir ...`, TensorBoard discovers available plugins, allows them to parse command line flags if needed, and configures URL routes to be served.
 
-  - **2) Web Session Creation**: When a user opens the frontend in a web browser, TensorBoard reads plugin frontend metadata and collects all active plugins.
+  - **2) Web session creation**: When a user opens the frontend in a web browser, TensorBoard reads plugin frontend metadata and collects all active plugins.
 
-  - **3) Dashboard Open**: When a user selects the plugin's dashboard in the UI, TensorBoard loads an IFrame with the plugin's ES module and tells it to render.
+  - **3) Dashboard open**: When a user selects the plugin's dashboard in the UI, TensorBoard loads an IFrame with the plugin's ES module and tells it to render.
 
-  - **4) Route Handling**: When a plugin's frontend makes URL requests to its backend, route handlers can respond with collected data.
+  - **4) Route handling**: When a plugin's frontend makes URL requests to its backend, route handlers can respond with collected data.
 
 
 ### Backend: How the plugin processes data, and sends it to the browser
 
 #### Terminology
 
-First, let's define some terminology used in TensorBoard. Definitions can be found in [base_plugin.py](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/base_plugin.py).
+First, let's define some terminology used in TensorBoard. Definitions can be found in [`base_plugin.py`].
 
   - `TBPlugin`: The base class for all plugins. Can be used as an entry point. Defining a TBPlugin is required.
   - `TBLoader`: The base class for plugins requiring flag parsing or custom loading. Defining a TBLoader is optional.
   - `TBContext`: The container of information passed from TensorBoard core to plugins when they are constructed. Includes 'logdir', 'flags', 'multiplexer', etc.
-  - `EventMultiplexer`: The provided utility for managing event data across runs, tags. Other multiplexers exist for database providers, etc.
+  - `EventMultiplexer`: The mechanism for reading event data across runs and tags. Other multiplexers exist for database providers, etc. Do not read events directly.
 
 A plugin backend is responsible for providing information about its frontend counterpart, serving frontend resources, and surfacing necessary data to the frontend by implementing routes (endpoints). TensorBoard begins by detecting plugins using the [Python `entry_points` mechanism][entrypoints-spec]; see the example plugin's [`setup.py`][entrypoints-declaration] for a full example of how to declare a plugin. The entry point must define either a `TBPlugin` or `TBLoader` class.
 
@@ -44,7 +44,7 @@ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py
 
 ```python
 class MyPlugin(base_plugin.TBPlugin):
-  ### On Plugin Setup
+  ### Plugin setup
   plugin_name = "My Awesome Plugin"
 
   def __init__(self, context): # ...
@@ -52,13 +52,13 @@ class MyPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return { "/tags": self._serve_tags }
 
-  ### On Web Session Creation
+  ### Web session creation
   def is_active(self): # ...
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(es_module_path = "/index.js", tab_name = "Awesome ML")
 
-  ### On Route Handling
+  ### Route handling
   def _serve_tags(self): # Returns a WSGI application that responds to the request.
 ```
 
@@ -66,12 +66,11 @@ class MyPlugin(base_plugin.TBPlugin):
   - `plugin_name`: Required field used as a unique ID for the plugin.
   - `get_plugin_apps()`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `is_active()`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
-  - `frontend_metadata()`: Defines how the plugin will be displayed on the frontend. See base_plugin.FrontendMetadata()
+  - `frontend_metadata()`: Defines how the plugin will be displayed on the frontend. See [`base_plugin.FrontendMetadata()`](https://github.com/tensorflow/tensorboard/blob/18dec9279e18a8222c9d83f90219ecddad591c46/tensorboard/plugins/base_plugin.py#L101).
     - `disable_reload`: Whether to disable the reload button and auto-reload timer. A `bool`; defaults to `False`.
     - `es_module_path`: ES module to use as an entry point to this plugin. A `str` that is a key in the result of `get_plugin_apps()`.
     - `remove_dom`: Whether to remove the plugin DOM when switching to a different plugin. A `bool`; defaults to `False`.
-    - `tab_name`: Name to show in the menu item for this dashboard within
-        the navigation bar. May differ from the plugin name. Should be a `str` or `None` to indicate to use the plugin name.
+    - `tab_name`: Name to show in the menu item for this dashboard within the navigation bar. May differ from the plugin name. An optional `str`, that defaults to the plugin name.
 
 If your plugin requires parsing flags or custom loading, consider defining a `TBLoader` as the entry point. Doing so is optional.
 
@@ -79,7 +78,7 @@ For example:
 
 ```python
 class MyLoader(base_plugin.TBLoader):
-  ### On Plugin Setup
+  ### Plugin Setup
 
   def define_flags(self, parser):
     parser.add_argument_group('custom').add_argument('--enable_my_extras')
@@ -146,7 +145,7 @@ Now that we have an API, it’s time for the cool part: adding a visualization!
 
 TensorBoard does not impose any framework/tool requirements for building a frontend—you can use React, Vue.js, jQuery, DOM API, or any new famous frameworks and use, for example, Webpack to create a JavaScript bundle. TensorBoard only requires an [ES Module] that is an entry point to your frontend ([example ES module][example-es-module]). Do note that all frontend resources have to be served by the plugin backend ([example backend][example-backend]).
 
-In the Dashboard Open phase, TensorBoard will create an IFrame and load the ES module defined by the backend's metadata. It will call the `render()` method in the module.
+When the dashboard opens, TensorBoard will create an IFrame and load the ES module defined by the backend's metadata. It will call the `render()` method in the module.
 
 [ES Module]: https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/
 [example-es-module]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/example/tensorboard_plugin_example/static/index.js#L16
@@ -205,7 +204,7 @@ A plugin should be distributed as a Pip package, and may be uploaded to PyPI. Pl
 
 We recommend that your plugin have an intuitive name that reflects the functionality—users, seeing the name, should be able to identify that it is a TensorBoard plugin and its function. Also, we recommend that you include the name of the plugin as part of the Pip package. For instance, a plugin `foo` should be distributed in a Pip package named `tensorboard_plugin_foo`.
 
-A predictable package naming scheme not only helps users find your plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires that all loaded plugins kave unique names. However, the plugin name can differ from the [user-facing display name][display-name]; display names are not strictly required to be unique.
+A predictable package naming scheme not only helps users find your plugin, but also helps you find a unique plugin name by surveying PyPI. TensorBoard requires that all loaded plugins have unique names. However, the plugin name can differ from the [user-facing display name][display-name]; display names are not strictly required to be unique.
 
 [display-name]: https://github.com/tensorflow/tensorboard/blob/373eb09e4c5d2b3cc2493f0949dc4be6b6a45e81/tensorboard/plugins/base_plugin.py#L35-L39
 
