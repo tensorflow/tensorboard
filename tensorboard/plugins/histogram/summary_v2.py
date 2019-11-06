@@ -29,11 +29,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
+
 import numpy as np
 
 from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import metadata
+from tensorboard.util import lazy_tensor_creator
 from tensorboard.util import tensor_util
 
 
@@ -76,9 +79,14 @@ def histogram(name, data, step=None, buckets=None, description=None):
   def histogram_summary(data, buckets, histogram_metadata, step):
     with summary_scope(
         name, 'histogram_summary', values=[data, buckets, step]) as (tag, _):
-      tensor = _buckets(data, bucket_count=buckets)
+      # Defer histogram bucketing logic by passing it as a callable to write(),
+      # wrapped in a LazyTensorCreator for backwards compatibility, so that we
+      # only do this work when summaries are actually written.
+      @lazy_tensor_creator.LazyTensorCreator
+      def lazy_tensor():
+        return _buckets(data, buckets)
       return tf.summary.write(
-          tag=tag, tensor=tensor, step=step, metadata=histogram_metadata)
+          tag=tag, tensor=lazy_tensor, step=step, metadata=summary_metadata)
 
   # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
   # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
