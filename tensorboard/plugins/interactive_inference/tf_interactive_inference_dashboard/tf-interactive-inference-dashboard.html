@@ -1699,6 +1699,7 @@ limitations under the License.
                             min-sal="[[minAttribution]]"
                             max-sal="[[maxAttribution]]"
                             colors="[[attributionColorScale]]"
+                            highlight-differences="[[showNearestCounterfactual]]"
                           >
                           </vz-example-viewer>
                         </div>
@@ -3937,7 +3938,10 @@ limitations under the License.
             value: 'custom',
             observer: 'optimizationSelectedChanged_',
           },
-          compareTitle: String,
+          compareTitle: {
+            type: String,
+            value: 'Attribution value(s)'
+          },
           // Dictionary of features to feature value attributions for display
           // in the example viewer. Filled in if the selected example contains
           // attribution information.
@@ -4238,7 +4242,9 @@ limitations under the License.
         nearestCounterfactualStatusChanged_: function(show) {
           if (show) {
             this.findClosestCounterfactual_();
+            this.compareTitle = 'Counterfactual value(s)';
           } else {
+            this.compareTitle = 'Attribution value(s)';
             this.comparedIndices = [];
             this.counterfactualExampleAndInference = null;
             this.refreshSelectedDatapoint_();
@@ -4311,7 +4317,6 @@ limitations under the License.
             this.counterfactualExampleAndInference = this.examplesAndInferences[
               closest
             ];
-            this.compareTitle = 'Counterfactual value(s)';
           }
         },
 
@@ -6706,13 +6711,13 @@ limitations under the License.
           if (this.minAttribution < 0) {
             attributionDomain.push(this.minAttribution);
             attributionColorRange.push(negAttributionHighColor);
-            attributionDomain.push(this.minAttribution / 2);
+            attributionDomain.push(this.minAttribution / 10);
             attributionColorRange.push(negAttributionLowColor);
           }
           attributionDomain.push(0);
           attributionColorRange.push(neutralAttributionColor);
           if (this.maxAttribution > 0) {
-            attributionDomain.push(this.maxAttribution / 2);
+            attributionDomain.push(this.maxAttribution / 10);
             attributionColorRange.push(posAttributionLowColor);
             attributionDomain.push(this.maxAttribution);
             attributionColorRange.push(posAttributionHighColor);

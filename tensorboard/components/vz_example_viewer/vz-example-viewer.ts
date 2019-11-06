@@ -147,6 +147,10 @@ namespace vz_example_viewer {
         computed: 'getMaxSeqNumber(seqFeaturesList)',
       },
       colors: Object,
+      highlightDifferences: {
+        type: Boolean,
+        value: true
+      },
       displayMode: {type: String, value: 'grid'},
       featureSearchValue: {type: String, value: '', notify: true},
       filteredFeaturesList: {type: Object},
@@ -181,6 +185,7 @@ namespace vz_example_viewer {
       compareTitle: String,
     },
     observers: [
+      'displaySaliency(saliency, example)',
       'haveSaliency(filteredFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
       'seqSaliency(seqNumber, seqFeaturesList, saliency, colors, showSaliency, saliencyCutoff)',
       'setFilteredFeaturesList(featuresList, featureSearchValue, saliency, sortOrder)',
@@ -422,6 +427,18 @@ namespace vz_example_viewer {
       return d3.selectAll(Polymer.dom(this.root).querySelectorAll(
         query
       ) as any);
+    },
+
+    displaySaliency: function(saliency) {
+      const feats = Object.keys(saliency);
+      const salJson = {};
+      for (let i = 0; i < feats.length; i++) {
+        const feat = feats[i];
+        const sal = saliency[feat];
+        salJson[feat] = {floatList: {value: [d3.format('.4f')(sal)]}};
+      }
+      this.saliencyJson = {features: {feature: salJson}};
+      this.compareJson = this.saliencyJson;
     },
 
     haveSaliency: function() {
@@ -1156,10 +1173,10 @@ namespace vz_example_viewer {
       if (index != null) {
         const values = this.getFeatureValues(feat, true);
         const compValues = this.getCompareFeatureValues(feat, true);
-        if (
-          index >= values.length ||
+        if (this.highlightDifferences &&
+          (index >= values.length ||
           index >= compValues.length ||
-          values[index] != compValues[index]
+          values[index] != compValues[index])
         ) {
           str += ' value-different';
         } else {
@@ -1358,6 +1375,9 @@ namespace vz_example_viewer {
      * json.
      */
     createCompareExamplesFromJson: function(json: string) {
+      if (!json || !Object.keys(json).length) {
+        json = this.saliencyJson;
+      }
       if (!json) {
         this.compareExample = null;
         return;
@@ -2072,6 +2092,10 @@ namespace vz_example_viewer {
 
     getUploadImageClass: function(readonly: boolean) {
       return readonly ? 'hide-controls' : 'upload-image-button';
+    },
+
+    getCompareHeaderClass: function(highlightDifferences: boolean) {
+      return highlightDifferences ? 'compare-value-text' : 'no-compare-value-text';
     },
 
     /**
