@@ -80,6 +80,13 @@ class LazyTensorCreatorTest(tf.test.TestCase):
       # exposed as an argument to tf.convert_to_tensor.
       lazy_tensor(as_ref=True)
 
+  def test_reentrant_callable_does_not_deadlock(self):
+    @lazy_tensor_creator.LazyTensorCreator
+    def lazy_tensor(nested_call=False):
+      return lazy_tensor()
+    with self.assertRaisesRegex(RuntimeError, "reentrant callable"):
+      lazy_tensor()
+
 
 if __name__ == '__main__':
   tf.test.main()

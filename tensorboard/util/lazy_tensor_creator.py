@@ -19,6 +19,11 @@ import threading
 from tensorboard.compat import tf2 as tf
 
 
+# Sentinel used for LazyTensorCreator._tensor to indicate that a value is
+# currently being computed, in order to fail hard on reentrancy.
+_CALL_IN_PROGRESS_SENTINEL = object()
+
+
 class LazyTensorCreator(object):
   """Lazy auto-converting wrapper for a callable that returns a `tf.Tensor`.
 
@@ -46,15 +51,18 @@ class LazyTensorCreator(object):
       raise ValueError("Not a callable: %r" % tensor_callable)
     self._tensor_callable = tensor_callable
     self._tensor = None
-    self._tensor_lock = threading.Lock()
+    self._tensor_lock = threading.RLock()
 
   def __call__(self, dtype=None, name=None, as_ref=False):
     del name  # ignored
     if as_ref:
       raise RuntimeError("Cannot use LazyTensorCreator to create ref tensor")
-    if self._tensor is None:
+    if self._tensor is None or self._tensor is _CALL_IN_PROGRESS_SENTINEL:
       with self._tensor_lock:
-        if self._tensor is None:
+        if self._tensor is _CALL_IN_PROGRESS_SENTINEL:
+          raise RuntimeError("Cannot use LazyTensorCreator with reentrant callable")
+        elif self._tensor is None:
+          self._tensor = _CALL_IN_PROGRESS_SENTINEL
           self._tensor = self._tensor_callable()
     if dtype not in (None, self._tensor.dtype):
       raise RuntimeError("Cannot use LazyTensorCreator with explicit dtype")
