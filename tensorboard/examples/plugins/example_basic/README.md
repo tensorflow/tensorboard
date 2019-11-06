@@ -14,13 +14,13 @@ A plugin is comprised of three components:
 
 The backend and frontend operate within a plugin lifecycle:
 
-  - **1) Plugin setup**: When a user starts `tensorboard --logdir ...`, TensorBoard discovers available plugins, allows them to parse command line flags if needed, and configures URL routes to be served.
+  - **1) Plugin initializes**: When a user starts `tensorboard --logdir ...`, TensorBoard discovers available plugins, allows them to parse command line flags if needed, and configures URL routes to be served.
 
-  - **2) Web session creation**: When a user opens the frontend in a web browser, TensorBoard reads plugin frontend metadata and collects all active plugins.
+  - **2) User loads TensorBoard**: When a user opens the frontend in a web browser, TensorBoard reads plugin frontend metadata and collects all active plugins.
 
-  - **3) Dashboard open**: When a user selects the plugin's dashboard in the UI, TensorBoard loads an IFrame with the plugin's ES module and tells it to render.
+  - **3) User opens the dashboard**: When a user selects the plugin's dashboard in the UI, TensorBoard loads an IFrame with the plugin's ES module and tells it to render.
 
-  - **4) Route handling**: When a plugin's frontend makes URL requests to its backend, route handlers can respond with collected data.
+  - **4) Plugin handles routes**: When a plugin's frontend makes URL requests to its backend, route handlers can respond with collected data.
 
 
 ### Backend: How the plugin processes data, and sends it to the browser
@@ -44,7 +44,6 @@ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py
 
 ```python
 class MyPlugin(base_plugin.TBPlugin):
-  ### Plugin setup
   plugin_name = "My Awesome Plugin"
 
   def __init__(self, context): # ...
@@ -52,7 +51,7 @@ class MyPlugin(base_plugin.TBPlugin):
   def get_plugin_apps(self):
     return { "/tags": self._serve_tags }
 
-  ### Web session creation
+  ### Upon loading TensorBoard in browser
   def is_active(self): # ...
 
   def frontend_metadata(self):
@@ -78,8 +77,6 @@ For example:
 
 ```python
 class MyLoader(base_plugin.TBLoader):
-  ### Plugin Setup
-
   def define_flags(self, parser):
     parser.add_argument_group('custom').add_argument('--enable_my_extras')
 
@@ -114,7 +111,7 @@ class MyPlugin(base_plugin.TBPlugin):
   def __init__(self, context):
     self.multiplexer = context.multiplexer
 
-  def collect_data(self):
+  def preprocess_data(self):
     """
     {runName: { images: [tag1, tag2, tag3],
                 scalarValues: [tagA, tagB, tagC],
@@ -137,7 +134,7 @@ class MyPlugin(base_plugin.TBPlugin):
     content = PluginRunToTagToContent(plugin_name)
 ```
 
-For the complete EventMultiplexer API, see [`event_multiplexer.py`](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/event_multiplexer.py).
+For the complete EventMultiplexer API, see [`PluginEventMultiplexer`][`PluginEventMultiplexer`].
 
 ### Frontend: How the plugin visualizes your new data
 
