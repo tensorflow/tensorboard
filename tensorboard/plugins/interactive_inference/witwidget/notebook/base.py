@@ -34,7 +34,11 @@ NUM_EXAMPLES_FOR_MUTANT_ANALYSIS = 50
 # Custom user agent for tracking number of calls to Cloud AI Platform.
 USER_AGENT_FOR_CAIP_TRACKING = 'WhatIfTool'
 
-POOL_SIZE = 10
+try:
+  POOL_SIZE = max(multiprocessing.cpu_count() - 1, 1)
+except Exception:
+  POOL_SIZE = 1
+
 
 class WitWidgetBase(object):
   """WIT widget base class for common code between Jupyter and Colab."""
@@ -92,6 +96,10 @@ class WitWidgetBase(object):
     examples = copied_config.pop('examples')
     self.config = copied_config
     self.set_examples(examples)
+
+    # This tracks whether mutant inference is running in order to
+    # skip calling for explanations for CAIP models when inferring
+    # for mutant inference, for performance reasons.
     self.running_mutant_infer = False
 
     # If using AI Platform for prediction, set the correct custom prediction
@@ -409,6 +417,7 @@ class WitWidgetBase(object):
       """Run prediction on a list of examples and return results."""
       # Properly package the examples to send for prediction.
       discovery_url = None
+      error_during_prediction = False
       if api_key is not None:
         discovery_url = (
           ('https://%s.googleapis.com/$discovery/rest'
@@ -451,10 +460,11 @@ class WitWidgetBase(object):
       try:
         response = request_builder.execute()
       except Exception as e:
+        error_during_prediction = True
         response = {'error': str(e)}
 
       # Get the attributions and baseline score if explaination is enabled.
-      if should_explain:
+      if should_explain and not error_during_prediction:
         try:
           request_builder = service.projects().explain(
             name=name,
