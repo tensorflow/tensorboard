@@ -212,8 +212,8 @@ def tensorboard_js_workspace():
       licenses = ["notice"],  # Apache License 2.0
       sha256_urls = {
           "85a2ff924f1bf4757976aca22fd0efb045d9b3854f5a4ae838c64e4d11e75005": [
-              "http://mirror.tensorflow.org/unpkg.com/umap-js@1.0.5/lib/umap-js.min.js",
-              "https://unpkg.com/umap-js@1.0.5/lib/umap-js.min.js",
+              "http://mirror.tensorflow.org/unpkg.com/umap-js@1.2.2/lib/umap-js.min.js",
+              "https://unpkg.com/umap-js@1.2.2/lib/umap-js.min.js",
           ],
       },
   )
