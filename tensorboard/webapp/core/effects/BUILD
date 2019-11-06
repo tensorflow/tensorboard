@@ -1,7 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
+# load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 tf_ts_library(
@@ -52,7 +51,7 @@ tf_ts_library(
     ],
 )
 
-# TODO(soergel): make this test work
+# TODO(soergel): Make this test work.
 # This did not exist previously, and it fails due to an Angular injection issue.
 # jasmine_node_test(
 #     name = "core_effects_jasmine_test",
