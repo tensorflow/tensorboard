@@ -60,10 +60,10 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "@npm//:node_modules/reflect-metadata/Reflect.js",
         ],
         runtime_deps = runtime_deps + [
-            "//tensorboard/components/tf_ng_tensorboard/testing:initialize_testbed",
+            "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
-            "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
+            "//tensorboard/webapp/testing:test_support_lib",
         ],
         **kwargs
     )
