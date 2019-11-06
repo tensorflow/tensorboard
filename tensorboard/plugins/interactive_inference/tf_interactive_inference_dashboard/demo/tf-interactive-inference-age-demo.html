@@ -230,9 +230,9 @@ limitations under the License.
 
             // Get the gradient of the prediction with respect to the inputs
             // for displaying attributions.
-            const func = x => this.model.apply(
-              x, {batchSize: 128, training: true});
-            const gradFunc = tf.grad(func)
+            const func = (x) =>
+              this.model.apply(x, {batchSize: 128, training: true});
+            const gradFunc = tf.grad(func);
             const grads = gradFunc(input);
             const res = func(input);
             const gradValues = await grads.data();
@@ -252,8 +252,12 @@ limitations under the License.
               attributions.push(
                 this.getAttributions(
                   gradValues.slice(
-                    i * TENSOR_SIZE, i * TENSOR_SIZE + TENSOR_SIZE),
-                    this.data[indices[i]]));
+                    i * TENSOR_SIZE,
+                    i * TENSOR_SIZE + TENSOR_SIZE
+                  ),
+                  this.data[indices[i]]
+                )
+              );
             }
             this.$.dash.inferences = inferences;
             this.$.dash.extraOutputs = extraOutputs;
@@ -566,28 +570,28 @@ limitations under the License.
         const attributions = {};
         let curIndex = 0;
 
-        const getValue = feat => {
+        const getValue = (feat) => {
           if (ex.features.feature[feat].bytesList != null) {
             return atob(ex.features.feature[feat].bytesList.value[0]);
-          }
-          else {
+          } else {
             return String(ex.features.feature[feat].floatList.value[0]);
           }
-        }
+        };
         const extractAttribution = (feat) => {
           if (this.categories[feat] != null) {
             // For one-hot encoded features, use the gradient of the
             // entry that corresponds to the feature value that was set to 1.
             let featureAttrs = attrValues.slice(
-              curIndex, curIndex + this.categories[feat].length);
+              curIndex,
+              curIndex + this.categories[feat].length
+            );
             curIndex += this.categories[feat].length;
-            attributions[feat] = featureAttrs[
-              this.categories[feat].indexOf(getValue(feat))] || 0;
+            attributions[feat] =
+              featureAttrs[this.categories[feat].indexOf(getValue(feat))] || 0;
+          } else {
+            attributions[feat] = attrValues[curIndex++];
           }
-          else {
-            attributions[feat] = attrValues[curIndex++]
-          }
-        }
+        };
 
         extractAttribution('workclass');
         extractAttribution('education');
