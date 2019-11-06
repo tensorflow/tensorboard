@@ -99,7 +99,7 @@ It's recommended that plugins using flags call the `parser.add_argument_group(pl
 
 ## Reading data from event files
 
-On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin.
+On instantiation, a plugin is provided a [`PluginEventMultiplexer`] object as a field on the TBContext, from which to read data. The `PluginRunToTagToContent` method on the multiplexer returns a dictionary containing all run–tag pairs and associated summary metadata for your plugin.
 
 Plugins are not technically restricted from arbitrary file system and network access, but we strongly recommend using the multiplexer exclusively. This abstracts over the filesystem (local or remote), provides a consistent user experience for runs and tags across plugins, and is optimized for TensorBoard read patterns.
 
