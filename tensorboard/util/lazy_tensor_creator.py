@@ -53,10 +53,7 @@ class LazyTensorCreator(object):
     self._tensor = None
     self._tensor_lock = threading.RLock()
 
-  def __call__(self, dtype=None, name=None, as_ref=False):
-    del name  # ignored
-    if as_ref:
-      raise RuntimeError("Cannot use LazyTensorCreator to create ref tensor")
+  def __call__(self):
     if self._tensor is None or self._tensor is _CALL_IN_PROGRESS_SENTINEL:
       with self._tensor_lock:
         if self._tensor is _CALL_IN_PROGRESS_SENTINEL:
@@ -64,15 +61,21 @@ class LazyTensorCreator(object):
         elif self._tensor is None:
           self._tensor = _CALL_IN_PROGRESS_SENTINEL
           self._tensor = self._tensor_callable()
-    if dtype not in (None, self._tensor.dtype):
-      raise RuntimeError("Cannot use LazyTensorCreator with explicit dtype")
     return self._tensor
 
 
 def _lazy_tensor_creator_converter(value, dtype=None, name=None, as_ref=False):
+  del name  # ignored
   if not isinstance(value, LazyTensorCreator):
     raise RuntimeError("Expected LazyTensorCreator, got %r" % value)
-  return value(dtype, name, as_ref)
+  if as_ref:
+    raise RuntimeError("Cannot use LazyTensorCreator to create ref tensor")
+  tensor = value()
+  if dtype not in (None, tensor.dtype):
+    raise RuntimeError(
+        "Cannot convert LazyTensorCreator returning dtype %s to dtype %s" % (
+            tensor.dtype, dtype))
+  return tensor
 
 
 tf.register_tensor_conversion_function(

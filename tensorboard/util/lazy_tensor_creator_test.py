@@ -78,7 +78,8 @@ class LazyTensorCreatorTest(tf.test.TestCase):
     with self.assertRaisesRegex(RuntimeError, "ref tensor"):
       # Call conversion routine manually since this isn't actually
       # exposed as an argument to tf.convert_to_tensor.
-      lazy_tensor(as_ref=True)
+      lazy_tensor_creator._lazy_tensor_creator_converter(
+          lazy_tensor, as_ref=True)
 
   def test_reentrant_callable_does_not_deadlock(self):
     @lazy_tensor_creator.LazyTensorCreator
