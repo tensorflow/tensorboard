@@ -107,7 +107,7 @@ py_library(
         ":metadata",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util:tensor_util",
+        "//tensorboard/util:lazy_tensor_creator",
     ],
 )
 
