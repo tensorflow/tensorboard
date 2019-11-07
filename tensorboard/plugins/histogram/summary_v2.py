@@ -29,8 +29,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import functools
-
 import numpy as np
 
 from tensorboard.compat import tf2 as tf

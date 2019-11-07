@@ -90,7 +90,7 @@ class LazyTensorCreatorTest(tf.test.TestCase):
 
   def test_reentrant_callable_does_not_deadlock(self):
     @lazy_tensor_creator.LazyTensorCreator
-    def lazy_tensor(nested_call=False):
+    def lazy_tensor():
       return lazy_tensor()
     with self.assertRaisesRegex(RuntimeError, "reentrant callable"):
       lazy_tensor()
