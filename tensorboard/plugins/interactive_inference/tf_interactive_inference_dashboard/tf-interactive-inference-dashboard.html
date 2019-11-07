@@ -1480,8 +1480,8 @@ limitations under the License.
                         <paper-dropdown-menu
                           label="Model:"
                           no-label-float
-                          class="counterfactual-dropdown"
-                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                          class="short-dropdown"
+                          hidden$="[[shouldHideModelSelector_(parsedModelNames)]]"
                         >
                           <paper-listbox
                             class="dropdown-content"
@@ -1493,7 +1493,7 @@ limitations under the License.
                               items="[[parsedModelNames]]"
                             >
                               <paper-item
-                                >[[getCounterfactualModelName_(item)]]</paper-item
+                                >[[getLabeledModelName_(item)]]</paper-item
                               >
                             </template>
                           </paper-listbox>
@@ -1674,6 +1674,27 @@ limitations under the License.
                               </paper-listbox>
                             </paper-dropdown-menu>
                             <svg id="attributionLegend"></svg>
+                            <paper-dropdown-menu
+                              label="Model:"
+                              no-label-float
+                              class="short-dropdown"
+                              hidden$="[[shouldHideModelSelector_(parsedModelNames)]]"
+                            >
+                              <paper-listbox
+                                class="dropdown-content"
+                                slot="dropdown-content"
+                                selected="{{attributionModelIndex}}"
+                              >
+                                <template
+                                  is="dom-repeat"
+                                  items="[[parsedModelNames]]"
+                                >
+                                  <paper-item
+                                    >[[getLabeledModelName_(item)]]</paper-item
+                                  >
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
                           </div>
                         </div>
                         <div class="datapoint-right-controls-holder"></div>
@@ -3764,6 +3785,12 @@ limitations under the License.
             type: Number,
             value: 0,
           },
+          // Choose which model is used for attribution value display
+          attributionModelIndex: {
+            type: Number,
+            value: 0,
+            observer: 'setAttributions',
+          },
           // Calculated statistics from the inference results.
           inferenceStats_: {
             type: Array,
@@ -4572,7 +4599,7 @@ limitations under the License.
           return stats && Object.keys(stats).length > 0;
         },
 
-        shouldHideCounterfactualModelSelector_: function(modelNames) {
+        shouldHideModelSelector_: function(modelNames) {
           return !(modelNames && modelNames.length > 1);
         },
 
@@ -6200,7 +6227,7 @@ limitations under the License.
           return feature;
         },
 
-        getCounterfactualModelName_: function(modelName) {
+        getLabeledModelName_: function(modelName) {
           return 'Model: ' + modelName;
         },
 
@@ -6244,11 +6271,23 @@ limitations under the License.
          * selected example.
          */
         setAttributions: function() {
+          if (!this.selected || this.selected.length == 0) {
+            return;
+          }
           const attrib = {};
           const selectedData = this.visdata[this.selected[0]];
-          const attributionFinder = new RegExp(attributionPrefix + '(.*)');
+          const modelNumSuffix = this.strWithModelName_(
+            '',
+            this.attributionModelIndex
+          );
+          const attributionFinder = new RegExp(
+            attributionPrefix + '(.*)' + modelNumSuffix
+          );
           const sparseAttributionFinder = new RegExp(
-            attributionPrefix + '(.*)' + attributionSparseKeySuffix
+            attributionPrefix +
+              '(.*)' +
+              attributionSparseKeySuffix +
+              modelNumSuffix
           );
           for (let key in selectedData) {
             let featureWithAttribution = attributionFinder.exec(key);
@@ -6642,48 +6681,58 @@ limitations under the License.
           for (let i = 0; i < attributions.indices.length; i++) {
             const idx = attributions.indices[i];
             const datapoint = Object.assign({}, this.visdata[idx]);
-            // TODO(jwexler): Support attributions from multiple models.
-            // For now, we only display attribution from the first model, if WIT
-            // is loaded with two models.
-            const attribs =
-              attributions.attributions[0] == null
-                ? {}
-                : attributions.attributions[0][i];
-            const keys = Object.keys(attribs);
-            for (let j = 0; j < keys.length; j++) {
-              // If the attributions for a key is a 2D array then treat the first
-              // entry as sparse keys for attributions and the second entry as
-              // the attributions for the sparse keys in the first array.
-              // Otherwise the attribution is a single value or list and can be
-              // used as such.
-              let attribKey = attributionPrefix + keys[j];
-              if (
-                Array.isArray(attribs[keys[j]]) &&
-                attribs[keys[j]].length == 2 &&
-                Array.isArray(attribs[keys[j]][0])
-              ) {
-                const attribSparseKeyKey =
-                  attributionPrefix + keys[j] + attributionSparseKeySuffix;
-                datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
-                attribKey =
-                  attributionPrefix + keys[j] + attributionSparseValueSuffix;
-                datapoint[attribKey] = attribs[keys[j]][1];
-              } else {
-                datapoint[attribKey] = attribs[keys[j]];
-              }
-              let newAttributions = Array.isArray(datapoint[attribKey])
-                ? datapoint[attribKey]
-                : [datapoint[attribKey]];
-              for (
-                let attribIdx = 0;
-                attribIdx < newAttributions.length;
-                attribIdx++
-              ) {
-                if (newAttributions[attribIdx] > this.maxAttribution) {
-                  this.maxAttribution = newAttributions[attribIdx];
+            console.log('hi');
+            for (
+              let modelNum = 0;
+              modelNum < attributions.attributions.length;
+              modelNum++
+            ) {
+              console.log(modelNum);
+              const attribs =
+                attributions.attributions[modelNum] == null
+                  ? {}
+                  : attributions.attributions[modelNum][i];
+              const keys = Object.keys(attribs);
+              for (let j = 0; j < keys.length; j++) {
+                // If the attributions for a key is a 2D array then treat the first
+                // entry as sparse keys for attributions and the second entry as
+                // the attributions for the sparse keys in the first array.
+                // Otherwise the attribution is a single value or list and can be
+                // used as such.
+                let attribKey = this.strWithModelName_(
+                  attributionPrefix + keys[j],
+                  modelNum
+                );
+                if (
+                  Array.isArray(attribs[keys[j]]) &&
+                  attribs[keys[j]].length == 2 &&
+                  Array.isArray(attribs[keys[j]][0])
+                ) {
+                  const attribSparseKeyKey =
+                    attributionPrefix + keys[j] + attributionSparseKeySuffix;
+                  datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
+                  attribKey = this.strWithModelName_(
+                    attributionPrefix + keys[j] + attributionSparseValueSuffix,
+                    modelNum
+                  );
+                  datapoint[attribKey] = attribs[keys[j]][1];
+                } else {
+                  datapoint[attribKey] = attribs[keys[j]];
                 }
-                if (newAttributions[attribIdx] < this.minAttribution) {
-                  this.minAttribution = newAttributions[attribIdx];
+                let newAttributions = Array.isArray(datapoint[attribKey])
+                  ? datapoint[attribKey]
+                  : [datapoint[attribKey]];
+                for (
+                  let attribIdx = 0;
+                  attribIdx < newAttributions.length;
+                  attribIdx++
+                ) {
+                  if (newAttributions[attribIdx] > this.maxAttribution) {
+                    this.maxAttribution = newAttributions[attribIdx];
+                  }
+                  if (newAttributions[attribIdx] < this.minAttribution) {
+                    this.minAttribution = newAttributions[attribIdx];
+                  }
                 }
               }
             }
