@@ -6715,13 +6715,13 @@ limitations under the License.
           if (this.minAttribution < 0) {
             attributionDomain.push(this.minAttribution);
             attributionColorRange.push(negAttributionHighColor);
-            attributionDomain.push(this.minAttribution / 10);
+            attributionDomain.push(this.minAttribution / 5);
             attributionColorRange.push(negAttributionLowColor);
           }
           attributionDomain.push(0);
           attributionColorRange.push(neutralAttributionColor);
           if (this.maxAttribution > 0) {
-            attributionDomain.push(this.maxAttribution / 10);
+            attributionDomain.push(this.maxAttribution / 5);
             attributionColorRange.push(posAttributionLowColor);
             attributionDomain.push(this.maxAttribution);
             attributionColorRange.push(posAttributionHighColor);
@@ -6781,9 +6781,13 @@ limitations under the License.
           }
           // Creates an array of [pct, colour] pairs as stop
           // values for legend
-          const pct = linspace(0, 100, attributionColorRange.length).map(
+          const low = attributionDomain[0];
+          const range = attributionDomain[
+            attributionDomain.length - 1] - low;
+          const pct = attributionDomain.map(
             (d) => {
-              return Math.round(d) + '%';
+              const perc = Math.round((d - low) / range * 100);
+              return perc + '%';
             }
           );
 
