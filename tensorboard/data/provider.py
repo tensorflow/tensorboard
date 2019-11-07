@@ -534,7 +534,7 @@ class BlobReference(object):
 
   def __repr__(self):
     return "BlobReference(%s)" % ", ".join(
-      ("url=%r" % (self._url,), "blob_key=%r" % (self._blob_key,))
+        ("url=%r" % (self._url,), "blob_key=%r" % (self._blob_key,))
     )
 
 
@@ -621,6 +621,7 @@ class RunTagFilter(object):
     return self._tags
 
   def __repr__(self):
-    return "RunTagFilter(%s)" % ", ".join(
-      ("runs=%r" % (self._runs,), "tags=%r" % (self._tags,))
-    )
+    return "RunTagFilter(%s)" % ", ".join((
+        "runs=%r" % (self._runs,),
+        "tags=%r" % (self._tags,),
+    ))
