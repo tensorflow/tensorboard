@@ -96,7 +96,6 @@ class WitWidgetBase(object):
     examples = copied_config.pop('examples')
     self.config = copied_config
     self.set_examples(examples)
-    self.running_mutant_infer = False
 
     # This tracks whether mutant inference is running in order to
     # skip calling for explanations for CAIP models when inferring

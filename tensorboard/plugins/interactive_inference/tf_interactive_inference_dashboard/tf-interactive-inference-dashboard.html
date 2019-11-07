@@ -3944,7 +3944,7 @@ limitations under the License.
           },
           compareTitle: {
             type: String,
-            value: 'Attribution value(s)'
+            value: 'Attribution value(s)',
           },
           // Dictionary of features to feature value attributions for display
           // in the example viewer. Filled in if the selected example contains
@@ -6782,14 +6782,11 @@ limitations under the License.
           // Creates an array of [pct, colour] pairs as stop
           // values for legend
           const low = attributionDomain[0];
-          const range = attributionDomain[
-            attributionDomain.length - 1] - low;
-          const pct = attributionDomain.map(
-            (d) => {
-              const perc = Math.round((d - low) / range * 100);
-              return perc + '%';
-            }
-          );
+          const range = attributionDomain[attributionDomain.length - 1] - low;
+          const pct = attributionDomain.map((d) => {
+            const perc = Math.round(((d - low) / range) * 100);
+            return perc + '%';
+          });
 
           const colourPct = d3.zip(pct, attributionColorRange);
 

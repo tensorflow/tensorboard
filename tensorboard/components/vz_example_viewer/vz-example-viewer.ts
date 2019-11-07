@@ -149,7 +149,7 @@ namespace vz_example_viewer {
       colors: Object,
       highlightDifferences: {
         type: Boolean,
-        value: true
+        value: true,
       },
       displayMode: {type: String, value: 'grid'},
       featureSearchValue: {type: String, value: '', notify: true},
@@ -430,15 +430,27 @@ namespace vz_example_viewer {
       ) as any);
     },
 
-    displaySaliency: function(saliency) {
+    displaySaliency: function(saliency: SaliencyMap) {
       const feats = Object.keys(saliency);
-      const salJson = {};
+      const salJson: any = {};
+      // Create a tf.Example json containing the saliency for each feature.
       for (let i = 0; i < feats.length; i++) {
         const feat = feats[i];
-        const sal = saliency[feat];
-        salJson[feat] = {floatList: {value: [d3.format('.4f')(sal)]}};
+        let salValues = saliency[feat];
+        if (!Array.isArray(salValues)) {
+          salValues = [salValues];
+        }
+        salJson[feat] = {
+          floatList: {
+            value: (salValues as number[]).map((sal: number) =>
+              d3.format('.4f')(sal)
+            ),
+          },
+        };
       }
       this.saliencyJson = {features: {feature: salJson}};
+
+      // Set the compareJson to this, for display beside the feature values.
       this.compareJson = this.saliencyJson;
     },
 
@@ -1174,10 +1186,11 @@ namespace vz_example_viewer {
       if (index != null) {
         const values = this.getFeatureValues(feat, true);
         const compValues = this.getCompareFeatureValues(feat, true);
-        if (this.highlightDifferences &&
+        if (
+          this.highlightDifferences &&
           (index >= values.length ||
-          index >= compValues.length ||
-          values[index] != compValues[index])
+            index >= compValues.length ||
+            values[index] != compValues[index])
         ) {
           str += ' value-different';
         } else {
@@ -1376,9 +1389,13 @@ namespace vz_example_viewer {
      * json.
      */
     createCompareExamplesFromJson: function(json: string) {
-      if (!json || !Object.keys(json).length) {
+      // If setting the compare example back to empty, and there is saliency
+      // information, then set the compare info to the saliency so that it
+      // is displayed instead of nothing.
+      if (!json || (!Object.keys(json).length && this.saliencyJson)) {
         json = this.saliencyJson;
       }
+
       if (!json) {
         this.compareExample = null;
         return;
@@ -2096,7 +2113,9 @@ namespace vz_example_viewer {
     },
 
     getCompareHeaderClass: function(highlightDifferences: boolean) {
-      return highlightDifferences ? 'compare-value-text' : 'no-compare-value-text';
+      return highlightDifferences
+        ? 'compare-value-text'
+        : 'no-compare-value-text';
     },
 
     /**
