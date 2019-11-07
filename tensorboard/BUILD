@@ -373,6 +373,14 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "expect_requests_installed",
+    # This is a dummy rule used as a requests dependency in open-source.
+    # We expect requests to already be installed on the system, e.g., via
+    # `pip install requests`.
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "tf_web_library_default_typings",
     srcs = [
