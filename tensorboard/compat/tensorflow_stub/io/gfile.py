@@ -157,7 +157,8 @@ class LocalFileSystem(object):
     def _write(self, filename, file_content, mode):
         encoding = None if "b" in mode else "utf8"
         with io.open(filename, mode, encoding=encoding) as f:
-            f.write(file_content)
+            compatify = compat.as_bytes if "b" in mode else compat.as_text
+            f.write(compatify(file_content))
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
@@ -524,7 +525,9 @@ class GFile(object):
             if self.write_temp is None:
                 mode = "w+b" if self.binary_mode else "w+"
                 self.write_temp = tempfile.TemporaryFile(mode)
-            self.write_temp.write(file_content)
+
+            compatify = compat.as_bytes if self.binary_mode else compat.as_text
+            self.write_temp.write(compatify(file_content))
 
     def __next__(self):
         line = None
@@ -732,7 +735,8 @@ def _write_string_to_file(filename, file_content):
     errors.OpError: If there are errors during the operation.
   """
   with GFile(filename, mode="w") as f:
-    f.write(file_content)
+    f.write(compat.as_text(file_content))
+
 
 # Used for tests only
 def _read_file_to_string(filename, binary_mode=False):
