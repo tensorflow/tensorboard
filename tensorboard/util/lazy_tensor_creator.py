@@ -52,6 +52,7 @@ class LazyTensorCreator(object):
     self._tensor_callable = tensor_callable
     self._tensor = None
     self._tensor_lock = threading.RLock()
+    _register_conversion_function_once()
 
   def __call__(self):
     if self._tensor is None or self._tensor is _CALL_IN_PROGRESS_SENTINEL:
@@ -78,7 +79,29 @@ def _lazy_tensor_creator_converter(value, dtype=None, name=None, as_ref=False):
   return tensor
 
 
-tf.register_tensor_conversion_function(
-    base_type=LazyTensorCreator,
-    conversion_func=_lazy_tensor_creator_converter,
-    priority=0)
+# Use module-level bit and lock to ensure that registration of the
+# LazyTensorCreator conversion function happens only once.
+_conversion_registered = False
+_conversion_registered_lock = threading.Lock()
+
+
+def _register_conversion_function_once():
+  """Performs one-time registration of `_lazy_tensor_creator_converter`.
+
+  This helper can be invoked multiple times but only registers the conversion
+  function on the first invocation, making it suitable for calling when
+  constructing a LazyTensorCreator.
+
+  Deferring the registration is necessary because doing it at at module import
+  time would trigger the lazy TensorFlow import to resolve, and that in turn
+  would break the delicate `tf.summary` import cycle avoidance scheme.
+  """
+  global _conversion_registered
+  if not _conversion_registered:
+    with _conversion_registered_lock:
+      if not _conversion_registered:
+        _conversion_registered = True
+        tf.register_tensor_conversion_function(
+            base_type=LazyTensorCreator,
+            conversion_func=_lazy_tensor_creator_converter,
+            priority=0)
