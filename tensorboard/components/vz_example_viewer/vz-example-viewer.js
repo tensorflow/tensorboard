@@ -340,7 +340,7 @@ var vz_example_viewer;
             for (const feat of this.filteredFeaturesList) {
                 const val = this.saliency[feat.name];
                 // If there is no saliency information for the feature, do not color it.
-                if (!val) {
+                if (val == null) {
                     continue;
                 }
                 // Set background color, tooltip, and text color, which are all based
