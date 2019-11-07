@@ -6681,13 +6681,11 @@ limitations under the License.
           for (let i = 0; i < attributions.indices.length; i++) {
             const idx = attributions.indices[i];
             const datapoint = Object.assign({}, this.visdata[idx]);
-            console.log('hi');
             for (
               let modelNum = 0;
               modelNum < attributions.attributions.length;
               modelNum++
             ) {
-              console.log(modelNum);
               const attribs =
                 attributions.attributions[modelNum] == null
                   ? {}
