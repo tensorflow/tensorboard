@@ -21,7 +21,14 @@ import tensorflow as tf
 from tensorboard.util import lazy_tensor_creator
 
 
+tf.compat.v1.enable_eager_execution()
+
+
 class LazyTensorCreatorTest(tf.test.TestCase):
+
+  def assertEqualAsNumpy(self, a, b):
+    # TODO(#2507): Remove after we no longer test against TF 1.x.
+    self.assertEqual(a.numpy(), b.numpy())
 
   def test_lazy_creation_with_memoization(self):
     boxed_count = [0]
@@ -40,21 +47,21 @@ class LazyTensorCreatorTest(tf.test.TestCase):
     def lazy_tensor():
       return tf.constant(1)
     real_tensor = tf.convert_to_tensor(lazy_tensor)
-    self.assertEqual(tf.constant(1), real_tensor)
+    self.assertEqualAsNumpy(tf.constant(1), real_tensor)
 
   def test_conversion_identity(self):
     @lazy_tensor_creator.LazyTensorCreator
     def lazy_tensor():
       return tf.constant(1)
     real_tensor = tf.identity(lazy_tensor)
-    self.assertEqual(tf.constant(1), real_tensor)
+    self.assertEqualAsNumpy(tf.constant(1), real_tensor)
 
   def test_conversion_implicit(self):
     @lazy_tensor_creator.LazyTensorCreator
     def lazy_tensor():
       return tf.constant(1)
     real_tensor = lazy_tensor + tf.constant(1)
-    self.assertEqual(tf.constant(2), real_tensor)
+    self.assertEqualAsNumpy(tf.constant(2), real_tensor)
 
   def test_explicit_dtype_okay_if_matches(self):
     @lazy_tensor_creator.LazyTensorCreator
@@ -62,7 +69,7 @@ class LazyTensorCreatorTest(tf.test.TestCase):
       return tf.constant(1, dtype=tf.int32)
     real_tensor = tf.convert_to_tensor(lazy_tensor, dtype=tf.int32)
     self.assertEqual(tf.int32, real_tensor.dtype)
-    self.assertEqual(tf.constant(1, dtype=tf.int32), real_tensor)
+    self.assertEqualAsNumpy(tf.constant(1, dtype=tf.int32), real_tensor)
 
   def test_explicit_dtype_rejected_if_different(self):
     @lazy_tensor_creator.LazyTensorCreator
