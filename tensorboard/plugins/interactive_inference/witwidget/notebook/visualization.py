@@ -579,6 +579,7 @@ class WitConfigBuilder(object):
     self.store('aip_service_name', service_name)
     self.store('aip_service_version', service_version)
     self.store('aip_batch_size', batch_size)
+    self.store('get_explanations', get_explanations)
     if version is not None:
       self.set_model_signature(version)
     if force_json_input:
@@ -589,8 +590,6 @@ class WitConfigBuilder(object):
       self.store('adjust_example', adjust_example)
     if adjust_attribution:
       self.store('adjust_attribution', adjust_attribution)
-    if get_explanations:
-      self.store('get_explanations', get_explanations)
     if api_key:
       self.store('aip_api_key', api_key)
     return self
@@ -645,6 +644,7 @@ class WitConfigBuilder(object):
     self.store('compare_aip_service_name', service_name)
     self.store('compare_aip_service_version', service_version)
     self.store('compare_aip_batch_size', batch_size)
+    self.store('compare_get_explanations', get_explanations)
     if version is not None:
       self.set_compare_model_signature(version)
     if force_json_input:
@@ -655,8 +655,6 @@ class WitConfigBuilder(object):
       self.store('compare_adjust_example', adjust_example)
     if adjust_attribution:
       self.store('compare_adjust_attribution', adjust_attribution)
-    if get_explanations:
-      self.store('compare_get_explanations', get_explanations)
     if api_key:
       self.store('compare_aip_api_key', api_key)
     return self

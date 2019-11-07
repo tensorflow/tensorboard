@@ -1,10 +1,10 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_js_binary")
+
 package(
     default_testonly = True,
     default_visibility = ["//tensorboard:internal"],
 )
-
-load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_js_binary")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -24,7 +24,7 @@ tf_ts_library(
 
 tf_js_binary(
     name = "testable_plugin_bundle",
-    compile = 0,
+    compile = 1,
     entry_point = "testable-plugin-lib.ts",
     deps = [
         ":testable_plugin_lib_bundle",
@@ -39,6 +39,9 @@ tf_web_library(
         "testable_plugin_bundle.js",
     ],
     path = "/tf-plugin-lib/test",
+    deps = [
+        ":testable_plugin_bundle",
+    ],
 )
 
 tf_web_library(

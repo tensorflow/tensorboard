@@ -313,6 +313,21 @@ class TBLoader(object):
     """
     pass
 
+  def load(self, context):
+    """Loads a TBPlugin instance during the setup phase.
+
+    Args:
+      context: The TBContext instance.
+
+    Returns:
+      A plugin instance or None if it could not be loaded. Loaders that return
+      None are skipped.
+
+    :type context: TBContext
+    :rtype: TBPlugin | None
+    """
+    return None
+
 
 class BasicLoader(TBLoader):
   """Simple TBLoader that's sufficient for most plugins."""

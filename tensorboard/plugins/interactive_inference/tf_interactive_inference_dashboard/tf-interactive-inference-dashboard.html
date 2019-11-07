@@ -1822,7 +1822,11 @@ limitations under the License.
                 <div id="noexamples" class="noexamples info-text">
                   Datapoints and their inference results will be displayed here.
                 </div>
-                <paper-progress indeterminate id="progress" hidden="[[loadingBarHidden_]]">
+                <paper-progress
+                  indeterminate
+                  id="progress"
+                  hidden="[[loadingBarHidden_]]"
+                >
                 </paper-progress>
                 <div class="feature-container-holder" id="partialplotholder">
                   <div class="pd-plots-header">
@@ -8022,7 +8026,7 @@ limitations under the License.
           ).querySelector('.tf-category-pane-content');
           const progress = document.createElement('paper-progress');
           progress.setAttribute('indeterminate', true);
-          progress.setAttribute('class', 'pdplot-progress')
+          progress.setAttribute('class', 'pdplot-progress');
           Polymer.dom(container).appendChild(progress);
         },
 
