@@ -473,11 +473,7 @@ class BlobReference(object):
   """A reference to a blob.
 
   Attributes:
-    url: A string containing a URL from which the blob data may be fetched
-      directly, bypassing the data provider (optional). URLs may be a vector
-      for data leaks (e.g. via browser history, web proxies, etc.), so these
-      URLs should not expose secret information.
-    blob_key: A string containing an key uniquely identifying a blob, which
+    blob_key: A string containing a key uniquely identifying a blob, which
       may be dereferenced via `provider.read_blob(blob_key)`.
 
       These keys must be constructed such that they can be included directly in
@@ -487,27 +483,20 @@ class BlobReference(object):
       implementations to normalize case to reduce confusion. The empty string
       is not a valid key.
 
-      As with URLs above, blob keys must not contain information that should be
-      kept secret. Privacy-sensitive applications should use random keys
-      (e.g. UUIDs), or encrypt keys containing secret fields.
+      Blob keys must not contain information that should be kept secret.
+      Privacy-sensitive applications should use random keys (e.g. UUIDs), or
+      encrypt keys containing secret fields.
+    url: (optional) A string containing a URL from which the blob data may be
+      fetched directly, bypassing the data provider. URLs may be a vector
+      for data leaks (e.g. via browser history, web proxies, etc.), so these
+      URLs should not expose secret information.
   """
 
   __slots__ = ("_url", "_blob_key")
 
-  def __init__(self, url, blob_key):
-    self._url = url
+  def __init__(self, blob_key, url=None):
     self._blob_key = blob_key
-
-  @property
-  def url(self):
-    """Provide the direct-access URL for this blob, if available.
-
-    Note that this method is *not* expected to construct a URL to the
-    data-loading endpoint provided by TensorBoard. If this method returns
-    None, then the caller should proceed to use `blob_key()` to build the URL,
-    as needed.
-    """
-    return self._url
+    self._url = url
 
   @property
   def blob_key(self):
@@ -520,21 +509,32 @@ class BlobReference(object):
     """
     return self._blob_key
 
+  @property
+  def url(self):
+    """Provide the direct-access URL for this blob, if available.
+
+    Note that this method is *not* expected to construct a URL to the
+    data-loading endpoint provided by TensorBoard. If this method returns
+    None, then the caller should proceed to use `blob_key()` to build the URL,
+    as needed.
+    """
+    return self._url
+
   def __eq__(self, other):
     if not isinstance(other, BlobReference):
       return False
-    if self._url != other._url:
-      return False
     if self._blob_key != other._blob_key:
+      return False
+    if self._url != other._url:
       return False
     return True
 
   def __hash__(self):
-    return hash((self._url, self._blob_key))
+    return hash((self._blob_key, self._url))
 
   def __repr__(self):
     return "BlobReference(%s)" % ", ".join(
-        ("url=%r" % (self._url,), "blob_key=%r" % (self._blob_key,))
+        ("blob_key=%r" % (self._blob_key,), "url=%r" % (self._url,))
     )
 
 
