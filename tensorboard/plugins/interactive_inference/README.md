@@ -287,7 +287,7 @@ The model to be used for inference by the tool can be specified in many ways:
   In this case the inference will be done inside the notebook using the
   provided estimator.
 - As a model hosted by [AI Platform Prediction](https://cloud.google.com/ml-engine/)
-  through the`set_ai_platform_model` method.
+  through the `set_ai_platform_model` method.
 - As a custom prediction function provided through `set_custom_predict_fn` method.
   In this case WIT will directly call the function for inference.
 - As an endpoint for a model being served by [TensorFlow Serving](https://github.com/tensorflow/serving),
@@ -302,7 +302,62 @@ for all options you can provide, including how to specify other model types
 (defaults to binary classification) and how to specify an optional second model
 to compare to the first model.
 
-### How can the What-If Tool use attribution values?
+### How can the What-If Tool use attribution values and other prediction-time information?
+
+Feature attribution values are numeric values for each input feature to an ML model that
+indicate how much impact that feature value had on the model's prediction.
+There are a variety of approaches to get feature attribution values for a predicts from an ML model,
+including [SHAP](https://github.com/slundberg/shap),
+[Integrated Gradients](https://github.com/ankurtaly/Integrated-Gradients),
+[SmoothGrad](https://pair-code.github.io/saliency/), and more.
+
+They can be a powerful way of analyzing how a model reacts to certain input values beyond
+just simply studying the affect that changing feature values on specified examples has on model output.
+Some attribution techniques require access to a model internals, such as the gradient-based methods,
+whereas others can be performed on black-box models. Regardless, the What-If Tool can visualize the
+results of attribution methods in addition to the standard model prediction results.
+
+There are two ways to use the What-If Tool to visualize attribution values. If you have deployed a
+model to Cloud AI Platform with the explainability feature enabled, and provide this model to
+the tool through the standard `set_ai_platform_model` method, then attribution values will
+automatically be generated and visualized by the tool with no additional setup needed.
+If you wish to view attribution values for a different model setup, this can be accomplished through
+use of the custom prediction function.
+
+As described in the `set_custom_predict_fn` documentation in
+[WitConfigBuilder](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/witwidget/notebook/visualization.py), this method must return a list of the same size as the number of examples
+provided to it, with each list entry representing the prediction-time information for that example.
+In the case of a standard model with no attribution information, the list entry is just a number
+(in the case of a regression model), or a list of class probabilities (in the case of a classification model).
+
+But, if there is attribution or other prediction-time information that can be provided, then the list entry
+can instead be a dictionary, with the standard model prediction output under the `predictions` key. Attribution
+information can be returned under the `attributions` key and any other supplimental information under its own
+descriptive key. The exact format of the attributions and other supplimental information can be found in the code
+documentation linked above.
+
+If attribution values are provided to the What-If Tool, they can be used in a number of ways. First, when selecting
+a datapoint in the Datapoint Editor tab, the attribution values are displayed next to each feature value and the
+features can be ordered by their attribution strength, instead of alphabetically. Additionally, the feature values
+are colored by their attribution values for quick interpretation of attribution strengths.
+
+Beyond displaying the attribution values for the selected datapoint, the attribution values for each feature can be
+used in the tool in the same ways as any other feature of the datapoints. They can be used selected in the
+datapoints visualization controls to use those values to create custom scatter plots and histograms.
+For example, you can create a scatterplot showing the relationship between the attribution value of two different features,
+with the datapoints colored by the predicted result from the model.
+They can also be used in the Performance tab as a way to slice a dataset for comparing performance statistics of different slices.
+For example, you can quickly compare the aggregate performance of a model on datapoints with low attribution of a
+specified feature, against the datapoints with high attribution of that feature.
+
+Any other supplimental information returned from a custom prediction function can also be used in the same way, driving
+custom visualizations and as a dimension to slice when analyzing aggregate model performance.
+
+When a datapoint is edited and the re-inferred through the model with the "Run inference" button, the attributions and
+other supplimental information is recalculated and updated in the tool.
+
+For an example of returning attribution values from a custom prediction function (in this case using the SHAP library to
+get attributions), see the [WIT COMPAS with SHAP notebook](https://colab.research.google.com/github/PAIR-code/what-if-tool/blob/master/WIT_COMPAS_with_SHAP.ipynb).
 
 ### How do I enable it for use in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
