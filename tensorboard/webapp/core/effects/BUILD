@@ -15,11 +15,9 @@ tf_ts_library(
         "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-        "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
 )
